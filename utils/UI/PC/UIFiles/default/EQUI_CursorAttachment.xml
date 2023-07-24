@@ -1,0 +1,77 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<StaticAnimation item = "CA_Anim">
+		<ScreenID>CA_Anim</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Animation>BuffIcons</Animation>
+	</StaticAnimation>
+
+	<StaticAnimation item = "CA_Anim2">
+		<ScreenID>CA_Anim2</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Animation>BuffIcons</Animation>
+	</StaticAnimation>
+
+	<SpellGem item = "CA_SpellGem">
+		<ScreenID>CA_SpellGem</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>32</CY>
+		</Size>
+		<SpellGemDrawTemplate>
+			<Holder>A_SpellGemHolder</Holder>
+			<Background>A_SpellGemBackground</Background>
+			<Highlight>A_SpellGemHighlight</Highlight>
+		</SpellGemDrawTemplate>
+		<SpellIconOffsetX>8</SpellIconOffsetX>
+		<SpellIconOffsetY>4</SpellIconOffsetY>
+	</SpellGem>
+
+	<Screen item = "CursorAttachment">
+		<ScreenID/>
+		<Font/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>50</CY>
+		</Size>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CA_Anim</Pieces>
+		<Pieces>CA_Anim2</Pieces>
+		<Pieces>CA_SpellGem</Pieces>
+	</Screen>
+
+</XML>

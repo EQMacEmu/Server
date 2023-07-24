@@ -1,0 +1,408 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes" />
+
+	<!-- ======================================================================
+
+		MAIL ADDRESS BOOK WINDOW
+
+	-->
+
+	<Listbox item = "MAIL_AB_List">
+		<ScreenID>NameList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>200</CX>
+			<CY>400</CY>
+		</Size>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>75</Width>
+			<Heading>Names</Heading>
+			<Sortable>false</Sortable>
+		</Columns>
+	</Listbox>
+
+	<Label item = "MAIL_AB_NameLabel">
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>6</LeftAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>32</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Name:</Text>
+		<TextColor>
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "MAIL_AB_NameField">
+		<ScreenID>NameField</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Border>true</Style_Border> 
+		<LeftAnchorOffset>75</LeftAnchorOffset>
+		<RightAnchorOffset>65</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>26</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+	
+	<Button item = "MAIL_AB_NameFieldIsPrivateCheckbox">
+		<ScreenID>NameFieldIsPrivateCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>55</LeftAnchorOffset>
+		<RightAnchorOffset>44</RightAnchorOffset>
+		<TopAnchorOffset>7</TopAnchorOffset>
+		<BottomAnchorOffset>18</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Hides the name of the list from the recipients.</TooltipReference>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_CheckBoxNormal</Normal>
+			<Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "MAIL_AB_NameFieldIsPrivateLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>32</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text>Private</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Label item = "MAIL_AB_AddressesLabel">
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Addresses:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "MAIL_AB_FieldOfAddresses">
+		<ScreenID>FieldOfAddresses</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Border>true</Style_Border> 
+		<LeftAnchorOffset>75</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>28</TopAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>true</Style_VScroll>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item = "MAIL_AB_NoteLabel">
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>6</LeftAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<BottomAnchorOffset>32</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Note:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "MAIL_AB_NoteField">
+		<ScreenID>NoteField</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Border>true</Style_Border> 
+		<LeftAnchorOffset>75</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>true</Style_VScroll>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "MAIL_AB_AddModifyButton">
+		<ScreenID>AddModifyButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>82</TopAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<BottomAnchorOffset>56</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Add</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_AB_DeleteButton">
+		<ScreenID>DeleteButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>54</TopAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Delete</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_AB_ClearButton">
+		<ScreenID>ClearButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>26</TopAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>New</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "MAIL_AB_TopInfos">
+		<ScreenID>TopInfos</ScreenID>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>80</CY>
+		</Size>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Pieces>MAIL_AB_NameLabel</Pieces>
+		<Pieces>MAIL_AB_NameField</Pieces>
+		<Pieces>MAIL_AB_AddressesLabel</Pieces>
+		<Pieces>MAIL_AB_FieldOfAddresses</Pieces>
+		<Pieces>MAIL_AB_NameFieldIsPrivateCheckbox</Pieces>
+		<Pieces>MAIL_AB_NameFieldIsPrivateLabel</Pieces>
+	</Screen>
+
+	<Screen item = "MAIL_AB_BottomInfos">
+		<ScreenID>BottomInfos</ScreenID>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>100</CY>
+		</Size>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Pieces>MAIL_AB_NoteLabel</Pieces>
+		<Pieces>MAIL_AB_NoteField</Pieces>
+		<Pieces>MAIL_AB_AddModifyButton</Pieces>
+		<Pieces>MAIL_AB_DeleteButton</Pieces>
+		<Pieces>MAIL_AB_ClearButton</Pieces>
+	</Screen>
+
+	<VerticalLayoutBox item = "MAIL_AB_Infos">
+		<ScreenID>Infos</ScreenID>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>200</CY>
+		</Size>
+		<Spacing>2</Spacing>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:MAIL_AB_TopInfos</Pieces>
+		<Pieces>Screen:MAIL_AB_BottomInfos</Pieces>
+	</VerticalLayoutBox>
+
+	<HorizontalLayoutBox item = "MAIL_AB_Layout">
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>6</LeftAnchorOffset>
+		<TopAnchorOffset>6</TopAnchorOffset>
+		<RightAnchorOffset>6</RightAnchorOffset>
+		<BottomAnchorOffset>6</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Listbox:MAIL_AB_List</Pieces>
+		<Pieces>VerticalLayoutBox:MAIL_AB_Infos</Pieces>
+	</HorizontalLayoutBox>
+
+	<Screen item = "MailAddressBookWindow">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>50</X>
+			<Y>50</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>300</CY>
+		</Size>
+		<Text>Address Book</Text>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>HorizontalLayoutBox:MAIL_AB_Layout</Pieces>
+	</Screen>
+
+</XML>

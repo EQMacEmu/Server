@@ -1,0 +1,3382 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+
+	<!-- ************ Player LF Guild Page ************ -->
+
+	<Label item ="PLFG_PlayerInfoLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<Text>Tell Guilds looking for players:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="PLFG_LevelClassLabel">
+		<ScreenID>PLFG_LevelClassLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>54</BottomAnchorOffset>
+		<Text>Level X Warrior with XX AA</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+	<Label item ="PLFG_TimeZoneLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<TopAnchorOffset>62</TopAnchorOffset>
+		<RightAnchorOffset>230</RightAnchorOffset>
+		<BottomAnchorOffset>82</BottomAnchorOffset>
+		<Text>My time zone is:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "PLFG_TimeZoneCombo">
+		<ScreenID>PLFG_TimeZoneCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>234</LeftAnchorOffset>
+		<TopAnchorOffset>60</TopAnchorOffset>
+		<RightAnchorOffset>384</RightAnchorOffset>
+		<BottomAnchorOffset>84</BottomAnchorOffset>
+		<ListHeight>200</ListHeight>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<TooltipReference>Select a Timezone that represents when you are online.</TooltipReference>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Label item ="PLFG_CommentsLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<RightAnchorOffset>64</RightAnchorOffset>
+		<BottomAnchorOffset>122</BottomAnchorOffset>
+		<Text>Comments:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "PLFG_CommentsEdit">
+		<ScreenID>PLFG_CommentsEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>68</LeftAnchorOffset>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>140</BottomAnchorOffset>
+		<Style_VScroll>true</Style_VScroll>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Multiline>true</Style_Multiline>
+	</Editbox>
+
+	<Button item = "PLFG_OnButton">
+		<ScreenID>PLFG_OnButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>150</TopAnchorOffset>
+		<RightAnchorOffset>204</RightAnchorOffset>
+		<BottomAnchorOffset>174</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFGuild On</Text>
+		<TooltipReference>Click to start Looking For Guild with the selected data.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "PLFG_UpdateButton">
+		<ScreenID>PLFG_UpdateButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>150</TopAnchorOffset>
+		<RightAnchorOffset>204</RightAnchorOffset>
+		<BottomAnchorOffset>174</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Update Info</Text>
+		<TooltipReference>Click to refresh your LFGuild data and reset expiration time.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "PLFG_OffButton">
+		<ScreenID>PLFG_OffButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<TopAnchorOffset>150</TopAnchorOffset>
+		<RightAnchorOffset>304</RightAnchorOffset>
+		<BottomAnchorOffset>174</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFGuild Off</Text>
+		<TooltipReference>Click to stop Looking For Guild.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="PLFG_ExpireLabel">
+		<ScreenID>PLFG_ExpireLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>180</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>204</BottomAnchorOffset>
+		<Text>Your LFGuild status will expire in 7 days from last refresh.</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Page item = "LFGUILD_PlayerLFGuildPage">
+		<ScreenID>LFGUILD_PlayerLFGuildPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>LF Guild</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>PLFG_PlayerInfoLabel</Pieces>
+		<Pieces>PLFG_LevelClassLabel</Pieces>
+		<Pieces>PLFG_TimeZoneLabel</Pieces>
+		<Pieces>PLFG_CommentsLabel</Pieces>
+		<Pieces>PLFG_CommentsEdit</Pieces>
+		<Pieces>PLFG_UpdateButton</Pieces>
+		<Pieces>PLFG_OnButton</Pieces>
+		<Pieces>PLFG_OffButton</Pieces>
+		<Pieces>PLFG_ExpireLabel</Pieces>
+		<Pieces>PLFG_TimeZoneCombo</Pieces>
+	</Page>
+
+
+	<!-- ************ Guild LF Player Page ************ -->
+
+	<Label item ="GLFP_GuildDeclarationLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<RightAnchorOffset>104</RightAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<Text>We're looking for:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "GLFP_SelectAllRolesButton">
+		<ScreenID>GLFP_SelectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>90</RightAnchorOffset>
+		<TopAnchorOffset>8</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+		<Text>Select All</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GLFP_DeselectAllRolesButton">
+		<ScreenID>GLFP_DeselectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>90</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>52</BottomAnchorOffset>
+		<Text>Select None</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Button item= "GLFP_BSTCheckbox">
+		<ScreenID>GLFP_BSTCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_CLRCheckbox">
+		<ScreenID>GLFP_CLRCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_DRUCheckbox">
+		<ScreenID>GLFP_DRUCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_SHMCheckbox">
+		<ScreenID>GLFP_SHMCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_ENCCheckbox">
+		<ScreenID>GLFP_ENCCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_MAGCheckbox">
+		<ScreenID>GLFP_MAGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_NECCheckbox">
+		<ScreenID>GLFP_NECCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_WIZCheckbox">
+		<ScreenID>GLFP_WIZCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_BERCheckbox">
+		<ScreenID>GLFP_BERCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_MNKCheckbox">
+		<ScreenID>GLFP_MNKCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_ROGCheckbox">
+		<ScreenID>GLFP_ROGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_WARCheckbox">
+		<ScreenID>GLFP_WARCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_BRDCheckbox">
+		<ScreenID>GLFP_BRDCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_PALCheckbox">
+		<ScreenID>GLFP_PALCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_RNGCheckbox">
+		<ScreenID>GLFP_RNGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GLFP_SHDCheckbox">
+		<ScreenID>GLFP_SHDCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GLFP_BSTLabel">
+		<ScreenID>GLFP_BSTLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BST</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_CLRLabel">
+		<ScreenID>GLFP_CLRLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>CLR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_DRULabel">
+		<ScreenID>GLFP_DRULabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>DRU</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_SHMLabel">
+		<ScreenID>GLFP_SHMLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>SHM</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_ENCLabel">
+		<ScreenID>GLFP_ENCLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>ENC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_MAGLabel">
+		<ScreenID>GLFP_MAGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>MAG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_NECLabel">
+		<ScreenID>GLFP_NECLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>NEC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_WIZLabel">
+		<ScreenID>GLFP_WIZLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>WIZ</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_BERLabel">
+		<ScreenID>GLFP_BERLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BER</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_MNKLabel">
+		<ScreenID>GLFP_MNKLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>MNK</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_ROGLabel">
+		<ScreenID>GLFP_ROGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>ROG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_WARLabel">
+		<ScreenID>GLFP_WARLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>WAR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_BRDLabel">
+		<ScreenID>GLFP_BRDLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BRD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_PALLabel">
+		<ScreenID>GLFP_PALLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>PAL</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_RNGLabel">
+		<ScreenID>GLFP_RNGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>RNG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GLFP_SHDLabel">
+		<ScreenID>GLFP_SHDLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>SHD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Screen item = "GLFP_ClassWnd">
+		<ScreenID>ClassWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<BottomAnchorOffset>96</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+
+		<Pieces>GLFP_SelectAllRolesButton</Pieces>
+		<Pieces>GLFP_DeselectAllRolesButton</Pieces>
+		<Pieces>GLFP_BSTCheckbox</Pieces>
+		<Pieces>GLFP_CLRCheckbox</Pieces>
+		<Pieces>GLFP_DRUCheckbox</Pieces>
+		<Pieces>GLFP_SHMCheckbox</Pieces>
+		<Pieces>GLFP_ENCCheckbox</Pieces>
+		<Pieces>GLFP_MAGCheckbox</Pieces>
+		<Pieces>GLFP_NECCheckbox</Pieces>
+		<Pieces>GLFP_WIZCheckbox</Pieces>
+		<Pieces>GLFP_BERCheckbox</Pieces>
+		<Pieces>GLFP_MNKCheckbox</Pieces>
+		<Pieces>GLFP_ROGCheckbox</Pieces>
+		<Pieces>GLFP_WARCheckbox</Pieces>
+		<Pieces>GLFP_BRDCheckbox</Pieces>
+		<Pieces>GLFP_PALCheckbox</Pieces>
+		<Pieces>GLFP_RNGCheckbox</Pieces>
+		<Pieces>GLFP_SHDCheckbox</Pieces>
+		<Pieces>GLFP_BSTLabel</Pieces>
+		<Pieces>GLFP_CLRLabel</Pieces>
+		<Pieces>GLFP_DRULabel</Pieces>
+		<Pieces>GLFP_SHMLabel</Pieces>
+		<Pieces>GLFP_ENCLabel</Pieces>
+		<Pieces>GLFP_MAGLabel</Pieces>
+		<Pieces>GLFP_NECLabel</Pieces>
+		<Pieces>GLFP_WIZLabel</Pieces>
+		<Pieces>GLFP_MNKLabel</Pieces>
+		<Pieces>GLFP_ROGLabel</Pieces>
+		<Pieces>GLFP_WARLabel</Pieces>
+		<Pieces>GLFP_BERLabel</Pieces>
+		<Pieces>GLFP_BRDLabel</Pieces>
+		<Pieces>GLFP_PALLabel</Pieces>
+		<Pieces>GLFP_RNGLabel</Pieces>
+		<Pieces>GLFP_SHDLabel</Pieces>
+	</Screen>
+
+
+	<Label item ="GLFP_LevelRangeLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>104</TopAnchorOffset>
+		<BottomAnchorOffset>124</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>100</RightAnchorOffset>
+		<Text>Player Levels:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GLFP_LevelRangeMinEditbox">
+		<ScreenID>GLFP_LevelRangeMinEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>126</BottomAnchorOffset>
+		<LeftAnchorOffset>104</LeftAnchorOffset>
+		<RightAnchorOffset>134</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GLFP_LevelRangeSeparatorLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>104</TopAnchorOffset>
+		<BottomAnchorOffset>124</BottomAnchorOffset>
+		<LeftAnchorOffset>136</LeftAnchorOffset>
+		<RightAnchorOffset>166</RightAnchorOffset>
+		<Text>to</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GLFP_LevelRangeMaxEditbox">
+		<ScreenID>GLFP_LevelRangeMaxEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>126</BottomAnchorOffset>
+		<LeftAnchorOffset>168</LeftAnchorOffset>
+		<RightAnchorOffset>198</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GLFP_MinAACountLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>210</LeftAnchorOffset>
+		<TopAnchorOffset>104</TopAnchorOffset>
+		<RightAnchorOffset>340</RightAnchorOffset>
+		<BottomAnchorOffset>124</BottomAnchorOffset>
+		<Text>with Min AA Count:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GLFP_MinAACountEdit">
+		<ScreenID>GLFP_MinAACountEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>126</BottomAnchorOffset>
+		<LeftAnchorOffset>344</LeftAnchorOffset>
+		<RightAnchorOffset>384</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GLFP_TimeZoneLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>132</TopAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+		<BottomAnchorOffset>152</BottomAnchorOffset>
+		<Text>Our main time zone is:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "GLFP_TimeZoneCombo">
+		<ScreenID>GLFP_TimeZoneCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>132</LeftAnchorOffset>
+		<TopAnchorOffset>130</TopAnchorOffset>
+		<RightAnchorOffset>282</RightAnchorOffset>
+		<BottomAnchorOffset>154</BottomAnchorOffset>
+		<ListHeight>200</ListHeight>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<TooltipReference>Select a Timezone that represents when your guild is usually online.</TooltipReference>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Label item ="GLFP_CommentsLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>172</TopAnchorOffset>
+		<RightAnchorOffset>64</RightAnchorOffset>
+		<BottomAnchorOffset>192</BottomAnchorOffset>
+		<Text>Comments:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GLFP_CommentsEdit">
+		<ScreenID>GLFP_CommentsEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>64</LeftAnchorOffset>
+		<TopAnchorOffset>160</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>210</BottomAnchorOffset>
+		<Style_VScroll>true</Style_VScroll>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Multiline>true</Style_Multiline>
+	</Editbox>
+
+	<Button item = "GLFP_OnButton">
+		<ScreenID>GLFP_OnButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>220</TopAnchorOffset>
+		<RightAnchorOffset>200</RightAnchorOffset>
+		<BottomAnchorOffset>244</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFPlayers On</Text>
+		<TooltipReference>Click to start Looking For Players with the selected data.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GLFP_UpdateButton">
+		<ScreenID>GLFP_UpdateButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>220</TopAnchorOffset>
+		<RightAnchorOffset>200</RightAnchorOffset>
+		<BottomAnchorOffset>244</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Update Info</Text>
+		<TooltipReference>Click to refresh your LFPlayer data and reset expiration time.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GLFP_OffButton">
+		<ScreenID>GLFP_OffButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<TopAnchorOffset>220</TopAnchorOffset>
+		<RightAnchorOffset>300</RightAnchorOffset>
+		<BottomAnchorOffset>244</BottomAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFPlayers Off</Text>
+		<TooltipReference>Click to stop Looking For Players.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GLFP_ExpireLabel">
+		<ScreenID>GLFP_ExpireLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>250</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>270</BottomAnchorOffset>
+		<Text>Your LFPlayers status will expire in 30 days from last refresh.</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Page item = "LFGUILD_GuildLFPlayerPage">
+		<ScreenID>LFGUILD_GuildLFPlayerPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>LF Players</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>GLFP_GuildDeclarationLabel</Pieces>
+		<Pieces>Screen:GLFP_ClassWnd</Pieces>
+		<Pieces>GLFP_LevelRangeLabel</Pieces>
+		<Pieces>GLFP_LevelRangeMinEditbox</Pieces>
+		<Pieces>GLFP_LevelRangeSeparatorLabel</Pieces>
+		<Pieces>GLFP_LevelRangeMaxEditbox</Pieces>
+		<Pieces>GLFP_MinAACountLabel</Pieces>
+		<Pieces>GLFP_MinAACountEdit</Pieces>
+		<Pieces>GLFP_TimeZoneLabel</Pieces>
+		<Pieces>GLFP_CommentsLabel</Pieces>
+		<Pieces>GLFP_CommentsEdit</Pieces>
+		<Pieces>GLFP_UpdateButton</Pieces>
+		<Pieces>GLFP_OnButton</Pieces>
+		<Pieces>GLFP_OffButton</Pieces>
+		<Pieces>GLFP_ExpireLabel</Pieces>
+		<Pieces>GLFP_TimeZoneCombo</Pieces>
+	</Page>
+
+
+	<!-- ************ Search Guilds Page ************ -->
+
+	<Label item ="PSFG_DeclarationLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<Text>Search for Guilds looking for a:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="PSFG_LevelLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>40</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<RightAnchorOffset>44</RightAnchorOffset>
+		<Text>Level</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "PSFG_LevelEdit">
+		<ScreenID>PSFG_LevelEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>38</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		<LeftAnchorOffset>46</LeftAnchorOffset>
+		<RightAnchorOffset>76</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Combobox item = "PSFG_ClassCombo">
+		<ScreenID>PSFG_ClassCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>38</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		<LeftAnchorOffset>82</LeftAnchorOffset>
+		<RightAnchorOffset>142</RightAnchorOffset>
+		<ListHeight>200</ListHeight>
+		<TooltipReference>Select a class to match</TooltipReference>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Label item ="PSFG_WithAALabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>40</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<LeftAnchorOffset>146</LeftAnchorOffset>
+		<RightAnchorOffset>176</RightAnchorOffset>
+		<Text>with</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "PSFG_AACountEdit">
+		<ScreenID>PSFG_AACountEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>38</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		<LeftAnchorOffset>182</LeftAnchorOffset>
+		<RightAnchorOffset>222</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="PSFG_AALabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>40</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<LeftAnchorOffset>226</LeftAnchorOffset>
+		<RightAnchorOffset>256</RightAnchorOffset>
+		<Text>AA</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Label item ="PSFG_TimeZoneLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>68</TopAnchorOffset>
+		<BottomAnchorOffset>88</BottomAnchorOffset>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<RightAnchorOffset>104</RightAnchorOffset>
+		<Text>Around time zone:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "PSFG_TimeZoneCombo">
+		<ScreenID>PSFG_TimeZoneCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>66</TopAnchorOffset>
+		<BottomAnchorOffset>90</BottomAnchorOffset>
+		<LeftAnchorOffset>108</LeftAnchorOffset>
+		<RightAnchorOffset>258</RightAnchorOffset>
+		<ListHeight>200</ListHeight>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<TooltipReference>Select a Timezone that represents when you are online.</TooltipReference>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+
+	<Button item = "PSFG_SearchButton">
+		<ScreenID>PSFG_SearchButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		<LeftAnchorOffset>64</LeftAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Search</Text>
+		<TooltipReference>Click to perform the search</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Listbox item = "PSFG_SearchResultList">
+		<ScreenID>PSFG_SearchResultList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>86</BottomAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>150</Width>
+			<Heading>Guild Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>75</Width>
+			<Heading>Timezone</Heading>
+		</Columns>
+		<Columns>
+			<Width>225</Width>
+			<Heading>Comments</Heading>
+		</Columns>
+	</Listbox>
+
+	<STMLbox item = "PSFG_Comment">
+		<ScreenID>PSFG_Comment</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Border>true</Style_Border>
+		<Text>Comment Area</Text>
+	</STMLbox>
+
+
+	<Page item = "LFGUILD_SearchGuildsPage">
+		<ScreenID>LFGUILD_SearchGuildsPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Search Guilds</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>PSFG_DeclarationLabel</Pieces>
+		<Pieces>PSFG_LevelLabel</Pieces>
+		<Pieces>PSFG_LevelEdit</Pieces>
+		<Pieces>PSFG_WithAALabel</Pieces>
+		<Pieces>PSFG_AACountEdit</Pieces>
+		<Pieces>PSFG_AALabel</Pieces>
+		<Pieces>PSFG_TimeZoneLabel</Pieces>
+		<Pieces>PSFG_SearchButton</Pieces>
+		<Pieces>PSFG_SearchResultList</Pieces>
+		<Pieces>PSFG_Comment</Pieces>
+		<Pieces>PSFG_TimeZoneCombo</Pieces>
+		<Pieces>PSFG_ClassCombo</Pieces>
+	</Page>
+
+	<!-- ************ Search Players Page ************ -->
+
+	<Label item ="GSFP_DeclarationLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		<Text>Search for Players who are LFGuild:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Button item = "GSFP_SelectAllRolesButton">
+		<ScreenID>GSFP_SelectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>90</RightAnchorOffset>
+		<TopAnchorOffset>8</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+		<Text>Select All</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GSFP_DeselectAllRolesButton">
+		<ScreenID>GSFP_DeselectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>90</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>52</BottomAnchorOffset>
+		<Text>Select None</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Button item= "GSFP_BSTCheckbox">
+		<ScreenID>GSFP_BSTCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_CLRCheckbox">
+		<ScreenID>GSFP_CLRCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_DRUCheckbox">
+		<ScreenID>GSFP_DRUCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_SHMCheckbox">
+		<ScreenID>GSFP_SHMCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>112</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_ENCCheckbox">
+		<ScreenID>GSFP_ENCCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_MAGCheckbox">
+		<ScreenID>GSFP_MAGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_NECCheckbox">
+		<ScreenID>GSFP_NECCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_WIZCheckbox">
+		<ScreenID>GSFP_WIZCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<RightAnchorOffset>192</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_BERCheckbox">
+		<ScreenID>GSFP_BERCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_MNKCheckbox">
+		<ScreenID>GSFP_MNKCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_ROGCheckbox">
+		<ScreenID>GSFP_ROGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_WARCheckbox">
+		<ScreenID>GSFP_WARCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>260</LeftAnchorOffset>
+		<RightAnchorOffset>272</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_BRDCheckbox">
+		<ScreenID>GSFP_BRDCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<BottomAnchorOffset>14</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_PALCheckbox">
+		<ScreenID>GSFP_PALCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>18</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_RNGCheckbox">
+		<ScreenID>GSFP_RNGCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>34</TopAnchorOffset>
+		<BottomAnchorOffset>46</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GSFP_SHDCheckbox">
+		<ScreenID>GSFP_SHDCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>340</LeftAnchorOffset>
+		<RightAnchorOffset>352</RightAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>62</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GSFP_BSTLabel">
+		<ScreenID>GSFP_BSTLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BST</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_CLRLabel">
+		<ScreenID>GSFP_CLRLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>CLR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_DRULabel">
+		<ScreenID>GSFP_DRULabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>DRU</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_SHMLabel">
+		<ScreenID>GSFP_SHMLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>SHM</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_ENCLabel">
+		<ScreenID>GSFP_ENCLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>ENC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_MAGLabel">
+		<ScreenID>GSFP_MAGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>MAG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_NECLabel">
+		<ScreenID>GSFP_NECLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>NEC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_WIZLabel">
+		<ScreenID>GSFP_WIZLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>195</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>WIZ</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_BERLabel">
+		<ScreenID>GSFP_BERLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BER</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_MNKLabel">
+		<ScreenID>GSFP_MNKLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>MNK</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_ROGLabel">
+		<ScreenID>GSFP_ROGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>ROG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_WARLabel">
+		<ScreenID>GSFP_WARLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>275</LeftAnchorOffset>
+		<RightAnchorOffset>335</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>WAR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_BRDLabel">
+		<ScreenID>GSFP_BRDLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>12</BottomAnchorOffset>
+
+		<Text>BRD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_PALLabel">
+		<ScreenID>GSFP_PALLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>16</TopAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+
+		<Text>PAL</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_RNGLabel">
+		<ScreenID>GSFP_RNGLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<BottomAnchorOffset>44</BottomAnchorOffset>
+
+		<Text>RNG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSFP_SHDLabel">
+		<ScreenID>GSFP_SHDLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>355</LeftAnchorOffset>
+		<RightAnchorOffset>415</RightAnchorOffset>
+		<TopAnchorOffset>48</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+
+		<Text>SHD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Screen item = "GSFP_ClassWnd">
+		<ScreenID>ClassWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>86</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+
+		<Pieces>GSFP_SelectAllRolesButton</Pieces>
+		<Pieces>GSFP_DeselectAllRolesButton</Pieces>
+		<Pieces>GSFP_BSTCheckbox</Pieces>
+		<Pieces>GSFP_CLRCheckbox</Pieces>
+		<Pieces>GSFP_DRUCheckbox</Pieces>
+		<Pieces>GSFP_SHMCheckbox</Pieces>
+		<Pieces>GSFP_ENCCheckbox</Pieces>
+		<Pieces>GSFP_MAGCheckbox</Pieces>
+		<Pieces>GSFP_NECCheckbox</Pieces>
+		<Pieces>GSFP_WIZCheckbox</Pieces>
+		<Pieces>GSFP_BERCheckbox</Pieces>
+		<Pieces>GSFP_MNKCheckbox</Pieces>
+		<Pieces>GSFP_ROGCheckbox</Pieces>
+		<Pieces>GSFP_WARCheckbox</Pieces>
+		<Pieces>GSFP_BRDCheckbox</Pieces>
+		<Pieces>GSFP_PALCheckbox</Pieces>
+		<Pieces>GSFP_RNGCheckbox</Pieces>
+		<Pieces>GSFP_SHDCheckbox</Pieces>
+		<Pieces>GSFP_BSTLabel</Pieces>
+		<Pieces>GSFP_CLRLabel</Pieces>
+		<Pieces>GSFP_DRULabel</Pieces>
+		<Pieces>GSFP_SHMLabel</Pieces>
+		<Pieces>GSFP_ENCLabel</Pieces>
+		<Pieces>GSFP_MAGLabel</Pieces>
+		<Pieces>GSFP_NECLabel</Pieces>
+		<Pieces>GSFP_WIZLabel</Pieces>
+		<Pieces>GSFP_MNKLabel</Pieces>
+		<Pieces>GSFP_ROGLabel</Pieces>
+		<Pieces>GSFP_WARLabel</Pieces>
+		<Pieces>GSFP_BERLabel</Pieces>
+		<Pieces>GSFP_BRDLabel</Pieces>
+		<Pieces>GSFP_PALLabel</Pieces>
+		<Pieces>GSFP_RNGLabel</Pieces>
+		<Pieces>GSFP_SHDLabel</Pieces>
+	</Screen>
+
+	<Label item ="GSFP_LevelRangeLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>92</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<RightAnchorOffset>100</RightAnchorOffset>
+
+		<Text>Player Levels:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GSFP_LevelRangeMinEditbox">
+		<ScreenID>GSFP_LevelRangeMinEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GSFP_LevelRangeSeparatorLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>92</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+		<LeftAnchorOffset>131</LeftAnchorOffset>
+		<RightAnchorOffset>145</RightAnchorOffset>
+
+		<Text>to</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GSFP_LevelRangeMaxEditbox">
+		<ScreenID>GSFP_LevelRangeMaxEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		<LeftAnchorOffset>145</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GSFP_MinAACountLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>92</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<RightAnchorOffset>300</RightAnchorOffset>
+		<Text>Min AA Count:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GSFP_MinAACountEdit">
+		<ScreenID>GSFP_MinAACountEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		<LeftAnchorOffset>305</LeftAnchorOffset>
+		<RightAnchorOffset>345</RightAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GSFP_TimeZoneLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>120</TopAnchorOffset>
+		<RightAnchorOffset>134</RightAnchorOffset>
+		<BottomAnchorOffset>140</BottomAnchorOffset>
+		<Text>Our main time zone is:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "GSFP_TimeZoneCombo">
+		<ScreenID>GSFP_TimeZoneCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>138</LeftAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<RightAnchorOffset>288</RightAnchorOffset>
+		<BottomAnchorOffset>142</BottomAnchorOffset>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ListHeight>200</ListHeight>
+		<TooltipReference>Select a Timezone that represents when your guild is usually online.</TooltipReference>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+
+	<Button item = "GSFP_SearchButton">
+		<ScreenID>GSFP_SearchButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>166</BottomAnchorOffset>
+		<LeftAnchorOffset>64</LeftAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Search</Text>
+		<TooltipReference>Click to perform the search</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Listbox item = "GSFP_SearchResultList">
+		<ScreenID>GSFP_SearchResultList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>168</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>86</BottomAnchorOffset>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Player Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Lvl</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cls</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>AA</Heading>
+		</Columns>
+		<Columns>
+			<Width>75</Width>
+			<Heading>Timezone</Heading>
+		</Columns>
+		<Columns>
+			<Width>220</Width>
+			<Heading>Comments</Heading>
+		</Columns>
+	</Listbox>
+
+	<STMLbox item = "GSFP_Comment">
+		<ScreenID>GSFP_Comment</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Border>true</Style_Border>
+		<Text>Comment Area</Text>
+	</STMLbox>
+
+
+	<Page item = "LFGUILD_SearchPlayersPage">
+		<ScreenID>LFGUILD_SearchPlayersPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Search Players</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>GSFP_DeclarationLabel</Pieces>
+		<Pieces>Screen:GSFP_ClassWnd</Pieces>
+		<Pieces>GSFP_LevelRangeLabel</Pieces>
+		<Pieces>GSFP_LevelRangeMinEditbox</Pieces>
+		<Pieces>GSFP_LevelRangeSeparatorLabel</Pieces>
+		<Pieces>GSFP_LevelRangeMaxEditbox</Pieces>
+		<Pieces>GSFP_MinAACountLabel</Pieces>
+		<Pieces>GSFP_MinAACountEdit</Pieces>
+		<Pieces>GSFP_TimeZoneLabel</Pieces>
+		<Pieces>GSFP_SearchButton</Pieces>
+		<Pieces>GSFP_SearchResultList</Pieces>
+		<Pieces>GSFP_Comment</Pieces>
+		<Pieces>GSFP_TimeZoneCombo</Pieces>
+	</Page>
+
+
+	<TabBox item = "LFGUILD_TabWindow">
+		<ScreenID>LFGUILD_TabWindow</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+		<Pages>LFGUILD_PlayerLFGuildPage</Pages>
+		<Pages>LFGUILD_GuildLFPlayerPage</Pages>
+		<Pages>LFGUILD_SearchGuildsPage</Pages>
+		<Pages>LFGUILD_SearchPlayersPage</Pages>
+	</TabBox>
+
+	<Screen item = "LFGuildWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>70</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>490</CX>
+			<CY>600</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Guild Search Window</Text>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>LFGUILD_TabWindow</Pieces>
+	</Screen>
+
+</XML>

@@ -1,0 +1,279 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- Hidden Edit box that will be used as a template for dynammically generated edit boxes -->
+	<Editbox item = "POLL_EditTemplate">
+		<ScreenID>EditTemplate</ScreenID>
+		<Font>4</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>280</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>30</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+<!-- Done with hidden edit box -->
+<!-- Hidden label that is created just to be able to grab the font we want to use in the dynamic labels -->
+	<Label item = "POLL_LabelTemplate">
+		<ScreenID>LabelTemplate</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Text></Text>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>40</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+<!-- End of hidden label -->
+
+
+
+
+
+<!-- Labels -->
+	<Label item = "POLL_QuestionLabel">
+		<ScreenID>QuestionLabel</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Text>Poll Question:</Text>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>40</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item = "POLL_ChoicesLabel">
+		<ScreenID>ChoicesLabel</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Text>Choices:</Text>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>40</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>	
+<!-- Window label -->
+	<Label item = "POLL_WndLabel">
+		<ScreenID>WndLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>POLL</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+<!-- Done with labels -->
+
+<!-- Hidden Buttons that are of different types so we can use them as templates to dynamically creates button -->
+	<Button item = "POLL_CheckButton">
+		<ScreenID>CheckButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>23</CX>
+			<CY>19</CY>
+		</Size>
+		<TooltipReference></TooltipReference>
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_RadioBtnNormal</Normal>
+			<Pressed>A_EQLS_RadioBtnPressed</Pressed>
+			<Disabled>A_EQLS_RadioBtnDisabled</Disabled>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- Done with Hidden buttons -->
+
+<!-- Buttons actually used on the screen -->
+	<Button item = "POLL_SubmitButton">
+		<ScreenID>SubmitButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>425</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Submit your response to the server</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>SUBMIT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "POLL_SkipButton">
+		<ScreenID>SkipButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>425</X>
+			<Y>425</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Skip the poll</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>SKIP</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- Done with buttons -->
+	
+	
+	
+
+
+<!-- Inner screen that contains the poll quesiton and choices available -->
+	<Screen item = "POLL_WorkingArea">
+		<ScreenID>PollArea</ScreenID>
+		<Font>4</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>40</X>
+			<Y>70</Y>
+		</Location>
+		<Size>
+			<CX>560</CX>
+			<CY>345</CY>
+		</Size>
+		<Text></Text>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Pieces>POLL_QuestionLabel</Pieces>
+		<Pieces>POLL_ChoicesLabel</Pieces>
+	</Screen>
+<!-- End of inner screen -->
+	
+	
+	<Screen item = "PollWindow">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+
+		<Text>Poll</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_AltBG01</Pieces>
+		<Pieces>EQLS_AltBG02</Pieces>
+		<Pieces>EQLS_AltBG03</Pieces>
+		<Pieces>EQLS_AltBG04</Pieces>
+		<Pieces>EQLS_AltBG05</Pieces>
+		<Pieces>EQLS_AltBG06</Pieces>
+		<Pieces>POLL_WorkingArea</Pieces>
+		<Pieces>POLL_WndLabel</Pieces>
+		<Pieces>POLL_CheckButton</Pieces>
+		<Pieces>POLL_LabelTemplate</Pieces>
+		<Pieces>POLL_SkipButton</Pieces>
+		<Pieces>POLL_SubmitButton</Pieces>
+		<Pieces>POLL_EditTemplate</Pieces>
+	</Screen>
+
+</XML>

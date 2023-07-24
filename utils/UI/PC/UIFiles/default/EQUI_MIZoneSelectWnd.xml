@@ -1,0 +1,145 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- The switch list window -->
+<Label item = "MIZ_Label">
+	<ScreenID/>
+	<RelativePosition>true</RelativePosition>
+	<AutoStretch>true</AutoStretch>
+	<LeftAnchorOffset>4</LeftAnchorOffset>
+	<TopAnchorOffset>2</TopAnchorOffset>
+	<RightAnchorOffset>4</RightAnchorOffset>
+	<BottomAnchorOffset>22</BottomAnchorOffset>
+	<TopAnchorToTop>true</TopAnchorToTop>
+	<BottomAnchorToTop>true</BottomAnchorToTop>
+	<LeftAnchorToLeft>true</LeftAnchorToLeft>
+	<RightAnchorToLeft>false</RightAnchorToLeft>
+	<Text>Instances available</Text>
+	<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+	</TextColor>
+	<NoWrap>true</NoWrap>
+	<AlignCenter>true</AlignCenter>
+	<AlignRight>false</AlignRight>
+</Label>
+
+<Button item = "MIZ_SelectButton">
+	<ScreenID>SelectButton</ScreenID>
+	<AutoStretch>true</AutoStretch>
+	<LeftAnchorOffset>10</LeftAnchorOffset>
+	<TopAnchorOffset>28</TopAnchorOffset>
+	<RightAnchorOffset>100</RightAnchorOffset>
+	<BottomAnchorOffset>4</BottomAnchorOffset>
+	<TopAnchorToTop>false</TopAnchorToTop>
+	<BottomAnchorToTop>false</BottomAnchorToTop>
+	<LeftAnchorToLeft>true</LeftAnchorToLeft>
+	<RightAnchorToLeft>true</RightAnchorToLeft>
+	<Style_VScroll>false</Style_VScroll>
+	<Style_HScroll>false</Style_HScroll>
+	<Style_Transparent>false</Style_Transparent>
+	<Style_Checkbox>false</Style_Checkbox>
+	<Text>Select</Text>
+	<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+	</TextColor>
+	<ButtonDrawTemplate>
+		<Normal>A_BtnNormal</Normal>
+		<Pressed>A_BtnPressed</Pressed>
+		<Flyby>A_BtnFlyby</Flyby>
+		<Disabled>A_BtnDisabled</Disabled>
+		<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+	</ButtonDrawTemplate>
+</Button>
+
+<Button item = "MIZ_CancelButton">
+	<ScreenID>CancelButton</ScreenID>
+	<AutoStretch>true</AutoStretch>
+	<LeftAnchorOffset>100</LeftAnchorOffset>
+	<TopAnchorOffset>28</TopAnchorOffset>
+	<RightAnchorOffset>10</RightAnchorOffset>
+	<BottomAnchorOffset>4</BottomAnchorOffset>
+	<TopAnchorToTop>false</TopAnchorToTop>
+	<BottomAnchorToTop>false</BottomAnchorToTop>
+	<LeftAnchorToLeft>false</LeftAnchorToLeft>
+	<RightAnchorToLeft>false</RightAnchorToLeft>
+	<Style_VScroll>false</Style_VScroll>
+	<Style_HScroll>false</Style_HScroll>
+	<Style_Transparent>false</Style_Transparent>
+	<Style_Checkbox>false</Style_Checkbox>
+	<Text>Cancel</Text>
+	<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+	</TextColor>
+	<ButtonDrawTemplate>
+		<Normal>A_BtnNormal</Normal>
+		<Pressed>A_BtnPressed</Pressed>
+		<Flyby>A_BtnFlyby</Flyby>
+		<Disabled>A_BtnDisabled</Disabled>
+		<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+	</ButtonDrawTemplate>
+</Button>
+
+<Listbox item = "MIZ_ZoneList">
+	<ScreenID>ZoneList</ScreenID>
+	<DrawTemplate>WDT_Inner</DrawTemplate>
+	<AutoStretch>true</AutoStretch>
+	<LeftAnchorOffset>4</LeftAnchorOffset>
+	<TopAnchorOffset>24</TopAnchorOffset>
+	<RightAnchorOffset>4</RightAnchorOffset>
+	<BottomAnchorOffset>32</BottomAnchorOffset>
+	<TopAnchorToTop>true</TopAnchorToTop>
+	<BottomAnchorToTop>false</BottomAnchorToTop>
+	<LeftAnchorToLeft>true</LeftAnchorToLeft>
+	<RightAnchorToLeft>false</RightAnchorToLeft>
+	<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+	</TextColor>
+	<Style_Border>true</Style_Border>
+	<Style_VScroll>true</Style_VScroll>
+	<Columns>
+		<Width>200</Width>
+		<Heading>Zone</Heading>
+	</Columns>
+	<Columns>
+		<Width>80</Width>
+		<Heading>Players</Heading>
+	</Columns>
+</Listbox>
+
+<Screen item = "MIZoneSelectWnd">
+	<RelativePosition>false</RelativePosition>
+	<Location>
+		<X>100</X>
+		<Y>60</Y>
+	</Location>
+	<Size>
+		<CX>300</CX>
+		<CY>200</CY>
+	</Size>
+	<Style_VScroll>false</Style_VScroll>
+	<Style_HScroll>false</Style_HScroll>
+	<Style_Transparent>false</Style_Transparent>
+	<Text>Choose which zone to enter</Text>
+	<DrawTemplate>WDT_Rounded</DrawTemplate>
+	<Style_Titlebar>true</Style_Titlebar>
+	<Style_Closebox>true</Style_Closebox>
+	<Style_Minimizebox>true</Style_Minimizebox>
+	<Style_Border>true</Style_Border>
+	<Style_Sizable>true</Style_Sizable>
+		<Pieces>MIZ_Label</Pieces>
+		<Pieces>MIZ_SelectButton</Pieces>
+		<Pieces>MIZ_CancelButton</Pieces>
+		<Pieces>MIZ_ZoneList</Pieces>
+</Screen>
+
+
+</XML>

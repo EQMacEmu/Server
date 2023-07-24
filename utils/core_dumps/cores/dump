@@ -1,0 +1,73 @@
+#!/bin/bash
+
+#
+# A script to extract core-file informations
+#
+
+#Set datestamp
+#DATE=$(date +%H:%M.%S_%h_%d_%Y)
+DATE=$(date +%h_%d_%Y_%H:%M.%S)
+
+#Binary images
+zoneimg=/cores/zone
+worldimg=/cores/world
+
+# cores #
+
+###### ZONES #####
+
+count=$(ls /cores/core.zone.*.*.* 2>/dev/null| wc -l)
+
+while [ $count -gt 0 ]; do
+
+	var=(core.zone.*.*.*)
+	corezone=$var
+	echo $var
+	echo $corezone
+	
+	gdblogfile="$corezone-gdb-zone_${DATE}.log"
+	
+	gdb -batch-silent \
+		-q \
+		-ex "set logging file $gdblogfile" \
+		-ex "set logging on" \
+		-ex "thread apply all bt full" \
+		-ex quit \
+		"$zoneimg" \
+		"$corezone"
+		
+	mv $var-gdb* /cores/core_log
+
+	mv $corezone /cores/processed/$corezone
+	let count=count-1
+
+done
+
+##### WORLD #####
+
+count=$(ls /cores/core.world.*.*.* 2>/dev/null| wc -l)
+
+while [ $count -gt 0 ]; do
+
+	var=(core.world.*.*.*)
+	coreworld=$var
+	echo $var
+	echo $coreworld
+	
+	gdblogfile="$coreworld-gdb-world_${DATE}.log"
+	
+	gdb -batch-silent \
+		-q \
+		-ex "set logging file $gdblogfile" \
+		-ex "set logging on" \
+		-ex "thread apply all bt full" \
+		-ex quit \
+		"$worldimg" \
+		"$coreworld"
+		
+	mv $var-gdb* /cores/core_log
+
+	mv $coreworld /cores/processed/$coreworld
+	let count=count-1
+
+done

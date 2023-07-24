@@ -1,0 +1,3 @@
+UPDATE `rule_values` SET `rule_name`='QueryServ:PlayerLogMerchantTransactions' WHERE (`ruleset_id`='1') AND (`rule_name`='QueryServ:MerchantLogTransactions');
+UPDATE `rule_values` SET `rule_name`='QueryServ:PlayerLogMerchantTransactions' WHERE (`ruleset_id`='2') AND (`rule_name`='QueryServ:MerchantLogTransactions');
+UPDATE `rule_values` SET `rule_name`='QueryServ:PlayerLogMerchantTransactions' WHERE (`ruleset_id`='11') AND (`rule_name`='QueryServ:MerchantLogTransactions');

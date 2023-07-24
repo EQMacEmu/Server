@@ -1,0 +1,291 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+<!-- Define textures/animations here since they are not commonly used -->
+	<TextureInfo item = "EQLS_SOESplash01.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_SOESplash02.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_SOESplash03.tga">
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_SOESplash04.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_SOESplash05.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_SOESplash06.tga">
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+<!-- 2D animations -->
+	<Ui2DAnimation item = "A_SOESplash01">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash01.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_SOESplash02">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash02.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_SOESplash03">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash03.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>128</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_SOESplash04">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash04.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_SOESplash05">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash05.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_SOESplash06">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_SOESplash06.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>128</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+<!-- Static animations -->
+	<StaticAnimation item = "SOE_Background1">
+		<ScreenID>SOE_Background1</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_SOESplash01</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "SOE_Background2">
+		<ScreenID>SOE_Background2</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_SOESplash02</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "SOE_Background3">
+		<ScreenID>SOE_Background3</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>512</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_SOESplash03</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "SOE_Background4">
+		<ScreenID>SOE_Background4</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_SOESplash04</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "SOE_Background5">
+		<ScreenID>SOE_Background5</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_SOESplash05</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "SOE_Background6">
+		<ScreenID>SOE_Background6</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>512</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_SOESplash06</Animation>
+	</StaticAnimation>
+<!-- End textures/animations -->
+
+	<Label item = "SOESplash_TrademarkEdit">
+		<ScreenID>SOESplash_TrademarkEdit</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>465</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>SOE and the SOE logo are registered trademarks of Sony Online Entertainment Inc.</Text>
+		<TextColor>
+				<R>148</R>
+				<G>105</G>
+				<B>49</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Screen item = "soesplash">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>SOE_Background1</Pieces>
+		<Pieces>SOE_Background2</Pieces>
+		<Pieces>SOE_Background3</Pieces>
+		<Pieces>SOE_Background4</Pieces>
+		<Pieces>SOE_Background5</Pieces>
+		<Pieces>SOE_Background6</Pieces>
+		<Pieces>SOESplash_TrademarkEdit</Pieces>
+	</Screen>
+</XML>

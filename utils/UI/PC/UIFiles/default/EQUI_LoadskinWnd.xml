@@ -1,0 +1,133 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="SKINW_SkinLabel">
+		<ScreenID>SkinLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>110</CX>
+			<CY>24</CY>
+		</Size>
+		<Text>Skins</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Listbox item = "SKINW_SkinList">
+		<ScreenID>SkinList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>1</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>108</CX>
+			<CY>120</CY>
+		</Size>
+		<Columns>
+			<Width>98</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Button item = "SKINW_INIButton">
+		<ScreenID>INIButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>15</X>
+			<Y>152</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text>Use INI</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SKINW_LoadButton">
+		<ScreenID>LoadButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>15</X>
+			<Y>180</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Load Skin</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "LoadskinWnd">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>196</X>
+			<Y>50</Y>
+		</Location>
+		<Size>
+			<CX>118</CX>
+			<CY>228</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Text>Load a skin</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>SKINW_SkinList</Pieces>
+		<Pieces>SKINW_SkinLabel</Pieces>
+		<Pieces>SKINW_INIButton</Pieces>
+		<Pieces>SKINW_LoadButton</Pieces>
+	</Screen>
+
+</XML>

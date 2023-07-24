@@ -1,0 +1,1124 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<!-- *********** Ticket Window, Knowledge Base Page *********** -->
+
+	<Label item ="TW_KBSearchLabel">
+		<ScreenID>TW_KBSearchLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>15</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Search Criteria</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+
+	<Label item ="TW_KBStringLabel">
+		<ScreenID>TW_KBSearchLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Search Text</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="TW_KBArticleLabel">
+		<ScreenID>TW_KBArticleLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>65</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Article ID</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "TW_KBStringInput">
+		<ScreenID>TW_KBStringInput</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Location>
+			<X>110</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+	</Editbox>
+
+	<Editbox item = "TW_KBArticleInput">
+		<ScreenID>TW_KBArticleInput</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Location>
+			<X>110</X>
+			<Y>65</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+	</Editbox>
+
+	<Button item = "TW_KBStringSearchButton">
+		<ScreenID>TW_KBStringSearchButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>380</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Search</Text>
+		<TooltipReference>Search for articles containing the specified text</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "TW_KBArticleSearchButton">
+		<ScreenID>TW_KBArticleSearchButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>380</X>
+			<Y>65</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Search</Text>
+		<TooltipReference>Search for an article by ID</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="TW_KBResultsLabel">
+		<ScreenID>TW_KBResultsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Search Results</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+
+	<Listbox item = "TW_KBResultsList">
+		<ScreenID>TW_KBResultsList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<TooltipReference></TooltipReference>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>120</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>220</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>50</Width>
+			<Heading>Match</Heading>
+		</Columns>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Article ID</Heading>
+		</Columns>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Title</Heading>
+		</Columns>
+	</Listbox>
+
+	<Label item ="TW_KBArticleBoxLabel">
+		<ScreenID>TW_KBArticleBoxLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>230</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Article</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<STMLbox item = "TW_KBArticleBox">
+		<ScreenID>TW_KBArticleBox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>250</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>40</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>true</Style_Border>
+		<Text>Prompt Area</Text>
+	</STMLbox>
+
+	<Button item = "TW_KBNewTicketButton">
+		<ScreenID>TW_KBNewTicketButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>155</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Create New Ticket</Text>
+		<TooltipReference>The search did not answer my question.  Create a new ticket</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	
+	<Button item = "TW_KBDoneButton">
+		<ScreenID>TW_KBDoneButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>85</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Done</Text>
+		<TooltipReference>Close the window</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Knowledge Base page -->
+	<Page item = "KnowledgeBasePage">
+		<ScreenID>KnowledgeBasePage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>10</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Knowledge Base</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>TW_KBSearchLabel</Pieces>
+			<Pieces>TW_KBStringLabel</Pieces>
+			<Pieces>TW_KBArticleLabel</Pieces>
+			<Pieces>TW_KBStringInput</Pieces>
+			<Pieces>TW_KBArticleInput</Pieces>
+			<Pieces>TW_KBStringSearchButton</Pieces>
+			<Pieces>TW_KBArticleSearchButton</Pieces>
+			<Pieces>TW_KBResultsLabel</Pieces>
+			<Pieces>TW_KBResultsList</Pieces>
+			<Pieces>TW_KBArticleBoxLabel</Pieces>
+			<Pieces>TW_KBArticleBox</Pieces>
+			<Pieces>TW_KBNewTicketButton</Pieces>
+			<Pieces>TW_KBDoneButton</Pieces>
+	</Page>
+
+
+	<Label item ="TW_NTTopicLabel">
+		<ScreenID>TW_NTTopicLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>15</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Topic</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+	<Combobox item = "TW_NTTopicCombobox">
+		<ScreenID>TW_NTTopicCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>5</X>
+			<Y>35</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ListHeight>120</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Label item ="TW_NTSubtopicLabel">
+		<ScreenID>TW_NTSubtopicLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>65</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Subtopic</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "TW_NTSubtopicCombobox">
+		<ScreenID>TW_NTSubtopicCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>5</X>
+			<Y>85</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ListHeight>120</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Label item ="TW_NTCommentsLabel">
+		<ScreenID>TW_NTCommentsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>135</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Comments</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "TW_NTCommentsBox">
+		<ScreenID>TW_NTCommentsBox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>115</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>70</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Multiline>true</Style_Multiline>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Text>Comments</Text>
+	</Editbox>
+
+	<STMLbox item = "TW_NTInstructionsBox">
+		<ScreenID>TW_NTInstructionsBox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>115</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>70</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Multiline>true</Style_Multiline>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Text></Text>
+	</STMLbox>
+
+	<Button item = "TW_NTSubmitButton">
+		<ScreenID>TW_NTSubmitButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>60</TopAnchorOffset>
+		<RightAnchorOffset>155</RightAnchorOffset>
+		<BottomAnchorOffset>40</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Submit</Text>
+		<TooltipReference>Submit the new ticket</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "TW_NTBeginButton">
+		<ScreenID>TW_NTBeginButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>60</TopAnchorOffset>
+		<RightAnchorOffset>155</RightAnchorOffset>
+		<BottomAnchorOffset>40</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Begin</Text>
+		<TooltipReference>Begin creating the new ticket</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "TW_NTDoneButton">
+		<ScreenID>TW_NTDoneButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>85</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Done</Text>
+		<TooltipReference>Close the window</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- *********** Ticket Window, New Ticket Page *********** -->
+
+	<!-- New Ticket page -->
+	<Page item = "NewTicketPage">
+		<ScreenID>NewTicketPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>10</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>New Ticket</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>TW_NTTopicLabel</Pieces>
+			<Pieces>TW_NTSubtopicLabel</Pieces>
+			<Pieces>TW_NTCommentsLabel</Pieces>
+			<Pieces>TW_NTCommentsBox</Pieces>
+			<Pieces>TW_NTInstructionsBox</Pieces>
+			<Pieces>TW_NTSubmitButton</Pieces>
+			<Pieces>TW_NTBeginButton</Pieces>
+			<Pieces>TW_NTDoneButton</Pieces>
+			<Pieces>TW_NTSubtopicCombobox</Pieces>
+			<Pieces>TW_NTTopicCombobox</Pieces>
+	</Page>
+
+
+	<!-- *********** Ticket Window, Open Tickets Page *********** -->
+
+	<Listbox item = "TW_OTTicketList">
+		<ScreenID>TW_OTTicketList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<TooltipReference></TooltipReference>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>20</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>80</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>60</Width>
+			<Heading>ID</Heading>
+		</Columns>
+		<Columns>
+			<Width>160</Width>
+			<Heading>Date Modified</Heading>
+		</Columns>
+		<Columns>
+			<Width>60</Width>
+			<Heading>Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Category</Heading>
+		</Columns>
+		<Columns>
+			<Width>120</Width>
+			<Heading>Status</Heading>
+		</Columns>
+	</Listbox>
+
+	<Button item = "TW_OTDeleteButton">
+		<ScreenID>TW_OTDeleteButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<TopAnchorOffset>90</TopAnchorOffset>
+		<RightAnchorOffset>280</RightAnchorOffset>
+		<BottomAnchorOffset>110</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Delete</Text>
+		<TooltipReference>Request to have this ticket deleted</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="TW_OTHistoryLabel">
+		<ScreenID>TW_OTHistoryLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>120</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>History</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<STMLbox item = "TW_OTCommentsBox">
+		<ScreenID>TW_OTCommentsBox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Text>Comments</Text>
+	</STMLbox>
+
+	<Button item = "TW_OTAddCommentButton">
+		<ScreenID>TW_OTAddCommentButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>155</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Add Comment</Text>
+		<TooltipReference>Add a comment to this ticket</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "TW_OTDoneButton">
+		<ScreenID>TW_OTDoneButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>85</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Done</Text>
+		<TooltipReference>Close the window</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Open Tickets page -->
+	<Page item = "OpenTicketsPage">
+		<ScreenID>OpenTicketsPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>10</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Open Tickets</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<AutoStretch>true</AutoStretch>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>TW_OTTicketList</Pieces>
+			<Pieces>TW_OTDeleteButton</Pieces>
+			<Pieces>TW_OTHistoryLabel</Pieces>
+			<Pieces>TW_OTCommentsBox</Pieces>
+			<Pieces>TW_OTAddCommentButton</Pieces>
+			<Pieces>TW_OTDoneButton</Pieces>
+	</Page>
+	
+	<Button item = "HELP_BackButton">
+		<ScreenID>HPBackButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>2</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>24</CY>
+		</Size>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Back</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "HELP_Tips">
+		<ScreenID>HPTipsButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>168</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>88</RightAnchorOffset>
+		<BottomAnchorOffset>26</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Size>
+			<CX>40</CX>
+			<CY>24</CY>
+		</Size>
+		<TooltipReference>Bring up the Tip of the Day window</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Reset Tips</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "HELP_Contents">
+		<ScreenID>HPContents</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>82</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>26</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Size>
+			<CX>40</CX>
+			<CY>24</CY>
+		</Size>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Contents</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Label item ="HELP_Title">
+		<ScreenID>HPTitle</ScreenID>
+		<Font>5</Font>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<RelativePosition>true</RelativePosition>
+		<Text></Text>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>44</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>26</BottomAnchorOffset>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+	</Label>
+	<STMLbox item = "HELP_Display">
+		<ScreenID>HPDisplay</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>26</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_Border>true</Style_Border>
+	</STMLbox>
+
+	<!-- Help page -->
+	<Page item = "HelpPage">
+		<ScreenID>HelpPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>10</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Quick Help</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<AutoStretch>true</AutoStretch>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>HELP_Display</Pieces>
+		<Pieces>HELP_BackButton</Pieces>
+		<Pieces>HELP_Title</Pieces>
+		<Pieces>HELP_Tips</Pieces>
+		<Pieces>HELP_Contents</Pieces>
+	</Page>
+	
+
+
+	<!-- *********** Ticket Window, Top level *********** -->
+
+	<TabBox item = "TicketWindow_Subwindows">
+		<ScreenID>TicketWindow_Subwindows</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Style_Sizable>true</Style_Sizable>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+			<Pages>HelpPage</Pages>
+			<Pages>KnowledgeBasePage</Pages>
+			<Pages>NewTicketPage</Pages>
+			<Pages>OpenTicketsPage</Pages>
+	</TabBox>
+
+	<Screen item = "TicketWindow">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>40</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>500</CX>
+			<CY>450</CY>
+		</Size>
+		<Text>Help/Customer Service</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>TicketWindow_Subwindows</Pieces>
+	</Screen>
+
+</XML>

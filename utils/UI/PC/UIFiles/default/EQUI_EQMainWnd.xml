@@ -1,0 +1,466 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<TextureInfo item = "menuicons01.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+
+	<Ui2DAnimation item = "A_MenuIcons">
+		<Cycle>false</Cycle>
+		<Grid>true</Grid>
+		<Vertical>true</Vertical>
+		<CellHeight>24</CellHeight>
+		<CellWidth>24</CellWidth>
+		<Frames>
+			<Texture>menuicons01.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_CascadeMenuSeparator">
+		<Frames>
+			<Texture>window_pieces01.tga</Texture>
+			<Location>
+				<X>80</X>
+				<Y>175</Y>
+			</Location>
+			<Size>
+				<CX>4</CX>
+				<CY>4</CY>
+			</Size>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_CascadeSubmenuIndicator">
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>164</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>10</CX>
+				<CY>11</CY>
+			</Size>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_EQBtnNormal">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>60</X>
+				<Y>26</Y>
+			</Location>
+			<Size>
+				<CX>42</CX>
+				<CY>42</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_EQBtnFlyby">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>102</X>
+				<Y>26</Y>
+			</Location>
+			<Size>
+				<CX>42</CX>
+				<CY>42</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_EQBtnPressed">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>144</X>
+				<Y>26</Y>
+			</Location>
+			<Size>
+				<CX>42</CX>
+				<CY>42</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_EQBtnPressedFlyby">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>186</X>
+				<Y>26</Y>
+			</Location>
+			<Size>
+				<CX>42</CX>
+				<CY>42</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+	<Ui2DAnimation item = "A_EQBtnDisabled">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>window_pieces05.tga</Texture>
+			<Location>
+				<X>60</X>
+				<Y>68</Y>
+			</Location>
+			<Size>
+				<CX>42</CX>
+				<CY>42</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	
+
+	<Button item = "CSepIW_Button">
+		<ScreenID>Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_CascadeMenuSeparator</Normal>
+			<NormalDecal/>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "CascadeSeparatorItemWnd">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>160</CX>
+			<CY>6</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CSepIW_Button</Pieces>
+	</Screen>
+
+	<Button item = "CSubIW_Button">
+		<ScreenID>Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Test Text</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal/>
+			<NormalDecal>A_MenuIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>0</X>
+			<Y>0</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>24</CX>
+			<CY>24</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "CSubIW_Arrow">
+		<ScreenID>Arrow</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>150</X>
+			<Y>6</Y>
+		</Location>
+		<Size>
+			<CX>10</CX>
+			<CY>11</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_CascadeSubmenuIndicator</Normal>
+			<NormalDecal/>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Screen item = "CascadeSubmenuItemWnd">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>160</CX>
+			<CY>24</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CSubIW_Arrow</Pieces>
+		<Pieces>CSubIW_Button</Pieces>
+	</Screen>
+
+	<Button item = "CCmdIW_Button">
+		<ScreenID>Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Test Text</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal/>
+			<NormalDecal>A_MenuIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>0</X>
+			<Y>0</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>24</CX>
+			<CY>24</CY>
+		</DecalSize>
+	</Button>
+
+	<Screen item = "CascadeCommandItemWnd">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>24</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CCmdIW_Button</Pieces>
+	</Screen>
+
+	<Screen item = "CascadeSubWnd">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>100</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+	</Screen>
+
+	<Screen item = "CascadeTopWnd">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>100</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+	</Screen>
+
+	<Button item = "EQM_EQButton">
+		<ScreenID>EQButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this to open the menu</TooltipReference>
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQBtnNormal</Normal>
+			<Pressed>A_EQBtnPressed</Pressed>
+			<Flyby>A_EQBtnFlyby</Flyby>
+			<Disabled>A_EQBtnDisabled</Disabled>
+			<PressedFlyby>A_EQBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "EQMainWnd">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>600</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>50</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_RoundedNoTitle</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQM_EQButton</Pieces>
+	</Screen>
+
+</XML>

@@ -1,0 +1,709 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+	<Button item = "AAW_TrainButton">
+		<ScreenID>TrainButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>525</X>
+			<Y>200</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Train</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "AAW_HotButton">
+		<ScreenID>HotButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>525</X>
+			<Y>236</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Hotkey</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "AAW_DoneButton">
+		<ScreenID>DoneButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>525</X>
+			<Y>272</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Done</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "AAW_LessExpButton">
+		<ScreenID>LessExpButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>498</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>-</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "AAW_MoreExpButton">
+		<ScreenID>MoreExpButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>580</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>+</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+		<!-- 
+			<SoundPressed/>
+			<SoundUp/>
+			<SoundFlyby/>
+		-->
+	</Button>
+
+	<StaticText item ="AAW_PercentLabel">
+		<ScreenID>PercentLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>488</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Exp to AA</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</StaticText>
+
+	<StaticText item ="AAW_PercentCount">
+		<ScreenID>ExpCount</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>524</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>100%</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</StaticText>
+
+
+	<Gauge item = "AAW_ExpGauge">
+		<ScreenID>ExpGauge</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>494</X>
+			<Y>75</Y>
+		</Location>
+		<Size>
+			<CX>108</CX>
+			<CY>28</CY>
+		</Size>
+		<GaugeOffsetY>20</GaugeOffsetY>
+		<Text>AA Exp</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<TextOffsetY>0</TextOffsetY>
+		<TextOffsetX>39</TextOffsetX>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<FillTint>
+				<R>240</R>
+				<G>240</G>
+				<B>0</B>
+		</FillTint>
+		<LinesFillTint>
+				<R>0</R>
+				<G>220</G>
+				<B>220</B>
+		</LinesFillTint>
+		<DrawLinesFill>true</DrawLinesFill>
+		<EQType>5</EQType>
+		<GaugeDrawTemplate>
+			<Background>A_GaugeBackground</Background>
+			<Fill>A_GaugeFill</Fill>
+			<Lines>A_GaugeLines</Lines>
+			<LinesFill>A_GaugeLinesFill</LinesFill>
+			<EndCapLeft>A_GaugeEndCapLeft</EndCapLeft>
+			<EndCapRight>A_GaugeEndCapRight</EndCapRight>
+		</GaugeDrawTemplate>
+	</Gauge>
+
+
+	<StaticText item ="AAW_TotalLabel">
+		<ScreenID>TotalLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>480</X>
+			<Y>155</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Total Pts. Spent:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</StaticText>
+
+	<StaticText item ="AAW_CurrentLabel">
+		<ScreenID>CurrentLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>480</X>
+			<Y>125</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>AA Points:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</StaticText>
+
+	<StaticText item ="AAW_TotalCount">
+		<ScreenID>TotalCount</ScreenID>
+		<!--<Font>3</Font>-->	
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>585</X>
+			<Y>170</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>100</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</StaticText>
+
+	<StaticText item ="AAW_CurrentCount">
+		<ScreenID>CurrentCount</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>585</X>
+			<Y>125</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>0</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</StaticText>
+
+	<STMLbox item = "AAW_Description">
+		<ScreenID>Description</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Location>
+			<X>4</X>
+			<Y>324</Y>
+		</Location>
+		<Size>
+			<CX>478</CX>
+			<CY>108</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Text>Description Area</Text>
+	</STMLbox>
+
+	<Listbox item = "AAW_GeneralList">
+		<ScreenID>List1</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>210</Width>
+			<Heading>Title</Heading>
+		</Columns>
+		<Columns>
+			<Width>70</Width>
+			<Heading>Cur/Max</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cost</Heading>
+		</Columns>
+	</Listbox>
+
+	<Page item = "AAW_GeneralPage">
+		<ScreenID>Page1</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>General</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AAW_GeneralList</Pieces>
+
+	</Page>
+
+	<Listbox item = "AAW_ArchList">
+		<ScreenID>List2</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>210</Width>
+			<Heading>Title</Heading>
+		</Columns>
+		<Columns>
+			<Width>70</Width>
+			<Heading>Cur/Max</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cost</Heading>
+		</Columns>
+	</Listbox>
+	<Page item = "AAW_ArchetypePage">
+		<ScreenID>Page2</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Archetype</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AAW_ArchList</Pieces>
+
+	</Page>
+	<Listbox item = "AAW_ClassList">
+		<ScreenID>List3</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>210</Width>
+			<Heading>Title</Heading>
+		</Columns>
+		<Columns>
+			<Width>70</Width>
+			<Heading>Cur/Max</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cost</Heading>
+		</Columns>
+	</Listbox>
+
+	<Page item = "AAW_ClassPage">
+		<ScreenID>Page3</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Class</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AAW_ClassList</Pieces>
+
+	</Page>
+	<Listbox item = "AAW_List4">
+		<ScreenID>List4</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>210</Width>
+			<Heading>Title</Heading>
+		</Columns>
+		<Columns>
+			<Width>70</Width>
+			<Heading>Cur/Max</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cost</Heading>
+		</Columns>
+	</Listbox>
+
+	<Page item = "AAW_Page4">
+		<ScreenID>Page4</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>PoP Advance</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AAW_List4</Pieces>
+
+	</Page>
+	<Listbox item = "AAW_List5">
+		<ScreenID>List5</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>210</Width>
+			<Heading>Title</Heading>
+		</Columns>
+		<Columns>
+			<Width>70</Width>
+			<Heading>Cur/Max</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Cost</Heading>
+		</Columns>
+	</Listbox>
+
+	<Page item = "AAW_Page5">
+		<ScreenID>Page5</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>PoP Ability</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AAW_List5</Pieces>
+
+	</Page>
+	<TabBox item = "AAW_Subwindows">
+		<ScreenID>Subwindows</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<Location>
+			<X>4</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>480</CX>
+			<CY>320</CY>
+		</Size>
+
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+			<Pages>AAW_GeneralPage</Pages>
+			<Pages>AAW_ArchetypePage</Pages>
+			<Pages>AAW_ClassPage</Pages>
+			<Pages>AAW_Page4</Pages>
+			<Pages>AAW_Page5</Pages>
+
+	</TabBox>
+
+	<Label item ="AAW_Timer">
+		<ScreenID>Timer</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>383</X>
+			<Y>327</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>14</CY>
+		</Size>
+		<Text></Text>
+		<TextColor>
+				<R>51</R>
+				<G>204</G>
+				<B>51</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Screen item = "AAWindow">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>10</Y>
+		</Location>
+		<Size>
+			<CX>630</CX>
+			<CY>461</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Text>Alternate Advancement Window</Text>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>AAW_Subwindows</Pieces>
+		<Pieces>AAW_Description</Pieces>
+		<Pieces>AAW_TotalLabel</Pieces>
+		<Pieces>AAW_TotalCount</Pieces>
+		<Pieces>AAW_CurrentLabel</Pieces>
+		<Pieces>AAW_CurrentCount</Pieces>
+		<Pieces>AAW_ExpGauge</Pieces>
+		<Pieces>AAW_TrainButton</Pieces>
+		<Pieces>AAW_HotButton</Pieces>
+		<Pieces>AAW_DoneButton</Pieces>
+		<Pieces>AAW_PercentLabel</Pieces>
+		<Pieces>AAW_PercentCount</Pieces>
+		<Pieces>AAW_LessExpButton</Pieces>
+		<Pieces>AAW_MoreExpButton</Pieces>
+		<Pieces>AAW_Timer</Pieces>
+
+	</Screen>
+
+</XML>

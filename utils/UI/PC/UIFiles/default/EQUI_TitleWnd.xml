@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<XML ID="EQInterfaceDefinitionLanguage">
+	<Schema xmlns="EverQuestData" xmlns:dt="EverQuestDataTypes" />
+	<!--	Display of player info -->
+	<Label item="Title_CurrentNameLabel">
+		<ScreenID>Title_CurrentNameLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>70</RightAnchorOffset>
+		<Text>Current:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item="Title_CurrentName">
+		<ScreenID>Title_CurrentName</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+		<LeftAnchorOffset>75</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<Text />
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item="Title_ProposedNameLabel">
+		<ScreenID>Title_ProposedNameLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>45</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>70</RightAnchorOffset>
+		<Text>Proposed:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item="Title_ProposedName">
+		<ScreenID>Title_ProposedName</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>45</BottomAnchorOffset>
+		<LeftAnchorOffset>75</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<Text />
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<!-- Title Prefix info.	This is the normal title that players are used to -->
+	<Listbox item="Title_AvailableTitles">
+		<ScreenID>Title_AvailableTitles</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>500</Width>
+			<Heading>Available Titles</Heading>
+		</Columns>
+		<Columns>
+			<Width />
+			<Heading />
+		</Columns>
+	</Listbox>
+	<Button item="Title_ChangeTitlePrefix">
+		<ScreenID>Title_ChangeTitlePrefix</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>88</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Change Title</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item="Title_ClearTitlePrefix">
+		<ScreenID>Title_ClearTitlePrefix</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>92</LeftAnchorOffset>
+		<RightAnchorOffset>170</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Clear Title</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Page item="Title_PrefixPage">
+		<ScreenID>Title_PrefixPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference />
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Titles</TabText>
+		<TabTextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Title_AvailableTitles</Pieces>
+		<Pieces>Title_ChangeTitlePrefix</Pieces>
+		<Pieces>Title_ClearTitlePrefix</Pieces>
+		<Location>
+			<X>0</X>
+			<Y>22</Y>
+		</Location>
+		<Size>
+			<CX>174</CX>
+			<CY>189</CY>
+		</Size>
+	</Page>
+	<!-- End of the prefix components -->
+	<!-- Title Suffix info.	This will go after the player's name. -->
+	<Listbox item="Title_AvailableSuffixes">
+		<ScreenID>Title_AvailableSuffixes</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>500</Width>
+			<Heading>Available Suffixes</Heading>
+		</Columns>
+		<Columns>
+			<Width />
+			<Heading />
+		</Columns>
+	</Listbox>
+	<Button item="Title_ChangeTitleSuffix">
+		<ScreenID>Title_ChangeTitleSuffix</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>88</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Change Suffix</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item="Title_ClearTitleSuffix">
+		<ScreenID>Title_ClearTitleSuffix</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>92</LeftAnchorOffset>
+		<RightAnchorOffset>170</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Clear Suffix</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Page item="Title_SuffixPage">
+		<ScreenID>Title_SuffixPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference />
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Suffixes</TabText>
+		<TabTextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Title_AvailableSuffixes</Pieces>
+		<Pieces>Title_ChangeTitleSuffix</Pieces>
+		<Pieces>Title_ClearTitleSuffix</Pieces>
+		<Location>
+			<X>0</X>
+			<Y>22</Y>
+		</Location>
+		<Size>
+			<CX>174</CX>
+			<CY>189</CY>
+		</Size>
+	</Page>
+	<!-- End of title suffix components -->
+	<!-- This tab box contains the list of title prefixes/suffixes -->
+	<TabBox item="Title_TitleSheet">
+		<ScreenID>Title_TitleSheet</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+		<Pages>Title_PrefixPage</Pages>
+		<Pages>Title_SuffixPage</Pages>
+	</TabBox>
+	<Label item="Title_NotifyNewTitlesLabel">
+		<ScreenID>Title_NotifyNewTitlesLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>27</LeftAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<Text>Notify me when new titles are available.</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Button item="Title_NotifyNewTitles">
+		<ScreenID>Title_NotifyNewTitles</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>13</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>22</RightAnchorOffset>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>true</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text />
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_CheckBoxNormal</Normal>
+			<Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+	<!-- The Title	Window -->
+	<Screen item="TitleWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>60</Y>
+		</Location>
+		<Size>
+			<CX>212</CX>
+			<CY>320</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Choose Your Title</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Title_CurrentNameLabel</Pieces>
+		<Pieces>Title_CurrentName</Pieces>
+		<Pieces>Title_ProposedNameLabel</Pieces>
+		<Pieces>Title_ProposedName</Pieces>
+		<Pieces>Title_NotifyNewTitlesLabel</Pieces>
+		<Pieces>Title_NotifyNewTitles</Pieces>
+		<Pieces>Title_TitleSheet</Pieces>
+	</Screen>
+</XML>

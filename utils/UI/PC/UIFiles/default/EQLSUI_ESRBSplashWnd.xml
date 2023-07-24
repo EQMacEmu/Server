@@ -1,0 +1,268 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- Define textures/animations here since they are not commonly used -->
+	<TextureInfo item = "EQLS_ESRBSplash01.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_ESRBSplash02.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_ESRBSplash03.tga">
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_ESRBSplash04.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_ESRBSplash05.tga">
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+	<TextureInfo item = "EQLS_ESRBSplash06.tga">
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+	</TextureInfo>
+<!--2DAnimations -->
+	<Ui2DAnimation item = "A_ESRBSplash01">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash01.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_ESRBSplash02">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash02.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_ESRBSplash03">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash03.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>128</CX>
+				<CY>256</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_ESRBSplash04">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash04.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_ESRBSplash05">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash05.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>256</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+	<Ui2DAnimation item = "A_ESRBSplash06">
+		<Cycle>true</Cycle>
+		<Frames>
+			<Texture>EQLS_ESRBSplash06.tga</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>128</CX>
+				<CY>224</CY>
+			</Size>
+			<Hotspot>
+				<X>0</X>
+				<Y>0</Y>
+			</Hotspot>
+			<Duration>1000</Duration>
+		</Frames>
+	</Ui2DAnimation>
+<!-- Static animations -->
+	<StaticAnimation item = "ESRB_Background1">
+		<ScreenID>SPLASH_Background1</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_ESRBSplash01</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "ESRB_Background2">
+		<ScreenID>SPLASH_Background2</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_ESRBSplash02</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "ESRB_Background3">
+		<ScreenID>SPLASH_Background3</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>512</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_ESRBSplash03</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "ESRB_Background4">
+		<ScreenID>SPLASH_Background4</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_ESRBSplash04</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "ESRB_Background5">
+		<ScreenID>SPLASH_Background5</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_ESRBSplash05</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "ESRB_Background6">
+		<ScreenID>SPLASH_Background6</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>512</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>224</CY>
+		</Size>
+		<Animation>A_ESRBSplash06</Animation>
+	</StaticAnimation>
+<!-- End textures/animations -->
+
+
+	<Screen item = "ratingsplash">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>ESRB_Background1</Pieces>
+		<Pieces>ESRB_Background2</Pieces>
+		<Pieces>ESRB_Background3</Pieces>
+		<Pieces>ESRB_Background4</Pieces>
+		<Pieces>ESRB_Background5</Pieces>
+		<Pieces>ESRB_Background6</Pieces>
+	</Screen>
+</XML>

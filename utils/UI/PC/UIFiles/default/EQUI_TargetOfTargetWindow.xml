@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<XML ID="EQInterfaceDefinitionLanguage">
+	<Schema xmlns="EverQuestData" xmlns:dt="EverQuestDataTypes" />
+	<Gauge item="TargetOfTarget_HP">
+		<ScreenID>TargetOfTarget_HP</ScreenID>
+		<Font>3</Font>
+		<TextColor>
+			<R>240</R>
+			<G>240</G>
+			<B>240</B>
+		</TextColor>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>3</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>108</CX>
+			<CY>27</CY>
+		</Size>
+		<GaugeOffsetY>16</GaugeOffsetY>
+		<TextOffsetX>8</TextOffsetX>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference />
+		<FillTint>
+			<R>240</R>
+			<G>0</G>
+			<B>0</B>
+		</FillTint>
+		<LinesFillTint>
+			<R>220</R>
+			<G>220</G>
+			<B>0</B>
+		</LinesFillTint>
+		<DrawLinesFill>false</DrawLinesFill>
+		<EQType>27</EQType>
+		<GaugeDrawTemplate>
+			<Background>A_GaugeBackground</Background>
+			<Fill>A_GaugeFill</Fill>
+			<Lines>A_GaugeLines</Lines>
+			<LinesFill>A_GaugeLinesFill</LinesFill>
+			<EndCapLeft>A_GaugeEndCapLeft</EndCapLeft>
+			<EndCapRight>A_GaugeEndCapRight</EndCapRight>
+		</GaugeDrawTemplate>
+	</Gauge>
+	<Label item="TargetOfTarget_HPLabel">
+		<ScreenID>TargetOfTarget_HPLabel</ScreenID>
+		<EQType>120</EQType>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>1</X>
+			<Y>13</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>12</CY>
+		</Size>
+		<Text />
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+	<Label item="TargetOfTarget_HPPercLabel">
+		<ScreenID>TargetOfTarget_HPPercLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>62</X>
+			<Y>13</Y>
+		</Location>
+		<Size>
+			<CX>16</CX>
+			<CY>12</CY>
+		</Size>
+		<Text>%</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Screen item="TargetOfTargetWindow">
+		<ScreenID>TargetOfTargetWindow</ScreenID>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>516</X>
+			<Y>242</Y>
+		</Location>
+		<Size>
+			<CX>124</CX>
+			<CY>50</CY>
+		</Size>
+		<Text>Target's Target</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Your Current Target's Target</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>TargetOfTarget_HP</Pieces>
+		<Pieces>TargetOfTarget_HPLabel</Pieces>
+		<Pieces>TargetOfTarget_HPPercLabel</Pieces>
+	</Screen>
+</XML>

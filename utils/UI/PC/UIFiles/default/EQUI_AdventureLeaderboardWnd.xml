@@ -1,0 +1,339 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item = "AdvLeaderboard_SelectLabel">
+		<ScreenID>AdvLeaderboard_SelectLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text>Select category:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "AdvLeaderboard_SelectCombobox">
+		<ScreenID>AdvLeaderboard_SelectCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<RightAnchorOffset>290</RightAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<ListHeight>120</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+		<Choices>Total wins</Choices>
+		<Choices>Total win %</Choices>
+		<Choices>Deepest Guk wins</Choices>
+		<Choices>Deepest Guk win %</Choices>
+		<Choices>Miragul's wins</Choices>
+		<Choices>Miragul's win %</Choices>
+		<Choices>Mistmoore wins</Choices>
+		<Choices>Mistmoore win %</Choices>
+		<Choices>Rujarkian wins</Choices>
+		<Choices>Rujarkian win %</Choices>
+		<Choices>Takish wins</Choices>
+		<Choices>Takish win %</Choices>
+	</Combobox>
+
+	<Combobox item = "AdvLeaderboard_RiskCombobox">
+		<ScreenID>AdvLeaderboard_RiskCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<TopAnchorOffset>35</TopAnchorOffset>
+		<RightAnchorOffset>290</RightAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<ListHeight>120</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+		<Choices>All</Choices>
+		<Choices>Normal Risk</Choices>
+		<Choices>High Risk</Choices>
+	</Combobox>
+
+	<Listbox item = "AdvLeaderboard_LeaderList">
+		<ScreenID>AdvLeaderboard_LeaderList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>50</Width>
+			<Heading>Rank</Heading>
+		</Columns>
+		<Columns>
+			<Width>120</Width>
+			<Heading>Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>60</Width>
+			<Heading>Success</Heading>
+		</Columns>
+		<Columns>
+			<Width>60</Width>
+			<Heading>Failure</Heading>
+		</Columns>
+		<Columns>
+			<Width>60</Width>
+			<Heading>Percent</Heading>
+		</Columns>
+
+	</Listbox>
+
+	<Label item = "AdvLeaderboard_YourRankLabel">
+		<ScreenID>AdvLeaderboard_YourRankLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>58</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item = "AdvLeaderboard_YourNameLabel">
+		<ScreenID>AdvLeaderboard_YourNameLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>60</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>180</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item = "AdvLeaderboard_YourSuccessLabel">
+		<ScreenID>AdvLeaderboard_YourSuccessLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>180</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>238</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item = "AdvLeaderboard_YourFailureLabel">
+		<ScreenID>AdvLeaderboard_YourFailureLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>240</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>299</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item = "AdvLeaderboard_YourPercentLabel">
+		<ScreenID>AdvLeaderboard_YourPercentLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>298</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>359</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>0</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<!-- Refresh Button -->
+	<Button item = "AdvLeaderboard_RefreshButton">
+		<ScreenID>AdvLeaderboard_RefreshButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>50</LeftAnchorOffset>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<RightAnchorOffset>170</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Refresh</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Done Button -->
+	<Button item = "AdvLeaderboard_DoneButton">
+		<ScreenID>AdvLeaderboard_DoneButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>230</LeftAnchorOffset>
+		<TopAnchorOffset>29</TopAnchorOffset>
+		<RightAnchorOffset>350</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Done</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- The Adventure Leaderboard Window -->
+	<Screen item = "AdventureLeaderboardWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>60</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>432</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Adventure Leaderboard</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>AdvLeaderboard_SelectLabel</Pieces>
+			<Pieces>AdvLeaderboard_LeaderList</Pieces>
+			<Pieces>AdvLeaderboard_RefreshButton</Pieces>
+			<Pieces>AdvLeaderboard_DoneButton</Pieces>
+			<Pieces>AdvLeaderboard_RiskCombobox</Pieces>
+			<Pieces>AdvLeaderboard_SelectCombobox</Pieces>
+			<Pieces>AdvLeaderboard_YourRankLabel</Pieces>
+			<Pieces>AdvLeaderboard_YourNameLabel</Pieces>
+			<Pieces>AdvLeaderboard_YourSuccessLabel</Pieces>
+			<Pieces>AdvLeaderboard_YourFailureLabel</Pieces>
+			<Pieces>AdvLeaderboard_YourPercentLabel</Pieces>
+	</Screen>
+
+</XML>

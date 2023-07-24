@@ -1,0 +1,2 @@
+alter table zone add column `never_idle` tinyint(3) not null default 0;
+update zone set never_idle = 1 where short_name in ("qeynos", "freporte", "erudnext", "butcher", "oot", "erudsxing", "timorous", "firiona", "oasis", "overthere", "nro", "iceclad", "nexus", "northkarana", "gfaydark", "tox", "greatdivide", "dreadlands", "kael", "thurgadinb", "mischiefplane");

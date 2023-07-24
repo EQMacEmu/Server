@@ -1,0 +1,144 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+<!-- Accept/Decline buttons -->
+	<Button item = "EULA_AcceptButton">
+		<ScreenID>AcceptButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>425</X>
+			<Y>420</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Accept the EULA.  You must accept this in order to play the game.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>ACCEPT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "EULA_DeclineButton">
+		<ScreenID>DeclineButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>420</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Decline the EULA.  This will exit the game.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>DECLINE</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- The EULA text -->
+	<STMLbox item = "EULA_Display">
+		<ScreenID>Display</ScreenID>
+		<Font>4</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>40</RightAnchorOffset>
+		<BottomAnchorOffset>75</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>true</Style_Border>
+	</STMLbox>
+<!-- Window label -->
+	<Label item = "EULA_WndLabel">
+		<ScreenID>WndLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>EULA</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	
+	
+	<Screen item = "EulaWindow">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Font>5</Font>
+		<Text>EULA</Text>
+		<TextColor>
+				<R>231</R>
+				<G>252</G>
+				<B>82</B>
+		</TextColor>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_AltBG01</Pieces>
+		<Pieces>EQLS_AltBG02</Pieces>
+		<Pieces>EQLS_AltBG03</Pieces>
+		<Pieces>EQLS_AltBG04</Pieces>
+		<Pieces>EQLS_AltBG05</Pieces>
+		<Pieces>EQLS_AltBG06</Pieces>
+		<Pieces>EULA_AcceptButton</Pieces>
+		<Pieces>EULA_DeclineButton</Pieces>
+		<Pieces>EULA_Display</Pieces>
+		<Pieces>EULA_WndLabel</Pieces>
+	</Screen>
+</XML>

@@ -1,0 +1,1082 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item = "BTR_ItemSearchLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>20</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text>Items to buy</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "BTR_ItemSearchList">
+		<ScreenID>ItemSearchList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>24</Width>
+			<Heading></Heading>
+		</Columns>
+		<Columns>
+			<Width>250</Width>
+			<Heading>Item Name</Heading>
+		</Columns>
+	</Listbox>
+
+	<Editbox item = "BTR_ItemSearchEdit">
+		<ScreenID>ItemSearchEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>60</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>List of items that you can try to Buy.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "BTR_ItemSearchButton">
+		<ScreenID>ItemSearchButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>56</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Press this button to see a list of items you can setup to Buy that match the substring entered.</TooltipReference>
+		<Text>Search</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "BTR_SearchWnd">
+		<ScreenID>SearchWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>190</CX>
+			<CY>400</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>BTR_ItemSearchLabel</Pieces>
+		<Pieces>BTR_ItemSearchList</Pieces>
+		<Pieces>BTR_ItemSearchEdit</Pieces>
+		<Pieces>BTR_ItemSearchButton</Pieces>
+	</Screen>
+
+	<Label item = "BTR_InventoryLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>72</RightAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text>Your Inventory</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "BTR_InventoryRefreshButton">
+		<ScreenID>InventoryRefreshButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>62</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to Refresh you Inventory List below.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Refresh</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Listbox item = "BTR_InventoryList">
+		<ScreenID>InventoryList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>242</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>24</Width>
+			<Heading></Heading>
+		</Columns>
+		<Columns>
+			<Width>140</Width>
+			<Heading>Item Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Qty</Heading>
+		</Columns>
+	</Listbox>
+
+	<Button item = "BTR_InventoryAddButton">
+		<ScreenID>InventoryAddButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>240</TopAnchorOffset>
+		<RightAnchorOffset>60</RightAnchorOffset>
+		<BottomAnchorOffset>220</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Add</Text>
+		<TooltipReference>Select an inventory item, and click this button to add that item to your compensation for this Line.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "BTR_InventoryRemoveButton">
+		<ScreenID>InventoryRemoveButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>60</LeftAnchorOffset>
+		<TopAnchorOffset>240</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>220</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Select a compensation item, and click this button to remove that item from your compensation for this Line.</TooltipReference>
+		<Text>Remove</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "BTR_CompensationLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>212</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>192</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text>Compensation</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "BTR_CompensationList">
+		<ScreenID>CompensationList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>190</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>87</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>24</Width>
+			<Heading></Heading>
+		</Columns>
+		<Columns>
+			<Width>140</Width>
+			<Heading>Item Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Qty</Heading>
+		</Columns>
+	</Listbox>
+
+	<Button item="BTR_CompensationPlat">
+		<ScreenID>CompensationPlat</ScreenID>
+		<RelativePosition>true</RelativePosition>
+  		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>85</TopAnchorOffset>
+		<RightAnchorOffset>82</RightAnchorOffset>
+		<BottomAnchorOffset>61</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select amount of Platinum you will pay.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>60000</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_PlatinumCoin</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>18</CX>
+			<CY>18</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item="BTR_CompensationGold">
+		<ScreenID>CompensationGold</ScreenID>
+		<RelativePosition>true</RelativePosition>
+  		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>59</TopAnchorOffset>
+		<RightAnchorOffset>82</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select amount of Gold you will pay.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>60000</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_GoldCoin</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>18</CX>
+			<CY>18</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item="BTR_CompensationSilver">
+		<ScreenID>CompensationSilver</ScreenID>
+		<RelativePosition>true</RelativePosition>
+  		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>82</LeftAnchorOffset>
+		<TopAnchorOffset>85</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>61</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select amount of Silver you will pay.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>60000</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_SilverCoin</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>18</CX>
+			<CY>18</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item="BTR_CompensationCopper">
+		<ScreenID>CompensationCopper</ScreenID>
+		<RelativePosition>true</RelativePosition>
+  		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>82</LeftAnchorOffset>
+		<TopAnchorOffset>59</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select amount of Copper you will pay.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>60000</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_CopperCoin</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>18</CX>
+			<CY>18</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "BTR_BuyLineModifyButton">
+		<ScreenID>BuyLineModifyButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>104</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>After making changes to a Buy Line, click this button to commit them.</TooltipReference>
+		<Text>Modify</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "BTR_CountLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>45</RightAnchorOffset>
+		<BottomAnchorOffset>7</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text>Count</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "BTR_CountEdit">
+		<ScreenID>CountEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>48</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>100</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TooltipReference>Select number of times you want to buy the item for the given compensation.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "BTR_BuyLineAddButton">
+		<ScreenID>BuyLineAddButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>104</LeftAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Create Buy</Text>
+		<TooltipReference>Click this button to create the Buy Line after selecting the compensation for each of the target item.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "BTR_CompensationWnd">
+		<ScreenID>CompensationWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>194</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>224</CX>
+			<CY>400</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>BTR_InventoryLabel</Pieces>
+		<Pieces>BTR_InventoryRefreshButton</Pieces>
+		<Pieces>BTR_InventoryList</Pieces>
+		<Pieces>BTR_InventoryAddButton</Pieces>
+		<Pieces>BTR_InventoryRemoveButton</Pieces>
+		<Pieces>BTR_CompensationLabel</Pieces>
+		<Pieces>BTR_CompensationList</Pieces>
+		<Pieces>BTR_CompensationPlat</Pieces>
+		<Pieces>BTR_CompensationGold</Pieces>
+		<Pieces>BTR_CompensationSilver</Pieces>
+		<Pieces>BTR_CompensationCopper</Pieces>
+		<Pieces>BTR_CountLabel</Pieces>
+		<Pieces>BTR_CountEdit</Pieces>
+		<Pieces>BTR_BuyLineAddButton</Pieces>
+		<Pieces>BTR_BuyLineModifyButton</Pieces>
+	</Screen>
+
+	<Label item = "BTR_BuyLineLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text>Buy Lines</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "BTR_BuyLineList">
+		<ScreenID>BuyLineList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>20</Width>
+			<Heading>On</Heading>
+		</Columns>
+		<Columns>
+			<Width>24</Width>
+			<Heading></Heading>
+		</Columns>
+		<Columns>
+			<Width>150</Width>
+			<Heading>Item Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>30</Width>
+			<Heading>Cnt</Heading>
+		</Columns>
+		<Columns>
+			<Width>120</Width>
+			<Heading>Offering</Heading>
+		</Columns>
+	</Listbox>
+
+	<Button item = "BTR_BuyLineRemoveButton">
+		<ScreenID>BuyLineRemoveButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>82</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Click this button to remove the selected Buy Line from your list.</TooltipReference>
+		<Text>Remove</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "BTR_BuyLineActiveButton">
+		<ScreenID>BuyLineActiveButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>62</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Click this button to toggle the active status of a Buy Line.</TooltipReference>
+		<Text>Toggle</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "BTR_BuyLineWnd">
+		<ScreenID>BuyLineWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>240</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>BTR_BuyLineLabel</Pieces>
+		<Pieces>BTR_BuyLineList</Pieces>
+		<Pieces>BTR_BuyLineRemoveButton</Pieces>
+		<Pieces>BTR_BuyLineActiveButton</Pieces>
+	</Screen>
+
+	<STMLbox item = "BTR_StatusText">
+		<ScreenID>StatusText</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<Text>No Text</Text>
+	</STMLbox>
+
+	<Button item = "BTR_ListLinesButton">
+		<ScreenID>ListLinesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>62</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Dump a list of your current lines to the Log window and your Barter Log file.</TooltipReference>
+		<Text>List</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "BTR_ClearStatusButton">
+		<ScreenID>ClearStatusButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>66</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>126</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Clear your Log window.</TooltipReference>
+		<Text>Clear</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "BTR_StatusTextWnd">
+		<ScreenID>StatusTextWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>240</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>160</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>BTR_StatusText</Pieces>
+		<Pieces>BTR_ListLinesButton</Pieces>
+		<Pieces>BTR_ClearStatusButton</Pieces>
+	</Screen>
+
+	<VerticalLayoutBox item = "BTR_StatusLayout">
+		<ScreenID>StatusLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>4</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:BTR_BuyLineWnd</Pieces>
+		<Pieces>Screen:BTR_StatusTextWnd</Pieces>
+	</VerticalLayoutBox>
+
+	<Screen item = "BTR_StatusWnd">
+		<ScreenID>StatusWnd</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>422</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>236</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>VerticalLayoutBox:BTR_StatusLayout</Pieces>
+	</Screen>
+
+	<HorizontalLayoutBox item = "BTR_Layout">
+		<ScreenID>Layout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>26</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>4</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:BTR_SearchWnd</Pieces>
+		<Pieces>Screen:BTR_CompensationWnd</Pieces>
+		<Pieces>Screen:BTR_StatusWnd</Pieces>
+	</HorizontalLayoutBox>
+
+	<Label item = "BTR_WelcomeLabel">
+		<ScreenID/>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>92</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Text>Welcome Text:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "BTR_WelcomeEdit">
+		<ScreenID>WelcomeEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>94</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>164</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter the text to display to prospective customers here.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "BTR_WelcomeButton">
+		<ScreenID>UpdateWelcomeButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>162</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>108</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Click this button to commit changes to your Welcome text.</TooltipReference>
+		<Text>Update</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "BTR_StartStopButton">
+		<ScreenID>StartStopButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>100</LeftAnchorOffset>
+		<TopAnchorOffset>42</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Click this button to enter/exit Buyer Mode.</TooltipReference>
+		<Text>Start Buyer</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "BarterWnd">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>150</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>700</CX>
+			<CY>420</CY>
+		</Size>
+		<Text>Barter Buyer Window</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>This is the window to setup/run Barter Mode.</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>HorizontalLayoutBox:BTR_Layout</Pieces>
+		<Pieces>BTR_WelcomeLabel</Pieces>
+		<Pieces>BTR_WelcomeEdit</Pieces>
+		<Pieces>BTR_WelcomeButton</Pieces>
+		<Pieces>BTR_StartStopButton</Pieces>
+	</Screen>
+
+</XML>

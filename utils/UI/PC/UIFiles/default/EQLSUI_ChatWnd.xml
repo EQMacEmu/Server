@@ -1,0 +1,441 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- Buttons -->
+	<Button item = "CHAT_OptionsButton">
+		<ScreenID>CHAT_OptionsButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>115</RightAnchorOffset>
+		<BottomAnchorOffset>31</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TooltipReference>Set various chat options</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Chat Options</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHAT_ExitButton">
+		<ScreenID>ExitButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>31</TopAnchorOffset>
+		<RightAnchorOffset>115</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TooltipReference>Return to the login menu</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>LOGOUT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHAT_HelpButton">
+		<ScreenID>HelpButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>31</TopAnchorOffset>
+		<RightAnchorOffset>235</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TooltipReference>Go to help webpage</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>HELP</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHAT_TechButton">
+		<ScreenID>TechButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>240</LeftAnchorOffset>
+		<TopAnchorOffset>31</TopAnchorOffset>
+		<RightAnchorOffset>355</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TooltipReference>Get tech support</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>TECH CHAT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHAT_ServersButton">
+		<ScreenID>ServersButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>360</LeftAnchorOffset>
+		<TopAnchorOffset>31</TopAnchorOffset>
+		<RightAnchorOffset>604</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TooltipReference>Go to the server list</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>GAME SERVERS</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- End of buttons -->
+
+<!-- Labels -->
+	<Label item = "CHAT_WndLabel">
+		<ScreenID>WndLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>40</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<Text>LOGIN CHAT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<!-- Make larger than needed and clip to parent window so that smooth scrolling occurs.  Otherwise letters pop into view from the right.  -->
+	<Label item = "CHAT_BannerLabel">
+		<ScreenID>BannerLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>3000</CX>
+			<CY>40</CY>
+		</Size>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<!-- Put the Label in a window so we can have a background -->
+	<Screen item = "CHAT_BannerWindow">
+		<ScreenID>BannerWnd</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>30</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>30</RightAnchorOffset>
+		<BottomAnchorOffset>40</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<Text>Chat</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CHAT_BannerLabel</Pieces>
+	</Screen>
+<!-- End of Labels -->
+
+<!-- SMTLBox's -->
+	<STMLbox item = "CHAT_ChatSTMLBox">
+		<ScreenID>ChatOutput</ScreenID>
+		<Font>3</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>45</TopAnchorOffset>
+		<RightAnchorOffset>180</RightAnchorOffset>
+		<BottomAnchorOffset>85</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_Transparent>false</Style_Transparent>
+	</STMLbox>
+<!-- End STMLBox's -->
+<!-- Lists -->
+	<Listbox item = "CHAT_RoomList">
+		<ScreenID>RoomList</ScreenID>
+		<Font>3</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>170</LeftAnchorOffset>
+		<TopAnchorOffset>45</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>215</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+
+		<Text>Rooms</Text>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Rooms</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+			<Heading></Heading>
+		</Columns>
+	</Listbox>
+	<!-- Put the list in a window so we can have a background -->
+	<Screen item = "CHAT_RoomListBackground">
+		<ScreenID>RoomListBackground</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>170</LeftAnchorOffset>
+		<TopAnchorOffset>45</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>215</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+	</Screen>
+	<Listbox item = "CHAT_PlayerList">
+		<ScreenID>PlayerList</ScreenID>
+		<Font>3</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>170</LeftAnchorOffset>
+		<TopAnchorOffset>220</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>45</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Players</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+			<Heading></Heading>
+		</Columns>
+	</Listbox>
+	<!-- Put the list in a window so we can have a background -->
+	<Screen item = "CHAT_PlayerListBackground">
+		<ScreenID>PlayerListBackground</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>170</LeftAnchorOffset>
+		<TopAnchorOffset>220</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>45</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+	</Screen>
+<!-- End of lists -->
+
+<!-- Edit boxes -->
+	<Editbox item = "CHAT_ChatEdit">
+		<ScreenID>ChatEdit</ScreenID>
+		<Font>3</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<Style_Border>true</Style_Border>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>80</TopAnchorOffset>
+		<RightAnchorOffset>180</RightAnchorOffset>
+		<BottomAnchorOffset>45</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+<!-- End of Edit Boxes -->
+
+
+<!-- The window itself -->
+	<Screen item = "chat">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text>Chat</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>CHAT_OptionsButton</Pieces>
+		<Pieces>CHAT_ExitButton</Pieces>
+		<Pieces>CHAT_HelpButton</Pieces>
+		<Pieces>CHAT_TechButton</Pieces>
+		<Pieces>CHAT_ServersButton</Pieces>
+		<Pieces>CHAT_ChatSTMLBox</Pieces>
+		<Pieces>CHAT_ChatEdit</Pieces>
+		<Pieces>CHAT_WndLabel</Pieces>
+		<Pieces>CHAT_BannerWindow</Pieces>
+		<Pieces>Screen:CHAT_RoomListBackground</Pieces>
+		<Pieces>CHAT_RoomList</Pieces>
+		<Pieces>Screen:CHAT_PlayerListBackground</Pieces>
+		<Pieces>CHAT_PlayerList</Pieces>
+	</Screen>
+
+</XML>

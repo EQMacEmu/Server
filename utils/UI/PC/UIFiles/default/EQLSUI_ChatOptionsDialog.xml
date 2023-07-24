@@ -1,0 +1,525 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+
+<!-- The various color options -->
+	<Button item = "CHATOPTIONS_AdminNameButton">
+		<ScreenID>CHATOPTIONS_AdminNameButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for admin names.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Admin Names</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_AdminChatButton">
+		<ScreenID>CHATOPTIONS_AdminChatButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>130</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for admin chat.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Admin Chat</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "CHATOPTIONS_GuideNameButton">
+		<ScreenID>CHATOPTIONS_GuideNameButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for Guide names.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Guide Names</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_GuideChatButton">
+		<ScreenID>CHATOPTIONS_GuideChatButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>130</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for Guide chat.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Guide Chat</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "CHATOPTIONS_PlayerNameButton">
+		<ScreenID>CHATOPTIONS_PlayerNameButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>85</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for Player names.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Player Names</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_PlayerChatButton">
+		<ScreenID>CHATOPTIONS_PlayerChatButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>130</X>
+			<Y>85</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for Player chat.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Player Chat</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_TellButton">
+		<ScreenID>CHATOPTIONS_TellButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>255</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for tells.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Tells</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_SystemButton">
+		<ScreenID>CHATOPTIONS_SystemButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>255</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for system messages.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>System Messages</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_CommandButton">
+		<ScreenID>CHATOPTIONS_CommandButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>255</X>
+			<Y>85</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to change the color for chat commands.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Chat Commands</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- END The various color options -->
+
+<!-- Font -->
+	<Button item = "CHATOPTIONS_FontLeftButton">
+		<ScreenID>CHATOPTIONS_FontLeftButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>130</Y>
+		</Location>
+		<Size>
+			<CX>19</CX>
+			<CY>23</CY>
+		</Size>
+		<TooltipReference></TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_HSBLeftNormal</Normal>
+			<Pressed>A_EQLS_HSBLeftPressed</Pressed>
+			<Flyby>A_EQLS_HSBLeftNormal</Flyby>
+			<Disabled>A_EQLS_HSBLeftDisabled</Disabled>
+			<PressedFlyby>A_EQLS_HSBLeftPressed</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Label item = "CHATOPTIONS_FontSizeLabel">
+		<ScreenID>CHATOPTIONS_FontSizeLabel</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>25</X>
+			<Y>130</Y>
+		</Location>
+		<Size>
+			<CX>25</CX>
+			<CY>25</CY>
+		</Size>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Button item = "CHATOPTIONS_FontRightButton">
+		<ScreenID>CHATOPTIONS_FontRightButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>51</X>
+			<Y>130</Y>
+		</Location>
+		<Size>
+			<CX>19</CX>
+			<CY>23</CY>
+		</Size>
+		<TooltipReference></TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_HSBRightNormal</Normal>
+			<Pressed>A_EQLS_HSBRightPressed</Pressed>
+			<Flyby>A_EQLS_HSBRightNormal</Flyby>
+			<Disabled>A_EQLS_HSBRightDisabled</Disabled>
+			<PressedFlyby>A_EQLS_HSBRightPressed</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Label item = "CHATOPTIONS_FontLabel">
+		<ScreenID>CHATOPTIONS_FontLabel</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>95</X>
+			<Y>130</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Font size (1-6)</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+<!-- END Font -->
+
+<!-- Misc -->
+	<Button item = "CHATOPTIONS_RestoreDefaultsButton">
+		<ScreenID>CHATOPTIONS_RestoreDefaultsButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>180</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to restore the default colors/font.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Restore Defaults</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_OKButton">
+		<ScreenID>CHATOPTIONS_OKButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>255</X>
+			<Y>180</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to accept your changes and close the options dialog.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Accept</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "CHATOPTIONS_CancelButton">
+		<ScreenID>CHATOPTIONS_CancelButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>130</X>
+			<Y>180</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click to cancel your changes and close the options dialog.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Cancel</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- END Misc -->
+
+
+<!-- The actual box of the dialog -->	
+	<Screen item = "CHATOPTIONS_Box">
+		<ScreenID>CHATOPTIONS_Box</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<TopAnchorOffset>120</TopAnchorOffset>
+		<RightAnchorOffset>110</RightAnchorOffset>
+		<BottomAnchorOffset>120</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+
+		<Text>Confirmation</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		
+		<Pieces>CHATOPTIONS_AdminNameButton</Pieces>
+		<Pieces>CHATOPTIONS_AdminChatButton</Pieces>
+		<Pieces>CHATOPTIONS_GuideNameButton</Pieces>
+		<Pieces>CHATOPTIONS_GuideChatButton</Pieces>
+		<Pieces>CHATOPTIONS_PlayerNameButton</Pieces>
+		<Pieces>CHATOPTIONS_PlayerChatButton</Pieces>
+		<Pieces>CHATOPTIONS_TellButton</Pieces>
+		<Pieces>CHATOPTIONS_SystemButton</Pieces>
+		<Pieces>CHATOPTIONS_CommandButton</Pieces>
+		<Pieces>CHATOPTIONS_FontLabel</Pieces>
+		<Pieces>CHATOPTIONS_FontLeftButton</Pieces>
+		<Pieces>CHATOPTIONS_FontSizeLabel</Pieces>
+		<Pieces>CHATOPTIONS_FontRightButton</Pieces>
+		<Pieces>CHATOPTIONS_RestoreDefaultsButton</Pieces>
+		<Pieces>CHATOPTIONS_OKButton</Pieces>
+		<Pieces>CHATOPTIONS_CancelButton</Pieces>
+	</Screen>
+
+
+<!-- The wrapper window -->
+	<Screen item = "chatoptions">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text>Chat</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>CHATOPTIONS_Box</Pieces>
+	</Screen>
+
+</XML>

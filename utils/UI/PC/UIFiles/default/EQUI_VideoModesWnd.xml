@@ -1,0 +1,193 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="VIDW_VideoResolutionsLabel">
+		<ScreenID>VIDW_VideoResolutionsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>10</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Video Resolutions:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "VIDW_VideoResolutionsList">
+		<ScreenID>VIDW_VideoResolutionsList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>108</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Label item ="VIDW_RefreshRateLabel">
+		<ScreenID>VIDW_RefreshRateLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>120</X>
+			<Y>10</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Refresh Rate:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="VIDW_BitDepthLabel">
+		<ScreenID>VIDW_BitDepthLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>120</X>
+			<Y>60</Y>
+		</Location>
+		<Size>
+			<CX>70</CX>
+			<CY>14</CY>
+		</Size>
+		<Text>Bit Depth:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "VIDW_RefreshRateCombobox">
+		<ScreenID>VIDW_RefreshRateCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>120</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ListHeight>100</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+	
+	<Combobox item = "VIDW_BitDepthCombobox">
+		<ScreenID>VIDW_BitDepthCombobox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>120</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ListHeight>100</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Button item = "VIDW_AcceptButton">
+		<ScreenID>VIDW_AcceptButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>130</X>
+			<Y>120</Y>
+		</Location>
+		<Size>
+			<CX>70</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Accept</Text>
+		<TooltipReference>Accept the current configuration</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Video Modes Screen -->
+	<Screen item = "VideoModesWindow">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>240</Y>
+		</Location>
+		<Size>
+			<CX>220</CX>
+			<CY>170</CY>
+		</Size>
+		<Text>Video Modes</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+			<Pieces>VIDW_VideoResolutionsLabel</Pieces>
+			<Pieces>VIDW_VideoResolutionsList</Pieces>
+			<Pieces>VIDW_AcceptButton</Pieces>
+			<Pieces>VIDW_RefreshRateLabel</Pieces>
+			<Pieces>VIDW_BitDepthLabel</Pieces>
+			<Pieces>VIDW_BitDepthCombobox</Pieces>
+			<Pieces>VIDW_RefreshRateCombobox</Pieces>
+	</Screen>
+</XML>

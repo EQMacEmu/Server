@@ -1,0 +1,232 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Button item = "SELW_ActionsToggleButton">
+		<ScreenID>SELW_ActionsToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Actions</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_ActionsBtnNormal</Normal>
+			<Pressed>A_ActionsBtnPressed</Pressed>
+			<Flyby>A_ActionsBtnFlyby</Flyby>
+			<Disabled>A_ActionsBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_ActionsBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_InventoryToggleButton">
+		<ScreenID>SELW_InventoryToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>30</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Inventory</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_InventoryBtnNormal</Normal>
+			<Pressed>A_InventoryBtnPressed</Pressed>
+			<Flyby>A_InventoryBtnFlyby</Flyby>
+			<Disabled>A_InventoryBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_InventoryBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_OptionsToggleButton">
+		<ScreenID>SELW_OptionsToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>60</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Options</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_OptionsBtnNormal</Normal>
+			<Pressed>A_OptionsBtnPressed</Pressed>
+			<Flyby>A_OptionsBtnFlyby</Flyby>
+			<Disabled>A_OptionsBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_OptionsBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_FriendsToggleButton">
+		<ScreenID>SELW_FriendsToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>90</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Friends</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_FriendsBtnNormal</Normal>
+			<Pressed>A_FriendsBtnPressed</Pressed>
+			<Flyby>A_FriendsBtnFlyby</Flyby>
+			<Disabled>A_FriendsBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_FriendsBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_HotboxToggleButton">
+		<ScreenID>SELW_HotboxToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>120</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Hotbuttons</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_HotboxBtnNormal</Normal>
+			<Pressed>A_HotboxBtnPressed</Pressed>
+			<Flyby>A_HotboxBtnFlyby</Flyby>
+			<Disabled>A_HotboxBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_HotboxBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_CastSpellToggleButton">
+		<ScreenID>SELW_CastSpellToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>150</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Spells</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_CastSpellBtnNormal</Normal>
+			<Pressed>A_CastSpellBtnPressed</Pressed>
+			<Flyby>A_CastSpellBtnFlyby</Flyby>
+			<Disabled>A_CastSpellBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_CastSpellBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_PetInfoToggleButton">
+		<ScreenID>SELW_PetInfoToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>180</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Pet Info</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_PetInfoBtnNormal</Normal>
+			<Pressed>A_PetInfoBtnPressed</Pressed>
+			<Flyby>A_PetInfoBtnFlyby</Flyby>
+			<Disabled>A_PetInfoBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_PetInfoBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_BuffToggleButton">
+		<ScreenID>SELW_BuffToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>210</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Effects</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_BuffBtnNormal</Normal>
+			<Pressed>A_BuffBtnPressed</Pressed>
+			<Flyby>A_BuffBtnFlyby</Flyby>
+			<Disabled>A_BuffBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_BuffBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SELW_HelpToggleButton">
+		<ScreenID>SELW_HelpToggleButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>240</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>26</CX>
+			<CY>26</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<TooltipReference>Help</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_HelpBtnNormal</Normal>
+			<Pressed>A_HelpBtnPressed</Pressed>
+			<Flyby>A_HelpBtnFlyby</Flyby>
+			<Disabled>A_HelpBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_HelpBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "SelectorWindow">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>135</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>278</CX>
+			<CY>50</CY>
+		</Size>
+		<Text>Window Selector</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+			<Pieces>SELW_ActionsToggleButton</Pieces>
+			<Pieces>SELW_InventoryToggleButton</Pieces>
+			<Pieces>SELW_OptionsToggleButton</Pieces>
+			<Pieces>SELW_FriendsToggleButton</Pieces>
+			<Pieces>SELW_HotboxToggleButton</Pieces>
+			<Pieces>SELW_CastSpellToggleButton</Pieces>
+			<Pieces>SELW_PetInfoToggleButton</Pieces>
+			<Pieces>SELW_BuffToggleButton</Pieces>
+			<Pieces>SELW_HelpToggleButton</Pieces>
+	</Screen>
+
+</XML>

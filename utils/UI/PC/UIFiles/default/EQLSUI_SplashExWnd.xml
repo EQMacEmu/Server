@@ -1,0 +1,115 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+<!-- Accept/Decline buttons -->
+	<Button item = "SplashEx_OKButton">
+		<ScreenID>SplashEx_OKButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>425</X>
+			<Y>420</Y>
+		</Location>
+		<Size>
+			<CX>135</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Click here to continue</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Close</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- The SPlash text -->
+	<STMLbox item = "SplashEx_Display">
+		<ScreenID>SplashEx_Display</ScreenID>
+		<Font>4</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>40</RightAnchorOffset>
+		<BottomAnchorOffset>75</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>true</Style_Border>
+	</STMLbox>
+<!-- Window label -->
+	<Label item = "SplashEx_WndLabel">
+		<ScreenID>SplashEx_WndLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Subscribe</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	
+	
+	<Screen item = "SplashExWindow">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Font>5</Font>
+		<Text>Notice</Text>
+		<TextColor>
+				<R>231</R>
+				<G>252</G>
+				<B>82</B>
+		</TextColor>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_AltBG01</Pieces>
+		<Pieces>EQLS_AltBG02</Pieces>
+		<Pieces>EQLS_AltBG03</Pieces>
+		<Pieces>EQLS_AltBG04</Pieces>
+		<Pieces>EQLS_AltBG05</Pieces>
+		<Pieces>EQLS_AltBG06</Pieces>
+		<Pieces>SplashEx_OKButton</Pieces>
+		<Pieces>SplashEx_Display</Pieces>
+		<Pieces>SplashEx_WndLabel</Pieces>
+	</Screen>
+</XML>

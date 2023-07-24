@@ -1,0 +1,307 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<!-- Walkthrough art assets -->
+
+	<TextureInfo item = "nuwWelcome.jpg">
+		<Size>
+			<CX>64</CX>
+			<CY>64</CY>
+		</Size>
+	</TextureInfo>
+
+	<Ui2DAnimation item = "A_nuwWelcome">
+		<Cycle>false</Cycle>
+		<Frames>
+			<Texture>nuwWelcome.jpg</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>64</CX>
+				<CY>64</CY>
+			</Size>
+		</Frames>
+	</Ui2DAnimation>
+
+	<TextureInfo item = "nuwKeyboardBasics.jpg">
+		<Size>
+			<CX>64</CX>
+			<CY>64</CY>
+		</Size>
+	</TextureInfo>
+
+	<Ui2DAnimation item = "A_nuwKeyboardBasics">
+		<Cycle>false</Cycle>
+		<Frames>
+			<Texture>nuwKeyboardBasics.jpg</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>64</CX>
+				<CY>64</CY>
+			</Size>
+		</Frames>
+	</Ui2DAnimation>
+
+	<TextureInfo item = "nuwMouseLook.jpg">
+		<Size>
+			<CX>64</CX>
+			<CY>64</CY>
+		</Size>
+	</TextureInfo>
+
+	<Ui2DAnimation item = "A_nuwMouseLook">
+		<Cycle>false</Cycle>
+		<Frames>
+			<Texture>nuwMouseLook.jpg</Texture>
+			<Location>
+				<X>0</X>
+				<Y>0</Y>
+			</Location>
+			<Size>
+				<CX>64</CX>
+				<CY>64</CY>
+			</Size>
+		</Frames>
+	</Ui2DAnimation>
+
+	<!-- Begin Walkthrough Window -->
+
+	<STMLbox item = "NUW_HelpTextStmlBox">
+		<ScreenID>NUW_HelpTextStmlBox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+
+		<Location>
+			<X>25</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>268</CX>
+			<CY>180</CY>
+		</Size>
+
+		<Style_Border>true</Style_Border>
+		<Style_Transparent>true</Style_Transparent>
+	</STMLbox>
+
+	<StaticAnimation item = "NUW_HelpImage">
+		<ScreenID>NUW_HelpImage</ScreenID>
+
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+
+		<Location>
+			<X>295</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>0</CX>
+			<CY>0</CY>
+		</Size>
+
+		<Style_Border>true</Style_Border>
+		<Style_Transparent>true</Style_Transparent>
+
+	</StaticAnimation>
+
+
+	<Button item = "NUW_PrevButton">
+		<ScreenID>NUW_PrevButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<Location>
+			<X>25</X>
+			<Y>230</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Prev</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "NUW_AudioCheckbox">
+		<ScreenID>NUW_AudioCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<Location>
+			<X>160</X>
+			<Y>230</Y>
+		</Location>
+		<Size>
+			<CX>12</CX>
+			<CY>12</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_CheckBoxNormal</Normal>
+			<Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "NUW_AudioLabel">
+		<ScreenID>NUW_AudioLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>175</X>
+			<Y>230</Y>
+		</Location>
+		<Size>
+			<CX>185</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Enable Voiceovers</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+
+	<Button item = "NUW_NextButton">
+		<ScreenID>NUW_NextButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<Location>
+			<X>383</X>
+			<Y>230</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Next</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Page item = "NUW_WelcomePage">
+		<ScreenID>NUW_WelcomePage</ScreenID>
+		<RelativePosition>false</RelativePosition>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Welcome!</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+	</Page>
+
+	<Page item = "NUW_MovementPage">
+		<ScreenID>NUW_MovementPage</ScreenID>
+		<RelativePosition>false</RelativePosition>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Movement</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+	</Page>
+
+	<TabBox item = "NUW_Subwindows">
+		<ScreenID>NUW_Subwindows</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<Location>
+			<X>10</X>
+			<Y>10</Y>
+		</Location>
+		<Size>
+			<CX>468</CX>
+			<CY>255</CY>
+		</Size>
+
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+		<Pages>NUW_WelcomePage</Pages>
+		<Pages>NUW_MovementPage</Pages>
+	</TabBox>
+
+	<Screen item = "NewUserWalkthroughWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>10</Y>
+		</Location>
+		<Size>
+			<CX>497</CX>
+			<CY>300</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>New User Walkthrough</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>NUW_Subwindows</Pieces>
+		<Pieces>NUW_HelpTextStmlBox</Pieces>
+		<Pieces>NUW_HelpImage</Pieces>
+		<Pieces>NUW_PrevButton</Pieces>
+		<Pieces>NUW_AudioCheckbox</Pieces>
+		<Pieces>NUW_AudioLabel</Pieces>
+		<Pieces>NUW_NextButton</Pieces>
+	</Screen>
+
+</XML>

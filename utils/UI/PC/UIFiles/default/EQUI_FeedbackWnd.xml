@@ -1,0 +1,147 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="FBKW_UserName">
+		<ScreenID>FBKW_UserName</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		
+		<LeftAnchorOffset>8</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<BottomAnchorOffset>18</BottomAnchorOffset>
+		
+		<Text>Playername123456</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Editbox item = "FBKW_FeedbackInput">
+		<ScreenID>FBKW_FeedbackInput</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>20</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		
+		<Style_Multiline>true</Style_Multiline>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+	</Editbox>
+	
+	<Button item = "FBKW_CancelButton">
+		<ScreenID>FBKW_CancelButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>70</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+
+		<Text>Cancel</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "FBKW_SendButton">
+		<ScreenID>FBKW_SendButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		
+		<LeftAnchorOffset>60</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+
+		<Text>Send</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "FeedbackWindow">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>50</X>
+			<Y>50</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>200</CY>
+		</Size>
+		<Text>Send Feedback</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>FBKW_UserName</Pieces>
+		<Pieces>FBKW_FeedbackInput</Pieces>
+		<Pieces>FBKW_CancelButton</Pieces>
+		<Pieces>FBKW_SendButton</Pieces>
+
+	</Screen>
+
+</XML>

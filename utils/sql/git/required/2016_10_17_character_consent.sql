@@ -1,0 +1,1 @@
+alter table `character_consent` add column `timestamp` datetime NOT NULL default '0000-00-00 00:00:00';

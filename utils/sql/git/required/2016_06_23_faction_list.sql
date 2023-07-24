@@ -1,0 +1,1 @@
+alter table faction_list add column `see_illusion` tinyint(3) not null default 0;

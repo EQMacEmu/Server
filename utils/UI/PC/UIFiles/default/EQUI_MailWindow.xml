@@ -1,0 +1,721 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes" />
+
+	<!-- ======================================================================
+
+		INBOX
+
+		The inbox view is composed of a list of non-deleted messages, a
+		view pane for the currently selected message, and UI elements to
+		compose, reply to, forward and delete messages.
+
+	-->
+
+	<Listbox item = "MAIL_InboxList">
+		<ScreenID>InboxList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>10</CX>
+			<CY>100</CY>
+		</Size>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>200</Width>
+			<Heading>From</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Subject</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Date</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+	</Listbox>
+
+	<STMLbox item = "MAIL_Body">
+		<ScreenID>Body</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>102</Y>
+		</Location>
+		<Size>
+			<CX>10</CX>
+			<CY>100</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+	</STMLbox>
+
+	<VerticalLayoutBox item = "MAIL_InboxLayout">
+		<ScreenID>InboxLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>MAIL_InboxList</Pieces>
+		<Pieces>MAIL_Body</Pieces>
+	</VerticalLayoutBox>
+
+	<Button item = "MAIL_ButtonCompose">
+		<ScreenID>ButtonCompose</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>2</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Compose a new message.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Compose</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonDelete">
+		<ScreenID>ButtonDelete</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>94</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Delete selected messages.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Delete</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonReply">
+		<ScreenID>ButtonReply</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>186</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Reply to sender.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Reply</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonReplyAll">
+		<ScreenID>ButtonReplyAll</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>278</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Reply to sender and recipients.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Reply All</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonForward">
+		<ScreenID>ButtonForward</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>370</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Forward selected message.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Forward</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonReport">
+		<ScreenID>ButtonReport</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>492</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Report innapropriate messages.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Report</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<!-- ======================================================================
+
+		TRASHCAN
+
+		The deleted items view is composed of a list of deleted messages, a
+		view pane for the currently selected message, and UI elements to
+		compose, reply to, forward and undelete messages.
+
+		You also have a button to permanently empty your trashcan.
+
+	-->
+
+
+	<Listbox item = "MAIL_TrashList">
+		<ScreenID>TrashList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>10</CX>
+			<CY>100</CY>
+		</Size>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>200</Width>
+			<Heading>From</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Subject</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Date</Heading>
+			<Sortable>true</Sortable>
+		</Columns>
+	</Listbox>
+
+	<STMLbox item = "MAIL_TrashBody">
+		<ScreenID>TrashBody</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>false</AutoStretch>
+		<Location>
+			<X>0</X>
+			<Y>102</Y>
+		</Location>
+		<Size>
+			<CX>10</CX>
+			<CY>100</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+	</STMLbox>
+
+	<VerticalLayoutBox item = "MAIL_TrashLayout">
+		<ScreenID>TrashLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>MAIL_TrashList</Pieces>
+		<Pieces>MAIL_TrashBody</Pieces>
+	</VerticalLayoutBox>
+
+
+	<Button item = "MAIL_ButtonTrashCompose">
+		<ScreenID>ButtonTrashCompose</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>2</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Compose a new message.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Compose</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonTrashUndelete">
+		<ScreenID>ButtonTrashUndelete</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>94</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Undelete selected messages.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Undelete</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonTrashReply">
+		<ScreenID>ButtonTrashReply</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>186</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Reply to sender.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Reply</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonTrashReplyAll">
+		<ScreenID>ButtonTrashReplyAll</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>278</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Reply to sender and recipients.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Reply All</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonTrashForward">
+		<ScreenID>ButtonTrashForward</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>370</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Forward selected message.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Forward</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_ButtonTrashEmpty">
+		<ScreenID>ButtonTrashEmpty</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>462</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>90</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Permanently remove deleted items.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Empty Trash</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+
+	<!-- ======================================================================
+
+		TABS: Inbox and Deleted Items.
+
+	-->
+
+	<Page item = "MAIL_InboxPage">
+		<ScreenID>InboxPage</ScreenID>
+		<RelativePosition>false</RelativePosition>
+		<TooltipReference>Messages in your mailbox.</TooltipReference>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Inbox</TabText>
+		<TabTextColor><R>255</R><G>255</G><B>255</B></TabTextColor>
+		<TabTextActiveColor><R>255</R><G>255</G><B>0</B></TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>MAIL_ButtonCompose</Pieces>
+		<Pieces>MAIL_ButtonDelete</Pieces>
+		<Pieces>MAIL_ButtonReply</Pieces>
+		<Pieces>MAIL_ButtonReplyAll</Pieces>
+		<Pieces>MAIL_ButtonForward</Pieces>
+		<Pieces>MAIL_ButtonReport</Pieces>
+		<Pieces>VerticalLayoutBox:MAIL_InboxLayout</Pieces>
+	</Page>
+
+	<Page item = "MAIL_TrashcanPage">
+		<ScreenID>TrashPage</ScreenID>
+		<RelativePosition>false</RelativePosition>
+		<TooltipReference>Messages that you have marked for deletion.</TooltipReference>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Deleted Items</TabText>
+		<TabTextColor><R>255</R><G>255</G><B>255</B></TabTextColor>
+		<TabTextActiveColor><R>255</R><G>255</G><B>0</B></TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>MAIL_ButtonTrashCompose</Pieces>
+		<Pieces>MAIL_ButtonTrashUndelete</Pieces>
+		<Pieces>MAIL_ButtonTrashReply</Pieces>
+		<Pieces>MAIL_ButtonTrashReplyAll</Pieces>
+		<Pieces>MAIL_ButtonTrashForward</Pieces>
+		<Pieces>MAIL_ButtonTrashEmpty</Pieces>
+		<Pieces>VerticalLayoutBox:MAIL_TrashLayout</Pieces>
+
+	</Page>
+
+	<!-- ======================================================================
+
+		Character Mailbox Selector
+
+	-->
+
+	<Label item = "MAIL_CharacterBoxSelectorLabel">
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>6</LeftAnchorOffset>
+		<RightAnchorOffset>150</RightAnchorOffset>
+		<TopAnchorOffset>7</TopAnchorOffset>
+		<BottomAnchorOffset>36</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Character Mailbox:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<Combobox item = "MAIL_CharacterBoxSelector">
+		<ScreenID>CharacterBoxSelector</ScreenID>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>115</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>62</RightAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<ListHeight>80</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<!-- ======================================================================
+
+		BUTTONS TO OTHER WINDOWS
+
+	-->
+
+	<Button item = "MAIL_OptionsButton">
+		<ScreenID>OptionsButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+
+		<LeftAnchorOffset>30</LeftAnchorOffset>
+		<TopAnchorOffset>3</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>29</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Mail Options</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_OptionsBtnNormal</Normal>
+			<Pressed>A_OptionsBtnPressed</Pressed>
+			<Flyby>A_OptionsBtnFlyby</Flyby>
+			<Disabled>A_OptionsBtnNormal</Disabled>  <!-- Will never be disabled -->
+			<PressedFlyby>A_OptionsBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "MAIL_AddressBookButton">
+		<ScreenID>AddressBookButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		
+		<LeftAnchorOffset>58</LeftAnchorOffset>
+		<TopAnchorOffset>3</TopAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<BottomAnchorOffset>29</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		
+		<Style_Checkbox>false</Style_Checkbox>
+		<TooltipReference>Address Book</TooltipReference>
+		<ButtonDrawTemplate>
+			<Normal>A_AddressBookBtnNormal</Normal>
+			<Pressed>A_AddressBookBtnPressed</Pressed>
+			<Flyby>A_AddressBookBtnFlyby</Flyby>
+			<Disabled>A_AddressBookBtnNormal</Disabled>  
+			<PressedFlyby>A_AddressBookBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- ======================================================================
+
+		MAIL WINDOW
+
+		The messaging interface simply offers two tabs.  The first one
+		enables the user to view and interact with his non-deleted messages.
+		The other one contains the messages that the user previously
+		deleted.
+
+	-->
+
+
+	<TabBox item = "MAIL_Tabs">
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>32</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+		<TextColor><R>255</R><G>255</G><B>255</B></TextColor>
+		<Pages>MAIL_InboxPage</Pages>
+		<Pages>MAIL_TrashcanPage</Pages>
+	</TabBox>
+
+	<Screen item = "MailWindow">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>50</X>
+			<Y>50</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>300</CY>
+		</Size>
+		<Text>Messages</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>This is the mail window.</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>MAIL_Tabs</Pieces>
+		<Pieces>MAIL_CharacterBoxSelectorLabel</Pieces>
+		<Pieces>MAIL_CharacterBoxSelector</Pieces>
+		<Pieces>MAIL_AddressBookButton</Pieces>
+		<Pieces>MAIL_OptionsButton</Pieces>
+	</Screen>
+
+</XML>

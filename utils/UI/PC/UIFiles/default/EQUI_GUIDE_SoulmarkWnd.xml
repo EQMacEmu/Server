@@ -1,0 +1,466 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Listbox item = "SOUL_List">
+		<ScreenID>List</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>2</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>250</CX>
+			<CY>124</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Date</Heading>
+		</Columns>
+		<Columns>
+			<Width>160</Width>
+			<Heading>Beginning Text</Heading>
+		</Columns>
+	</Listbox>
+
+	<Label item ="SOUL_NameLabel">
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Name:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_IDLabel">
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>22</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>ID:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_GMLabel">
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>42</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>GM:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_GMIDLabel">
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>62</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>GM ID:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_NameText">
+		<ScreenID>Name</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>2</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Unknown</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_IDText">
+		<ScreenID>ID</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>22</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Unknown</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_GMText">
+		<ScreenID>GM</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>42</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Unknown</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_GMIDText">
+		<ScreenID>GMID</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>320</X>
+			<Y>62</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Unknown</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="SOUL_DateText">
+		<ScreenID>Date</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>82</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>16</CY>
+		</Size>
+		<Text>Unknown</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "SOUL_RemoveButton">
+		<ScreenID>Remove</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>356</X>
+			<Y>102</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select a Soulmark and click this to remove it from the player.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Remove</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SOUL_EditButton">
+		<ScreenID>Edit</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>266</X>
+			<Y>102</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select a Soulmark and click this to remove it from the player.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Edit Text</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<STMLbox item = "SOUL_MarkText">
+		<ScreenID>MarkText</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Location>
+			<X>2</X>
+			<Y>130</Y>
+		</Location>
+		<Size>
+			<CX>450</CX>
+			<CY>80</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Text>Test text</Text>
+	</STMLbox>
+
+	<Editbox item = "SOUL_MarkInput">
+		<ScreenID>MarkInput</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>2</X>
+			<Y>214</Y>
+		</Location>
+		<Size>
+			<CX>232</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "SOUL_WarnButton">
+		<ScreenID>Warn</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>240</X>
+			<Y>214</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Add a warning with the text entered.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Warn</Text>
+		<TextColor>
+			<R>255</R>
+			<G>155</G>
+			<B>155</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SOUL_PraiseButton">
+		<ScreenID>Praise</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>304</X>
+			<Y>214</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Add a praise with the text entered.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Praise</Text>
+		<TextColor>
+			<R>155</R>
+			<G>255</G>
+			<B>155</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "SOUL_DoneButton">
+		<ScreenID>Done</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>378</X>
+			<Y>214</Y>
+		</Location>
+		<Size>
+			<CX>70</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Close this window.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Done</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SquareBtnNormal</Normal>
+			<Pressed>A_SquareBtnPressed</Pressed>
+			<Flyby>A_SquareBtnFlyby</Flyby>
+			<Disabled>A_SquareBtnDisabled</Disabled>
+			<PressedFlyby>A_SquareBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Screen item = "SoulmarkWnd">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>465</CX>
+			<CY>268</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Text>Soulmark Window (GM)</Text>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>SOUL_List</Pieces>
+		<Pieces>SOUL_NameLabel</Pieces>
+		<Pieces>SOUL_IDLabel</Pieces>
+		<Pieces>SOUL_GMLabel</Pieces>
+		<Pieces>SOUL_GMIDLabel</Pieces>
+		<Pieces>SOUL_NameText</Pieces>
+		<Pieces>SOUL_IDText</Pieces>
+		<Pieces>SOUL_GMText</Pieces>
+		<Pieces>SOUL_GMIDText</Pieces>
+		<Pieces>SOUL_DateText</Pieces>
+		<Pieces>SOUL_RemoveButton</Pieces>
+		<Pieces>SOUL_EditButton</Pieces>
+		<Pieces>SOUL_MarkText</Pieces>
+		<Pieces>SOUL_MarkInput</Pieces>
+		<Pieces>SOUL_WarnButton</Pieces>
+		<Pieces>SOUL_PraiseButton</Pieces>
+		<Pieces>SOUL_DoneButton</Pieces>
+	</Screen>
+
+
+</XML>

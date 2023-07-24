@@ -1,0 +1,1 @@
+alter table qs_player_killed_by_log ADD column `type` varchar(255) default "UNKNOWN";

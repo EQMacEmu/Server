@@ -1,0 +1,568 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- IS_L_EAR		1 -->
+
+	<InvSlot item = "INSW_InvSlot1">
+		<ScreenID>InvSlot1</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvEar</Background>
+		<EQType>8001</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_HEAD		2 -->
+
+	<InvSlot item = "INSW_InvSlot2">
+		<ScreenID>InvSlot2</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>85</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvHead</Background>
+		<EQType>8002</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_FACE		3 -->
+
+	<InvSlot item = "INSW_InvSlot3">
+		<ScreenID>InvSlot3</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>125</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvFace</Background>
+		<EQType>8003</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_R_EAR		4 -->
+
+	<InvSlot item = "INSW_InvSlot4">
+		<ScreenID>InvSlot4</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvEar</Background>
+		<EQType>8004</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_NECK		5 -->
+
+	<InvSlot item = "INSW_InvSlot5">
+		<ScreenID>InvSlot5</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>45</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvNeck</Background>
+		<EQType>8005</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_SHOULDERS	6 -->
+
+	<InvSlot item = "INSW_InvSlot6">
+		<ScreenID>InvSlot6</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvShoulders</Background>
+		<EQType>8006</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_ARMS		7 -->
+
+	<InvSlot item = "INSW_InvSlot7">
+		<ScreenID>InvSlot7</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvArms</Background>
+		<EQType>8007</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_ABOUT_BODY	8 -->
+
+	<InvSlot item = "INSW_InvSlot8">
+		<ScreenID>InvSlot8</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvAboutBody</Background>
+		<EQType>8008</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_L_WRIST		9 -->
+
+	<InvSlot item = "INSW_InvSlot9">
+		<ScreenID>InvSlot9</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>120</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvWrist</Background>
+		<EQType>8009</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_R_WRIST		10 -->
+
+	<InvSlot item = "INSW_InvSlot10">
+		<ScreenID>InvSlot10</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>120</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvWrist</Background>
+		<EQType>8010</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_RANGE		11 -->
+
+	<InvSlot item = "INSW_InvSlot11">
+		<ScreenID>InvSlot11</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>105</X>
+			<Y>280</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvRange</Background>
+		<EQType>8011</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_HANDS		12 -->
+
+	<InvSlot item = "INSW_InvSlot12">
+		<ScreenID>InvSlot12</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>160</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvHands</Background>
+		<EQType>8012</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_PRIMARY		13 -->
+
+	<InvSlot item = "INSW_InvSlot13">
+		<ScreenID>InvSlot13</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>25</X>
+			<Y>280</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvPrimary</Background>
+		<EQType>8013</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_SECONDARY	14 -->
+
+	<InvSlot item = "INSW_InvSlot14">
+		<ScreenID>InvSlot14</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>65</X>
+			<Y>280</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvSecondary</Background>
+		<EQType>8014</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_L_FINGERS	15 -->
+
+	<InvSlot item = "INSW_InvSlot15">
+		<ScreenID>InvSlot15</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>200</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvRing</Background>
+		<EQType>8015</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_R_FINGERS	16 -->
+
+	<InvSlot item = "INSW_InvSlot16">
+		<ScreenID>InvSlot16</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>200</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvRing</Background>
+		<EQType>8016</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_CHEST		17 -->
+
+	<InvSlot item = "INSW_InvSlot17">
+		<ScreenID>InvSlot17</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvChest</Background>
+		<EQType>8017</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_LEGS		18 -->
+
+	<InvSlot item = "INSW_InvSlot18">
+		<ScreenID>InvSlot18</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>65</X>
+			<Y>240</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvLegs</Background>
+		<EQType>8018</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_FEET		19 -->
+
+	<InvSlot item = "INSW_InvSlot19">
+		<ScreenID>InvSlot19</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>105</X>
+			<Y>240</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvFeet</Background>
+		<EQType>8019</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_WAIST		20 -->
+
+	<InvSlot item = "INSW_InvSlot20">
+		<ScreenID>InvSlot20</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>160</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvWaist</Background>
+		<EQType>8020</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+<!-- IS_AMMO		21 -->
+
+	<InvSlot item = "INSW_InvSlot21">
+		<ScreenID>InvSlot21</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>145</X>
+			<Y>280</Y>
+		</Location>
+		<Size>
+			<CX>40</CX>
+			<CY>40</CY>
+		</Size>
+		<Background>A_InvAmmo</Background>
+		<EQType>8021</EQType>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+	</InvSlot>
+
+	<Editbox item = "INSW_Edit">
+		<ScreenID>INSW_Edit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>45</X>
+			<Y>40</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>200</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Multiline>true</Style_Multiline>
+	</Editbox>
+
+
+	<Button item = "INSW_DoneButton">
+		<ScreenID>DoneButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>80</X>
+			<Y>325</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Done</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "InspectWnd">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>220</CX>
+			<CY>375</CY>
+		</Size>
+		<Text>Inspect</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Inspect</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>INSW_InvSlot1</Pieces>
+		<Pieces>INSW_InvSlot2</Pieces>
+		<Pieces>INSW_InvSlot3</Pieces>
+		<Pieces>INSW_InvSlot4</Pieces>
+		<Pieces>INSW_InvSlot5</Pieces>
+		<Pieces>INSW_InvSlot6</Pieces>
+		<Pieces>INSW_InvSlot7</Pieces>
+		<Pieces>INSW_InvSlot8</Pieces>
+		<Pieces>INSW_InvSlot9</Pieces>
+		<Pieces>INSW_InvSlot10</Pieces>
+		<Pieces>INSW_InvSlot11</Pieces>
+		<Pieces>INSW_InvSlot12</Pieces>
+		<Pieces>INSW_InvSlot13</Pieces>
+		<Pieces>INSW_InvSlot14</Pieces>
+		<Pieces>INSW_InvSlot15</Pieces>
+		<Pieces>INSW_InvSlot16</Pieces>
+		<Pieces>INSW_InvSlot17</Pieces>
+		<Pieces>INSW_InvSlot18</Pieces>
+		<Pieces>INSW_InvSlot19</Pieces>
+		<Pieces>INSW_InvSlot20</Pieces>
+		<Pieces>INSW_InvSlot21</Pieces>
+		<Pieces>INSW_Edit</Pieces>
+		<Pieces>INSW_DoneButton</Pieces>
+	</Screen>
+
+</XML>

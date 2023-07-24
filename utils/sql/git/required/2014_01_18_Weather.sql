@@ -1,0 +1,16 @@
+alter table zone add column `rain_chance1` int(4) not null default 0;
+alter table zone add column `rain_chance2` int(4) not null default 0;
+alter table zone add column `rain_chance3` int(4) not null default 0;
+alter table zone add column `rain_chance4` int(4) not null default 0;
+alter table zone add column `rain_duration1` int(4) not null default 0;
+alter table zone add column `rain_duration2` int(4) not null default 0;
+alter table zone add column `rain_duration3` int(4) not null default 0;
+alter table zone add column `rain_duration4` int(4) not null default 0;
+alter table zone add column `snow_chance1` int(4) not null default 0;
+alter table zone add column `snow_chance2` int(4) not null default 0;
+alter table zone add column `snow_chance3` int(4) not null default 0;
+alter table zone add column `snow_chance4` int(4) not null default 0;
+alter table zone add column `snow_duration1` int(4) not null default 0;
+alter table zone add column `snow_duration2` int(4) not null default 0;
+alter table zone add column `snow_duration3` int(4) not null default 0;
+alter table zone add column `snow_duration4` int(4) not null default 0;

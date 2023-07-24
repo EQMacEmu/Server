@@ -1,0 +1,1 @@
+alter table npc_types add column `ignore_distance` float(0) not null default 600;

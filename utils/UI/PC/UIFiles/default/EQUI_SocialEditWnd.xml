@@ -1,0 +1,833 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="SEW_NameInputLabel">
+		<ScreenID>SEW_NameInputLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>212</TopAnchorOffset>
+		<RightAnchorOffset>95</RightAnchorOffset>
+		<BottomAnchorOffset>192</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Text>Social Name:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "SEW_NameInput">
+		<ScreenID>SEW_NameInput</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>195</TopAnchorOffset>
+		<RightAnchorOffset>95</RightAnchorOffset>
+		<BottomAnchorOffset>175</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<TooltipReference>Enter a name for this social here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "SEW_TC0Button">
+		<ScreenID>SEW_TC0Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>240</R>
+				<G>240</G>
+				<B>240</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC1Button">
+		<ScreenID>SEW_TC1Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>124</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>240</R>
+				<G>180</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC2Button">
+		<ScreenID>SEW_TC2Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>148</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>128</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC3Button">
+		<ScreenID>SEW_TC3Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>172</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>180</R>
+				<G>100</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC4Button">
+		<ScreenID>SEW_TC4Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>196</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>0</G>
+				<B>128</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC5Button">
+		<ScreenID>SEW_TC5Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>220</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>240</R>
+				<G>0</G>
+				<B>240</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC6Button">
+		<ScreenID>SEW_TC6Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>244</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>128</R>
+				<G>128</G>
+				<B>128</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC7Button">
+		<ScreenID>SEW_TC7Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>268</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>224</R>
+				<G>224</G>
+				<B>224</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC8Button">
+		<ScreenID>SEW_TC8Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>292</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>130</R>
+				<G>130</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC9Button">
+		<ScreenID>SEW_TC9Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>316</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>96</R>
+				<G>96</G>
+				<B>96</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC10Button">
+		<ScreenID>SEW_TC10Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>0</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC11Button">
+		<ScreenID>SEW_TC11Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>124</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>140</R>
+				<G>0</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC12Button">
+		<ScreenID>SEW_TC12Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>148</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>160</R>
+				<G>160</G>
+				<B>160</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC13Button">
+		<ScreenID>SEW_TC13Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>172</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>240</R>
+				<G>0</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC14Button">
+		<ScreenID>SEW_TC14Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>196</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>240</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC15Button">
+		<ScreenID>SEW_TC15Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>220</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>240</R>
+				<G>240</G>
+				<B>0</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC16Button">
+		<ScreenID>SEW_TC16Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>244</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>0</G>
+				<B>240</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC17Button">
+		<ScreenID>SEW_TC17Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>268</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>100</G>
+				<B>240</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC18Button">
+		<ScreenID>SEW_TC18Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>292</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>0</R>
+				<G>240</G>
+				<B>240</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SEW_TC19Button">
+		<ScreenID>SEW_TC19Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>316</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>20</CX>
+			<CY>20</CY>
+		</Size>
+		<TooltipReference>Choose a color for this social name</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>A</Text>
+		<TextColor>
+				<R>128</R>
+				<G>0</G>
+				<B>128</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+
+
+	<Editbox item = "SEW_Line0Input">
+		<ScreenID>SEW_Line0Input</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>155</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>135</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter first command here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Editbox item = "SEW_Line1Input">
+		<ScreenID>SEW_Line1Input</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>130</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>110</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter second command here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Editbox item = "SEW_Line2Input">
+		<ScreenID>SEW_Line2Input</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>105</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>85</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter third command here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Editbox item = "SEW_Line3Input">
+		<ScreenID>SEW_Line3Input</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>80</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter fourth command here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Editbox item = "SEW_Line4Input">
+		<ScreenID>SEW_Line4Input</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TooltipReference>Enter fifth command here</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+
+	<Button item = "SEW_Clear_Button">
+		<ScreenID>SEW_Clear_Button</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>28</TopAnchorOffset>
+		<RightAnchorOffset>69</RightAnchorOffset>
+		<BottomAnchorOffset>8</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Clear all commands</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Clear</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Button item = "SEW_Accept_Button">
+		<ScreenID>SEW_Accept_Button</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>69</LeftAnchorOffset>
+		<TopAnchorOffset>28</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>8</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Accept your changes</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Accept</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Screen item = "SocialEditWnd">
+		<!--<ScreenID/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>355</CX>
+			<CY>240</CY>
+		</Size>
+		<Text>Edit Social</Text>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>SEW_NameInputLabel</Pieces>
+		<Pieces>SEW_NameInput</Pieces>
+		<Pieces>SEW_TC0Button</Pieces>
+		<Pieces>SEW_TC1Button</Pieces>
+		<Pieces>SEW_TC2Button</Pieces>
+		<Pieces>SEW_TC3Button</Pieces>
+		<Pieces>SEW_TC4Button</Pieces>
+		<Pieces>SEW_TC5Button</Pieces>
+		<Pieces>SEW_TC6Button</Pieces>
+		<Pieces>SEW_TC7Button</Pieces>
+		<Pieces>SEW_TC8Button</Pieces>
+		<Pieces>SEW_TC9Button</Pieces>
+		<Pieces>SEW_TC10Button</Pieces>
+		<Pieces>SEW_TC11Button</Pieces>
+		<Pieces>SEW_TC12Button</Pieces>
+		<Pieces>SEW_TC13Button</Pieces>
+		<Pieces>SEW_TC14Button</Pieces>
+		<Pieces>SEW_TC15Button</Pieces>
+		<Pieces>SEW_TC16Button</Pieces>
+		<Pieces>SEW_TC17Button</Pieces>
+		<Pieces>SEW_TC18Button</Pieces>
+		<Pieces>SEW_TC19Button</Pieces>
+		<Pieces>SEW_Line0Input</Pieces>
+		<Pieces>SEW_Line1Input</Pieces>
+		<Pieces>SEW_Line2Input</Pieces>
+		<Pieces>SEW_Line3Input</Pieces>
+		<Pieces>SEW_Line4Input</Pieces>
+		<Pieces>SEW_Clear_Button</Pieces>
+		<Pieces>SEW_Accept_Button</Pieces>
+	</Screen>
+
+</XML>

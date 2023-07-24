@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<XML ID="EQInterfaceDefinitionLanguage">
+  <Schema xmlns="EverQuestData" xmlns:dt="EverQuestDataTypes" />
+  <Button item="MTW_JoinAtIntersectButton">
+    <ScreenID>MTW_JoinAtIntersectButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>105</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Style_Checkbox>false</Style_Checkbox>
+    <Text>Join At Intersect</Text>
+    <TooltipReference>Find the intersection point of two selected lines and extend the lines to meet at that point. Holding Control down when clicking this button will adjust only the first selected line.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_StartLineButton">
+    <ScreenID>MTW_StartLineButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>5</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Start Line</Text>
+    <TooltipReference>Set down a point where your character is standing. Press the End Line button to finish the line.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_EndLineButton">
+    <ScreenID>MTW_EndLineButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>25</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>End Line</Text>
+    <TooltipReference>Set down a point where your character is standing, and end the line. </TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_RemoveLineButton">
+    <ScreenID>MTW_RemoveLineButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>65</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Remove Line</Text>
+    <TooltipReference>Cut out the currently highlighted map line.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_AddPointButton">
+    <ScreenID>MTW_AddPointButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>45</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Add Point</Text>
+    <TooltipReference>Add a point onto the current map where your character is standing.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_AutoMapButton">
+    <ScreenID>MTW_AutoMapButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>131</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Style_Checkbox>true</Style_Checkbox>
+    <Text>Auto Map</Text>
+    <TooltipReference>Adds points to a line when you change direction.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_SetCurrentColorButton">
+    <ScreenID>MTW_SetCurrentColorButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>241</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Set Current Color</Text>
+    <TooltipReference>Set the color that we will draw the next map line in.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+    <Font>2</Font>
+  </Button>
+  <Button item="MTW_ChangeLineColorButton">
+    <ScreenID>MTW_ChangeLineColorButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>85</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Set Line Color</Text>
+    <TooltipReference>Change the current color of the highlighted map line.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+    <Font>3</Font>
+  </Button>
+  <Button item="MTW_AddLabelButton">
+    <ScreenID>MTW_AddLabelButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>156</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Add Label</Text>
+    <TooltipReference>Add a text label to the map.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_EditLabelButton">
+    <ScreenID>MTW_EditLabelButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>176</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Edit Label</Text>
+    <TooltipReference>Change the text of the selected map label.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_MoveLabelToMeButton">
+    <ScreenID>MTW_MoveLabelToMeButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>196</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text> Move Label To Me</Text>
+    <TooltipReference>Move the selected map label to your current location.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+    <Font>2</Font>
+  </Button>
+  <Button item="MTW_RemoveLabelButton">
+    <ScreenID>MTW_RemoveLabelButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>216</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Remove Label</Text>
+    <TooltipReference>Remove the highlighted text label from the map</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_ClearMapButton">
+    <ScreenID>MTW_ClearMapButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>266</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Clear Map</Text>
+    <TooltipReference>Clear all the lines and labels from the entire map.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Button item="MTW_ClearLayerButton">
+    <ScreenID>MTW_ClearLayerButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>286</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Clear Active Layer</Text>
+    <TooltipReference>Clear the current layer.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+    <Font>2</Font>
+  </Button>
+  <Button item="MTW_SaveMapButton">
+    <ScreenID>MTW_SaveMapButton</ScreenID>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>2</X>
+      <Y>311</Y>
+    </Location>
+    <Size>
+      <CX>100</CX>
+      <CY>20</CY>
+    </Size>
+    <Style_VScroll>false</Style_VScroll>
+    <Style_HScroll>false</Style_HScroll>
+    <Style_Transparent>false</Style_Transparent>
+    <Text>Save Map</Text>
+    <TooltipReference>Save the map to a file.</TooltipReference>
+    <TextColor>
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </TextColor>
+    <ButtonDrawTemplate>
+      <Normal>A_BtnNormal</Normal>
+      <Pressed>A_BtnPressed</Pressed>
+      <Flyby>A_BtnFlyby</Flyby>
+      <Disabled>A_BtnDisabled</Disabled>
+      <PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+    </ButtonDrawTemplate>
+  </Button>
+  <Screen item="MapToolbarWnd">
+    <!--<ScreenID/>-->
+    <RelativePosition>false</RelativePosition>
+    <Location>
+      <X>0</X>
+      <Y>0</Y>
+    </Location>
+    <Size>
+      <CX>112</CX>
+      <CY>356</CY>
+    </Size>
+    <Text>Map Toolbar</Text>
+    <DrawTemplate>WDT_Rounded</DrawTemplate>
+    <Style_Titlebar>true</Style_Titlebar>
+    <Style_Closebox>true</Style_Closebox>
+    <Style_Minimizebox>false</Style_Minimizebox>
+    <Style_Border>true</Style_Border>
+    <Style_Sizable>false</Style_Sizable>
+    <Pieces>MTW_StartLineButton</Pieces>
+    <Pieces>MTW_EndLineButton</Pieces>
+    <Pieces>MTW_RemoveLineButton</Pieces>
+    <Pieces>MTW_AddPointButton</Pieces>
+    <Pieces>MTW_AutoMapButton</Pieces>
+    <Pieces>MTW_SetCurrentColorButton</Pieces>
+    <Pieces>MTW_ChangeLineColorButton</Pieces>
+    <Pieces>MTW_AddLabelButton</Pieces>
+    <Pieces>MTW_EditLabelButton</Pieces>
+    <Pieces>MTW_MoveLabelToMeButton</Pieces>
+    <Pieces>MTW_RemoveLabelButton</Pieces>
+    <Pieces>MTW_ClearMapButton</Pieces>
+    <Pieces>MTW_ClearLayerButton</Pieces>
+    <Pieces>MTW_SaveMapButton</Pieces>
+    <Pieces>MTW_JoinAtIntersectButton</Pieces>
+  </Screen>
+</XML>

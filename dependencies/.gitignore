@@ -1,0 +1,13 @@
+boost/
+luaj_x86/
+luaj_x64/
+mysql_x86/
+mysql_x64/
+zlib_x86/
+zlib_x64/
+cyassl/
+websocketpp/
+curl_x86/
+curl_x64/
+libsodium/
+openssl_x64/

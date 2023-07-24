@@ -1,0 +1,397 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+<!-- Buttons -->
+	<Button item = "SERVERSELECT_NewsButton">
+		<ScreenID>NewsButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>40</X>
+			<Y>390</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>See the latest news</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>NEWS</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_ExitButton">
+		<ScreenID>ExitButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>40</X>
+			<Y>425</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Return to the login menu</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>LOGOUT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_ChatButton">
+		<ScreenID>ChatButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>390</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Enter chat</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>CHAT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_CreditsButton">
+		<ScreenID>CreditsButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>425</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>View the credits</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>CREDITS</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_PlayButton">
+		<ScreenID>PlayButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>378</X>
+			<Y>390</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Start the game!</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>PLAY EVERQUEST!</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_PlayLastServerButton">
+		<ScreenID>PlayLastServerButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>378</X>
+			<Y>425</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Start the game!</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "SERVERSELECT_OrderExpansionButton">
+		<ScreenID>OrderExpansionButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>40</X>
+			<Y>342</Y>
+		</Location>
+		<Size>
+			<CX>115</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Order a recent expansion</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Order</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- End of buttons -->
+
+<!-- Labels -->
+	<Label item = "SERVERSELECT_ExpansionsLabel">
+		<ScreenID>ExpansionsLabel</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>3000</CX>
+			<CY>31</CY>
+		</Size>
+		<Text></Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<!-- Put the Label in a window so we can have a background -->
+	<Screen item = "SERVERSELECT_ExpansionsWindow">
+		<ScreenID>ExpansionsWindow</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>160</X>
+			<Y>342</Y>
+		</Location>
+		<Size>
+			<CX>440</CX>
+			<CY>36</CY>
+		</Size>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>SERVERSELECT_ExpansionsLabel</Pieces>
+	</Screen>
+	<Label item = "SERVERSELECT_ServerListLabel">
+		<ScreenID>ServerListLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>SERVER SELECT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item = "SERVERSELECT_LastServerLabel">
+		<ScreenID>LastServerLabel</ScreenID>
+		<Font>2</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>280</X>
+			<Y>428</Y>
+		</Location>
+		<Size>
+			<CX>94</CX>
+			<CY>40</CY>
+		</Size>
+		<Text>QUICK CONNECT TO LAST SERVER</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+<!-- End of Labels -->
+
+<!-- Server list -->
+	<Listbox item = "SERVERSELECT_ServerList">
+		<ScreenID>ServerList</ScreenID>
+		<Font>4</Font>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>40</RightAnchorOffset>
+		<BottomAnchorOffset>140</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+
+		<Style_Border>true</Style_Border>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>400</Width>
+			<Heading>Server:</Heading>
+		</Columns>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Status:</Heading>
+		</Columns>
+	</Listbox>
+
+	<!-- Put the Label in a window so we can have a background -->
+	<Screen item = "SERVERSELECT_ServerListBackground">
+		<ScreenID>ServerListBackground</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>45</LeftAnchorOffset>
+		<TopAnchorOffset>75</TopAnchorOffset>
+		<RightAnchorOffset>45</RightAnchorOffset>
+		<BottomAnchorOffset>145</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Text></Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+	</Screen>
+<!-- End of server list -->
+
+
+
+	<Screen item = "serverselect">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text>Server Select</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_AltBG01</Pieces>
+		<Pieces>EQLS_AltBG02</Pieces>
+		<Pieces>EQLS_AltBG03</Pieces>
+		<Pieces>EQLS_AltBG04</Pieces>
+		<Pieces>EQLS_AltBG05</Pieces>
+		<Pieces>EQLS_AltBG06</Pieces>
+		<Pieces>SERVERSELECT_NewsButton</Pieces>
+		<Pieces>SERVERSELECT_ExitButton</Pieces>
+		<Pieces>SERVERSELECT_ChatButton</Pieces>
+		<Pieces>SERVERSELECT_CreditsButton</Pieces>
+		<Pieces>SERVERSELECT_PlayButton</Pieces>
+		<Pieces>SERVERSELECT_OrderExpansionButton</Pieces>
+		<Pieces>SERVERSELECT_ExpansionsWindow</Pieces>
+		<Pieces>SERVERSELECT_ServerListBackground</Pieces>
+		<Pieces>SERVERSELECT_ServerList</Pieces>
+		<Pieces>SERVERSELECT_ServerListLabel</Pieces>
+		<Pieces>SERVERSELECT_LastServerLabel</Pieces>
+		<Pieces>SERVERSELECT_PlayLastServerButton</Pieces>
+	</Screen>
+
+</XML>

@@ -1,0 +1,57 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Listbox item = "SKSW_SkillSelectorList">
+		<ScreenID>SKSW_SkillSelectorList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>200</Width>
+			<Heading>Skill Name</Heading>
+		</Columns>
+		<!--Columns>
+			<Width>85</Width>
+			<Heading>Rank</Heading>
+		</Columns>
+		<Columns>
+			<Width>50</Width>
+			<Heading>Value</Heading>
+		</Columns-->
+	</Listbox>
+
+	<Screen item = "SkillsSelectWindow">
+		<!--<ScreenID/>-->
+		<!--<Font/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>400</X>
+			<Y>250</Y>
+		</Location>
+		<Size>
+			<CX>200</CX>
+			<CY>240</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Text>Choose a skill</Text>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>SKSW_SkillSelectorList</Pieces>
+	</Screen>
+
+</XML>

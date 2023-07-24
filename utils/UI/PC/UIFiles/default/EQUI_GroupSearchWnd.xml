@@ -1,0 +1,3027 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<!-- ************ Player Info Page ************ -->
+
+	<!-- Player Info Label -->
+	<Label item ="PIP_PlayerInfoLabel">
+		<ScreenID>PIP_PlayerInfoLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<!-- Search Comments -->
+	<Label item ="PIP_CommentsLabel">
+		<ScreenID>PIP_CommentsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>37</TopAnchorOffset>
+		<BottomAnchorOffset>55</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>80</RightAnchorOffset>
+
+		<Text>Comments:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+	<Editbox item = "PIP_CommentsEditbox">
+		<ScreenID>PIP_CommentsEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>35</TopAnchorOffset>
+		<BottomAnchorOffset>55</BottomAnchorOffset>
+		<LeftAnchorOffset>85</LeftAnchorOffset>
+		<RightAnchorOffset>200</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<!-- Additional filters -->
+	<Button item = "PIP_AdditionalFiltersButton">
+		<ScreenID>PIP_AdditionalFiltersButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>37</TopAnchorOffset>
+		<BottomAnchorOffset>57</BottomAnchorOffset>
+		<LeftAnchorOffset>150</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Additional Filters...</Text>
+		<TooltipReference>Set extra rules to help trim out group results that you don't want.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Group level range -->
+	<Label item ="PIP_LevelRangeLabel">
+		<ScreenID>PIP_LevelRangeLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+
+		<Text>Want group levels:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "PIP_LevelRangeMinEditbox">
+		<ScreenID>PIP_LevelRangeMinEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<RightAnchorOffset>160</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="PIP_LevelRangeSeparatorLabel">
+		<ScreenID>PIP_LevelRangeSeparatorLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>161</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "PIP_LevelRangeMaxEditbox">
+		<ScreenID>PIP_LevelRangeMaxEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>175</LeftAnchorOffset>
+		<RightAnchorOffset>205</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+
+	<!-- Update LFG status buttons -->
+	<Button item = "PIP_PostMyInfoButton">
+		<ScreenID>PIP_PostMyInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFG on</Text>
+		<TooltipReference>Submit your information so groups seeking players may see it.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "PIP_UpdateMyInfoButton">
+		<ScreenID>PIP_UpdateMyInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- This button should have the same position/size as PIP_PostMyInfoButton -->
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Update Info</Text>
+		<TooltipReference>Update the information you currently have listed for groups seeking players.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "PIP_RemoveMyInfoButton">
+		<ScreenID>PIP_RemoveMyInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFG off</Text>
+		<TooltipReference>Remove your listed information so players seeking groups may no longer see it.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Page for setting player info -->
+	<Page item = "PlayerInfoPage">
+		<ScreenID>PlayerInfoPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab box -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Player Looking For A Group</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>PIP_PlayerInfoLabel</Pieces>
+			<Pieces>PIP_CommentsLabel</Pieces>
+			<Pieces>PIP_CommentsEditbox</Pieces>
+			<Pieces>PIP_AdditionalFiltersButton</Pieces>
+			<Pieces>PIP_LevelRangeLabel</Pieces>
+			<Pieces>PIP_LevelRangeMinEditbox</Pieces>
+			<Pieces>PIP_LevelRangeSeparatorLabel</Pieces>
+			<Pieces>PIP_LevelRangeMaxEditbox</Pieces>
+
+			<Pieces>PIP_UpdateMyInfoButton</Pieces>
+			<Pieces>PIP_PostMyInfoButton</Pieces>
+			<Pieces>PIP_RemoveMyInfoButton</Pieces>
+	</Page>
+
+	<!-- ************ Group Info Page ************ -->
+
+	<!-- Player Info Label -->
+	<Label item ="GIP_GroupInfoLabel">
+		<ScreenID>GIP_GroupInfoLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<!-- Search Comments -->
+	<Label item ="GIP_CommentsLabel">
+		<ScreenID>GIP_CommentsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>37</TopAnchorOffset>
+		<BottomAnchorOffset>57</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>80</RightAnchorOffset>
+
+		<Text>Comments:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+	<Editbox item = "GIP_CommentsEditbox">
+		<ScreenID>GIP_CommentsEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>35</TopAnchorOffset>
+		<BottomAnchorOffset>55</BottomAnchorOffset>
+		<LeftAnchorOffset>85</LeftAnchorOffset>
+		<RightAnchorOffset>200</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<!-- Additional filters -->
+	<Button item = "GIP_AdditionalFiltersButton">
+		<ScreenID>GIP_AdditionalFiltersButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>37</TopAnchorOffset>
+		<BottomAnchorOffset>57</BottomAnchorOffset>
+		<LeftAnchorOffset>150</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Additional Filters...</Text>
+		<TooltipReference>Set extra rules to help trim out player results that you don't want.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Group Roles -->
+	<Label item ="GIP_LookingForRolesLabel">
+		<ScreenID>GIP_LookingForRolesLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>64</TopAnchorOffset>
+		<BottomAnchorOffset>84</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+
+		<Text>Want classes:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+	<Button item= "GIP_BstCheckbox">
+		<ScreenID>GIP_BstCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<RightAnchorOffset>132</RightAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<BottomAnchorOffset>82</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_ClrCheckbox">
+		<ScreenID>GIP_ClrCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<RightAnchorOffset>132</RightAnchorOffset>
+		<TopAnchorOffset>86</TopAnchorOffset>
+		<BottomAnchorOffset>98</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_DruCheckbox">
+		<ScreenID>GIP_DruCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<RightAnchorOffset>132</RightAnchorOffset>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_ShmCheckbox">
+		<ScreenID>GIP_ShmCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>120</LeftAnchorOffset>
+		<RightAnchorOffset>132</RightAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_EncCheckbox">
+		<ScreenID>GIP_EncCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>200</LeftAnchorOffset>
+		<RightAnchorOffset>212</RightAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<BottomAnchorOffset>82</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_MagCheckbox">
+		<ScreenID>GIP_MagCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>200</LeftAnchorOffset>
+		<RightAnchorOffset>212</RightAnchorOffset>
+		<TopAnchorOffset>86</TopAnchorOffset>
+		<BottomAnchorOffset>98</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_NecCheckbox">
+		<ScreenID>GIP_NecCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>200</LeftAnchorOffset>
+		<RightAnchorOffset>212</RightAnchorOffset>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_WizCheckbox">
+		<ScreenID>GIP_WizCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>200</LeftAnchorOffset>
+		<RightAnchorOffset>212</RightAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_BerCheckbox">
+		<ScreenID>GIP_BerCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>280</LeftAnchorOffset>
+		<RightAnchorOffset>292</RightAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<BottomAnchorOffset>82</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_MnkCheckbox">
+		<ScreenID>GIP_MnkCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>280</LeftAnchorOffset>
+		<RightAnchorOffset>292</RightAnchorOffset>
+		<TopAnchorOffset>86</TopAnchorOffset>
+		<BottomAnchorOffset>98</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_RogCheckbox">
+		<ScreenID>GIP_RogCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>280</LeftAnchorOffset>
+		<RightAnchorOffset>292</RightAnchorOffset>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_WarCheckbox">
+		<ScreenID>GIP_WarCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>280</LeftAnchorOffset>
+		<RightAnchorOffset>292</RightAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_BrdCheckbox">
+		<ScreenID>GIP_BrdCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>360</LeftAnchorOffset>
+		<RightAnchorOffset>372</RightAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<BottomAnchorOffset>82</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_PalCheckbox">
+		<ScreenID>GIP_PalCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>360</LeftAnchorOffset>
+		<RightAnchorOffset>372</RightAnchorOffset>
+		<TopAnchorOffset>86</TopAnchorOffset>
+		<BottomAnchorOffset>98</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_RanCheckbox">
+		<ScreenID>GIP_RanCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>360</LeftAnchorOffset>
+		<RightAnchorOffset>372</RightAnchorOffset>
+		<TopAnchorOffset>102</TopAnchorOffset>
+		<BottomAnchorOffset>114</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item= "GIP_ShdCheckbox">
+		<ScreenID>GIP_ShdCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>360</LeftAnchorOffset>
+		<RightAnchorOffset>372</RightAnchorOffset>
+		<TopAnchorOffset>118</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GIP_BstLabel">
+		<ScreenID>GIP_BstLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>135</LeftAnchorOffset>
+		<RightAnchorOffset>195</RightAnchorOffset>
+		<TopAnchorOffset>68</TopAnchorOffset>
+		<BottomAnchorOffset>80</BottomAnchorOffset>
+
+		<Text>BST</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_ClrLabel">
+		<ScreenID>GIP_ClrLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>135</LeftAnchorOffset>
+		<RightAnchorOffset>195</RightAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<BottomAnchorOffset>96</BottomAnchorOffset>
+
+		<Text>CLR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_DruLabel">
+		<ScreenID>GIP_DruLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>135</LeftAnchorOffset>
+		<RightAnchorOffset>195</RightAnchorOffset>
+		<TopAnchorOffset>100</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+
+		<Text>DRU</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_ShmLabel">
+		<ScreenID>GIP_ShmLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>135</LeftAnchorOffset>
+		<RightAnchorOffset>195</RightAnchorOffset>
+		<TopAnchorOffset>116</TopAnchorOffset>
+		<BottomAnchorOffset>128</BottomAnchorOffset>
+
+		<Text>SHM</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_EncLabel">
+		<ScreenID>GIP_EncLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>215</LeftAnchorOffset>
+		<RightAnchorOffset>275</RightAnchorOffset>
+		<TopAnchorOffset>68</TopAnchorOffset>
+		<BottomAnchorOffset>80</BottomAnchorOffset>
+
+		<Text>ENC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_MagLabel">
+		<ScreenID>GIP_MagLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>215</LeftAnchorOffset>
+		<RightAnchorOffset>275</RightAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<BottomAnchorOffset>96</BottomAnchorOffset>
+
+		<Text>MAG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_NecLabel">
+		<ScreenID>GIP_NecLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>215</LeftAnchorOffset>
+		<RightAnchorOffset>275</RightAnchorOffset>
+		<TopAnchorOffset>100</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+
+		<Text>NEC</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_WizLabel">
+		<ScreenID>GIP_WizLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>215</LeftAnchorOffset>
+		<RightAnchorOffset>275</RightAnchorOffset>
+		<TopAnchorOffset>116</TopAnchorOffset>
+		<BottomAnchorOffset>128</BottomAnchorOffset>
+
+		<Text>WIZ</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_BerLabel">
+		<ScreenID>GIP_BerLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>295</LeftAnchorOffset>
+		<RightAnchorOffset>355</RightAnchorOffset>
+		<TopAnchorOffset>68</TopAnchorOffset>
+		<BottomAnchorOffset>80</BottomAnchorOffset>
+
+		<Text>BER</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_MnkLabel">
+		<ScreenID>GIP_MnkLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>295</LeftAnchorOffset>
+		<RightAnchorOffset>355</RightAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<BottomAnchorOffset>96</BottomAnchorOffset>
+
+		<Text>MNK</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_RogLabel">
+		<ScreenID>GIP_RogLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>295</LeftAnchorOffset>
+		<RightAnchorOffset>355</RightAnchorOffset>
+		<TopAnchorOffset>100</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+
+		<Text>ROG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_WarLabel">
+		<ScreenID>GIP_WarLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>295</LeftAnchorOffset>
+		<RightAnchorOffset>355</RightAnchorOffset>
+		<TopAnchorOffset>116</TopAnchorOffset>
+		<BottomAnchorOffset>128</BottomAnchorOffset>
+
+		<Text>WAR</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_BrdLabel">
+		<ScreenID>GIP_BrdLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>375</LeftAnchorOffset>
+		<RightAnchorOffset>435</RightAnchorOffset>
+		<TopAnchorOffset>68</TopAnchorOffset>
+		<BottomAnchorOffset>80</BottomAnchorOffset>
+
+		<Text>BRD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_PalLabel">
+		<ScreenID>GIP_PalLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>375</LeftAnchorOffset>
+		<RightAnchorOffset>435</RightAnchorOffset>
+		<TopAnchorOffset>84</TopAnchorOffset>
+		<BottomAnchorOffset>96</BottomAnchorOffset>
+
+		<Text>PAL</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_RanLabel">
+		<ScreenID>GIP_RanLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>375</LeftAnchorOffset>
+		<RightAnchorOffset>435</RightAnchorOffset>
+		<TopAnchorOffset>100</TopAnchorOffset>
+		<BottomAnchorOffset>112</BottomAnchorOffset>
+
+		<Text>RNG</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GIP_ShdLabel">
+		<ScreenID>GIP_ShdLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>375</LeftAnchorOffset>
+		<RightAnchorOffset>435</RightAnchorOffset>
+		<TopAnchorOffset>116</TopAnchorOffset>
+		<BottomAnchorOffset>128</BottomAnchorOffset>
+
+		<Text>SHD</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "GIP_SelectAllRolesButton">
+		<ScreenID>GIP_SelectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>110</RightAnchorOffset>
+		<TopAnchorOffset>87</TopAnchorOffset>
+		<BottomAnchorOffset>107</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Select All</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GIP_DeselectAllRolesButton">
+		<ScreenID>GIP_DeselectAllRolesButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>110</RightAnchorOffset>
+		<TopAnchorOffset>110</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Select None</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GIP_LevelRangeLabel">
+		<ScreenID>GIP_LevelRangeLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+
+		<Text>Want player levels:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GIP_LevelRangeMinEditbox">
+		<ScreenID>GIP_LevelRangeMinEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<RightAnchorOffset>160</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="GIP_LevelRangeSeparatorLabel">
+		<ScreenID>GIP_LevelRangeSeparatorLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>161</LeftAnchorOffset>
+		<RightAnchorOffset>175</RightAnchorOffset>
+
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item = "GIP_LevelRangeMaxEditbox">
+		<ScreenID>GIP_LevelRangeMaxEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>140</TopAnchorOffset>
+		<BottomAnchorOffset>160</BottomAnchorOffset>
+		<LeftAnchorOffset>175</LeftAnchorOffset>
+		<RightAnchorOffset>205</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<!-- Update info so other players can see -->
+	<Button item = "GIP_PostOurInfoButton">
+		<ScreenID>GIP_PostOurInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFP on</Text>
+		<TooltipReference>Submit your group's information so players seeking groups may see it.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GIP_UpdateOurInfoButton">
+		<ScreenID>GIP_UpdateOurInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- This button should have the same position/size as GIP_PostMyInfoButton -->
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>220</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Update Info</Text>
+		<TooltipReference>Update the information you have listed for players seeking groups.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GIP_RemoveOurInfoButton">
+		<ScreenID>GIP_RemoveOurInfoButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<TopAnchorOffset>142</TopAnchorOffset>
+		<BottomAnchorOffset>162</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>LFP off</Text>
+		<TooltipReference>Remove your listed information so players seeking groups may no longer see it.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Page for setting group info -->
+	<Page item = "GroupInfoPage">
+		<ScreenID>GroupInfoPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab box -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Group Looking For Players</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>GIP_GroupInfoLabel</Pieces>
+			
+			<Pieces>GIP_CommentsLabel</Pieces>
+			<Pieces>GIP_CommentsEditbox</Pieces>
+			<Pieces>GIP_AdditionalFiltersButton</Pieces>
+			
+			<Pieces>GIP_LookingForRolesLabel</Pieces>
+
+			<Pieces>GIP_BstCheckbox</Pieces>
+			<Pieces>GIP_ClrCheckbox</Pieces>
+			<Pieces>GIP_DruCheckbox</Pieces>
+			<Pieces>GIP_ShmCheckbox</Pieces>
+			<Pieces>GIP_EncCheckbox</Pieces>
+			<Pieces>GIP_MagCheckbox</Pieces>
+			<Pieces>GIP_NecCheckbox</Pieces>
+			<Pieces>GIP_WizCheckbox</Pieces>
+			<Pieces>GIP_BerCheckbox</Pieces>
+			<Pieces>GIP_MnkCheckbox</Pieces>
+			<Pieces>GIP_RogCheckbox</Pieces>
+			<Pieces>GIP_WarCheckbox</Pieces>
+			<Pieces>GIP_BrdCheckbox</Pieces>
+			<Pieces>GIP_PalCheckbox</Pieces>
+			<Pieces>GIP_RanCheckbox</Pieces>
+			<Pieces>GIP_ShdCheckbox</Pieces>
+
+			<Pieces>GIP_BstLabel</Pieces>
+			<Pieces>GIP_ClrLabel</Pieces>
+			<Pieces>GIP_DruLabel</Pieces>
+			<Pieces>GIP_ShmLabel</Pieces>
+			<Pieces>GIP_EncLabel</Pieces>
+			<Pieces>GIP_MagLabel</Pieces>
+			<Pieces>GIP_NecLabel</Pieces>
+			<Pieces>GIP_WizLabel</Pieces>
+			<Pieces>GIP_MnkLabel</Pieces>
+			<Pieces>GIP_RogLabel</Pieces>
+			<Pieces>GIP_WarLabel</Pieces>
+			<Pieces>GIP_BerLabel</Pieces>
+			<Pieces>GIP_BrdLabel</Pieces>
+			<Pieces>GIP_PalLabel</Pieces>
+			<Pieces>GIP_RanLabel</Pieces>
+			<Pieces>GIP_ShdLabel</Pieces>
+
+			<Pieces>GIP_LevelRangeLabel</Pieces>
+			<Pieces>GIP_LevelRangeMinEditbox</Pieces>
+			<Pieces>GIP_LevelRangeSeparatorLabel</Pieces>
+			<Pieces>GIP_LevelRangeMaxEditbox</Pieces>
+
+			<Pieces>GIP_UpdateOurInfoButton</Pieces>
+			<Pieces>GIP_PostOurInfoButton</Pieces>
+			<Pieces>GIP_RemoveOurInfoButton</Pieces>
+
+			<Pieces>GIP_SelectAllRolesButton</Pieces>
+			<Pieces>GIP_DeselectAllRolesButton</Pieces>
+	</Page>
+
+	<!-- ************ Tab Window which contains info settings ************ -->
+
+	<!-- Tabbed subwindows for different search screens -->
+	<TabBox item = "GSW_InfoPages">
+		<ScreenID>GSW_InfoPages</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>220</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+			<Pages>PlayerInfoPage</Pages>
+			<Pages>GroupInfoPage</Pages>
+	</TabBox>
+
+	<!-- ************ Tab Window which contains search results ************ -->
+
+	<!-- Search results -->
+	<Label item = "PLP_NumSearchResultsLabel">
+		<ScreenID>PLP_NumSearchResultsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "PLP_PlayerSearchResultList">
+		<ScreenID>PLP_PlayerSearchResultList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>35</BottomAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Level</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Class</Heading>
+		</Columns>
+		<Columns>
+			<Width>80</Width>
+			<Heading>Zone</Heading>
+		</Columns>
+		<Columns>
+			<Width>400</Width>
+			<Heading>Comments</Heading>
+		</Columns>
+	</Listbox>
+
+	<!-- Update the search list -->
+	<Button item= "PLP_ShowMatchesCheckbox">
+		<ScreenID>PLP_ShowMatchesCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>21</TopAnchorOffset>
+		<BottomAnchorOffset>9</BottomAnchorOffset>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<RadioGroup>FilterPlayerMatches</RadioGroup>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="PLP_ShowMatchesLabel">
+		<ScreenID>PLP_ShowMatchesLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>23</TopAnchorOffset>
+		<BottomAnchorOffset>11</BottomAnchorOffset>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>135</RightAnchorOffset>
+
+		<Text>Show Matches</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item= "PLP_ShowAllCheckbox">
+		<ScreenID>PLP_ShowAllCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>21</TopAnchorOffset>
+		<BottomAnchorOffset>9</BottomAnchorOffset>
+		<LeftAnchorOffset>140</LeftAnchorOffset>
+		<RightAnchorOffset>152</RightAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<RadioGroup>FilterPlayerMatches</RadioGroup>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="PLP_ShowAllLabel">
+		<ScreenID>PLP_ShowAllLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>23</TopAnchorOffset>
+		<BottomAnchorOffset>11</BottomAnchorOffset>
+		<LeftAnchorOffset>155</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+
+		<Text>Show All</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "PLP_RefreshPlayerButton">
+		<ScreenID>PLP_RefreshPlayerButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Get Matches</Text>
+		<TooltipReference>This button updates your search result list with the latest information.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Page for getting LFG players -->
+	<Page item = "PlayerListPage">
+		<ScreenID>PlayerListPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab box -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Players Looking For A Group</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>PLP_NumSearchResultsLabel</Pieces>
+			<Pieces>PLP_PlayerSearchResultList</Pieces>
+			
+			<Pieces>PLP_ShowMatchesCheckbox</Pieces>
+			<Pieces>PLP_ShowMatchesLabel</Pieces>
+			<Pieces>PLP_ShowAllCheckbox</Pieces>
+			<Pieces>PLP_ShowAllLabel</Pieces>
+
+			<Pieces>PLP_RefreshPlayerButton</Pieces>
+	</Page>
+
+
+	<!-- Search results -->
+	<Label item = "GLP_NumSearchResultsLabel">
+		<ScreenID>GLP_NumSearchResultsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "GLP_PlayerSearchResultList">
+		<ScreenID>GLP_PlayerSearchResultList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>172</BottomAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Group Leader</Heading>
+		</Columns>
+		<Columns>
+			<Width>20</Width>
+			<Heading>#</Heading>
+		</Columns>
+		<Columns>
+			<Width>40</Width>
+			<Heading>Level</Heading>
+		</Columns>
+		<Columns>
+			<Width>80</Width>
+			<Heading>Zone</Heading>
+		</Columns>
+		<Columns>
+			<Width>400</Width>
+			<Heading>Comments</Heading>
+		</Columns>
+	</Listbox>
+
+	<Listbox item = "GLP_GroupDetailList">
+		<ScreenID>GLP_GroupDetailList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>171</TopAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>150</Width>
+			<Heading>Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>150</Width>
+			<Heading>Class</Heading>
+		</Columns>
+		<Columns>
+			<Width>400</Width>
+			<Heading>Level</Heading>
+		</Columns>
+	</Listbox>
+
+	<Listbox item = "GLP_ClassesWantedList">
+		<ScreenID>GLP_ClassesWantedList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>59</TopAnchorOffset>
+		<BottomAnchorOffset>34</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+
+		<Columns>
+			<Width>400</Width>
+			<Heading>Desired Classes</Heading>
+		</Columns>
+
+	</Listbox>
+
+	<!-- Update the search list -->
+	<Button item= "GLP_ShowMatchesCheckbox">
+		<ScreenID>GLP_ShowMatchesCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>21</TopAnchorOffset>
+		<BottomAnchorOffset>9</BottomAnchorOffset>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<RadioGroup>FilterGroupMatches</RadioGroup>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GLP_ShowMatchesLabel">
+		<ScreenID>GLP_ShowMatchesLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>23</TopAnchorOffset>
+		<BottomAnchorOffset>11</BottomAnchorOffset>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>135</RightAnchorOffset>
+
+		<Text>Show Matches</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item= "GLP_ShowAllCheckbox">
+		<ScreenID>GLP_ShowAllCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>21</TopAnchorOffset>
+		<BottomAnchorOffset>9</BottomAnchorOffset>
+		<LeftAnchorOffset>140</LeftAnchorOffset>
+		<RightAnchorOffset>152</RightAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<RadioGroup>FilterGroupMatches</RadioGroup>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item ="GLP_ShowAllLabel">
+		<ScreenID>GLP_ShowAllLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<TopAnchorOffset>23</TopAnchorOffset>
+		<BottomAnchorOffset>11</BottomAnchorOffset>
+		<LeftAnchorOffset>155</LeftAnchorOffset>
+		<RightAnchorOffset>255</RightAnchorOffset>
+
+		<RadioGroup>FilterGroupMatches</RadioGroup>
+		<Text>Show All</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "GLP_RefreshGroupsButton">
+		<ScreenID>GLP_RefreshGroupsButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>25</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Get Matches</Text>
+		<TooltipReference>This button updates your search result list with the latest information.</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Page for getting LFP players -->
+	<Page item = "GroupListPage">
+		<ScreenID>GroupListPage</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<!-- Pages are sized and positioned by their parent tab box -->
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<TabText>Groups Looking For Players</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>GLP_NumSearchResultsLabel</Pieces>
+			<Pieces>GLP_PlayerSearchResultList</Pieces>
+			<Pieces>GLP_GroupDetailList</Pieces>
+			<Pieces>GLP_ClassesWantedList</Pieces>
+	
+			<Pieces>GLP_ShowMatchesCheckbox</Pieces>
+			<Pieces>GLP_ShowMatchesLabel</Pieces>
+			<Pieces>GLP_ShowAllCheckbox</Pieces>
+			<Pieces>GLP_ShowAllLabel</Pieces>
+
+			<Pieces>GLP_RefreshGroupsButton</Pieces>
+	</Page>
+
+
+	<!-- Tabbed subwindows for different search screens -->
+	<TabBox item = "GSW_SearchPages">
+		<ScreenID>GSW_SearchPages</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>245</TopAnchorOffset>
+		<BottomAnchorOffset>5</BottomAnchorOffset>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+			<Pages>PlayerListPage</Pages>
+			<Pages>GroupListPage</Pages>
+	</TabBox>
+
+
+	<!-- ************ LFG window, top level ************ -->
+
+	<Label item ="GSW_IAmALabel">
+		<ScreenID>GSW_IAmALabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>5</TopAnchorOffset>
+		<BottomAnchorOffset>25</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+
+		<Text>I am a:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="GSW_ShowMeLabel">
+		<ScreenID>GSW_ShowMeLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<TopAnchorOffset>225</TopAnchorOffset>
+		<BottomAnchorOffset>245</BottomAnchorOffset>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+
+		<Text>Show me:</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Screen item = "GroupSearchWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>70</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>490</CX>
+			<CY>600</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Group Search Window</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+			<Pieces>GSW_IAmALabel</Pieces>
+			<Pieces>GSW_ShowMeLabel</Pieces>
+			<Pieces>GSW_InfoPages</Pieces>
+			<Pieces>GSW_SearchPages</Pieces>
+	</Screen>
+
+
+	<!-- ************ Filters Window ************ -->
+
+	<!-- Use friends / ignore list filters-->
+	
+	<Button item = "GSFW_UseIgnoreListCheckbox">
+		<ScreenID>GSFW_UseIgnoreListCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<TopAnchorOffset>10</TopAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "GSFW_UseIgnoreListLabel">
+		<ScreenID>GSFW_UseIgnoreListLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>8</TopAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+
+		<Text>Use my ignore list</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "GSFW_UseFriendsListCheckbox">
+		<ScreenID>GSFW_UseFriendsListCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<TopAnchorOffset>30</TopAnchorOffset>
+		<BottomAnchorOffset>42</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "GSFW_UseFriendsListLabel">
+		<ScreenID>GSFW_UseFriendsListLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>28</TopAnchorOffset>
+		<BottomAnchorOffset>42</BottomAnchorOffset>
+
+		<Text>Only show my friends (uses your friends list)</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+
+	<!-- Use guild filters-->
+	
+	<Button item = "GSFW_ExcludedGuildsCheckbox">
+		<ScreenID>GSFW_ExcludedGuildsCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<TopAnchorOffset>60</TopAnchorOffset>
+		<BottomAnchorOffset>72</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "GSFW_ExcludedGuildsLabel">
+		<ScreenID>GSFW_ExcludedGuildsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>58</TopAnchorOffset>
+		<BottomAnchorOffset>72</BottomAnchorOffset>
+
+		<Text>Do not include these guilds in my search results</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "GSFW_ExcludedGuildsList">
+		<ScreenID>GSFW_ExcludedGuildsList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>75</TopAnchorOffset>
+		<BottomAnchorOffset>145</BottomAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Columns>
+			<Width>400</Width>
+			<Heading>Guild Names</Heading>
+		</Columns>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Button item = "GSFW_RemoveExcludedGuildButton">
+		<ScreenID>GSFW_RemoveExcludedGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>80</TopAnchorOffset>
+		<BottomAnchorOffset>100</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Remove</Text>
+		<TooltipReference>Remove the currently selected guild</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GSFW_RemoveAllExcludedGuildButton">
+		<ScreenID>GSFW_RemoveAllExcludedGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>110</TopAnchorOffset>
+		<BottomAnchorOffset>130</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Remove All</Text>
+		<TooltipReference>Clear this guild list</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Combobox item = "GSFW_GuildNamesToExcludeSelectionCombo">
+		<ScreenID>GSFW_GuildNamesToExcludeSelectionCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>25</LeftAnchorOffset>
+		<RightAnchorOffset>125</RightAnchorOffset>
+		<TopAnchorOffset>150</TopAnchorOffset>
+		<BottomAnchorOffset>174</BottomAnchorOffset>
+
+		<ListHeight>200</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Button item = "GSFW_AddExcludedGuildButton">
+		<ScreenID>GSFW_AddExcludedGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>154</TopAnchorOffset>
+		<BottomAnchorOffset>174</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Add</Text>
+		<TooltipReference>Add the selected guild to this list</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GSFW_DesiredGuildsCheckbox">
+		<ScreenID>GSFW_DesiredGuildsCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<TopAnchorOffset>185</TopAnchorOffset>
+		<BottomAnchorOffset>197</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "GSFW_DesiredGuildsLabel">
+		<ScreenID>GSFW_DesiredGuildsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>183</TopAnchorOffset>
+		<BottomAnchorOffset>197</BottomAnchorOffset>
+
+		<Text>Only include these guilds in my search results</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "GSFW_DesiredGuildsList">
+		<ScreenID>GSFW_DesiredGuildsList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>120</RightAnchorOffset>
+		<TopAnchorOffset>200</TopAnchorOffset>
+		<BottomAnchorOffset>270</BottomAnchorOffset>
+
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+
+		<Columns>
+			<Width>400</Width>
+			<Heading>Guild Names</Heading>
+		</Columns>
+
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Button item = "GSFW_RemoveDesiredGuildButton">
+		<ScreenID>GSFW_RemoveDesiredGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>205</TopAnchorOffset>
+		<BottomAnchorOffset>225</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Remove</Text>
+		<TooltipReference>Remove the currently selected guild</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "GSFW_RemoveAllDesiredGuildButton">
+		<ScreenID>GSFW_RemoveAllDesiredGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>235</TopAnchorOffset>
+		<BottomAnchorOffset>255</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Remove All</Text>
+		<TooltipReference>Clear this guild list</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Combobox item = "GSFW_GuildNamesToDesireSelectionCombo">
+		<ScreenID>GSFW_GuildNamesToDesireSelectionCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>25</LeftAnchorOffset>
+		<RightAnchorOffset>125</RightAnchorOffset>
+		<TopAnchorOffset>275</TopAnchorOffset>
+		<BottomAnchorOffset>299</BottomAnchorOffset>
+
+		<ListHeight>200</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+
+	<Button item = "GSFW_AddDesiredGuildButton">
+		<ScreenID>GSFW_AddDesiredGuildButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorOffset>110</LeftAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<TopAnchorOffset>279</TopAnchorOffset>
+		<BottomAnchorOffset>299</BottomAnchorOffset>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Add</Text>
+		<TooltipReference>Add the selected guild to this list</TooltipReference>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<!-- Mutual Exclusion Search Mode -->
+	<Button item = "GSFW_ExclusionSearchCheckbox">
+		<ScreenID>GSFW_ExclusionSearchCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<RightAnchorOffset>32</RightAnchorOffset>
+		<TopAnchorOffset>310</TopAnchorOffset>
+		<BottomAnchorOffset>322</BottomAnchorOffset>
+		
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+		  <Normal>A_CheckBoxNormal</Normal>
+		  <Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "GSFW_ExclusionSearchLabel">
+		<ScreenID>GSFW_ExclusionSearchLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<LeftAnchorOffset>35</LeftAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<TopAnchorOffset>308</TopAnchorOffset>
+		<BottomAnchorOffset>322</BottomAnchorOffset>
+
+		<Text>Only players who match my posted filters can query me.</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<!-- The Filters Window -->
+	<Screen item = "GroupSearchFiltersWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>60</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>355</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Text>Group Search: Additional Filters</Text>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+			<Pieces>GSFW_UseIgnoreListCheckbox</Pieces>
+			<Pieces>GSFW_UseIgnoreListLabel</Pieces>
+			<Pieces>GSFW_UseFriendsListCheckbox</Pieces>
+			<Pieces>GSFW_UseFriendsListLabel</Pieces>
+			<Pieces>GSFW_ExcludedGuildsCheckbox</Pieces>
+			<Pieces>GSFW_ExcludedGuildsLabel</Pieces>
+			<Pieces>GSFW_ExcludedGuildsList</Pieces>
+			<Pieces>GSFW_AddExcludedGuildButton</Pieces>
+			<Pieces>GSFW_RemoveExcludedGuildButton</Pieces>
+			<Pieces>GSFW_RemoveAllExcludedGuildButton</Pieces>
+			<Pieces>GSFW_DesiredGuildsCheckbox</Pieces>
+			<Pieces>GSFW_DesiredGuildsLabel</Pieces>
+			<Pieces>GSFW_DesiredGuildsList</Pieces>
+			<Pieces>GSFW_AddDesiredGuildButton</Pieces>
+			<Pieces>GSFW_RemoveDesiredGuildButton</Pieces>
+			<Pieces>GSFW_RemoveAllDesiredGuildButton</Pieces>
+			<Pieces>GSFW_ExclusionSearchCheckbox</Pieces>
+			<Pieces>GSFW_ExclusionSearchLabel</Pieces>
+			<Pieces>GSFW_GuildNamesToDesireSelectionCombo</Pieces>
+			<Pieces>GSFW_GuildNamesToExcludeSelectionCombo</Pieces>
+	</Screen>
+
+
+</XML>

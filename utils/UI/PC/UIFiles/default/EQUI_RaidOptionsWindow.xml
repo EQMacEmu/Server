@@ -1,0 +1,752 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="RAIDOPTIONS_CurrentLootTypeLabel">
+		<ScreenID>RAIDOPTIONS_CurrentLootTypeLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>15</CY>
+		</Size>
+		<Text>Current loot type : </Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="RAIDOPTIONS_CurrentLootType">
+		<ScreenID>RAIDOPTIONS_CurrentLootType</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>110</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>15</CX>
+			<CY>15</CY>
+		</Size>
+		<Text>1</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item ="RAIDOPTIONS_LooterListLabel">
+		<ScreenID>RAIDOPTIONS_LooterListLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>15</CY>
+		</Size>
+		<Text>Current Looter List</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "RAIDOPTIONS_LooterList">
+		<ScreenID>RAIDOPTIONS_LooterList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<TooltipReference>List of all players that are allowed to loot a kill</TooltipReference>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>165</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>140</CX>
+			<CY>125</CY>
+		</Size>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Width>100</Width>
+		</Columns>
+	</Listbox>
+
+
+	<Label item ="RAIDOPTIONS_SetLootTypeLabel">
+		<ScreenID>RAIDOPTIONS_SetLootTypeLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>45</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>15</CY>
+		</Size>
+		<Text>Set the loot type</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Combobox item = "RAIDOPTIONS_SetLootTypeCombo">
+		<ScreenID>RAIDOPTIONS_SetLootTypeCombo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>5</X>
+			<Y>60</Y>
+		</Location>
+		<Size>
+			<CX>140</CX>
+			<CY>25</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ListHeight>60</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+		<Choices>Leader Only</Choices>
+		<Choices>Leader and Group Leaders</Choices>
+		<Choices>Leader Selected</Choices>
+	</Combobox>
+
+
+	<Label item ="RAIDOPTIONS_ClassColorLabel">
+		<ScreenID>RAIDOPTIONS_ClassColorLabel</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>95</X>
+			<Y>155</Y>
+		</Location>
+		<Size>
+			<CX>150</CX>
+			<CY>15</CY>
+		</Size>
+		<Text>Color Text For Each Class</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "RAIDOPTIONS_ClassColor0">
+		<ScreenID>RAIDOPTIONS_ClassColor0</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>5</X>
+			<Y>175</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Bard</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor1">
+		<ScreenID>RAIDOPTIONS_ClassColor1</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>70</X>
+			<Y>175</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Beastlord</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor2">
+		<ScreenID>RAIDOPTIONS_ClassColor2</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>135</X>
+			<Y>175</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Cleric</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor3">
+		<ScreenID>RAIDOPTIONS_ClassColor3</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>200</X>
+			<Y>175</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Druid</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor4">
+		<ScreenID>RAIDOPTIONS_ClassColor4</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>265</X>
+			<Y>175</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Enchanter</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<Button item = "RAIDOPTIONS_ClassColor5">
+		<ScreenID>RAIDOPTIONS_ClassColor5</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>5</X>
+			<Y>205</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Magician</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor6">
+		<ScreenID>RAIDOPTIONS_ClassColor6</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>70</X>
+			<Y>205</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Monk</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor7">
+		<ScreenID>RAIDOPTIONS_ClassColor7</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>135</X>
+			<Y>205</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Necro</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor8">
+		<ScreenID>RAIDOPTIONS_ClassColor8</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>200</X>
+			<Y>205</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Paladin</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor9">
+		<ScreenID>RAIDOPTIONS_ClassColor9</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>265</X>
+			<Y>205</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Ranger</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<Button item = "RAIDOPTIONS_ClassColor10">
+		<ScreenID>RAIDOPTIONS_ClassColor10</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>5</X>
+			<Y>235</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Rogue</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor11">
+		<ScreenID>RAIDOPTIONS_ClassColor11</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>70</X>
+			<Y>235</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>ShdwKngt</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor12">
+		<ScreenID>RAIDOPTIONS_ClassColor12</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>135</X>
+			<Y>235</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Shaman</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor13">
+		<ScreenID>RAIDOPTIONS_ClassColor13</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>200</X>
+			<Y>235</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Warrior</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "RAIDOPTIONS_ClassColor14">
+		<ScreenID>RAIDOPTIONS_ClassColor14</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Choose color for the class</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Location>
+			<X>265</X>
+			<Y>235</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Wizard</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+
+
+
+
+
+
+
+
+
+
+	<Screen item = "RaidOptionsWindow">
+		<ScreenID/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>78</Y>
+		</Location>
+		<Size>
+			<CX>340</CX>
+			<CY>290</CY>
+		</Size>
+		<Text>Raid Options Window</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>This is the raid options window.</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>RAIDOPTIONS_CurrentLootTypeLabel</Pieces>
+		<Pieces>RAIDOPTIONS_CurrentLootType</Pieces>
+		<Pieces>RAIDOPTIONS_LooterListLabel</Pieces>
+		<Pieces>RAIDOPTIONS_LooterList</Pieces>
+		<Pieces>RAIDOPTIONS_SetLootTypeLabel</Pieces>
+		<Pieces>RAIDOPTIONS_SetLootTypeCombo</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColorLabel</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor0</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor1</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor2</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor3</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor4</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor5</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor6</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor7</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor8</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor9</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor10</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor11</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor12</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor13</Pieces>
+		<Pieces>RAIDOPTIONS_ClassColor14</Pieces>
+	</Screen>
+
+</XML>

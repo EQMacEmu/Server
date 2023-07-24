@@ -1,0 +1,964 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Listbox item = "ProgressionList">
+		<ScreenID>ProgressionList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>128</CY>
+		</Size>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Progression</Heading>
+		</Columns>
+		<Columns>
+			<Width>55</Width>
+			<Heading></Heading>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+	
+	<Listbox item = "ProgressionBranchList">
+		<ScreenID>ProgressionBranchList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>128</CY>
+		</Size>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Monster Class</Heading>
+		</Columns>
+		<Columns>
+			<Width>55</Width>
+			<Heading></Heading>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Listbox item = "ProgressionStepList">
+		<ScreenID>ProgressionStepList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>128</CY>
+		</Size>
+		<Columns>
+			<Width>100</Width>
+			<Heading>Monster</Heading>
+		</Columns>
+		<Columns>
+			<Width>55</Width>
+			<Heading>Level</Heading>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<VerticalLayoutBox item = "ProgressionSelectionListLayout">
+		<ScreenID>ProgressionSelectionListLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Listbox:ProgressionList</Pieces>
+		<Pieces>Listbox:ProgressionBranchList</Pieces>
+		<Pieces>Listbox:ProgressionStepList</Pieces>
+	</VerticalLayoutBox>
+
+	<Screen item = "ProgressionSelectionListPane">
+		<ScreenID>ProgressionSelectionListPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>300</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>VerticalLayoutBox:ProgressionSelectionListLayout</Pieces>
+	</Screen>
+
+	<Label item = "STAT_ClassValueLabel">
+		<ScreenID>ClassValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>6</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Class Label</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+	</Label>
+
+	<Label item = "STAT_LevelValueLabel">
+		<ScreenID>LevelValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>22</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+	</Label>
+
+	<Label item = "STAT_HitPointsLabel">
+		<ScreenID>HitPointsLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>46</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Hit Points:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_ManaLabel">
+		<ScreenID>ManaLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>62</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Mana:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_EnduranceLabel">
+		<ScreenID>EnduranceLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>78</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Endurance:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_StrengthLabel">
+		<ScreenID>StrengthLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>94</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Strength:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_StaminaLabel">
+		<ScreenID>StaminaLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>110</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Stamina:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_CharismaLabel">
+		<ScreenID>CharismaLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>126</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Charisma:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_DexterityLabel">
+		<ScreenID>DexterityLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>142</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Dexterity:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_IntelligenceLabel">
+		<ScreenID>IntelligenceLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>158</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Intelligence:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_AgilityLabel">
+		<ScreenID>AgilityLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>174</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Agility:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_WisdomLabel">
+		<ScreenID>WisdomLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>190</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>Wisdom:</Text>
+		<TextColor>
+			<!-- c_crLtBlueCool -->
+			<R>138</R>
+			<G>163</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+	</Label>
+
+	<Label item = "STAT_HitPointsValueLabel">
+		<ScreenID>HitPointsValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>46</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_ManaValueLabel">
+		<ScreenID>ManaValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>62</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_EnduranceValueLabel">
+		<ScreenID>EnduranceValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>78</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_StrengthValueLabel">
+		<ScreenID>StrengthValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>94</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_StaminaValueLabel">
+		<ScreenID>StaminaValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>110</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_CharismaValueLabel">
+		<ScreenID>CharismaValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>126</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_DexterityValueLabel">
+		<ScreenID>DexterityValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>142</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_IntelligenceValueLabel">
+		<ScreenID>IntelligenceValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>158</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_AgilityValueLabel">
+		<ScreenID>AgilityValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>174</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Label item = "STAT_WisdomValueLabel">
+		<ScreenID>WisdomValueLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>190</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Text>-</Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<StaticAnimation item = "STAT_ClassAnim">
+		<ScreenID>ClassAnim</ScreenID>
+		<Location>
+			<X>16</X>
+			<Y>214</Y>
+		</Location>
+		<Size>
+			<CX>75</CX>
+			<CY>142</CY>
+		</Size>
+		<Animation>A_ClassAnim01</Animation>
+	</StaticAnimation>
+
+	<Screen item = "ProgressionSelectionStatsPane">
+		<ScreenID>ProgressionSelectionStatsPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>180</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>108</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>STAT_ClassValueLabel</Pieces>
+		<Pieces>STAT_LevelValueLabel</Pieces>
+		<Pieces>STAT_HitPointsLabel</Pieces>
+		<Pieces>STAT_ManaLabel</Pieces>
+		<Pieces>STAT_EnduranceLabel</Pieces>
+		<Pieces>STAT_StrengthLabel</Pieces>
+		<Pieces>STAT_StaminaLabel</Pieces>
+		<Pieces>STAT_CharismaLabel</Pieces>
+		<Pieces>STAT_DexterityLabel</Pieces>
+		<Pieces>STAT_IntelligenceLabel</Pieces>
+		<Pieces>STAT_AgilityLabel</Pieces>
+		<Pieces>STAT_WisdomLabel</Pieces>
+		<Pieces>STAT_HitPointsValueLabel</Pieces>
+		<Pieces>STAT_ManaValueLabel</Pieces>
+		<Pieces>STAT_EnduranceValueLabel</Pieces>
+		<Pieces>STAT_StrengthValueLabel</Pieces>
+		<Pieces>STAT_StaminaValueLabel</Pieces>
+		<Pieces>STAT_CharismaValueLabel</Pieces>
+		<Pieces>STAT_DexterityValueLabel</Pieces>
+		<Pieces>STAT_IntelligenceValueLabel</Pieces>
+		<Pieces>STAT_AgilityValueLabel</Pieces>
+		<Pieces>STAT_WisdomValueLabel</Pieces>
+		<Pieces>STAT_ClassAnim</Pieces>
+	</Screen>
+
+	<Listbox item = "ProgressionSelectionAbilitiesList">
+		<ScreenID>ProgressionSelectionAbilitiesList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Abilities</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Screen item = "ProgressionSelectionAbilitiesPane">
+		<ScreenID>ProgressionSelectionAbilitiesPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>128</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>ProgressionSelectionAbilitiesList</Pieces>
+	</Screen>
+
+	<Listbox item = "ProgressionSelectionEquipmentList">
+		<ScreenID>ProgressionSelectionEquipmentList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Equipment</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+
+	<Screen item = "ProgressionSelectionEquipmentPane">
+		<ScreenID>ProgressionSelectionEquipmentPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>128</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>ProgressionSelectionEquipmentList</Pieces>
+	</Screen>
+
+	<STMLbox item = "ProgressionSelectionInfo">
+		<ScreenID>ProgressionSelectionInfo</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</STMLbox>
+
+	<Button item = "ProgressionSelectionItemIconButton">
+		<ScreenID>ProgressionSelectionItemIconButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>70</LeftAnchorOffset>
+		<TopAnchorOffset>12</TopAnchorOffset>
+		<RightAnchorOffset>26</RightAnchorOffset>
+		<BottomAnchorOffset>56</BottomAnchorOffset>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<SoundPressed/>
+		<SoundUp/>
+		<SoundFlyby/>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Screen item = "ProgressionSelectionInfoPane">
+		<ScreenID>ProgressionSelectionInfoPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>128</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>ProgressionSelectionInfo</Pieces>
+		<Pieces>ProgressionSelectionItemIconButton</Pieces>
+	</Screen>
+
+	<VerticalLayoutBox item = "ProgressionTemplateDataListLayout">
+		<ScreenID>ProgressionTemplateDataListLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:ProgressionSelectionAbilitiesPane</Pieces>
+		<Pieces>Screen:ProgressionSelectionEquipmentPane</Pieces>
+		<Pieces>Screen:ProgressionSelectionInfoPane</Pieces>
+	</VerticalLayoutBox>
+
+	<Screen item = "ProgressionTemplateDataListPane">
+		<ScreenID>ProgressionTemplateDataListPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>VerticalLayoutBox:ProgressionTemplateDataListLayout</Pieces>
+	</Screen>
+
+	<HorizontalLayoutBox item = "ProgressionTemplateTopLayout">
+		<ScreenID>ProgressionTemplateTopLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>31</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:ProgressionSelectionListPane</Pieces>
+		<Pieces>Screen:ProgressionSelectionStatsPane</Pieces>
+		<Pieces>Screen:ProgressionTemplateDataListPane</Pieces>
+	</HorizontalLayoutBox>
+
+	<Button item = "ProgressionTemplateSelectCancelButton">
+		<ScreenID>ProgressionTemplateSelectCancelButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>27</TopAnchorOffset>
+		<RightAnchorOffset>150</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click to keep your current form.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Keep Current Form</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "ProgressionTemplateSelectAcceptButton">
+		<ScreenID>ProgressionTemplateSelectAcceptButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>150</LeftAnchorOffset>
+		<TopAnchorOffset>27</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click to transform into the selected monster.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Select Monster</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "ProgressionSelectionWnd">
+		<!--<ScreenID/>-->
+		<!--<Font/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>414</CY>
+		</Size>
+		<Text>Spirit Shroud Selection</Text>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>HorizontalLayoutBox:ProgressionTemplateTopLayout</Pieces>
+		<Pieces>ProgressionTemplateSelectAcceptButton</Pieces>
+		<Pieces>ProgressionTemplateSelectCancelButton</Pieces>
+	</Screen>
+</XML>

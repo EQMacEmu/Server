@@ -1,0 +1,1 @@
+alter table `qs_player_trade_log` add column `bagged` int(11) not null default 0;

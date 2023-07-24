@@ -1,0 +1,1 @@
+INSERT INTO `logsys_categories` VALUES ('37', 'EQMac', '0', '0', '0');

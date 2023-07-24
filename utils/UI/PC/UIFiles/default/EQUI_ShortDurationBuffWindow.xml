@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<XML ID="EQInterfaceDefinitionLanguage">
+	<Schema xmlns="EverQuestData" xmlns:dt="EverQuestDataTypes" />
+	<Button item="SDBW_Buff0_Button">
+		<ScreenID>Buff0</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>3</X>
+			<Y>3</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>	 -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>	 -->
+		<ButtonDrawTemplate>
+			<Normal>BlueIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff1_Button">
+		<ScreenID>Buff1</ScreenID>
+		<!--<Font>3</Font>	 -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>48</X>
+			<Y>3</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>	 -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<RadioGroup />
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff2_Button">
+		<ScreenID>Buff2</ScreenID>
+		<!--<Font>3</Font>	 -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>93</X>
+			<Y>3</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>	 -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<RadioGroup />
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff3_Button">
+		<ScreenID>Buff3</ScreenID>
+		<!--<Font>3</Font>	 -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>3</X>
+			<Y>49</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>	 -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<RadioGroup />
+		<ButtonDrawTemplate>
+			<Normal>BlueIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff4_Button">
+		<ScreenID>Buff4</ScreenID>
+		<!--<Font>3</Font> Default -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>48</X>
+			<Y>49</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference />
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/> Default -->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff5_Button">
+		<ScreenID>Buff5</ScreenID>
+		<!--<Font>3</Font> Defautl -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>93</X>
+			<Y>49</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/> Default -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/> Default -->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff6_Button">
+		<ScreenID>Buff6</ScreenID>
+		<!--<Font>3</Font> Default -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>3</X>
+			<Y>95</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference />
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/> Default -->
+		<ButtonDrawTemplate>
+			<Normal>BlueIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff7_Button">
+		<ScreenID>Buff7</ScreenID>
+		<!--<Font>3</Font> Use defaults -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>48</X>
+			<Y>95</Y>
+		</Location>
+		<Size>
+			<CX>34</CX>
+			<CY>34</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/> Use defaults -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/> Use Defaults -->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>30</CX>
+			<CY>30</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff8_Button">
+		<ScreenID>Buff8</ScreenID>
+		<!--<Font>3</Font>Defaults-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>93</X>
+			<Y>95</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/> Use default -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>Use default-->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff9_Button">
+		<ScreenID>Buff9</ScreenID>
+		<!--<Font>3</Font>Use Defaults -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>3</X>
+			<Y>141</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/> Use Defaults -->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>	-->
+		<ButtonDrawTemplate>
+			<Normal>BlueIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff10_Button">
+		<ScreenID>Buff10</ScreenID>
+		<!--<Font>3</Font> -->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>48</X>
+			<Y>141</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item="SDBW_Buff11_Button">
+		<ScreenID>Buff11</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>93</X>
+			<Y>141</Y>
+		</Location>
+		<Size>
+			<CX>44</CX>
+			<CY>44</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<ButtonDrawTemplate>
+			<Normal>RedIconBackground</Normal>
+			<NormalDecal>BuffIcons</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Screen item="ShortDurationBuffWindow">
+		<!--<ScreenID/>-->
+		<Text>Songs</Text>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>415</X>
+			<Y>395</Y>
+		</Location>
+		<Size>
+			<CX>104</CX>
+			<CY>160</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>SDBW_Buff0_Button</Pieces>
+		<Pieces>SDBW_Buff1_Button</Pieces>
+		<Pieces>SDBW_Buff2_Button</Pieces>
+		<Pieces>SDBW_Buff3_Button</Pieces>
+		<Pieces>SDBW_Buff4_Button</Pieces>
+		<Pieces>SDBW_Buff5_Button</Pieces>
+		<Pieces>SDBW_Buff6_Button</Pieces>
+		<Pieces>SDBW_Buff7_Button</Pieces>
+		<Pieces>SDBW_Buff8_Button</Pieces>
+		<Pieces>SDBW_Buff9_Button</Pieces>
+		<Pieces>SDBW_Buff10_Button</Pieces>
+		<Pieces>SDBW_Buff11_Button</Pieces>
+	</Screen>
+</XML>

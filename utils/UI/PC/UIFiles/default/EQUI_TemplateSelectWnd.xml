@@ -1,0 +1,486 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Listbox item = "TemplateSelectList1">
+		<ScreenID>TemplateSelectList1</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>100</CY>
+		</Size>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Available Characters:</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Listbox item = "TemplateSelectList2">
+		<ScreenID>TemplateSelectList2</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>120</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>100</CY>
+		</Size>
+		<Columns>
+			<Width>1000</Width>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<VerticalLayoutBox item = "TemplateSelectListLayout">
+		<ScreenID>TemplateSelectListLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Listbox:TemplateSelectList1</Pieces>
+		<Pieces>Listbox:TemplateSelectList2</Pieces>
+	</VerticalLayoutBox>
+
+	<Screen item = "TemplateSelectListPane">
+		<ScreenID>TemplateSelectListPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>180</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>VerticalLayoutBox:TemplateSelectListLayout</Pieces>
+	</Screen>
+
+	<Listbox item = "TemplateSelectStatsList">
+		<ScreenID>TemplateSelectStatsList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Stats:</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+			<Heading>Dummy</Heading>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Screen item = "TemplateSelectStatsPane">
+		<ScreenID>TemplateSelectStatsPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>180</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>120</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>TemplateSelectStatsList</Pieces>
+	</Screen>
+
+	<Listbox item = "TemplateSelectAbilitiesList">
+		<ScreenID>TemplateSelectAbilitiesList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Abilities:</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Screen item = "TemplateSelectAbilitiesPane">
+		<ScreenID>TemplateSelectAbilitiesPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>80</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>TemplateSelectAbilitiesList</Pieces>
+	</Screen>
+
+	<Listbox item = "TemplateSelectEquipmentList">
+		<ScreenID>TemplateSelectEquipmentList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Columns>
+			<Width>1000</Width>
+			<Heading>Equipment:</Heading>
+		</Columns>
+		<Columns>
+			<Width>0</Width>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+
+	<Screen item = "TemplateSelectEquipmentPane">
+		<ScreenID>TemplateSelectEquipmentPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>80</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>TemplateSelectEquipmentList</Pieces>
+	</Screen>
+
+	<STMLbox item = "TemplateSelectOtherData">
+		<ScreenID>TemplateSelectOtherData</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Border>true</Style_Border>
+	</STMLbox>
+
+	<Screen item = "TemplateSelectOtherPane">
+		<ScreenID>TemplateSelectOtherPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>160</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>60</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>TemplateSelectOtherData</Pieces>
+	</Screen>
+
+	<VerticalLayoutBox item = "TemplateDataListLayout">
+		<ScreenID>TemplateDataListLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:TemplateSelectAbilitiesPane</Pieces>
+		<Pieces>Screen:TemplateSelectEquipmentPane</Pieces>
+		<Pieces>Screen:TemplateSelectOtherPane</Pieces>
+	</VerticalLayoutBox>
+
+	<Screen item = "TemplateDataListPane">
+		<ScreenID>TemplateDataListPane</ScreenID>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>VerticalLayoutBox:TemplateDataListLayout</Pieces>
+	</Screen>
+
+	<HorizontalLayoutBox item = "TemplateTopLayout">
+		<ScreenID>TemplateTopLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:TemplateSelectListPane</Pieces>
+		<Pieces>Screen:TemplateSelectStatsPane</Pieces>
+		<Pieces>Screen:TemplateDataListPane</Pieces>
+	</HorizontalLayoutBox>
+
+
+	<Screen item = "TemplateSelectTopPane">
+		<ScreenID>TemplateSelectTopPane</ScreenID>
+		<!--<Font/>-->
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>220</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>HorizontalLayoutBox:TemplateTopLayout</Pieces>
+	</Screen>
+
+	<STMLbox item = "TemplateSelectDescription">
+		<ScreenID>TemplateSelectDescription</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Location>
+			<X>0</X>
+			<Y>220</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>140</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Text>Description</Text>
+	</STMLbox>
+
+	<VerticalLayoutBox item = "TemplateSelectLayout">
+		<ScreenID>TemplateSelectLayout</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>29</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Spacing>2</Spacing>
+		<Style_Border>false</Style_Border>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<Pieces>Screen:TemplateSelectTopPane</Pieces>
+		<Pieces>STMLbox:TemplateSelectDescription</Pieces>
+	</VerticalLayoutBox>
+
+	<Button item = "TemplateSelectCancelButton">
+		<ScreenID>TemplateSelectCancelButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>10</LeftAnchorOffset>
+		<TopAnchorOffset>27</TopAnchorOffset>
+		<RightAnchorOffset>130</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this to cancel selection of a character.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Cancel</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "TemplateSelectAcceptButton">
+		<ScreenID>TemplateSelectAcceptButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>130</LeftAnchorOffset>
+		<TopAnchorOffset>27</TopAnchorOffset>
+		<RightAnchorOffset>10</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Select a character and click this button to accept.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Accept</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "TemplateSelectWnd">
+		<!--<ScreenID/>-->
+		<!--<Font/>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>600</CX>
+			<CY>400</CY>
+		</Size>
+		<Text>Select a Character</Text>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>VerticalLayoutBox:TemplateSelectLayout</Pieces>
+		<Pieces>TemplateSelectAcceptButton</Pieces>
+		<Pieces>TemplateSelectCancelButton</Pieces>
+	</Screen>
+</XML>

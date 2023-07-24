@@ -1,0 +1,570 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Button item = "Credits_OKButton">
+		<ScreenID>OKButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<RightAnchorOffset>155</RightAnchorOffset>
+		<TopAnchorOffset>55</TopAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+
+		<TooltipReference>Close this window.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>OK</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_SmallBtnNormal</Normal>
+			<Pressed>A_EQLS_SmallBtnPressed</Pressed>
+			<Flyby>A_EQLS_SmallBtnHover</Flyby>
+			<Disabled>A_EQLS_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_SmallBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	
+	<Label item = "Credits_WndLabel">
+		<ScreenID>WndLabel</ScreenID>
+		<Font>5</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>200</X>
+			<Y>20</Y>
+		</Location>
+		<Size>
+			<CX>270</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>GAME CREDITS</Text>
+		<TextColor>
+				<R>255</R>
+				<G>218</G>
+				<B>96</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	
+<!-- Classic -->
+	<STMLbox item = "Credits_Classic">
+		<ScreenID>Credits_Classic</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Classic_Page">
+		<ScreenID>Credits_Classic_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>EQ</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Classic</Pieces>
+	</Page>
+<!-- Kunark -->
+	<STMLbox item = "Credits_Kunark">
+		<ScreenID>Credits_Kunark</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Kunark_Page">
+		<ScreenID>Credits_Kunark_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>Kunark</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Kunark</Pieces>
+	</Page>
+<!-- Velious -->
+	<STMLbox item = "Credits_Velious">
+		<ScreenID>Credits_Velious</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Velious_Page">
+		<ScreenID>Credits_Velious_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>Velious</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Velious</Pieces>
+	</Page>
+<!-- Luclin -->
+	<STMLbox item = "Credits_Luclin">
+		<ScreenID>Credits_Luclin</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Luclin_Page">
+		<ScreenID>Credits_Luclin_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>Luclin</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Luclin</Pieces>
+	</Page>
+<!-- PoP -->
+	<STMLbox item = "Credits_PoP">
+		<ScreenID>Credits_PoP</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_PoP_Page">
+		<ScreenID>Credits_PoP_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>PoP</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_PoP</Pieces>
+	</Page>
+<!-- LoY -->
+	<STMLbox item = "Credits_LoY">
+		<ScreenID>Credits_LoY</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_LoY_Page">
+		<ScreenID>Credits_LoY_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>LoY</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_LoY</Pieces>
+	</Page>
+<!-- LDoN -->
+	<STMLbox item = "Credits_LDoN">
+		<ScreenID>Credits_LDoN</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_LDoN_Page">
+		<ScreenID>Credits_LDoN_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>LDoN</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_LDoN</Pieces>
+	</Page>
+<!-- Gates -->
+	<STMLbox item = "Credits_Gates">
+		<ScreenID>Credits_Gates</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Gates_Page">
+		<ScreenID>Credits_Gates_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>GoD</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Gates</Pieces>
+	</Page>
+<!-- Omens -->
+	<STMLbox item = "Credits_Omens">
+		<ScreenID>Credits_Omens</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Omens_Page">
+		<ScreenID>Credits_Omens_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>OoW</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Omens</Pieces>
+	</Page>
+<!-- Dragons -->
+	<STMLbox item = "Credits_Dragons">
+		<ScreenID>Credits_Dragons</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Dragons_Page">
+		<ScreenID>Credits_Dragons_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>DoN</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Dragons</Pieces>
+	</Page>
+<!-- Depths -->
+	<STMLbox item = "Credits_Depths">
+		<ScreenID>Credits_Depths</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>true</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>4</LeftAnchorOffset>
+		<TopAnchorOffset>4</TopAnchorOffset>
+		<RightAnchorOffset>4</RightAnchorOffset>
+		<BottomAnchorOffset>4</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>false</Style_Border>
+	</STMLbox>
+	<Page item = "Credits_Depths_Page">
+		<ScreenID>Credits_Depths_Page</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<!-- Pages are sized and positioned by their parent tab -->
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_EQLS_Def_Bordered</DrawTemplate>
+		<TabText>DoD</TabText>
+		<TabTextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TabTextColor>
+		<TabTextActiveColor>
+				<R>255</R>
+				<G>255</G>
+				<B>0</B>
+		</TabTextActiveColor>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>Credits_Depths</Pieces>
+	</Page>
+
+	
+	<TabBox item = "Credits_TabWnd">
+		<ScreenID>Credits_TabWnd</ScreenID>
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>40</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>40</RightAnchorOffset>
+		<BottomAnchorOffset>60</BottomAnchorOffset>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<Style_Border>true</Style_Border>
+
+		<TabBorderTemplate>FT_DefTabBorder</TabBorderTemplate>
+		<PageBorderTemplate>FT_DefPageBorder</PageBorderTemplate>
+		<Pages>Credits_Classic_Page</Pages>
+		<Pages>Credits_Kunark_Page</Pages>
+		<Pages>Credits_Velious_Page</Pages>
+		<Pages>Credits_Luclin_Page</Pages>
+		<Pages>Credits_PoP_Page</Pages>
+		<Pages>Credits_LoY_Page</Pages>
+		<Pages>Credits_LDoN_Page</Pages>
+		<Pages>Credits_Gates_Page</Pages>
+		<Pages>Credits_Omens_Page</Pages>
+		<Pages>Credits_Dragons_Page</Pages>
+		<Pages>Credits_Depths_Page</Pages>
+	</TabBox>
+
+	<Screen item = "credits">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+
+		<Text>News</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_AltBG01</Pieces>
+		<Pieces>EQLS_AltBG02</Pieces>
+		<Pieces>EQLS_AltBG03</Pieces>
+		<Pieces>EQLS_AltBG04</Pieces>
+		<Pieces>EQLS_AltBG05</Pieces>
+		<Pieces>EQLS_AltBG06</Pieces>
+		<Pieces>Credits_OKButton</Pieces>
+		<Pieces>Credits_TabWnd</Pieces>
+		<Pieces>Credits_WndLabel</Pieces>
+	</Screen>
+
+
+
+</XML>

@@ -1,0 +1,259 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+<!-- Buttons -->
+	<Button item = "MAIN_ConnectButton">
+		<ScreenID>ConnectButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>170</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Go to the login screen</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>LOGIN</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MAIN_AccountButton">
+		<ScreenID>AccountButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>220</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Go to account maintenance</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>ACCOUNT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MAIN_EQWebpageButton">
+		<ScreenID>EQWebpageButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>270</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Go to the EQ Live webpage</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>EQ LIVE WEBPAGE</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MAIN_HelpButton">
+		<ScreenID>HelpButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>320</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Answers to common questions</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>HELP</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MAIN_OptionsButton">
+		<ScreenID>OptionsButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>370</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Launchs the options editor which allows you to change your game options</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>OPTIONS</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MAIN_ExitButton">
+		<ScreenID>ExitButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>325</X>
+			<Y>420</Y>
+		</Location>
+		<Size>
+			<CX>244</CX>
+			<CY>31</CY>
+		</Size>
+		<TooltipReference>Exit the login client</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>EXIT</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_EQLS_LargeBtnNormal</Normal>
+			<Pressed>A_EQLS_LargeBtnPressed</Pressed>
+			<Flyby>A_EQLS_LargeBtnHover</Flyby>
+			<Disabled>A_EQLS_LargeBtnDisabled</Disabled>
+			<PressedFlyby>A_EQLS_LargeBtnPressedHover</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+<!-- End of buttons -->
+
+
+<!-- Copyright Info, if you change this, also change it on EQLSUI_ConnectWnd.xml -->
+	<Label item = "MAIN_Trademark1Label">
+		<ScreenID>Trademark1Label</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>400</Y>
+		</Location>
+		<Size>
+			<CX>280</CX>
+			<CY>30</CY>
+		</Size>
+		<Text>EverQuest is a registered trademark of Sony Computer Entertainment America Inc.</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+	<Label item = "MAIN_Trademark2Label">
+		<ScreenID>Trademark2Label</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>435</Y>
+		</Location>
+		<Size>
+			<CX>280</CX>
+			<CY>40</CY>
+		</Size>
+		<Text>© 1999-2005 Sony Computer Entertainment America Inc.  All Rights Reserved.</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Screen item = "main">
+		<!--<ScreenID/>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>640</CX>
+			<CY>480</CY>
+		</Size>
+		<Text>Main</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<DrawTemplate>WDT_EQLS_Def_NoFrame</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>EQLS_MainBG01</Pieces>
+		<Pieces>EQLS_MainBG02</Pieces>
+		<Pieces>EQLS_MainBG03</Pieces>
+		<Pieces>EQLS_MainBG04</Pieces>
+		<Pieces>EQLS_MainBG05</Pieces>
+		<Pieces>EQLS_MainBG06</Pieces>
+		<Pieces>MAIN_ConnectButton</Pieces>
+		<Pieces>MAIN_AccountButton</Pieces>
+		<Pieces>MAIN_HelpButton</Pieces>
+		<Pieces>MAIN_OptionsButton</Pieces>
+		<Pieces>MAIN_ExitButton</Pieces>
+		<Pieces>MAIN_EQWebpageButton</Pieces>
+		<Pieces>MAIN_Trademark1Label</Pieces>
+		<Pieces>MAIN_Trademark2Label</Pieces>
+	</Screen>
+</XML>

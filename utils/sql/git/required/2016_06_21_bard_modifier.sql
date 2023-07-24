@@ -1,0 +1,1 @@
+ALTER TABLE `character_buffs` ADD `bard_modifier` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10';

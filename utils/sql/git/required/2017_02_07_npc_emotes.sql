@@ -1,0 +1,1 @@
+alter table npc_emotes drop index `emoteid`;

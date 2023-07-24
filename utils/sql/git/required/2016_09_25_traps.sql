@@ -1,0 +1,1 @@
+alter table traps add column `undetectable` tinyint(4) not null default 0;

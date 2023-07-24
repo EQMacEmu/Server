@@ -1,0 +1,12 @@
+alter table `altadv_vars` drop column `hotkey_sid`;
+alter table `altadv_vars` drop column `hotkey_sid2`;
+alter table `altadv_vars` drop column `title_sid`;
+alter table `altadv_vars` drop column `desc_sid`;
+alter table `altadv_vars` drop column `sof_next_skill`;
+alter table `altadv_vars` drop column `sof_current_level`;
+alter table `altadv_vars` drop column `sof_next_id`;
+alter table `altadv_vars` drop column `sof_type`;
+alter table `altadv_vars` drop column `sof_cost_inc`;
+alter table `altadv_vars` drop column `sof_max_level`;
+alter table `altadv_vars` drop column `clientver`;
+alter table `altadv_vars` drop column `berserker`;

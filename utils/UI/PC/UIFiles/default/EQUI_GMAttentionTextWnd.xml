@@ -1,0 +1,59 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<STMLbox item = "GATW_GmTextBox">
+		<ScreenID>GATW_GmTextBox</ScreenID>
+
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+
+		<RelativePosition>true</RelativePosition>
+		
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		
+		<Style_VScroll>true</Style_VScroll>
+		<Style_Border>true</Style_Border>
+		<Style_Transparent>true</Style_Transparent>
+
+	</STMLbox>
+
+
+
+	<Screen item = "GmAttentionTextWindow">
+
+		<RelativePosition>false</RelativePosition>
+
+		<Text>GM Attention Text Window</Text>
+
+		<Location>
+			<X>320</X>
+			<Y>240</Y>
+		</Location>
+		<Size>
+			<CX>421</CX>
+			<CY>180</CY>
+		</Size>
+
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+
+		<DrawTemplate>WDT_Def2</DrawTemplate>
+
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>GATW_GmTextBox</Pieces>
+
+	</Screen>
+
+</XML>

@@ -1,0 +1,146 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<STMLbox item = "NW_NoteDisplay">
+		<ScreenID>Note</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Border>false</Style_Border>
+		<Style_Transparent>true</Style_Transparent>
+		<!--<Font>3</Font>-->
+		<TextColor>
+				<R>0</R>
+				<G>0</G>
+				<B>0</B>
+		</TextColor>
+		<Location>
+			<X>55</X>
+			<Y>73</Y>
+		</Location>
+		<Size>
+			<CX>265</CX>
+			<CY>180</CY>
+		</Size>
+		<Text>Test text</Text>
+	</STMLbox>
+
+	<StaticAnimation item = "NW_BG1">
+		<ScreenID>BG1</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_NoteBG01</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "NW_BG2">
+		<ScreenID>BG2</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>256</CY>
+		</Size>
+		<Animation>A_NoteBG02</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "NW_BG3">
+		<ScreenID>BG3</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>256</CX>
+			<CY>128</CY>
+		</Size>
+		<Animation>A_NoteBG03</Animation>
+	</StaticAnimation>
+	<StaticAnimation item = "NW_BG4">
+		<ScreenID>BG4</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>256</X>
+			<Y>256</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>128</CY>
+		</Size>
+		<Animation>A_NoteBG04</Animation>
+	</StaticAnimation>
+	<Button item = "NW_DoneButton">
+		<ScreenID>DoneButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>234</LeftAnchorOffset>
+		<TopAnchorOffset>26</TopAnchorOffset>
+		<RightAnchorOffset>134</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<Style_Transparent>false</Style_Transparent>
+		<!--<TooltipReference/>-->
+		<Style_Checkbox>false</Style_Checkbox>
+		<!--<RadioGroup/>-->
+		<Text>Done</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+		<!--<SoundPressed/>-->
+		<!--<<SoundUp/>-->
+		<!--<SoundFlyby/>-->
+	</Button>
+	<Screen item = "NoteWindow">
+		<!--<ScreenID/>-->
+		<!--<Font>3</Font>-->
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>384</CX>
+			<CY>354</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>This is an Item Display window</TooltipReference>
+		<DrawTemplate>WDT_Rounded</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Text>A Note</Text>
+		<Pieces>NW_BG1</Pieces>
+		<Pieces>NW_BG2</Pieces>
+		<Pieces>NW_BG3</Pieces>
+		<Pieces>NW_BG4</Pieces>
+		<Pieces>NW_NoteDisplay</Pieces>
+		<Pieces>NW_DoneButton</Pieces>
+	</Screen>
+
+</XML>

@@ -1,0 +1,1 @@
+alter table spawngroup drop column `dist`;

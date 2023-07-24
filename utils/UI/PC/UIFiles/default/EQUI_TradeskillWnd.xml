@@ -1,0 +1,1104 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item ="COMBW_MinTrivialText">
+		<ScreenID/>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>4</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>24</CY>
+		</Size>
+		<Text>Min. Trivial:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item="COMBW_MinTrivialEdit">
+		<ScreenID>MinTrivialEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<TooltipReference />
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>106</X>
+			<Y>4</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+	</Editbox>
+	
+	<Label item ="COMBW_MaxTrivialText">
+		<ScreenID/>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>24</CY>
+		</Size>
+		<Text>Max. Trivial:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item="COMBW_MaxTrivialEdit">
+		<ScreenID>MaxTrivialEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<TooltipReference />
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>106</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>50</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item ="COMBW_SearchTextText">
+		<ScreenID/>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>4</X>
+			<Y>56</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>24</CY>
+		</Size>
+		<Text>Partial Name:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Editbox item="COMBW_SearchTextEdit">
+		<ScreenID>SearchTextEdit</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<TooltipReference />
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>106</X>
+			<Y>56</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>24</CY>
+		</Size>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "COMBW_SearchButton">
+		<ScreenID>SearchButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>50</X>
+			<Y>84</Y>
+		</Location>
+		<Size>
+			<CX>100</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to find recipes that match the criteria above.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Search Recipes</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "COMBW_SearchArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>124</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_MinTrivialText</Pieces>
+		<Pieces>COMBW_MinTrivialEdit</Pieces>
+		<Pieces>COMBW_MaxTrivialText</Pieces>
+		<Pieces>COMBW_MaxTrivialEdit</Pieces>
+		<Pieces>COMBW_SearchTextText</Pieces>
+		<Pieces>COMBW_SearchTextEdit</Pieces>
+		<Pieces>COMBW_SearchButton</Pieces>
+	</Screen>
+
+	<Label item ="COMBW_KnownRecipeText">
+		<ScreenID/>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Known Matching Recipes:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Listbox item = "COMBW_RecipeList">
+		<ScreenID>RecipeList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Columns>
+			<Width>140</Width>
+			<Heading>Recipe Name</Heading>
+		</Columns>
+		<Columns>
+			<Width>50</Width>
+			<Heading>Trivial</Heading>
+		</Columns>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+	</Listbox>
+
+	<Screen item = "COMBW_RecipeListArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>124</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>50</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_KnownRecipeText</Pieces>
+		<Pieces>COMBW_RecipeList</Pieces>
+	</Screen>
+
+	<Label item ="COMBW_FavoritesText">
+		<ScreenID/>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>22</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Favorite Recipes:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "COMBW_AddFavoriteButton">
+		<ScreenID>AddFavoriteButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>2</X>
+			<Y>24</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to add the selected recipe to your favorites list.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Add</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "COMBW_RemoveFavoriteButton">
+		<ScreenID>RemoveFavoriteButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>64</X>
+			<Y>24</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to remove the selected recipe from your favorites list.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Remove</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "COMBW_ShowFavoritesButton">
+		<ScreenID>ShowFavoritesButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>124</X>
+			<Y>24</Y>
+		</Location>
+		<Size>
+			<CX>60</CX>
+			<CY>24</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to show your favorite recipes in the list.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Show</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "COMBW_FavoritesArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>50</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_FavoritesText</Pieces>
+		<Pieces>COMBW_AddFavoriteButton</Pieces>
+		<Pieces>COMBW_RemoveFavoriteButton</Pieces>
+		<Pieces>COMBW_ShowFavoritesButton</Pieces>
+	</Screen>
+	
+	<Screen item = "COMBW_LeftSideArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>160</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_FavoritesArea</Pieces>
+		<Pieces>COMBW_RecipeListArea</Pieces>
+		<Pieces>COMBW_SearchArea</Pieces>
+	</Screen>
+
+
+	<Label item ="COMBW_SkillLabel">
+		<ScreenID>SkillLabel</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>2</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>24</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Tradeskill (skill)</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "COMBW_ContainerIcon">
+		<ScreenID>ContainerIcon</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>59</X>
+			<Y>26</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This is the currently open Tradeskill Container</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Label item ="COMBW_ContainerName">
+		<ScreenID>ContainerName</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>2</LeftAnchorOffset>
+		<TopAnchorOffset>70</TopAnchorOffset>
+		<RightAnchorOffset>2</RightAnchorOffset>
+		<BottomAnchorOffset>90</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Text>Tradeskill Container</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>true</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "COMBW_ExperimentButton">
+		<ScreenID>ExperimentButton</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>92</TopAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<BottomAnchorOffset>116</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to use the old tradeskill interface to experiment with recipes you don't know.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Experiment</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "COMBW_RequiredIcon0">
+		<ScreenID>RequiredIcon0</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item = "COMBW_RequiredIcon1">
+		<ScreenID>RequiredIcon1</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>42</X>
+			<Y>0</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "COMBW_RequiredIcon2">
+		<ScreenID>RequiredIcon2</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>42</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item = "COMBW_RequiredIcon3">
+		<ScreenID>RequiredIcon3</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>42</X>
+			<Y>42</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "COMBW_RequiredIcon4">
+		<ScreenID>RequiredIcon4</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>84</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item = "COMBW_RequiredIcon5">
+		<ScreenID>RequiredIcon5</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>42</X>
+			<Y>84</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "COMBW_RequiredIcon6">
+		<ScreenID>RequiredIcon6</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>126</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item = "COMBW_RequiredIcon7">
+		<ScreenID>RequiredIcon7</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>42</X>
+			<Y>126</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Button item = "COMBW_RequiredIcon8">
+		<ScreenID>RequiredIcon8</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>0</X>
+			<Y>168</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+	<Button item = "COMBW_RequiredIcon9">
+		<ScreenID>RequiredIcon9</ScreenID>
+		<!--<Font>3</Font>-->
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>42</X>
+			<Y>168</Y>
+		</Location>
+		<Size>
+			<CX>42</CX>
+			<CY>42</CY>
+		</Size>
+		<TooltipReference>This area will display the components required for the selected recipe</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_RecessedBox</Normal>
+			<NormalDecal>A_DragItem</NormalDecal>
+		</ButtonDrawTemplate>
+		<DecalOffset>
+			<X>2</X>
+			<Y>2</Y>
+		</DecalOffset>
+		<DecalSize>
+			<CX>40</CX>
+			<CY>40</CY>
+		</DecalSize>
+	</Button>
+
+	<Screen item = "COMBW_ComponentArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>39</LeftAnchorOffset>
+		<TopAnchorOffset>120</TopAnchorOffset>
+		<RightAnchorOffset>123</RightAnchorOffset>
+		<BottomAnchorOffset>330</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>true</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_RequiredIcon0</Pieces>
+		<Pieces>COMBW_RequiredIcon1</Pieces>
+		<Pieces>COMBW_RequiredIcon2</Pieces>
+		<Pieces>COMBW_RequiredIcon3</Pieces>
+		<Pieces>COMBW_RequiredIcon4</Pieces>
+		<Pieces>COMBW_RequiredIcon5</Pieces>
+		<Pieces>COMBW_RequiredIcon6</Pieces>
+		<Pieces>COMBW_RequiredIcon7</Pieces>
+		<Pieces>COMBW_RequiredIcon8</Pieces>
+		<Pieces>COMBW_RequiredIcon9</Pieces>
+	</Screen>
+
+	<Screen item = "COMBW_ContainerArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>330</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_SkillLabel</Pieces>
+		<Pieces>COMBW_ContainerIcon</Pieces>
+		<Pieces>COMBW_ContainerName</Pieces>
+		<Pieces>COMBW_ExperimentButton</Pieces>
+		<Pieces>COMBW_ComponentArea</Pieces>
+	</Screen>
+
+	<Button item = "COMBW_CombineButton">
+		<ScreenID>CombineButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<BottomAnchorOffset>30</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to combine the selected recipe.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Combine</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "COMBW_AutoInvButton">
+		<ScreenID>AutoInvButton</ScreenID>
+		<Font>4</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>22</TopAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to auto-inventory whatever is on your cursor.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Auto-Inventory</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "COMBW_CombineArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>334</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>388</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>true</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_CombineButton</Pieces>
+		<Pieces>COMBW_AutoInvButton</Pieces>
+	</Screen>
+
+	<Button item = "COMBW_UseCtrlCheckbox">
+		<ScreenID>UseCtrlCheckbox</ScreenID>
+		<Font>2</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>5</LeftAnchorOffset>
+		<TopAnchorOffset>52</TopAnchorOffset>
+		<RightAnchorOffset>5</RightAnchorOffset>
+		<BottomAnchorOffset>28</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text>Open with Ctrl-R-click</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "COMBW_CloseButton">
+		<ScreenID>CloseButton</ScreenID>
+		<Font>3</Font>
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>20</LeftAnchorOffset>
+		<TopAnchorOffset>24</TopAnchorOffset>
+		<RightAnchorOffset>20</RightAnchorOffset>
+		<BottomAnchorOffset>2</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>false</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference>Click this button to close the tradeskill window.</TooltipReference>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Close</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Screen item = "COMBW_FlagsArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>0</LeftAnchorOffset>
+		<TopAnchorOffset>392</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>true</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_CloseButton</Pieces>
+		<Pieces>COMBW_UseCtrlCheckbox</Pieces>
+	</Screen>
+
+	<Screen item = "COMBW_RightSideArea">
+		<ScreenID/>
+		<!--<Font/>-->
+		<RelativePosition>true</RelativePosition>
+		<AutoStretch>true</AutoStretch>
+		<LeftAnchorOffset>160</LeftAnchorOffset>
+		<TopAnchorOffset>0</TopAnchorOffset>
+		<RightAnchorOffset>0</RightAnchorOffset>
+		<BottomAnchorOffset>0</BottomAnchorOffset>
+		<LeftAnchorToLeft>false</LeftAnchorToLeft>
+		<TopAnchorToTop>true</TopAnchorToTop>
+		<RightAnchorToLeft>false</RightAnchorToLeft>
+		<BottomAnchorToTop>false</BottomAnchorToTop>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_Transparent>true</Style_Transparent>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Style_Titlebar>false</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>false</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+		<Pieces>COMBW_ContainerArea</Pieces>
+		<Pieces>COMBW_CombineArea</Pieces>
+		<Pieces>COMBW_FlagsArea</Pieces>
+	</Screen>
+
+	<Screen item = "TradeskillWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>20</X>
+			<Y>25</Y>
+		</Location>
+		<Size>
+			<CX>400</CX>
+			<CY>525</CY>
+		</Size>
+		<Text>Tradeskill Window</Text>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>COMBW_LeftSideArea</Pieces>
+		<Pieces>COMBW_RightSideArea</Pieces>
+	</Screen>
+
+</XML>

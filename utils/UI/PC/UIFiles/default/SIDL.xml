@@ -1,0 +1,364 @@
+<?xml version="1.0" ?>
+<!-- My first XML Document -->
+<XML ID="EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes">
+		<ElementType name="Class">
+			<attribute name="item" type="string" />
+		</ElementType>
+		<ElementType name="RGB">
+			<superType type="Class" />
+			<element name="Alpha" type="int">
+				<default>255</default>
+			</element>
+			<element name="R" type="int">
+				<default>0</default>
+			</element>
+			<element name="G" type="int">
+				<default>0</default>
+			</element>
+			<element name="B" type="int">
+				<default>0</default>
+			</element>
+		</ElementType>
+		<ElementType name="Point">
+			<element name="X" type="int">
+				<default>0</default>
+			</element>
+			<element name="Y" type="int">
+				<default>0</default>
+			</element>
+		</ElementType>
+		<ElementType name="Size">
+			<element name="CX" type="int" />
+			<element name="CY" type="int" />
+		</ElementType>
+		<ElementType name="TextureInfo">
+			<superType type="Class" />
+			<element name="Size" type="Size" />
+		</ElementType>
+		<ElementType name="Frame">
+			<superType type="Class" />
+			<element name="Texture" type="string" />
+			<element name="Location" type="Point" />
+			<element name="Size" type="Size" />
+			<element name="Hotspot" type="Point" />
+			<element name="Duration" type="int">
+				<default>1000</default>
+			</element>
+			<element name="Shading" type="RGB" minOccurs="0" maxOccurs="*" />
+			<element name="Specular" type="RGB" minOccurs="0" maxOccurs="*" />
+		</ElementType>
+		<ElementType name="Ui2DAnimation">
+			<superType type="Class" />
+			<element name="Cycle" type="boolean" />
+			<element name="Grid" type="boolean" />
+			<element name="Vertical" type="boolean" />
+			<element name="CellWidth" type="int">
+				<default>0</default>
+			</element>
+			<element name="CellHeight" type="int">
+				<default>0</default>
+			</element>
+			<element name="Frames" type="Frame" minOccurs="0" maxOccurs="*" />
+		</ElementType>
+		<ElementType name="ButtonDrawTemplate">
+			<superType type="Class" />
+			<element name="Normal" type="Ui2DAnimation:item" />
+			<element name="Pressed" type="Ui2DAnimation:item" />
+			<element name="Flyby" type="Ui2DAnimation:item" />
+			<element name="Disabled" type="Ui2DAnimation:item" />
+			<element name="PressedFlyby" type="Ui2DAnimation:item" />
+			<element name="NormalDecal" type="Ui2DAnimation:item" />
+			<element name="PressedDecal" type="Ui2DAnimation:item" />
+			<element name="FlybyDecal" type="Ui2DAnimation:item" />
+			<element name="DisabledDecal" type="Ui2DAnimation:item" />
+			<element name="PressedFlybyDecal" type="Ui2DAnimation:item" />
+		</ElementType>
+		<ElementType name="GaugeDrawTemplate">
+			<superType type="Class" />
+			<element name="Background" type="Ui2DAnimation:item" />
+			<element name="Fill" type="Ui2DAnimation:item" />
+			<element name="Lines" type="Ui2DAnimation:item" />
+			<element name="LinesFill" type="Ui2DAnimation:item" />
+			<element name="EndCapRight" type="Ui2DAnimation:item" />
+			<element name="EndCapLeft" type="Ui2DAnimation:item" />
+		</ElementType>
+		<ElementType name="SpellGemDrawTemplate">
+			<superType type="Class" />
+			<element name="Holder" type="Ui2DAnimation:item" />
+			<element name="Background" type="Ui2DAnimation:item" />
+			<element name="Highlight" type="Ui2DAnimation:item" />
+		</ElementType>
+		<ElementType name="FrameTemplate">
+			<superType type="Class" />
+			<element name="TopLeft" type="Ui2DAnimation:item" />
+			<element name="Top" type="Ui2DAnimation:item" />
+			<element name="TopRight" type="Ui2DAnimation:item" />
+			<element name="RightTop" type="Ui2DAnimation:item" />
+			<element name="Right" type="Ui2DAnimation:item" />
+			<element name="RightBottom" type="Ui2DAnimation:item" />
+			<element name="BottomRight" type="Ui2DAnimation:item" />
+			<element name="Bottom" type="Ui2DAnimation:item" />
+			<element name="BottomLeft" type="Ui2DAnimation:item" />
+			<element name="LeftTop" type="Ui2DAnimation:item" />
+			<element name="Left" type="Ui2DAnimation:item" />
+			<element name="LeftBottom" type="Ui2DAnimation:item" />
+			<element name="Middle" type="Ui2DAnimation:item" />
+			<element name="OverlapLeft" type = "int">
+				<default>0</default>
+			</element>
+			<element name="OverlapTop" type = "int">
+				<default>0</default>
+			</element>
+			<element name="OverlapRight" type = "int">
+				<default>0</default>
+			</element>
+			<element name="OverlapBottom" type = "int">
+				<default>0</default>
+			</element>
+		</ElementType>
+		<ElementType name="ScrollbarDrawTemplate">
+			<superType type="Class" />
+			<element name="UpButton" type="ButtonDrawTemplate" />
+			<element name="DownButton" type="ButtonDrawTemplate" />
+			<element name="Thumb" type="FrameTemplate" />
+			<element name="MiddleTextureInfo" type="string" />
+			<element name="MiddleTint" type="RGB" />
+		</ElementType>
+		<ElementType name="WindowDrawTemplate">
+			<superType type="Class" />
+			<element name="Background" type="TextureInfo:item" />
+			<element name="VSBTemplate" type="ScrollbarDrawTemplate" />
+			<element name="HSBTemplate" type="ScrollbarDrawTemplate" />
+			<element name="CloseBox" type="ButtonDrawTemplate" />
+			<element name="MinimizeBox" type="ButtonDrawTemplate" />
+			<element name="TileBox" type="ButtonDrawTemplate" />
+			<element name="Border" type="FrameTemplate" />
+			<element name="Titlebar" type="FrameTemplate" />
+		</ElementType>
+		<ElementType name="SliderDrawTemplate">
+			<superType type="Class" />
+			<element name="Thumb" type="ButtonDrawTemplate" />
+			<element name="Background" type="Ui2DAnimation:item" />
+			<element name="EndCapRight" type="Ui2DAnimation:item" />
+			<element name="EndCapLeft" type="Ui2DAnimation:item" />
+		</ElementType>
+		<ElementType name="ScreenPiece">
+			<superType type="Class" />
+			<element name="ScreenID" type="string" />
+			<element name="Font" type="int">
+				<default>3</default>
+			</element>
+			<element name="RelativePosition" type="boolean">
+				<default>true</default>
+			</element>
+			<element name="Location" type="Point" />
+			<element name="Size" type="Size" />
+			<element name="AutoStretch" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="TopAnchorToTop" type = "boolean">
+				<default>true</default>
+			</element>
+			<element name="LeftAnchorToLeft" type = "boolean">
+				<default>true</default>
+			</element>
+			<element name="BottomAnchorToTop" type = "boolean">
+				<default>true</default>
+			</element>
+			<element name="RightAnchorToLeft" type = "boolean">
+				<default>true</default>
+			</element>
+			<element name="TopAnchorOffset" type="int">
+				<default>0</default>
+			</element>
+			<element name="BottomAnchorOffset" type="int">
+				<default>0</default>
+			</element>
+			<element name="LeftAnchorOffset" type="int">
+				<default>0</default>
+			</element>
+			<element name="RightAnchorOffset" type="int">
+				<default>0</default>
+			</element>
+			<element name="Text" type="string" />
+			<element name="TextColor" type="RGB" />
+		</ElementType>
+		<ElementType name="StaticScreenPiece">
+			<superType type="ScreenPiece" />
+			<element name="AutoDraw" type="boolean">
+				<default>true</default>
+			</element>
+		</ElementType>
+		<ElementType name="StaticAnimation">
+			<superType type="StaticScreenPiece" />
+			<element name="Animation" type="Ui2DAnimation:item" />
+		</ElementType>
+		<ElementType name="StaticText">
+			<superType type="StaticScreenPiece" />
+			<element name="NoWrap" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="AlignCenter" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="AlignRight" type="boolean">
+				<default>false</default>
+			</element>
+		</ElementType>
+		<ElementType name="StaticFrame">
+			<superType type="StaticScreenPiece" />
+			<element name="FrameTemplate" type="FrameTemplate:item" />
+		</ElementType>
+		<ElementType name="StaticHeader">
+			<superType type="StaticScreenPiece" />
+			<element name="FrameTemplate" type="FrameTemplate:item" />
+			<element name="TextReference" type="string" />
+			<element name="TextColor" type="RGB" />
+		</ElementType>
+		<ElementType name="Control">
+			<superType type="ScreenPiece" />
+			<element name="Style_VScroll" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="Style_HScroll" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="Style_Transparent" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="Style_Border" type="boolean" />
+			<element name="TooltipReference" type="string" />
+			<element name="DrawTemplate" type="WindowDrawTemplate:item" />
+		</ElementType>
+		<ElementType name="ListboxColumn">
+			<superType type="Class" />
+			<element name="Header" type="FrameTemplate:item" />
+			<element name="Heading" type="string" />
+			<element name="Width" type="int" />
+			<element name="Sortable" type="boolean" />
+			<element name="DataType" type="string" />
+		</ElementType>
+		<ElementType name="Listbox">
+			<superType type="Control" />
+			<element name="Columns" type="ListboxColumn" minOccurs="0" maxOccurs="*" />
+			<element name="OwnerDraw" type="boolean" />
+		</ElementType>
+		<ElementType name="Button">
+			<superType type="Control" />
+			<element name="Style_Checkbox" type="boolean" />
+			<element name="RadioGroup" type="string" />
+			<element name="Text" type="string" />
+			<element name="ButtonDrawTemplate" type="ButtonDrawTemplate" />
+			<element name="SoundPressed" type="string" />
+			<element name="SoundUp" type="string" />
+			<element name="SoundFlyby" type="string" />
+			<element name="DecalOffset" type="Point" />
+			<element name="DecalSize" type="Size" />
+		</ElementType>
+		<ElementType name="Gauge">
+			<superType type="Control" />
+			<element name="GaugeDrawTemplate" type="GaugeDrawTemplate" />
+			<element name="EQType" type="int" />
+			<element name="FillTint" type="RGB" />
+			<element name="DrawLinesFill" type="boolean" />
+			<element name="LinesFillTint" type="RGB" />
+			<element name="TextOffsetX" type="int">
+				<default>0</default>
+			</element>
+			<element name="TextOffsetY" type="int">
+				<default>0</default>
+			</element>
+			<element name="GaugeOffsetX" type="int">
+				<default>0</default>
+			</element>
+			<element name="GaugeOffsetY" type="int">
+				<default>16</default>
+			</element>
+		</ElementType>
+		<ElementType name="SpellGem">
+			<superType type="Control" />
+			<element name="SpellGemDrawTemplate" type="SpellGemDrawTemplate" />
+			<element name="SpellIconOffsetX" type="int">
+				<default>0</default>
+			</element>
+			<element name="SpellIconOffsetY" type="int">
+				<default>0</default>
+			</element>
+		</ElementType>
+		<ElementType name="InvSlot">
+			<superType type="Control" />
+			<element name="EQType" type="int" />
+			<element name="Background" type="Ui2DAnimation:item" />
+			<element name="ItemOffsetX" type="int">
+				<default>0</default>
+			</element>
+			<element name="ItemOffsetY" type="int">
+				<default>0</default>
+			</element>
+		</ElementType>
+		<ElementType name="Editbox">
+			<superType type="Control" />
+			<element name="Style_Multiline" type="boolean" />
+		</ElementType>
+		<ElementType name="Slider">
+			<superType type="Control" />
+			<element name="SliderArt" type="SliderDrawTemplate:item" />
+		</ElementType>
+		<ElementType name="Label">
+			<superType type="Control" />
+			<element name="EQType" type="int" />
+			<element name="NoWrap" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="AlignCenter" type="boolean">
+				<default>false</default>
+			</element>
+			<element name="AlignRight" type="boolean">
+				<default>false</default>
+			</element>
+		</ElementType>
+		<ElementType name="STMLbox">
+			<superType type="Control" />
+		</ElementType>
+		<ElementType name="Combobox">
+			<superType type="Control"/>
+			<element name = "Button" type = "ButtonDrawTemplate:item"/>
+			<element name = "ListHeight" type = "int"/>
+			<element name = "Choices" type = "string" minOccurs = "0" maxOccurs = "*" />
+		</ElementType>
+		<ElementType name="Page">
+			<superType type="Control" />
+			<element name="TabText" type="string" />
+			<element name="TabTextColor" type="RGB" />
+			<element name="TabTextActiveColor" type="RGB" />
+			<element name="TabIcon" type="Ui2DAnimation:item" />
+			<element name="TabIconActive" type="Ui2DAnimation:item" />
+			<element name="Pieces" type="ScreenPiece:item" minOccurs="0" maxOccurs="*" />
+		</ElementType>
+		<ElementType name="TabBox">
+			<superType type="Control" />
+			<element name="TabBorderTemplate" type="FrameTemplate:item" />
+			<element name="PageBorderTemplate" type="FrameTemplate:item" />
+			<element name="Pages" type="Page:item" minOccurs="0" maxOccurs="*" />
+		</ElementType>
+		<ElementType name="Screen">
+			<superType type="Control" />
+			<element name="Style_Titlebar" type="boolean" />
+			<element name="Style_Closebox" type="boolean" />
+			<element name="Style_Minimizebox" type="boolean" />
+			<element name="Style_Sizable" type="boolean" />
+			<element name="Pieces" type="ScreenPiece:item" minOccurs="0" maxOccurs="*" />
+		</ElementType>
+		<ElementType name="SuiteDefaults">
+			<superType type="Class" />
+			<element name="DefaultWindowDrawTemplate" type="WindowDrawTemplate:item" />
+			<element name="CursorDefault" type="Ui2DAnimation:item" />
+			<element name="CursorResizeNS" type="Ui2DAnimation:item" />
+			<element name="CursorResizeEW" type="Ui2DAnimation:item" />
+			<element name="CursorResizeNESW" type="Ui2DAnimation:item" />
+			<element name="CursorResizeNWSE" type="Ui2DAnimation:item" />
+			<element name="CursorDrag" type="Ui2DAnimation:item" />
+		</ElementType>
+	</Schema>
+</XML>

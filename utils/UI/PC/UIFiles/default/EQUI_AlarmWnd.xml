@@ -1,0 +1,252 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Label item = "ALRW_ReminderLabel">
+		<ScreenID>ALRW_ReminderLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>105</CX>
+			<CY>50</CY>
+		</Size>
+		<Text>Please warn me after this time passes:</Text>
+		<TextColor>
+				<R>255</R>
+				<G>50</G>
+				<B>50</B>
+		</TextColor>
+		<NoWrap>false</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Label item = "ALRW_HoursLabel">
+		<ScreenID>ALRW_HoursLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>104</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>65</CX>
+			<CY>22</CY>
+		</Size>
+		<Text>Hours</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "ALRW_HoursEditbox">
+		<ScreenID>ALRW_HoursEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>175</X>
+			<Y>5</Y>
+		</Location>
+		<Size>
+			<CX>30</CX>
+			<CY>22</CY>
+		</Size>
+		<Text>0</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Label item = "ALRW_MinutesLabel">
+		<ScreenID>ALRW_MinutesLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>104</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>65</CX>
+			<CY>22</CY>
+		</Size>
+		<Text>Minutes</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>true</AlignRight>
+	</Label>
+
+	<Editbox item = "ALRW_MinutesEditbox">
+		<ScreenID>ALRW_MinutesEditbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<RelativePosition>true</RelativePosition>
+		<Style_Border>true</Style_Border>
+		<Location>
+			<X>175</X>
+			<Y>30</Y>
+		</Location>
+		<Size>
+			<CX>30</CX>
+			<CY>22</CY>
+		</Size>
+		<Text>0</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+	</Editbox>
+
+	<Button item = "ALRW_NeverShowAgainCheckbox">
+		<ScreenID>ALRW_NeverShowAgainCheckbox</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>10</X>
+			<Y>55</Y>
+		</Location>
+		<Size>
+			<CX>12</CX>
+			<CY>12</CY>
+		</Size>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>true</Style_Checkbox>
+		<Text></Text>
+		<TextColor>
+			<R>255</R>
+			<G>255</G>
+			<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_CheckBoxNormal</Normal>
+			<Pressed>A_CheckBoxPressed</Pressed>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Label item = "ALRW_NeverShowAgainLabel">
+		<ScreenID>ALRW_NeverShowAgainLabel</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>25</X>
+			<Y>55</Y>
+		</Location>
+		<Size>
+			<CX>185</CX>
+			<CY>25</CY>
+		</Size>
+		<Text>Do not show this window again.</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<NoWrap>true</NoWrap>
+		<AlignCenter>false</AlignCenter>
+		<AlignRight>false</AlignRight>
+	</Label>
+
+	<Button item = "ALRW_CancelButton">
+		<ScreenID>ALRW_CancelButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>5</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>75</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Skip</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+	<Button item = "ALRW_OkButton">
+		<ScreenID>ALRW_OkButton</ScreenID>
+		<RelativePosition>true</RelativePosition>
+		<Location>
+			<X>120</X>
+			<Y>80</Y>
+		</Location>
+		<Size>
+			<CX>75</CX>
+			<CY>20</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<Style_Checkbox>false</Style_Checkbox>
+		<Text>Set Time</Text>
+		<TextColor>
+				<R>255</R>
+				<G>255</G>
+				<B>255</B>
+		</TextColor>
+		<ButtonDrawTemplate>
+			<Normal>A_SmallBtnNormal</Normal>
+			<Pressed>A_SmallBtnPressed</Pressed>
+			<Flyby>A_SmallBtnFlyby</Flyby>
+			<Disabled>A_SmallBtnDisabled</Disabled>
+			<PressedFlyby>A_SmallBtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+
+
+	<Screen item = "AlarmWnd">
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>100</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>220</CX>
+			<CY>130</CY>
+		</Size>
+		<Text>Alarm Window</Text>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>false</Style_Closebox>
+		<Style_Minimizebox>false</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>false</Style_Sizable>
+			<Pieces>ALRW_ReminderLabel</Pieces>
+			<Pieces>ALRW_HoursLabel</Pieces>
+			<Pieces>ALRW_HoursEditbox</Pieces>
+			<Pieces>ALRW_MinutesLabel</Pieces>
+			<Pieces>ALRW_MinutesEditbox</Pieces>
+			<Pieces>ALRW_NeverShowAgainCheckbox</Pieces>
+			<Pieces>ALRW_NeverShowAgainLabel</Pieces>
+			<Pieces>ALRW_CancelButton</Pieces>
+			<Pieces>ALRW_OkButton</Pieces>
+	</Screen>
+
+</XML>

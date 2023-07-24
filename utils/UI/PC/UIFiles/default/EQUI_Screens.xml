@@ -1,0 +1,169 @@
+<?xml version = "1.0"?>
+<XML ID = "EQInterfaceDefinitionLanguage">
+	<Schema xmlns = "EverQuestData" xmlns:dt = "EverQuestDataTypes"/>
+
+	<Editbox item = "MW_ChatInput">
+		<ScreenID>ChatInput</ScreenID>
+		<Location>
+			<X>10</X>
+			<Y>260</Y>
+		</Location>
+		<Size>
+			<CX>128</CX>
+			<CY>20</CY>
+		</Size>
+	</Editbox>
+	<Listbox item = "MW_List">
+		<ScreenID>List</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>10</X>
+			<Y>125</Y>
+		</Location>
+		<Size>
+			<CX>280</CX>
+			<CY>125</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<Columns>
+			<Header>Header_Listbox</Header>
+			<Width>90</Width>
+			<Heading>Column 1</Heading>
+		</Columns>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Column 2</Heading>
+		</Columns>
+		<Columns>
+			<Width>90</Width>
+			<Heading>Column 3</Heading>
+		</Columns>
+	</Listbox>
+	<Combobox item = "MW_Languages">
+		<ScreenID>Languages</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>10</X>
+			<Y>100</Y>
+		</Location>
+		<Size>
+			<CX>280</CX>
+			<CY>20</CY>
+		</Size>
+		<ListHeight>100</ListHeight>
+		<Button>BDT_Combo</Button>
+		<Style_Border>true</Style_Border>
+	</Combobox>
+	<Listbox item = "MW_OwnerDrawList">
+		<ScreenID>OwnerDrawList</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Location>
+			<X>10</X>
+			<Y>285</Y>
+		</Location>
+		<Size>
+			<CX>280</CX>
+			<CY>75</CY>
+		</Size>
+		<Style_Border>true</Style_Border>
+		<Style_VScroll>true</Style_VScroll>
+		<OwnerDraw>true</OwnerDraw>
+	</Listbox>
+	<Button item = "MW_Checkbox">
+		<ScreenID>Checkbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Text>Check</Text>
+		<Location>
+			<X>10</X>
+			<Y>365</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>32</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MW_Radio1">
+		<ScreenID>Checkbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Text>Radio 1</Text>
+		<Location>
+			<X>10</X>
+			<Y>400</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>32</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<RadioGroup>Radios</RadioGroup>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Button item = "MW_Radio2">
+		<ScreenID>Checkbox</ScreenID>
+		<DrawTemplate>WDT_Inner</DrawTemplate>
+		<Text>Radio 2</Text>
+		<Location>
+			<X>100</X>
+			<Y>400</Y>
+		</Location>
+		<Size>
+			<CX>80</CX>
+			<CY>32</CY>
+		</Size>
+		<Style_Checkbox>true</Style_Checkbox>
+		<RadioGroup>Radios</RadioGroup>
+		<ButtonDrawTemplate>
+			<Normal>A_BtnNormal</Normal>
+			<Pressed>A_BtnPressed</Pressed>
+			<Flyby>A_BtnFlyby</Flyby>
+			<Disabled>A_BtnDisabled</Disabled>
+			<PressedFlyby>A_BtnPressedFlyby</PressedFlyby>
+		</ButtonDrawTemplate>
+	</Button>
+	<Screen item = "MotherWindow">
+		<ScreenID/>
+		<Font/>
+		<RelativePosition>false</RelativePosition>
+		<Location>
+			<X>450</X>
+			<Y>50</Y>
+		</Location>
+		<Size>
+			<CX>300</CX>
+			<CY>500</CY>
+		</Size>
+		<Style_VScroll>false</Style_VScroll>
+		<Style_HScroll>false</Style_HScroll>
+		<Style_Transparent>false</Style_Transparent>
+		<TooltipReference/>
+		<DrawTemplate>WDT_Def</DrawTemplate>
+		<Style_Titlebar>true</Style_Titlebar>
+		<Style_Closebox>true</Style_Closebox>
+		<Style_Minimizebox>true</Style_Minimizebox>
+		<Style_Border>true</Style_Border>
+		<Style_Sizable>true</Style_Sizable>
+		<Pieces>MW_Languages</Pieces>
+		<Pieces>MW_ChatInput</Pieces>
+		<Pieces>MW_List</Pieces>
+		<Pieces>MW_OwnerDrawList</Pieces>
+		<Pieces>MW_Checkbox</Pieces>
+		<Pieces>MW_Radio1</Pieces>
+		<Pieces>MW_Radio2</Pieces>
+	</Screen>
+
+</XML>
