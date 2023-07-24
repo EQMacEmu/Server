@@ -7,4 +7,4 @@ Map Git:
 https://github.com/EQMacEmu/Maps
 
 Database:
-https://github.com/EQMacEmu/Server/utils/sql/database_full/
+https://github.com/EQMacEmu/Server/utils/sql/database_full
