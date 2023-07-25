@@ -28,6 +28,7 @@
 	#include <windows.h>
 #else
 	#include <sys/time.h>
+	#include <ctime>
 	#include <netinet/in.h>
 #endif
 
