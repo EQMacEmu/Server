@@ -128,7 +128,6 @@ bool PersistentTimer::Load(Database *db) {
                                     (unsigned long)_char_id, _type);
     auto results = db->QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "Error in PersistentTimer::Load, error: %s", results.ErrorMessage().c_str());
 		return false;
 	}
 
@@ -158,9 +157,6 @@ bool PersistentTimer::Store(Database *db) {
 
     auto results = db->QueryDatabase(query);
 	if (!results.Success()) {
-#if EQDEBUG > 5
-		Log(Logs::General, Logs::Error, "Error in PersistentTimer::Store, error: %s", results.ErrorMessage().c_str());
-#endif
 		return false;
 	}
 
@@ -275,7 +271,6 @@ bool PTimerList::Load(Database *db) {
                                     (unsigned long)_char_id);
     auto results = db->QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "Error in PersistentTimer::Load, error: %s", results.ErrorMessage().c_str());
 		return false;
 	}
 
@@ -330,7 +325,6 @@ bool PTimerList::Clear(Database *db) {
 
     auto results = db->QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "Error in PersistentTimer::Clear, error: %s", results.ErrorMessage().c_str());
 		return false;
 	}
 
@@ -427,7 +421,6 @@ bool PTimerList::ClearOffline(Database *db, uint32 char_id, pTimerType type) {
 
     auto results = db->QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "Error in PTimerList::ClearOffline, error: %s", results.ErrorMessage().c_str());
 		return false;
 	}
 

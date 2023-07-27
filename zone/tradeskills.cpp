@@ -117,11 +117,6 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 		return;
 	}
 
-	// Send acknowledgement packets to client
-	auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
-	user->QueuePacket(outapp);
-	safe_delete(outapp);
-
 	//changing from a switch to string of if's since we don't need to iterate through all of the skills in the SkillType enum
 	if (spec.tradeskill == EQ::skills::SkillAlchemy) {
 		if (user_pp.class_ != SHAMAN) {
@@ -149,7 +144,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	//now clean out the containers.
 	if(worldcontainer) {
 		container->Clear();
-		outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
+		auto outapp = new EQApplicationPacket(OP_ClearObject, sizeof(ClearObject_Struct));
 		ClearObject_Struct *cos = (ClearObject_Struct *)outapp->pBuffer;
 		cos->Clear = 1;
 		user->QueuePacket(outapp);
@@ -181,87 +176,19 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 		}
 	}
 
+	{
+		// Send acknowledgement packets to client - this lets the client transact again
+		auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
+		user->QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+
 	if (success) {
 		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name.c_str(), spec.recipe_id);
 	}
 	else {
 		parse->EventPlayer(EVENT_COMBINE_FAILURE, user, spec.name.c_str(), spec.recipe_id);
 	}
-}
-
-EQ::skills::SkillType Object::TypeToSkill(uint32 type)
-{
-	switch(type) // grouped and ordered by SkillUseTypes name - new types need to be verified for proper SkillUseTypes and use
-	{
-/*SkillAlchemy*/
-		case EQ::item::BagTypeMedicineBag: { return EQ::skills::SkillAlchemy; }
-
-/*SkillBaking*/
-		// case BagTypeMixingBowl: // No idea...
-		case EQ::item::BagTypeOven: { return EQ::skills::SkillBaking; }
-
-/*SkillBlacksmithing*/
-		case EQ::item::BagTypeForge:
-		// case BagTypeKoadaDalForge:
-		case EQ::item::BagTypeTeirDalForge:
-		case EQ::item::BagTypeOggokForge:
-		case EQ::item::BagTypeStormguardForge:
-		// case BagTypeAkanonForge:
-		// case BagTypeNorthmanForge:
-		// case BagTypeCabilisForge:
-		// case BagTypeFreeportForge:
-		// case BagTypeRoyalQeynosForge:
-		// case BagTypeTrollForge:
-		case EQ::item::BagTypeFierDalForge:
-		case EQ::item::BagTypeValeForge: { return EQ::skills::SkillBlacksmithing; } // Delete return if BagTypeGuktaForge enabled
-		// case BagTypeErudForge:
-		// case BagTypeGuktaForge: { return SkillBlacksmithing; }
-
-/*SkillBrewing*/
-		// case BagTypeIceCreamChurn: // No idea...
-		case EQ::item::BagTypeBrewBarrel: { return EQ::skills::SkillBrewing; }
-
-/*SkillFishing*/
-		case EQ::item::BagTypeTackleBox: { return EQ::skills::SkillFishing; }
-
-/*SkillFletching*/
-		case EQ::item::BagTypeFletchingKit: { return EQ::skills::SkillFletching; } // Delete return if BagTypeFierDalFletchingKit enabled
-		// case BagTypeFierDalFletchingKit: { return SkillFletching; }
-
-/*SkillJewelryMaking*/
-		case EQ::item::BagTypeJewelersKit: { return EQ::skills::SkillJewelryMaking; }
-
-/*SkillMakePoison*/
-		// This is a guess and needs to be verified... (Could be SkillAlchemy)
-		// case BagTypeMortar: { return SkillMakePoison; }
-
-/*SkillPottery*/
-		case EQ::item::BagTypePotteryWheel:
-		case EQ::item::BagTypeKiln: { return EQ::skills::SkillPottery; } // Delete return if BagTypeIksarPotteryWheel enabled
-		// case BagTypeIksarPotteryWheel: { return SkillPottery; }
-
-/*SkillResearch*/
-		// case BagTypeLexicon:
-		case EQ::item::BagTypeWizardsLexicon:
-		case EQ::item::BagTypeMagesLexicon:
-		case EQ::item::BagTypeNecromancersLexicon:
-		case EQ::item::BagTypeEnchantersLexicon: { return EQ::skills::SkillResearch; } // Delete return if BagTypeConcordanceofResearch enabled
-		// case BagTypeConcordanceofResearch: { return SkillResearch; }
-
-/*SkillTailoring*/
-		case EQ::item::BagTypeSewingKit: { return EQ::skills::SkillTailoring; } // Delete return if BagTypeFierDalTailoringKit enabled
-		// case BagTypeHalflingTailoringKit:
-		// case BagTypeErudTailoringKit:
-		// case BagTypeFierDalTailoringKit: { return SkillTailoring; }
-
-/*SkillTinkering*/
-		case EQ::item::BagTypeToolBox: { return EQ::skills::SkillTinkering; }
-
-/*Undefined*/
-		default: { break; }
-	}
-
-	return TradeskillUnknown;
 }
 
 //returns true on success

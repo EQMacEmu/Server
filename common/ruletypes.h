@@ -335,6 +335,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY ( Merchant )
 RULE_BOOL( Merchant, UseGreed, false) // if true, merchants that do not already have a database set greed value will raise their prices the more they are sold to or bought from.  This is custom behavior and not classic
 RULE_INT ( Merchant, GreedThreshold, 100) // How many purchases are required to or from a vendor before it becomes greedy and starts to raise their prices.
+RULE_BOOL( Merchant, ClearTempList, true) // clear temp list after death if set true.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Bazaar )

@@ -83,6 +83,7 @@
 #include "wguild_mgr.h"
 #include "ucs.h"
 #include "queryserv.h"
+#include "world_server_command_handler.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
@@ -162,15 +163,9 @@ int main(int argc, char** argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	/* Database Version Check */
-	uint32 Database_Version = CURRENT_BINARY_DATABASE_VERSION;
-	if (argc >= 2) { 
-		if (strcasecmp(argv[1], "db_version") == 0) {
-			std::cout << "Binary Database Version: " << Database_Version << std::endl;
-			return 0;
-		}
+	if (argc > 1) {
+		WorldserverCommandHandler::CommandHandler(argc, argv);
 	}
-
 
 	LoadServerConfig();
 
@@ -202,9 +197,9 @@ int main(int argc, char** argv) {
 
 	guild_mgr.SetDatabase(&database);
 
-	/* Register Log System and Settings */
-	database.LoadLogSettings(LogSys.log_settings);
-	LogSys.StartFileLogs();
+	LogSys.SetDatabase(&database)
+		->LoadLogDatabaseSettings()
+		->StartFileLogs();
 
 	if (argc >= 2) {
 		std::string tmp;

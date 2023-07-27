@@ -756,6 +756,16 @@ bool Lua_Mob::SpellFinished(int spell_id, Lua_Mob target, int slot, int mana_use
 	return self->SpellFinished(spell_id, target, static_cast<EQ::spells::CastingSlot>(slot), mana_used, inventory_slot, resist_adjust, proc, recourse);
 }
 
+bool Lua_Mob::SpellOnTarget(int spell_id, Lua_Mob target) {
+	Lua_Safe_Call_Bool();
+	return self->SpellOnTarget(spell_id, target);
+}
+
+bool Lua_Mob::SpellOnTarget(int spell_id, Lua_Mob target, int adjust) {
+	Lua_Safe_Call_Bool();
+	return self->SpellOnTarget(spell_id, target, false, true, adjust);
+}
+
 Lua_Mob Lua_Mob::GetPet() {
 	Lua_Safe_Call_Class(Lua_Mob);
 	return Lua_Mob(self->GetPet());
@@ -1552,6 +1562,22 @@ void Lua_Mob::StopNavigation() {
 	self->StopNavigation();
 }
 
+int Lua_Mob::GetSnaredAmount() {
+	Lua_Safe_Call_Int();
+	return self->GetSnaredAmount();
+}
+
+bool Lua_Mob::IsCasting() {
+	Lua_Safe_Call_Bool();
+	return self->IsCasting();
+}
+
+int Lua_Mob::GetDamageShieldAmount() {
+	Lua_Safe_Call_Int();
+	return self->GetDamageShieldAmount();
+}
+
+
 luabind::scope lua_register_mob() {
 	return luabind::class_<Lua_Mob, Lua_Entity>("Mob")
 		.def(luabind::constructor<>())
@@ -1697,7 +1723,9 @@ luabind::scope lua_register_mob() {
 		.def("SpellFinished", (bool(Lua_Mob::*)(int,Lua_Mob,int,int,uint32))&Lua_Mob::SpellFinished)
 		.def("SpellFinished", (bool(Lua_Mob::*)(int,Lua_Mob,int,int,uint32,int))&Lua_Mob::SpellFinished)
 		.def("SpellFinished", (bool(Lua_Mob::*)(int,Lua_Mob,int,int,uint32,int,bool))&Lua_Mob::SpellFinished)
-		.def("SpellFinished", (bool(Lua_Mob::*)(int, Lua_Mob, int, int, uint32, int, bool, bool))&Lua_Mob::SpellFinished)
+		.def("SpellFinished", (bool(Lua_Mob::*)(int,Lua_Mob,int,int,uint32,int,bool,bool))&Lua_Mob::SpellFinished)
+		.def("SpellOnTarget", (bool(Lua_Mob::*)(int,Lua_Mob))&Lua_Mob::SpellOnTarget)
+		.def("SpellOnTarget", (bool(Lua_Mob::*)(int,Lua_Mob,int))&Lua_Mob::SpellOnTarget)
 		.def("GetPet", &Lua_Mob::GetPet)
 		.def("GetOwner", &Lua_Mob::GetOwner)
 		.def("IsPet", (bool(Lua_Mob::*)(void))&Lua_Mob::IsPet)
@@ -1827,7 +1855,10 @@ luabind::scope lua_register_mob() {
 		.def("WalkTo", (int(Lua_Mob::*)(double, double, double))& Lua_Mob::WalkTo)
 		.def("RunTo", (int(Lua_Mob::*)(double, double, double))& Lua_Mob::RunTo)
 		.def("NavigateTo", (void(Lua_Mob::*)(double, double, double))& Lua_Mob::NavigateTo)
-		.def("StopNavigation", (void(Lua_Mob::*)(void))& Lua_Mob::StopNavigation);
+		.def("StopNavigation", (void(Lua_Mob::*)(void))& Lua_Mob::StopNavigation)
+		.def("GetSnaredAmount", (int(Lua_Mob::*)(void))& Lua_Mob::GetSnaredAmount)
+		.def("IsCasting", (bool(Lua_Mob::*)(void))& Lua_Mob::IsCasting)
+		.def("GetDamageShieldAmount", (int(Lua_Mob::*)(void))& Lua_Mob::GetDamageShieldAmount);
 }
 
 luabind::scope lua_register_special_abilities() {

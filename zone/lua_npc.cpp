@@ -306,6 +306,16 @@ void Lua_NPC::MoveTo(float x, float y, float z, float h, bool save, uint32 delay
 	self->MoveTo(position, save, delay);
 }
 
+void Lua_NPC::StopQuestMove() {
+	Lua_Safe_Call_Void();
+	self->StopQuestMove();
+}
+
+void Lua_NPC::StopQuestMove(bool save_guard_spot) {
+	Lua_Safe_Call_Void();
+	self->StopQuestMove(save_guard_spot);
+}
+
 void Lua_NPC::NextGuardPosition() {
 	Lua_Safe_Call_Void();
 	self->NextGuardPosition();
@@ -606,6 +616,17 @@ void Lua_NPC::SetBaseHP(uint32 new_hp) {
 	self->SetBaseHP(new_hp);
 }
 
+void Lua_NPC::SetSpawnPoint(float x, float y, float z, float h) {
+	Lua_Safe_Call_Void();
+	self->SetSpawnPoint(x, y, z, h);
+}
+
+void Lua_NPC::SetClass(int classNum) {
+	Lua_Safe_Call_Void();
+	self->SetClass(classNum);
+}
+
+
 luabind::scope lua_register_npc() {
 	return luabind::class_<Lua_NPC, Lua_Mob>("NPC")
 		.def(luabind::constructor<>())
@@ -722,7 +743,11 @@ luabind::scope lua_register_npc() {
 		.def("CanTalk", (bool(Lua_NPC::*)(void))&Lua_NPC::CanTalk)
 		.def("ForceRepop", (void(Lua_NPC::*)(bool))&Lua_NPC::ForceRepop)
 		.def("SetNPCAggro", (void(Lua_NPC::*)(bool))&Lua_NPC::SetNPCAggro)
-		.def("SetBaseHP", (void(Lua_NPC::*)(uint32))&Lua_NPC::SetBaseHP);
+		.def("SetBaseHP", (void(Lua_NPC::*)(uint32))&Lua_NPC::SetBaseHP)
+		.def("SetSpawnPoint", (void(Lua_NPC::*)(float, float, float, float))& Lua_NPC::SetSpawnPoint)
+		.def("StopQuestMove", (void(Lua_NPC::*)(void))& Lua_NPC::StopQuestMove)
+		.def("StopQuestMove", (void(Lua_NPC::*)(bool))& Lua_NPC::StopQuestMove)
+		.def("SetClass", (void(Lua_NPC::*)(int))& Lua_NPC::SetClass);
 }
 
 #endif

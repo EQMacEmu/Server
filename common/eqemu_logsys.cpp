@@ -19,6 +19,7 @@
 
 #include "eqemu_logsys.h"
 #include "platform.h"
+#include "repositories/logsys_categories_repository.h"
 #include "strings.h"
 #include "database.h"
 #include "misc.h"
@@ -29,6 +30,7 @@
 #include <iomanip>
 #include <time.h>
 #include <sys/stat.h>
+#include <algorithm>
 
 std::ofstream process_log;
 
@@ -84,7 +86,7 @@ EQEmuLogSys::EQEmuLogSys()
 
 EQEmuLogSys::~EQEmuLogSys() = default;
 
-void EQEmuLogSys::LoadLogSettingsDefaults()
+EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 {
 	/* Get Executable platform currently running this code (Zone/World/etc) */
 	log_platform = GetExecutablePlatformInt();
@@ -136,18 +138,26 @@ void EQEmuLogSys::LoadLogSettingsDefaults()
 	/*	Declare process file names for log writing
 		If there is no process_file_name declared, no log file will be written, simply
 	*/
-	if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformWorld)
+	if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformWorld) {
 		platform_file_name = "world";
-	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformQueryServ)
+	}
+	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformQueryServ) {
 		platform_file_name = "query_server";
-	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformZone)
+	}
+	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformZone) {
 		platform_file_name = "zone";
-	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformUCS)
+	}
+	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformUCS) {
 		platform_file_name = "ucs";
-	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformLogin)
+	}
+	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformLogin) {
 		platform_file_name = "login";
-	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformLogin)
+	}
+	else if (EQEmuLogSys::log_platform == EQEmuExePlatform::ExePlatformLogin) {
 		platform_file_name = "launcher";
+	}
+
+	return this;
 }
 
 /**
@@ -480,4 +490,77 @@ void EQEmuLogSys::EnableConsoleLogging()
 		log_settings[log_index].log_to_console = Logs::General;
 		log_settings[log_index].is_category_enabled = 1;
 	}
+}
+
+EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
+{
+	auto categories = LogsysCategoriesRepository::GetWhere(
+		*m_database,
+		"TRUE ORDER BY log_category_id"
+	);
+
+	// keep track of categories
+	std::vector<int> db_categories{};
+	db_categories.reserve(categories.size());
+
+	// loop through database categories
+	for (auto& c : categories) {
+		if (c.log_category_id <= Logs::None || c.log_category_id >= Logs::MaxCategoryID) {
+			continue;
+		}
+
+		log_settings[c.log_category_id].log_to_console = static_cast<uint8>(c.log_to_console);
+		log_settings[c.log_category_id].log_to_file = static_cast<uint8>(c.log_to_file);
+		log_settings[c.log_category_id].log_to_gmsay = static_cast<uint8>(c.log_to_gmsay);
+
+		// Determine if any output method is enabled for the category
+		// and set it to 1 so it can used to check if category is enabled
+		const bool log_to_console = log_settings[c.log_category_id].log_to_console > 0;
+		const bool log_to_file = log_settings[c.log_category_id].log_to_file > 0;
+		const bool log_to_gmsay = log_settings[c.log_category_id].log_to_gmsay > 0;
+		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay;
+
+		if (is_category_enabled) {
+			log_settings[c.log_category_id].is_category_enabled = 1;
+		}
+
+		// This determines whether or not the process needs to actually file log anything.
+		// If we go through this whole loop and nothing is set to any debug level, there
+		// is no point to create a file or keep anything open
+		if (log_settings[c.log_category_id].log_to_file > 0) {
+			LogSys.file_logs_enabled = true;
+		}
+
+		db_categories.emplace_back(c.log_category_id);
+	}
+
+	// Auto inject categories that don't exist in the database...
+	for (int i = Logs::AA; i != Logs::MaxCategoryID; i++) {
+		if (std::find(db_categories.begin(), db_categories.end(), i) == db_categories.end()) {
+			LogInfo(
+				"Automatically adding new log category [{0}]",
+				Logs::LogCategoryName[i]
+			);
+
+			auto new_category = LogsysCategoriesRepository::NewEntity();
+			new_category.log_category_id = i;
+			new_category.log_category_description = Strings::Escape(Logs::LogCategoryName[i]);
+			new_category.log_to_console = log_settings[i].log_to_console;
+			new_category.log_to_gmsay = log_settings[i].log_to_gmsay;
+			new_category.log_to_file = log_settings[i].log_to_file;
+
+			LogsysCategoriesRepository::InsertOne(*m_database, new_category);
+		}
+	}
+
+	LogInfo("Loaded [{}] log categories", categories.size());
+
+	return this;
+}
+
+EQEmuLogSys* EQEmuLogSys::SetDatabase(Database* db)
+{
+	m_database = db;
+
+	return this;
 }

@@ -185,6 +185,7 @@ public:
 	int GetSpentAA();
 	void AddAAPoints(int points);
 	void RefundAA();
+	void ExpendAATimer(int aaid);
 	int GetModCharacterFactionLevel(int faction);
 	int GetStartZone();
 	void KeyRingAdd(uint32 item);

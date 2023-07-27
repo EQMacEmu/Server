@@ -987,7 +987,7 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 
 				if (!fizzle)
 				{
-					CastToClient()->RefreshSpellIcon(true);
+					CastToClient()->RefreshSpellIcon();
 				}
 			}
 		}
@@ -1365,7 +1365,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 			SendSpellBarEnable(spell_id);
 		}
 
-		if (slot < CastingSlot::MaxGems)
+		if (slot < CastingSlot::MaxGems || slot == CastingSlot::Ability)
 		{
 			// this causes the delayed refresh of the spell bar gems
 			c->MemorizeSpell(static_cast<uint32>(slot), spell_id, memSpellSpellbar);
@@ -1523,7 +1523,10 @@ bool Mob::HasSpellReagent(uint16 spell_id)
 		int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost, spell_id, item_name);
 		if (zone->random.Roll(reg_focus))
 		{
-			Message_StringID(MT_Spells, BEGINS_TO_SHINE, item_name.c_str());
+			if (item_name.length() > 0)
+			{
+				Message_StringID(MT_Spells, BEGINS_TO_SHINE, item_name.c_str());
+			}
 			Log(Logs::General, Logs::Focus, "focusReagentCost prevented reagent consumption (%d chance)", reg_focus);
 		}
 		else
@@ -2174,7 +2177,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 			}
 			else
 			{
-				if (spells[spell_id].targettype == ST_GroupTeleport)
+				if (spells[spell_id].targettype == ST_GroupTeleport || spells[spell_id].targettype == ST_Group)
 				{
 					// group spell cast by NPC has a special case in AESpell
 					// Balance of the Nameless, Cazic's Gift, recourse spells
@@ -2247,6 +2250,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 			else if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2)	//harm touch
 			{
 				recast -= GetAA(aaTouchoftheWicked) * 720;
+				CastToClient()->ExpendAATimer(aaImprovedHarmTouch);
 			}
 
 			uint16 timer_id = spell_id;
@@ -3302,12 +3306,13 @@ void Mob::BuffFadeAll(bool skiprez, bool message)
 {
 	int buff_count = GetMaxTotalSlots();
 	for (int j = 0; j < buff_count; j++) {
-		if(buffs[j].spellid != SPELL_UNKNOWN)
+		if (buffs[j].spellid != SPELL_UNKNOWN)
 		{
-			if(!skiprez || (skiprez && !IsResurrectionEffects(buffs[j].spellid)))
+			if (!skiprez || (skiprez && !IsResurrectionEffects(buffs[j].spellid)))
 				BuffFadeBySlot(j, false, message);
 		}
 	}
+
 	//we tell BuffFadeBySlot not to recalc, so we can do it only once when were done
 	CalcBonuses();
 }
@@ -4746,29 +4751,17 @@ bool Mob::IsPacified()
 	return false;
 }
 
-void Client::RefreshSpellIcon(bool disableslot)
+void Client::RefreshSpellIcon()
 {
 	for (unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
 	{
 		if (IsValidSpell(m_pp.mem_spells[i]) && p_timers.Enabled(pTimerSpellStart + m_pp.mem_spells[i]))
 		{
 			m_pp.spellSlotRefresh[i] = p_timers.GetRemainingTime(pTimerSpellStart + m_pp.mem_spells[i]);
-			if(disableslot)
+			if(m_pp.spellSlotRefresh[i] > 0)
 			{
-				if(m_pp.spellSlotRefresh[i] > 0)
-				{
-					MemorizeSpell(i, m_pp.mem_spells[i], memSpellSpellbar);
-					Log(Logs::General, Logs::Spells, "Sending slot disable for spell %d in slot %d which has %d seconds left", m_pp.mem_spells[i], i, m_pp.spellSlotRefresh[i]);
-				}
-			}
-			else
-			{
-				if(m_pp.spellSlotRefresh[i] == 0)
-				{
-					MemorizeSpell(i, SPELLBAR_UNLOCK, memSpellSpellbar);
-					Log(Logs::General, Logs::Spells, "Sending slot enable for spell %d in slot %d", m_pp.mem_spells[i], i);
-					p_timers.Clear(&database, pTimerSpellStart + m_pp.mem_spells[i]);
-				}
+				MemorizeSpell(i, m_pp.mem_spells[i], memSpellSpellbar);
+				Log(Logs::General, Logs::Spells, "Sending slot disable for spell %d in slot %d which has %d seconds left", m_pp.mem_spells[i], i, m_pp.spellSlotRefresh[i]);
 			}
 		}
 	}

@@ -272,6 +272,27 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				// Bards don't get mana from effects, good or bad.
 				if(GetClass() == BARD)
 					break;
+
+				// from client decompile, these effects are less effective on NPCs above level 52
+				if (spells[spell_id].buffdurationformula == 0 && IsNPC())
+				{
+					if (GetLevel() > 52)
+					{
+						if (GetLevel() > 54)
+						{
+							effect_value /= 3;
+							if (effect_value < -105)
+							{
+								effect_value = -105;
+							}
+						}
+						else
+						{
+							effect_value /= 2;
+						}
+					}
+				}
+
 				if(spells[spell_id].manatapspell) {
 					if(GetCasterClass() != 'N') {
 #ifdef SPELL_EFFECT_SPAM

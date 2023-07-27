@@ -199,10 +199,10 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	/* Register Log System and Settings */
-	LogSys.SetGMSayHandler(&Zone::GMSayHookCallBackProcess);
-	database.LoadLogSettings(LogSys.log_settings); 
-	LogSys.StartFileLogs();
+	LogSys.SetDatabase(&database)
+		->LoadLogDatabaseSettings()
+		->SetGMSayHandler(&Zone::GMSayHookCallBackProcess)
+		->StartFileLogs();
 
 	/* Guilds */
 	guild_mgr.SetDatabase(&database);
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
 	std::string hotfix_name;
 	if(database.GetVariable("hotfix_name", hotfix_name)) {
 		if(!hotfix_name.empty()) {
-			LogInfo("Current hotfix in use: '{}'", hotfix_name.c_str());
+			LogInfo("Current hotfix in use: [{}]", hotfix_name.c_str());
 		}
 	}
 

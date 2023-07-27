@@ -81,9 +81,9 @@ int main() {
 		return 1;
 	}
 
-	/* Register Log System and Settings */
-	database.LoadLogSettings(LogSys.log_settings);
-	LogSys.StartFileLogs();
+	LogSys.SetDatabase(&database)
+		->LoadLogDatabaseSettings()
+		->StartFileLogs();
 
 	if (signal(SIGINT, CatchSignal) == SIG_ERR)	{
 		LogInfo("Could not set signal handler");

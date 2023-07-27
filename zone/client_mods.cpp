@@ -1789,8 +1789,10 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	Log(Logs::Moderate, Logs::Spells, "%s::GetInstrumentMod() song=%d mod=%d modcap=%d\n",
 			GetName(), spell_id, effectmod, effectmodcap);
 
-	//Cinda`s Charismatic Carillon
-	if (spell_id == 708)
+	// it's unclear if the 2 cassindra clarity songs should be modded.  there are conflicting accounts on old forum posts.
+	// the TAKP client does mod these spells unless we lie to the client by sending this false mod value in the action packet instead.
+	// it is possible that AK worked this way, but this is just a guess.
+	if (spell_id == SPELL_CINDAS_CHARISMATIC_CARILLON || spell_id == SPELL_CASSINDRAS_CHANT_OF_CLARITY || spell_id == SPELL_CASSINDRAS_CHORUS_OF_CLARITY)
 	{
 		effectmod = 10;
 		Log(Logs::General, Logs::Spells, "Overriding instrument mod for song %d to %d", spell_id, effectmod);

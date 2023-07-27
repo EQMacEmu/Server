@@ -858,9 +858,9 @@ struct WearChange_Struct
 {
 	/*000*/ uint16 spawn_id;
 	/*002*/ uint8  wear_slot_id;
-	/*003*/ uint8  unknown03; // This is always used for Primary/Secondary. It also is used on the initial wearchange when a player is entering the zone. It isn't a slot :(
+	/*003*/ uint8  align03; // struct field alignment only, data here is not meaningful
 	/*004*/ uint16 material;
-	/*006*/ uint16 unknown06;
+	/*006*/ uint16 align06; // struct field alignment only, data here is not meaningful
 	/*008*/ EQ::textures::Tint_Struct color;
 	/*012*/
 };

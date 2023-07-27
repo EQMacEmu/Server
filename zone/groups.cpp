@@ -18,7 +18,6 @@
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
 #include "masterentity.h"
-#include "npc_ai.h"
 #include "../common/packet_functions.h"
 #include "../common/packet_dump.h"
 #include "../common/strings.h"

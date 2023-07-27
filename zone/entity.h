@@ -328,8 +328,6 @@ public:
 	void	QueueClientsByTarget(Mob* sender, const EQApplicationPacket* app, bool iSendToSender = true, Mob* SkipThisMob = 0, bool ackreq = true,
 						bool HoTT = true, uint32 ClientVersionBits = 0xFFFFFFFF);
 
-	void	QueueManaged(Mob* sender, const EQApplicationPacket* app, bool ignore_sender=false, bool ackreq = true);
-
 	void	AEAttack(Mob *attacker, float dist = 18.0f, int targetLimit = 0);
 	void	AETaunt(Client *caster, float range = 0.0f);
 	void	AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_caster = true, int16 resist_adjust = 0, Mob* target = nullptr, bool initial_cast = true);
@@ -349,7 +347,6 @@ public:
 	void	SendPositionUpdates(Client* client);
 	static char* RemoveNumbers(char* name);
 	void	SignalMobsByNPCID(uint32 npc_type, int signal_id, const char* data = nullptr);
-	void	CountNPC(uint32* NPCCount, uint32* NPCLootCount, uint32* gmspawntype_count);
 	void	RemoveEntity(uint16 id);
 	void	SendPetitionToAdmins(Petition* pet);
 	void	SendPetitionToAdmins();
@@ -369,7 +366,6 @@ public:
 	void	Process();
 	void	ClearAggro(Mob* targ);
 	void	ClearFeignAggro(Mob* targ);
-	void	CheckNearbyNodes(Client* c);
 	void	AggroZone(Mob* who, int hate = 0, bool use_ignore_dist = false);
 
 	bool	Fighting(Mob* targ);

@@ -749,8 +749,7 @@ void Client::SetBindPoint(int to_zone, const glm::vec3& location) {
 		m_pp.binds[0].z = location.z;
 		m_pp.binds[0].heading = m_Position.w * 2.0f;
 	}
-	auto regularBindPoint = glm::vec4(m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
-	database.SaveCharacterBindPoint(this->CharacterID(), m_pp.binds[0].zoneId, regularBindPoint, 0);
+	database.SaveCharacterBinds(this);
 }
 
 void Client::SetBindPoint2(int to_zone, const glm::vec4& location) {
@@ -768,8 +767,7 @@ void Client::SetBindPoint2(int to_zone, const glm::vec4& location) {
 		m_pp.binds[0].z = location.z;
 		m_pp.binds[0].heading = location.w * 2.0f;
 	}
-	auto regularBindPoint = glm::vec4(m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
-	database.SaveCharacterBindPoint(this->CharacterID(), m_pp.binds[0].zoneId, regularBindPoint, 0);
+	database.SaveCharacterBinds(this);
 }
 
 void Client::GoToBind(uint8 bindnum) {

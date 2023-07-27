@@ -1692,7 +1692,7 @@ void WorldServer::Process() {
 			break;
 		}
 		case ServerOP_ReloadLogs: {
-			database.LoadLogSettings(LogSys.log_settings);
+			LogSys.LoadLogDatabaseSettings();
 			break;
 		}
 		case ServerOP_QueryServGeneric:
@@ -1781,34 +1781,34 @@ void WorldServer::Process() {
 		case ServerOP_ChangeSharedMem:
 		{
 			std::string hotfix_name = std::string((char*)pack->pBuffer);
-			Log(Logs::General, Logs::ZoneServer, "Loading items");
+			LogInfo("Loading items");
 			if(!database.LoadItems(hotfix_name)) {
-				Log(Logs::General, Logs::Error, "Loading items FAILED!");
+				LogError("Loading items FAILED!");
 			}
 
-			Log(Logs::General, Logs::ZoneServer, "Loading npc faction lists");
+			LogInfo("Loading npc faction lists");
 			if(!database.LoadNPCFactionLists(hotfix_name)) {
-				Log(Logs::General, Logs::Error, "Loading npcs faction lists FAILED!");
+				LogError("Loading npcs faction lists FAILED!");
 			}
 
-			Log(Logs::General, Logs::ZoneServer, "Loading loot tables");
+			LogInfo("Loading loot tables");
 			if(!database.LoadLoot(hotfix_name)) {
-				Log(Logs::General, Logs::Error, "Loading loot FAILED!");
+				LogError("Loading loot FAILED!");
 			}
 
-			Log(Logs::General, Logs::ZoneServer, "Loading skill caps");
+			LogInfo("Loading skill caps");
 			if(!database.LoadSkillCaps(std::string(hotfix_name))) {
-				Log(Logs::General, Logs::Error, "Loading skill caps FAILED!");
+				LogError("Loading skill caps FAILED!");
 			}
 
-			Log(Logs::General, Logs::ZoneServer, "Loading spells");
+			LogInfo("Loading spells");
 			if(!database.LoadSpells(hotfix_name, &SPDAT_RECORDS, &spells)) {
-				Log(Logs::General, Logs::Error, "Loading spells FAILED!");
+				LogError("Loading spells FAILED!");
 			}
 
-			Log(Logs::General, Logs::ZoneServer, "Loading base data");
+			LogInfo("Loading base data");
 			if(!database.LoadBaseData(hotfix_name)) {
-				Log(Logs::General, Logs::Error, "Loading base data FAILED!");
+				LogError("Loading base data FAILED!");
 			}
 			break;
 		}

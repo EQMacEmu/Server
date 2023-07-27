@@ -323,7 +323,7 @@ public:
 	int					GetMaxWp() const { return max_wp; }
 	void				DisplayWaypointInfo(Client *to);
 	void				CalculateNewWaypoint();
-	void				AssignWaypoints(int32 grid, int start_wp = 0);
+	void				AssignWaypoints(int32 grid_id, int start_wp = 0);
 	void				RemoveWaypoints();
 	void				SetWaypointPause();
 	void				UpdateWaypoint(int wp_index);
@@ -340,6 +340,7 @@ public:
 	void				MoveTo(const glm::vec4& position, bool saveguardspot, uint32 delay = 5);
 	void				GetClosestWaypoints(std::list<wplist> &wp_list, int count, const glm::vec3& location);
 	int					GetClosestWaypoint(const glm::vec3& location);
+	void				StopQuestMove(bool setGuardSpot = false);
 
 	void				NextGuardPosition();
 	void				SaveGuardSpot(bool iClearGuardSpot = false);
@@ -349,6 +350,7 @@ public:
 	void				RestoreGuardSpotCharm();
 	void				AI_SetRoambox(float iRoamDist, uint32 iDelay = 2500, uint32 iMinDelay = 2500);
 	void				AI_SetRoambox(float iMaxX, float iMinX, float iMaxY, float iMinY, uint32 iDelay = 2500, uint32 iMinDelay = 2500);
+	void				SetSpawnPoint(float x, float y, float z, float h);
 
 	inline bool WillAggroNPCs() const { return(npc_aggro); }
 
@@ -374,6 +376,7 @@ public:
 
 	void	ModifyNPCStat(const char *identifier, const char *newValue);
 	virtual void SetLevel(uint8 in_level, bool command = false);
+	inline void SetClass(uint8 classNum) { if (classNum <= PLAYER_CLASS_COUNT && classNum > 0) class_ = static_cast<uint8>(classNum); }; // for custom scripts
 
 	const bool GetCombatEvent() const { return combat_event; }
 	void SetCombatEvent(bool b) { combat_event = b; }

@@ -86,6 +86,8 @@ public:
 	void SetNoQuestPause(bool state);
 	void MoveTo(float x, float y, float z, float h, bool save);
 	void MoveTo(float x, float y, float z, float h, bool save, uint32 delay);
+	void StopQuestMove();
+	void StopQuestMove(bool save_guard_spot);
 	void NextGuardPosition();
 	void SaveGuardSpot();
 	void SaveGuardSpot(bool clear);
@@ -141,6 +143,8 @@ public:
 	void ForceRepop();
 	void SetNPCAggro(bool state);
 	void SetBaseHP(uint32 new_hp);
+	void SetSpawnPoint(float x, float y, float z, float h);
+	void SetClass(int classNum);
 };
 
 #endif

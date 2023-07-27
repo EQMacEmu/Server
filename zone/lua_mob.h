@@ -179,6 +179,8 @@ public:
 	bool SpellFinished(int spell_id, Lua_Mob target, int slot, int mana_used, uint32 inventory_slot, int resist_adjust);
 	bool SpellFinished(int spell_id, Lua_Mob target, int slot, int mana_used, uint32 inventory_slot, int resist_adjust, bool proc);
 	bool SpellFinished(int spell_id, Lua_Mob target, int slot, int mana_used, uint32 inventory_slot, int resist_adjust, bool proc, bool recourse);
+	bool SpellOnTarget(int spell_id, Lua_Mob target);
+	bool SpellOnTarget(int spell_id, Lua_Mob target, int adjust);
 	Lua_Mob GetPet();
 	Lua_Mob GetOwner();
 	bool IsPet();
@@ -313,6 +315,9 @@ public:
 	void WalkTo(double x, double y, double z);
 	void NavigateTo(double x, double y, double z);
 	void StopNavigation();
+	int GetSnaredAmount();
+	bool IsCasting();
+	int GetDamageShieldAmount();
 };
 
 #endif

@@ -1656,6 +1656,94 @@ void EntityList::QueueClients(Mob *sender, const EQApplicationPacket *app,
 
 void EntityList::QueueWearChange(Mob *sender, const EQApplicationPacket *app, bool ignore_sender, uint16 slot, bool force_helm_update)
 {
+	/*
+		custom helms - IT240 but clients using old models don't send 240, they send the specific model instead
+
+		665 and 660 work with luclin models for vah shir, they don't show up on non cats.
+		these send 240 with both new and old models so shouldn't be seen in wearchanges normally
+
+		vah shir 665/660
+		human 627/620
+		barbarian 537/530
+		erudite 575/570
+		wood elf 565/561
+		high elf 605/600
+		dark elf 545/540
+		half elf 595/590
+		dwarf 557/550
+		troll 655/650
+		ogre 645/640
+		halfling 615/610
+		gnome 585/580
+		iksar 635/630
+
+        The following race/gender combinations have a hair portion to the head which is shown/hidden for custom helms.
+        This is implemented poorly in the client and all instances of that head share the same state, so if a spawn has a custom
+        helm equipped all other spawns/players with that head lose the back of their head.  This also happens in the other direction
+		so that you get both the custom helm and the hair model showing at the same time.  There seems to be no way to work around this
+		short of disabling custom helms for less glitchy models.
+
+        Human Female
+        Barbarian Female
+        Erudite Male
+        Erudite Female
+        Wood Elf Female
+        Dark Elf Female
+	*/
+	if (app)
+	{
+		WearChange_Struct *wc = (WearChange_Struct *)app->pBuffer;
+		if (wc->wear_slot_id == EQ::textures::armorHead)
+		{
+			switch (wc->material)
+			{
+			case 665:
+			case 660:
+			case 627:
+			case 620:
+			case 537:
+			case 530:
+			case 565:
+			case 561:
+			case 605:
+			case 600:
+			case 545:
+			case 540:
+			case 595:
+			case 590:
+			case 557:
+			case 550:
+			case 655:
+			case 650:
+			case 645:
+			case 640:
+			case 615:
+			case 610:
+			case 585:
+			case 580:
+			case 635:
+			case 630:
+				wc->material = 240;
+
+				// unfortunately the tint is wrong when a tinted custom helm is worn by a client using old models and there seems to be no good way to work around this.
+				// when the same helm is worn by a luclin model client it just treats it as a normal tinted item so they will appear inconsistent to luclin model using viewers
+				// we can't just look at their inventory because the wear change packets come before the item swap packets.  it would work for the special case where we're initially,
+				// zoning in and sending the first appearance but it would just get overwritten again when they swap the helm and get the wrong tint if we tried to peek at the inventory
+
+				/* this is just here for a comment and is wrong, don't use this code.
+				   if we're relaying a wear change where the client sent the wrong tint, we can't know the right tint since it may not be in the inventory slot yet. 
+				   the wearchange is sent before the item swaps.
+				Client *c = GetClientByID(wc->spawn_id);
+				if (c)
+				{
+					wc->color.Color = c->GetEquipmentColor(wc->wear_slot_id);
+				}
+				*/
+				break;
+			}
+		}
+	}
+
 	auto it = client_list.begin();
 	while (it != client_list.end()) {
 		Client *ent = it->second;
@@ -1666,21 +1754,6 @@ void EntityList::QueueWearChange(Mob *sender, const EQApplicationPacket *app, bo
 		++it;
 	}
 }
-
-void EntityList::QueueManaged(Mob *sender, const EQApplicationPacket *app,
-		bool ignore_sender, bool ackreq)
-{
-	auto it = client_list.begin();
-	while (it != client_list.end()) {
-		Client *ent = it->second;
-
-		if ((!ignore_sender || ent != sender))
-			ent->QueuePacket(app, ackreq, Client::CLIENT_CONNECTED);
-
-		++it;
-	}
-}
-
 
 void EntityList::QueueClientsStatus(Mob *sender, const EQApplicationPacket *app,
 		bool ignore_sender, uint8 minstatus, uint8 maxstatus)
@@ -2545,21 +2618,6 @@ void EntityList::RemoveEntity(uint16 id)
 void EntityList::Process()
 {
 	CheckSpawnQueue();
-}
-
-void EntityList::CountNPC(uint32 *NPCCount, uint32 *NPCLootCount, uint32 *gmspawntype_count)
-{
-	*NPCCount = 0;
-	*NPCLootCount = 0;
-
-	auto it = npc_list.begin();
-	while (it != npc_list.end()) {
-		(*NPCCount)++;
-		(*NPCLootCount) += it->second->CountLoot();
-		if (it->second->GetNPCTypeID() == 0)
-			(*gmspawntype_count)++;
-		++it;
-	}
 }
 
 void EntityList::Depop(bool StartSpawnTimer)

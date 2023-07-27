@@ -3,10 +3,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 SET(common_sources
 	base_packet.cpp
 	classes.cpp
+	cli/eqemu_command_handler.cpp
 	condition.cpp
 	crash.cpp
 	crc16.cpp
 	crc32.cpp
+	database/database_dump_service.cpp
 	database.cpp
 	dbcore.cpp
 	emu_constants.cpp
@@ -30,9 +32,9 @@ SET(common_sources
 	extprofile.cpp
 	faction.cpp
 	fastmath.cpp
+	file_util.cpp
 	guild_base.cpp
 	inventory_profile.cpp
-	inventory_slot.cpp
 	ipc_mutex.cpp
 	item_data.cpp
 	item_instance.cpp
@@ -91,6 +93,216 @@ SET(common_sources
 	tinyxml/tinyxmlparser.cpp
 )
 
+SET(repositories
+	# Base Repositories
+	repositories/base/base_blocked_spells_repository.h
+	repositories/base/base_bug_reports_repository.h
+	repositories/base/base_bugs_repository.h
+	repositories/base/base_char_create_combinations_repository.h
+	repositories/base/base_char_create_point_allocations_repository.h
+	repositories/base/base_character_alternate_abilities_repository.h
+	repositories/base/base_character_bind_repository.h
+	repositories/base/base_character_buffs_repository.h
+	repositories/base/base_character_corpse_items_repository.h
+	repositories/base/base_character_corpses_repository.h
+	repositories/base/base_character_currency_repository.h
+	repositories/base/base_character_data_repository.h
+	repositories/base/base_character_faction_values_repository.h
+	repositories/base/base_character_inspect_messages_repository.h
+	repositories/base/base_character_inventory_repository.h
+	repositories/base/base_character_languages_repository.h
+	repositories/base/base_character_material_repository.h
+	repositories/base/base_character_memmed_spells_repository.h
+	repositories/base/base_character_pet_buffs_repository.h
+	repositories/base/base_character_pet_info_repository.h
+	repositories/base/base_character_pet_inventory_repository.h
+	repositories/base/base_character_skills_repository.h
+	repositories/base/base_character_spells_repository.h
+	repositories/base/base_character_timers_repository.h
+	repositories/base/base_character_zone_flags_repository.h
+	repositories/base/base_damageshieldtypes_repository.h
+	repositories/base/base_discovered_items_repository.h
+	repositories/base/base_doors_repository.h
+	repositories/base/base_faction_list_mod_repository.h
+	repositories/base/base_faction_list_repository.h
+	repositories/base/base_fishing_repository.h
+	repositories/base/base_forage_repository.h
+	repositories/base/base_friends_repository.h
+	repositories/base/base_gm_ips_repository.h
+	repositories/base/base_graveyard_repository.h
+	repositories/base/base_grid_entries_repository.h
+	repositories/base/base_grid_repository.h
+	repositories/base/base_ground_spawns_repository.h
+	repositories/base/base_group_id_repository.h
+	repositories/base/base_group_leaders_repository.h
+	repositories/base/base_guild_members_repository.h
+	repositories/base/base_guild_ranks_repository.h
+	repositories/base/base_guilds_repository.h
+	repositories/base/base_item_tick_repository.h
+	repositories/base/base_items_repository.h
+	repositories/base/base_level_exp_mods_repository.h
+	repositories/base/base_logsys_categories_repository.h
+	repositories/base/base_lootdrop_entries_repository.h
+	repositories/base/base_lootdrop_repository.h
+	repositories/base/base_loottable_entries_repository.h
+	repositories/base/base_loottable_repository.h
+	repositories/base/base_merchantlist_repository.h
+	repositories/base/base_merchantlist_temp_repository.h
+	repositories/base/base_npc_emotes_repository.h
+	repositories/base/base_npc_faction_entries_repository.h
+	repositories/base/base_npc_faction_repository.h
+	repositories/base/base_npc_spells_effects_entries_repository.h
+	repositories/base/base_npc_spells_effects_repository.h
+	repositories/base/base_npc_spells_entries_repository.h
+	repositories/base/base_npc_spells_repository.h
+	repositories/base/base_npc_types_repository.h
+	repositories/base/base_npc_types_tint_repository.h
+	repositories/base/base_object_contents_repository.h
+	repositories/base/base_object_repository.h
+	repositories/base/base_petitions_repository.h
+	repositories/base/base_pets_repository.h
+	repositories/base/base_player_titlesets_repository.h
+	repositories/base/base_quest_globals_repository.h
+	repositories/base/base_raid_details_repository.h
+	repositories/base/base_raid_members_repository.h
+	repositories/base/base_reports_repository.h
+	repositories/base/base_respawn_times_repository.h
+	repositories/base/base_rule_sets_repository.h
+	repositories/base/base_rule_values_repository.h
+	repositories/base/base_saylink_repository.h
+	repositories/base/base_skill_caps_repository.h
+	repositories/base/base_spawn_condition_values_repository.h
+	repositories/base/base_spawn_conditions_repository.h
+	repositories/base/base_spawn_events_repository.h
+	repositories/base/base_spawn2_repository.h
+	repositories/base/base_spawnentry_repository.h
+	repositories/base/base_spawngroup_repository.h
+	repositories/base/base_spell_globals_repository.h
+	repositories/base/base_spells_new_repository.h
+	repositories/base/base_start_zones_repository.h
+	repositories/base/base_starting_items_repository.h
+	repositories/base/base_titles_repository.h
+	repositories/base/base_trader_repository.h
+	repositories/base/base_tradeskill_recipe_entries_repository.h
+	repositories/base/base_tradeskill_recipe_repository.h
+	repositories/base/base_traps_repository.h
+	repositories/base/base_zone_points_repository.h
+	repositories/base/base_zone_repository.h
+	repositories/base/base_aa_actions_repository.h
+	repositories/base/base_aa_effects_repository.h
+	repositories/base/base_aa_required_level_cost_repository.h
+	repositories/base/base_account_flags_repository.h
+	repositories/base/base_account_ip_repository.h
+	repositories/base/base_account_repository.h
+	repositories/base/base_account_rewards_repository.h
+	repositories/base/base_altadv_vars_repository.h
+	repositories/base/base_base_data_repository.h
+	
+	# Extended Repositories
+	repositories/bug_reports_repository.h
+	repositories/bugs_repository.h
+	repositories/char_create_combinations_repository.h
+	repositories/char_create_point_allocations_repository.h
+	repositories/character_alternate_abilities_repository.h
+	repositories/character_bind_repository.h
+	repositories/character_buffs_repository.h
+	repositories/character_corpse_items_repository.h
+	repositories/character_corpses_repository.h
+	repositories/character_currency_repository.h
+	repositories/character_data_repository.h
+	repositories/character_faction_values_repository.h
+	repositories/character_inspect_messages_repository.h
+	repositories/character_inventory_repository.h
+	repositories/character_languages_repository.h
+	repositories/character_material_repository.h
+	repositories/character_memmed_spells_repository.h
+	repositories/character_pet_buffs_repository.h
+	repositories/character_pet_info_repository.h
+	repositories/character_pet_inventory_repository.h
+	repositories/character_skills_repository.h
+	repositories/character_spells_repository.h
+	repositories/character_timers_repository.h
+	repositories/character_zone_flags_repository.h
+	repositories/damageshieldtypes_repository.h
+	repositories/discovered_items_repository.h
+	repositories/doors_repository.h
+	repositories/faction_list_mod_repository.h
+	repositories/faction_list_repository.h
+	repositories/fishing_repository.h
+	repositories/forage_repository.h
+	repositories/friends_repository.h
+	repositories/gm_ips_repository.h
+	repositories/graveyard_repository.h
+	repositories/grid_entries_repository.h
+	repositories/grid_repository.h
+	repositories/ground_spawns_repository.h
+	repositories/group_id_repository.h
+	repositories/group_leaders_repository.h
+	repositories/guild_members_repository.h
+	repositories/guild_ranks_repository.h
+	repositories/guilds_repository.h
+	repositories/item_tick_repository.h
+	repositories/items_repository.h
+	repositories/level_exp_mods_repository.h
+	repositories/logsys_categories_repository.h
+	repositories/lootdrop_entries_repository.h
+	repositories/lootdrop_repository.h
+	repositories/loottable_entries_repository.h
+	repositories/loottable_repository.h
+	repositories/merchantlist_repository.h
+	repositories/merchantlist_temp_repository.h
+	repositories/npc_emotes_repository.h
+	repositories/npc_faction_entries_repository.h
+	repositories/npc_faction_repository.h
+	repositories/npc_spells_effects_entries_repository.h
+	repositories/npc_spells_effects_repository.h
+	repositories/npc_spells_entries_repository.h
+	repositories/npc_spells_repository.h
+	repositories/npc_types_repository.h
+	repositories/npc_types_tint_repository.h
+	repositories/object_contents_repository.h
+	repositories/object_repository.h
+	repositories/petitions_repository.h
+	repositories/pets_repository.h
+	repositories/player_titlesets_repository.h
+	repositories/quest_globals_repository.h
+	repositories/raid_details_repository.h
+	repositories/raid_members_repository.h
+	repositories/reports_repository.h
+	repositories/respawn_times_repository.h
+	repositories/rule_sets_repository.h
+	repositories/rule_values_repository.h
+	repositories/saylink_repository.h
+	repositories/skill_caps_repository.h
+	repositories/spawn_condition_values_repository.h
+	repositories/spawn_conditions_repository.h
+	repositories/spawn_events_repository.h
+	repositories/spawn2_repository.h
+	repositories/spawnentry_repository.h
+	repositories/spawngroup_repository.h
+	repositories/spell_globals_repository.h
+	repositories/spells_new_repository.h
+	repositories/start_zones_repository.h
+	repositories/starting_items_repository.h
+	repositories/titles_repository.h
+	repositories/trader_repository.h
+	repositories/tradeskill_recipe_entries_repository.h
+	repositories/tradeskill_recipe_repository.h
+	repositories/traps_repository.h
+	repositories/zone_points_repository.h
+	repositories/zone_repository.h
+	repositories/aa_actions_repository.h
+	repositories/aa_effects_repository.h
+	repositories/aa_required_level_cost_repository.h
+	repositories/account_flags_repository.h
+	repositories/account_ip_repository.h
+	repositories/account_repository.h
+	repositories/account_rewards_repository.h
+	repositories/altadv_vars_repository.h
+	repositories/base_data_repository.h
+	repositories/blocked_spells_repository.h
+	)
+
 SET(common_headers
 	additive_lagged_fibonacci_engine.h
 	any.h
@@ -99,12 +311,17 @@ SET(common_headers
 	bodytypes.h
 	chat_oplist.h
 	classes.h
+	cli/argh.h
+	cli/eqemu_command_handler.h
+	cli/terminal_color.hpp
+	database/database_dump_service.h
 	condition.h
 	crash.h
 	crc16.h
 	crc32.h
 	data_verification.h
 	database.h
+	database_schema.h
 	dbcore.h
 	deity.h
 	emu_constants.h
@@ -138,13 +355,13 @@ SET(common_headers
 	faction.h
 	fastmath.h
 	features.h
+	file_util.h
 	fixed_memory_hash_set.h
 	fixed_memory_variable_hash_set.h
 	global_define.h
 	guild_base.h
 	guilds.h
 	inventory_profile.h
-	inventory_slot.h
 	ipc_mutex.h
 	item_data.h
 	item_fieldlist.h
@@ -281,7 +498,7 @@ SOURCE_GROUP(TinyXML FILES
 
 INCLUDE_DIRECTORIES(Patches SocketLib StackWalker TinyXML)
 
-ADD_LIBRARY(common ${common_sources} ${common_headers})
+ADD_LIBRARY(common ${common_sources} ${common_headers} ${repositories})
 
 IF(UNIX)
 	SET_SOURCE_FILES_PROPERTIES("patches/mac.cpp" PROPERTIES COMPILE_FLAGS -O0)

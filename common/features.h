@@ -141,7 +141,7 @@ enum {	//timer settings, all in milliseconds
 #define THREATENINGLY_ARRGO_CHANCE 32 // 32/128 (25%) chance that a mob will aggro on con Threateningly
 
 //max factions per npc faction list
-#define MAX_NPC_FACTIONS 20
+#define MAX_NPC_FACTIONS 40
 
 //individual faction pool
 #define MAX_PERSONAL_FACTION 2000

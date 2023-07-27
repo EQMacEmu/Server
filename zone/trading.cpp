@@ -70,11 +70,6 @@ void Trade::Request(uint32 mob_id)
 	with_id = mob_id;
 }
 
-void Trade::SetTradeCash(uint32 in_pp, uint32 in_gp, uint32 in_sp, uint32 in_cp)
-{
-	pp=in_pp; gp=in_gp; sp=in_sp; cp=in_cp;
-}
-
 // Initiate a trade with another mob
 // initiate_with specifies whether to start trade with other mob as well
 void Trade::Start(uint32 mob_id, bool initiate_with)

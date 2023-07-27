@@ -1104,7 +1104,7 @@ int16 EQ::InventoryProfile::_PutItem(int16 slot_id, ItemInstance* inst)
 	}
 
 	if (result == INVALID_INDEX) {
-		Log(Logs::General, Logs::Error, "Inventory::_PutItem: Invalid slot_id specified (%i)", slot_id);
+		LogError("Inventory::_PutItem: Invalid slot_id specified ({})", slot_id);
 		InventoryProfile::MarkDirty(inst); // Slot not found, clean up
 	}
 

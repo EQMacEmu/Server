@@ -307,6 +307,7 @@ public:
 	bool HasDoT();
 	bool CanCastBindAffinity();
 	bool CanClassCastSpell(uint16 spell_id) { if (!spells[spell_id].not_player_spell && spells[spell_id].classes[GetClass() - 1] < 255) return true; else return false; };
+	int GetDamageShieldAmount() { return spellbonuses.DamageShield < 0 ? -(spellbonuses.DamageShield + itembonuses.DamageShield) : -spellbonuses.DamageShield; };
 
 	bool IsStackBlocked(uint16 new_buff_spell_id);
 	void ProcessBuffOverwriteEffects(uint16 spell_id);

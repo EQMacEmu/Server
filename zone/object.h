@@ -110,8 +110,6 @@ public:
 	void Delete(bool reset_state=false); // Object itself
 	static void HandleCombine(Client* user, const Combine_Struct* in_combine, Object *worldo);
 
-	static EQ::skills::SkillType TypeToSkill(uint32 type);
-
 	// Packet functions
 	void CreateSpawnPacket(EQApplicationPacket* app);
 	void CreateDeSpawnPacket(EQApplicationPacket* app);

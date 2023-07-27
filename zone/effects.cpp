@@ -1049,7 +1049,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		// test to fix possible cause of random zone crashes..external methods accessing client properties before they're initialized
 		if (curmob->IsClient() && !curmob->CastToClient()->ClientFinishedLoading())
 			continue;
-		if (curmob == center && (center->IsBeacon() || (spells[spell_id].targettype != ST_AETarget && spells[spell_id].targettype != ST_GroupTeleport)))
+		if (curmob == center && (center->IsBeacon() || (spells[spell_id].targettype != ST_AETarget && spells[spell_id].targettype != ST_GroupTeleport && spells[spell_id].targettype != ST_Group)))
 			continue;
 		if (curmob == caster && !affect_caster)	//watch for caster too
 			continue;
@@ -1092,6 +1092,8 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				//only affect mobs we would assist.
 				if (!(f <= FACTION_AMIABLY) && !IsLuclinPortSpell(spell_id))
 					continue;
+				if ((spells[spell_id].targettype == ST_Group || spells[spell_id].targettype == ST_GroupTeleport) && curmob->IsPet())
+					continue;
 			}
 		}
 		if (detrimental) {
@@ -1105,7 +1107,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		else { 
 			// Balance of the Nameless, Cazic's Gift, recourse spells
 			// AESpell is called for ST_GroupTeleport spells cast by NPCs.  The faction check above already filtered out unfriendly NPCs.
-			if(!clientcaster && spells[spell_id].targettype == ST_GroupTeleport)
+			if(!clientcaster && (spells[spell_id].targettype == ST_GroupTeleport || spells[spell_id].targettype == ST_Group))
 			{
 				if (!curmob->IsNPC())
 					continue;
@@ -1130,7 +1132,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 					continue;
 				}
 			}
-			if (caster->CheckAggro(curmob))
+			if (caster->CheckAggro(curmob) && spell_id != SPELL_DIMENSIONAL_RETURN) // exception for An_unseen_entity returning people from stomach event in potorment
 				continue;
 		}
 

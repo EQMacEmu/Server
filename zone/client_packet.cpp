@@ -597,19 +597,13 @@ void Client::CompleteConnect()
 	// entity_list.SendZoneAppearance(this);
 
 	client_data_loaded = true;
-	int cur_slot;
-	// Without this self only wearchange, armor colors won't show up properly.
-	for (int cur_slot = EQ::textures::textureBegin; cur_slot <= EQ::textures::LastTexture; cur_slot++) {
-		SendWearChange(cur_slot, this, true);
-	}
-	// added due to wear change above
 
 	UpdateActiveLight();
 	SendAppearancePacket(AT_Light, GetActiveLightType());
 
 	Mob *pet = GetPet();
 	if (pet != nullptr) {
-		for (cur_slot = EQ::textures::textureBegin; cur_slot <= EQ::textures::LastTexture; cur_slot++) {
+		for (int cur_slot = EQ::textures::textureBegin; cur_slot <= EQ::textures::LastTexture; cur_slot++) {
 			pet->SendWearChange(cur_slot, nullptr, true);
 		}
 		// added due to wear change above
@@ -1516,6 +1510,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	{
 		Log(Logs::General, Logs::EQMac, "Removing buffs from %s. HP is: %i MaxHP is: %i BaseHP is: %i HP from items is: %i HP from spells is: %i", GetName(), GetHP(), GetMaxHP(), GetBaseHP(), itembonuses.HP, spellbonuses.HP);
 		BuffFadeAll(true);
+		SetHP(itembonuses.HP);
 	}
 
 	if (m_pp.z <= zone->newzone_data.underworld) 
@@ -1754,7 +1749,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	for(int k = EQ::textures::textureBegin; k <= EQ::textures::LastTexture; k++)
 	{
 		sze->equipment[k] = GetEquipmentMaterial(k);
-		sze->equipcolors.Slot[k].Color = GetEquipmentColor(i);
+		sze->equipcolors.Slot[k].Color = GetEquipmentColor(k);
 	}
 	sze->AFK = AFK;
 	sze->anon = m_pp.anon;
@@ -2720,8 +2715,6 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 				spell_to_cast = SPELL_HARM_TOUCH2;		// unholy aura uses disease resist version, unless it's the AA skill, which is unresistable
 			else
 				spell_to_cast = castspell->spell_id;
-
-			// to do: start Improved Harm Touch and Leech Curse AA timers here and notify client
 		}
 
 		// if we've matched LoH or HT, cast now
@@ -5465,6 +5458,8 @@ void Client::Handle_OP_GuildWar(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 {
+	// TODO: this is not correct and causes the skill to never level up until you manually train it to be above 0.
+	// Need to differentiate between 0, 254 (untrained) and 255 (can't learn) values but 0 is treated as not having the skill in many places.
 	if (!HasSkill(EQ::skills::SkillHide))
 	{
 		return;
@@ -5477,8 +5472,8 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 	int reuse = HideReuseTime - GetAA(209);
 	p_timers.Start(pTimerHide, reuse - 1);
 
-	float hidechance = ((GetSkill(EQ::skills::SkillHide) / 250.0f) + .25) * 100;
-	float random = zone->random.Real(0, 100);
+	int hidechance = std::max(10, (int)GetSkill(EQ::skills::SkillHide));
+	int random = zone->random.Int(0, 99);
 	uint8 success = SKILLUP_FAILURE;
 	if (random < hidechance) 
 	{
@@ -7842,6 +7837,8 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 {
+	// TODO: this is not correct and causes the skill to never level up until you manually train it to be above 0.
+	// Need to differentiate between 0, 254 (untrained) and 255 (can't learn) values but 0 is treated as not having the skill in many places.
 	if (!HasSkill(EQ::skills::SkillSneak)) {
 		return;
 	}
@@ -7853,9 +7850,9 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 	p_timers.Start(pTimerSneak, SneakReuseTime - 1);
 
 	uint8 success = SKILLUP_FAILURE;
-	float hidechance = ((GetSkill(EQ::skills::SkillSneak) / 300.0f) + .25) * 100;
-	float random = zone->random.Real(0, 99);
-	if (random < hidechance) 
+	int sneakchance = std::max(10, (int)GetSkill(EQ::skills::SkillSneak));
+	int random = zone->random.Int(0, 99);
+	if (random < sneakchance) 
 	{
 		sneaking = true;
 		success = SKILLUP_SUCCESS;

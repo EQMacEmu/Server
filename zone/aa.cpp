@@ -128,10 +128,6 @@ void Client::ActivateAA(aaID aaid)
 	const AA_DBAction *caa = &AA_Actions[aaid][activate_val];
 
 	int ptimerID = GetAATimerID(aaid) + pTimerAAStart;
-	if (aaid == aaImprovedHarmTouch || aaid == aaLeechTouch)
-	{
-		ptimerID = pTimerHarmTouch;
-	}
 
 	if (!p_timers.Expired(&database, ptimerID))
 	{
@@ -260,10 +256,8 @@ void Client::ActivateAA(aaID aaid)
 			Message_StringID(CC_Default, NO_SUITABLE_CORPSE);
 			return;
 		}
-
-		// save wake corpse info
-		wake_corpse_id = corpse->GetID();
-		wake_corpse_position = corpse->GetPosition();
+		if (IsClient())
+			CastToClient()->wake_corpse_id = corpse->GetID();	// save the corpse to make sure we raise the right one; it might move or a new one appears closer before spell finishes
 
 		char corpse_name[64];
 		if (corpse->IsPlayerCorpse())
@@ -407,9 +401,11 @@ void Client::ActivateAA(aaID aaid)
 			return;
 		}
 
-		if ((aaid == aaImprovedHarmTouch || aaid == aaLeechTouch) && HasInstantDisc(SPELL_HARM_TOUCH))
+		if (aaid == aaImprovedHarmTouch || aaid == aaLeechTouch)
 		{
-			FadeDisc();
+			GetPTimers().Start(pTimerHarmTouch, reuse_timer);
+			if (HasInstantDisc(SPELL_HARM_TOUCH))
+				FadeDisc();
 		}
 	}
 }
@@ -501,7 +497,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	PetRecord record;
 	if (!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
 	{
-		Log(Logs::General, Logs::Error, "Unknown swarm pet spell id: %d, check pets table", spell_id);
+		LogError("Unknown swarm pet spell id: {}, check pets table", spell_id);
 		Message(CC_Red, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
 		return;
 	}
@@ -541,17 +537,23 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	pet->sticktarg = sticktarg;
 
 	// Wake The Dead
-	if (IsClient() && !strcmp(spells[spell_id].teleport_zone, "animateDead") && CastToClient()->wake_corpse_id != 0)
+	if (!strcmp(spells[spell_id].teleport_zone, "animateDead"))
 	{
-		Corpse *corpse = entity_list.GetCorpseByID(CastToClient()->wake_corpse_id);
-		if (!corpse)
+		Corpse* corpse;
+		
+		if (IsClient())
+			corpse = entity_list.GetCorpseByID(CastToClient()->wake_corpse_id);
+		else
+			corpse = entity_list.GetClosestCorpse(this, nullptr);
+
+		if (!corpse || DistanceSquaredNoZ(GetPosition(), corpse->GetPosition()) > 10000 || !CheckLosFN(corpse, true))
 		{
 			Message_StringID(CC_Default, NO_SUITABLE_CORPSE);
 		}
 		else
 		{
 			CopyWakeCorpse(&pet->npc_type, corpse);
-			NPC *wakePet = CreateTemporaryPet(&pet->npc_type, pet->pet_duration_seconds, pet->pet_target_id, pet->followme, pet->sticktarg, CastToClient()->wake_corpse_position);
+			NPC *wakePet = CreateTemporaryPet(&pet->npc_type, pet->pet_duration_seconds, pet->pet_target_id, pet->followme, pet->sticktarg, corpse->GetPosition());
 
 			//gear stuff, need to make sure there's
 			//no situation where this stuff can be duped
@@ -578,9 +580,8 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 			entity_list.MessageClose_StringID(this, false, 100.0f, MT_Disciplines, RISES_TO_SERVE, corpse_name, GetCleanName());
 		}
 
-		// clear wake corpse info
-		CastToClient()->wake_corpse_id = 0;
-		CastToClient()->wake_corpse_position = { 0,0,0,0 };
+		if (IsClient())
+			CastToClient()->wake_corpse_id = 0;
 		delete pet;
 	}
 	else if (pet->pet_count > 0)
@@ -932,15 +933,7 @@ void Client::SendAATimers() {
 				for (; c != e; ++c) 
 				{
 					PersistentTimer *cur = c->second;
-					if (aa[i]->AA == aaImprovedHarmTouch || aa[i]->AA == aaLeechTouch)
-					{
-						PersistentTimer *httimer = p_timers.Get(pTimerHarmTouch);
-						if (httimer)
-						{
-							starttime = httimer->GetStartTime();
-						}
-					}
-					else if (cur->GetType() < pTimerAAStart || cur->GetType() > pTimerAAEnd)
+					if (cur->GetType() < pTimerAAStart || cur->GetType() > pTimerAAEnd)
 					{
 						continue;	//not an AA timer
 					}
@@ -972,10 +965,6 @@ void Client::ResetSingleAATimer(aaID activate, uint32 messageid)
 	Message_StringID(color, messageid);
 
 	int ptimerID = GetAATimerID(activate) + pTimerAAStart;
-	if (activate == aaImprovedHarmTouch || activate == aaLeechTouch)
-	{
-		ptimerID = pTimerHarmTouch;
-	}
 	p_timers.Clear(&database, ptimerID);
 
 	auto outapp = new EQApplicationPacket(OP_AAAction, sizeof(UseAA_Struct));
@@ -997,10 +986,6 @@ void Client::ResetAATimer(aaID activate, uint32 messageid)
 	Message_StringID(color, messageid);
 
 	int ptimerID = GetAATimerID(activate) + pTimerAAStart;
-	if (activate == aaImprovedHarmTouch || activate == aaLeechTouch)
-	{
-		ptimerID = pTimerHarmTouch;
-	}
 	p_timers.Clear(&database, ptimerID);
 
 	SendAATimers();
@@ -1492,4 +1477,32 @@ uint8 Client::GetAARankTitle()
 		return 1;
 
 	return 0;
+}
+
+// copied from ActivateAA().  used for lua scripts that need to disable player AAs
+void Client::ExpendAATimer(int aaid_int)
+{
+	if (aaid_int <= 0 || aaid_int >= aaHighestID)
+		return;
+	aaID aaid = (aaID)aaid_int;
+	uint8 activate_val = GetAA(aaid);
+
+	if (activate_val == 0)
+	{
+		return;
+	}
+	if (activate_val > MAX_AA_ACTION_RANKS)
+		activate_val = MAX_AA_ACTION_RANKS;
+	activate_val--;
+
+	const AA_DBAction* caa = &AA_Actions[aaid][activate_val];
+
+	int ptimerID = GetAATimerID(aaid) + pTimerAAStart;
+
+	int reuse_timer = CalcAAReuseTimer(caa);
+	if (reuse_timer > 0)
+	{
+		SendAATimer(aaid, static_cast<uint32>(time(nullptr)), static_cast<uint32>(time(nullptr)));
+		p_timers.Start(ptimerID, reuse_timer);
+	}
 }

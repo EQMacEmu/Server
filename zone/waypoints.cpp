@@ -303,12 +303,12 @@ void NPC::MoveTo(const glm::vec4& position, bool saveguardspot, uint32 delay)
 		m_GuardPoint = position;
 		m_GuardPoint.z = GetFixedZ(position);
 
-		m_GuardPoint.w = FixHeading(m_GuardPoint.w);
-		if(m_GuardPoint.w == 0.0f)
-			m_GuardPoint.w  = 0.0001f;		//hack to make IsGuarding simpler
+		if (m_GuardPoint.w == -1.0f)
+			m_GuardPoint.w = this->CalculateHeadingToTarget(position.x, position.y);
 
-		if(m_GuardPoint.w  == -1.0f)
-			m_GuardPoint.w  = FixHeading(this->CalculateHeadingToTarget(position.x, position.y));
+		m_GuardPoint.w = FixHeading(m_GuardPoint.w);
+		if (m_GuardPoint.w == 0.0f)
+			m_GuardPoint.w  = 0.0001f;		//hack to make IsGuarding simpler
 
 		Log(Logs::Detail, Logs::AI, "Setting guard position to %s", to_string(static_cast<glm::vec3>(m_GuardPoint)).c_str());
 	}
@@ -762,82 +762,72 @@ float Mob::SetRunAnimation(float speed)
 	return speed;
 }
 
-void NPC::AssignWaypoints(int32 grid, int start_wp)
+void NPC::AssignWaypoints(int32 grid_id, int start_wp)
 {
-	if (grid == 0)
+	if (grid_id == 0)
 		return; // grid ID 0 not supported
 
-	if (grid < 0) {
+	if (grid_id < 0) {
 		// Allow setting negative grid values for pausing pathing
-		this->CastToNPC()->SetGrid(grid);
+		this->CastToNPC()->SetGrid(grid_id);
 		return;
 	}
 
 	Waypoints.clear();
 	roamer = false;
 
-	// Retrieve the wander and pause types for this grid
-	std::string query = StringFormat("SELECT `type`, `type2` FROM `grid` WHERE `id` = %i AND `zoneid` = %i", grid,
-					 zone->GetZoneID());
-	auto results = database.QueryDatabase(query);
-	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "MySQL Error while trying to assign grid %u to mob %s: %s", grid,
-			name, results.ErrorMessage().c_str());
+	auto grid_entry = GridRepository::GetGrid(zone->grids, grid_id);
+	if (grid_entry.id == 0) {
 		return;
 	}
 
-	if (results.RowCount() == 0)
-		return;
+	wandertype = grid_entry.type;
+	pausetype = grid_entry.type2;
 
-	auto row = results.begin();
-
-	wandertype = atoi(row[0]);
-	pausetype = atoi(row[1]);
-
-	this->CastToNPC()->SetGrid(grid); // Assign grid number
-
-	// Retrieve all waypoints for this grid
-	query = StringFormat("SELECT `x`,`y`,`z`,`pause`,`heading`, `centerpoint` "
-		"FROM grid_entries WHERE `gridid` = %i AND `zoneid` = %i "
-		"ORDER BY `number`", grid, zone->GetZoneID());
-	results = database.QueryDatabase(query);
-	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "MySQL Error while trying to assign waypoints from grid %u to mob %s: %s", grid, name, results.ErrorMessage().c_str());
-		return;
-	}
+	SetGrid(grid_id);	// Assign grid number
 
 	roamer = true;
 	max_wp = 0;	// Initialize it; will increment it for each waypoint successfully added to the list
 
-	for (auto row = results.begin(); row != results.end(); ++row, ++max_wp)
-	{
-		wplist newwp;
-		newwp.index = max_wp;
-		newwp.x = atof(row[0]);
-		newwp.y = atof(row[1]);
-		newwp.z = atof(row[2]);
+	for (auto& entry : zone->grid_entries) {
+		if (entry.gridid == grid_id) {
+			wplist new_waypoint{};
+			new_waypoint.index = max_wp;
+			new_waypoint.x = entry.x;
+			new_waypoint.y = entry.y;
+			new_waypoint.z = entry.z;
 
 		if(zone->HasMap() && RuleB(Map, FixPathingZWhenLoading) && !IsBoat())
 		{
-			auto positon = glm::vec3(newwp.x,newwp.y,newwp.z);
+			auto positon = glm::vec3(new_waypoint.x, new_waypoint.y, new_waypoint.z);
 			if(!RuleB(Watermap, CheckWaypointsInWaterWhenLoading) || !zone->HasWaterMap() ||
 				(zone->HasWaterMap() && !zone->watermap->InWater(positon)))
 			{
-				glm::vec3 dest(newwp.x, newwp.y, newwp.z);
+				glm::vec3 dest(new_waypoint.x, new_waypoint.y, new_waypoint.z);
 
 				float newz = zone->zonemap->FindBestZ(dest, nullptr);
 
 				if( (newz != BEST_Z_INVALID) && std::abs(newz+GetZOffset()-dest.z) < (RuleR(Map, FixPathingZMaxDeltaLoading)+GetZOffset()))
 				{
-					newwp.z = SetBestZ(newz);
+					new_waypoint.z = SetBestZ(newz);
 				}
 			}
 		}
 
-		newwp.pause = atoi(row[3]);
-		newwp.heading = atof(row[4]);
-		newwp.centerpoint = atobool(row[5]);
-		Waypoints.push_back(newwp);
+		new_waypoint.pause = entry.pause;
+		new_waypoint.heading = entry.heading;
+		new_waypoint.centerpoint = entry.centerpoint;
+
+		LogPathing(
+			"Loading Grid [{}] number [{}] name [{}]",
+			grid_id,
+			entry.number,
+			GetCleanName()
+		);
+
+		Waypoints.push_back(new_waypoint);
+		max_wp++;
+		}
 	}
 
 	if(Waypoints.size() < 2) {
@@ -862,8 +852,9 @@ void NPC::InitializeGrid(int start_wp)
 		patrol = cur_wp;
 	}
 
-	if (wandertype == GridRandom10 || wandertype == GridRandom || wandertype == GridRand5LoS)
+	if (wandertype == GridRandom10 || wandertype == GridRandom || wandertype == GridRand5LoS) {
 		CalculateNewWaypoint();
+	}
 }
 
 void NPC::RemoveWaypoints()
@@ -1422,4 +1413,12 @@ void NPC::SaveGuardSpotCharm()
 void NPC::RestoreGuardSpotCharm()
 {
 	m_GuardPoint = m_GuardPointSaved;
+}
+
+void NPC::SetSpawnPoint(float x, float y, float z, float h)
+{
+	m_SpawnPoint.x = x;
+	m_SpawnPoint.y = y;
+	m_SpawnPoint.z = z;
+	m_SpawnPoint.w = FixHeading(h);
 }

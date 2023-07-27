@@ -1632,14 +1632,16 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 		else { Message(CC_Red, "Could not resynchronize destination slot %i.", move_slots->to_slot); }
 	}
 
-	if(!resync && Admin() < 10)
-	{
-		Kick();
-	}
-	else if(resync)
+	if(resync)
 	{
 		std::string error = "Item successfully resycned.";
 		if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
+	}
+
+	if (Admin() < 10)
+	{
+		Message(CC_Red, "Disconnecting to avoid item loss, please relog.");
+		Kick();
 	}
 }
 

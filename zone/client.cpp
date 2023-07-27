@@ -342,7 +342,6 @@ Client::Client(EQStreamInterface* ieqs)
 	pc_feettexture = -1;
 
 	wake_corpse_id = 0;
-	wake_corpse_position = { 0,0,0,0 };
 	ranged_attack_leeway_timer.Disable();
 }
 
@@ -544,11 +543,10 @@ bool Client::Save(uint8 iCommitNow) {
 	/* Save Character Currency */
 	database.SaveCharacterCurrency(CharacterID(), &m_pp);
 
-	/* Save Current Bind Points */
-	auto regularBindPosition = glm::vec4(m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
-	auto homeBindPosition = glm::vec4(m_pp.binds[4].x, m_pp.binds[4].y, m_pp.binds[4].z, m_pp.binds[4].heading);
-	database.SaveCharacterBindPoint(CharacterID(), m_pp.binds[0].zoneId, regularBindPosition, 0); /* Regular bind */
-	database.SaveCharacterBindPoint(CharacterID(), m_pp.binds[4].zoneId, homeBindPosition, 1); /* Home Bind */
+	// save character binds
+	// this may not need to be called in Save() but it's here for now
+	// to maintain the current behavior
+	database.SaveCharacterBinds(this);
 
 	/* Save Character Buffs */
 	database.SaveBuffs(this);
@@ -2399,12 +2397,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 
 						bindhps += bindhps*bindBonus / 100;
 
-						//if the bind takes them above the max bindable
-						//cap it at that value. Dont know if live does it this way
-						//but it makes sense to me.
 						int chp = bindmob->GetHP() + bindhps;
-						if(chp > max_hp)
-							chp = max_hp;
 
 						bindmob->SetHP(chp);
 						bindmob->SendHPUpdate();
@@ -3812,6 +3805,7 @@ void Client::SuspendMinion()
 					CurrentPet->GetPetState(m_suspendedminion.Buffs, m_suspendedminion.Items, m_suspendedminion.Name);
 				else
 					strn0cpy(m_suspendedminion.Name, CurrentPet->GetName(), 64); // Name stays even at rank 1
+				EntityList::RemoveNumbers(m_suspendedminion.Name);
 
 				Message_StringID(clientMessageTell, SUSPEND_MINION_SUSPEND, CurrentPet->GetCleanName());
 
@@ -5834,7 +5828,7 @@ bool Client::FleshToBone()
 	return false;
 }
 
-void Client::SetPCTexture(uint16 slot, uint8 texture, uint32 color, bool set_wrist)
+void Client::SetPCTexture(uint8 slot, uint16 texture, uint32 color, bool set_wrist)
 {
 	if (set_wrist || (!set_wrist && (texture != 0 || slot != EQ::textures::armorWrist)))
 		Log(Logs::General, Logs::Inventory, "%s is setting material slot %d to %d color %d", GetName(), slot, texture, color);
@@ -5843,8 +5837,43 @@ void Client::SetPCTexture(uint16 slot, uint8 texture, uint32 color, bool set_wri
 	{
 	case EQ::textures::armorHead:
 	{
-		pc_helmtexture = texture;
-		helmcolor = color;
+		// fix up custom helms worn by old model clients so they appear correctly to luclin model clients too
+		// old model clients don't send the item's tint since they are using the custom helm graphic, there seems to be no good way to make this consistent between the 2 model types
+		switch (texture)
+		{
+		case 665:
+		case 660:
+		case 627:
+		case 620:
+		case 537:
+		case 530:
+		case 565:
+		case 561:
+		case 605:
+		case 600:
+		case 545:
+		case 540:
+		case 595:
+		case 590:
+		case 557:
+		case 550:
+		case 655:
+		case 650:
+		case 645:
+		case 640:
+		case 615:
+		case 610:
+		case 585:
+		case 580:
+		case 635:
+		case 630:
+			pc_helmtexture = 240;
+			break;
+		default:
+			pc_helmtexture = texture;
+			helmcolor = color;
+		}
+
 		break;
 	}
 	case EQ::textures::armorChest:
@@ -5894,7 +5923,7 @@ void Client::SetPCTexture(uint16 slot, uint8 texture, uint32 color, bool set_wri
 	}
 }
 
-void Client::GetPCEquipMaterial(uint16 slot, int16& texture, uint32& color)
+void Client::GetPCEquipMaterial(uint8 slot, int16& texture, uint32& color)
 {
 	switch (slot)
 	{

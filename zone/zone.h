@@ -24,6 +24,9 @@
 #include "../common/rulesys.h"
 #include "../common/types.h"
 #include "../common/strings.h"
+#include "zonedb.h"
+#include "../common/repositories/grid_repository.h"
+#include "../common/repositories/grid_entries_repository.h"
 #include "qglobals.h"
 #include "spawn2.h"
 #include "spawngroup.h"
@@ -131,6 +134,8 @@ public:
 	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
 	SpawnGroupList spawn_group_list;
 
+	Timer GetInitgridsTimer();
+
 	bool RemoveSpawnEntry(uint32 spawnid);
 	bool RemoveSpawnGroup(uint32 in_id);
 
@@ -141,6 +146,7 @@ public:
 	void	Repop();
 	void	RepopClose(const glm::vec4& client_position, uint32 repop_distance);
 	void	ClearNPCTypeCache(int id);
+	void	SpawnStatus(Mob* client, char filter = 'a', uint32 spawnid = 0);
 	void	StartShutdownTimer(uint32 set_time = 0);
 	void    ChangeWeather();
 	bool	HasWeather();
@@ -223,6 +229,9 @@ public:
 	bool	IsIdling() { return (idle || (numclients <= 0 && ZoneWillNotIdle())); };
 	inline	bool BuffTimersSuspended() const { return newzone_data.SuspendBuffs != 0; };
 
+	std::vector<GridRepository::Grid> grids;
+	std::vector<GridEntriesRepository::GridEntries> grid_entries;
+
 	time_t	weather_timer;
 	uint8	weather_intensity;
 	uint8	zone_weather;
@@ -256,7 +265,8 @@ public:
 	std::vector<NPC_Emote_Struct*> NPCEmoteList;
 	LinkedList<KeyRing_Data_Struct*> KeyRingDataList;
 
-	void    LoadTickItems();
+	void LoadTickItems();
+	void LoadGrids();
 	uint32  GetSpawnKillCount(uint32 in_spawnid);
 	std::unordered_map<int, item_tick_struct> tick_items;
 
@@ -336,6 +346,7 @@ private:
 
 	Timer	autoshutdown_timer;
 	Timer	clientauth_timer;
+	Timer	initgrids_timer;
 	Timer	spawn2_timer;
 	Timer	qglobal_purge_timer;
 	Timer*	Weather_Timer;

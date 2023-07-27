@@ -282,7 +282,7 @@ bool Client::Process() {
 				- having used a ranged weapon recently
 		*/
 		if(auto_attack) {
-			if(!IsAIControlled() && !dead
+			if(!IsAIControlled() && !dead && !IsSitting()
 				&& !(spellend_timer.Enabled() && casting_spell_id && GetClass() != BARD)
 				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead && !IsMeleeDisabled()
 				)

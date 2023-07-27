@@ -973,7 +973,7 @@ bool ZoneServer::Process() {
 			}
 			case ServerOP_ReloadLogs: {
 				zoneserver_list.SendPacket(pack);
-				database.LoadLogSettings(LogSys.log_settings);
+				LogSys.LoadLogDatabaseSettings();
 				break;
 			}
 			case ServerOP_ReloadRules: {

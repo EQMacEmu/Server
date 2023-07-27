@@ -100,7 +100,6 @@ enum { //Type arguments to the Message* routines.
 	clientMessageWhite3 = 20,
 };
 
-#define SPELLBAR_UNLOCK 0x2bc
 enum { //scribing argument to MemorizeSpell
 	memSpellScribing = 0,
 	memSpellMemorize = 1,
@@ -699,6 +698,7 @@ public:
 	void WarCry(uint8 rank); // AA Warcry
 	bool FleshToBone(); // AA Flesh To Bone
 	uint8 GetAARankTitle();
+	void ExpendAATimer(int aaid_int);
 
 	// Item methods
 	void EVENT_ITEM_ScriptStopReturn();
@@ -926,7 +926,7 @@ public:
 	void SendMerchantEnd();
 	float GetPortHeading(uint16 newx, uint16 newy);
 	bool IsMule() { return (Admin() < 80 && m_pp.mule); }
-	void RefreshSpellIcon(bool disableslot = false);
+	void RefreshSpellIcon();
 	void SendCancelTrade(Mob* with);
 	void ClearPTimers(uint16 type);
 	void UpdateItemHP(EQ::ItemInstance* item, bool equip = true);
@@ -1004,8 +1004,8 @@ public:
 	int16 pc_handtexture;
 	int16 pc_legtexture;
 	int16 pc_feettexture;
-	void SetPCTexture(uint16 slot, uint8 texture, uint32 color, bool set_wrist = true);
-	void GetPCEquipMaterial(uint16 slot, int16& texture, uint32& color);
+	void SetPCTexture(uint8 slot, uint16 texture, uint32 color, bool set_wrist = true);
+	void GetPCEquipMaterial(uint8 slot, int16& texture, uint32& color);
 
 	bool IsUnderWater();
 	bool IsInWater();
@@ -1306,7 +1306,6 @@ private:
 	int32 drink_hp;
 	uint8 drowning;
 	uint16 wake_corpse_id; // Wake The Dead AA
-	glm::vec4 wake_corpse_position;
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
 };

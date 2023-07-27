@@ -88,6 +88,7 @@ class PTimerList;
 
 #define SQL(...) #__VA_ARGS__
 
+class LogSettings;
 class Database : public DBcore {
 public:
 	Database();
@@ -221,9 +222,6 @@ public:
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);
 	bool	AdjustSpawnTimes();
 	uint8   GetZoneRandomLoc(uint32 zoneid);
-
-	/* EQEmuLogSys */
-	void	LoadLogSettings(EQEmuLogSys::LogSettings* log_settings);
 
 private:
 	std::map<uint32,std::string>	zonename_array;

@@ -240,7 +240,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, EQ::InventoryProfile* inv)
                                     "FROM character_inventory WHERE id = %i ORDER BY slotid", char_id);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
-        Log(Logs::General, Logs::Error, "Error loading character items.");
+        LogError("Error loading character items.");
         return false;
     }
 
@@ -298,7 +298,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, EQ::InventoryProfile* inv)
             put_slot_id = inv->PushCursor(*inst);
         else if (slot_id >= 3110 && slot_id <= 3179) {
             // Admins: please report any occurrences of this error
-            Log(Logs::General, Logs::Error, "Warning: Defunct location for item in inventory: charid=%i, item_id=%i, slot_id=%i .. pushing to cursor...", char_id, item_id, slot_id);
+            LogError("Warning: Defunct location for item in inventory: charid={}, item_id={}, slot_id={} .. pushing to cursor...", char_id, item_id, slot_id);
             put_slot_id = inv->PushCursor(*inst);
         } else
             put_slot_id = inv->PutItem(slot_id, *inst);
@@ -307,7 +307,7 @@ bool SharedDatabase::GetInventory(uint32 char_id, EQ::InventoryProfile* inv)
 
         // Save ptr to item in inventory
         if (put_slot_id == INVALID_INDEX) {
-            Log(Logs::General, Logs::Error, "Warning: Invalid slot_id for item in inventory: charid=%i, item_id=%i, slot_id=%i",char_id, item_id, slot_id);
+            LogError("Warning: Invalid slot_id for item in inventory: charid={}, item_id={}, slot_id={}",char_id, item_id, slot_id);
         }
     }
 

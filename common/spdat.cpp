@@ -1344,6 +1344,15 @@ bool IsInstrumentModdableSpellEffect(uint16 spell_id, int effect_index)
 		case SE_AbsorbMagicAtt: // Psalm of Mystic Shielding, Niv`s Melody of Preservation, Shield of Songs, Niv`s Harmonic
 		case SE_ResistAll: // Psalm of Veeshan
 			return true;
+
+		case SE_CurrentMana:
+		{
+			// Only these mana songs are moddable: Cassindra`s Chorus of Clarity, Denon`s Dissension, Cassindra`s Chant of Clarity, Ervaj's Lost Composition
+			// but we override the mod for the mana regen songs in Mob::GetInstrumentMod()
+			if (SPA == SE_CurrentMana && spells[spell_id].buffdurationformula == 0 && spells[spell_id].targettype != ST_Tap && spells[spell_id].targettype != ST_TargetAETap)
+				return true;
+			return false;
+		}
 	}
 
 	return false;

@@ -386,7 +386,7 @@ int command_init(void)
 		command_add("skills", "List skill difficulty.", AccountStatus::GMAdmin, command_skilldifficulty) ||
 		command_add("spawn", "[name] [race] [level] [material] [hp] [gender] [class] [priweapon] [secweapon] [merchantid] - Spawn an NPC.", AccountStatus::GMImpossible, command_spawn) ||
 		command_add("spawnfix", "- Find targeted NPC in database based on its X/Y/heading and update the database to make it spawn at your current location/heading.", AccountStatus::GMImpossible, command_spawnfix) ||
-		command_add("spawnstatus", "[All|Disabled|Enabled|Spawn ID] ] - Show respawn timer status.", AccountStatus::GMStaff, command_spawnstatus) ||
+		command_add("spawnstatus", "[a|u|s|d|e|spawnid|help] - Show respawn timer status.", AccountStatus::GMStaff, command_spawnstatus) ||
 		command_add("spellinfo", "[spellid] - Get detailed info about a spell.", AccountStatus::Guide, command_spellinfo) ||
 		command_add("starve", "Sets hunger and thirst to 0.", AccountStatus::GMCoder, command_starve) ||
 		command_add("stun", "[duration] - Stuns you or your target for duration.", AccountStatus::QuestMaster, command_stun) ||
@@ -4749,138 +4749,17 @@ void command_rewind(Client *c, const Seperator *sep){
 
 void command_spawnstatus(Client *c, const Seperator *sep)
 {
-	int arguments = sep->argnum;
-	if (!arguments) {
-		c->Message(CC_Default, "Usage: #spawnstatus all - Show all spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus disabled - Show all disabled spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus enabled - Show all enabled spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus [Spawn ID] - Show spawn status by ID for your current zone");
-		return;
+	if (sep->IsNumber(1))
+	{
+		// show spawn status by spawn2 id
+		zone->SpawnStatus(c, 'a', atoi(sep->arg[1]));
 	}
-
-	bool is_all = !strcasecmp(sep->arg[1], "all");
-	bool is_disabled = !strcasecmp(sep->arg[1], "disabled");
-	bool is_enabled = !strcasecmp(sep->arg[1], "enabled");
-	bool is_search = sep->IsNumber(1);
-
-	if (
-		!is_all &&
-		!is_disabled &&
-		!is_enabled &&
-		!is_search
-		) {
-		c->Message(CC_Default, "Usage: #spawnstatus all - Show all spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus disabled - Show all disabled spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus enabled - Show all enabled spawn statuses for your current zone");
-		c->Message(CC_Default, "Usage: #spawnstatus [Spawn ID] - Show spawn status by ID for your current zone");
-		return;
-	}
-
-	std::string filter_type;
-	if (is_disabled) {
-		filter_type = "Disabled";
-	}
-	else if (is_enabled) {
-		filter_type = "Enabled";
-	}
-
-	uint32 spawn_id = 0;
-	if (is_search) {
-		spawn_id = std::stoul(sep->arg[1]);
-	}
-
-	LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
-	iterator.Reset();
-
-	uint32 filtered_count = 0;
-	uint32 spawn_count = 0;
-	uint32 spawn_number = 1;
-	while (iterator.MoreElements()) {
-		auto e = iterator.GetData();
-		auto time_remaining = e->GetTimer().GetRemainingTime();
-		if (
-			is_all ||
-			(
-				is_disabled &&
-				time_remaining == 0xFFFFFFFF
-				) ||
-			(
-				is_enabled &&
-				time_remaining != 0xFFFFFFFF
-				) ||
-			(
-				is_search &&
-				e->GetID() == spawn_id
-				)
-			) {
-			c->Message(
-				CC_Default,
-				fmt::format(
-					"Spawn {} | ID: {} Coordinates: {:.2f}, {:.2f}, {:.2f}, {:.2f}",
-					spawn_number,
-					e->GetID(),
-					e->GetX(),
-					e->GetY(),
-					e->GetZ(),
-					e->GetHeading()
-				).c_str()
-			);
-			if (time_remaining != 0xFFFFFFFF) {
-				auto seconds_remaining = (time_remaining / 1000);
-				c->Message(
-					CC_Default,
-					fmt::format(
-						"Spawn {} | Respawn: {} ({} Second{})",
-						spawn_number,
-						Strings::SecondsToTime(seconds_remaining),
-						seconds_remaining,
-						seconds_remaining != 1 ? "s" : ""
-					).c_str()
-				);
-			}
-			filtered_count++;
-			spawn_number++;
-		}
-		spawn_count++;
-		iterator.Advance();
-	}
-
-	if (!spawn_count) {
-		c->Message(CC_Default, "No spawns were found in this zone.");
-		return;
-	}
-
-	if (!is_all && !is_search && !filtered_count) {
-		c->Message(
-			CC_Default,
-			fmt::format(
-				"No {} spawns were found in this zone.",
-				filter_type
-			).c_str()
-		);
-		return;
-	}
-
-	if (is_all) {
-		c->Message(
-			CC_Default,
-			fmt::format(
-				"{} spawn{} listed.",
-				spawn_count,
-				spawn_count != 1 ? "s" : ""
-			).c_str()
-		);
+	else if (strcmp(sep->arg[1], "help") == 0)
+	{
+		c->Message(CC_Default, "Usage: #spawnstatus <[a]ll (default) | [u]nspawned | [s]pawned | [d]isabled | [e]nabled | {Spawn2 ID}>");
 	}
 	else {
-		c->Message(
-			CC_Default,
-			fmt::format(
-				"{} of {} spawn{} listed.",
-				filtered_count,
-				spawn_count,
-				spawn_count != 1 ? "s" : ""
-			).c_str()
-		);
+		zone->SpawnStatus(c, sep->arg[1][0]);
 	}
 }
 
@@ -5476,7 +5355,7 @@ void command_time(Client *c, const Seperator *sep){
 		}
 		c->Message(CC_Red, "Setting world time to %s:%i (Timezone: 0)...", sep->arg[1], minutes);
 		zone->SetTime(atoi(sep->arg[1]) + 1, minutes);
-		Log(Logs::General, Logs::ZoneServer, "%s :: Setting world time to %s:%i (Timezone: 0)...", c->GetCleanName(), sep->arg[1], minutes);
+		LogInfo("{} :: Setting world time to {}:{} (Timezone: 0)...", c->GetCleanName(), sep->arg[1], minutes);
 	}
 	else {
 		c->Message(CC_Red, "To set the Time: #time HH [MM]");
@@ -5491,7 +5370,7 @@ void command_time(Client *c, const Seperator *sep){
 			zone->zone_time.getEQTimeZoneMin()
 			);
 		c->Message(CC_Red, "It is now %s.", timeMessage);
-		Log(Logs::General, Logs::ZoneServer, "Current Time is: %s", timeMessage);
+		LogInfo("Current Time is: {} ", timeMessage);
 	}
 }
 

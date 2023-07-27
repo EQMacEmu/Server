@@ -10,6 +10,12 @@
 #include "groups.h"
 #include "zone.h"
 #include "zonedb.h"
+#include "../common/repositories/npc_types_repository.h"
+#include "../common/repositories/character_bind_repository.h"
+#include "../common/repositories/character_buffs_repository.h"
+#include "../common/repositories/character_pet_buffs_repository.h"
+#include "../common/repositories/character_pet_inventory_repository.h"
+#include "../common/repositories/character_pet_info_repository.h"
 
 #include <ctime>
 #include <iostream>
@@ -1036,19 +1042,51 @@ bool ZoneDatabase::SaveCharacterLanguage(uint32 character_id, uint32 lang_id, ui
 	return true;
 }
 
-bool ZoneDatabase::SaveCharacterBindPoint(uint32 character_id, uint32 zone_id, const glm::vec4& position, uint8 is_home){
-	if (zone_id <= 0) {
-		return false;
+void ZoneDatabase::SaveCharacterBinds(Client* c) 
+{
+	// bulk save character binds
+	std::vector<CharacterBindRepository::CharacterBind> binds = {};
+	CharacterBindRepository::CharacterBind bind = {};
+
+	// count character binds
+	int bind_count = 0;
+	for (auto& b : c->GetPP().binds) {
+		if (b.zoneId) {
+			bind_count++;
+		}
 	}
 
-	/* Save Home Bind Point */
-	std::string query = StringFormat("REPLACE INTO `character_bind` (id, zone_id, x, y, z, heading, is_home)"
-		" VALUES (%u, %u, %f, %f, %f, %f, %i)", character_id, zone_id, position.x, position.y, position.z, position.w, is_home);
-	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterBindPoint for character ID: %i zone_id: %u position: %s ishome: %u", character_id, zone_id, to_string(position).c_str(), is_home);
-	auto results = QueryDatabase(query);
-	if (!results.RowsAffected()) {
+	LogInfo("bind count is [{}]", bind_count);
+
+	// allocate memory for binds
+	binds.reserve(bind_count);
+
+	// copy binds to vector
+	int i = 0;
+	for (auto& b : c->GetPP().binds) {
+		if (b.zoneId) {
+			// copy bind data
+			bind.id = c->CharacterID();
+			bind.zone_id = b.zoneId;
+			bind.x = b.x;
+			bind.y = b.y;
+			bind.z = b.z;
+			bind.heading = b.heading;
+			bind.is_home = i;
+
+			binds.emplace_back(bind);
+
+			i++;
+		}
 	}
-	return true;
+
+	//save binds
+	if (bind_count > 0) {
+		// delete old binds
+		CharacterBindRepository::DeleteWhere(database, fmt::format("id = {}", c->CharacterID()));
+		// save new binds
+		CharacterBindRepository::InsertMany(database, binds);
+	}
 }
 
 bool ZoneDatabase::SaveCharacterSkill(uint32 character_id, uint32 skill_id, uint32 value){
@@ -1405,13 +1443,31 @@ bool ZoneDatabase::DeleteCharacterConsent(char grantname[64], char ownername[64]
  * or nullptr otherwise. If id passed is 0, loads all npc_types for
  * the current zone, returning the last item added.
  */
-const NPCType* ZoneDatabase::GetNPCType (uint32 id) {
+const NPCType* ZoneDatabase::GetNPCType (uint32 id, bool bulk_load) 
+{
 	const NPCType *npc=nullptr;
 
-	// If NPC is already in tree, return it.
+	/* If there is a cached NPC entry, load it */
 	auto itr = zone->npctable.find(id);
 	if(itr != zone->npctable.end())
 		return itr->second;
+
+	std::string filter = fmt::format("id = {}", id);
+
+	if (bulk_load) {
+		LogDebug("Performing bulk NPC Types load");
+
+		filter = fmt::format(
+			SQL(
+				id IN(
+					select npcID from spawnentry where spawngroupID IN(
+						select spawngroupID from spawn2 where `zone` = '{}'
+					)
+				)
+			),
+			zone->GetShortName()
+		);
+	}
 
     // Otherwise, get NPCs from database.
 	npc = GrabNPCType(id);
@@ -1434,135 +1490,110 @@ NPCType* ZoneDatabase::GetNPCTypeTemp (uint32 id) {
 }
 
 NPCType* ZoneDatabase::GrabNPCType(uint32 id)
-{
-	// If id is 0, load all npc_types for the current zone,
-	// according to spawn2.
-	std::string query = StringFormat("SELECT npc_types.id, npc_types.name, npc_types.level, npc_types.race, "
-		"npc_types.class, npc_types.hp, npc_types.mana, npc_types.gender, "
-		"npc_types.texture, npc_types.helmtexture, npc_types.size, "
-		"npc_types.loottable_id, npc_types.merchant_id, npc_types.attack_delay, "
-		"npc_types.STR, npc_types.STA, npc_types.DEX, npc_types.AGI, npc_types._INT, "
-		"npc_types.WIS, npc_types.CHA, npc_types.MR, npc_types.CR, npc_types.DR, "
-		"npc_types.FR, npc_types.PR, npc_types.ignore_despawn, "
-		"npc_types.mindmg, npc_types.maxdmg, npc_types.attack_count, npc_types.special_abilities, "
-		"npc_types.npc_spells_id, npc_types.npc_spells_effects_id, npc_types.d_melee_texture1, "
-		"npc_types.d_melee_texture2, npc_types.walkspeed, npc_types.prim_melee_type, "
-		"npc_types.sec_melee_type, npc_types.ranged_type, npc_types.runspeed, npc_types.aggro_pc, "
-		"npc_types.ignore_distance, npc_types.hp_regen_rate, npc_types.mana_regen_rate, "
-		"npc_types.aggroradius, npc_types.assistradius, npc_types.bodytype, npc_types.npc_faction_id, "
-		"npc_types.face, npc_types.luclin_hairstyle, npc_types.luclin_haircolor, "
-		"npc_types.luclin_eyecolor, npc_types.luclin_eyecolor2, npc_types.luclin_beardcolor,"
-		"npc_types.luclin_beard, npc_types.armortint_id, "
-		"npc_types.armortint_red, npc_types.armortint_green, npc_types.armortint_blue, "
-		"npc_types.see_invis, npc_types.see_invis_undead, npc_types.lastname, "
-		"npc_types.qglobal, npc_types.AC, npc_types.npc_aggro, npc_types.spawn_limit, "
-		"npc_types.see_sneak, npc_types.see_improved_hide, npc_types.ATK, npc_types.Accuracy, "
-		"npc_types.raid_target, npc_types.slow_mitigation, npc_types.maxlevel, npc_types.scalerate, "
-		"npc_types.private_corpse, npc_types.unique_spawn_by_name, npc_types.underwater, "
-		"npc_types.emoteid, npc_types.spellscale, npc_types.healscale, npc_types.light, "
-		"npc_types.combat_hp_regen, npc_types.combat_mana_regen, "
-		"npc_types.armtexture, npc_types.bracertexture, npc_types.handtexture, npc_types.legtexture, "
-		"npc_types.feettexture, npc_types.chesttexture, npc_types.avoidance, npc_types.exp_pct, "
-		"npc_types.greed, npc_types.engage_notice, npc_types.stuck_behavior, npc_types.flymode FROM npc_types WHERE id = %d", id);
+{	
+	std::string filter = fmt::format("id = {}", id);
+	NPCType *tmp_npctype;
+	tmp_npctype = new NPCType;
+	memset(tmp_npctype, 0, sizeof *tmp_npctype);
 
-	auto results = QueryDatabase(query);
-	if (!results.Success()) {
-		return nullptr;
-	}
-
-	NPCType *tmpNPCType;
-	tmpNPCType = new NPCType;
-	memset(tmpNPCType, 0, sizeof *tmpNPCType);
-
-	for (auto& row = results.begin(); row != results.end(); ++row)
+	for (NpcTypesRepository::NpcTypes& n : NpcTypesRepository::GetWhere((Database&)database, filter))
 	{
-		tmpNPCType->npc_id = atoi(row[0]);
-		strn0cpy(tmpNPCType->name, row[1], 50);
-		tmpNPCType->level = atoi(row[2]);
-		tmpNPCType->race = atoi(row[3]);
-		tmpNPCType->class_ = atoi(row[4]);
-		tmpNPCType->max_hp = atoi(row[5]);
-		tmpNPCType->cur_hp = tmpNPCType->max_hp;
-		tmpNPCType->Mana = atoi(row[6]);
-		tmpNPCType->gender = atoi(row[7]);
-		tmpNPCType->texture = atoi(row[8]);
-		tmpNPCType->helmtexture = atoi(row[9]);
-		tmpNPCType->size = atof(row[10]);
-		tmpNPCType->loottable_id = atoi(row[11]);
-		tmpNPCType->merchanttype = atoi(row[12]);
-		tmpNPCType->attack_delay = atoi(row[13]);
-		tmpNPCType->STR = atoi(row[14]);
-		tmpNPCType->STA = atoi(row[15]);
-		tmpNPCType->DEX = atoi(row[16]);
-		tmpNPCType->AGI = atoi(row[17]);
-		tmpNPCType->INT = atoi(row[18]);
-		tmpNPCType->WIS = atoi(row[19]);
-		tmpNPCType->CHA = atoi(row[20]);
-		tmpNPCType->MR = atoi(row[21]);
-		tmpNPCType->CR = atoi(row[22]);
-		tmpNPCType->DR = atoi(row[23]);
-		tmpNPCType->FR = atoi(row[24]);
-		tmpNPCType->PR = atoi(row[25]);
+		tmp_npctype->npc_id					= n.id;
 
-		tmpNPCType->ignore_despawn = atoi(row[26]) == 1 ? true : false;
-		tmpNPCType->min_dmg = atoi(row[27]);
-		tmpNPCType->max_dmg = atoi(row[28]);
-		tmpNPCType->attack_count = atoi(row[29]);
-		if (row[30] != nullptr)
-			strn0cpy(tmpNPCType->special_abilities, row[30], 512);
-		else
-			tmpNPCType->special_abilities[0] = '\0';
-		tmpNPCType->npc_spells_id = atoi(row[31]);
-		tmpNPCType->npc_spells_effects_id = atoi(row[32]);
-		tmpNPCType->d_melee_texture1 = atoi(row[33]);
-		tmpNPCType->d_melee_texture2 = atoi(row[34]);
-		tmpNPCType->walkspeed = atof(row[35]);
-		tmpNPCType->prim_melee_type = atoi(row[36]);
-		tmpNPCType->sec_melee_type = atoi(row[37]);
-		tmpNPCType->ranged_type = atoi(row[38]);
-		tmpNPCType->runspeed = atof(row[39]);
-		tmpNPCType->aggro_pc = atoi(row[40]) == 1 ? true : false;
-		tmpNPCType->ignore_distance = atof(row[41]);
-		tmpNPCType->hp_regen = atoi(row[42]);
-		tmpNPCType->mana_regen = atoi(row[43]);
+		strn0cpy(tmp_npctype->name, n.name.c_str(), 50);
+
+		tmp_npctype->level					= n.level;
+		tmp_npctype->race					= n.race;
+		tmp_npctype->class_					= n.class_;
+		tmp_npctype->max_hp					= n.hp;
+		tmp_npctype->cur_hp					= tmp_npctype->max_hp;
+		tmp_npctype->Mana					= n.mana;
+		tmp_npctype->gender					= n.gender;
+		tmp_npctype->texture				= n.texture;
+		tmp_npctype->helmtexture			= n.helmtexture;
+		tmp_npctype->size					= n.size;
+		tmp_npctype->loottable_id			= n.loottable_id;
+		tmp_npctype->merchanttype			= n.merchant_id;
+		tmp_npctype->attack_delay			= n.attack_delay;
+		tmp_npctype->STR					= n.STR;
+		tmp_npctype->STA					= n.STA;
+		tmp_npctype->DEX					= n.DEX;
+		tmp_npctype->AGI					= n.AGI;
+		tmp_npctype->INT					= n._INT;
+		tmp_npctype->WIS					= n.WIS;
+		tmp_npctype->CHA					= n.CHA;
+		tmp_npctype->MR						= n.MR;
+		tmp_npctype->CR						= n.CR;
+		tmp_npctype->DR						= n.DR;
+		tmp_npctype->FR						= n.FR;
+		tmp_npctype->PR						= n.PR;
+
+		tmp_npctype->ignore_despawn			= n.ignore_despawn == 1 ? true : false;
+		tmp_npctype->min_dmg				= n.mindmg;
+		tmp_npctype->max_dmg				= n.maxdmg;
+		tmp_npctype->attack_count			= n.attack_count;
+		if (!n.special_abilities.empty()) {
+			strn0cpy(tmp_npctype->special_abilities, n.special_abilities.c_str(), 512);
+		}
+		else {
+			tmp_npctype->special_abilities[0] = '\0';
+		}
+		tmp_npctype->npc_spells_id			= n.npc_spells_id;
+		tmp_npctype->npc_spells_effects_id	= n.npc_spells_effects_id;
+		tmp_npctype->d_melee_texture1		= n.d_melee_texture1;
+		tmp_npctype->d_melee_texture2		= n.d_melee_texture2;
+		tmp_npctype->walkspeed				= n.walkspeed;
+		tmp_npctype->prim_melee_type		= n.prim_melee_type;
+		tmp_npctype->sec_melee_type			= n.sec_melee_type;
+		tmp_npctype->ranged_type			= n.ranged_type;
+		tmp_npctype->runspeed				= n.runspeed;
+		tmp_npctype->aggro_pc				= n.aggro_pc == 1 ? true : false;
+		tmp_npctype->ignore_distance		= n.ignore_distance;
+		tmp_npctype->hp_regen				= n.hp_regen_rate;
+		tmp_npctype->mana_regen				= n.mana_regen_rate;
 
 		// set defaultvalue for aggroradius
-		tmpNPCType->aggroradius = (int32)atoi(row[44]);
-		if (tmpNPCType->aggroradius <= 0)
-			tmpNPCType->aggroradius = 70;
+		tmp_npctype->aggroradius			= n.aggroradius;
+		if (tmp_npctype->aggroradius <= 0) {
+			tmp_npctype->aggroradius = 70;
+		}
 
-		tmpNPCType->assistradius = (int32)atoi(row[45]);
-		if (tmpNPCType->assistradius <= 0)
-			tmpNPCType->assistradius = tmpNPCType->aggroradius;
+		tmp_npctype->assistradius			= n.assistradius;
+		if (tmp_npctype->assistradius <= 0) {
+			tmp_npctype->assistradius = tmp_npctype->aggroradius;
+		}
 
-		if (row[46] && strlen(row[46]))
-			tmpNPCType->bodytype = (uint8)atoi(row[46]);
-		else
-			tmpNPCType->bodytype = 0;
+		if (n.bodytype > 0) {
+			tmp_npctype->bodytype = n.bodytype;
+		}
+		else {
+			tmp_npctype->bodytype = 0;
+		}
 
-		tmpNPCType->npc_faction_id = atoi(row[47]);
+		tmp_npctype->npc_faction_id			= n.npc_faction_id;
 
-		tmpNPCType->luclinface = atoi(row[48]);
-		tmpNPCType->hairstyle = atoi(row[49]);
-		tmpNPCType->haircolor = atoi(row[50]);
-		tmpNPCType->eyecolor1 = atoi(row[51]);
-		tmpNPCType->eyecolor2 = atoi(row[52]);
-		tmpNPCType->beardcolor = atoi(row[53]);
-		tmpNPCType->beard = atoi(row[54]);
+		tmp_npctype->luclinface				= n.face;
+		tmp_npctype->hairstyle				= n.luclin_hairstyle;
+		tmp_npctype->haircolor				= n.luclin_haircolor;
+		tmp_npctype->eyecolor1				= n.luclin_eyecolor;
+		tmp_npctype->eyecolor2				= n.luclin_eyecolor2;
+		tmp_npctype->beardcolor				= n.luclin_beardcolor;
+		tmp_npctype->beard					= n.luclin_beard;
 
-		uint32 armor_tint_id = atoi(row[55]);
+		uint32 armor_tint_id				= n.armortint_id;
 
-		tmpNPCType->armor_tint.Head.Color = (atoi(row[56]) & 0xFF) << 16;
-		tmpNPCType->armor_tint.Head.Color |= (atoi(row[57]) & 0xFF) << 8;
-		tmpNPCType->armor_tint.Head.Color |= (atoi(row[58]) & 0xFF);
-		tmpNPCType->armor_tint.Head.Color |= (tmpNPCType->armor_tint.Head.Color) ? (0xFF << 24) : 0;
+		tmp_npctype->armor_tint.Head.Color = (n.armortint_red & 0xFF) << 16;
+		tmp_npctype->armor_tint.Head.Color |= (n.armortint_green & 0xFF) << 8;
+		tmp_npctype->armor_tint.Head.Color |= (n.armortint_blue & 0xFF);
+		tmp_npctype->armor_tint.Head.Color |= (tmp_npctype->armor_tint.Head.Color) ? (0xFF << 24) : 0;
 
 		if (armor_tint_id == 0)
 			for (int index = EQ::textures::armorChest; index <= EQ::textures::LastTexture; index++)
-				tmpNPCType->armor_tint.Slot[index].Color = tmpNPCType->armor_tint.Slot[0].Color;
-		else if (tmpNPCType->armor_tint.Slot[0].Color == 0)
+				tmp_npctype->armor_tint.Slot[index].Color = tmp_npctype->armor_tint.Slot[0].Color;
+		else if (tmp_npctype->armor_tint.Slot[0].Color == 0)
 		{
-			std::string armortint_query = StringFormat("SELECT red1h, grn1h, blu1h, "
+			std::string armortint_query = StringFormat(
+				"SELECT red1h, grn1h, blu1h, "
 				"red2c, grn2c, blu2c, "
 				"red3a, grn3a, blu3a, "
 				"red4b, grn4b, blu4b, "
@@ -1573,76 +1604,80 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 				"red9x, grn9x, blu9x "
 				"FROM npc_types_tint WHERE id = %d",
 				armor_tint_id);
+
 			auto armortint_results = QueryDatabase(armortint_query);
-			if (!armortint_results.Success() || armortint_results.RowCount() == 0)
+			if (!armortint_results.Success() || armortint_results.RowCount() == 0) {
 				armor_tint_id = 0;
+			}
 			else {
 				auto& armorTint_row = armortint_results.begin();
 
 				for (int index = EQ::textures::textureBegin; index <= EQ::textures::LastTexture; index++) {
-					tmpNPCType->armor_tint.Slot[index].Color = atoi(armorTint_row[index * 3]) << 16;
-					tmpNPCType->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 1]) << 8;
-					tmpNPCType->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 2]);
-					tmpNPCType->armor_tint.Slot[index].Color |= (tmpNPCType->armor_tint.Slot[index].Color) ? (0xFF << 24) : 0;
+					tmp_npctype->armor_tint.Slot[index].Color = atoi(armorTint_row[index * 3]) << 16;
+					tmp_npctype->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 1]) << 8;
+					tmp_npctype->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 2]);
+					tmp_npctype->armor_tint.Slot[index].Color |= (tmp_npctype->armor_tint.Slot[index].Color) ? (0xFF << 24) : 0;
 				}
 			}
 		}
-		else
+		else {
 			armor_tint_id = 0;
+		}
 
-		tmpNPCType->see_invis = atoi(row[59]);
-		tmpNPCType->see_invis_undead = atoi(row[60]) == 0 ? false : true;	// Set see_invis_undead flag
-		if (row[61] != nullptr)
-			strn0cpy(tmpNPCType->lastname, row[61], 32);
+		tmp_npctype->see_invis				= n.see_invis;
+		tmp_npctype->see_invis_undead		= n.see_invis_undead == 0 ? false : true;	// Set see_invis_undead flag
+		if (!n.lastname.empty()) {
+			strn0cpy(tmp_npctype->lastname, n.lastname.c_str(), 32);
+		}
 
-		tmpNPCType->qglobal = atoi(row[62]) == 0 ? false : true;	// qglobal
-		tmpNPCType->AC = atoi(row[63]);
-		tmpNPCType->npc_aggro = atoi(row[64]) == 0 ? false : true;
-		tmpNPCType->spawn_limit = atoi(row[65]);
-		tmpNPCType->see_sneak = atoi(row[66]) == 0 ? false : true;
-		tmpNPCType->see_improved_hide = atoi(row[67]) == 0 ? false : true;
-		tmpNPCType->ATK = atoi(row[68]);
-		tmpNPCType->accuracy_rating = atoi(row[69]);
-		tmpNPCType->raid_target = atoi(row[70]) == 0 ? false : true;
-		tmpNPCType->slow_mitigation = atoi(row[71]);
-		tmpNPCType->maxlevel = atoi(row[72]);
-		tmpNPCType->scalerate = atoi(row[73]);
-		tmpNPCType->private_corpse = atoi(row[74]) == 1 ? true : false;
-		tmpNPCType->unique_spawn_by_name = atoi(row[75]) == 1 ? true : false;
-		tmpNPCType->underwater = atoi(row[76]) == 1 ? true : false;
-		tmpNPCType->emoteid = atoi(row[77]);
-		tmpNPCType->spellscale = atof(row[78]);
-		tmpNPCType->healscale = atof(row[79]);
-		tmpNPCType->light = (atoi(row[80]) & 0x0F);
-		tmpNPCType->combat_hp_regen = atoi(row[81]);
-		tmpNPCType->combat_mana_regen = atoi(row[82]);
-		tmpNPCType->armtexture = atoi(row[83]);
-		tmpNPCType->bracertexture = atoi(row[84]);
-		tmpNPCType->handtexture = atoi(row[85]);
-		tmpNPCType->legtexture = atoi(row[86]);
-		tmpNPCType->feettexture = atoi(row[87]);
-		tmpNPCType->chesttexture = atoi(row[88]);
-		tmpNPCType->avoidance = atoi(row[89]);
-		tmpNPCType->exp_pct = atoi(row[90]);
-		tmpNPCType->greed = atoi(row[91]);
-		tmpNPCType->engage_notice = atoi(row[92]) == 1 ? true : false;
-		tmpNPCType->stuck_behavior = atoi(row[93]);
-		tmpNPCType->flymode = atoi(row[94]);
-		if (tmpNPCType->flymode < 0 || tmpNPCType->flymode > 3)
-			tmpNPCType->flymode = EQ::constants::GravityBehavior::Water;
+		tmp_npctype->qglobal				= n.qglobal == 0 ? false : true;	// qglobal
+		tmp_npctype->AC						= n.AC;
+		tmp_npctype->npc_aggro				= n.npc_aggro == 0 ? false : true;
+		tmp_npctype->spawn_limit			= n.spawn_limit;
+		tmp_npctype->see_sneak				= n.see_sneak == 0 ? false : true;
+		tmp_npctype->see_improved_hide		= n.see_improved_hide == 0 ? false : true;
+		tmp_npctype->ATK					= n.ATK;
+		tmp_npctype->accuracy_rating		= n.Accuracy;
+		tmp_npctype->raid_target			= n.raid_target == 0 ? false : true;
+		tmp_npctype->slow_mitigation		= n.slow_mitigation;
+		tmp_npctype->maxlevel				= n.maxlevel;
+		tmp_npctype->scalerate				= n.scalerate;
+		tmp_npctype->private_corpse			= n.private_corpse == 1 ? true : false;
+		tmp_npctype->unique_spawn_by_name	= n.unique_spawn_by_name == 1 ? true : false;
+		tmp_npctype->underwater				= n.underwater == 1 ? true : false;
+		tmp_npctype->emoteid				= n.emoteid;
+		tmp_npctype->spellscale				= n.spellscale;
+		tmp_npctype->healscale				= n.healscale;
+		tmp_npctype->light					= (n.light & 0x0F);
+		tmp_npctype->combat_hp_regen		= n.combat_hp_regen;
+		tmp_npctype->combat_mana_regen		= n.combat_mana_regen;
+		tmp_npctype->armtexture				= n.armtexture;
+		tmp_npctype->bracertexture			= n.bracertexture;
+		tmp_npctype->handtexture			= n.handtexture;
+		tmp_npctype->legtexture				= n.legtexture;
+		tmp_npctype->feettexture			= n.feettexture;
+		tmp_npctype->chesttexture			= n.chesttexture;
+		tmp_npctype->avoidance				= n.avoidance;
+		tmp_npctype->exp_pct				= n.exp_pct;
+		tmp_npctype->greed					= n.greed;
+		tmp_npctype->engage_notice			= n.engage_notice == 1 ? true : false;
+		tmp_npctype->stuck_behavior			= n.stuck_behavior;
+		tmp_npctype->flymode				= n.flymode;
+		if (tmp_npctype->flymode < 0 || tmp_npctype->flymode > 3)
+			tmp_npctype->flymode = EQ::constants::GravityBehavior::Water;
 
 		// If NPC with duplicate NPC id already in table,
 		// free item we attempted to add.
-		if (zone->npctable.find(tmpNPCType->npc_id) != zone->npctable.end()) {
-			std::cerr << "Error loading duplicate NPC " << tmpNPCType->npc_id << std::endl;
-			delete tmpNPCType;
+		if (zone->npctable.find(tmp_npctype->npc_id) != zone->npctable.end()) {
+			std::cerr << "Error loading duplicate NPC " << tmp_npctype->npc_id << std::endl;
+			delete tmp_npctype;
 			return nullptr;
 		}
 
-		zone->npctable[tmpNPCType->npc_id] = tmpNPCType;
+		zone->npctable[tmp_npctype->npc_id] = tmp_npctype;
 	}
 
-	return tmpNPCType;
+	return tmp_npctype;
 }
 
 uint8 ZoneDatabase::GetGridType(uint32 grid, uint32 zoneid) {
@@ -1672,6 +1707,12 @@ void ZoneDatabase::DeleteMerchantTemp(uint32 npcid, uint32 slot){
 	std::string query = StringFormat("DELETE FROM merchantlist_temp WHERE npcid=%d AND slot=%d", npcid, slot);
 	QueryDatabase(query);
 }
+
+void ZoneDatabase::DeleteMerchantTempList(uint32 npcid) {
+	std::string query = StringFormat("DELETE FROM merchantlist_temp WHERE npcid=%d", npcid);
+	QueryDatabase(query);
+}
+
 
 bool ZoneDatabase::UpdateZoneSafeCoords(const char* zonename, const glm::vec3& location) {
 
@@ -1956,26 +1997,58 @@ void ZoneDatabase::CommandLogs(const char* char_name, const char* acct_name, flo
 
 void ZoneDatabase::SaveBuffs(Client *client) {
 
-	std::string query = StringFormat("DELETE FROM `character_buffs` WHERE `id` = '%u'", client->CharacterID());
-	database.QueryDatabase(query);
+	// delete the character buffs
+	CharacterBuffsRepository::DeleteWhere(database, fmt::format("id = {}", client->CharacterID()));
 
+	// get the character buffs
 	uint32 buff_count = client->GetMaxBuffSlots();
 	Buffs_Struct *buffs = client->GetBuffs();
 
-	for (int index = 0; index < buff_count; index++) {
-		if(buffs[index].spellid == SPELL_UNKNOWN)
-            continue;
+	// character buffs struct
+	auto b = CharacterBuffsRepository::NewEntity();
 
-		query = StringFormat("INSERT INTO `character_buffs` (id, slot_id, spell_id, "
-                            "caster_level, caster_name, ticsremaining, counters, melee_rune, "
-                            "magic_rune, persistent, ExtraDIChance, bard_modifier) "
-                            "VALUES('%u', '%u', '%u', '%u', '%s', '%u', '%u', '%i', '%i', '%i', '%i', '%u')", 
-							client->CharacterID(), index, buffs[index].spellid,
-                            buffs[index].realcasterlevel, buffs[index].caster_name, buffs[index].ticsremaining,
-                            buffs[index].counters, buffs[index].melee_rune,
-                            buffs[index].magic_rune, buffs[index].persistant_buff,
-                            buffs[index].ExtraDIChance, buffs[index].instrumentmod);
-       QueryDatabase(query);
+	// vector of character buffs
+	std::vector<CharacterBuffsRepository::CharacterBuffs> character_buffs = {};
+
+	// count the number of buffs that are valid
+	int character_buff_count = 0;
+	for (int index = 0; index < buff_count; index++) {
+		if (!IsValidSpell(buffs[index].spellid)) {
+			continue;
+		}
+		character_buff_count++;
+	}
+
+	// allocate memory for the character buffs
+	character_buffs.reserve(character_buff_count);
+
+	for (int index = 0; index < buff_count; index++) {
+		if (!IsValidSpell(buffs[index].spellid)) {
+			continue;
+		}
+
+		// fill in the buff struct
+		b.id				= client->CharacterID();
+		b.slot_id			= index;
+		b.spell_id			= buffs[index].spellid;
+		b.caster_level		= buffs[index].realcasterlevel;
+		b.caster_name		= buffs[index].caster_name;
+		b.ticsremaining		= buffs[index].ticsremaining;
+		b.counters			= buffs[index].counters;
+		b.melee_rune		= buffs[index].melee_rune;
+		b.magic_rune		= buffs[index].magic_rune;
+		b.persistent		= buffs[index].persistant_buff;
+		b.ExtraDIChance		= buffs[index].ExtraDIChance;
+		b.bard_modifier		= buffs[index].instrumentmod;
+
+		// add the buff to the vector
+
+		character_buffs.emplace_back(b);
+	}
+
+	// insert the buffs into the database
+	if (!character_buffs.empty()) {
+		CharacterBuffsRepository::InsertMany(database, character_buffs);
 	}
 }
 
@@ -2076,69 +2149,119 @@ void ZoneDatabase::SavePetInfo(Client *client)
 {
 	PetInfo *petinfo = nullptr;
 
-	std::string query = StringFormat("DELETE FROM `character_pet_buffs` WHERE `char_id` = %u", client->CharacterID());
-	auto results = database.QueryDatabase(query);
-	if (!results.Success())
-		return;
+	// Pet Info
+	std::vector<CharacterPetInfoRepository::CharacterPetInfo> pet_infos = {};
+	CharacterPetInfoRepository::CharacterPetInfo pet_info = {};
 
-	query = StringFormat("DELETE FROM `character_pet_inventory` WHERE `char_id` = %u", client->CharacterID());
-	results = database.QueryDatabase(query);
-	if (!results.Success())
-		return;
+	// Pet buffs
+	std::vector<CharacterPetBuffsRepository::CharacterPetBuffs> pet_buffs = {};
+	CharacterPetBuffsRepository::CharacterPetBuffs pet_buff = {};
 
+	// Pet inventory
+	std::vector<CharacterPetInventoryRepository::CharacterPetInventory> inventory = {};
+	CharacterPetInventoryRepository::CharacterPetInventory item = {};
+
+	// Loop through pet types
 	for (int pet = 0; pet < 2; pet++) {
 		petinfo = client->GetPetInfo(pet);
-		if (!petinfo)
+		if (!petinfo) {
 			continue;
-
-		query = StringFormat("INSERT INTO `character_pet_info` "
-				"(`char_id`, `pet`, `petname`, `petpower`, `spell_id`, `hp`, `mana`, `size`) "
-				"VALUES (%u, %u, '%s', %i, %u, %u, %u, %f) "
-				"ON DUPLICATE KEY UPDATE `petname` = '%s', `petpower` = %i, `spell_id` = %u, "
-				"`hp` = %u, `mana` = %u, `size` = %f",
-				client->CharacterID(), pet, petinfo->Name, petinfo->petpower, petinfo->SpellID,
-				petinfo->HP, petinfo->Mana, petinfo->size, // and now the ON DUPLICATE ENTRIES
-				petinfo->Name, petinfo->petpower, petinfo->SpellID, petinfo->HP, petinfo->Mana, petinfo->size);
-		results = database.QueryDatabase(query);
-		if (!results.Success())
-			return;
-		query.clear();
-
-		// pet buffs!
-		for (int index = 0; index < RuleI(Spells, MaxTotalSlotsPET); index++) {
-			if (petinfo->Buffs[index].spellid == SPELL_UNKNOWN || petinfo->Buffs[index].spellid == 0)
-				continue;
-			if (query.length() == 0)
-				query = StringFormat("INSERT INTO `character_pet_buffs` "
-						"(`char_id`, `pet`, `slot`, `spell_id`, `caster_level`, "
-						"`ticsremaining`, `counters`) "
-						"VALUES (%u, %u, %u, %u, %u, %u, %d)",
-						client->CharacterID(), pet, index, petinfo->Buffs[index].spellid,
-						petinfo->Buffs[index].level, petinfo->Buffs[index].duration,
-						petinfo->Buffs[index].counters);
-			else
-				query += StringFormat(", (%u, %u, %u, %u, %u, %u, %d)",
-						client->CharacterID(), pet, index, petinfo->Buffs[index].spellid,
-						petinfo->Buffs[index].level, petinfo->Buffs[index].duration,
-						petinfo->Buffs[index].counters);
 		}
-		database.QueryDatabase(query);
-		query.clear();
 
-		// pet inventory!
+		// build pet info into struct
+		pet_info.char_id = client->CharacterID();
+		pet_info.pet = pet;
+		pet_info.petname = petinfo->Name;
+		pet_info.petpower = petinfo->petpower;
+		pet_info.spell_id = petinfo->SpellID;
+		pet_info.hp = petinfo->HP;
+		pet_info.mana = petinfo->Mana;
+		pet_info.size = petinfo->size;
+
+		// add pet info to vector
+		pet_infos.push_back(pet_info);
+
+		// build pet buffs into struct
+		int pet_buff_count = 0;
+		int max_slots = RuleI(Spells, MaxTotalSlotsPET);
+
+		// count pet buffs
+		for (int index = 0; index < max_slots; index++) {
+			if (!IsValidSpell(petinfo->Buffs[index].spellid)) {
+				continue;
+			}
+			pet_buff_count++;
+		}
+		// reserve space for pet buffs
+		pet_buffs.reserve(pet_buff_count);
+
+		// loop through pet buffs
+		for (int index = 0; index < max_slots; index++) {
+			if (!IsValidSpell(petinfo->Buffs[index].spellid)) {
+				continue;
+			}
+
+			pet_buff.char_id = client->CharacterID();
+			pet_buff.pet = pet;
+			pet_buff.slot = index;
+			pet_buff.spell_id = petinfo->Buffs[index].spellid;
+			pet_buff.caster_level = petinfo->Buffs[index].level;
+			pet_buff.ticsremaining = petinfo->Buffs[index].duration;
+			pet_buff.counters = petinfo->Buffs[index].counters;
+
+			// add pet buffs to vector
+			pet_buffs.push_back(pet_buff);
+		}
+
+		// build pet inventory into struct
+		int pet_inventory_count = 0;
 		for (int index = EQ::invslot::EQUIPMENT_BEGIN; index < EQ::invslot::EQUIPMENT_END; index++) {
-			if (!petinfo->Items[index])
+			if (!petinfo->Items[index]) {
 				continue;
-
-			if (query.length() == 0)
-				query = StringFormat("INSERT INTO `character_pet_inventory` "
-						"(`char_id`, `pet`, `slot`, `item_id`) "
-						"VALUES (%u, %u, %u, %u)",
-						client->CharacterID(), pet, index, petinfo->Items[index]);
-			else
-				query += StringFormat(", (%u, %u, %u, %u)", client->CharacterID(), pet, index, petinfo->Items[index]);
+			}
+			pet_inventory_count++;
 		}
-		database.QueryDatabase(query);
+
+		// loop through pet inventory
+		for (int index = EQ::invslot::EQUIPMENT_BEGIN; index <= EQ::invslot::EQUIPMENT_END; index++) {
+			if (!petinfo->Items[index]) {
+				continue;
+			}
+			item.char_id = client->CharacterID();
+			item.pet = pet;
+			item.slot = index;
+			item.item_id = petinfo->Items[index];
+
+			// add pet inventory to vector
+			inventory.push_back(item);
+		}
+
+		// insert pet info into database
+		if (!pet_infos.empty()) {
+			// Delete existing pet info
+			CharacterPetInfoRepository::DeleteWhere(database, fmt::format("char_id = {}", client->CharacterID()));
+
+			// Insert new pet info
+			CharacterPetInfoRepository::InsertMany(database, pet_infos);
+		}
+
+		// insert pet buffs into database
+		if (!pet_buffs.empty()) {
+			// Delete existing pet buffs
+			CharacterPetBuffsRepository::DeleteWhere(database, fmt::format("char_id = {}", client->CharacterID()));
+
+			// Insert new pet buffs
+			CharacterPetBuffsRepository::InsertMany(database, pet_buffs);
+		}
+
+		// insert pet inventory into database
+		if (!inventory.empty()) {
+			// Delete existing pet inventory
+			CharacterPetInventoryRepository::DeleteWhere(database, fmt::format("char_id = {}", client->CharacterID()));
+
+			// Insert new pet inventory
+			CharacterPetInventoryRepository::InsertMany(database, inventory);
+		}
 	}
 }
 

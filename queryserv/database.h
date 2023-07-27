@@ -56,7 +56,6 @@ public:
 	void LogPlayerLootRecords(QSPlayerLootRecords_struct* QS, uint32 Items);
 
 	void GeneralQueryReceive(ServerPacket *pack);
-	void LoadLogSettings(EQEmuLogSys::LogSettings* log_settings);
 
 	/*
 	 * Database Setup for bootstraps only.

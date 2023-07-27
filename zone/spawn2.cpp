@@ -152,7 +152,10 @@ bool Spawn2::Process() {
 			return(true);
 		}
 
-		if (spawn_group == nullptr) {
+		/**
+		* Wait for init grids timer because we bulk load this data before trying to fetch it individually
+		 */
+		if (spawn_group == nullptr && zone->GetInitgridsTimer().Check()) {
 			database.LoadSpawnGroupsByID(spawngroup_id_, &zone->spawn_group_list);
 			spawn_group = zone->spawn_group_list.GetSpawnGroup(spawngroup_id_);
 		}
@@ -568,6 +571,9 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 
 	timeval tv;
 	gettimeofday(&tv, nullptr);
+
+	/* Bulk Load NPC Types Data into the cache*/
+	database.GetNPCType(0, true);
 
 	std::string spawn_query = StringFormat(
 		"SELECT "

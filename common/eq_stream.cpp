@@ -2314,27 +2314,27 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 			}
 			/************ END FRAGMENT CHECK ************/
 
-			if(app->size && app->pBuffer)
-			{
-				if (i == 0) {
-					if (LogSys.log_settings[Logs::PacketServerClientWithDump].is_category_enabled == 1){
-						EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
-						if (app_opcode != OP_SpecialMesg && 
-							(!RuleB(EventLog, SkipCommonPacketLogging) ||
-							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))){
-							Log(Logs::General, Logs::PacketServerClientWithDump, "[%s - 0x%04x] [Size: %u] %s", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size, DumpProtocolPacketToString(app).c_str());
-						}
-					}
-					if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1){
-						EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
-						if (app_opcode != OP_SpecialMesg && 
-							(!RuleB(EventLog, SkipCommonPacketLogging) ||
-							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))){
-						Log(Logs::General, Logs::PacketServerClient, "[%s - 0x%04x] [Size: %u]", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size);
-						}
+			if (i == 0) {
+				if (LogSys.log_settings[Logs::PacketServerClientWithDump].is_category_enabled == 1) {
+					EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
+					if (app_opcode != OP_SpecialMesg &&
+						(!RuleB(EventLog, SkipCommonPacketLogging) ||
+							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))) {
+						Log(Logs::General, Logs::PacketServerClientWithDump, "[%s - 0x%04x] [Size: %u] %s", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size, DumpProtocolPacketToString(app).c_str());
 					}
 				}
+				if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1) {
+					EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
+					if (app_opcode != OP_SpecialMesg &&
+						(!RuleB(EventLog, SkipCommonPacketLogging) ||
+							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))) {
+						Log(Logs::General, Logs::PacketServerClient, "[%s - 0x%04x] [Size: %u]", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size);
+					}
+				}
+			}
 
+			if(app->size && app->pBuffer)
+			{
 				if(pack->HDR.a3_Fragment)
 				{
 					// If this is the last packet in the fragment group

@@ -66,7 +66,6 @@ SET(zone_sources
 	mob_ai.cpp
 	mob_movement_manager.cpp
 	npc.cpp
-	npc_ai.cpp
 	object.cpp
 	oriented_bounding_box.cpp
 	pathfinder_interface.cpp
@@ -106,7 +105,6 @@ SET(zone_sources
 
 SET(zone_headers
 	aa.h
-	basic_functions.h
 	beacon.h
 	client.h
 	client_packet.h
@@ -147,11 +145,9 @@ SET(zone_headers
 	lua_spell.h
 	map.h
 	masterentity.h
-	message.h
 	mob.h
 	mob_movement_manager.h
 	npc.h
-	npc_ai.h
 	object.h
 	oriented_bounding_box.h
 	pathfinder_interface.h
@@ -169,7 +165,6 @@ SET(zone_headers
 	quest_parser_collection.h
 	raids.h
 	raycast_mesh.h
-	skills.h
 	spawn2.cpp
 	spawn2.h
 	spawngroup.h

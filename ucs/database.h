@@ -53,8 +53,6 @@ public:
 	void AddFriendOrIgnore(int CharID, int Type, std::string Name);
 	void RemoveFriendOrIgnore(int CharID, int Type, std::string Name);
 	void GetFriendsAndIgnore(int CharID, std::vector<std::string> &Friends, std::vector<std::string> &Ignorees); 
-	void LoadLogSettings(EQEmuLogSys::LogSettings* log_settings);
-
 
 protected:
 	void HandleMysqlError(uint32 errnum);

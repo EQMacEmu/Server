@@ -795,6 +795,11 @@ void Lua_Client::RefundAA() {
 	self->RefundAA();
 }
 
+void Lua_Client::ExpendAATimer(int aaid) {
+	Lua_Safe_Call_Void();
+	self->ExpendAATimer(aaid);
+}
+
 int Lua_Client::GetModCharacterFactionLevel(int faction) {
 	Lua_Safe_Call_Int();
 	return self->GetModCharacterFactionLevel(faction);
@@ -1356,7 +1361,8 @@ luabind::scope lua_register_client() {
 		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, luabind::adl::object))& Lua_Client::QuestReward)
 		.def("GetMonkHandToHandDamage", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDamage)
 		.def("GetMonkHandToHandDelay", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDelay)
-		.def("SendSound", (void(Lua_Client::*)(uint16))&Lua_Client::SendSound);
+		.def("SendSound", (void(Lua_Client::*)(uint16))&Lua_Client::SendSound)
+		.def("ExpendAATimer", (void(Lua_Client::*)(int))& Lua_Client::ExpendAATimer);
 }
 
 luabind::scope lua_register_inventory_where() {

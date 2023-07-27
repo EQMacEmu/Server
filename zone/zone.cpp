@@ -860,7 +860,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	autoshutdown_timer.Start(AUTHENTICATION_TIMEOUT * 1000, false);
 	Weather_Timer = new Timer(60000);
 	Weather_Timer->Start();
-	LogInfo("The next weather check for zone: %s will be in {} seconds.", short_name, Weather_Timer->GetRemainingTime() / 1000);
+	LogInfo("The next weather check for zone: {} will be in {} seconds.", short_name, Weather_Timer->GetRemainingTime() / 1000);
 	zone_weather = 0;
 	weather_intensity = 0;
 	blocked_spells = nullptr;
@@ -1058,6 +1058,7 @@ bool Zone::Init(bool iStaticZone) {
 
 	LogInfo("Init Finished: ZoneID = {}, Time Offset = {} ", zoneid, zone->zone_time.getEQTimeZone());
 
+	LoadGrids();
 	LoadTickItems();
 
 	if (zone->newzone_data.maxclip > 0.0f)
@@ -1455,18 +1456,17 @@ void Zone::StartShutdownTimer(uint32 set_time) {
 }
 
 bool Zone::Depop(bool StartSpawnTimer) {
-std::map<uint32,NPCType *>::iterator itr;
+	std::map<uint32,NPCType *>::iterator itr;
 	entity_list.Depop(StartSpawnTimer);
 	entity_list.ClearTrapPointers();
 	entity_list.UpdateAllTraps(false);
-#ifdef DEPOP_INVALIDATES_NPC_TYPES_CACHE
-	// Refresh npctable, getting current info from database.
-	while(!npctable.empty()) {
-		itr=npctable.begin();
+
+	/* Refresh npctable (cache), getting current info from database. */
+	while (npctable.size()) {
+		itr = npctable.begin();
 		delete itr->second;
 		npctable.erase(itr);
 	}
-#endif
 
 	return true;
 }
@@ -1532,11 +1532,25 @@ void Zone::Repop() {
 
 	quest_manager.ClearAllTimers();
 
-	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list))
-		LogError("Error in Zone::Repop: database.PopulateZoneSpawnList failed");
+	LogInfo("Loading spawn groups");
+	if (!database.LoadSpawnGroups(short_name, &spawn_group_list)) {
+		LogError("Loading spawn groups failed");
+	}
 
-	if (!database.PopulateRandomZoneSpawnList(zoneid, spawn2_list))
+	LogInfo("Loading spawn conditions");
+	if (!spawn_conditions.LoadSpawnConditions(short_name)) {
+		LogError("Loading spawn conditions failed, continuing without them");
+	}
+
+	if (!database.PopulateZoneSpawnList(zoneid, spawn2_list)) {
+		LogError("Error in Zone::Repop: database.PopulateZoneSpawnList failed");
+	}
+
+	if (!database.PopulateRandomZoneSpawnList(zoneid, spawn2_list)) {
 		LogError("Error in Zone::Repop: database.PopulateRandomZoneSpawnList failed");
+	}
+
+	LoadGrids();
 
 	entity_list.UpdateAllTraps(true, true);
 }
@@ -1712,6 +1726,71 @@ bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,
 	}
 
 	return true;
+}
+
+void Zone::SpawnStatus(Mob* client, char filter, uint32 spawnid)
+{
+	LinkedListIterator<Spawn2*> iterator(spawn2_list);
+	NPC* npc;
+	uint32 remaining;
+	int sec;
+
+	uint32 x = 0;
+	iterator.Reset();
+	while(iterator.MoreElements())
+	{
+		if (spawnid > 0 && iterator.GetData()->GetID() != spawnid)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if ((filter == 'e' || filter == 'E') && !iterator.GetData()->Enabled())
+		{
+			iterator.Advance();
+			continue;
+		}
+		if ((filter == 'd' || filter == 'D') && iterator.GetData()->Enabled())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		npc = iterator.GetData()->GetNPCPointer();
+
+		if ((filter == 's' || filter == 'S') && !npc)
+		{
+			iterator.Advance();
+			continue;
+		}
+		if ((filter == 'u' || filter == 'U') && npc)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		remaining = iterator.GetData()->timer.GetRemainingTime();
+		if (remaining == 0xFFFFFFFF)
+		{
+			remaining = 0;
+			sec = -1;
+		}
+		else
+			sec = (remaining / 1000) % 60;
+
+		remaining /= 1000;
+
+		client->Message(CC_Default, "  %d: %s%s - NPC Type ID: %u - X:%1.1f, Y:%1.1f, Z:%1.1f - Spawn Timer: %u hrs %u mins %i sec",
+			iterator.GetData()->GetID(),
+			!iterator.GetData()->Enabled() ? "(disabled) " : "", npc ? npc->GetCleanName() : "(unspawned)",
+			iterator.GetData()->CurrentNPCID(),
+			iterator.GetData()->GetX(), iterator.GetData()->GetY(), iterator.GetData()->GetZ(), 
+			remaining / (60 * 60), (remaining / 60) % 60, sec);
+
+		x++;
+		iterator.Advance();
+	}
+	client->Message(CC_Default, "%i spawns listed.", x);
 }
 
 bool Zone::RemoveSpawnEntry(uint32 spawnid)
@@ -2513,4 +2592,15 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 	}
 
 	return false;
+}
+
+void Zone::LoadGrids()
+{
+	grids = GridRepository::GetZoneGrids(database, GetZoneID());
+	grid_entries = GridEntriesRepository::GetZoneGridEntries(database, GetZoneID());
+}
+
+Timer Zone::GetInitgridsTimer()
+{
+	return initgrids_timer;
 }

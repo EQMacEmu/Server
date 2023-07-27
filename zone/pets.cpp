@@ -676,7 +676,7 @@ void Mob::SetPetID(uint16 NewPetID) {
 
 void NPC::GetPetState(SpellBuff_Struct *pet_buffs, uint32 *items, char *name) {
 	//save the pet name
-	strn0cpy(name, GetCleanName(), 64);
+	strn0cpy(name, GetName(), 64);
 
 	//save their items, we only care about what they are actually wearing
 	memcpy(items, equipment, sizeof(uint32)* EQ::invslot::EQUIPMENT_COUNT);

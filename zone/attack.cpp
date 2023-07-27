@@ -1948,6 +1948,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		{
 			Log(Logs::Detail, Logs::Death, "NPC checks failed. No XP for you.");
 		}
+
+		if (IsNPC() && ismerchant && RuleB(Merchant, ClearTempList)) {
+			database.DeleteMerchantTempList(GetNPCTypeID());
+			zone->tmpmerchanttable[GetNPCTypeID()].clear();
+		}
 	}
 	else
 	{
@@ -3811,7 +3816,7 @@ bool Mob::HasDied()
 {
 	bool Result = false;
 
-	if (IsClient() && (GetHP() <= -10 || CastToClient()->IsDead()))
+	if (IsClient() && (GetHP() < -10 || CastToClient()->IsDead()))
 	{
 		Result = true;
 	}

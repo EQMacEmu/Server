@@ -202,7 +202,6 @@ public:
 	bool	LoadCharacterBindPoint(uint32 character_id, PlayerProfile_Struct* pp);
 
 	/* Character Data Saves  */
-	bool	SaveCharacterBindPoint(uint32 character_id, uint32 zone_id, const glm::vec4& position, uint8 is_home);
 	bool	SaveCharacterCurrency(uint32 character_id, PlayerProfile_Struct* pp);
 	bool	SaveCharacterData(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp, ExtendedProfile_Struct* m_epp);
 	bool	SaveCharacterAA(uint32 character_id, uint32 aa_id, uint32 current_level);
@@ -213,6 +212,7 @@ public:
 	bool	SaveCharacterConsent(char grantname[64], char ownername[64]);
 	bool	SaveCharacterConsent(char grantname[64], char ownername[64], std::list<CharacterConsent> &consent_list);
 	bool	SaveAccountShowHelm(uint32 account_id, bool value);
+	static void SaveCharacterBinds(Client* c);
 
 	/* Character Data Deletes   */
 	bool	DeleteCharacterSpell(uint32 character_id, uint32 spell_id, uint32 slot_id);
@@ -333,7 +333,7 @@ public:
 
 	DBnpcspells_Struct*				GetNPCSpells(uint32 iDBSpellsID);
 	DBnpcspellseffects_Struct*		GetNPCSpellsEffects(uint32 iDBSpellsEffectsID);
-	const NPCType*					GetNPCType(uint32 id);
+	const NPCType*					GetNPCType(uint32 id, bool bulk_load = false);
 	NPCType*					    GetNPCTypeTemp(uint32 id);
 	NPCType*						GrabNPCType(uint32 id);
 
@@ -350,6 +350,7 @@ public:
 	/* Merchants  */
 	void	SaveMerchantTemp(uint32 npcid, uint32 slot, uint32 item, uint32 charges, uint32 quantity);
 	void	DeleteMerchantTemp(uint32 npcid, uint32 slot);
+	void	DeleteMerchantTempList(uint32 npcid);
 
 	/* Tradeskills  */
 	bool	GetTradeRecipe(const EQ::ItemInstance* container, uint8 c_type, uint32 some_id, uint32 char_id, DBTradeskillRecipe_Struct *spec);

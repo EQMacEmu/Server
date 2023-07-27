@@ -2136,6 +2136,57 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 				if (cur->Worn.Effect>0 && (cur->Worn.Type == EQ::item::ItemEffectWorn)) { // latent effects
 					ApplySpellsBonuses(cur->Worn.Effect, cur->Worn.Level > 0 ? cur->Worn.Level : GetLevel(), newbon, 0, true);
 				}
+
+				if (GetClass() == BARD)
+				{
+					switch (cur->BardType)
+					{
+					case 51: /* All (e.g. Singing Short Sword) */
+					{
+						if (cur->BardValue > newbon->singingMod)
+							newbon->singingMod = cur->BardValue;
+						if (cur->BardValue > newbon->brassMod)
+							newbon->brassMod = cur->BardValue;
+						if (cur->BardValue > newbon->stringedMod)
+							newbon->stringedMod = cur->BardValue;
+						if (cur->BardValue > newbon->percussionMod)
+							newbon->percussionMod = cur->BardValue;
+						if (cur->BardValue > newbon->windMod)
+							newbon->windMod = cur->BardValue;
+						break;
+					}
+					case 50: /* Singing */
+					{
+						if (cur->BardValue > newbon->singingMod)
+							newbon->singingMod = cur->BardValue;
+						break;
+					}
+					case 23: /* Wind */
+					{
+						if (cur->BardValue > newbon->windMod)
+							newbon->windMod = cur->BardValue;
+						break;
+					}
+					case 24: /* stringed */
+					{
+						if (cur->BardValue > newbon->stringedMod)
+							newbon->stringedMod = cur->BardValue;
+						break;
+					}
+					case 25: /* brass */
+					{
+						if (cur->BardValue > newbon->brassMod)
+							newbon->brassMod = cur->BardValue;
+						break;
+					}
+					case 26: /* Percussion */
+					{
+						if (cur->BardValue > newbon->percussionMod)
+							newbon->percussionMod = cur->BardValue;
+						break;
+					}
+					}
+				}
 			}
 		}
 

@@ -418,7 +418,7 @@ bool Database::DeleteCharacter(char *name) {
 	auto results = QueryDatabase(query);
 	for (auto row = results.begin(); row != results.end(); ++row) { charid = atoi(row[0]); }
 	if (charid <= 0){ 
-		Log(Logs::General, Logs::Error, "Database::DeleteCharacter :: Character (%s) not found, stopping delete...", name);
+		LogError("Database::DeleteCharacter :: Character ({}) not found, stopping delete...", name);
 		return false; 
 	}
 
@@ -686,7 +686,7 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, EQ::I
 	charid = GetCharacterID(pp->name);
 
 	if(!charid) {
-		Log(Logs::General, Logs::Error, "StoreCharacter: no character id");
+		LogError("StoreCharacter: no character id");
 		return false;
 	}
 
@@ -1768,7 +1768,7 @@ void Database::SetGroupID(const char* name, uint32 id, uint32 charid, uint32 acc
 		auto results = QueryDatabase(query);
 
 		if (!results.Success())
-			Log(Logs::General, Logs::Error, "Error deleting character from group id: %s", results.ErrorMessage().c_str());
+			LogError("Error deleting character from group id: {} ", results.ErrorMessage().c_str());
 
 		return;
 	}
@@ -2148,90 +2148,6 @@ bool Database::SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year
 
 	return results.Success();
 
-}
-
-void Database::LoadLogSettings(EQEmuLogSys::LogSettings* log_settings)
-{
-	std::string query = 
-		"SELECT "
-		"log_category_id, "
-		"log_category_description, "
-		"log_to_console, "
-		"log_to_file, "
-		"log_to_gmsay "
-		"FROM "
-		"logsys_categories "
-		"ORDER BY log_category_id";
-
-	auto results = QueryDatabase(query);
-	int log_category_id = 0;
-
-	int* categories_in_database = new int[1000];
-
-	for (auto row = results.begin(); row != results.end(); ++row) {
-		log_category_id = atoi(row[0]);
-		if (log_category_id <= Logs::None || log_category_id >= Logs::MaxCategoryID) {
-			continue;
-		}
-
-		log_settings[log_category_id].log_to_console = static_cast<uint8>(atoi(row[2]));
-		log_settings[log_category_id].log_to_file = static_cast<uint8>(atoi(row[3]));
-		log_settings[log_category_id].log_to_gmsay = static_cast<uint8>(atoi(row[4]));
-
-		/* Determine if any output method is enabled for the category 
-			and set it to 1 so it can used to check if category is enabled */
-		const bool log_to_console		= log_settings[log_category_id].log_to_console > 0;
-		const bool log_to_file			= log_settings[log_category_id].log_to_file > 0;
-		const bool log_to_gmsay			= log_settings[log_category_id].log_to_gmsay > 0;
-		const bool is_category_enabled	= log_to_console || log_to_file || log_to_gmsay;
-
-		if (is_category_enabled) {
-			log_settings[log_category_id].is_category_enabled = 1;
-		}
-
-		/* 
-			This determines whether or not the process needs to actually file log anything.
-			If we go through this whole loop and nothing is set to any debug level, there is no point to create a file or keep anything open
-		*/
-		if (log_settings[log_category_id].log_to_file > 0){
-			LogSys.file_logs_enabled = true;
-		}
-
-		categories_in_database[log_category_id] = 1;
-	}
-
-	/**
- * Auto inject categories that don't exist in the database...
- */
-	for (int log_index = Logs::AA; log_index != Logs::MaxCategoryID; log_index++) {
-		if (categories_in_database[log_index] != 1) {
-
-			LogInfo(
-				"New Log Category [{0}] doesn't exist... Automatically adding to [logsys_categories] table...",
-				Logs::LogCategoryName[log_index]
-			);
-
-			auto inject_query = fmt::format(
-				"INSERT INTO logsys_categories "
-				"(log_category_id, "
-				"log_category_description, "
-				"log_to_console, "
-				"log_to_file, "
-				"log_to_gmsay) "
-				"VALUES "
-				"({0}, '{1}', {2}, {3}, {4})",
-				log_index,
-				Strings::Escape(Logs::LogCategoryName[log_index]),
-				std::to_string(log_settings[log_index].log_to_console),
-				std::to_string(log_settings[log_index].log_to_file),
-				std::to_string(log_settings[log_index].log_to_gmsay)
-			);
-
-			QueryDatabase(inject_query);
-		}
-	}
-
-	delete[] categories_in_database;
 }
 
 void Database::ClearAllActive() {

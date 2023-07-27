@@ -376,7 +376,7 @@ bool Beacon::Process()
 		}
 		else if (caster && spell_iterations--) {
 			// AE Spells
-			bool affect_caster = (!caster->IsNPC() && !caster->IsAIControlled());	//NPC AE spells do not affect the NPC caster
+			bool affect_caster = spells[spell_id].targettype == ST_Group || (!caster->IsNPC() && !caster->IsAIControlled());	// most NPC AE spells do not affect the NPC caster
 			entity_list.AESpell(caster, this, spell_id, affect_caster, resist_adjust, nullptr, initial_cast);
 			initial_cast = false;
 		}

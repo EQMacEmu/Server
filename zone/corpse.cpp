@@ -1094,7 +1094,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		// lets double check....
 		Entity* looter = entity_list.GetID(this->being_looted_by);
 		if(looter == 0) { 
-			this->being_looted_by = 0xFFFFFFFF; 
+			ResetLooter();
 		}
 	}
 
@@ -1270,8 +1270,8 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	if (!loot_cooldown_timer.Check()) {
 		SendEndLootErrorPacket(client);
 		//unlock corpse for others
-		if (this->being_looted_by = client->GetID()) {
-			being_looted_by = 0xFFFFFFFF;
+		if (this->being_looted_by == client->GetID()) {
+			ResetLooter();
 		}
 		return;
 	}
@@ -1281,8 +1281,8 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		client->Message(CC_Red, "You may not loot an item while you have an item on your cursor.");
 		SendEndLootErrorPacket(client);
 		/* Unlock corpse for others */
-		if (this->being_looted_by = client->GetID()) {
-			being_looted_by = 0xFFFFFFFF;
+		if (this->being_looted_by == client->GetID()) {
+			ResetLooter();
 		}
 		return;
 	}
@@ -1307,7 +1307,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	if (IsPlayerCorpse() && (char_id != client->CharacterID()) && CanPlayerLoot(client->CharacterID()) && GetPlayerKillItem() == 0){
 		client->Message(CC_Red, "Error: You cannot loot any more items from this corpse.");
 		SendEndLootErrorPacket(client);
-		being_looted_by = 0xFFFFFFFF;
+		ResetLooter();
 		return;
 	}
 	const EQ::ItemData* item = nullptr;
@@ -1342,7 +1342,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		if (client->CheckLoreConflict(item)) {
 			client->Message_StringID(0, LOOT_LORE_ERROR);
 			SendEndLootErrorPacket(client);
-			being_looted_by = 0;
+			ResetLooter();
 			delete inst;
 			return;
 		}
@@ -1357,7 +1357,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 					{
 						client->Message(CC_Default, "You cannot loot this container. The %s inside is a Lore Item and you already have one.", bag_item->Name);
 						SendEndLootErrorPacket(client);
-						being_looted_by = 0;
+						ResetLooter();
 						delete inst;
 						return;
 					}
@@ -1470,7 +1470,7 @@ void Corpse::EndLoot(Client* client, const EQApplicationPacket* app)
 	client->QueuePacket(outapp);
 	safe_delete(outapp);
 
-	this->being_looted_by = 0xFFFFFFFF;
+	ResetLooter();
 	if (this->IsEmpty())
 	{
 		Delete();

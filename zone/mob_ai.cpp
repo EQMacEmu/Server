@@ -1285,7 +1285,7 @@ void Mob::AI_Process() {
 
 	}
 
-	if (IsCasting())
+	if (IsCasting() && GetClass() != BARD)
 		return;
 
 	bool facing_set = false;
@@ -2004,6 +2004,8 @@ void NPC::AI_DoMovement() {
 		move_speed = GetMovespeed();
 
 	bool atguardpoint = IsGuarding() && m_Position.x == m_GuardPoint.x && m_Position.y == m_GuardPoint.y && m_Position.z == m_GuardPoint.z && !roambox_distance && !roamer;
+	if (permarooted && m_Position.w == m_GuardPoint.w)
+		atguardpoint = true;
 
 	if (atguardpoint || permarooted) {
 		move_speed = 0.0f;
@@ -2110,7 +2112,9 @@ void NPC::AI_DoMovement() {
 
 				auto routeNode = route.begin();
 				m_Navigation = GetPosition();
-				if (route.size() > 0)
+				if (permarooted)
+					m_Navigation.w = m_GuardPoint.w;
+				else if (route.size() > 0)
 					m_Navigation.w = CalculateHeadingToTarget(routeNode->pos.x, routeNode->pos.y);
 				else
 					m_Navigation.w = CalculateHeadingToTarget(m_GuardPoint.x, m_GuardPoint.y);
@@ -3623,3 +3627,15 @@ uint32 ZoneDatabase::GetMaxNPCSpellsEffectsID() {
     return atoi(row[0]);
 }
 
+// This will halt scripted MoveTo() commands, not grid movement
+void NPC::StopQuestMove(bool setGuardSpot) {
+	if (!roamer || cur_wp != EQ::WaypointStatus::QuestControlNoGrid)
+		return;
+
+	StopNavigation();
+	roamer = false;
+	SetGrid(0 - GetGrid());
+	SetAppearance(eaStanding, false);
+	if (setGuardSpot)
+		SaveGuardSpot();
+}

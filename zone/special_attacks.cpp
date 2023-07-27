@@ -420,7 +420,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app)
 	CombatAbility_Struct* ca_atk = (CombatAbility_Struct*) app->pBuffer;
 
 	/* Check to see if actually have skill or innate racial ability (like Ogres have Slam) */
-	if (MaxSkill(static_cast<EQ::skills::SkillType>(ca_atk->m_skill)) <= 0 && !HasRacialAbility(ca_atk))
+	if (ca_atk->m_skill != EQ::skills::SkillThrowing && MaxSkill(static_cast<EQ::skills::SkillType>(ca_atk->m_skill)) <= 0 && !HasRacialAbility(ca_atk))
 		return;
 
 	if(GetTarget()->GetID() != ca_atk->m_target)
