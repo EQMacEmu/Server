@@ -237,6 +237,10 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NP
 		corpse_delay_timer.Start(GetDecayTime() + 1000);
 	}
 
+	for (int i = 0; i < MAX_LOOTERS; i++) {
+		initial_allowed_looters[i] = 0;
+	}
+
 	for (int i = 0; i < MAX_LOOTERS; i++){
 		allowed_looters[i] = 0;
 	}
@@ -323,6 +327,10 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 
 	for (i = 0; i < MAX_LOOTERS; i++){
 		allowed_looters[i] = 0;
+	}
+
+	for (int i = 0; i < MAX_LOOTERS; i++) {
+		initial_allowed_looters[i] = 0;
 	}
 
 	is_corpse_changed		= true;
@@ -455,15 +463,21 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 		IsRezzed(false);
 		Save();
 		database.TransactionCommit();
-
-		if(!IsEmpty()) {
-			corpse_decay_timer.Start(RuleI(Character, CorpseDecayTimeMS));
+		if (client->IsHardcore()) {
+			corpse_decay_timer.Start(1);
 		}
-		else if (IsEmpty() && RuleB(Character, SacrificeCorpseDepop) && killedby == Killed_Sac &&
-			(GetZoneID() == poknowledge || GetZoneID() == nexus || GetZoneID() == bazaar))
+		else
 		{
-			corpse_decay_timer.Start(180000);
+			if (!IsEmpty()) {
+				corpse_decay_timer.Start(RuleI(Character, CorpseDecayTimeMS));
+			}
+			else if (IsEmpty() && RuleB(Character, SacrificeCorpseDepop) && killedby == Killed_Sac &&
+				(GetZoneID() == poknowledge || GetZoneID() == nexus || GetZoneID() == bazaar))
+			{
+				corpse_decay_timer.Start(180000);
+			}
 		}
+
 		return;
 	} //end "not leaving naked corpses"
 
@@ -622,6 +636,7 @@ Corpse::Corpse(uint32 in_dbid, uint32 in_charid, const char* in_charname, ItemLi
 	for (int i = 0; i < MAX_LOOTERS; i++){
 		allowed_looters[i] = 0;
 	}
+
 	SetPlayerKillItemID(0);
 
 	UpdateEquipmentLight();
@@ -1041,18 +1056,36 @@ void Corpse::SetDecayTimer(uint32 decaytime) {
 
 bool Corpse::CanPlayerLoot(int charid) {
 	uint8 looters = 0;
-	for (int i = 0; i < MAX_LOOTERS; i++) {
-		if (allowed_looters[i] != 0){
-			looters++;
-		}
 
-		if (allowed_looters[i] == charid){
-			return true;
+	Client* c = entity_list.GetClientByCharID(charid);
+	if (c && c->IsSelfFound())
+	{
+		for (int i = 0; i < MAX_LOOTERS; i++) {
+			if (initial_allowed_looters[i] != 0) {
+				looters++;
+			}
+
+			if (initial_allowed_looters[i] == charid) {
+				return true;
+			}
 		}
 	}
-	/* If we have no looters, obviously client can loot */
-	if (looters == 0){
-		return true;
+	else
+	{
+		for (int i = 0; i < MAX_LOOTERS; i++) {
+			if (allowed_looters[i] != 0) {
+				looters++;
+			}
+
+			if (allowed_looters[i] == charid) {
+				return true;
+			}
+		}
+
+		/* If we have no looters, obviously client can loot */
+		if (looters == 0) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -1064,6 +1097,8 @@ void Corpse::AllowPlayerLoot(Mob *them, uint8 slot) {
 		return;
 
 	allowed_looters[slot] = them->CastToClient()->CharacterID();
+
+	initial_allowed_looters[slot] = them->CastToClient()->CharacterID();
 }
 
 void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* app) {
@@ -1339,6 +1374,19 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 
 	if (client && inst) {
+
+		if (item_data->pet || item_data->quest)
+		{
+			if (client->IsSoloOnly() || client->IsSelfFound())
+			{
+				client->Message(CC_Red, "This item is from a charmed pet, which is not allowed during a solo or self found run.");
+				SendEndLootErrorPacket(client);
+				ResetLooter();
+				delete inst;
+				return;
+			}
+		}
+
 		if (client->CheckLoreConflict(item)) {
 			client->Message_StringID(0, LOOT_LORE_ERROR);
 			SendEndLootErrorPacket(client);
@@ -1346,6 +1394,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 			delete inst;
 			return;
 		}
+
 		// search through bags for lore items
 		if (item && item->IsClassBag()) {
 			for (int i = 0; i < 10; i++) {
@@ -1727,6 +1776,7 @@ void Corpse::AddLooter(Mob* who) {
 	for (int i = 0; i < MAX_LOOTERS; i++) {
 		if (allowed_looters[i] == 0) {
 			allowed_looters[i] = who->CastToClient()->CharacterID();
+			initial_allowed_looters[i] = who->CastToClient()->CharacterID();
 			break;
 		}
 	}

@@ -54,6 +54,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 	m_inuse = false;
 	m_inst = nullptr;
 	m_ground_spawn=false;
+	m_is_player_drop = false;
 	// Copy object data
 	memcpy(&m_data, &object, sizeof(Object_Struct));
 	if (inst) {
@@ -73,6 +74,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 Object::Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,uint32 respawntimer)
  : respawn_timer(respawntimer), decay_timer(RuleI(Groundspawns, DecayTime)), random_timer(respawntimer)
 {
+	m_is_player_drop = false;
 
 	user = 0;
 	last_user = 0;
@@ -119,6 +121,7 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 	m_icon	= 0;
 	m_inuse	= false;
 	m_ground_spawn = false;
+	m_is_player_drop = true;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
 	m_data.heading = client->GetHeading();
@@ -160,7 +163,7 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 	}
 }
 
-Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time)
+Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time, bool is_player_drop)
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
 {
 	user = 0;
@@ -172,6 +175,7 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 	m_type	= OT_DROPPEDITEM;
 	m_icon	= 0;
 	m_inuse	= false;
+	m_is_player_drop = is_player_drop;
 	m_ground_spawn = false;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
@@ -221,6 +225,8 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 		}
 	}
 }
+
+
 
 Object::Object(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time)
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
@@ -494,6 +500,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 	{
 		if (m_inst && sender) 
 		{
+
 			// if there is a lore conflict - don't allow the item to be picked up
 			if(sender->CheckLoreConflict(m_inst->GetItem())) 
 			{

@@ -1153,6 +1153,16 @@ struct ServerFlagUpdate_Struct {
 	int16 admin;
 };
 
+struct ServerGroupInvite_Struct {
+		/*000*/	char invitee_name[64];		// Comment: 
+		/*064*/	char inviter_name[64];		// Comment: 
+		/*128*/	char unknown[65];		// Comment: 
+		/*193*/
+
+		// Custom:
+		uint8 self_found;
+};
+
 #pragma pack()
 
 #endif

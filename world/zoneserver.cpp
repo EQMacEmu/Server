@@ -246,7 +246,7 @@ bool ZoneServer::Process() {
 				if(pack->size != sizeof(GroupInvite_Struct))
 					break;
 
-				GroupInvite_Struct* gis = (GroupInvite_Struct*) pack->pBuffer;
+				ServerGroupInvite_Struct* gis = (ServerGroupInvite_Struct*) pack->pBuffer;
 
 				client_list.SendPacket(gis->invitee_name, pack);
 				break;

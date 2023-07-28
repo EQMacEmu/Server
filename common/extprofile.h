@@ -54,6 +54,9 @@ struct ExtendedProfile_Struct {
 	uint32				mercTimerRemaining; /* Not Used */
 	uint8				mercGender; /* Not Used */
 	int32				mercState; /* Not Used */
+	uint8				self_found;
+	uint8				solo_only;
+	uint8				hardcore;
 };
 
 #pragma pack()

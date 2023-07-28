@@ -742,11 +742,11 @@ void WorldServer::Process() {
 		}
 		case ServerOP_GroupInvite: {
 			// A player in another zone invited a player in this zone to join their group.
-			GroupInvite_Struct* gis = (GroupInvite_Struct*)pack->pBuffer;
+			ServerGroupInvite_Struct* gis = (ServerGroupInvite_Struct*)pack->pBuffer;
 
 			Mob *Invitee = entity_list.GetMob(gis->invitee_name);
 
-			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped())
+			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped() && Invitee->CastToClient()->IsSelfFound() == gis->self_found)
 			{
 				auto outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
 				memcpy(outapp->pBuffer, gis, sizeof(GroupInvite_Struct));

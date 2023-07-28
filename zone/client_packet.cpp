@@ -2812,7 +2812,7 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
-	if (entity && entity->IsObject()) {
+	if (entity && entity->IsObject() && entity->CastToObject()->IsPlayerDrop()) {
 		Object* object = entity->CastToObject();
 
 		object->HandleClick(this, click_object);
@@ -2824,6 +2824,20 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		snprintf(buf, 9, "%u", click_object->drop_id);
 		buf[9] = '\0';
 		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0, &args);
+	}
+	else {
+
+		if (entity && entity->IsObject() && IsSelfFound())
+		{
+			Message(CC_Red, "You cannot pick up dropped player items because you are performing a self found challenge.");
+		}
+
+		auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
+		ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
+		loreitem->player_id = click_object->player_id;
+		loreitem->drop_id = 0xFFFFFFFF;
+		QueuePacket(outapp);
+		safe_delete(outapp);
 	}
 
 	return;
@@ -4798,6 +4812,12 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You are solo and thus cannot join a group.");
+		return;
+	}
+
 	// If we've received the packet and it's valid, then we're either going to join the group or fail in some way. 
 	// In either case, the invite should be cleared so just do it now.
 	Log(Logs::General, Logs::Group, "%s is clearing the group invite.", GetName());
@@ -4808,6 +4828,18 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 
 	if (inviter != nullptr && inviter->IsClient()) 
 	{
+		if (inviter->CastToClient()->IsSoloOnly())
+		{
+			Message(CC_Red, "The inviter is solo only. You cannot join.");
+			return;
+		}
+
+		if (IsSelfFound() != inviter->CastToClient()->IsSelfFound())
+		{
+			Message(CC_Red, "The inviting player's self found flag does not match yours. You cannot join the group.");
+			return;
+		}
+
 		strn0cpy(gf->name1, inviter->GetName(), 64);
 		strn0cpy(gf->name2, this->GetName(), 64);
 
@@ -4963,6 +4995,12 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	Mob *Invitee = entity_list.GetMob(gis->invitee_name);
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You have solo mode enabled, and cannot group with you.");
+		return;
+	}
+
 	if (Invitee == this)
 	{
 		Message_StringID(CC_Default, GROUP_INVITEE_SELF);
@@ -4971,6 +5009,16 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if (Invitee) {
 		if (Invitee->IsClient()) {
+			if (Invitee->CastToClient()->IsSelfFound() != IsSelfFound())
+			{
+				Message(CC_Red, "This player has a different self found enabled than you do, and cannot group with you.");
+				return;
+			}
+			if (Invitee->CastToClient()->IsSoloOnly())
+			{
+				Message(CC_Red, "This player has solo mode enabled, and cannot group with you.");
+				return;
+			}
 			if (!Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
 			{
 				if (app->GetOpcode() == OP_GroupInvite2)
@@ -5028,8 +5076,11 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 	}
 	else
 	{
-		auto pack = new ServerPacket(ServerOP_GroupInvite, sizeof(GroupInvite_Struct));
-		memcpy(pack->pBuffer, gis, sizeof(GroupInvite_Struct));
+		auto pack = new ServerPacket(ServerOP_GroupInvite, sizeof(ServerGroupInvite_Struct));
+		ServerGroupInvite_Struct* sgis = (ServerGroupInvite_Struct*)pack->pBuffer;
+
+		memcpy(pack->pBuffer, gis, sizeof(ServerGroupInvite_Struct));
+		sgis->self_found = IsSelfFound();
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -6524,6 +6575,12 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You are solo only and cannot be invited to the raid.");
+		return;
+	}
+
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
@@ -6534,6 +6591,20 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		Client *i = entity_list.GetClientByName(ri->player_name);
 		if (i)
 		{
+
+			if (i->IsSoloOnly())
+			{
+				Message(CC_Red, "This player is solo only and cannot be invited to the raid.");
+				return;
+			}
+
+			if (IsSelfFound() != i->IsSelfFound())
+			{
+				Message(CC_Red, "This player's self found flag does not match yours, and cannot be invited to the raid.");
+				return;
+			}
+
+			
 			//This sends an "invite" to the client in question.
 			auto outapp = new EQApplicationPacket(OP_RaidInvite, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
@@ -6580,6 +6651,35 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			// fail
 			return;
 		}
+
+		if (leader->IsSoloOnly())
+		{
+			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
+			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
+			rg->action = RaidCommandSendDisband;
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
+			this->QueuePacket(outapp);
+			safe_delete(outapp);
+			Message(CC_Red, "The leader is solo only and cannot be invited to the raid? What's going on here, friend?");
+			return;
+		}
+
+		if (IsSelfFound() != leader->IsSelfFound())
+		{
+			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
+			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
+			rg->action = RaidCommandSendDisband;
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
+			this->QueuePacket(outapp);
+			safe_delete(outapp);
+			Message(CC_Red, "The leader player's self found flag does not match yours. You cannot be invited to the raid.");
+			return;
+		}
+
 		if (i)
 		{
 			if (IsRaidGrouped())
@@ -8719,9 +8819,24 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 
 	if (tradee && tradee->IsClient()) 
 	{
-
 		if (IsFeigned())
 		{
+			FinishTrade(this);
+			trade->Reset();
+			return;
+		}
+
+		if (IsSelfFound())
+		{
+			Message(CC_Red, "You are doing a solo-self-found run. You cannot trade with other players.");
+			FinishTrade(this);
+			trade->Reset();
+			return;
+		}
+
+		if (tradee->CastToClient()->IsSelfFound())
+		{
+			Message(CC_Red, "This player is doing a solo-self-found run. You cannot trade with them.");
 			FinishTrade(this);
 			trade->Reset();
 			return;

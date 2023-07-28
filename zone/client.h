@@ -332,6 +332,15 @@ public:
 	inline const float GetBindHeading(uint32 index = 0) const { return m_pp.binds[index].heading; }
 	inline uint32 GetBindZoneID(uint32 index = 0) const { return m_pp.binds[index].zoneId; }
 	inline uint32 GetZoneChangeCount() const { return m_pp.zone_change_count; }
+	
+	inline uint8 IsHardcore() const { return m_epp.hardcore; }
+	inline uint8 IsSoloOnly() const { return m_epp.solo_only; }
+	inline uint8 IsSelfFound() const { return m_epp.self_found; }
+
+	inline void SetHardcore(uint8 in_hardcore) { m_epp.hardcore = in_hardcore; Save(1); }
+	inline void SetSoloOnly(uint8 in_solo_only) { m_epp.solo_only = in_solo_only;  Save(1); }
+	inline void SetSelfFound(uint8 in_self_found) { m_epp.self_found = in_self_found; Save(1); }
+
 	int32 CalcMaxMana();
 	int32 CalcBaseMana();
 	const int32& SetMana(int32 amount);

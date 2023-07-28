@@ -167,6 +167,7 @@ private:
 	bool		rez; /*Sets if a corpse has been rezzed or not to determine if XP should be given*/
 	bool		become_npc;
 	int			allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
+	int			initial_allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
 	Timer		corpse_decay_timer; /* The amount of time in millseconds in which a corpse will take to decay (Depop/Poof) */
 	Timer		corpse_rez_timer; /* The amount of time in millseconds in which a corpse can be rezzed */
 	Timer		corpse_delay_timer;

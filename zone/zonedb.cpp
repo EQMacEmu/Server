@@ -808,7 +808,10 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		"showhelm,					"
 		"`e_aa_effects`,			"
 		"`e_percent_to_aa`,			"
-		"`e_expended_aa_spent`		"
+		"`e_expended_aa_spent`,		"
+		"`e_self_found`,			"
+		"`e_solo_only`,				"
+		"`e_hardcore`				"
 		"FROM                       "
 		"character_data             "
 		"WHERE `id` = %i         ", character_id);
@@ -870,6 +873,9 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		m_epp->aa_effects = atoi(row[r]); r++;									 // "`e_aa_effects`,			"
 		m_epp->perAA = atoi(row[r]); r++;										 // "`e_percent_to_aa`,			"
 		m_epp->expended_aa = atoi(row[r]); r++;									 // "`e_expended_aa_spent`,		"
+		m_epp->self_found = atoi(row[r]); r++;									 // "`e_self_found`,			"
+		m_epp->solo_only = atoi(row[r]); r++;									 // "`e_solo_only`,				"
+		m_epp->hardcore = atoi(row[r]); r++;									 // "`e_hardcore`,				"
 	}
 	return true;
 }
@@ -1156,7 +1162,10 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		" showhelm,					 "
 		" e_aa_effects,				 "
 		" e_percent_to_aa,			 "
-		" e_expended_aa_spent		 "
+		" e_expended_aa_spent,		 "
+		" e_self_found,				 "
+		" e_solo_only,				 "
+		" e_hardcore				 "
 		")							 "
 		"VALUES ("
 		"%u,"  // id																" id,                        "
@@ -1212,11 +1221,14 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // aa_points					  pp->aapoints,							" aa_points,                 "
 		"%u,"  // boatid					  pp->boatid,							" boatid					 "
 		"'%s'," // `boatname`				  pp->boat,								" `boatname`,                "
-		"%u,"	//famished					  pp->famished							" famished					 "
-		"%u,"	//showhelm					  pp->showhelm							" showhelm					 "
+		"%u,"  // famished					  pp->famished							" famished					 "
+		"%u,"  // showhelm					  pp->showhelm							" showhelm					 "
 		"%u,"  // e_aa_effects
 		"%u,"  // e_percent_to_aa
-		"%u"   // e_expended_aa_spent
+		"%u,"  // e_expended_aa_spent
+		"%u,"  // e_self_found
+		"%u,"  // e_solo_only
+		"%u"   // e_hardcore
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1275,7 +1287,10 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		pp->showhelm,					  // " showhelm					  "
 		m_epp->aa_effects,
 		m_epp->perAA,
-		m_epp->expended_aa
+		m_epp->expended_aa,
+		m_epp->self_found,
+		m_epp->solo_only,
+		m_epp->hardcore
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);
