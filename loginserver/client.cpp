@@ -293,7 +293,7 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 
 	if (!server.db->GetLoginDataFromAccountName(username, d_pass_hash, d_account_id))
 	{
-		LogError("Error logging in, user %s does not exist in the database.", username.c_str());
+		LogError("Error logging in, user {0} does not exist in the database.", username.c_str());
 		LogError("platform : {} , username : {} does not exist", platform, username);
 		if (server.options.CanAutoCreateAccounts())
 		{
