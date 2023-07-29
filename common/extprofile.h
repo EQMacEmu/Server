@@ -57,6 +57,7 @@ struct ExtendedProfile_Struct {
 	uint8				self_found;
 	uint8				solo_only;
 	uint8				hardcore;
+	uint64				hardcore_death_time;
 };
 
 #pragma pack()

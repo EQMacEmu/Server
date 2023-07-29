@@ -1443,13 +1443,15 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 		}
 		
 		UnmemSpellAll(false);
-		if (IsHardcore() && (RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel)))
-		{
-			SetLevel(1);
-			UnscribeSpellAll(false);
-		}
 		if((RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel)) || RuleB(Character, LeaveNakedCorpses))
 		{
+			if (IsHardcore())
+			{
+				// Delete the character on next character select retrieval, so it can be hidden from owned characters. Purge these periodically.
+				uint64 death_timestamp = std::time(nullptr);
+				SetHardcoreDeathTimeStamp(death_timestamp);
+			}
+
 			// If we've died on a boat, make sure corpse falls overboard.
 			if(GetBoatNPCID() != 0)
 			{

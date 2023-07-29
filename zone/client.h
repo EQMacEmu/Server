@@ -340,6 +340,7 @@ public:
 	inline void SetHardcore(uint8 in_hardcore) { m_epp.hardcore = in_hardcore; Save(1); }
 	inline void SetSoloOnly(uint8 in_solo_only) { m_epp.solo_only = in_solo_only;  Save(1); }
 	inline void SetSelfFound(uint8 in_self_found) { m_epp.self_found = in_self_found; Save(1); }
+	inline void SetHardcoreDeathTimeStamp(uint32 in_death_timestamp) { m_epp.hardcore_death_time = in_death_timestamp; Save(1); }
 
 	int32 CalcMaxMana();
 	int32 CalcBaseMana();

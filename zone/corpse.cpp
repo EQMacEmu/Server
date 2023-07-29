@@ -1058,7 +1058,7 @@ bool Corpse::CanPlayerLoot(int charid) {
 	uint8 looters = 0;
 
 	Client* c = entity_list.GetClientByCharID(charid);
-	if (c && c->IsSelfFound())
+	if (c && c->IsSelfFound() || c && c->IsSoloOnly())
 	{
 		for (int i = 0; i < MAX_LOOTERS; i++) {
 			if (initial_allowed_looters[i] != 0) {

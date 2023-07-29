@@ -2812,7 +2812,21 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
-	if (entity && entity->IsObject() && entity->CastToObject()->IsPlayerDrop()) {
+	if (entity && entity->IsObject()) {
+		if (entity->CastToObject()->IsPlayerDrop())
+		{
+			if (IsSelfFound() || IsSoloOnly())
+			{
+				Message(CC_Red, "You cannot pick up dropped player items because you are performing a self found or solo challenge.");
+				auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
+				ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
+				loreitem->player_id = click_object->player_id;
+				loreitem->drop_id = 0xFFFFFFFF;
+				QueuePacket(outapp);
+				safe_delete(outapp);
+			}
+		}
+
 		Object* object = entity->CastToObject();
 
 		object->HandleClick(this, click_object);
@@ -2824,20 +2838,6 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		snprintf(buf, 9, "%u", click_object->drop_id);
 		buf[9] = '\0';
 		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0, &args);
-	}
-	else {
-
-		if (entity && entity->IsObject() && IsSelfFound())
-		{
-			Message(CC_Red, "You cannot pick up dropped player items because you are performing a self found challenge.");
-		}
-
-		auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
-		ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
-		loreitem->player_id = click_object->player_id;
-		loreitem->drop_id = 0xFFFFFFFF;
-		QueuePacket(outapp);
-		safe_delete(outapp);
 	}
 
 	return;
@@ -7481,17 +7481,20 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 	const EQ::ItemData* item = nullptr;
 	uint32 prevcharges = 0;
-	if (item_id == 0) { //check to see if its on the temporary table
-		std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
-		std::list<TempMerchantList>::const_iterator tmp_itr;
-		TempMerchantList ml;
-		for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr){
-			ml = *tmp_itr;
-			if (mp->itemslot == ml.slot){
-				item_id = ml.item;
-				tmpmer_used = true;
-				prevcharges = ml.charges;
-				break;
+	if (!IsSoloOnly() && !IsSelfFound())
+	{
+		if (item_id == 0) { //check to see if its on the temporary table
+			std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
+			std::list<TempMerchantList>::const_iterator tmp_itr;
+			TempMerchantList ml;
+			for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr) {
+				ml = *tmp_itr;
+				if (mp->itemslot == ml.slot) {
+					item_id = ml.item;
+					tmpmer_used = true;
+					prevcharges = ml.charges;
+					break;
+				}
 			}
 		}
 	}
@@ -8645,6 +8648,11 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 		if (ints->Code == BazaarTrader_StartTraderMode && app->size == sizeof(Trader_Struct))
 		{
+			if (IsSoloOnly() || IsSelfFound())
+			{
+				Message(CC_Red, "You are solo or self found only, and cannot list or sell items in The Bazaar.");
+				return;
+			}
 			GetItems_Struct* gis = GetTraderItems();
 		//	bool TradeItemsValid = true;
 
@@ -8768,6 +8776,13 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app) 
 {
+
+	if (IsSoloOnly() || IsSelfFound())
+	{
+		TradeRequestFailed(app);
+		Message(CC_Red, "You are solo or self found only, and cannot purchase items from The Bazaar.");
+		return;
+	}
 	// Bazaar Trader:
 	//
 	// Client has elected to buy an item from a Trader
@@ -8826,7 +8841,7 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
-		if (IsSelfFound())
+		if (IsSoloOnly())
 		{
 			Message(CC_Red, "You are doing a solo-self-found run. You cannot trade with other players.");
 			FinishTrade(this);
@@ -8834,12 +8849,24 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
-		if (tradee->CastToClient()->IsSelfFound())
+
+		if (tradee->CastToClient()->IsSoloOnly())
 		{
-			Message(CC_Red, "This player is doing a solo-self-found run. You cannot trade with them.");
+			Message(CC_Red, "Your trade partner is doing a solo-self-found run. You cannot trade with them.");
 			FinishTrade(this);
 			trade->Reset();
 			return;
+		}
+
+		if (tradee->CastToClient()->IsSelfFound() == true || IsSelfFound() == true)
+		{
+			if (tradee->CastToClient()->IsSelfFound() != IsSelfFound())
+			{
+				Message(CC_Red, "This player does not match your self-found flags. You cannot trade with them.");
+				FinishTrade(this);
+				trade->Reset();
+				return;
+			}
 		}
 
 		if (trade->state != TradeNone && trade->state != Requesting) {

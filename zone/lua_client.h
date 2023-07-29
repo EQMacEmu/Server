@@ -186,6 +186,12 @@ public:
 	void AddAAPoints(int points);
 	void RefundAA();
 	void ExpendAATimer(int aaid);
+	void SetHardcore(int hardcore);
+	int IsHardcore();
+	void SetSelfFound(int self_found);
+	int IsSelfFound();
+	void SetSoloOnly(int solo_only);
+	int IsSoloOnly();
 	int GetModCharacterFactionLevel(int faction);
 	int GetStartZone();
 	void KeyRingAdd(uint32 item);
