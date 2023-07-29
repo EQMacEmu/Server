@@ -629,6 +629,14 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 
 		if (m_inst && m_inst->IsType(EQ::item::ItemClassBag))
 		{
+			if (sender->IsSoloOnly())
+			{
+				m_inst->Clear();
+			}
+			else if (sender->IsSelfFound())
+			{
+				m_inst->Clear();
+			}
 			if (RuleB(AlKabor, NoDropRemoveTradeskill))
 			{
 				//Clear out no-drop and no-rent items first
