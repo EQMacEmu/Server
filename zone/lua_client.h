@@ -192,6 +192,8 @@ public:
 	int IsSelfFound();
 	void SetSoloOnly(int solo_only);
 	int IsSoloOnly();
+
+	void ClearPlayerInfoAndGrantStartingItems();
 	int GetModCharacterFactionLevel(int faction);
 	int GetStartZone();
 	void KeyRingAdd(uint32 item);

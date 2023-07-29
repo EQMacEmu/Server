@@ -337,9 +337,9 @@ public:
 	inline uint8 IsSoloOnly() const { return m_epp.solo_only; }
 	inline uint8 IsSelfFound() const { return m_epp.self_found; }
 
-	inline void SetHardcore(uint8 in_hardcore) { m_epp.hardcore = in_hardcore; Save(1); }
-	inline void SetSoloOnly(uint8 in_solo_only) { m_epp.solo_only = in_solo_only;  Save(1); }
-	inline void SetSelfFound(uint8 in_self_found) { m_epp.self_found = in_self_found; Save(1); }
+	inline void SetHardcore(uint8 in_hardcore) { m_epp.hardcore = in_hardcore; }
+	inline void SetSoloOnly(uint8 in_solo_only) { m_epp.solo_only = in_solo_only; }
+	inline void SetSelfFound(uint8 in_self_found) { m_epp.self_found = in_self_found; }
 	inline void SetHardcoreDeathTimeStamp(uint32 in_death_timestamp) { m_epp.hardcore_death_time = in_death_timestamp; Save(1); }
 
 	int32 CalcMaxMana();
@@ -579,17 +579,18 @@ public:
 	void	ReadBook(BookRequest_Struct *book);
 	void	QuestReadBook(const char* text, uint8 type);
 	void	SendClientMoneyUpdate(uint8 type,uint32 amount);
+	void	SendBankAndCursorToInventoryMoneyUpdate(uint8 type, uint32 amount);
 	void	SendClientMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum);
 	bool	TakeMoneyFromPP(uint64 copper, bool updateclient=false);
 	void	AddMoneyToPP(uint64 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
 	void	ClearMoney();
-	void	ResetStartingSkills();
+	void	RemoveAllSkills();
 	uint64	GetCarriedMoney();
 	uint64	GetAllMoney();
 
-	void SetClassStartingSkills();
+	void ResetStartingSkills();
 	void SetRaceStartingSkills();
 	void SetRacialLanguages();
 	void SetClassLanguages();

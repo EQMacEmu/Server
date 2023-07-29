@@ -5284,3 +5284,20 @@ void Mob::SetRandomFeatures()
 		}
 	}
 }
+
+void Mob::SetHP(int32 hp)
+{
+	if (hp >= max_hp)
+		cur_hp = max_hp; 
+	else 
+		cur_hp = hp;
+	if (IsNPC())
+	{
+		if (cur_hp == max_hp) // reset FTE
+		{
+			CastToNPC()->solo_group_fte = 0;
+			CastToNPC()->solo_raid_fte = 0;
+			CastToNPC()->solo_fte_charid = 0;
+		}
+	}
+}

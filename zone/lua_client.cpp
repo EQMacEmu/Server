@@ -822,12 +822,18 @@ int Lua_Client::IsSelfFound() {
 
 void Lua_Client::SetSoloOnly(int solo_only) {
 	Lua_Safe_Call_Void();
-	self->SetAAPoints(solo_only);
+	self->SetSoloOnly(solo_only);
 }
 
 int Lua_Client::IsSoloOnly() {
 	Lua_Safe_Call_Int();
 	return self->IsSoloOnly();
+}
+
+void Lua_Client::ClearPlayerInfoAndGrantStartingItems()
+{
+	Lua_Safe_Call_Void();
+	self->ClearPlayerInfoAndGrantStartingItems();
 }
 
 int Lua_Client::GetModCharacterFactionLevel(int faction) {
@@ -1398,7 +1404,8 @@ luabind::scope lua_register_client() {
 .def("SetSelfFound", (void(Lua_Client::*)(int))&Lua_Client::SetSelfFound)
 .def("IsSelfFound", (int(Lua_Client::*)(void))&Lua_Client::IsSelfFound)
 .def("SetSoloOnly", (void(Lua_Client::*)(int))&Lua_Client::SetSoloOnly)
-.def("IsSoloOnly", (int(Lua_Client::*)(void))&Lua_Client::IsSoloOnly);
+.def("IsSoloOnly", (int(Lua_Client::*)(void))&Lua_Client::IsSoloOnly)
+.def("ClearPlayerInfoAndGrantStartingItems", (void(Lua_Client::*)(void))&Lua_Client::ClearPlayerInfoAndGrantStartingItems);
 }
 
 luabind::scope lua_register_inventory_where() {

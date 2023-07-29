@@ -1942,12 +1942,33 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		if (IsNPC() && !killer->CastToClient()->IsMule() && !IsPlayerOwned() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && player_damaged)
 		{
 			give_exp_client = killer->CastToClient();
+
 			if (give_exp_client)
 			{
-				Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
+				bool is_solo_only = give_exp_client->IsSoloOnly();
+				bool is_self_found = give_exp_client->IsSelfFound();
 
-				// We hand out XP here.
-				GiveExp(give_exp_client, xp);
+				if (!is_solo_only && !is_self_found)
+				{
+					Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
+
+					// We hand out XP here.
+					GiveExp(give_exp_client, xp);
+				}
+				else
+				{
+					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
+					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
+					bool is_solo_fte_credit = give_exp_client->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
+					
+					if (is_raid_solo_fte_credit || is_group_solo_fte_credit || is_solo_fte_credit)
+					{
+						Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
+
+						// We hand out XP here.
+						GiveExp(give_exp_client, xp);
+					}
+				}
 			}
 		}
 		else
@@ -2097,92 +2118,198 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 
 	if (killer != 0 && killer->IsClient())
 	{
-		corpse->AllowPlayerLoot(killer, 0);
-		if (killer->IsGrouped())
+		bool is_solo_only = killer->CastToClient()->IsSoloOnly();
+		bool is_self_found = killer->CastToClient()->IsSelfFound();
+
+		if (is_solo_only && is_self_found)
 		{
+			bool is_solo_fte_charid = solo_fte_charid == killer->CastToClient()->CharacterID();
 			Group* group = entity_list.GetGroupByClient(killer->CastToClient());
-			if (group != 0) {
-				float groupHighestLevel = group->GetHighestLevel();
-				for (int i = 0; i < MAX_GROUP_MEMBERS; i++)
-				{
-					if (group->members[i] != nullptr)
+			Raid* raid = entity_list.GetRaidByClient(killer->CastToClient());
+			bool is_raid_solo_fte_credit = raid ? raid->GetID() == CastToNPC()->solo_raid_fte : false;
+			bool is_group_solo_fte_credit = group ? group->GetID() == CastToNPC()->solo_group_fte : false;
+			if (is_solo_fte_charid)
+			{
+				corpse->AllowPlayerLoot(killer, 0);
+			}
+			if (killer->IsGrouped())
+			{
+				if (group != nullptr) {
+					float groupHighestLevel = group->GetHighestLevel();
+					for (int i = 0; i < MAX_GROUP_MEMBERS; i++)
 					{
-						bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
-						bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
-						if(!is_self_found || is_self_found && can_get_experience)
-							corpse->AllowPlayerLoot(group->members[i], i);
+						if (group->members[i] != nullptr)
+						{
+							bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
+							bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
+							if (!is_self_found || is_self_found && can_get_experience && is_group_solo_fte_credit)
+								corpse->AllowPlayerLoot(group->members[i], i);
+						}
+					}
+				}
+			}
+			else if (killer->HasRaid())
+			{
+				Raid* r = entity_list.GetRaidByClient(killer->CastToClient());
+				if (r) {
+					r->VerifyRaid();
+					float raidHighestLevel = r->GetHighestLevel();
+					int i = 0;
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+					{
+						switch (r->GetLootType())
+						{
+						case 0:
+						case 1:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 2:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							else if (r->members[x].member && r->members[x].IsGroupLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 3:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							else if (r->members[x].member && r->members[x].IsLooter)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 4:
+							if (r->members[x].member)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						}
 					}
 				}
 			}
 		}
-		else if (killer->HasRaid())
+		else
 		{
-			Raid* r = entity_list.GetRaidByClient(killer->CastToClient());
-			if (r) {
-				r->VerifyRaid();
-				float raidHighestLevel = r->GetHighestLevel();
-				int i = 0;
-				for (int x = 0; x < MAX_RAID_MEMBERS; x++)
-				{
-					switch (r->GetLootType())
+			corpse->AllowPlayerLoot(killer, 0);
+			if (killer->IsGrouped())
+			{
+				Group* group = entity_list.GetGroupByClient(killer->CastToClient());
+				if (group != 0) {
+					float groupHighestLevel = group->GetHighestLevel();
+					for (int i = 0; i < MAX_GROUP_MEMBERS; i++)
 					{
-					case 0:
-					case 1:
-						if (r->members[x].member && r->members[x].IsRaidLeader)
+						if (group->members[i] != nullptr)
 						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
+							bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
+							bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
+							if(!is_self_found || is_self_found && can_get_experience)
+								corpse->AllowPlayerLoot(group->members[i], i);
 						}
-						break;
-					case 2:
-						if (r->members[x].member && r->members[x].IsRaidLeader)
+					}
+				}
+			}
+			else if (killer->HasRaid())
+			{
+				Raid* r = entity_list.GetRaidByClient(killer->CastToClient());
+				if (r) {
+					r->VerifyRaid();
+					float raidHighestLevel = r->GetHighestLevel();
+					int i = 0;
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+					{
+						switch (r->GetLootType())
 						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
+						case 0:
+						case 1:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 2:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							else if (r->members[x].member && r->members[x].IsGroupLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 3:
+							if (r->members[x].member && r->members[x].IsRaidLeader)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							else if (r->members[x].member && r->members[x].IsLooter)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
+						case 4:
+							if (r->members[x].member)
+							{
+								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
+								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
+								if (!is_self_found || is_self_found && can_get_experience)
+									corpse->AllowPlayerLoot(r->members[x].member, i);
+								i++;
+							}
+							break;
 						}
-						else if (r->members[x].member && r->members[x].IsGroupLeader)
-						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
-						}
-						break;
-					case 3:
-						if (r->members[x].member && r->members[x].IsRaidLeader)
-						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
-						}
-						else if (r->members[x].member && r->members[x].IsLooter)
-						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
-						}
-						break;
-					case 4:
-						if (r->members[x].member)
-						{
-							bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
-							bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(r->members[x].member, i);
-							i++;
-						}
-						break;
 					}
 				}
 			}

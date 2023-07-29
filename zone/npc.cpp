@@ -392,6 +392,10 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	raid_fte = 0;
 	group_fte = 0;
 	fte_charid = 0;
+
+	solo_raid_fte = 0;
+	solo_group_fte = 0;
+	solo_fte_charid = 0;
 	bonusAvoidance = d->avoidance;
 	exp_pct = d->exp_pct;
 	push_vector = glm::vec3(0.0f, 0.0f, 0.0f);

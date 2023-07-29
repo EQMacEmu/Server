@@ -450,6 +450,12 @@ public:
 	uint32 raid_fte;
 	uint32 group_fte;
 	uint32 fte_charid;
+
+	// IDs of the first group or player who aggroed this NPC.
+	uint32 solo_raid_fte;
+	uint32 solo_group_fte;
+	uint32 solo_fte_charid;
+
 	bool ValidateFTE();
 
 	std::string GetSpawnedString();

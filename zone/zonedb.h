@@ -221,6 +221,7 @@ public:
 	bool	DeleteCharacterMemorizedSpell(uint32 character_id, uint32 spell_id, uint32 slot_id);
 	bool	DeleteCharacterAAs(uint32 character_id);
 	bool	DeleteCharacterConsent(char grantname[64], char ownername[64], uint32 corpse_id);
+	bool	DeleteCharacterSkills(uint32 character_id, PlayerProfile_Struct * pp);
 
 	/* Character Inventory  */
 	bool	SaveSoulboundItems(Client* client, std::list<EQ::ItemInstance*>::const_iterator &start, std::list<EQ::ItemInstance*>::const_iterator &end);

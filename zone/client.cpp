@@ -1605,6 +1605,19 @@ void Client::SendClientMoneyUpdate(uint8 type,uint32 amount){
 	safe_delete(outapp);
 }
 
+
+void Client::SendClientMoneyUpdate(uint8 type, uint32 amount) {
+	auto outapp = new EQApplicationPacket(OP_TradeMoneyUpdate, sizeof(TradeMoneyUpdate_Struct));
+	TradeMoneyUpdate_Struct* mus = (TradeMoneyUpdate_Struct*)outapp->pBuffer;
+	mus->amount = amount;
+	mus->trader = 0;
+	mus->type = type;
+	Log(Logs::Detail, Logs::Debug, "Client::SendClientMoneyUpdate() %s added %i coin of type: %i.",
+		GetName(), amount, type);
+	QueuePacket(outapp);
+	safe_delete(outapp);
+}
+
 void Client::SendClientMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum)
 {
 	// This method is used to update the client's coin when /split is used, and it cannot
@@ -6088,19 +6101,12 @@ void Client::SetLockSavePosition(bool lock_save_position)
 	Client::m_lock_save_position = lock_save_position;
 }
 
-void Client::SetClassStartingSkills()
+void Client::RemoveAllSkills()
 {
 	for (uint32 i = 0; i <= EQ::skills::HIGHEST_SKILL; ++i) {
-		if (m_pp.skills[i] == 0) {
-			// Skip specialized, tradeskills (fishing excluded), Alcohol Tolerance, and Bind Wound
-			if (EQ::skills::IsSpecializedSkill((EQ::skills::SkillType)i) ||
-				(EQ::skills::IsTradeskill((EQ::skills::SkillType)i) && i != EQ::skills::SkillFishing) ||
-				i == EQ::skills::SkillAlcoholTolerance || i == EQ::skills::SkillBindWound)
-				continue;
-
-			m_pp.skills[i] = 0;
-		}
+		m_pp.skills[i] = 0;
 	}
+	database.DeleteCharacterSkills(CharacterID(), &m_pp);
 }
 
 void Client::SetRaceStartingSkills()

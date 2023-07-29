@@ -421,6 +421,15 @@ bool Client::FindOnCursor(uint32 item_id) {
 
 void Client::ClearMoney()
 {
+
+
+	SendClientMoneyUpdate(0, -GetCopper());
+	SendClientMoneyUpdate(1, -GetSilver());
+	SendClientMoneyUpdate(2, -GetGold());
+	SendClientMoneyUpdate(3, -GetPlatinum());
+
+
+
 	m_pp.copper = 0;
 	m_pp.copper_bank = 0;
 	m_pp.copper_cursor = 0;
@@ -433,12 +442,13 @@ void Client::ClearMoney()
 	m_pp.platinum = 0;
 	m_pp.platinum_bank = 0;
 	m_pp.platinum_cursor = 0;
-	SendClientMoney(0, 0, 0, 0);
 	SaveCurrency();
 }
 
 void Client::ResetStartingSkills()
 {
+	m_pp.level2 = 0;
+	m_pp.points = 0;
 
 	//Set all skills to 0.
 	for (int s = 0; s <= EQ::skills::HIGHEST_SKILL; s++)
@@ -452,9 +462,9 @@ void Client::ResetStartingSkills()
 	}
 	
 	/* Set Racial and Class specific language and skills */
+	RemoveAllSkills();
 	SetRacialLanguages();
 	SetRaceStartingSkills();
-	SetClassStartingSkills();
 	SetClassLanguages();
 }
 
@@ -525,8 +535,8 @@ void Client::ClearPlayerInfoAndGrantStartingItems()
 	//Grant starting items to the player again, since we just removed their inventory.
 	database.ResetStartingItems(this, m_pp.race, m_pp.class_, m_pp.deity, m_pp.binds[4].zoneId, m_pp.name, Admin());
 
-	//Their state is likely all sorts of messed up. Kick them.
-	Kick();
+	//Their state is likely all sorts of messed up. Commit immediately (Save) and then Kick them.
+	Save(1);
 }
 
 // Remove item from inventory

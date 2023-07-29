@@ -513,6 +513,32 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 					}
 				}
 			}
+
+			bool no_solo_fte = owner->GetMaxHP() == owner->GetHP();
+			if (no_solo_fte && (ent->IsClient() || ent->IsPlayerOwned()))
+			{
+				Mob* oos = ent->GetOwnerOrSelf();
+				if (oos && oos->IsClient())
+				{
+					Client* c = oos->CastToClient();
+					if (c)
+					{
+						owner->CastToNPC()->solo_fte_charid = c->CharacterID();
+
+						Raid *kr = entity_list.GetRaidByClient(c);
+						Group *kg = entity_list.GetGroupByClient(c);
+						if (kr)
+						{
+							owner->CastToNPC()->solo_raid_fte = kr->GetID();
+						}
+						else if (kg)
+						{
+							owner->CastToNPC()->solo_group_fte = kg->GetID();
+						}
+					}
+				}
+			}
+
 		}
 
 		p = new tHateEntry;

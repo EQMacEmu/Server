@@ -330,7 +330,7 @@ public:
 	virtual bool Death(Mob* killerMob, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, uint8 killedby = 0, bool bufftic = false) = 0;
 	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill,
 		bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false) = 0;
-	inline virtual void SetHP(int32 hp) { if (hp >= max_hp) cur_hp = max_hp; else cur_hp = hp;}
+	virtual void SetHP(int32 hp);
 	inline void SetOOCRegen(int32 newoocregen) {oocregen = newoocregen;}
 	virtual void Heal();
 	virtual void HealDamage(uint32 amount, Mob* caster = nullptr, uint16 spell_id = SPELL_UNKNOWN, bool hot = false);

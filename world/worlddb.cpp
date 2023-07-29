@@ -66,7 +66,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 		"beard,                     "  // 14
 		"face,                      "  // 15
 		"zone_id,		            "  // 16
-		"showhelm,					"  // 17
+		"showhelm					"  // 17
 		"FROM                       "
 		"character_data             "
 		"WHERE `account_id` = %i AND is_deleted = 0 AND e_hardcore_death_time = 0 ORDER BY `name` LIMIT %d   ", account_id, limit);
