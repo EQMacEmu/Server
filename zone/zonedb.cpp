@@ -2285,6 +2285,14 @@ void ZoneDatabase::SavePetInfo(Client *client)
 	}
 }
 
+void ZoneDatabase::RemoveAllFactions(Client *client) {
+
+	std::string query = StringFormat("DELETE FROM character_faction_values "
+		"id = %u",
+		client->CharacterID());
+	QueryDatabase(query);
+}
+
 
 void ZoneDatabase::RemoveTempFactions(Client *client) {
 
@@ -3881,6 +3889,39 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 			Log(Logs::Moderate, Logs::Inventory, "SaveCursor: Sending out ItemPacket for non-queued cursor item %s", inst->GetItem()->Name);
 		}
 	}
+	return true;
+}
+
+
+bool ZoneDatabase::ResetStartingItems(Client* c, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level)
+{
+	const EQ::ItemData* myitem;
+
+	std::string query = StringFormat("SELECT itemid, item_charges, slot FROM starting_items "
+		"WHERE (race = %i or race = 0) AND (class = %i or class = 0) AND "
+		"(deityid = %i or deityid = 0) AND (zoneid = %i or zoneid = 0) AND "
+		"gm <= %i ORDER BY id",
+		si_race, si_class, si_deity, si_current_zone, admin_level);
+	auto results = QueryDatabase(query);
+	if (!results.Success())
+		return false;
+
+
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		int32 itemid = atoi(row[0]);
+		int32 charges = atoi(row[1]);
+		int32 slot = atoi(row[2]);
+		myitem = GetItem(itemid);
+
+		if (!myitem)
+			continue;
+
+		if (slot < 0)
+			slot = c->GetInv().FindFreeSlot(0, 0);
+
+		c->SummonItem(itemid, charges, slot);
+	}
+
 	return true;
 }
 

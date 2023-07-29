@@ -33,7 +33,10 @@
 #include "../common/features.h"
 #include "../common/spdat.h"
 #include "../common/guilds.h"
+#include "../common/languages.h"
 #include "../common/rulesys.h"
+#include "../common/races.h"
+#include "../common/classes.h"
 #include "../common/strings.h"
 #include "../common/data_verification.h"
 #include "position.h"
@@ -6083,4 +6086,190 @@ bool Client::IsLockSavePosition() const
 void Client::SetLockSavePosition(bool lock_save_position)
 {
 	Client::m_lock_save_position = lock_save_position;
+}
+
+void Client::SetClassStartingSkills()
+{
+	for (uint32 i = 0; i <= EQ::skills::HIGHEST_SKILL; ++i) {
+		if (m_pp.skills[i] == 0) {
+			// Skip specialized, tradeskills (fishing excluded), Alcohol Tolerance, and Bind Wound
+			if (EQ::skills::IsSpecializedSkill((EQ::skills::SkillType)i) ||
+				(EQ::skills::IsTradeskill((EQ::skills::SkillType)i) && i != EQ::skills::SkillFishing) ||
+				i == EQ::skills::SkillAlcoholTolerance || i == EQ::skills::SkillBindWound)
+				continue;
+
+			m_pp.skills[i] = 0;
+		}
+	}
+}
+
+void Client::SetRaceStartingSkills()
+{
+	switch (m_pp.race)
+	{
+	case BARBARIAN:
+	case ERUDITE:
+	case HALF_ELF:
+	case HIGH_ELF:
+	case HUMAN:
+	case OGRE:
+	case TROLL:
+	{
+		// No Race Specific Skills
+		break;
+	}
+	case DWARF:
+	{
+		m_pp.skills[EQ::skills::SkillSenseHeading] = 50; //Even if we set this to 0, Intel client sets this to 50 anyway. Confirmed this is correct for era.
+		break;
+	}
+	case DARK_ELF:
+	{
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		break;
+	}
+	case GNOME:
+	{
+		m_pp.skills[EQ::skills::SkillTinkering] = 50;
+		break;
+	}
+	case HALFLING:
+	{
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		break;
+	}
+	case IKSAR:
+	{
+		m_pp.skills[EQ::skills::SkillForage] = 50;
+		m_pp.skills[EQ::skills::SkillSwimming] = 100;
+		break;
+	}
+	case WOOD_ELF:
+	{
+		m_pp.skills[EQ::skills::SkillForage] = 50;
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		break;
+	}
+	case VAHSHIR:
+	{
+		m_pp.skills[EQ::skills::SkillSafeFall] = 50;
+		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		break;
+	}
+	}
+}
+
+void Client::SetRacialLanguages()
+{
+	switch (m_pp.race)
+	{
+	case BARBARIAN:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_BARBARIAN] = 100;
+		break;
+	}
+	case DARK_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_ELVISH] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_ELDER_ELVISH] = 54;
+		m_pp.languages[LANG_ELVISH] = 54;
+		break;
+	}
+	case DWARF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DWARVISH] = 100;
+		m_pp.languages[LANG_GNOMISH] = 25;
+		break;
+	}
+	case ERUDITE:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ERUDIAN] = 100;
+		break;
+	}
+	case GNOME:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DWARVISH] = 25;
+		m_pp.languages[LANG_GNOMISH] = 100;
+		break;
+	}
+	case HALF_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case HALFLING:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_HALFLING] = 100;
+		break;
+	}
+	case HIGH_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_ELVISH] = 51;
+		m_pp.languages[LANG_ELDER_ELVISH] = 51;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case HUMAN:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		break;
+	}
+	case IKSAR:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_LIZARDMAN] = 100;
+		break;
+	}
+	case OGRE:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_OGRE] = 100;
+		break;
+	}
+	case TROLL:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_TROLL] = 100;
+		break;
+	}
+	case WOOD_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case VAHSHIR:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_COMBINE_TONGUE] = 100;
+		m_pp.languages[LANG_ERUDIAN] = 32;
+		m_pp.languages[LANG_VAH_SHIR] = 100;
+		break;
+	}
+	}
+}
+
+void Client::SetClassLanguages()
+{
+	// we only need to handle one class, but custom server might want to do more
+	switch (m_pp.class_) {
+	case ROGUE:
+		m_pp.languages[LANG_THIEVES_CANT] = 100;
+		break;
+	default:
+		break;
+	}
 }

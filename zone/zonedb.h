@@ -190,6 +190,8 @@ public:
 	void LoadPetInfo(Client *c);
 	void SavePetInfo(Client *c);
 	void RemoveTempFactions(Client *c);
+	void RemoveAllFactions(Client *client);
+	bool ResetStartingItems(Client* c, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level);
 
 	/* Character Data Loaders  */
 	bool	LoadCharacterFactionValues(uint32 character_id, faction_map & val_list);

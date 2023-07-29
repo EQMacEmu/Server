@@ -584,8 +584,15 @@ public:
 	void	AddMoneyToPP(uint64 copper,bool updateclient);
 	void	AddMoneyToPP(uint32 copper, uint32 silver, uint32 gold,uint32 platinum,bool updateclient);
 	bool	HasMoney(uint64 copper);
+	void	ClearMoney();
+	void	ResetStartingSkills();
 	uint64	GetCarriedMoney();
 	uint64	GetAllMoney();
+
+	void SetClassStartingSkills();
+	void SetRaceStartingSkills();
+	void SetRacialLanguages();
+	void SetClassLanguages();
 
 	bool IsDiscovered(uint32 itemid);
 	void DiscoverItem(uint32 itemid);
@@ -717,6 +724,7 @@ public:
 	void	SetMaterial(int16 slot_id, uint32 item_id);
 	int32	GetItemIDAt(int16 slot_id);
 	bool	FindOnCursor(uint32 item_id);
+	void	ClearPlayerInfoAndGrantStartingItems();
 	bool	PutItemInInventory(int16 slot_id, const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursor(const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop = false);

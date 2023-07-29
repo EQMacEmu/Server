@@ -419,6 +419,116 @@ bool Client::FindOnCursor(uint32 item_id) {
 	return false;
 }
 
+void Client::ClearMoney()
+{
+	m_pp.copper = 0;
+	m_pp.copper_bank = 0;
+	m_pp.copper_cursor = 0;
+	m_pp.silver = 0;
+	m_pp.silver_bank = 0;
+	m_pp.silver_cursor = 0;
+	m_pp.gold = 0;
+	m_pp.gold_bank = 0;
+	m_pp.gold_cursor = 0;
+	m_pp.platinum = 0;
+	m_pp.platinum_bank = 0;
+	m_pp.platinum_cursor = 0;
+	SendClientMoney(0, 0, 0, 0);
+	SaveCurrency();
+}
+
+void Client::ResetStartingSkills()
+{
+
+	//Set all skills to 0.
+	for (int s = 0; s <= EQ::skills::HIGHEST_SKILL; s++)
+	{
+		m_pp.skills[s] = 0;
+	}
+	//Set all languages to 0.
+	for (int l = 0; l <= MAX_PP_LANGUAGE; l++)
+	{
+		m_pp.languages[l] = 0;
+	}
+	
+	/* Set Racial and Class specific language and skills */
+	SetRacialLanguages();
+	SetRaceStartingSkills();
+	SetClassStartingSkills();
+	SetClassLanguages();
+}
+
+void Client::ClearPlayerInfoAndGrantStartingItems()
+{
+	//Clear player's money.
+	ClearMoney();
+
+	//Remove spells.
+	UnscribeSpellAll(false);
+	UnmemSpellAll(false);
+
+	//Fade all buffs.
+	BuffFadeAll(false, true);
+
+	//Clear AAs.
+	RefundAA();
+	SetAAPoints(0);
+	m_pp.aapoints_spent = 0;
+	
+	//Remove all factions.
+	database.RemoveAllFactions(this);
+	factionvalues.clear();
+
+	//Remove starting skills.
+	ResetStartingSkills();
+
+	//Remove all items from their trade if they're doing one.
+	Mob *Other = trade->With();
+	if (Other)
+	{
+		FinishTrade(this);
+
+		if (Other->IsClient())
+			Other->CastToClient()->FinishTrade(Other);
+
+		/* Reset both sides of the trade */
+		trade->Reset();
+		Other->trade->Reset();
+	}
+
+	//Delete all items from their inventory.
+	for (int16 i = EQ::invslot::SLOT_BEGIN; i <= EQ::invbag::BANK_BAGS_END;)
+	{
+		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
+
+		if (i == EQ::invslot::GENERAL_END) {
+			i = EQ::invbag::GENERAL_BAGS_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invbag::CURSOR_BAG_END) {
+			i = EQ::invslot::BANK_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invslot::BANK_END) {
+			i = EQ::invbag::BANK_BAGS_BEGIN;
+			continue;
+		}
+
+		if (newinv)
+		{
+			DeleteItemInInventory(i, 0, true, true);
+		}
+
+		i++;
+	}
+
+	//Grant starting items to the player again, since we just removed their inventory.
+	database.ResetStartingItems(this, m_pp.race, m_pp.class_, m_pp.deity, m_pp.binds[4].zoneId, m_pp.name, Admin());
+
+	//Their state is likely all sorts of messed up. Kick them.
+	Kick();
+}
+
 // Remove item from inventory
 void Client::DeleteItemInInventory(int16 slot_id, int8 quantity, bool client_update, bool update_db) 
 {
