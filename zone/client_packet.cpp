@@ -2824,6 +2824,7 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 				loreitem->drop_id = 0xFFFFFFFF;
 				QueuePacket(outapp);
 				safe_delete(outapp);
+				return;
 			}
 		}
 
@@ -4997,7 +4998,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if (IsSoloOnly())
 	{
-		Message(CC_Red, "You have solo mode enabled, and cannot group with you.");
+		Message(CC_Red, "You have solo mode enabled, and cannot group with anyone.");
 		return;
 	}
 

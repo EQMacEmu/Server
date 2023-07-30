@@ -470,6 +470,7 @@ void Client::ResetStartingSkills()
 
 void Client::ClearPlayerInfoAndGrantStartingItems()
 {
+
 	//Clear player's money.
 	ClearMoney();
 
@@ -534,6 +535,10 @@ void Client::ClearPlayerInfoAndGrantStartingItems()
 
 	//Grant starting items to the player again, since we just removed their inventory.
 	database.ResetStartingItems(this, m_pp.race, m_pp.class_, m_pp.deity, m_pp.binds[4].zoneId, m_pp.name, Admin());
+
+	//Set Level / EXP to 0.
+	SetLevel(1, true);
+	SetEXP(0, 0);
 
 	//Their state is likely all sorts of messed up. Commit immediately (Save) and then Kick them.
 	Save(1);

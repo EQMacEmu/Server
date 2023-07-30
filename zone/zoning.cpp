@@ -786,7 +786,12 @@ void Client::GoToBind(uint8 bindnum) {
 void Client::GoToDeath() {
 	//Client will request a zone in EQMac era clients, but let's make sure they get there:
 	zone_mode = ZoneToBindPoint;
+
 	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ZoneToBindPoint);
+	if (IsHardcore())
+	{
+		WorldKick();
+	}
 }
 
 void Client::SetZoneFlag(uint32 zone_id) {

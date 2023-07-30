@@ -1055,9 +1055,6 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 					return false;
 				}
 
-				if (c1->GetPVP() == c2->GetPVP())
-					return true;
-
 				if (c1->IsSoloOnly() || c2->IsSoloOnly())
 				{
 					// if either are solo only don't allow.
@@ -1068,9 +1065,12 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 				{
 					bool can_get_experience = c1->IsInLevelRange(c2->GetLevel());
 					bool compatible = c1->IsSelfFound() == c2->IsSelfFound();
-					if (!compatible || compatible && can_get_experience)
+					if (!compatible || compatible && !can_get_experience)
 						return false;
 				}
+
+				if (c1->GetPVP() == c2->GetPVP())
+					return true;
 
 			}
 			else if(_NPC(mob2))				// client to npc
