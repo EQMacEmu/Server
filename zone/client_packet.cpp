@@ -3245,6 +3245,29 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
+
+	if (tmob->IsClient())
+	{
+		Client* tmobClient = tmob->CastToClient();
+
+		bool self_found = tmobClient->IsSelfFound();
+		bool solo_only = tmobClient->IsSoloOnly();
+		bool hardcore = tmobClient->IsHardcore();
+		if (self_found || solo_only || hardcore)
+		{
+			std::string ruleset_string = "This player is running the";
+			if (solo_only)
+				ruleset_string += " solo ";
+			if (self_found)
+				ruleset_string += " self found ";
+			if (hardcore)
+				ruleset_string += " hardcore ";
+			ruleset_string += "ruleset.";
+
+			Message(0, ruleset_string.c_str());
+
+		}
+	}
 	return;
 }
 
@@ -8864,6 +8887,16 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			if (tradee->CastToClient()->IsSelfFound() != IsSelfFound())
 			{
 				Message(CC_Red, "This player does not match your self-found flags. You cannot trade with them.");
+				FinishTrade(this);
+				trade->Reset();
+				return;
+			}
+
+			bool can_get_experience = IsInLevelRange(tradee->GetLevel());
+
+			if (!can_get_experience)
+			{
+				Message(CC_Red, "This player is out of your self found level range. You cannot trade with them.");
 				FinishTrade(this);
 				trade->Reset();
 				return;
