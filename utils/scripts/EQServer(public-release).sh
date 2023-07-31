@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# using xterm as terminal so that tput does not produce error messages
+export TERM=xterm
+
 ##### SYSTEM USER, DATABASE AND DIRS #####
 serverdir=eqserver
 dbuser=changeme
