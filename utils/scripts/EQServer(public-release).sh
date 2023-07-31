@@ -880,7 +880,7 @@ setupxml)
 	echo $'\r' >> eqemu_config.xml
 	echo '	<directories>' >> eqemu_config.xml
 	echo '		<maps>Maps</maps>' >> eqemu_config.xml
-	echo '		<quests>quests</quests>' >> eqemu_config.xml
+	echo '		<quests>quests/</quests>' >> eqemu_config.xml
 	echo '		<plugins>quests/plugins</plugins>' >> eqemu_config.xml
 	echo '	</directories>' >> eqemu_config.xml
 	echo '</server>' >> eqemu_config.xml
