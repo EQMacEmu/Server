@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# using xterm as terminal so that tput does not produce error messages
+export TERM=xterm
+
 ##### SYSTEM USER, DATABASE AND DIRS #####
 serverdir=eqserver
 dbuser=changeme
@@ -39,32 +42,32 @@ ulimit -c unlimited
 ##### CALCULATE TIMER AND ZONE COUNTS #####
 if  [ $boats = "TRUE" ]; then
 	zonecount_boats=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT COUNT(enabled) FROM launcher_zones WHERE enabled = 1 AND launcher = 'boats';")
-	let zonecount_temp=$zonecount_temp+$zonecount_boats
+	let zonecount_temp=$((zonecount_temp+zonecount_boats))
 fi
 
 if  [ $zone1 = "TRUE" ]; then
 	zonecount_zone1=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT COUNT(enabled) FROM launcher_zones WHERE enabled = 1 AND launcher = 'zone1';")
-	let zonecount_temp=$zonecount_temp+$zonecount_zone1
+	let zonecount_temp=$((zonecount_temp+zonecount_zone1))
 fi
 
 if  [ $zone2 = "TRUE" ]; then
 	zonecount_zone2=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT COUNT(enabled) FROM launcher_zones WHERE enabled = 1 AND launcher = 'zone2';")
-	let zonecount_temp=$zonecount_temp+$zonecount_zone2
+	let zonecount_temp=$((zonecount_temp+zonecount_zone2))
 fi
 
 if  [ $zone3 = "TRUE" ]; then
 	zonecount_zone3=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT COUNT(enabled) FROM launcher_zones WHERE enabled = 1 AND launcher = 'zone3';")
-	let zonecount_temp=$zonecount_temp+$zonecount_zone3
+	let zonecount_temp=$((zonecount_temp+zonecount_zone3))
 fi
 
 if  [ $dynamic1 = "TRUE" ]; then
 	dynamiccount1=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT launcher.dynamics FROM launcher WHERE launcher.name='dynzone1';")
-	let zonecount_temp=$zonecount_temp+$dynamiccount1
+	let zonecount_temp=$((zonecount_temp+dynamiccount1))
 fi
 
 if  [ $dynamic2 = "TRUE" ]; then
 	dynamiccount2=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT launcher.dynamics FROM launcher WHERE launcher.name='dynzone2';")
-	let zonecount_temp=$zonecount_temp+$dynamiccount2
+	let zonecount_temp=$((zonecount_temp+dynamiccount2))
 fi
 
 if [ $zonecount_temp > 0 ]; then
@@ -877,7 +880,7 @@ setupxml)
 	echo $'\r' >> eqemu_config.xml
 	echo '	<directories>' >> eqemu_config.xml
 	echo '		<maps>Maps</maps>' >> eqemu_config.xml
-	echo '		<quests>quests</quests>' >> eqemu_config.xml
+	echo '		<quests>quests/</quests>' >> eqemu_config.xml
 	echo '		<plugins>quests/plugins</plugins>' >> eqemu_config.xml
 	echo '	</directories>' >> eqemu_config.xml
 	echo '</server>' >> eqemu_config.xml
