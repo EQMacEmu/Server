@@ -47,7 +47,7 @@ fi
 
 if  [ $zone1 = "TRUE" ]; then
 	zonecount_zone1=$(mysql -u $dbuser --password=$dbpass -h $dbIP -D $gamedb -se "SELECT COUNT(enabled) FROM launcher_zones WHERE enabled = 1 AND launcher = 'zone1';")
-	llet zonecount_temp=$((zonecount_temp+zonecount_zone1))
+	let zonecount_temp=$((zonecount_temp+zonecount_zone1))
 fi
 
 if  [ $zone2 = "TRUE" ]; then
