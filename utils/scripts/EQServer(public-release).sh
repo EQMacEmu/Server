@@ -584,7 +584,6 @@ if [ $user = "root" ]; then
 	apt -y install bash
 	apt -y install openssh-server
 	apt -y install git
-	apt -y install git-core
 	apt -y install gcc
 	apt -y install g++
 	apt -y install cpp
