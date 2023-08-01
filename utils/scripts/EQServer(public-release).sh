@@ -581,21 +581,24 @@ preinstall)
 if [ $user = "root" ]; then 
 	apt update
 	apt -y upgrade
-	apt -y install bash
-	apt -y install openssh-server
-	apt -y install git
-	apt -y install gcc
-	apt -y install g++
-	apt -y install cpp
-	apt -y install unzip
-	apt -y install make
-	apt -y install cmake
-	apt -y install subversion
-	apt -y install libio-stringy-perl
-	apt -y install zlib-bin
-	apt -y install zlibc
-	apt -y install libperl-dev
-	apt -y install uuid-dev
+        apt -y install bash
+        apt -y install build-essential
+        apt -y install cmake
+        apt -y install cpp
+        apt -y install ccache
+        apt -y install g++
+        apt -y install gcc
+        apt -y install gdb
+        apt -y install git
+        apt -y install libio-stringy-perl
+        apt -y install libjson-perl
+        apt -y install libperl-dev
+        apt -y install make
+        apt -y install openssh-server
+        apt -y install subversion
+        apt -y install unzip
+        apt -y install uuid-dev
+        apt -y install zlib1g-dev
 	
 	#use this block for mysql otherwise comment it for mariadb
 	###########################################################	
