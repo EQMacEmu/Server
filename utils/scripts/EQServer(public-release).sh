@@ -599,16 +599,16 @@ if [ $user = "root" ]; then
 	
 	#use this block for mysql otherwise comment it for mariadb
 	###########################################################	
-	#apt -y install mysql-server
-	#apt -y install mysql-client
-	#apt -y install libmysqlclient-dev
+	#apt -y install default-mysql-server
+	#apt -y install default-mysql-client
+	#apt -y install default-libmysqlclient-dev
 	#apt -y install libdbd-mysql-perl
 	###########################################################
 	
 	#use this block for mariadb otherwise comment it for mysql
 	###########################################################
 	apt -y install mariadb-server
-	apt -y install libmariadbclient-dev
+	apt -y install default-libmysqlclient-dev
 	apt -y install libmariadbd-dev
 	apt -y install libwtdbomysql-dev
 	apt -y install libwtdbomysql35
