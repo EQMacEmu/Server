@@ -603,13 +603,13 @@ if [ $user = "root" ]; then
 	###########################################################	
 	#apt-get -y install mysql-server
 	#apt-get -y install mysql-client
-	#apt-get -y install libmymqlclient-dev
+	#apt-get -y install libmysqlclient-dev
 	#apt-get -y install libdbd-mysql-perl
 	###########################################################
 	
 	#use this block for mariadb otherwise comment it for mysql
 	###########################################################
-	apt-get -y install mariadb-server-5.5	
+	apt-get -y install mariadb-server
 	apt-get -y install libmariadbclient-dev
 	apt-get -y install libmariadbd-dev
 	apt-get -y install libwtdbomysql-dev
