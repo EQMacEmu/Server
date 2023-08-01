@@ -2909,7 +2909,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 				}
 			}
 		}
-		else if (IsEffectInSpell(spell_id, SE_CancelMagic)){
+		else if (spells[spell_id].goodEffect != 0 && IsEffectInSpell(spell_id, SE_CancelMagic)){
 			if (!CancelMagicIsAllowedOnTarget(spelltar))
 			{
 				spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetCleanName());
