@@ -577,6 +577,7 @@ updatefinalstage)
 	$0 build2
 ;;
 
+preinstall)
 if [ $user = "root" ]; then 
 	apt update
 	apt -y upgrade
