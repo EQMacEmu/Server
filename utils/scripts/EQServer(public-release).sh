@@ -580,7 +580,7 @@ updatefinalstage)
 preinstall)
 if [ $user = "root" ]; then 
 	apt update
-	apt upgrade
+	apt -y upgrade
 	apt -y install bash
 	apt -y install openssh-server
 	apt -y install git
