@@ -579,67 +579,67 @@ updatefinalstage)
 
 preinstall)
 if [ $user = "root" ]; then 
-	aptitude update
-	aptitude safe-upgrade
-	apt-get -y install bash
-	apt-get -y install openssh-server
-	apt-get -y install git
-	apt-get -y install git-core
-	apt-get -y install gcc
-	apt-get -y install g++
-	apt-get -y install cpp
-	apt-get -y install unzip
-	apt-get -y install make
-	apt-get -y install cmake
-	apt-get -y install subversion
-	apt-get -y install libio-stringy-perl
-	apt-get -y install zlib-bin
-	apt-get -y install zlibc
-	apt-get -y install libperl-dev
-	apt-get -y install libperl5.18
-	apt-get -y install uuid-dev
+	apt update
+	apt upgrade
+	apt -y install bash
+	apt -y install openssh-server
+	apt -y install git
+	apt -y install git-core
+	apt -y install gcc
+	apt -y install g++
+	apt -y install cpp
+	apt -y install unzip
+	apt -y install make
+	apt -y install cmake
+	apt -y install subversion
+	apt -y install libio-stringy-perl
+	apt -y install zlib-bin
+	apt -y install zlibc
+	apt -y install libperl-dev
+	apt -y install libperl5.18
+	apt -y install uuid-dev
 	
 	#use this block for mysql otherwise comment it for mariadb
 	###########################################################	
-	#apt-get -y install mysql-server
-	#apt-get -y install mysql-client
-	#apt-get -y install libmysqlclient-dev
-	#apt-get -y install libdbd-mysql-perl
+	#apt -y install mysql-server
+	#apt -y install mysql-client
+	#apt -y install libmysqlclient-dev
+	#apt -y install libdbd-mysql-perl
 	###########################################################
 	
 	#use this block for mariadb otherwise comment it for mysql
 	###########################################################
-	apt-get -y install mariadb-server
-	apt-get -y install libmariadbclient-dev
-	apt-get -y install libmariadbd-dev
-	apt-get -y install libwtdbomysql-dev
-	apt-get -y install libwtdbomysql35
+	apt -y install mariadb-server
+	apt -y install libmariadbclient-dev
+	apt -y install libmariadbd-dev
+	apt -y install libwtdbomysql-dev
+	apt -y install libwtdbomysql35
 	###########################################################
 	
-	apt-get -y install libmysql++
-	apt-get -y install libperl5i-perl
-	apt-get -y install libboost-all-dev
-	apt-get -y install liblua5.1-0
-	apt-get -y install liblua5.1-0-dev
-	apt-get -y install libluabind-dev
-	apt-get -y install lua5.1
-	apt-get -y install build-essential
-	apt-get -y install libssl1.0.0
-	apt-get -y install libssl-dev
-	apt-get -y install openssl
-	apt-get -y install libcurl4-openssl-dev
-	apt-get -y install ruby1.9.1
-	apt-get -y install ruby1.9.1-dev
-	apt-get -y install ctags
-	apt-get -y install apache2
-	apt-get -y install libapache2-mod-php5
-	apt-get -y install php5-mysql
-	apt-get -y install php5-gd
-	apt-get -y install expect
-	apt-get -y install xinetd 
-	apt-get -y install valgrind
-	apt-get -y install proftpd
-	apt-get -y install
+	apt -y install libmysql++
+	apt -y install libperl5i-perl
+	apt -y install libboost-all-dev
+	apt -y install liblua5.1-0
+	apt -y install liblua5.1-0-dev
+	apt -y install libluabind-dev
+	apt -y install lua5.1
+	apt -y install build-essential
+	apt -y install libssl1.0.0
+	apt -y install libssl-dev
+	apt -y install openssl
+	apt -y install libcurl4-openssl-dev
+	apt -y install ruby1.9.1
+	apt -y install ruby1.9.1-dev
+	apt -y install ctags
+	apt -y install apache2
+	apt -y install libapache2-mod-php5
+	apt -y install php5-mysql
+	apt -y install php5-gd
+	apt -y install expect
+	apt -y install xinetd 
+	apt -y install valgrind
+	apt -y install proftpd
+	apt -y install
 	exit 1
 else
 	echo This needs you to run the script as sudo...
