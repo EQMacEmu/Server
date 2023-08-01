@@ -595,7 +595,6 @@ if [ $user = "root" ]; then
 	apt -y install zlib-bin
 	apt -y install zlibc
 	apt -y install libperl-dev
-	apt -y install libperl5.18
 	apt -y install uuid-dev
 	
 	#use this block for mysql otherwise comment it for mariadb
