@@ -1960,13 +1960,18 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
 					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
 					bool is_solo_fte_credit = give_exp_client->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
-					
+					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f && dmg_amt >= GetMaxHP() * 0.50;
+					bool is_majority_killer_dmg = (float)ssf_player_damage > GetMaxHP() * 0.50f;
+
 					if (is_raid_solo_fte_credit || is_group_solo_fte_credit || is_solo_fte_credit)
 					{
-						Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
+						if (!is_majority_ds_damage && is_majority_killer_dmg)
+						{
+							Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
 
-						// We hand out XP here.
-						GiveExp(give_exp_client, xp);
+							// We hand out XP here.
+							GiveExp(give_exp_client, xp);
+						}
 					}
 				}
 			}
@@ -2001,7 +2006,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 			Log(Logs::Moderate, Logs::Death, "Creating a corpse for %s", killer->GetName());
 
-			CreateCorpse(killer, corpse);
+			CreateCorpse(killer, dmg_amt, corpse);
 
 			if (IsZomm())
 			{
@@ -2088,7 +2093,7 @@ void NPC::IdleDeath(Mob* killerMob)
 	return;
 }
 
-void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
+void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 {
 	if (killer != 0)
 	{
@@ -2121,13 +2126,16 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 		bool is_solo_only = killer->CastToClient()->IsSoloOnly();
 		bool is_self_found = killer->CastToClient()->IsSelfFound();
 
-		if (is_solo_only && is_self_found)
+		if (is_solo_only || is_self_found)
 		{
 			bool is_solo_fte_charid = solo_fte_charid == killer->CastToClient()->CharacterID();
 			Group* group = entity_list.GetGroupByClient(killer->CastToClient());
 			Raid* raid = entity_list.GetRaidByClient(killer->CastToClient());
 			bool is_raid_solo_fte_credit = raid ? raid->GetID() == CastToNPC()->solo_raid_fte : false;
 			bool is_group_solo_fte_credit = group ? group->GetID() == CastToNPC()->solo_group_fte : false;
+			bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;
+			bool is_majority_killer_dmg = (float)ssf_player_damage >= GetMaxHP() * 0.50f;
+
 			if (is_solo_fte_charid)
 			{
 				corpse->AllowPlayerLoot(killer, 0);
@@ -2142,7 +2150,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 						{
 							bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
 							bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
-							if (!is_self_found || is_self_found && can_get_experience && is_group_solo_fte_credit)
+							if (!is_self_found || is_self_found && can_get_experience && is_group_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 								corpse->AllowPlayerLoot(group->members[i], i);
 						}
 					}
@@ -2165,7 +2173,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -2175,7 +2183,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -2183,7 +2191,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -2193,7 +2201,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -2201,7 +2209,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -2211,7 +2219,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 							{
 								bool can_get_experience = r->members[i].member->IsInLevelRange(r->GetHighestLevel());
 								bool is_self_found = r->members[i].member->IsClient() && r->members[i].member->CastToClient()->IsSelfFound();
-								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit)
+								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
 									corpse->AllowPlayerLoot(r->members[x].member, i);
 								i++;
 							}
@@ -3015,13 +3023,22 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 				total_damage += adj_damage;
 
 				// NPC DS damage is just added to npc_damage.
-				if (FromDamageShield && (attacker->IsClient() || attacker->IsPlayerOwned()))
+				if (FromDamageShield && (attacker->IsClient() && !attacker->CastToClient()->IsSoloOnly() && !attacker->CastToClient()->IsSelfFound() || attacker->IsPlayerOwned()))
 					ds_damage += adj_damage;
 
 				// Pets should not be included.
-				if (!FromDamageShield && attacker->IsClient())
+				if (!FromDamageShield && attacker->IsClient() || FromDamageShield && attacker->IsClient() && (attacker->CastToClient()->IsSoloOnly() || !attacker->CastToClient()->IsSelfFound()))
 				{
 					player_damage += adj_damage;
+					Client* ssf_check_player = attacker->CastToClient();
+
+					bool is_raid_solo_fte_credit = ssf_check_player->GetRaid() ? ssf_check_player->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
+					bool is_group_solo_fte_credit = ssf_check_player->GetGroup() ? ssf_check_player->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
+					bool is_solo_fte_credit = ssf_check_player->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
+					if (is_solo_fte_credit || is_raid_solo_fte_credit || is_group_solo_fte_credit)
+					{
+						ssf_player_damage += adj_damage;
+					}
 				}
 
 				if(attacker->IsDireCharmed())

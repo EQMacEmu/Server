@@ -441,7 +441,7 @@ public:
 	uint8 greed;		// merchant greed; default value of 0 means a 25% price markup
 	uint8 GetGreedPercent();
 
-	void CreateCorpse(Mob* killer, bool &corpse);
+	void CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse);
 	void GiveExp(Client* killer, bool &xp);
 	uint16 GetExpPercent() { return exp_pct; }
 	float GetPBAoEReduction(uint8 killer_level);

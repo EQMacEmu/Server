@@ -386,6 +386,7 @@ Mob::Mob(const char* in_name,
 	dire_charmed = false;
 	feared = false;
 	player_damage = 0;
+	ssf_player_damage = 0;
 	dire_pet_damage = 0;
 	total_damage = 0;
 	ds_damage = 0;
@@ -5291,13 +5292,15 @@ void Mob::SetHP(int32 hp)
 		cur_hp = max_hp; 
 	else 
 		cur_hp = hp;
+
 	if (IsNPC())
 	{
-		if (cur_hp == max_hp) // reset FTE
+		if (cur_hp >= max_hp * 0.90) // reset FTE
 		{
 			CastToNPC()->solo_group_fte = 0;
 			CastToNPC()->solo_raid_fte = 0;
 			CastToNPC()->solo_fte_charid = 0;
+			ssf_player_damage = 0;
 		}
 	}
 }
