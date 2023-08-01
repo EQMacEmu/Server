@@ -577,41 +577,37 @@ updatefinalstage)
 	$0 build2
 ;;
 
-preinstall)
 if [ $user = "root" ]; then 
 	apt update
 	apt -y upgrade
-        apt -y install bash
-        apt -y install build-essential
-        apt -y install cmake
-        apt -y install cpp
-        apt -y install ccache
-        apt -y install g++
-        apt -y install gcc
-        apt -y install gdb
-        apt -y install git
-        apt -y install libio-stringy-perl
-        apt -y install libjson-perl
-        apt -y install libperl-dev
-        apt -y install make
-        apt -y install openssh-server
-        apt -y install subversion
-        apt -y install unzip
-        apt -y install uuid-dev
-        apt -y install zlib1g-dev
+	apt -y install bash
+	apt -y install openssh-server
+	apt -y install git
+	apt -y install gcc
+	apt -y install g++
+	apt -y install cpp
+	apt -y install unzip
+	apt -y install make
+	apt -y install cmake
+	apt -y install subversion
+	apt -y install libio-stringy-perl
+	apt -y install zlib-bin
+	apt -y install zlibc
+	apt -y install libperl-dev
+	apt -y install uuid-dev
 	
 	#use this block for mysql otherwise comment it for mariadb
 	###########################################################	
-	#apt -y install default-mysql-server
-	#apt -y install default-mysql-client
-	#apt -y install default-libmysqlclient-dev
+	#apt -y install mysql-server
+	#apt -y install mysql-client
+	#apt -y install libmysqlclient-dev
 	#apt -y install libdbd-mysql-perl
 	###########################################################
 	
 	#use this block for mariadb otherwise comment it for mysql
 	###########################################################
 	apt -y install mariadb-server
-	apt -y install default-libmysqlclient-dev
+	apt -y install libmariadbclient-dev
 	apt -y install libmariadbd-dev
 	apt -y install libwtdbomysql-dev
 	apt -y install libwtdbomysql35
