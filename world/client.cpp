@@ -695,6 +695,12 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	Checksum_Struct *cs=(Checksum_Struct *)app->pBuffer;
 	uint64 checksum = cs->checksum;
 
+	std::string custom_checksum_name = "CustomChecksum";
+	std::string custom_checksum_val = "";
+	database.GetVariable(custom_checksum_name, custom_checksum_val);
+
+	int64 custom_checksum_ll = atoll(custom_checksum_val.c_str());
+
 	if(GetClientVersionBit() == EQ::versions::ClientVersionBit::bit_MacPC)
 	{
 		//Pristine spell file. 
@@ -711,9 +717,13 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Exe Checksum is GOOD!");
 		}
+		else if (checksum == custom_checksum_ll)
+		{
+			Log(Logs::Detail, Logs::WorldServer, "Custom Checksum is GOOD!");
+		}
 		else
 		{
-			Log(Logs::Detail, Logs::WorldServer, "Checksum is BAD!");
+			Log(Logs::Detail, Logs::WorldServer, "Checksum is BAD! %lld", checksum);
 			return false;
 		}
 	}
