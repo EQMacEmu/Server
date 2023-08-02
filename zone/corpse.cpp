@@ -463,19 +463,13 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 		IsRezzed(false);
 		Save();
 		database.TransactionCommit();
-		if (client->IsHardcore()) {
-			corpse_decay_timer.Start(1);
+		if (!IsEmpty()) {
+			corpse_decay_timer.Start(RuleI(Character, CorpseDecayTimeMS));
 		}
-		else
+		else if (IsEmpty() && RuleB(Character, SacrificeCorpseDepop) && killedby == Killed_Sac &&
+			(GetZoneID() == poknowledge || GetZoneID() == nexus || GetZoneID() == bazaar))
 		{
-			if (!IsEmpty()) {
-				corpse_decay_timer.Start(RuleI(Character, CorpseDecayTimeMS));
-			}
-			else if (IsEmpty() && RuleB(Character, SacrificeCorpseDepop) && killedby == Killed_Sac &&
-				(GetZoneID() == poknowledge || GetZoneID() == nexus || GetZoneID() == bazaar))
-			{
-				corpse_decay_timer.Start(180000);
-			}
+			corpse_decay_timer.Start(180000);
 		}
 
 		return;
