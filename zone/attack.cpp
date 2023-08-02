@@ -3022,6 +3022,13 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 
 				total_damage += adj_damage;
 
+				Client* ultimate_owner = attacker->IsClient() ? attacker->CastToClient() : nullptr;
+					
+				if(attacker->IsPet() && attacker->HasOwner() && attacker->GetOwner() != nullptr && attacker->GetOwner() != attacker && attacker->GetOwner()->IsClient());
+				{
+					ultimate_owner = attacker->GetOwner()->CastToClient();
+				}
+
 				// NPC DS damage is just added to npc_damage.
 				if (FromDamageShield && (attacker->IsClient() && !attacker->CastToClient()->IsSoloOnly() && !attacker->CastToClient()->IsSelfFound() || attacker->IsPlayerOwned()))
 					ds_damage += adj_damage;
@@ -3030,14 +3037,17 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 				if (!FromDamageShield && attacker->IsClient() || FromDamageShield && attacker->IsClient() && (attacker->CastToClient()->IsSoloOnly() || !attacker->CastToClient()->IsSelfFound()))
 				{
 					player_damage += adj_damage;
-					Client* ssf_check_player = attacker->CastToClient();
+				}
 
-					bool is_raid_solo_fte_credit = ssf_check_player->GetRaid() ? ssf_check_player->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
-					bool is_group_solo_fte_credit = ssf_check_player->GetGroup() ? ssf_check_player->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
-					bool is_solo_fte_credit = ssf_check_player->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
+				if (ultimate_owner)
+				{
+
+					bool is_raid_solo_fte_credit = ultimate_owner->GetRaid() ? ultimate_owner->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
+					bool is_group_solo_fte_credit = ultimate_owner->GetGroup() ? ultimate_owner->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
+					bool is_solo_fte_credit = ultimate_owner->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
 					if (is_solo_fte_credit || is_raid_solo_fte_credit || is_group_solo_fte_credit)
 					{
-						ssf_player_damage += adj_damage;
+						ssf_player_damage += damage;
 					}
 				}
 
