@@ -3022,26 +3022,32 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 
 				total_damage += adj_damage;
 
-				Client* ultimate_owner = attacker->IsClient() ? attacker->CastToClient() : nullptr;
-					
-				if(attacker->IsPet() && attacker->HasOwner() && attacker->GetOwner() != nullptr && attacker->GetOwner() != attacker && attacker->GetOwner()->IsClient());
-				{
-					ultimate_owner = attacker->GetOwner()->CastToClient();
-				}
 
 				// NPC DS damage is just added to npc_damage.
-				if (FromDamageShield && (attacker->IsClient() && !attacker->CastToClient()->IsSoloOnly() && !attacker->CastToClient()->IsSelfFound() || attacker->IsPlayerOwned()))
+				if (FromDamageShield && (attacker->IsClient() || attacker->IsPlayerOwned()))
 					ds_damage += adj_damage;
 
-				// Pets should not be included.
-				if (!FromDamageShield && attacker->IsClient() || FromDamageShield && attacker->IsClient() && (attacker->CastToClient()->IsSoloOnly() || attacker->CastToClient()->IsSelfFound()))
+				if (!FromDamageShield && attacker->IsClient())
 				{
 					player_damage += adj_damage;
 				}
 
+				Client* ultimate_owner = attacker->IsClient() ? attacker->CastToClient() : nullptr;
+
+				if (attacker->IsPlayerOwned() && ultimate_owner == nullptr)
+				{
+					if (HasOwner() && GetUltimateOwner()->IsClient())
+					{
+						ultimate_owner = GetUltimateOwner()->CastToClient();
+					}
+					if ((IsNPC() && CastToNPC()->GetSwarmInfo() && CastToNPC()->GetSwarmInfo()->GetOwner() && CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))
+					{
+						ultimate_owner = CastToNPC()->GetSwarmInfo()->GetOwner()->CastToClient();
+					}
+				}
+
 				if (ultimate_owner)
 				{
-
 					bool is_raid_solo_fte_credit = ultimate_owner->GetRaid() ? ultimate_owner->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
 					bool is_group_solo_fte_credit = ultimate_owner->GetGroup() ? ultimate_owner->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
 					bool is_solo_fte_credit = ultimate_owner->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
