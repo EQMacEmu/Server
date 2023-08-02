@@ -447,7 +447,7 @@ void Client::ClearMoney()
 
 void Client::ResetStartingSkills()
 {
-	m_pp.level2 = 0;
+	m_pp.level2 = 1;
 	m_pp.points = 5;
 
 	//Set all skills to 0.

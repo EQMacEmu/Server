@@ -799,7 +799,7 @@ uint32 Group::GetHighestLevel2()
 	{
 		if (members[i] && members[i]->IsClient())
 		{
-			if (members[i]->CastToClient->GetLevel2() > level)
+			if (members[i]->CastToClient()->GetLevel2() > level)
 				level = members[i]->CastToClient()->GetLevel2();
 		}
 	}

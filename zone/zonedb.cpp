@@ -3906,16 +3906,16 @@ bool ZoneDatabase::ResetStartingItems(Client* c, uint32 si_race, uint32 si_class
 {
 	std::string starting_zone_query = StringFormat("SELECT zone_id FROM start_zones "
 		"WHERE (player_race = %i) AND (player_class = %i) AND "
-		"(player_deity = %i) AND (bind_id = %i)");
-		si_race, si_class, si_deity, si_current_zone, admin_level);
-	auto results = QueryDatabase(starting_zone_query);
-	if (!results.Success())
+		"(player_deity = %i) AND (bind_id = %i)",
+		si_race, si_class, si_deity, si_current_zone);
+	auto starting_zone_query_results = QueryDatabase(starting_zone_query);
+	if (!starting_zone_query_results.Success())
 		return false;
 
-	if (results.RowCount() == 0)
+	if (starting_zone_query_results.RowCount() == 0)
 		return false;
 
-	auto starting_zone_id = atoi(results.begin()[0]);
+	auto starting_zone_id = atoi(starting_zone_query_results.begin()[0]);
 	
 	if (starting_zone_id == 0)
 		return false;
