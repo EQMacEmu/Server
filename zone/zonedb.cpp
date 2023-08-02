@@ -3904,17 +3904,32 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 
 bool ZoneDatabase::ResetStartingItems(Client* c, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level)
 {
-	const EQ::ItemData* myitem;
+	std::string starting_zone_query = StringFormat("SELECT zone_id FROM start_zones "
+		"WHERE (player_race = %i) AND (player_class = %i) AND "
+		"(player_deity = %i) AND (bind_id = %i)");
+		si_race, si_class, si_deity, si_current_zone, admin_level);
+	auto results = QueryDatabase(starting_zone_query);
+	if (!results.Success())
+		return false;
+
+	if (results.RowCount() == 0)
+		return false;
+
+	auto starting_zone_id = atoi(results.begin()[0]);
+	
+	if (starting_zone_id == 0)
+		return false;
 
 	std::string query = StringFormat("SELECT itemid, item_charges, slot FROM starting_items "
 		"WHERE (race = %i or race = 0) AND (class = %i or class = 0) AND "
 		"(deityid = %i or deityid = 0) AND (zoneid = %i or zoneid = 0) AND "
 		"gm <= %i ORDER BY id",
-		si_race, si_class, si_deity, si_current_zone, admin_level);
+		si_race, si_class, si_deity, starting_zone_id, admin_level);
 	auto results = QueryDatabase(query);
 	if (!results.Success())
 		return false;
 
+	const EQ::ItemData* myitem;
 
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		int32 itemid = atoi(row[0]);

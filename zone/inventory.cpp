@@ -448,7 +448,7 @@ void Client::ClearMoney()
 void Client::ResetStartingSkills()
 {
 	m_pp.level2 = 0;
-	m_pp.points = 0;
+	m_pp.points = 5;
 
 	//Set all skills to 0.
 	for (int s = 0; s <= EQ::skills::HIGHEST_SKILL; s++)

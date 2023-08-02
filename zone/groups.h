@@ -81,6 +81,7 @@ public:
 	inline	bool IsLeader(Mob* leadertest) { return leadertest==leader; };
 	uint8	GroupCount();
 	uint32	GetHighestLevel();
+	uint32	GetHighestLevel2();
 	uint32	GetLowestLevel();
 	void	QueuePacket(const EQApplicationPacket *app, bool ack_req = true);
 	void	TeleportGroup(Mob* sender, uint32 zoneID, float x, float y, float z, float heading);

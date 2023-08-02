@@ -8891,16 +8891,6 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 				trade->Reset();
 				return;
 			}
-
-			bool can_get_experience = IsInLevelRange(tradee->GetLevel());
-
-			if (!can_get_experience)
-			{
-				Message(CC_Red, "This player is out of your self found level range. You cannot trade with them.");
-				FinishTrade(this);
-				trade->Reset();
-				return;
-			}
 		}
 
 		if (trade->state != TradeNone && trade->state != Requesting) {
