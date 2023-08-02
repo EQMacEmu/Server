@@ -1960,7 +1960,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
 					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
 					bool is_solo_fte_credit = give_exp_client->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
-					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f && dmg_amt >= GetMaxHP() * 0.50;
+					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;
 					bool is_majority_killer_dmg = (float)ssf_player_damage > GetMaxHP() * 0.50f;
 
 					if (is_raid_solo_fte_credit || is_group_solo_fte_credit || is_solo_fte_credit)
