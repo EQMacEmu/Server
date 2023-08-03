@@ -5295,7 +5295,7 @@ void Mob::SetHP(int32 hp)
 
 	if (IsNPC())
 	{
-		if ((float)cur_hp >= (float)max_hp * (level <= 5 ? 0.995f : 0.90f)) // reset FTE
+		if ((float)cur_hp >= (float)max_hp) // reset FTE
 		{
 			CastToNPC()->solo_group_fte = 0;
 			CastToNPC()->solo_raid_fte = 0;
