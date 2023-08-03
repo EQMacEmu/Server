@@ -1010,7 +1010,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 	float dist2 = dist * dist;
 	float dist_targ = 0;
 
-	bool detrimental = IsDetrimentalSpell(spell_id);
+	bool detrimental = spells[spell_id].goodEffect == 0;
 	bool clientcaster = caster->IsClient();
 	int MAX_TARGETS_ALLOWED = 5;
 

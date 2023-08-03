@@ -1,0 +1,76 @@
+{
+  "server": {
+    "zones": {
+      "defaultstatus": "0",
+      "ports": {
+        "low": "7000",
+        "high": "7400"
+      }
+    },
+    "qsdatabase": {
+      "host": "localhost",
+      "port": "3306",
+      "username": "root",
+      "password": "eqemu",
+      "db": "peq"
+    },
+    "chatserver": {
+      "port": "7778",
+      "host": ""
+    },
+    "mailserver": {
+      "host": "",
+      "port": "7778"
+    },
+    "world": {
+      "loginserver1": {
+        "account": "",
+        "password": "",
+        "legacy": "1",
+        "host": "login.eqemulator.net",
+        "port": "5998"
+      },
+      "loginserver2": {
+        "port": "5998",
+        "account": "",
+        "password": "",
+        "host": "127.0.0.1"
+      },
+      "loginserver3": {
+        "port": "5998",
+        "account": "",
+        "password": "",
+        "host": "login.projecteq.net"
+      },
+      "tcp": {
+        "ip": "127.0.0.1",
+        "port": "9001"
+      },
+      "telnet": {
+        "ip": "0.0.0.0",
+        "port": "9000",
+        "enabled": "true"
+      },
+      "key": "qwerty1234",
+      "shortname": "TAKP Clone Server",
+      "longname": "TAKP Clone Server",
+      "address": "192.168.0.1",
+      "localaddress": "127.0.0.1"
+    },
+    "database": {
+      "db": "peq",
+      "host": "localhost",
+      "port": "3306",
+      "username": "root",
+      "password": "eqemu"
+    },
+    "files": {
+      "opcodes": "assets/opcodes/opcodes.conf",
+      "mail_opcodes": "assets/opcodes/mail_opcodes.conf"
+    },
+    "directories": {
+      "patches": "assets/patches/",
+      "opcodes": "assets/opcodes/"
+    }
+  }
+}

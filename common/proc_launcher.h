@@ -84,7 +84,7 @@ protected:
 private:
 	static ProcLauncher s_launcher;
 #ifndef WIN32
-	uint32 m_signalCount;
+	uint m_signalCount;
 	static void HandleSigChild(int signum);
 #endif
 };
