@@ -3036,13 +3036,13 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 
 				if (attacker->IsPlayerOwned() && ultimate_owner == nullptr)
 				{
-					if (HasOwner() && GetUltimateOwner()->IsClient())
+					if (attacker->HasOwner() && attacker->GetUltimateOwner()->IsClient())
 					{
-						ultimate_owner = GetUltimateOwner()->CastToClient();
+						ultimate_owner = attacker->GetUltimateOwner()->CastToClient();
 					}
-					if ((IsNPC() && CastToNPC()->GetSwarmInfo() && CastToNPC()->GetSwarmInfo()->GetOwner() && CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))
+					if ((attacker->IsNPC() && attacker->CastToNPC()->GetSwarmInfo() && attacker->CastToNPC()->GetSwarmInfo()->GetOwner() && attacker->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))
 					{
-						ultimate_owner = CastToNPC()->GetSwarmInfo()->GetOwner()->CastToClient();
+						ultimate_owner = attacker->CastToNPC()->GetSwarmInfo()->GetOwner()->CastToClient();
 					}
 				}
 

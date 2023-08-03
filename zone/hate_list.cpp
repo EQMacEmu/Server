@@ -514,27 +514,38 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 				}
 			}
 
-			bool no_solo_fte = owner->GetMaxHP() == owner->GetHP();
+			bool no_solo_fte = owner->CastToNPC()->solo_raid_fte == 0 && owner->CastToNPC()->solo_group_fte == 0 && owner->CastToNPC()->solo_fte_charid == 0;
 			if (no_solo_fte && (ent->IsClient() || ent->IsPlayerOwned()))
 			{
-				Mob* oos = ent->GetOwnerOrSelf();
-				if (oos && oos->IsClient())
-				{
-					Client* c = oos->CastToClient();
-					if (c)
-					{
-						owner->CastToNPC()->solo_fte_charid = c->CharacterID();
 
-						Raid *kr = entity_list.GetRaidByClient(c);
-						Group *kg = entity_list.GetGroupByClient(c);
-						if (kr)
-						{
-							owner->CastToNPC()->solo_raid_fte = kr->GetID();
-						}
-						else if (kg)
-						{
-							owner->CastToNPC()->solo_group_fte = kg->GetID();
-						}
+				Client* ultimate_owner = ent->IsClient() ? ent->CastToClient() : nullptr;
+
+
+				if (ent->IsPlayerOwned() && ultimate_owner == nullptr)
+				{
+					if (ent->HasOwner() && ent->GetUltimateOwner()->IsClient())
+					{
+						ultimate_owner = ent->GetUltimateOwner()->CastToClient();
+					}
+					if ((ent->IsNPC() && ent->CastToNPC()->GetSwarmInfo() && ent->CastToNPC()->GetSwarmInfo()->GetOwner() && ent->CastToNPC()->GetSwarmInfo()->GetOwner()->IsClient()))
+					{
+						ultimate_owner = ent->CastToNPC()->GetSwarmInfo()->GetOwner()->CastToClient();
+					}
+				}
+
+				if (ultimate_owner)
+				{
+					owner->CastToNPC()->solo_fte_charid = ultimate_owner->CharacterID();
+
+					Raid *kr = entity_list.GetRaidByClient(ultimate_owner);
+					Group *kg = entity_list.GetGroupByClient(ultimate_owner);
+					if (kr)
+					{
+						owner->CastToNPC()->solo_raid_fte = kr->GetID();
+					}
+					else if (kg)
+					{
+						owner->CastToNPC()->solo_group_fte = kg->GetID();
 					}
 				}
 			}
