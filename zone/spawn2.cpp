@@ -514,8 +514,9 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"force_z "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s'",
-		zone_name
+		"WHERE zone = '%s' AND expansion <= %i",
+		zone_name,
+		RuleI(Character, DefaultExpansions)
 		);
 	results = QueryDatabase(query);
 
@@ -617,8 +618,9 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 		"force_z "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s'",
-		zone_name
+		"WHERE zone = '%s' AND expansion <= %i",
+		zone_name,
+		RuleI(Character, DefaultExpansions)
 	);
 	results = QueryDatabase(query);
 

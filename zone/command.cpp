@@ -367,6 +367,7 @@ int command_init(void)
 		command_add("setgreed", "[greed] - Sets a merchant greed value.", AccountStatus::GMAdmin, command_setgreed) ||
 		command_add("setlanguage", "[language ID] [value] - Set your target's language skillnum to value.", AccountStatus::GMAreas, command_setlanguage) ||
 		command_add("setlsinfo", "[email] [password] - Set login server email address and password (if supported by login server).", AccountStatus::Max, command_setlsinfo) ||
+		command_add("setnpcexpansion", "[bitmask] - Restrict an NPC spawn2 by bitmask.", AccountStatus::GMAdmin, command_setnpcexpansion) ||
 		command_add("setpass", "[accountname] [password] - Set local password for accountname.", AccountStatus::Max, command_setpass) ||
 		command_add("setskill", "[skillnum] [value] - Set your target's skill skillnum to value.", AccountStatus::GMAreas, command_setskill) ||
 		command_add("setskillall", "[value] - Set all of your target's skills to value.", AccountStatus::GMAreas, command_setskillall) ||
@@ -2523,6 +2524,37 @@ void command_delacct(Client *c, const Seperator *sep){
 			c->Message(CC_Default, "The account was deleted.");
 		else
 			c->Message(CC_Default, "Unable to delete account.");
+}
+
+void command_setnpcexpansion(Client* c, const Seperator* sep)
+{
+	if (sep->IsNumber(1) && c->GetTarget() && c->GetTarget()->IsNPC() && c->GetTarget()->CastToNPC()->GetSpawnPointID() != 0)
+	{
+		std::string query = fmt::format(
+			"UPDATE spawn2 SET expansion = {} WHERE id = {}",
+			std::stoi(sep->arg[1]),
+			c->GetTarget()->CastToNPC()->GetSpawnPointID()
+
+		);
+		auto results = database.QueryDatabase(query);
+		if (!results.Success()) {
+			c->Message(CC_Red, "Failed to set spawn expansion bitmask.");
+			return;
+		}
+
+		c->Message(
+			CC_Default,
+			fmt::format(
+				"Name: {} Expansion {} Bitmask Set",
+				c->GetTarget()->GetCleanName(),
+				std::stoi(sep->arg[1])
+			).c_str()
+		);
+	}
+	else
+	{
+		c->Message(CC_Default, "Usage: #setnpcexpansion [bitmask]");
+	}
 }
 
 void command_setpass(Client *c, const Seperator *sep){

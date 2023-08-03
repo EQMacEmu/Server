@@ -624,6 +624,9 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Worn.Type = std::stoi(row[ItemField::worntype]);
 		item.Worn.Level = static_cast<uint8>(std::stoul(row[ItemField::wornlevel]));
 		item.Worn.Level2 = static_cast<uint8>(std::stoul(row[ItemField::wornlevel2]));
+		
+		//Expansion appears in
+		item.Expansion = std::stoi(row[ItemField::expansion]);
 
         try {
             hash.insert(item.ID, item);
@@ -641,8 +644,14 @@ const EQ::ItemData* SharedDatabase::GetItem(uint32 id)
 		return nullptr;
 	}
 
+
 	if(items_hash->exists(id)) {
-		return &(items_hash->at(id));
+		EQ::ItemData* returned_item = &(items_hash->at(id));
+
+		if (returned_item != nullptr && returned_item->Expansion <= RuleI(World, DefaultExpansions))
+		{
+			return returned_item;
+		}
 	}
 
 	return nullptr;
@@ -660,7 +669,13 @@ const EQ::ItemData* SharedDatabase::IterateItems(uint32* id)
 		}
 
 		if(items_hash->exists(*id)) {
-			return &(items_hash->at((*id)++));
+			EQ::ItemData* returned_item = &(items_hash->at((*id)));
+
+			if (returned_item != nullptr && returned_item->Expansion <= RuleI(Character, DefaultExpansions))
+			{
+				++(*id);
+				return returned_item;
+			}
 		} else {
 			++(*id);
 		}
@@ -1611,7 +1626,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 
 	const std::string query = "SELECT lootdrop.id, lootdrop_entries.item_id, lootdrop_entries.item_charges, "
                             "lootdrop_entries.equip_item, lootdrop_entries.chance, lootdrop_entries.minlevel, "
-                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier FROM lootdrop JOIN lootdrop_entries "
+                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.expansion FROM lootdrop JOIN lootdrop_entries "
                             "ON lootdrop.id = lootdrop_entries.lootdrop_id ORDER BY lootdrop_id";
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -1642,6 +1657,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
         ld->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
         ld->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
         ld->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
+		ld->Entries[current_entry].expansion = static_cast<int32>(atoi(row[8]));
 
         ++(ld->NumEntries);
         ++current_entry;

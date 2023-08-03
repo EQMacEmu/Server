@@ -776,8 +776,8 @@ bool ZoneDatabase::LoadDoors(int32 iDoorCount, Door *into, const char *zone_name
                                     "dest_zone, dest_x, dest_y, dest_z, dest_heading, "
                                     "door_param, invert_state, incline, size, client_version_mask, altkeyitem, islift, "
 									"close_time, can_open "
-                                    "FROM doors WHERE zone = '%s' "
-                                    "ORDER BY doorid asc", zone_name);
+                                    "FROM doors WHERE zone = '%s' AND expansion <= %i "
+                                    "ORDER BY doorid asc", zone_name, RuleI(Character, DefaultExpansions));
 	auto results = QueryDatabase(query);
 	if (!results.Success()){
 		return false;

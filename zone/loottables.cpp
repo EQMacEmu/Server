@@ -127,6 +127,9 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 
 	if (droplimit == 0 && mindrop == 0) {
 		for (uint32 i = 0; i < lds->NumEntries; ++i) {
+			if (lds->Entries[i].expansion > RuleI(Charater, DefaultExpansions))
+				continue;
+
 			int multiplier = lds->Entries[i].multiplier;
 			for (int j = 0; j < multiplier; ++j) {
 				if (zone->random.Real(0.0, 100.0) <= lds->Entries[i].chance) {
@@ -159,6 +162,8 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 	float roll_t_min = 0.0f;
 	bool active_item_list = false;
 	for (uint32 i = 0; i < lds->NumEntries; ++i) {
+		if (lds->Entries[i].expansion > RuleI(Charater, DefaultExpansions))
+			continue;
 		uint32 itemid = lds->Entries[i].item_id;
 		int8 charges = lds->Entries[i].item_charges;
 		const EQ::ItemData* db_item = GetItem(itemid);
@@ -183,6 +188,8 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 	for(int i = 0; i < mindrop; ++i) {
 		float roll = (float)zone->random.Real(0.0, roll_t_min);
 		for(uint32 j = 0; j < lds->NumEntries; ++j) {
+			if (lds->Entries[j].expansion > RuleI(Charater, DefaultExpansions))
+				continue;
 			uint32 itemid = lds->Entries[j].item_id;
 			int8 charges = lds->Entries[j].item_charges;
 			const EQ::ItemData* db_item = GetItem(itemid);
@@ -225,6 +232,8 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 		float roll = (float)zone->random.Real(0.0, roll_t);
 		for (uint32 j = 0; j < lds->NumEntries; ++j)
 		{
+			if (lds->Entries[j].expansion > RuleI(Charater, DefaultExpansions))
+				continue;
 			uint32 itemid = lds->Entries[j].item_id;
 			int8 charges = lds->Entries[j].item_charges;
 			const EQ::ItemData* db_item = GetItem(itemid);
@@ -273,6 +282,8 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 			if (dropCount >= droplimit)
 				break;
 
+			bool expansion_enabled = lds->Entries[i].expansion <= RuleI(Character, DefaultExpansions);
+
 			uint32 itemid = lds->Entries[i].item_id;
 			int8 charges = lds->Entries[i].item_charges;
 			const EQ::ItemData* db_item = GetItem(itemid);
@@ -281,7 +292,7 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 				if (charges <= 1)
 					charges = db_item->MaxCharges;
 			}
-			if (db_item)
+			if (db_item && expansion_enabled)
 			{
 				if (zone->random.Real(0.0, 100.0) <= lds->Entries[i].chance)
 				{
