@@ -313,6 +313,7 @@ namespace EQ
 		bool	QuestItemFlag;
 		int8	Soulbound;
 		uint8	FVNoDrop;		// Firiona Vie nodrop flag
+		int32	Expansion;		//What expansion this item becomes unlocked in.
 
 		bool IsEquipable(uint16 Race, uint16 Class) const;
 		bool IsClassCommon() const;

@@ -47,6 +47,7 @@ struct LootDropEntries_Struct {
 	uint8	minlevel;
 	uint8	maxlevel;
 	uint8	multiplier;
+	int32	expansion;
 };
 
 struct LootDrop_Struct {

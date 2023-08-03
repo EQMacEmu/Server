@@ -202,7 +202,7 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
                                     "spawngroup.max_y, spawngroup.min_y, spawngroup.delay, "
                                     "spawngroup.despawn, spawngroup.despawn_timer, spawngroup.mindelay, spawngroup.wp_spawns "
                                     "FROM spawn2, spawngroup WHERE spawn2.spawngroupID = spawngroup.ID "
-                                    "AND zone = '%s'", zone_name);
+                                    "AND zone = '%s' AND expansion <= %i", zone_name, RuleI(Character, DefaultExpansions));
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		return false;
@@ -220,7 +220,7 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
                         "FROM spawnentry, spawn2, npc_types "
                         "WHERE spawnentry.npcID=npc_types.id "
                         "AND spawnentry.spawngroupID = spawn2.spawngroupID "
-                        "AND zone = '%s'", zone_name);
+                        "AND zone = '%s' AND spawnentry.expansion <= %i", zone_name, RuleI(Character, DefaultExpansions));
     results = QueryDatabase(query);
     if (!results.Success()) {
         Log(Logs::General, Logs::Error, "Error2 in PopulateZoneLists query '%'", query.c_str());
@@ -262,8 +262,8 @@ bool ZoneDatabase::LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_g
 
 	query = StringFormat("SELECT DISTINCT(spawnentry.spawngroupID), spawnentry.npcid, "
                         "spawnentry.chance, spawngroup.spawn_limit, spawnentry.mintime, spawnentry.maxtime FROM spawnentry, spawngroup "
-                        "WHERE spawnentry.spawngroupID = '%i' AND spawngroup.spawn_limit = '0' "
-                        "ORDER BY chance", spawngroupid);
+                        "WHERE spawnentry.spawngroupID = '%i' AND spawngroup.spawn_limit = '0' AND spawnentry.expansion <= %i"
+                        "ORDER BY chance", spawngroupid, RuleI(Character, DefaultExpansions));
     results = QueryDatabase(query);
 	if (!results.Success()) {
         Log(Logs::General, Logs::Error, "Error3 in PopulateZoneLists query '%s'", query.c_str());

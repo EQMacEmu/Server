@@ -747,8 +747,8 @@ Ground_Spawns* ZoneDatabase::LoadGroundSpawns(uint32 zone_id, Ground_Spawns* gs)
                                     "min_x, min_y, heading, name, "
                                     "item, max_allowed, respawn_timer "
                                     "FROM ground_spawns "
-                                    "WHERE zoneid = %i "
-                                    "LIMIT 50", zone_id);
+                                    "WHERE zoneid = %i AND expansion <= %i "
+                                    "LIMIT 50", zone_id, RuleI(Character, DefaultExpansions));
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		return gs;
