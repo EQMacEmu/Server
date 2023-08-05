@@ -930,6 +930,14 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		MerchantList ml = *itr;
 		ml.slot = i;
 
+		bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
+		bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
+
+		if (!expansion_enabled && !expansion_all)
+		{
+			continue;
+		}
+
 		if (GetLevel() < ml.level_required)
 			continue;
 

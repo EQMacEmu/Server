@@ -514,9 +514,10 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"force_z "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s' AND expansion <= %i",
+		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
 		zone_name,
-		RuleI(Character, DefaultExpansions)
+		RuleR(World, CurrentExpansion),
+		RuleR(World, CurrentExpansion)
 		);
 	results = QueryDatabase(query);
 
@@ -618,9 +619,10 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 		"force_z "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s' AND expansion <= %i",
+		"WHERE zone = '%s' AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
 		zone_name,
-		RuleI(Character, DefaultExpansions)
+		RuleR(World, CurrentExpansion),
+		RuleR(World, CurrentExpansion)
 	);
 	results = QueryDatabase(query);
 
