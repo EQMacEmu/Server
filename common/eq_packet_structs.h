@@ -2333,7 +2333,8 @@ struct MerchantList {
 	uint32	classes_required;
 	uint8	probability;
 	uint8	quantity;
-	int32	expansion;
+	float	min_expansion;
+	float	max_expansion;
 	uint8	qty_left; // Not stored in the DB
 };
 

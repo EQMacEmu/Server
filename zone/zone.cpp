@@ -161,8 +161,8 @@ bool Zone::LoadZoneObjects() {
 	std::string query = StringFormat("SELECT id, zoneid, xpos, ypos, zpos, heading, "
                                     "itemid, charges, objectname, type, icon, size, "
                                     "solid, incline FROM object "
-                                    "WHERE zoneid = %i AND expansion <= %i",
-                                    zoneid, RuleI(Character, DefaultExpansions));
+                                    "WHERE zoneid = %i AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
+                                    zoneid, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
     auto results = database.QueryDatabase(query);
     if (!results.Success()) {
 		LogError("Error Loading Objects from DB: {} ", results.ErrorMessage().c_str());
@@ -610,7 +610,8 @@ void Zone::GetMerchantDataForZoneLoad() {
 				level_required,
 				classes_required,
 				quantity,
-				expansion
+				min_expansion,
+				max_expansion
 			FROM 
 				merchantlist 
 			WHERE 
@@ -690,7 +691,8 @@ void Zone::GetMerchantDataForZoneLoad() {
 			mle.qty_left = mle.quantity;
 		else
 			mle.qty_left = 0;
-		mle.expansion = static_cast<int8>(std::stoul(row[7]));
+		mle.min_expansion = std::stof(row[7]);
+		mle.max_expansion = std::stof(row[8]);
 		merchant_list->second.push_back(mle);
 	}
 }

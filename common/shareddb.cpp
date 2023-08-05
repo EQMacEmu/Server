@@ -626,7 +626,8 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Worn.Level2 = static_cast<uint8>(std::stoul(row[ItemField::wornlevel2]));
 		
 		//Expansion appears in
-		item.Expansion = std::stoi(row[ItemField::expansion]);
+		item.min_expansion = std::stoi(row[ItemField::min_expansion]);
+		item.max_expansion = std::stoi(row[ItemField::max_expansion]);
 
         try {
             hash.insert(item.ID, item);
@@ -648,9 +649,14 @@ const EQ::ItemData* SharedDatabase::GetItem(uint32 id)
 	if(items_hash->exists(id)) {
 		EQ::ItemData* returned_item = &(items_hash->at(id));
 
-		if (returned_item != nullptr && returned_item->Expansion <= RuleI(World, DefaultExpansions))
+		if (returned_item != nullptr)
 		{
-			return returned_item;
+			bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
+			bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+			if (expansion_enabled || expansion_all)
+			{
+				return returned_item;
+			}
 		}
 	}
 
@@ -671,10 +677,19 @@ const EQ::ItemData* SharedDatabase::IterateItems(uint32* id)
 		if(items_hash->exists(*id)) {
 			EQ::ItemData* returned_item = &(items_hash->at((*id)));
 
-			if (returned_item != nullptr && returned_item->Expansion <= RuleI(Character, DefaultExpansions))
+			if (returned_item != nullptr)
 			{
-				++(*id);
-				return returned_item;
+				bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
+				bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+				if (expansion_enabled || expansion_all)
+				{
+					++(*id);
+					return returned_item;
+				}
+				else
+				{
+					++(*id);
+				}
 			}
 		} else {
 			++(*id);
@@ -1626,7 +1641,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 
 	const std::string query = "SELECT lootdrop.id, lootdrop_entries.item_id, lootdrop_entries.item_charges, "
                             "lootdrop_entries.equip_item, lootdrop_entries.chance, lootdrop_entries.minlevel, "
-                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.expansion FROM lootdrop JOIN lootdrop_entries "
+                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.min_expansion, lootdrop_entries.max_expansion FROM lootdrop JOIN lootdrop_entries "
                             "ON lootdrop.id = lootdrop_entries.lootdrop_id ORDER BY lootdrop_id";
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -1657,7 +1672,8 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
         ld->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
         ld->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
         ld->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
-		ld->Entries[current_entry].expansion = static_cast<int32>(atoi(row[8]));
+		ld->Entries[current_entry].min_expansion = (atof(row[8]));
+		ld->Entries[current_entry].max_expansion = (atof(row[9]));
 
         ++(ld->NumEntries);
         ++current_entry;

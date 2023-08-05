@@ -7357,6 +7357,14 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			continue;
 		}
 
+		bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
+		bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
+
+		if (!expansion_enabled && !expansion_all)
+		{
+			continue;
+		}
+
 		int32 fac = tmp ? tmp->GetPrimaryFaction() : 0;
 		int32 facmod = GetModCharacterFactionLevel(fac);
 		if(IsInvisible(tmp))
