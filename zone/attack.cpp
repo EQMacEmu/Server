@@ -1933,15 +1933,19 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 				killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName());
 		}
 	}
+	bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;
+	bool is_majority_killer_dmg = (float)ssf_player_damage > (float)GetMaxHP() * 0.50f;
+	Log(Logs::Moderate, Logs::Death, "%s Before credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", killer->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 
-	//give_exp_client is the player who gets XP credit.
-	Client *give_exp_client = nullptr;
+
 	if (killer && killer->IsClient())
 	{
+		Log(Logs::Detail, Logs::Death, "In credit.");
+		//give_exp_client is the player who gets XP credit.
+		Client *give_exp_client = killer->CastToClient();
 		// Make sure the dead NPC should give XP and the player is able to receive it (not a mule)
 		if (IsNPC() && !killer->CastToClient()->IsMule() && !IsPlayerOwned() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && player_damaged)
 		{
-			give_exp_client = killer->CastToClient();
 
 			if (give_exp_client)
 			{
@@ -1957,11 +1961,9 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 				}
 				else
 				{
-					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
-					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
-					bool is_solo_fte_credit = give_exp_client->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
-					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;	
-					bool is_majority_killer_dmg = (float)ssf_player_damage > (float)GetMaxHP() * 0.50f;
+					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == solo_raid_fte : false;
+					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == solo_group_fte : false;
+					bool is_solo_fte_credit = give_exp_client->CharacterID() == solo_fte_charid ? true : false;
 
 					if (is_raid_solo_fte_credit || is_group_solo_fte_credit || is_solo_fte_credit)
 					{
