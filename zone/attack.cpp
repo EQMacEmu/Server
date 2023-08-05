@@ -1960,25 +1960,36 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 					bool is_raid_solo_fte_credit = give_exp_client->GetRaid() ? give_exp_client->GetRaid()->GetID() == CastToNPC()->solo_raid_fte : false;
 					bool is_group_solo_fte_credit = give_exp_client->GetGroup() ? give_exp_client->GetGroup()->GetID() == CastToNPC()->solo_group_fte : false;
 					bool is_solo_fte_credit = give_exp_client->CharacterID() == CastToNPC()->solo_fte_charid ? true : false;
-					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;
+					bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.50f;	
 					bool is_majority_killer_dmg = (float)ssf_player_damage > (float)GetMaxHP() * 0.50f;
 
 					if (is_raid_solo_fte_credit || is_group_solo_fte_credit || is_solo_fte_credit)
 					{
 						if (!is_majority_ds_damage && is_majority_killer_dmg)
 						{
-							Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
-
+							Log(Logs::Moderate, Logs::Death, "%s will receive XP credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 							// We hand out XP here.
 							GiveExp(give_exp_client, xp);
 						}
+						else
+						{
+							Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit #2. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+						}
+					}
+					else
+					{
+						Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 					}
 				}
+			}
+			else
+			{
+				Log(Logs::Detail, Logs::Death, "NPC checks failed. No XP for you.");
 			}
 		}
 		else
 		{
-			Log(Logs::Detail, Logs::Death, "NPC checks failed. No XP for you.");
+			Log(Logs::Detail, Logs::Death, "Give exp client checks failed. No XP for you.");
 		}
 
 		if (IsNPC() && ismerchant && RuleB(Merchant, ClearTempList)) {
