@@ -699,7 +699,12 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	std::string custom_checksum_val = "";
 	database.GetVariable(custom_checksum_name, custom_checksum_val);
 
+	std::string prev_custom_checksum_name = "PreviousCustomChecksum";
+	std::string prev_custom_checksum_val = "";
+	database.GetVariable(prev_custom_checksum_name, prev_custom_checksum_val);
+
 	int64 custom_checksum_ll = atoll(custom_checksum_val.c_str());
+	int64 prev_custom_checksum_ll = atoll(prev_custom_checksum_val.c_str());
 
 	if(GetClientVersionBit() == EQ::versions::ClientVersionBit::bit_MacPC)
 	{
@@ -720,6 +725,10 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 		else if (checksum == custom_checksum_ll)
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Custom Checksum is GOOD!");
+		}
+		else if (checksum == prev_custom_checksum_ll)
+		{
+			Log(Logs::Detail, Logs::WorldServer, "Previous Custom Checksum is GOOD!");
 		}
 		else
 		{
