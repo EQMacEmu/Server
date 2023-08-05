@@ -561,7 +561,9 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 				faction_required, 
 				level_required,
 				classes_required, 
-				quantity 
+				quantity,
+				min_expansion,
+				max_expansion
 			FROM 
 				merchantlist 
 			WHERE 
@@ -585,6 +587,8 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 		ml.level_required = static_cast<int8>(std::stoul(row[3]));
         ml.classes_required = std::stoul(row[4]);
 		ml.quantity = static_cast<int8>(std::stoul(row[5]));
+		ml.min_expansion = atof(row[6]);
+		ml.max_expansion = atof(row[7]);
 
 		if(ml.quantity > 0)
 			ml.qty_left = ml.quantity;
@@ -691,8 +695,8 @@ void Zone::GetMerchantDataForZoneLoad() {
 			mle.qty_left = mle.quantity;
 		else
 			mle.qty_left = 0;
-		mle.min_expansion = std::stof(row[7]);
-		mle.max_expansion = std::stof(row[8]);
+		mle.min_expansion = atof(row[7]);
+		mle.max_expansion = atof(row[8]);
 		merchant_list->second.push_back(mle);
 	}
 }
@@ -706,7 +710,7 @@ void Zone::ClearMerchantLists()
 									" spawn2 AS s2 "
 									" WHERE nt.merchant_id = ml.merchantid "
 									" AND nt.id = se.npcid AND se.spawngroupid = s2.spawngroupid "
-									" AND s2.zone = '%s' "
+									" AND s2.zone = '%s' AND ((%.2f >= ml.min_expansion AND %.2f < ml.max_expansion) OR (ml.min_expansion = 0 AND ml.max_expansion = 0)) "
 									" GROUP by nt.id", GetShortName());
 
 	auto results = database.QueryDatabase(query);
