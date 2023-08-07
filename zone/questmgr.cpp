@@ -2502,3 +2502,7 @@ std::string QuestManager::GetEncounter() const {
 
 	return "";
 }
+
+float QuestManager::GetCurrentExpansion() const {
+	return RuleR(World, CurrentExpansion);
+}
