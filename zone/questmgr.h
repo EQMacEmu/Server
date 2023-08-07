@@ -222,6 +222,7 @@ public:
 	void ClearNPCTypeCache(int npctype_id);
 	void SendDebug(const char* message, int level);
 	void ReloadZoneStaticData();
+	float GetCurrentExpansion() const;
 
 	Client *GetInitiator() const;
 	NPC *GetNPC() const;
