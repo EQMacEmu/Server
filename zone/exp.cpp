@@ -121,7 +121,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	float aa_mult = RuleR(Character, AAExpMultiplier);	// should be 1.0 for non-custom
 	float aa_lvl_mod = 1.0f;	// level_exp_mods table
 
-	// This logic replicates the Spetember 4 & 6 2002 patch exp modifications that granted a large
+	// This logic replicates the September 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
 	uint8 moblevel = killed_mob->GetLevel();
 	int lvl_diff = moblevel - GetLevel();
@@ -161,6 +161,10 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 				lb_mult = 0.6f;
 		}
 	}
+
+	//Disables the September 4 & 6 2002 patch exp modifications that granted a large experience bonus to kills within +/-5 levels of the player for level 51+ players
+	if (!RuleB(AlKabor, EnableMobLevelModifier))
+		mlm = 1.0f;
 
 	// These rules are no longer used, but keeping them in for custom control.  They should all be 100.0 for non-custom
 	con_mult = 100.0f;
@@ -773,9 +777,31 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 	if (RuleB(AlKabor, OutOfRangeGroupXPBonus))
 		members = gs.membercount;
 
-	if (RuleB(AlKabor, VeliousGroupEXPBonuses))
+	if (RuleB(AlKabor, ClassicGroupEXPBonuses))
 	{
-		// group bonus from Jan 2001 until June 2003.
+		// group bonus from Launch (Classic) until Jan 2001 (Velious, 1 Month In).
+		switch (members)
+		{
+		case 2:
+			groupmod = 1.02f;
+			break;
+		case 3:
+			groupmod = 1.04f;
+			break;
+		case 4:
+			groupmod = 1.06f;
+			break;
+		case 5:
+			groupmod = 1.08f;
+			break;
+		case 6:
+			groupmod = 1.1f;
+			break;
+		}
+	}
+    else if (RuleB(AlKabor, VeliousGroupEXPBonuses))
+	{
+		// group bonus from Jan 2001 until June 2003. Technically, this is enabled the first month of Velious.
 		switch (members)
 		{
 		case 2:
