@@ -675,6 +675,11 @@ void Client::PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, Ser
 		{
 			if(bag_item_data[i] == nullptr)
 				continue;
+
+			const EQ::ItemData* sub_item_item_data = database.GetItem(bag_item_data[i]->item_id);
+			if(sub_item_item_data == nullptr)
+				continue;
+
 			const EQ::ItemInstance *bagitem = database.CreateItem(bag_item_data[i]->item_id, bag_item_data[i]->charges);
 			interior_slot = EQ::InventoryProfile::CalcSlotId(slot_id, i);
 			Log(Logs::Detail, Logs::Inventory, "Putting bag loot item %s (%d) into slot %d (bag slot %d)", inst.GetItem()->Name, inst.GetItem()->ID, interior_slot, i);
