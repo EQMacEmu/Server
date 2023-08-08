@@ -367,7 +367,7 @@ int command_init(void)
 		command_add("setgreed", "[greed] - Sets a merchant greed value.", AccountStatus::GMAdmin, command_setgreed) ||
 		command_add("setlanguage", "[language ID] [value] - Set your target's language skillnum to value.", AccountStatus::GMAreas, command_setlanguage) ||
 		command_add("setlsinfo", "[email] [password] - Set login server email address and password (if supported by login server).", AccountStatus::Max, command_setlsinfo) ||
-		command_add("setnpcexpansion", "[bitmask] - Restrict an NPC spawn2 by bitmask.", AccountStatus::GMAdmin, command_setnpcexpansion) ||
+		command_add("setnpcexpansion", "[min_expansion] [max_expansion] - Restrict an NPC's spawn2 (spawn location) by min, max expansion. These are float values.", AccountStatus::GMAdmin, command_setnpcexpansion) ||
 		command_add("setpass", "[accountname] [password] - Set local password for accountname.", AccountStatus::Max, command_setpass) ||
 		command_add("setskill", "[skillnum] [value] - Set your target's skill skillnum to value.", AccountStatus::GMAreas, command_setskill) ||
 		command_add("setskillall", "[value] - Set all of your target's skills to value.", AccountStatus::GMAreas, command_setskillall) ||
@@ -2528,11 +2528,12 @@ void command_delacct(Client *c, const Seperator *sep){
 
 void command_setnpcexpansion(Client* c, const Seperator* sep)
 {
-	if (sep->IsNumber(1) && c->GetTarget() && c->GetTarget()->IsNPC() && c->GetTarget()->CastToNPC()->GetSpawnPointID() != 0)
+	if (sep->arg[1][0] && sep->arg[2][0]  && c->GetTarget() && c->GetTarget()->IsNPC() && c->GetTarget()->CastToNPC()->GetSpawnPointID() != 0)
 	{
 		std::string query = fmt::format(
-			"UPDATE spawn2 SET expansion = {} WHERE id = {}",
-			std::stoi(sep->arg[1]),
+			"UPDATE spawn2 SET min_expansion = {}, max_expansion = {} WHERE id = {}",
+			std::stof(sep->arg[1]),
+			std::stof(sep->arg[2]),
 			c->GetTarget()->CastToNPC()->GetSpawnPointID()
 
 		);
@@ -2545,15 +2546,16 @@ void command_setnpcexpansion(Client* c, const Seperator* sep)
 		c->Message(
 			CC_Default,
 			fmt::format(
-				"Name: {} Expansion {} Bitmask Set",
+				"Name: {} Min Expansion {} Max Expansion {} Successfully Set",
 				c->GetTarget()->GetCleanName(),
-				std::stoi(sep->arg[1])
+				std::stof(sep->arg[1]),
+				std::stof(sep->arg[2])
 			).c_str()
 		);
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #setnpcexpansion [bitmask]");
+		c->Message(CC_Default, "Usage: #setnpcexpansion [min_expansion] [max_expansion]");
 	}
 }
 
