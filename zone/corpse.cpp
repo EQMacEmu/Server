@@ -1367,7 +1367,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		}
 	}
 
-	if (client && inst) {
+	if (client && inst && item_data) {
 
 		if (item_data->pet || item_data->quest)
 		{
@@ -1426,7 +1426,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 
 
 		/* First add it to the looter - this will do the bag contents too */
-		if (lootitem->auto_loot) {
+		if (lootitem && lootitem->auto_loot) {
 			if (!client->AutoPutLootInInventory(*inst, true, true, bag_item_data))
 				client->PutLootInInventory(EQ::invslot::slotCursor, *inst, bag_item_data);
 		}
