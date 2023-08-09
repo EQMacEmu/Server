@@ -1,0 +1,6 @@
+[submodule "TAKP-Maps"]
+	path = TAKP-Maps
+	url = git@github.com:jcon321/TAKP-Maps.git
+[submodule "TAKP-quests"]
+	path = TAKP-quests
+	url = git@github.com:jcon321/TAKP-quests.git
