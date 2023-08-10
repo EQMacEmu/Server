@@ -709,6 +709,18 @@ enum Expansions
 	AllEQ = 15
 };
 
+// Values are bitwise, so we can compare with the expansion field in account.
+enum ExpansionEras : int
+{
+	AllEQEras = 0,
+	ClassicEQEra = 1,
+	KunarkEQEra = 2,
+	VeliousEQEra = 3,
+	LuclinEQEra = 4,
+	PlanesEQEra = 5,
+	PostPlanesEra = 6
+};
+
 static const uint32 MAX_SPELL_DB_ID_VAL = 65535;
 
 enum ChatChannelNames : uint16

@@ -78,6 +78,8 @@
 #include "classes.h"
 #include "races.h"
 #include "spdat.h"
+#include "rulesys.h"
+#include "eq_constants.h"
 
 #ifndef WIN32
 #include <stdlib.h>
@@ -1170,6 +1172,13 @@ int32 GetFuriousBash(uint16 spell_id)
 {
 	if (!IsValidSpell(spell_id))
 		return 0;
+
+	if (RuleB(AlKabor, EnableEraFocusEffectRules))
+	{
+		//Disable Focus Effects before we enter Luclin.
+		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)
+			return 0;
+	}
 
 	for (int i = 0; i < EFFECT_COUNT; ++i)
 		if (spells[spell_id].effectid[i] == SE_SpellHateMod)

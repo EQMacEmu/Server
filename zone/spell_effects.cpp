@@ -4218,6 +4218,12 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 		(casting_spell_slot == EQ::spells::CastingSlot::Item || casting_aa > 0))
 		return 0;
 
+	if (RuleB(AlKabor, EnableEraFocusEffectRules))
+	{
+		//Disable Focus Effects before we enter Luclin.
+		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)
+			return 0;
+	}
 	int16 realTotal = 0;
 	int16 realTotal2 = 0;
 	int16 realTotal3 = 0;

@@ -285,7 +285,12 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 	}
 
 	if (item->Focus.Effect>0 && (item->Focus.Type == EQ::item::ItemEffectFocus)) { // focus effects
-		ApplySpellsBonuses(item->Focus.Effect, GetLevel(), newbon, 0, true);
+		if (RuleB(AlKabor, EnableEraFocusEffectRules)) {
+			//Disable Focus Effects before we enter Luclin.
+			if (RuleR(World, CurrentExpansion) >= (float)ExpansionEras::LuclinEQEra) {
+				ApplySpellsBonuses(item->Focus.Effect, GetLevel(), newbon, 0, true);
+			}
+		}
 	}
 
 	switch(item->BardType)
