@@ -162,6 +162,7 @@ int command_init(void)
 		command_add("beard", "- Change the beard of your target.", AccountStatus::GMImpossible, command_beard) ||
 		command_add("beardcolor", "- Change the beard color of your target.", AccountStatus::GMImpossible, command_beardcolor) ||
 		command_add("bestz", "- Ask map for a good Z coord for your x,y coords.", AccountStatus::ApprenticeGuide, command_bestz) ||
+		command_add("betabuff", "[level] - Buffs user's player to provided level, giving level * 100 platinum, along with providing a (potentially non era-specific) set of reagents, spells and skills.", AccountStatus::GMImpossible, command_betabuff) ||
 		command_add("bind", "- Sets your targets bind spot to their current location.", AccountStatus::SeniorGuide, command_bind) ||
 		command_add("boatinfo", "- Gets infomation about the boats currently spawned in the zone.", AccountStatus::SeniorGuide, command_boatinfo) ||
 		command_add("bug", "- Bug report system. Encase your bug in quotes. Type: #bug <quote>I have a bug</quote>.", AccountStatus::EQSupport, command_bug) ||
@@ -10905,6 +10906,76 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 				drop_string
 			).c_str()
 		);
+	}
+}
+
+void command_betabuff(Client* c, const Seperator* sep) {
+	if (sep->IsNumber(1))
+	{
+
+		uint32 level = atoi(sep->arg[1]);
+
+		int curspell = 0;
+		int book_slot = 0;
+		uint16 skillLevel = HARD_SKILL_CAP;
+		int pClass = c->GetClass();
+
+
+		if ((uint32)c->GetLevel() >= level) {
+			c->Message(CC_Red, "This character cannot be buffed to this level.");
+			return;
+		}
+
+		if (level > RuleI(Character, MaxBetaBuffLevel))
+		{
+			c->Message(CC_Red, "This character cannot be buffed to this level. The current betabuff cap is: %i", RuleI(Character, MaxBetaBuffLevel));
+		}
+
+		if (c->GetLevel() > RuleI(Character, MaxLevel)) {
+			c->Message(CC_Red, "This character is above the maximum level for test buff.");
+			return;
+		}
+
+		c->SetLevel(level, true);
+		c->AddEXPPercent(10, level);
+		//Scribe Spells
+		for (curspell = 0, book_slot = c->GetNextAvailableSpellBookSlot(); curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = c->GetNextAvailableSpellBookSlot(book_slot)) {
+			if (spells[curspell].classes[c->GetPP().class_ - 1] >= 1 && spells[curspell].classes[c->GetPP().class_ - 1] <= level) {
+				if (!c->HasSpellScribed(curspell)) {
+					c->ScribeSpell(curspell, book_slot);
+				}
+			}
+		}
+		// Skills
+		for (EQ::skills::SkillType skill_num = EQ::skills::Skill1HBlunt; skill_num <= EQ::skills::HIGHEST_SKILL; skill_num = (EQ::skills::SkillType)(skill_num + 1))
+		{
+			uint16 max_level = c->GetMaxSkillAfterSpecializationRules(skill_num, c->MaxSkill(skill_num));
+			uint16 cap_level = skillLevel > max_level ? max_level : skillLevel;
+			c->SetSkill(skill_num, cap_level);
+		}
+
+		//Pet Reagents
+		switch (pClass)
+		{
+		case NECROMANCER:
+			c->SummonItem(13073, 20);
+			break;
+		case MAGICIAN:
+			c->SummonItem(10015, 20);
+			break;
+		case ENCHANTER:
+			c->SummonItem(13080, 20);
+			break;
+		}
+
+		c->AddMoneyToPP(0, 0, 0, 100 * level, true);
+
+		c->Save(1);
+		return;
+	}
+	else
+	{
+		c->Message(CC_Default, "Usage: #betabuff [level]");
 	}
 }
 

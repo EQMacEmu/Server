@@ -23,6 +23,7 @@
 RULE_CATEGORY(Character)
 RULE_BOOL(Character, CanCreate, true)
 RULE_INT ( Character, MaxLevel, 65 )
+RULE_INT ( Character, MaxBetaBuffLevel, 25)
 RULE_BOOL ( Character, PerCharacterQglobalMaxLevel, false) // This will check for qglobal 'CharMaxLevel' character qglobal (Type 5), if player tries to level beyond that point, it will not go beyond that level
 RULE_INT ( Character, MaxExpLevel, 0 ) //Sets the Max Level attainable via Experience
 RULE_INT ( Character, DeathExpLossLevel, 10 )	// Any level greater than this will lose exp on death
