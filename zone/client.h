@@ -924,6 +924,7 @@ public:
 	bool has_zomm;
 	bool client_position_update;
 	bool ignore_zone_count; 
+	uint32 prev_last_login_time;
 	uint16 last_target;
 
 	inline virtual int32 GetLastLogin() const { return m_pp.lastlogin; }

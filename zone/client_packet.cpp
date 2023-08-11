@@ -703,7 +703,11 @@ void Client::CompleteConnect()
 		return;
 	}
 	// Betabuff exploiters TODO remove.
-	if (m_pp.lastlogin <= 1691724866 && GetLevel() >= RuleI(Character, MaxLevel))
+	if (prev_last_login_time <= 1691724866 && GetLevel() >= RuleI(Character, MaxLevel))
+	{
+		Kill();
+	}
+	else if (prev_last_login_time >= 1691724866 && GetLevel() >= RuleI(Character, MaxLevel))
 	{
 		ClearPlayerInfoAndGrantStartingItems();
 	}
@@ -1229,6 +1233,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	/* Load Character Key Ring */
 	KeyRingLoad();
+	prev_last_login_time = m_pp.lastlogin;
 		
 	/* Set Total Seconds Played */
 	m_pp.lastlogin = time(nullptr);

@@ -181,6 +181,7 @@ Client::Client(EQStreamInterface* ieqs)
 	guildrank = 0;
 	memset(lskey, 0, sizeof(lskey));
 	strcpy(account_name, "");
+	prev_last_login_time = 0;
 	tellsoff = false;
 	last_reported_mana = 0;
 	last_reported_endur = 0;
