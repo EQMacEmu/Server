@@ -710,7 +710,8 @@ void Client::CompleteConnect()
 	else if (prev_last_login_time >= 1691724866 && GetLevel() > RuleI(Character, MaxLevel))
 	{
 		ClearPlayerInfoAndGrantStartingItems();
-		Kill();
+		Kick();
+		WorldKick();
 	}
 }
 

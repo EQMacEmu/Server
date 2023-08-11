@@ -544,9 +544,6 @@ void Client::ClearPlayerInfoAndGrantStartingItems()
 
 	//Their state is likely all sorts of messed up. Commit immediately (Save) and then...
 	Save(1);
-
-	//Return them to safe coords, forcing a zone w/o client crash
-	GoToSafeCoords(return_zone_id);
 }
 
 // Remove item from inventory
