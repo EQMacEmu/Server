@@ -10970,7 +10970,10 @@ void command_betabuff(Client* c, const Seperator* sep) {
 		}
 
 		c->AddMoneyToPP(0, 0, 0, 100 * (level - c->GetLevel()), true);
-
+		c->SetGMSpellException(1);
+		c->SpellFinished(278, c); // Spirit of Wolf
+		c->SpellFinished(430, c); // Storm Strength
+		c->SetGMSpellException(0);
 		c->Save(1);
 		return;
 	}
