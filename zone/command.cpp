@@ -10921,7 +10921,7 @@ void command_betabuff(Client* c, const Seperator* sep) {
 		int pClass = c->GetClass();
 
 
-		if ((uint32)c->GetLevel() >= level) {
+		if ((uint32)c->GetLevel() > level) {
 			c->Message(CC_Red, "This character cannot be buffed to this level.");
 			return;
 		}
@@ -10929,6 +10929,7 @@ void command_betabuff(Client* c, const Seperator* sep) {
 		if (level > RuleI(Character, MaxBetaBuffLevel))
 		{
 			c->Message(CC_Red, "This character cannot be buffed to this level. The current betabuff cap is: %i", RuleI(Character, MaxBetaBuffLevel));
+			return;
 		}
 
 		if (c->GetLevel() > RuleI(Character, MaxLevel)) {
@@ -10968,7 +10969,7 @@ void command_betabuff(Client* c, const Seperator* sep) {
 			break;
 		}
 
-		c->AddMoneyToPP(0, 0, 0, 100 * level, true);
+		c->AddMoneyToPP(0, 0, 0, 100 * (level - c->GetLevel()), true);
 
 		c->Save(1);
 		return;

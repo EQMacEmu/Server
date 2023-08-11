@@ -702,6 +702,11 @@ void Client::CompleteConnect()
 		}
 		return;
 	}
+	// Betabuff exploiters TODO remove.
+	if (m_pp.lastlogin <= 1691724866 && GetLevel() >= RuleI(Character, MaxLevel))
+	{
+		ClearPlayerInfoAndGrantStartingItems();
+	}
 }
 
 
