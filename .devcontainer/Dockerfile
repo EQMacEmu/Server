@@ -40,17 +40,10 @@ RUN apt install -y \
 # but we will create a folder on the root of container for runtime files
 RUN mkdir -p /takp/logs
 RUN mkdir -p /takp/shared
-RUN mkdir -p /takp/maps
-RUN mkdir -p /takp/quest
+#RUN mkdir -p /takp/maps
+#RUN mkdir -p /takp/quest
 
-#RUN touch line1.txt
-#RUN touch line2.txt
-
-#RUN echo "${localWorkspaceFolder}" > line1.txt
-#RUN echo "${MARIADB_HOSTNAME}" > line2.txt 
-
-#COPY TAKP-Maps /takp/maps/
-#COPY TAKP-quests /takp/quests/
+#RUN ln -s /workspaces/TAKP-Server/TAKP-Maps /takp/maps
 
 # Todo Copying build files from workspace folder... maybe task runs the copy to /takp?
 
