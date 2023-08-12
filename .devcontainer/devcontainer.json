@@ -5,7 +5,12 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces",
-	"features": {}
+	"features": {},
+
+	"postStartCommand": {
+		"loginConf": "cp /workspaces/loginserver/login_util/*.conf /takp",
+		"opcodeConf": "cp /workspaces/utils/patches/*.conf /takp"
+	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

@@ -37,13 +37,16 @@ RUN apt install -y \
     vim
 
 # .devcontainer mounts our local workspace inside container at /workspaces
-# but we will create a folder on the root of container for runtime files
+# /workspaces is not available at docker build time
+
+# create a folder on the root of container for runtime files
 RUN mkdir -p /takp/logs
 RUN mkdir -p /takp/shared
-
-# Note submodules name
+# ln does not care if /workspaces exists at this time
+#   Note submodules name
 RUN ln -s /workspaces/TAKP-Maps /takp/maps
 RUN ln -s /workspaces/TAKP-quests /takp/quests
+
 
 # Todo Copying build files from workspace folder... maybe task runs the copy to /takp?
 
