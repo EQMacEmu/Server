@@ -36,14 +36,14 @@ RUN apt install -y \
     mariadb-client \
     vim
 
-# .devcontainer mounts our local workspace inside container at /workspaces/TAKP-Server
+# .devcontainer mounts our local workspace inside container at /workspaces
 # but we will create a folder on the root of container for runtime files
 RUN mkdir -p /takp/logs
 RUN mkdir -p /takp/shared
-#RUN mkdir -p /takp/maps
-#RUN mkdir -p /takp/quest
 
-#RUN ln -s /workspaces/TAKP-Server/TAKP-Maps /takp/maps
+# Note submodules name
+RUN ln -s /workspaces/TAKP-Maps /takp/maps
+RUN ln -s /workspaces/TAKP-quests /takp/quests
 
 # Todo Copying build files from workspace folder... maybe task runs the copy to /takp?
 

@@ -4,7 +4,7 @@
 	"name": "C++ and MariaDB",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolder}",
+	"workspaceFolder": "/workspaces",
 	"features": {}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
