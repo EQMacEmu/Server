@@ -1096,6 +1096,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		Log(Logs::General, Logs::WorldServer, "%s already has %d characters. OPCharCreate returning false.", name, charcount);
 		return false;
 	}
+	
 
 	PlayerProfile_Struct pp;
 	EQ::InventoryProfile inv;
@@ -1242,6 +1243,8 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 
 	Log(Logs::Detail, Logs::WorldServer, "Validating char creation info...");
 
+	int currentExpansions = RuleI(Character, DefaultExpansions);
+
 	RaceClassCombos class_combo;
 	bool found = false;
 	int combos = character_create_race_class_combos.size();
@@ -1249,7 +1252,8 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 		if (character_create_race_class_combos[i].Class == cc->class_ &&
 				character_create_race_class_combos[i].Race == cc->race &&
 				character_create_race_class_combos[i].Deity == cc->deity &&
-				character_create_race_class_combos[i].Zone == cc->start_zone) {
+				character_create_race_class_combos[i].Zone == cc->start_zone &&
+			(currentExpansions & character_create_race_class_combos[i].ExpansionRequired == character_create_race_class_combos[i].ExpansionRequired || character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];
 			found = true;
 			break;

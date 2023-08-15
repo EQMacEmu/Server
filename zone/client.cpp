@@ -6267,3 +6267,37 @@ void Client::SetClassLanguages()
 		break;
 	}
 }
+
+
+uint8 Client::GetRaceArmorSize() 
+{
+
+	uint8 armorSize = 0;
+	int pRace = GetBaseRace();
+
+	switch (pRace)
+	{
+	case WOOD_ELF: // Small
+	case HIGH_ELF:
+	case DARK_ELF:
+	case DWARF:
+	case HALFLING:
+	case GNOME:
+		armorSize = 0;
+		break;
+	case BARBARIAN:  // Medium
+	case ERUDITE:
+	case HALF_ELF:
+	case IKSAR:
+	case HUMAN:
+		armorSize = 1;
+		break;
+	case TROLL: // Large
+	case OGRE:
+	case VAHSHIR:
+		armorSize = 2;
+		break;
+	}
+
+	return armorSize;
+}

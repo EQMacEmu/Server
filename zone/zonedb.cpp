@@ -812,7 +812,8 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		"`e_self_found`,			"
 		"`e_solo_only`,				"
 		"`e_hardcore`,				"
-		"`e_hardcore_death_time`	"
+		"`e_hardcore_death_time`,	"
+		"`e_betabuff_gear_flag`	    "
 		"FROM                       "
 		"character_data             "
 		"WHERE `id` = %i         ", character_id);
@@ -877,7 +878,8 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		m_epp->self_found = atoi(row[r]); r++;									 // "`e_self_found`,			"
 		m_epp->solo_only = atoi(row[r]); r++;									 // "`e_solo_only`,				"
 		m_epp->hardcore = atoi(row[r]); r++;									 // "`e_hardcore`,				"
-		m_epp->hardcore_death_time = atoll(row[r]); r++;							 // "`e_hardcore_death_time"	"
+		m_epp->hardcore_death_time = atoll(row[r]); r++;						 // "`e_hardcore_death_time",	"
+		m_epp->betabuff_gear_flag = atoi(row[r]); r++;							 // "`e_betabuff_gear_flag"		"
 	}
 	return true;
 }
@@ -1177,7 +1179,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		" e_self_found,				 "
 		" e_solo_only,				 "
 		" e_hardcore,				 "
-		" e_hardcore_death_time		 "
+		" e_hardcore_death_time,     "
+		" e_betabuff_gear_flag		 "
 		")							 "
 		"VALUES ("
 		"%u,"  // id																" id,                        "
@@ -1241,7 +1244,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // e_self_found
 		"%u,"  // e_solo_only
 		"%u,"  // e_hardcore
-		"%lld" // e_hardcore_death_time
+		"%lld," // e_hardcore_death_time
+		"%u"   // e_betabuff_gear_flag
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1304,7 +1308,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		m_epp->self_found,
 		m_epp->solo_only,
 		m_epp->hardcore,
-		m_epp->hardcore_death_time
+		m_epp->hardcore_death_time,
+		m_epp->betabuff_gear_flag
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);

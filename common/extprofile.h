@@ -58,6 +58,7 @@ struct ExtendedProfile_Struct {
 	uint8				solo_only;
 	uint8				hardcore;
 	uint64				hardcore_death_time;
+	uint8				betabuff_gear_flag;
 };
 
 #pragma pack()
