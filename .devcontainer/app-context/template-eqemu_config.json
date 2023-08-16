@@ -1,0 +1,53 @@
+{
+    "server": {
+      "zones": {
+        "defaultstatus": "0",
+        "ports": {
+          "low": "7000",
+          "high": "7400"
+        }
+      },
+      "qsdatabase": {
+        "host": "${MARIADB_HOSTNAME}",
+        "port": "3306",
+        "username": "${MARIADB_USER}",
+        "password": "${MARIADB_PASSWORD}",
+        "db": "${MARIADB_DATABASE}"
+      },
+      "chatserver": {
+        "host": "${SERVER_ADDRESS}",
+        "port": "7778"
+      },
+      "mailserver": {
+        "host": "${SERVER_ADDRESS}",
+        "port": "7778"
+      },
+      "world": {
+        "loginserver1": {
+          "port": "5998",
+          "account": "",
+          "password": "",
+          "host": "login"
+        },
+        "tcp": {
+          "host": "world",
+          "port": "9000"
+        },
+        "key": "somelongrandomstring12345asdfffff",
+        "shortname": "${SERVER_SHORT_NAME}",
+        "longname": "${SERVER_LONG_NAME}",
+        "address": "${SERVER_ADDRESS}",
+        "localaddress": "${SERVER_ADDRESS}"
+      },
+      "database": {
+        "db": "${MARIADB_DATABASE}",
+        "host": "${MARIADB_HOSTNAME}",
+        "port": "3306",
+        "username": "${MARIADB_USER}",
+        "password": "${MARIADB_PASSWORD}"
+      },
+      "launcher": {
+        "exe": "/takp/zone"
+      }
+    }
+  }

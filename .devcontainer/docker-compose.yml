@@ -7,15 +7,12 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: app.Dockerfile
     env_file:
       - .env
 
     volumes:
       - ..:/workspaces:cached
-
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
 
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
     network_mode: service:db
@@ -24,7 +21,9 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    image: mariadb:10.3.32-focal
+    build:
+      context: .
+      dockerfile: db.Dockerfile
     restart: unless-stopped
     volumes:
       - mariadb-data:/var/lib/MARIADB

@@ -6,12 +6,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "mkdir -p build && cd build && cmake -G 'Unix Makefiles' .. && make -j `grep -P '^core id\t' /proc/cpuinfo | sort -u | wc -l`"
-        },
-        {
-            "label": "deploy",
-            "type": "shell",
-            "command": ""
+            "command": "cd build && cmake -G 'Unix Makefiles' .. && make -j `grep -P '^core id\t' /proc/cpuinfo | sort -u | wc -l`"
         }
     ]
 }
