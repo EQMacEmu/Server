@@ -379,7 +379,7 @@ public:
 	virtual void CalcBonuses();
 	inline virtual int32 GetAC() const { return AC; }			// this returns the value displayed in the client and is not used in calcs
 	int GetOffense(EQ::skills::SkillType skill);
-	uint32 RollDamageMultiplier(uint32 offense, int& damage);
+	uint32 RollDamageMultiplier(uint32 offense, int& damage, EQ::skills::SkillType skill);
 	int GetMitigation(bool ignoreCap);
 	int GetMitigation() { return GetMitigation(false); }
 	static int GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int spell_ac_sum, int classnum, int level, int base_race, int carried_weight, int agi, int defense_skill_value, int combat_stability_percent);

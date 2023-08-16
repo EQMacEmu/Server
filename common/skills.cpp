@@ -156,6 +156,9 @@ int EQ::skills::GetSkillBaseDamage(SkillType skill, int skillLevel)
 	case SkillTigerClaw:
 		base = 4;
 		break;
+	case SkillIntimidation:
+		base = 2;
+		break;
 	default:
 		return 0;
 	}

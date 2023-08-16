@@ -438,21 +438,6 @@ int32 Client::GetAACastingTimeModifier(uint16 spell_id, int32 casttime)
 			}
 		}
 	}
-	// Not an AA but it's in this function in the client
-	// Innate hybrid detrimental spell haste - 3% cast time reduction per level over 50
-	else
-	{
-		if(
-			GetLevel() > 50 &&
-			(GetClass() == BEASTLORD || GetClass() == PALADIN || GetClass() == RANGER || GetClass() == SHADOWKNIGHT) &&
-			modified_cast_time > 2999 &&
-			spell->goodEffect == 0
-		)
-		{
-			float percent_mod = 100.0 - (GetLevel() - 50) * 3.0;
-			modified_cast_time = (int32)((float)modified_cast_time * percent_mod / 100.0);
-		}
-	}
 
 	return modified_cast_time - casttime;
 }
@@ -1010,7 +995,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 	float dist2 = dist * dist;
 	float dist_targ = 0;
 
-	bool detrimental = spells[spell_id].goodEffect == 0;
+	bool detrimental = IsDetrimentalSpell(spell_id);
 	bool clientcaster = caster->IsClient();
 	int MAX_TARGETS_ALLOWED = 5;
 

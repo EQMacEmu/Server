@@ -849,7 +849,7 @@ public:
 	bool CheckWillAggro(Mob *mob, bool turn_mobs = false);
 	bool CheckDragAggro(Mob *mob);
 
-	void InstillDoubt(Mob *who);
+	void InstillDoubt(Mob *who, int stage = 0);
 	int16 GetResist(uint8 type) const;
 	Mob* GetShieldTarget() const { return shield_target; }		// the entity I am shielding (warrior /shield)
 	void SetShieldTarget(Mob* mob) { shield_target = mob;}
@@ -1284,6 +1284,9 @@ protected:
 	bool iszomm;
 	uint16 MerchantSession;
 	bool engaged;
+
+	uint16 instillDoubtTargetID;
+	Timer instillDoubtStageTimer;
 
 private:
 	void _StopSong(); //this is not what you think it is

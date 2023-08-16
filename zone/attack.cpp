@@ -423,7 +423,6 @@ int NPC::GetBaseDamage(Mob* defender, int slot)
 	{
 		int di1k = (max_dmg - min_dmg) * 1000 / 19;			// multiply damage interval by 1000 to avoid using floats
 		di1k = (di1k + 50) / 100 * 100;						// round DI to nearest tenth of a point
-		int db = max_dmg * 1000 - di1k * 20;
 		baseDamage = di1k / 100;
 	}
 
@@ -574,14 +573,14 @@ int Mob::CalcMeleeDamage(Mob* defender, int baseDamage, EQ::skills::SkillType sk
 		damage = 1;
 
 	if (IsClient())
-		CastToClient()->RollDamageMultiplier(offense, damage);
+		CastToClient()->RollDamageMultiplier(offense, damage, skill);
 
 	return damage;
 }
 
 // the output of this function is precise and is based on the code from:
 // https://forums.daybreakgames.com/eq/index.php?threads/progression-monks-we-have-work-to-do.229581/
-uint32 Client::RollDamageMultiplier(uint32 offense, int& damage)
+uint32 Client::RollDamageMultiplier(uint32 offense, int& damage, EQ::skills::SkillType skill)
 {
 	int rollChance = 51;
 	int maxExtra = 210;
@@ -638,7 +637,7 @@ uint32 Client::RollDamageMultiplier(uint32 offense, int& damage)
 
 		damage = damage * roll / 100;
 
-		if (level >= 55 && damage > 1 && IsWarriorClass())
+		if (level >= 55 && damage > 1 && skill != EQ::skills::SkillArchery && IsWarriorClass())
 			damage++;
 
 		return roll;
@@ -3109,6 +3108,9 @@ void Mob::GenerateDamagePackets(Mob* attacker, bool FromDamageShield, int32 dama
 			break;
 		case EQ::skills::Skill1HPiercing:
 			a->force = 0.05f;
+			break;
+		case EQ::skills::SkillIntimidation:
+			a->force = 2.5f;
 			break;
 		default:
 			a->force = 0.0f;

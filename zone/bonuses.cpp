@@ -1056,7 +1056,8 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	int buff_count = GetMaxTotalSlots();
 	for(i = 0; i < buff_count; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN){
-			ApplySpellsBonuses(buffs[i].spellid, buffs[i].casterlevel, newbon, buffs[i].casterid, false, buffs[i].instrumentmod, buffs[i].ticsremaining,i);
+			uint8 caster_level = i == 15 ? GetLevel() : buffs[i].casterlevel; // disciplines are in a fake buff slot at index 15 and these need the current level
+			ApplySpellsBonuses(buffs[i].spellid, caster_level, newbon, buffs[i].casterid, false, buffs[i].instrumentmod, buffs[i].ticsremaining, i);
 		}
 	}
 

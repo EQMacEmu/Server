@@ -17,6 +17,7 @@
 #define ESCAPE						114		//You escape from combat, hiding yourself from view.
 #define AA_OFF						119		//Alternate Experience is *OFF*.
 #define AA_ON						121		//Alternate Experience is *ON*.
+#define CANT_HIT_THEM				123		//You can't hit them from here.
 #define TARGET_TOO_FAR				124		//Your target is too far away, get closer!
 #define PROC_TOOLOW					126		//Your will is not sufficient to command this weapon.
 #define PROC_PETTOOLOW				127		//Your pet's will is not sufficient to command its weapon.
@@ -428,6 +429,7 @@
 #define DOORS_NO_PICK				7564	//You must have a lock pick in your inventory to do this.
 #define CURRENT_SPELL_EFFECTS		8757	//%1's current spell effects:
 #define BUFF_MINUTES_REMAINING		8799	//%1 (%2 minutes remaining)
+#define DROPPED_ITEM				9058	//You just dropped your %1.
 #define AE_RAMPAGE					11015	//%1 goes on a WILD RAMPAGE!
 #define GROUP_IS_FULL				12000	//You cannot join that group, it is full.
 #define GROUP_REMOVED				12001   //You have been removed from the group.
@@ -501,7 +503,7 @@
 #define DIVINE_AURA_NO_ATK			12695	//You can't attack while invulnerable!
 #define TRY_ATTACKING_SOMEONE		12696	//Try attacking someone other than yourself, it's more productive.
 #define BACKSTAB_WEAPON				12874	//You need a piercing weapon as your primary weapon in order to backstab
-#define DROPPED_ITEM				12904	//There was no room in your inventory, and the item has dropped to the ground.
+#define NO_ROOM_IN_INV				12904	//There was no room in your inventory, and the item has dropped to the ground.
 #define MORE_SKILLED_THAN_I			12931	//%1 tells you, 'You are more skilled than I! What could I possibly teach you?'
 #define SURNAME_EXISTS				12939	//You already have a surname. Operation failed.
 #define SURNAME_LEVEL				12940	//You can only submit a surname upon reaching the 20th level. Operation failed.
