@@ -156,6 +156,13 @@ void Mob::SpellProcess()
 			}
 		}
 	}
+
+	// instill doubt
+	if (instillDoubtStageTimer.Check())
+	{
+		instillDoubtStageTimer.Disable();
+		InstillDoubt(nullptr, 1); // the target ID is saved in instillDoubtTargetID field
+	}
 }
 
 void NPC::SpellProcess()
@@ -409,6 +416,20 @@ bool Mob::DoCastSpell(uint16 spell_id, uint16 target_id, CastingSlot slot,
 		// if there's a cast time, check if they have a modifier for it
 		if(cast_time) {
 			cast_time = GetActSpellCasttime(spell_id, cast_time);
+		}
+
+		// Innate hybrid detrimental spell haste - 3% cast time reduction per level over 50
+		// This was added to the game in the February 21, 2001 patch.  Logs confirm it does apply to NPCs as well.
+		if (
+			GetLevel() > 50 &&
+			(GetClass() == BEASTLORD || GetClass() == PALADIN || GetClass() == RANGER || GetClass() == SHADOWKNIGHT) &&
+			cast_time > 2999 &&
+			spells[spell_id].goodEffect == 0
+		)
+		{
+			float percent_mod = 100.0 - (GetLevel() - 50) * 3.0;
+			cast_time = (int32)((float)cast_time * percent_mod / 100.0);
+			cast_time = cast_time < orgcasttime / 2 ? orgcasttime / 2 : cast_time;
 		}
 	}
 	else
@@ -2275,6 +2296,14 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 
 	if(IsNPC())
 		CastToNPC()->AI_Event_SpellCastFinished(true, static_cast<uint16>(slot));
+
+	// Reset attack timer on casts for most classes.  Logs confirm this does apply to NPCs as well.
+	// Note that the exceptions for hybrid classes (except bard) were added in the January 9, 2001 patch. (BSTs in Luclin, obv)
+	if (slot >= CastingSlot::Gem1 && slot < CastingSlot::MaxGems && GetClass() != BARD && GetClass() != RANGER
+		&& GetClass() != SHADOWKNIGHT && GetClass() != PALADIN && GetClass() != BEASTLORD)
+	{
+		GetAttackTimer().Reset();
+	}
 
 	return true;
 }

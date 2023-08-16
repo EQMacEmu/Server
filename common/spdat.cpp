@@ -327,6 +327,9 @@ bool IsBeneficialSpell(uint16 spell_id)
 		// We need to check more things!
 		if (tt == ST_Target || tt == ST_AETarget || tt == ST_Animal ||
 				tt == ST_Undead || tt == ST_Pet) {
+			// TODO: SpellAffectIndex is data for the older particle cloud system in the client, and not for spell logic.
+			// all of this beneficial/detrimental stuff is not right, it's just full of hacks like this for specific spells
+			// which masks some of the problems
 			uint16 sai = spells[spell_id].SpellAffectIndex;
 
 			// If the resisttype is magic and SpellAffectIndex is Calm/dispell sight

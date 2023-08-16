@@ -1665,17 +1665,8 @@ void Client::OPGMTraining(const EQApplicationPacket *app)
 	int factionlvl = GetFactionLevel(CharacterID(), GetRace(), GetClass(), GetDeity(), primaryfaction, pTrainer);
 	if (factionlvl >= FACTION_APPREHENSIVELY)
 	{
+		gmtrain->success = 0;
 		pTrainer->Say_StringID(0, WONT_SELL_RACE5, itoa(GetRaceStringID()));
-
-		// this will pop up a skills window without any skills in it
-		// if you don't send this packet back, the client bugs out and the user cannot right click on anything else afterward
-		// feel free to improve this if you know what you are doing (unlike me)
-		EQ::skills::SkillType sk;
-		for (sk = EQ::skills::Skill1HBlunt; sk <= EQ::skills::HIGHEST_SKILL; sk = (EQ::skills::SkillType)(sk + 1))
-			gmtrain->skills[sk] = 0;
-		for (int l = 0; l < 32; l++) {
-			gmtrain->language[l] = 0;
-		}
 
 		FastQueuePacket(&outapp);
 		return;
@@ -1693,7 +1684,7 @@ void Client::OPGMTraining(const EQApplicationPacket *app)
 	}
 	Mob* trainer = entity_list.GetMob(gmtrain->npcid);
 	gmtrain->greed = CalcPriceMod(trainer);
-	gmtrain->unknown208 = 1;
+	gmtrain->success = 1;
 	for(int l = 0; l < 32; l++) {
 		gmtrain->language[l] = 201;
 	}

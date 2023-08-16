@@ -55,9 +55,9 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	/* Register Log System and Settings */
-	database.LoadLogSettings(LogSys.log_settings);
-	LogSys.StartFileLogs();
+	LogSys.SetDatabase(&database)
+		->LoadLogDatabaseSettings()
+		->StartFileLogs();
 
 	ExportSpells(&database);
 	ExportSkillCaps(&database);

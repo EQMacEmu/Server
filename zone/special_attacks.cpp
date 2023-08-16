@@ -1656,44 +1656,75 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 }
 
 
-void Mob::InstillDoubt(Mob *who) {
-	//make sure we can use this skill
-	/*int skill = GetSkill(INTIMIDATION);*/	//unused
+void Mob::InstillDoubt(Mob *who, int stage) 
+{
+	if (stage == 0) // begin instill, when button is first pressed a series of animations is played for 6 seconds
+	{
+		if (!who || !(who->IsNPC() || who->IsClient()) || who->IsUnTargetable())
+			return;
 
-	//make sure our target is an NPC
-	if(!who || !who->IsNPC())
-		return;
+		instillDoubtTargetID = who->GetID(); // save target for next stage
+		instillDoubtStageTimer.Start(6000);
+	}
+	else if (stage == 1) // finish instill 6 seconds later when the animations are done
+	{
+		instillDoubtStageTimer.Disable();
 
-	if(DivineAura())
-		return;
+		if (DivineAura())
+			return;
 
-	//range check
-	if(!CombatRange(who))
-		return;
+		// this part is totally made up, the real formula is unknown
+		uint16 skillValue = GetSkill(EQ::skills::SkillIntimidation);
+		if (skillValue < 25)
+			skillValue = 0;
+		int random = zone->random.Int(0, 250);
+		if (random < skillValue)
+		{
+			// skill check success, now kick the target and fear it if the kick lands
 
-	//I think this formula needs work
-	int value = 0;
+			// make sure the target still exists
+			Mob *instillTarget = entity_list.GetMob(instillDoubtTargetID);
+			instillDoubtTargetID = 0; // clear saved target
+			if (!instillTarget || instillTarget == this || instillTarget->HasDied())
+				return;
 
-	//user's bonus
-	value += GetSkill(EQ::skills::SkillIntimidation) + GetCHA()/4;
+			// skill up
+			if (IsClient())
+			{
+				CastToClient()->CheckIncreaseSkill(EQ::skills::SkillIntimidation, instillTarget, zone->skill_difficulty[EQ::skills::SkillIntimidation].difficulty);
+			}
 
-	//target's counters
-	value -= target->GetLevel()*4 + who->GetWIS()/4;
+			// range check after skill up so can practice on anything if you just want skill points
+			if (!CombatRange(instillTarget))
+				return;
 
-	if (zone->random.Roll(value)) {
-		//temporary hack...
-		//cast fear on them... should prolly be a different spell
-		//and should be un-resistable.
-		SpellOnTarget(229, who, false, true, -2000);
-		//is there a success message?
-	} else {
-		Message_StringID(CC_Blue,NOT_SCARING);
-		//Idea from WR:
-		/* if (target->IsNPC() && zone->random.Int(0,99) < 10 ) {
-			entity_list.MessageClose(target, false, 50, MT_NPCRampage, "%s lashes out in anger!",target->GetName());
-			//should we actually do this? and the range is completely made up, unconfirmed
-			entity_list.AEAttack(target, 50);
-		}*/
+			if (!IsFacingMob(instillTarget))
+			{
+				Message_StringID(MT_TooFarAway, CANT_HIT_THEM);
+				return;
+			}
+
+			if (instillTarget->IsNPC() && instillTarget->CastToNPC()->GetSpecialAbility(IMMUNE_AGGRO))
+				return;
+
+			// base damage is 2, this function scales it up some based on skill level
+			int base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillIntimidation, GetSkill(EQ::skills::SkillIntimidation));
+			int minDmg = 1;
+			if (instillTarget->IsImmuneToMelee(this, EQ::invslot::slotFeet))
+				minDmg = DMG_INVUL;
+			int dmgDone = DoSpecialAttackDamage(instillTarget, EQ::skills::SkillIntimidation, base, minDmg, 0, Animation::None);
+
+			// the fear doesn't happen unless the kick dealt damage
+			if(dmgDone > 0)
+				SpellOnTarget(SPELL_FEAR, instillTarget);
+		}
+		else
+		{
+			// skill check failure
+
+			Message_StringID(CC_Blue, NOT_SCARING);
+			instillDoubtTargetID = 0;
+		}
 	}
 }
 

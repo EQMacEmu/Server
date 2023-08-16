@@ -436,7 +436,7 @@ static const uint8 SkillDamageTypes[EQ::skills::HIGHEST_SKILL + 1] = // change t
 /*JewelryMaking*/			DamageTypeUnknown,
 /*Pottery*/					DamageTypeUnknown,
 /*PercussionInstruments*/	DamageTypeSpell,
-/*Intimidation*/			DamageTypeUnknown,
+/*Intimidation*/			30,
 /*Berserking*/				DamageTypeUnknown,
 /*Taunt*/					DamageTypeUnknown,
 /*Frenzy*/					//74 //,

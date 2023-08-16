@@ -549,6 +549,10 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 		if (!corpse || DistanceSquaredNoZ(GetPosition(), corpse->GetPosition()) > 10000 || !CheckLosFN(corpse, true))
 		{
 			Message_StringID(CC_Default, NO_SUITABLE_CORPSE);
+			if (IsClient())
+			{
+				CastToClient()->ResetAATimer(aaWaketheDead, ABILITY_FAILED);
+			}
 		}
 		else
 		{

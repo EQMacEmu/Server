@@ -2554,9 +2554,7 @@ snare has both of them negative, yet their range should work the same:
 			break;
 
 		case 150: //resistant discipline (custom formula)
-			result = ubase;
-			if (caster_level >= 30)
-				result += (caster_level - 30) * 0.35; 
+			result = caster_level > 50 ? 10 : caster_level > 45 ? 5 + caster_level - 45 : caster_level > 40 ? 5 : caster_level > 34 ? 4 : 3;
 			break;
 
 		//these are used in stacking effects... formula unknown

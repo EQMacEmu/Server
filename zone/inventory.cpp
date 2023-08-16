@@ -346,6 +346,7 @@ void Client::DropItem(int16 slot_id)
 		return;
 
 	CreateGroundObject(inst, glm::vec4(GetX(), GetY(), GetZ(), 0), RuleI(Groundspawns, DecayTime));
+	Message_StringID(CC_User_Default, DROPPED_ITEM, inst->GetItem()->Name);
 
 	safe_delete(inst);
 }
@@ -353,7 +354,7 @@ void Client::DropItem(int16 slot_id)
 //This differs from EntityList::CreateGroundObject by using the inst, so bag contents are
 //preserved. EntityList creates a new instance using ID, so bag contents are lost. Also,
 //EntityList can be used by NPCs for things like disarm.
-void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, uint32 decay_time, bool message)
+void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, uint32 decay_time, bool inventory_full)
 {
 	if (!inst) {
 		// Item doesn't exist in inventory!
@@ -369,7 +370,7 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 
 	if (RuleB(QueryServ, PlayerLogGroundSpawn) && inst)
 	{
-		QServ->QSGroundSpawn(CharacterID(), inst->GetID(), inst->GetCharges(), 0, GetZoneID(), true, message);
+		QServ->QSGroundSpawn(CharacterID(), inst->GetID(), inst->GetCharges(), 0, GetZoneID(), true, inventory_full);
 		if (inst->IsType(EQ::item::ItemClassBag))
 		{
 			for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; (sub_slot <= EQ::invbag::SLOT_END); ++sub_slot)
@@ -377,15 +378,15 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 				const EQ::ItemInstance* bag_inst = inst->GetItem(sub_slot);
 				if (bag_inst)
 				{
-					QServ->QSGroundSpawn(CharacterID(), bag_inst->GetID(), bag_inst->GetCharges(), inst->GetID(), GetZoneID(), true, message);
+					QServ->QSGroundSpawn(CharacterID(), bag_inst->GetID(), bag_inst->GetCharges(), inst->GetID(), GetZoneID(), true, inventory_full);
 				}
 			}
 		}
 	}
 
-	if (message)
+	if (inventory_full)
 	{
-		Message_StringID(CC_Yellow, DROPPED_ITEM);
+		Message_StringID(CC_Yellow, NO_ROOM_IN_INV);
 	}
 
 	// Package as zone object
@@ -804,7 +805,7 @@ void Client::PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, Ser
 				continue;
 
 			const EQ::ItemData* sub_item_item_data = database.GetItem(bag_item_data[i]->item_id);
-			if(sub_item_item_data == nullptr)
+			if (sub_item_item_data == nullptr)
 				continue;
 
 			const EQ::ItemInstance *bagitem = database.CreateItem(bag_item_data[i]->item_id, bag_item_data[i]->charges);

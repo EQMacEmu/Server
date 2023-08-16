@@ -396,6 +396,8 @@ Mob::Mob(const char* in_name,
 	current_buff_refresh = false;
 	temporary_pets_effect = nullptr;
 	best_z_fail_count = 0;
+
+	instillDoubtTargetID = 0;
 }
 
 Mob::~Mob()
