@@ -423,7 +423,7 @@ bool Mob::DoCastSpell(uint16 spell_id, uint16 target_id, CastingSlot slot,
 		if (
 			GetLevel() > 50 &&
 			(GetClass() == BEASTLORD || GetClass() == PALADIN || GetClass() == RANGER || GetClass() == SHADOWKNIGHT) &&
-			cast_time > 2999 &&
+			orgcasttime > 2999 &&
 			spells[spell_id].goodEffect == 0
 		)
 		{
