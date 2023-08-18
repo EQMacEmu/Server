@@ -14,11 +14,21 @@ services:
     volumes:
       - ..:/workspaces:cached
 
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally. 
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    ports:
+      # loginserver
+      - 6000:6000/udp
+      - 5998:5998
+      # world
+      - 9000:9000/udp
+      - 9000:9000
+      # ucs
+      - 7778:7778/udp
+      # boat zones
+      - 7375-7400:7375-7400/tcp
+      - 7375-7400:7375-7400/udp
+      # dynamic zones
+      - 7000-7374:7000-7374/tcp
+      - 7000-7374:7000-7374/udp
 
   db:
     build:
@@ -29,5 +39,5 @@ services:
       - mariadb-data:/var/lib/MARIADB
     env_file:
       - .env
-    # Add "forwardPorts": ["3306"] to **devcontainer.json** to forward DB locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    ports:
+      - 3306:3306

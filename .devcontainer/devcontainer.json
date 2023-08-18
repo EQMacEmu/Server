@@ -5,14 +5,16 @@
 	"dockerComposeFile": "docker-compose.yml",
 	"overrideCommand": false,
 	"service": "app",
-	"workspaceFolder": "/workspaces",
+	"workspaceFolder": "/workspaces"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This is the recommended way to access the container from the host
-	"forwardPorts": [3306]
+	//"forwardPorts": [3306]
+
+	// forwardPorts doesn't support udp, and we're not using codespaces so docker-compose is fine
 
 	// Configure tool-specific properties.
 	// "customizations": {},

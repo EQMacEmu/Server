@@ -34,7 +34,8 @@ RUN apt install -y \
     lua5.1 \
     lua-bitop \
     mariadb-client \
-    vim
+    vim \
+    net-tools
 
 # devcontainter.json & docker-compose.yml mounts our local workspace inside container at /workspaces
 # /workspaces is not available at docker build time & is out of scope of docker context

@@ -10,5 +10,5 @@ ADD db-context/tblloginserversettings.sql /docker-entrypoint-initdb.d
 RUN rm /docker-entrypoint-initdb.d/drop_system.sql
 
 # extra sql scripts
-ADD db-context/2023_07_27_tblLoginServerAccounts.sql /docker-entrypoint-initdb.d/z_auto_create.sql
+ADD db-context/auto_create_login.sql /docker-entrypoint-initdb.d/z_auto_create_login.sql
 ADD db-context/launcher_boats.sql /docker-entrypoint-initdb.d/z_launcher_boats.sql

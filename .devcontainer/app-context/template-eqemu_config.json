@@ -27,10 +27,10 @@
           "port": "5998",
           "account": "",
           "password": "",
-          "host": "login"
+          "host": "${SERVER_ADDRESS}"
         },
         "tcp": {
-          "host": "world",
+          "host": "${SERVER_ADDRESS}",
           "port": "9000"
         },
         "key": "somelongrandomstring12345asdfffff",
