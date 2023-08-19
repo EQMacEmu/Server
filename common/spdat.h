@@ -29,6 +29,7 @@
 #define SPELL_PACIFY 45
 #define SPELL_LAY_ON_HANDS 87
 #define SPELL_HARM_TOUCH 88				// regular HT (MR resist); Both PCs and NPCs use this
+#define SPELL_FEAR 229
 #define SPELL_MINOR_ILLUSION 287
 #define SPELL_ILLUSION_TREE 601
 #define SPELL_CINDAS_CHARISMATIC_CARILLON 708

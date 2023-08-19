@@ -485,10 +485,9 @@ struct SpellBuffFade_Struct {
 struct GMTrainee_Struct{
 	/*000*/ uint16 npcid;
 	/*002*/	uint16 playerid;
-	/*004*/ uint16 skills[74];
-	/*152*/ uint8  unknown154[52];
+	/*004*/ uint16 skills[100];
 	/*204*/	float  greed;
-	/*208*/ uint8  unknown208; //Always 0x01
+	/*208*/ uint8  success;
 	/*209*/	uint8  language[32];
 	/*241*/	uint8  ending[3]; //Copied from client packet (probably void)
 	/*244*/

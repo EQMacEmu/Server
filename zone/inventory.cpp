@@ -677,7 +677,7 @@ void Client::PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, Ser
 				continue;
 
 			const EQ::ItemData* sub_item_item_data = database.GetItem(bag_item_data[i]->item_id);
-			if(sub_item_item_data == nullptr)
+			if (sub_item_item_data == nullptr)
 				continue;
 
 			const EQ::ItemInstance *bagitem = database.CreateItem(bag_item_data[i]->item_id, bag_item_data[i]->charges);

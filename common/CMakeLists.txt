@@ -53,6 +53,7 @@ SET(common_sources
 	packet_dump.cpp
 	packet_dump_file.cpp
 	packet_functions.cpp
+	process/process.cpp
 	proc_launcher.cpp
 	ptimer.cpp
 	races.cpp
@@ -75,7 +76,6 @@ SET(common_sources
 	worldconn.cpp
 	xml_parser.cpp
 	platform.cpp
-	process/process.cpp
 	json/jsoncpp.cpp
 	patches/patches.cpp
 	patches/mac.cpp
@@ -402,7 +402,7 @@ SET(common_headers
 	shareddb.h
 	skills.h
 	spdat.h
-    	strings.h
+    strings.h
 	struct_strategy.h
 	textures.h
 	tcp_basic_server.h

@@ -17,6 +17,7 @@
 #define ESCAPE						114		//You escape from combat, hiding yourself from view.
 #define AA_OFF						119		//Alternate Experience is *OFF*.
 #define AA_ON						121		//Alternate Experience is *ON*.
+#define CANT_HIT_THEM				123		//You can't hit them from here.
 #define TARGET_TOO_FAR				124		//Your target is too far away, get closer!
 #define PROC_TOOLOW					126		//Your will is not sufficient to command this weapon.
 #define PROC_PETTOOLOW				127		//Your pet's will is not sufficient to command its weapon.
