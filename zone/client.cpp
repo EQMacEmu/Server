@@ -172,6 +172,7 @@ Client::Client(EQStreamInterface* ieqs)
 	WithCustomer = false;
 	TraderSession = 0;
 	WID = 0;
+	gm_grid = nullptr;
 	account_id = 0;
 	admin = AccountStatus::Player;
 	lsaccountid = 0;

@@ -120,6 +120,7 @@ void command_gmspeed(Client *c, const Seperator *sep);
 void command_godmode(Client *c, const Seperator *sep);
 void command_goto(Client *c, const Seperator *sep);
 void command_grid(Client *c, const Seperator *sep);
+void command_gridrecord(Client *c, const Seperator *sep);
 void command_guild(Client *c, const Seperator *sep);
 void command_guildapprove(Client *c, const Seperator *sep);
 void command_guildcreate(Client *c, const Seperator *sep);

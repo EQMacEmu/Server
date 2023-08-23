@@ -174,6 +174,9 @@ public:
 
 	bool is_client_moving;
 
+	DBGrid_Struct* gm_grid;
+	std::vector<wplist> gm_grid_waypoint_list;
+
 	//abstract virtual function implementations required by base abstract class
 	virtual bool Death(Mob* killerMob, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, uint8 killedby = 0, bool bufftic = false);
 	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false);

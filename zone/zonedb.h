@@ -29,6 +29,28 @@ namespace EQ
 
 //#include "doors.h"
 
+enum class GridWanderType : uint8
+{
+	eGridCircular = 0,
+	eGridRandom10ClosestWaypoints = 1,
+	eGridRandom = 2,
+	eGridPatrol = 3,
+	eGridOneWayThenRepop = 4,
+	eGridRandom5LOS = 5,
+	eGridOneWayThenDepop = 6,
+	eGridWp0Centerpoint = 7,
+	eGridRandomCenterpoint = 8,
+	eGridRandomPath = 9
+};
+
+enum class GridPauseType : uint8
+{
+	eGridPauseRandomPlusHalf = 0,
+	eGridPauseFull = 1,
+	eGridPauseRandom = 2,
+};
+
+
 struct wplist {
 	int index;
 	float x;
@@ -37,6 +59,12 @@ struct wplist {
 	int pause;
 	float heading;
 	bool centerpoint;
+};
+
+struct DBGrid_Struct {
+	uint32 id;
+	GridWanderType wander_type;
+	GridPauseType pause_type;
 };
 
 #pragma pack(1)
