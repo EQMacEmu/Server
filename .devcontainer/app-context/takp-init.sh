@@ -13,8 +13,8 @@ make -j `grep -P '^core id\t' /proc/cpuinfo | sort -u | wc -l`
 mkdir -p /takp/logs
 mkdir -p /takp/shared
 
-# symlink maps and quests (note submodules name)
-ln -s /workspaces/TAKP-Maps /takp/maps
+# symlink Maps and quests (note submodules name)
+ln -s /workspaces/TAKP-Maps /takp/Maps
 ln -s /workspaces/TAKP-quests /takp/quests
 
 # copy static opcodes
