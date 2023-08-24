@@ -108,6 +108,12 @@ bool Zone::Bootup(uint32 iZoneID, bool iStaticZone) {
 	zone->zonemap = Map::LoadMapFile(zone->map_name);
 	zone->watermap = WaterMap::LoadWaterMapfile(zone->map_name);
 	zone->pathing = IPathfinder::Load(zone->map_name);
+	if (zone->zonemap == nullptr || zone->watermap == nullptr) {
+		std::cerr << "Zone->Loading map files failed for Maps/" << zone->map_name << std::endl;
+		safe_delete(zone);
+		worldserver.SetZoneData(0);
+		return false;
+	}
 
 	std::string tmp;
 	if (database.GetVariable("loglevel", tmp)) {
