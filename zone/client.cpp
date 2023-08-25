@@ -6302,3 +6302,42 @@ uint8 Client::GetRaceArmorSize()
 
 	return armorSize;
 }
+
+void Client::LoadLootedLegacyItems()
+{
+	std::string query = StringFormat("SELECT item_id FROM character_legacy_items "
+		"WHERE character_id = '%i' ORDER BY item_id", character_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return;
+	}
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+		looted_legacy_items.insert(atoi(row[0]));
+
+}
+
+bool Client::CheckLegacyItemLooted(uint16 item_id)
+{
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		return true;
+	}
+	return false;
+}
+
+void Client::AddLootedLegacyItem(uint16 item_id)
+{
+	if (CheckLegacyItemLooted(item_id))
+		return;
+
+	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id) VALUES (%i, %i)", character_id, item_id);
+
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return;
+	}
+	looted_legacy_items.insert(item_id);
+	
+}

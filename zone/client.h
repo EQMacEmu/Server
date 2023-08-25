@@ -1012,6 +1012,9 @@ public:
 	bool ShowHelm() { return m_pp.showhelm; }
 	void SetShowHelm(bool value) { m_pp.showhelm = value; }
 	bool SpillBeer();
+	void AddLootedLegacyItem(uint16 item_id);
+	bool CheckLegacyItemLooted(uint16 item_id);
+	void LoadLootedLegacyItems();
 	void ResetSkill(EQ::skills::SkillType skillid, bool reset_timer = false);
 	void ResetAllSkills();
 
@@ -1135,6 +1138,8 @@ private:
 	uint16				duel_target;
 	bool				duelaccepted;
 	std::list<uint32>	keyring;
+	std::set<uint16>	looted_legacy_items;
+
 	bool				tellsoff;	// GM /toggle
 	bool				gmhideme;
 	bool				AFK;

@@ -183,7 +183,7 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddLootDrop(const EQ::ItemData*dbitem, ItemList* itemlistconst, int8 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange = false, bool quest = false, bool pet = false, bool force_equip = false);
+	void	AddLootDrop(const EQ::ItemData*dbitem, ItemList* itemlistconst, int8 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange = false, bool quest = false, bool pet = false, bool force_equip = false, uint8 min_looter_level = 0);
 	void	AddItem(uint32 itemid, int8 charges, bool equipitem = true, bool quest = false);
 	void	AddLootTable();
 	void	AddLootTable(uint32 ldid);

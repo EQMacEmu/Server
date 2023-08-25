@@ -2586,6 +2586,7 @@ struct ServerLootItem_Struct {
 	uint8	quest;
 	uint8	pet;
 	bool	forced;
+	uint8	min_looter_level;
 };
 
 struct Checksum_Struct {

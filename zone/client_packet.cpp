@@ -1235,6 +1235,10 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	/* Load Character Key Ring */
 	KeyRingLoad();
+
+	/*Load Looted Legacy Items*/
+	LoadLootedLegacyItems();
+
 	prev_last_login_time = m_pp.lastlogin;
 		
 	/* Set Total Seconds Played */

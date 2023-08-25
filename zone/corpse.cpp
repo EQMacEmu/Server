@@ -792,6 +792,7 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot) {
 	item->item_id = itemnum;
 	item->charges = charges;
 	item->equip_slot = slot;
+	item->min_looter_level = 0;
 	itemlist.push_back(item);
 
 	UpdateEquipmentLight();
@@ -1379,6 +1380,29 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				delete inst;
 				return;
 			}
+		}
+
+		if (!IsPlayerCorpse() && item_data->min_looter_level != 0)
+		{
+			if (client->GetLevel() < item_data->min_looter_level)
+			{
+				client->Message(CC_Red, "You cannot loot this type of legacy item. Required character level: %i", item_data->min_looter_level);
+				SendEndLootErrorPacket(client);
+				ResetLooter();
+				delete inst;
+				return;
+			}
+
+			if (client->CheckLegacyItemLooted(item_data->item_id))
+			{
+				client->Message(CC_Red, "This is a legacy item. You've already looted a legacy item of this type already on this character.");
+				SendEndLootErrorPacket(client);
+				ResetLooter();
+				delete inst;
+				return;
+			}
+
+			client->AddLootedLegacyItem(item_data->item_id);
 		}
 
 		if (client->CheckLoreConflict(item)) {
