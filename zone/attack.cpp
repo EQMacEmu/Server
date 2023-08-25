@@ -1931,7 +1931,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		{
 			if (killerMob && killerMob->IsClient())
 			{
-				if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+				if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
 					killerMob->Message(CC_Yellow, "Killer of mob could not be determined.  This could indicate a problem");
 			}
 			Log(Logs::Moderate, Logs::Death, "Killer of mob could not be determined.  This could indicate a problem");
@@ -1940,8 +1940,8 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		{
 			if (killerMob && killerMob->IsClient())
 			{
-				if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
- 					killerMob->Message(CC_Yellow, "%s%s was chosen as the top damage killer with %d damage done to %s", killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName);
+				if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+ 					killerMob->Message(CC_Yellow, "%s%s was chosen as the top damage killer with %d damage done to %s", killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName());
 			}
 			Log(Logs::Moderate, Logs::Death, "%s%s was chosen as the top damage killer with %d damage done to %s",
 				killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName());
@@ -1951,7 +1951,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	bool is_majority_killer_dmg = (float)ssf_player_damage > (float)GetMaxHP() * 0.45f;
 	if (killer && killerMob && killerMob->IsClient())
 	{
-		if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+		if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
 			killerMob->Message(CC_Yellow, "%s Before credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", killer->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 	}
 
