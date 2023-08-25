@@ -3046,8 +3046,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		*/
 		rewind_timer.Start(30000, true);
 	}
-
-	SetMoving(!(ppu->y_pos  == m_Position.y && ppu->x_pos == m_Position.x));
+	
+	if (!IsAIControlled())
+		SetMoving(!(ppu->y_pos  == m_Position.y && ppu->x_pos == m_Position.x));
 
 	if (door_check_timer.Check())
 	{
