@@ -1914,6 +1914,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	{
 		// If the final blow was from a NPC that was not a client pet and the dead mob was below force_level, give the NPC credit so the corpse doesn't spawn.
 		killer = oos;
+		if (killerMob && killerMob->IsClient())
+		{
+			if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+				killerMob->Message(CC_Yellow, "A NPC got the deathblow. Giving credit to %s.", oos->GetName());
+		}
 		Log(Logs::Moderate, Logs::Death, "A NPC got the deathblow. Giving credit to %s.", oos->GetName());
 	}
 	else if (IsZomm())
@@ -1924,21 +1929,42 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 		if (killer == nullptr)
 		{
+			if (killerMob && killerMob->IsClient())
+			{
+				if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+					killerMob->Message(CC_Yellow, "Killer of mob could not be determined.  This could indicate a problem");
+			}
 			Log(Logs::Moderate, Logs::Death, "Killer of mob could not be determined.  This could indicate a problem");
 		}
 		else
 		{
+			if (killerMob && killerMob->IsClient())
+			{
+				if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+ 					killerMob->Message(CC_Yellow, "%s%s was chosen as the top damage killer with %d damage done to %s", killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName);
+			}
 			Log(Logs::Moderate, Logs::Death, "%s%s was chosen as the top damage killer with %d damage done to %s",
 				killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName());
 		}
 	}
 	bool is_majority_ds_damage = (float)ds_damage > (float)GetMaxHP() * 0.45f;
 	bool is_majority_killer_dmg = (float)ssf_player_damage > (float)GetMaxHP() * 0.45f;
-	Log(Logs::Moderate, Logs::Death, "%s Before credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", killer->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+	if (killer && killerMob && killerMob->IsClient())
+	{
+		if (killerMob->CastToClient()->IsSoloOnly() || killer->CastToClient()->IsSelfFound())
+			killerMob->Message(CC_Yellow, "%s Before credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", killer->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+	}
 
+	if(killer)
+		Log(Logs::Moderate, Logs::Death, "%s Before credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", killer->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 
 	if (killer && killer->IsClient())
 	{
+		if (killerMob && killerMob->IsClient())
+		{
+			if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+				killerMob->Message(15, "In credit.");
+		}
 		Log(Logs::Detail, Logs::Death, "In credit.");
 		//give_exp_client is the player who gets XP credit.
 		Client *give_exp_client = killer->CastToClient();
@@ -1953,6 +1979,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 				if (!is_solo_only && !is_self_found)
 				{
+					if (killerMob && killerMob->IsClient())
+					{
+						if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+							killerMob->Message(15, "%s will receive XP credit.", give_exp_client->GetName());
+					}
 					Log(Logs::Moderate, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
 
 					// We hand out XP here.
@@ -1968,28 +1999,53 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 					{
 						if (!is_majority_ds_damage && is_majority_killer_dmg)
 						{
+							if (killerMob && killerMob->IsClient())
+							{
+								if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+									killerMob->Message(15, "%s will receive XP credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+							}
 							Log(Logs::Moderate, Logs::Death, "%s will receive XP credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 							// We hand out XP here.
 							GiveExp(give_exp_client, xp);
 						}
 						else
 						{
-							Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit #2. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+							if (killerMob && killerMob->IsClient())
+							{
+								if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+									killerMob->Message(15, "%s will not receive XP credit (failed killer damage or ds damage check). solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+							}
+							Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit (failed killer damage or ds damage check). solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 						}
 					}
 					else
 					{
-						Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+						if (killerMob && killerMob->IsClient())
+						{
+							if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+								killerMob->Message(15, "%s will not receive XP credit. failed characterid/groupid/raidid check. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
+						}
+						Log(Logs::Moderate, Logs::Death, "%s will not receive XP credit. failed characterid/groupid/raidid check. solo_fte_credit = %i, ds damage: %i, bool %i, solo damage %i, bool %i", give_exp_client->GetName(), solo_fte_charid, ds_damage, is_majority_ds_damage == true ? 1 : 0, ssf_player_damage, is_majority_killer_dmg == true ? 1 : 0);
 					}
 				}
 			}
 			else
 			{
+				if (killerMob && killerMob->IsClient())
+				{
+					if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+						killerMob->Message(15, "NPC checks failed. No XP for you.");
+				}
 				Log(Logs::Detail, Logs::Death, "NPC checks failed. No XP for you.");
 			}
 		}
 		else
 		{
+			if (killerMob && killerMob->IsClient())
+			{
+				if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+					killerMob->Message(15, "Give exp client checks failed. No XP for you.");
+			}
 			Log(Logs::Detail, Logs::Death, "Give exp client checks failed. No XP for you.");
 		}
 
@@ -2000,6 +2056,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	}
 	else
 	{
+		if (killerMob && killerMob->IsClient())
+		{
+			if (killerMob->CastToClient()->IsSoloOnly() || killerMob->CastToClient()->IsSelfFound())
+				killerMob->Message(15, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
+		}
 		Log(Logs::Moderate, Logs::Death, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
 	}
 
