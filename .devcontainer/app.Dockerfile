@@ -21,7 +21,8 @@ RUN apt update && apt install -y \
     lua-bitop \
     make \
     mariadb-client \
-    uuid-dev
+    uuid-dev \
+    dos2unix
 
 
 # packages for runtime
@@ -35,13 +36,15 @@ RUN apt install -y \
     lua-bitop \
     mariadb-client \
     vim \
-    net-tools
+    net-tools \
+    dos2unix
 
 # devcontainter.json & docker-compose.yml mounts our local workspace inside container at /workspaces
 # /workspaces is not available at docker build time & is out of scope of docker context
 
 COPY app-context/takp-init.sh /
 RUN chmod +x /takp-init.sh
+RUN dos2unix /takp-init.sh
 ENTRYPOINT [ "/takp-init.sh" ]
 # todo server startup
 CMD [ "sleep", "infinity" ]
