@@ -4216,7 +4216,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 		(casting_spell_slot == EQ::spells::CastingSlot::Item || casting_aa > 0))
 		return 0;
 
-	if (RuleB(AlKabor, EnableEraFocusEffectRules))
+	if (RuleB(AlKabor, EnableEraItemRules))
 	{
 		//Disable Focus Effects before we enter Luclin.
 		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)

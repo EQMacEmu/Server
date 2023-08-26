@@ -968,7 +968,7 @@ namespace Mac {
 			//Focus items did not exist before Planes of Power, so disable them.
 			if(item->Focus.Effect < 0)
 				mac_pop_item->FocusEffect = 0;
-			else if((RuleB(AlKabor, EnableEraFocusEffectRules)) && (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra))
+			else if((RuleB(AlKabor, EnableEraItemRules)) && (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra))
 				mac_pop_item->FocusEffect = 0;
 			else
 				mac_pop_item->FocusEffect = item->Focus.Effect;

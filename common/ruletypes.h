@@ -123,7 +123,7 @@ RULE_INT(World, StreamDataRate, 50) // Sets the datarate for EQOldStream. Defaul
 RULE_INT(World, WhoListLimit, 20) //The max players returned in /who all.
 RULE_INT(World, MuleToonLimit, 8) // The number of characters a mule account can create/access.
 RULE_BOOL( World, DontBootDynamics, false) // If true, dynamic zones will not boot when a player tries to enter them.
-RULE_REAL( World, CurrentExpansion, 15.0)
+RULE_REAL( World, CurrentExpansion, 6.0)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )
@@ -190,7 +190,7 @@ RULE_BOOL (AlKabor, ReducedMonkAC, true) // AK behavior is true.  Monks had a lo
 RULE_BOOL (AlKabor, BlockProjectileCorners, true) // AK behavior is true.  If an NPC was in a corner, arrows and bolts would not hit them.
 RULE_BOOL (AlKabor, BlockProjectileWalls, true) // AK behavior is true.  If an NPC was walled, then arrows and bolts had to be fired from an angle parallel to the wall in order to hit them. (if this is true, corners will also block)
 RULE_BOOL (AlKabor, EnableMobLevelModifier, true) // AK behavior is true.  If true, enable the September 4 & 6 2002 patch exp modifications that granted a large experience bonus to kills within +/-5 levels of the player for level 51+ players
-RULE_BOOL (AlKabor, EnableEraFocusEffectRules, false) // AK behavior is false. If true, disable focus effects in the era they did not exist in.
+RULE_BOOL (AlKabor, EnableEraItemRules, false) // AK behavior is false. If true, disable item data in the era they did not exist in.
 RULE_BOOL (AlKabor, EnableLuclinHarmonyResistOverride, true) // AK behavior is true. If true, enable the late Luclin Harmony resist override.
 RULE_BOOL (AlKabor, EnableLatePlanesHarmonyNerf, true) // AK behavior is true. If true, enable the late Planes of Power Harmony nerf
 RULE_CATEGORY_END()

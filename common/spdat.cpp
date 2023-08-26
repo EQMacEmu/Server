@@ -1176,7 +1176,7 @@ int32 GetFuriousBash(uint16 spell_id)
 	if (!IsValidSpell(spell_id))
 		return 0;
 
-	if (RuleB(AlKabor, EnableEraFocusEffectRules))
+	if (RuleB(AlKabor, EnableEraItemRules))
 	{
 		//Disable Focus Effects before we enter Luclin.
 		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)
