@@ -1859,6 +1859,7 @@ void WorldServer::Process() {
 				}
 				if (zone->EndQuake_Timer)
 				{
+					zone->EndQuake_Timer->Enable();
 					zone->EndQuake_Timer->Start(((zone->last_quake_struct.start_timestamp - cur_time) + (RuleI(Quarm, QuakeEndTimeDuration))) * 1000);
 				}
 			}

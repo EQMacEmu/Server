@@ -317,19 +317,22 @@ int main(int argc, char** argv) {
 	if (RuleB(Quarm, EnableQuakes))
 	{
 		//This will return false if we have bad quake data, or the quake happened within 24 hours of a downtime.
-		bool bQuakeReset = !database.LoadNextQuakeTime(next_quake);
+		bool bQuakeReset = database.LoadNextQuakeTime(next_quake);
 		if (bQuakeReset)
 		{
-			//Start the timer in 15 minutes. (magic value is set in fail condition)
-			//Process normal quake logic after.
-			NextQuakeTimer.Start(next_quake.start_timestamp * 1000);
+			//We're outside of the 24 hour window. Players will wait normal "next_start_timestamp" amount.
+			NextQuakeTimer.Enable();
+			NextQuakeTimer.Start((next_quake.next_start_timestamp - Timer::GetTimeSeconds()) * 1000);
+			Log(Logs::Detail, Logs::WorldServer, "Using next_start_timestamp to calculate next trigger time.. %i", (next_quake.next_start_timestamp - Timer::GetTimeSeconds()));
 		}
 		else
 		{
-			//We're outside of the 24 hour window. Players will wait normal "next_start_timestamp" amount.
-			NextQuakeTimer.Start(next_quake.next_start_timestamp * 1000);
+			//Start the timer in 15 minutes. (magic value is set in fail condition)
+			//Process normal quake logic after.
+			Log(Logs::Detail, Logs::WorldServer, "Using start_timestamp to calculate next trigger time.. %i", (next_quake.start_timestamp - Timer::GetTimeSeconds()));
+			NextQuakeTimer.Enable();
+			NextQuakeTimer.Start((next_quake.start_timestamp - Timer::GetTimeSeconds()) * 1000);
 		}
-		DisableQuakeTimer.Disable();
 	}
 
 
@@ -478,6 +481,7 @@ int main(int argc, char** argv) {
 		{
 			if (NextQuakeTimer.Check())
 			{
+				Log(Logs::Detail, Logs::WorldServer, "Triggered quake! %i", (next_quake.start_timestamp - Timer::GetTimeSeconds()));
 				uint32 cur_time = Timer::GetTimeSeconds();
 				database.SaveNextQuakeTime(next_quake);
 				auto pack = new ServerPacket(ServerOP_QuakeImminent, sizeof(ServerEarthquakeImminent_Struct));
@@ -487,6 +491,7 @@ int main(int argc, char** argv) {
 				seis->start_timestamp = next_quake.start_timestamp;
 				zoneserver_list.SendPacket(pack);
 				safe_delete(pack);
+				NextQuakeTimer.Enable();
 				NextQuakeTimer.Start((next_quake.next_start_timestamp - cur_time) * 1000);
 
 				std::string motd_str = "Welcome to Project Quarm! ";
@@ -497,8 +502,8 @@ int main(int argc, char** argv) {
 
 				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Red, "Druzzil Ro's voice echoes in your mind, 'Mortals... they always aren't content with what they have, aren't they?'");
 				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Yellow, "Druzzil Ro's projection alters time and space. The effective ruleset changes to: %s", QuakeTypeToString(next_quake.quake_type).c_str());
-
-				DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + 86400));
+				DisableQuakeTimer.Enable();
+				DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + RuleI(Quarm, QuakeEndTimeDuration)));
 			}
 
 			if (DisableQuakeTimer.Check())

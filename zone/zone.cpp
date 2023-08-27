@@ -1553,6 +1553,7 @@ bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
 			reset_at_least_one_spawn2 = true;
 			pSpawn2->Repop(in_respawn_timer); // milliseconds
 		}
+		iterator.Advance();
 	}
 	return true;
 }

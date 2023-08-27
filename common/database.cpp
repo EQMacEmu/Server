@@ -2160,6 +2160,8 @@ struct TimeOfDay_Struct Database::LoadTime(time_t &realtime)
 
 bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct)
 {
+
+
 	std::string query = StringFormat("SELECT start_timestamp, next_timestamp, ruleset FROM quake_data");
 	auto results = QueryDatabase(query);
 	EQ::Random random;
@@ -2174,6 +2176,9 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 		earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
 		earthquake_struct.quake_type = ruleset;
 
+		std::string query1 = StringFormat("DELETE FROM quake_data");
+		auto results1 = QueryDatabase(query1);
+
 		std::string query2 = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
 		auto results2 = QueryDatabase(query2);
 		return false;
@@ -2187,7 +2192,7 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 	earthquake_struct.quake_type = (QuakeType)atoi(row[2]);
 
 	//Force-Prep the next quake update in 15 minutes, if we are recovering from a server downtime during a quake. Ideally this would never happen but patch days do happen.
-	if (earthquake_struct.start_timestamp + 86400 < time(0))
+	if (Timer::GetTimeSeconds() < earthquake_struct.start_timestamp + RuleI(Quarm, QuakeEndTimeDuration))
 	{
 		Log(Logs::Detail, Logs::WorldServer, "Recovering-from-downtime within 24 hour window. Using default rules values and a random ruleset...");
 		QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled+1, QuakeType::QuakeMax-1));
@@ -2195,6 +2200,11 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 		earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
 		earthquake_struct.quake_type = ruleset;
 		earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
+
+
+		std::string query1 = StringFormat("DELETE FROM quake_data");
+		auto results1 = QueryDatabase(query1);
+
 		std::string query2 = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
 		auto results2 = QueryDatabase(query2);
 		return false;
@@ -2214,6 +2224,10 @@ bool Database::SaveNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 	earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
 	earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
 	earthquake_struct.quake_type = ruleset;
+
+
+	std::string query1 = StringFormat("DELETE FROM quake_data");
+	auto results1 = QueryDatabase(query1);
 
 	std::string query = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
 	auto results = QueryDatabase(query);
