@@ -386,6 +386,7 @@ void WorldServer::Process() {
 		}
 		case ServerOP_Motd: {
 			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
+
 			auto outapp = new EQApplicationPacket(OP_MOTD);
 			char tmp[500] = {0};
 			sprintf(tmp, "%s", smotd->motd);
@@ -1860,7 +1861,7 @@ void WorldServer::Process() {
 				if (zone->EndQuake_Timer)
 				{
 					zone->EndQuake_Timer->Enable();
-					zone->EndQuake_Timer->Start(((zone->last_quake_struct.start_timestamp - cur_time) + (RuleI(Quarm, QuakeEndTimeDuration))) * 1000);
+					zone->EndQuake_Timer->Start((RuleI(Quarm, QuakeRepopDelay) + RuleI(Quarm, QuakeEndTimeDuration)) * 1000);
 				}
 			}
 			break;
