@@ -503,7 +503,7 @@ int main(int argc, char** argv) {
 				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Red, "Druzzil Ro's voice echoes in your mind, 'Mortals... they always aren't content with what they have, aren't they?'");
 				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Yellow, "Druzzil Ro's projection alters time and space. The effective ruleset changes to: %s", QuakeTypeToString(next_quake.quake_type).c_str());
 				DisableQuakeTimer.Enable();
-				DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + RuleI(Quarm, QuakeEndTimeDuration)));
+				DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + RuleI(Quarm, QuakeEndTimeDuration)) * 1000);
 			}
 
 			if (DisableQuakeTimer.Check())
