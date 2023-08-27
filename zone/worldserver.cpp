@@ -1841,6 +1841,30 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_QuakeImminent:
+		{
+			if (zone)
+			{
+				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
+				memcpy(&zone->last_quake_struct, seis, sizeof(ServerEarthquakeImminent_Struct));
+
+				uint32 cur_time = Timer::GetTimeSeconds();
+				if (zone->last_quake_struct.start_timestamp >= cur_time)
+				{
+					bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeRepopDelay)) * 1000); // if we reset at least one, this is true
+					if (should_broadcast_notif)
+					{
+						entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the [%s] ruleset, also listed in the /motd.", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+					}
+				}
+				if (zone->EndQuake_Timer)
+				{
+					zone->EndQuake_Timer->Start(((zone->last_quake_struct.start_timestamp - cur_time) + (RuleI(Quarm, QuakeEndTimeDuration))) * 1000);
+				}
+			}
+			break;
+		}
+
 		default: {
 			std::cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			std::cout << " size:" << pack->size << std::endl;

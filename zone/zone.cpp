@@ -832,6 +832,8 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	tradevar = 0;
 	lootvar = 0;
 
+	memset(&last_quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+
 	short_name = strcpy(new char[strlen(in_short_name)+1], in_short_name);
 	std::string tmp = short_name;
 	for (auto & c : tmp) c = tolower(c);
@@ -868,6 +870,8 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	autoshutdown_timer.Start(AUTHENTICATION_TIMEOUT * 1000, false);
 	Weather_Timer = new Timer(60000);
 	Weather_Timer->Start();
+	EndQuake_Timer = new Timer(60000);
+	EndQuake_Timer->Disable();
 	LogInfo("The next weather check for zone: {} will be in {} seconds.", short_name, Weather_Timer->GetRemainingTime() / 1000);
 	zone_weather = 0;
 	weather_intensity = 0;
@@ -929,6 +933,7 @@ Zone::~Zone() {
 	safe_delete_array(short_name);
 	safe_delete_array(long_name);
 	safe_delete(Weather_Timer);
+	safe_delete(EndQuake_Timer);
 	ClearNPCEmotes(&NPCEmoteList);
 	zone_point_list.Clear();
 	entity_list.Clear();
@@ -1280,6 +1285,17 @@ bool Zone::Process() {
 		this->ChangeWeather();
 	}
 
+	if (EndQuake_Timer->Check())
+	{
+		uint32 cur_time = Timer::GetTimeSeconds();
+		bool should_broadcast_notif = zone->ResetEngageNotificationTargets(RuleI(Quarm, QuakeRepopDelay) * 1000); // if we reset at least one, this is true
+		if (should_broadcast_notif)
+		{
+			entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the standard (GM-Enforced Rotations) ruleset, also in the /motd", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+		}
+		EndQuake_Timer->Disable();
+	}
+
 	if(qGlobals)
 	{
 		if(qglobal_purge_timer.Check())
@@ -1522,6 +1538,23 @@ void Zone::RepopClose(const glm::vec4& client_position, uint32 repop_distance)
 		Log(Logs::General, Logs::None, "Error in Zone::Repop: database.PopulateZoneSpawnList failed");
 
 	entity_list.UpdateAllTraps(true, true);
+}
+
+bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
+{
+	bool reset_at_least_one_spawn2 = false;
+	LinkedListIterator<Spawn2*> iterator(spawn2_list);
+
+	iterator.Reset();
+	while (iterator.MoreElements()) {
+		Spawn2* pSpawn2 = iterator.GetData();
+		if (pSpawn2->IsRaidTargetSpawnpoint())
+		{
+			reset_at_least_one_spawn2 = true;
+			pSpawn2->Repop(in_respawn_timer); // milliseconds
+		}
+	}
+	return true;
 }
 
 void Zone::Repop() {

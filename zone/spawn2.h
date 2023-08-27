@@ -34,7 +34,7 @@ public:
 		uint32 respawn, uint32 variance,
 		uint32 timeleft = 0, uint32 grid = 0,
 		uint16 cond_id = SC_AlwaysEnabled, int16 min_value = 0, bool in_enabled = true, EmuAppearance anim = eaStanding, 
-		bool force_z = false, bool rand_spawn = false);
+		bool force_z = false, bool rand_spawn = false, bool raid_target_spawnpoint = false);
 	~Spawn2();
 
 	void	LoadGrid(int start_wp = 0);
@@ -72,6 +72,7 @@ public:
 	void	SetTimer(uint32 duration) { timer.Start(duration, false); }
 	uint32  GetKillCount() { return killcount; }
 	bool	GetForceZ() { return force_z; }
+	bool	IsRaidTargetSpawnpoint() { return raid_target_spawnpoint; }
 protected:
 	friend class Zone;
 	friend class SpawnGroup;
@@ -99,6 +100,7 @@ private:
 	uint32  killcount;
 	bool force_z;
 	bool rand_spawn;
+	bool raid_target_spawnpoint;
 };
 
 class SpawnCondition {

@@ -196,6 +196,15 @@ RULE_BOOL (AlKabor, EnableLatePlanesHarmonyNerf, true) // AK behavior is true. I
 RULE_CATEGORY_END()
 
 
+RULE_CATEGORY(Quarm)
+RULE_BOOL(Quarm, EnableQuakes, true) // Quarm default is true. If false, disable the auto-quake system.
+RULE_INT(Quarm, QuakeMinVariance, 604800) // 7 Days
+RULE_INT(Quarm, QuakeMaxVariance, 864000) // 10 Days
+RULE_INT(Quarm, QuakeRepopDelay, 900) // 15 Minutes
+RULE_INT(Quarm, QuakeEndTimeDuration, 84600) // 24 Hour
+RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters whom are flagged as hardcore will be deleted after their untimely death with no way to recover them.
+RULE_CATEGORY_END()
+
 RULE_CATEGORY( Map )
 //enable these to help prevent mob hopping when they are pathing
 RULE_BOOL ( Map, FixPathingZWhenLoading, true )		//increases zone boot times a bit to reduce hopping.

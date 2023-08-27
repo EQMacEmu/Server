@@ -233,6 +233,21 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 	return;
 }
 
+void WorldDatabase::ClearHardcoreCharacters(int AccID) {
+	/* Get Character Info */
+	std::string cquery = StringFormat(
+		"SELECT                     "
+		"`id`,                      "  // 0
+		"name                      "  // 1
+		"FROM                       "
+		"character_data             "
+		"WHERE `account_id` = %i AND e_hardcore_death_time != 0 ORDER BY `name`", AccID);
+	auto results = database.QueryDatabase(cquery); int char_num = 0;
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		database.DeleteCharacter(row[1]);
+	}
+}
+
 int WorldDatabase::MoveCharacterToBind(int CharID, uint8 bindnum) {
 	/*  if an invalid bind point is specified, use the primary bind */
 	if (bindnum > 4)

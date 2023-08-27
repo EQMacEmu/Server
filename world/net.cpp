@@ -34,6 +34,8 @@
 #include "../common/version.h"
 #include "../common/eqtime.h"
 #include "../common/timeoutmgr.h"
+#include "../common/strings.h"
+#include "../common/emu_constants.h"
 
 #include "../common/opcodemgr.h"
 #include "../common/guilds.h"
@@ -101,6 +103,7 @@ uint32 numzones = 0;
 bool holdzones = false;
 const WorldConfig *Config;
 EQEmuLogSys LogSys;
+ServerEarthquakeImminent_Struct next_quake;
 
 extern ConsoleList console_list;
 
@@ -169,28 +172,28 @@ int main(int argc, char** argv) {
 
 	LoadServerConfig();
 
-	Config=WorldConfig::get();
+	Config = WorldConfig::get();
 
 	LogInfo("CURRENT_VERSION: [{0}]", CURRENT_VERSION);
 
-	#ifdef _DEBUG
-		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	#endif
+#ifdef _DEBUG
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
-	if (signal(SIGINT, CatchSignal) == SIG_ERR)	{
+	if (signal(SIGINT, CatchSignal) == SIG_ERR) {
 		LogError("Could not set signal handler");
 		return 1;
 	}
-	if (signal(SIGTERM, CatchSignal) == SIG_ERR)	{
+	if (signal(SIGTERM, CatchSignal) == SIG_ERR) {
 		LogError("Could not set signal handler");
 		return 1;
 	}
-	#ifndef WIN32
-	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)	{
+#ifndef WIN32
+	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		LogError("Could not set signal handler");
 		return 1;
 	}
-	#endif
+#endif
 
 	RegisterLoginservers();
 	LoadDatabaseConnections();
@@ -219,7 +222,7 @@ int main(int argc, char** argv) {
 			if (argc == 4) {
 				if (Seperator::IsNumber(argv[3])) {
 					if (atoi(argv[3]) >= 0 && atoi(argv[3]) <= 255) {
-						if (database.SetAccountStatus(argv[2], atoi(argv[3]))){
+						if (database.SetAccountStatus(argv[2], atoi(argv[3]))) {
 							std::cout << "Account flagged: Username='" << argv[2] << "', status=" << argv[3] << std::endl;
 							return 0;
 						}
@@ -246,7 +249,7 @@ int main(int argc, char** argv) {
 	database.LoadVariables();
 
 	std::string hotfix_name;
-	if(database.GetVariable("hotfix_name", hotfix_name)) {
+	if (database.GetVariable("hotfix_name", hotfix_name)) {
 		if (!hotfix_name.empty()) {
 			LogInfo("Current hotfix in use: [{0}]", hotfix_name.c_str());
 		}
@@ -260,11 +263,11 @@ int main(int argc, char** argv) {
 	database.ClearRaid();
 	database.ClearRaidDetails();
 	LogInfo("Loading items..");
-	if(!database.LoadItems(hotfix_name))
+	if (!database.LoadItems(hotfix_name))
 		LogError("Error: Could not load item data. But ignoring");
 
 	LogInfo("Loading skill caps..");
-	if(!database.LoadSkillCaps(std::string(hotfix_name)))
+	if (!database.LoadSkillCaps(std::string(hotfix_name)))
 		LogError("Error: Could not load skill cap data. But ignoring");
 
 	LogInfo("Loading guilds..");
@@ -274,23 +277,25 @@ int main(int argc, char** argv) {
 		std::string tmp;
 		if (database.GetVariable("RuleSet", tmp)) {
 			LogInfo("Loading rule set [{0}]", tmp.c_str());
-			if(!RuleManager::Instance()->LoadRules(&database, tmp.c_str())) {
+			if (!RuleManager::Instance()->LoadRules(&database, tmp.c_str())) {
 				LogInfo("Failed to load ruleset [{0}], falling back to defaults.", tmp.c_str());
 			}
-		} else {
-			if(!RuleManager::Instance()->LoadRules(&database, "default")) {
+		}
+		else {
+			if (!RuleManager::Instance()->LoadRules(&database, "default")) {
 				LogInfo("No rule set configured, using default rules");
-			} else {
+			}
+			else {
 				LogInfo("Loaded default rule set 'default'", tmp.c_str());
 			}
 		}
 	}
-	if(RuleB(World, ClearTempMerchantlist)){
+	if (RuleB(World, ClearTempMerchantlist)) {
 		LogInfo("Clearing temporary merchant lists...");
 		database.ClearMerchantTemp();
 	}
 
-	if(RuleB(World, AdjustRespawnTimes)){
+	if (RuleB(World, AdjustRespawnTimes)) {
 		LogInfo("Clearing and adjusting boot time spawn timers...");
 		database.AdjustSpawnTimes();
 	}
@@ -299,9 +304,34 @@ int main(int argc, char** argv) {
 	TimeOfDay_Struct eqTime;
 	time_t realtime;
 	eqTime = database.LoadTime(realtime);
-	zoneserver_list.worldclock.setEQTimeOfDay(eqTime,realtime);
+	zoneserver_list.worldclock.setEQTimeOfDay(eqTime, realtime);
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
+
+	memset(&next_quake, 0, sizeof(ServerEarthquakeImminent_Struct));
+	Timer NextQuakeTimer(900000);
+	NextQuakeTimer.Disable();
+	Timer DisableQuakeTimer(900000);
+	DisableQuakeTimer.Disable();
+
+	if (RuleB(Quarm, EnableQuakes))
+	{
+		//This will return false if we have bad quake data, or the quake happened within 24 hours of a downtime.
+		bool bQuakeReset = !database.LoadNextQuakeTime(next_quake);
+		if (bQuakeReset)
+		{
+			//Start the timer in 15 minutes. (magic value is set in fail condition)
+			//Process normal quake logic after.
+			NextQuakeTimer.Start(next_quake.start_timestamp * 1000);
+		}
+		else
+		{
+			//We're outside of the 24 hour window. Players will wait normal "next_start_timestamp" amount.
+			NextQuakeTimer.Start(next_quake.next_start_timestamp * 1000);
+		}
+		DisableQuakeTimer.Disable();
+	}
+
 
 	LogInfo("Loading launcher list..");
 	launcher_list.LoadList();
@@ -441,6 +471,44 @@ int main(int argc, char** argv) {
 			else
 			{
 				LogDebug("EQTime successfully saved.");
+			}
+		}
+
+		if (RuleB(Quarm, EnableQuakes))
+		{
+			if (NextQuakeTimer.Check())
+			{
+				uint32 cur_time = Timer::GetTimeSeconds();
+				database.SaveNextQuakeTime(next_quake);
+				auto pack = new ServerPacket(ServerOP_QuakeImminent, sizeof(ServerEarthquakeImminent_Struct));
+				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
+				seis->quake_type = next_quake.quake_type;
+				seis->next_start_timestamp = next_quake.next_start_timestamp;
+				seis->start_timestamp = next_quake.start_timestamp;
+				zoneserver_list.SendPacket(pack);
+				safe_delete(pack);
+				NextQuakeTimer.Start((next_quake.next_start_timestamp - cur_time) * 1000);
+
+				std::string motd_str = "Welcome to Project Quarm! ";
+				motd_str += "The ";
+				motd_str +=QuakeTypeToString(next_quake.quake_type).c_str();
+				motd_str += " earthquake ruleset is currently in effect.";
+				database.SetVariable("MOTD", motd_str.c_str());
+
+				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Red, "Druzzil Ro's voice echoes in your mind, 'Mortals... they always aren't content with what they have, aren't they?'");
+				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Yellow, "Druzzil Ro's projection alters time and space. The effective ruleset changes to: %s", QuakeTypeToString(next_quake.quake_type).c_str());
+
+				DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + 86400));
+			}
+
+			if (DisableQuakeTimer.Check())
+			{
+				std::string motd_str = "Welcome to Project Quarm! ";
+				motd_str += "The standard ruleset is currently in effect. (GM-Enforced Rotations)";
+				database.SetVariable("MOTD", motd_str.c_str());
+				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Red, "Druzzil Ro's voice echoes in your mind, 'It seems as though the mortals have had enough of my games. I must teach them to share again.'");
+				zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Yellow, "Druzzil Ro's grasp no longer archors this land... for now. The effective ruleset changes to: GM-Enforced Rotations.");
+				DisableQuakeTimer.Disable();
 			}
 		}
 

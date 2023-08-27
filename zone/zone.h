@@ -141,7 +141,7 @@ public:
 
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
-
+	bool	ResetEngageNotificationTargets(uint32 in_respawn_timer);
 	bool	Depop(bool StartSpawnTimer = false);
 	void	Repop();
 	void	RepopClose(const glm::vec4& client_position, uint32 repop_distance);
@@ -235,6 +235,9 @@ public:
 	time_t	weather_timer;
 	uint8	weather_intensity;
 	uint8	zone_weather;
+
+	ServerEarthquakeImminent_Struct last_quake_struct;
+	Timer*	EndQuake_Timer;
 
 	uint8 loglevelvar;
 	uint8 merchantvar;

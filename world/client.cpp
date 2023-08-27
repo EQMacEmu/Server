@@ -165,7 +165,10 @@ void Client::SendCharInfo() {
 	}
 
 	seencharsel = true;
-
+	if (RuleB(Quarm, DeleteHCCharactersAfterDeath))
+	{
+		database.ClearHardcoreCharacters(GetAccountID());
+	}
 	// Send OP_SendCharInfo
 	auto outapp = new EQApplicationPacket(OP_SendCharInfo, sizeof(CharacterSelect_Struct));
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
@@ -665,9 +668,10 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 
 	uint32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
 	uint32 level = database.GetLevelByChar((char*)app->pBuffer);
+	uint32 is_hardcore = database.GetHardcoreStatus((char*)app->pBuffer);
 	if(char_acct_id == GetAccountID()) {
 		Log(Logs::Detail, Logs::WorldServer,"Delete character: %s",app->pBuffer);
-		if(level >= 30)
+		if(level >= 30 && !is_hardcore)
 		{
 			database.MarkCharacterDeleted((char *)app->pBuffer);
 		}

@@ -296,3 +296,27 @@ std::string EQ::constants::GetSpawnAnimationName(uint8 animation_id)
 
 	return std::string();
 }
+
+std::string QuakeTypeToString(QuakeType in_type)
+{
+	std::string out_stringtype = "Disabled";
+
+	switch (in_type)
+	{
+	case QuakeType::QuakeFTE:
+		out_stringtype = "First to Engage";
+		break;
+	case QuakeType::QuakeDPSRace:
+		out_stringtype = "DPS Race";
+		break;
+	case QuakeType::QuakeExtraMob:
+		out_stringtype = "Extra Target for Server Rotation";
+		break;
+	case QuakeType::QuakeDisabled:
+	case QuakeType::QuakeMax:
+	default:
+		out_stringtype = "Disabled";
+		break;
+	}
+	return out_stringtype;
+}

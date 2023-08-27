@@ -26,6 +26,7 @@
 #include "types.h"
 #include "dbcore.h"
 #include "linked_list.h"
+#include "servertalk.h"
 #include "eq_packet_structs.h"
 
 #include <cmath>
@@ -142,6 +143,7 @@ public:
 	void	ClearAccountActive(uint32 AccountID);
 	void	SetAccountActive(uint32 AccountID);
 	uint32	GetLevelByChar(const char* charname);
+	uint32	GetHardcoreStatus(const char* charname);
 	bool	NoRentExpired(const char* name);
 
 	/*
@@ -219,6 +221,8 @@ public:
 	void	SetFirstLogon(uint32 CharID, uint8 firstlogon);
 	void	AddReport(std::string who, std::string against, std::string lines);
 	struct TimeOfDay_Struct		LoadTime(time_t &realtime);
+	bool LoadNextQuakeTime(ServerEarthquakeImminent_Struct &realtime);
+	bool SaveNextQuakeTime(ServerEarthquakeImminent_Struct & earthquake_struct);
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);
 	bool	AdjustSpawnTimes();
 	uint8   GetZoneRandomLoc(uint32 zoneid);

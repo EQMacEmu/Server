@@ -5304,5 +5304,20 @@ void Mob::SetHP(int32 hp)
 			CastToNPC()->solo_fte_charid = 0;
 			ssf_player_damage = 0;
 		}
+
+		if (CastToNPC()->fte_charid != 0 && CastToNPC()->HasEngageNotice() && ((float)cur_hp >= (float)max_hp * (0.997f)))
+		{
+			Client* c = entity_list.GetClientByCharID(CastToNPC()->fte_charid);
+			uint32 curtime = (Timer::GetCurrentTime() % 120);
+			uint32 lastAggroTime = CastToNPC()->GetAggroDeaggroTime() % 60;
+			if(!c || curtime >= lastAggroTime + 60)
+			{
+				CastToNPC()->fte_charid = 0;
+				CastToNPC()->group_fte = 0;
+				CastToNPC()->raid_fte = 0;
+				entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
+			}
+			
+		}
 	}
 }
