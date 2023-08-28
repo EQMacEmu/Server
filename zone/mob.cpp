@@ -114,7 +114,7 @@ Mob::Mob(const char* in_name,
 	SetMoving(false);
 	moved=false;
 	m_RewindLocation = glm::vec3();
-
+	m_LastLocation = glm::vec3();
 	name[0]=0;
 	orig_name[0]=0;
 	clean_name[0]=0;

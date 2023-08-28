@@ -477,6 +477,9 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 			Log(Logs::General, Logs::Error, "Client::ProcessMovePC received a reguest to perform an unsupported client zone operation.");
 			break;
 	}
+
+	exemptHackCount = true;
+	ExpectedRewindPos = glm::vec3(x, y, z);
 }
 
 void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {

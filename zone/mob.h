@@ -1152,6 +1152,7 @@ protected:
 	TemporaryPetsEffect* temporary_pets_effect;
 
 	glm::vec3 m_RewindLocation;
+	glm::vec3 m_LastLocation;
 	Timer rewind_timer;
 
 	uint8 haircolor;

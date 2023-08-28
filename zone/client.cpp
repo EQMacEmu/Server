@@ -242,6 +242,10 @@ Client::Client(EQStreamInterface* ieqs)
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 	AttemptedMessages = 0;
 	TotalKarma = 0;
+	HackCount = 0;
+	last_position_update_time = std::chrono::high_resolution_clock::now();
+	exemptHackCount = false;
+	ExpectedRewindPos = glm::vec3();
 	m_ClientVersion = EQ::versions::Unknown;
 	m_ClientVersionBit = 0;
 	AggroCount = 0;

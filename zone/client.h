@@ -65,6 +65,7 @@ struct ItemData;
 #include <float.h>
 #include <set>
 #include <algorithm>
+#include <chrono>
 
 
 #define CLIENT_TIMEOUT		90000
@@ -505,6 +506,13 @@ public:
 
 	//This gets the skill value of the item type equiped in the Primary Slot
 	uint16 GetPrimarySkillValue();
+
+	int HackCount;
+
+	bool exemptHackCount;
+	glm::vec3 ExpectedRewindPos;
+	std::chrono::high_resolution_clock::time_point last_position_update_time;
+
 
 	inline uint32 GetEXP() const { return m_pp.exp; }
 

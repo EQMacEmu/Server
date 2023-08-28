@@ -1267,6 +1267,9 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/* Set Mob variables for spawn */
 	class_ = m_pp.class_;
 	level = m_pp.level;
+	last_position_update_time = std::chrono::high_resolution_clock::now();
+	m_RewindLocation = glm::vec3();
+	m_LastLocation = glm::vec3();
 	m_Position.x = m_pp.x;
 	m_Position.y = m_pp.y;
 	m_Position.z = m_pp.z;
@@ -3018,6 +3021,50 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
+	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
+	bool bSkip = false;
+	if (m_LastLocation == glm::vec3())
+	{
+		m_LastLocation = newPosition;
+		m_Position.x = newPosition.x;
+		m_Position.y = newPosition.y;
+		m_Position.z = newPosition.z;
+
+		bSkip = true;
+	}
+	double dist = DistanceNoZ(m_LastLocation, newPosition);
+	double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
+
+	bool shouldTryHackCheck = !exemptHackCount;
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
+	auto seccount = seconds.count();
+	auto distDivTime = 0.;
+	if (dist > 5.0 && seccount >= 1.0)
+	{
+		distDivTime = dist / seccount;
+	}
+
+	/*
+		If the PPU was a large jump, such as a cross zone gate or Call of Hero,
+			just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
+	*/
+
+	bool is_exempt_correct = false;
+
+	if (distFromExpected < 125.0 && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+	{
+		is_exempt_correct = true;
+		ExpectedRewindPos = glm::vec3(0, 0, 0);
+	}
+	auto speed = GetRunspeed();
+	if (distDivTime >= 125.f && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED)
+	{
+		std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime);
+		worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str());
+		database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+	}
+
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos/10.0f));
@@ -3090,6 +3137,14 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_Position.x = ppu->x_pos;
 	m_Position.y = ppu->y_pos;
 	m_Position.z = (float)ppu->z_pos/10.0f;
+	m_RewindLocation = m_Position;
+	auto current_update_time = std::chrono::high_resolution_clock::now();
+	auto timeDiff = std::chrono::duration<double>(currentTime - last_position_update_time);
+	if (timeDiff.count() >= 1.0)
+	{
+		last_position_update_time = current_update_time;
+		m_LastLocation = m_Position;
+	}
 	//auto old_anim = animation;
 	animation = ppu->anim_type;
 	// No need to check for loc change, our client only sends this packet if it has actually moved in some way.
