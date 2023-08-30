@@ -160,7 +160,7 @@ namespace EQ
 		// Clone current item
 		ItemInstance* Clone() const;
 
-		bool IsSlotAllowed(int16 slot_id) const;
+		bool IsSlotAllowed(int16 slot_id, EQ::InventoryProfile &inv) const;
 
 		void Initialize(SharedDatabase* db = nullptr);
 

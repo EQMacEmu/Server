@@ -2011,7 +2011,7 @@ void Client::MoveSlotNotAllowed(bool client_update)
 {
 	// equipment
 	for(auto slot_id = EQ::invslot::EQUIPMENT_BEGIN; slot_id <= EQ::invslot::EQUIPMENT_END; ++slot_id) {
-		if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id)) {
+		if(m_inv[slot_id] && !m_inv[slot_id]->IsSlotAllowed(slot_id, m_inv)) {
 			auto inst = m_inv.PopItem(slot_id);
 			bool is_arrow = (inst->GetItem()->ItemType == EQ::item::ItemTypeArrow) ? true : false;
 			int16 free_slot_id = m_inv.FindFreeSlot(inst->IsType(EQ::item::ItemClassBag), true, inst->GetItem()->Size, is_arrow);
