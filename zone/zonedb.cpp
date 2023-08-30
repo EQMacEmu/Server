@@ -3549,12 +3549,7 @@ Corpse* ZoneDatabase::LoadCharacterCorpse(uint32 player_corpse_id) {
 
 bool ZoneDatabase::LoadCharacterCorpses(uint32 zone_id) {
 	std::string query;
-	if (!RuleB(Zone, EnableShadowrest)){
-		query = StringFormat("SELECT id, charid, charname, x, y, z, heading, UNIX_TIMESTAMP(time_of_death), is_rezzed, was_at_graveyard FROM character_corpses WHERE zone_id='%u'", zone_id);
-	}
-	else{
-		query = StringFormat("SELECT id, charid, charname, x, y, z, heading, UNIX_TIMESTAMP(time_of_death), is_rezzed, 0 as was_at_graveyard FROM character_corpses WHERE zone_id='%u' AND is_buried=0", zone_id);
-	}
+	query = StringFormat("SELECT id, charid, charname, x, y, z, heading, UNIX_TIMESTAMP(time_of_death), is_rezzed, was_at_graveyard FROM character_corpses WHERE zone_id='%u'", zone_id);
 
 	auto results = QueryDatabase(query);
 	for (auto& row = results.begin(); row != results.end(); ++row) {

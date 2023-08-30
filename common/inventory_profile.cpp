@@ -238,8 +238,8 @@ bool EQ::InventoryProfile::SwapItem(int16 slot_a, int16 slot_b)
 	ItemInstance* inst_a = GetItem(slot_a);
 	ItemInstance* inst_b = GetItem(slot_b);
 
-	if (inst_a) { if (!inst_a->IsSlotAllowed(slot_b)) { return false; } }
-	if (inst_b) { if (!inst_b->IsSlotAllowed(slot_a)) { return false; } }
+	if (inst_a) { if (!inst_a->IsSlotAllowed(slot_b, *this)) { return false; } }
+	if (inst_b) { if (!inst_b->IsSlotAllowed(slot_a, *this)) { return false; } }
 
 	_PutItem(slot_a, inst_b); // Copy b->a
 	_PutItem(slot_b, inst_a); // Copy a->b

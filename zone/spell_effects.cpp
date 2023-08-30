@@ -1500,7 +1500,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				float size = GetSize();
 
 				// Do not allow Shrink if Gnome size or smaller, or if size 20 or higher. 
-				if(modifyAmount < 1.0f && size > gnome_height && size < 20.0f)
+				if(modifyAmount < 1.0f && size > gnome_height && (size < 20.0f || IsSummonedClientPet()))
 				{
 					if (size == ogre_height)
 						size = 8.0f;
