@@ -481,13 +481,90 @@ EQ::ItemInstance* EQ::ItemInstance::Clone() const
 	return new ItemInstance(*this);
 }
 
-bool EQ::ItemInstance::IsSlotAllowed(int16 slot_id) const {
+bool EQ::ItemInstance::IsSlotAllowed(int16 slot_id, EQ::InventoryProfile &inv) const
+{
 	if (!m_item) { return false; }
-	else if (InventoryProfile::SupportsContainers(slot_id)) { return true; }
-	else if (m_item->Slots & (1 << slot_id)) { return true; }
-	else if (slot_id == invslot::slotAmmo && (m_item->ItemType == item::ItemTypeSmallThrowing || m_item->ItemType == item::ItemTypeLargeThrowing)) { return true; }
-	else if (slot_id > invslot::EQUIPMENT_END) { return true; }
-	else { return false; }
+	if (InventoryProfile::SupportsContainers(slot_id)) { return true; }
+	if (slot_id > invslot::EQUIPMENT_END) { return true; }
+
+	if (slot_id >= invslot::EQUIPMENT_BEGIN && slot_id <= invslot::EQUIPMENT_END)
+	{
+		if (m_item->ItemClass == EQ::item::ItemClassBag || m_item->ItemClass == EQ::item::ItemClassBook)
+			return false;
+
+		if (slot_id == invslot::slotRange)
+		{
+			if (m_item->ItemType == item::ItemTypeArrow || m_item->ItemType == item::ItemTypeUnknown4) // type 28 isn't actually used on any items but this logic is in the client
+				return false;
+			if (m_item->Range)
+				return true;
+		}
+		else if (slot_id == invslot::slotAmmo)
+		{
+			if (m_item->ItemType == item::ItemTypeArrow || m_item->ItemType == item::ItemTypeSmallThrowing)
+				return true;
+		}
+		if (m_item->ItemType == item::ItemTypeUnknown4) // type 28 isn't actually used on any items but this logic is in the client
+			return true;
+
+		if ((m_item->Slots & (1 << slot_id)) == 0) { return false; }
+
+		if (slot_id == invslot::slotPrimary)
+		{
+			auto secondary_item = inv[invslot::slotSecondary];
+			if (secondary_item)
+			{
+				if (m_item->ItemType == item::ItemType2HBlunt ||
+					m_item->ItemType == item::ItemType2HSlash ||
+					m_item->ItemType == item::ItemType2HPiercing ||
+					secondary_item->m_item->ItemType == item::ItemTypeWindInstrument ||
+					secondary_item->m_item->ItemType == item::ItemTypeStringedInstrument ||
+					secondary_item->m_item->ItemType == item::ItemTypeBrassInstrument ||
+					secondary_item->m_item->ItemType == item::ItemTypePercussionInstrument)
+				{
+					return false;
+				}
+			}
+		}
+		else if (slot_id == invslot::slotSecondary)
+		{
+			if (m_item->ItemType != item::ItemType2HBlunt &&
+				m_item->ItemType != item::ItemType2HSlash &&
+				m_item->ItemType != item::ItemType2HPiercing)
+			{
+				// EQ_Equipment::IsWeapon
+				bool IsWeapon = true;
+				if (m_item->Damage == 0 || m_item->ItemType == item::ItemTypeUnknown6 || m_item->ItemType == item::ItemTypeUnknown7 || m_item->ItemType == item::ItemTypeArrow || m_item->ItemType == item::ItemTypeUnknown4)
+					IsWeapon = false;
+
+				bool CanDualWield = true; // TODO - get this value from the character
+
+				if (!IsWeapon || CanDualWield)
+				{
+					auto primary_item = inv[invslot::slotPrimary];
+					if (!primary_item)
+						return true;
+
+					if (m_item->ItemType != item::ItemTypeWindInstrument &&
+						m_item->ItemType != item::ItemTypeStringedInstrument &&
+						m_item->ItemType != item::ItemTypeBrassInstrument &&
+						m_item->ItemType != item::ItemTypePercussionInstrument)
+					{
+						if (primary_item->m_item->ItemType != item::ItemType2HBlunt &&
+							primary_item->m_item->ItemType != item::ItemType2HSlash &&
+							primary_item->m_item->ItemType != item::ItemType2HPiercing)
+						{
+							return true;
+						}
+					}
+				}
+
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void EQ::ItemInstance::Initialize(SharedDatabase *db) {

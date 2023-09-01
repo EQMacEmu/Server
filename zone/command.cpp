@@ -5565,7 +5565,7 @@ void command_guild(Client *c, const Seperator *sep){
 		else if ((client->Admin() >= minStatusToEditOtherGuilds && admin < minStatusToEditOtherGuilds) && client->GuildID() != c->GuildID()) // no peeping for GMs, make sure tell message stays the same
 			c->Message(CC_Default, "You must target someone or specify a character name.");
 		else {
-			if (client->IsInAGuild())
+			if (!client->IsInAGuild())
 				c->Message(CC_Default, "%s is not in a guild.", client->GetName());
 			else if (guild_mgr.IsGuildLeader(client->GuildID(), client->CharacterID()))
 				c->Message(CC_Default, "%s is the leader of <%s> rank: %s", client->GetName(), guild_mgr.GetGuildName(client->GuildID()), guild_mgr.GetRankName(client->GuildID(), client->GuildRank()));
@@ -5859,21 +5859,21 @@ void command_guild(Client *c, const Seperator *sep){
 			c->Message(CC_Default, "Error: World server dirconnected");
 		else {
 			uint32 leader = 0;
-			if (sep->IsNumber(2)) {
-				leader = atoi(sep->arg[2]);
+			if (sep->IsNumber(3)) {
+				leader = atoi(sep->arg[3]);
 			}
-			else if ((leader = database.GetCharacterID(sep->arg[2])) != 0) {
+			else if ((leader = database.GetCharacterID(sep->arg[3])) != 0) {
 				//got it from the db..
 			}
 			else {
-				c->Message(CC_Red, "Unable to find char '%s'", sep->arg[2]);
+				c->Message(CC_Red, "Unable to find char '%s'", sep->arg[3]);
 				return;
 			}
 
 			uint32 tmpdb = guild_mgr.FindGuildByLeader(leader);
 			if (leader == 0)
 				c->Message(CC_Default, "New leader not found.");
-			else if (tmpdb != 0) {
+			else if (tmpdb != GUILD_NONE) {
 				c->Message(CC_Default, "Error: %s already is the leader of guild # %i", sep->arg[2], tmpdb);
 			}
 			else {

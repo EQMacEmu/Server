@@ -2668,8 +2668,8 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 					}
 
 					if (item->Click.Level2 > 0)
-					{			
-						if (GetLevel() >= item->Click.Level2 || clicky_override)
+					{
+						if (GetLevel() >= item->Click.Level2 || item->Click.Type == EQ::item::ItemEffectClick || clicky_override)
 						{
 							EQ::ItemInstance* p_inst = (EQ::ItemInstance*)inst;
 							int i = parse->EventItem(EVENT_ITEM_CLICK_CAST, this, p_inst, nullptr, "", castspell->inventoryslot);

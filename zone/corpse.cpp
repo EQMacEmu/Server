@@ -933,7 +933,7 @@ bool Corpse::Process() {
 		return true;
 	}
 
-	if (corpse_graveyard_timer.Check()) {
+	if (worldserver.Connected() && corpse_graveyard_timer.Check()) {
 		if (zone->HasGraveyard()) {
 			Save();
 
@@ -966,11 +966,10 @@ bool Corpse::Process() {
 	if (IsPlayerCorpse() && zone->HasGraveyard() && !corpse_graveyard_timer.Enabled())
 	{
 		// it already went to GY, prevent dragging it back out
-		static auto lastpos = glm::vec4();
 		if (!corpse_graveyard_moved_timer.Enabled())
 			corpse_graveyard_moved_timer.Start(2000);
 		
-		if (corpse_graveyard_moved_timer.Check() && lastpos != GetPosition())
+		if (corpse_graveyard_moved_timer.Check() && corpse_graveyard_moved_lastpos != GetPosition())
 		{
 			if (DistanceSquaredNoZ(zone->GetGraveyardPoint(), GetPosition()) > 75.0f * 75.0f)
 			{
@@ -981,7 +980,7 @@ bool Corpse::Process() {
 				is_corpse_changed = true;
 				Save();
 			}
-			lastpos = GetPosition();
+			corpse_graveyard_moved_lastpos = GetPosition();
 		}
 	}
 
@@ -1804,6 +1803,7 @@ void Corpse::LoadPlayerCorpseDecayTime(uint32 corpse_db_id, bool empty){
 	if(!corpse_db_id)
 		return;
 
+	corpse_graveyard_moved_lastpos = glm::vec4();
 	uint32 active_corpse_decay_timer = database.GetCharacterCorpseDecayTimer(corpse_db_id);
 	int32 corpse_decay;
 	if(empty)

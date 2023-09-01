@@ -173,6 +173,7 @@ private:
 	Timer		corpse_delay_timer;
 	Timer		corpse_graveyard_timer;
 	Timer		corpse_graveyard_moved_timer;
+	glm::vec4	corpse_graveyard_moved_lastpos;
 	Timer		loot_cooldown_timer; /* Delay between loot actions on the corpse entity */
 	Timer		owner_online_timer; /* How often in milliseconds in which a corpse will check if its owner is online */
 	uint8		killedby;
