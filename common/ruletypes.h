@@ -202,6 +202,13 @@ RULE_INT(Quarm, QuakeMinVariance, 604800) // 7 Days
 RULE_INT(Quarm, QuakeMaxVariance, 864000) // 10 Days
 RULE_INT(Quarm, QuakeRepopDelay, 900) // 15 Minutes
 RULE_INT(Quarm, QuakeEndTimeDuration, 84600) // 24 Hour
+RULE_INT(Quarm, RespawnReductionLowerBoundMin, 60001) //60 to 400 seconds
+RULE_INT(Quarm, RespawnReductionHigherBoundMin, 10000) //10 to 60 seconds
+RULE_INT(Quarm, RespawnReductionLowerBoundMax, 400000) //60 to 400 seconds
+RULE_INT(Quarm, RespawnReductionHigherBoundMax, 60000) //10 to 60 seconds
+RULE_INT(Quarm, RespawnReductionLowerBound, 30000 ) //30s
+RULE_INT(Quarm, RespawnReductionHigherBound, 60000) //60s
+RULE_BOOL(Quarm, EnableRespawnReductionSystem, false) //10 to 60 seconds
 RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters whom are flagged as hardcore will be deleted after their untimely death with no way to recover them.
 RULE_CATEGORY_END()
 

@@ -883,6 +883,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	weather_intensity = 0;
 	blocked_spells = nullptr;
 	totalBS = 0;
+	reducedspawntimers = false;
 	aas = nullptr;
 	totalAAs = 0;
 	gottime = false;
@@ -1143,7 +1144,7 @@ bool Zone::LoadZoneCFG(const char* filename, bool DontLoadDefault)
 	safe_delete_array(map_name);
 
 	if (!database.GetZoneCFG(database.GetZoneID(filename), &newzone_data, can_bind,
-		can_combat, can_levitate, can_castoutdoor, is_city, zone_type, default_ruleset, &map_name, can_bind_others, skip_los, drag_aggro, can_castdungeon, pull_limit))
+		can_combat, can_levitate, can_castoutdoor, is_city, zone_type, default_ruleset, &map_name, can_bind_others, skip_los, drag_aggro, can_castdungeon, pull_limit,reducedspawntimers))
 	{
 		LogError("Error loading the Zone Config.");
 		return false;

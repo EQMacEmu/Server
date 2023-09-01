@@ -106,6 +106,17 @@ uint32 Spawn2::resetTimer()
 			rspawn = 100;
 	}
 
+	if (RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		if (zone->IsReducedSpawnTimersZone())
+		{
+			if (rspawn >= RuleI(Quarm, RespawnReductionHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionHigherBoundMax))
+				rspawn = RuleI(Quarm, RespawnReductionHigherBound);
+			else if (rspawn >= RuleI(Quarm, RespawnReductionLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionLowerBoundMax))
+				rspawn = RuleI(Quarm, RespawnReductionLowerBound);
+		}
+	}
+
 	return (rspawn);
 
 }
