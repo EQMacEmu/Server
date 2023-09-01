@@ -119,8 +119,9 @@ void HateList::CheckFrenzyHate()
 void HateList::Wipe()
 {
 	if (list.size() > 0)
+	{
 		aggroDeaggroTime = Timer::GetCurrentTime();
-
+	}
 	auto iterator = list.begin();
 
 	while(iterator != list.end())
@@ -134,6 +135,18 @@ void HateList::Wipe()
 		iterator = list.erase(iterator);
 
 	}
+
+	if (owner && owner->IsNPC())
+	{
+		if ((float)owner->GetHP() >= ((float)owner->GetMaxHP() * (owner->GetLevel() <= 5 ? 0.995f : 0.90f))) // reset FTE
+		{
+			owner->CastToNPC()->solo_group_fte = 0;
+			owner->CastToNPC()->solo_raid_fte = 0;
+			owner->CastToNPC()->solo_fte_charid = 0;
+			owner->ssf_player_damage = 0;
+		}
+	}
+
 	ignoreStuckCount = 0;
 }
 
