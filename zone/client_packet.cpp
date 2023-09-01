@@ -698,7 +698,7 @@ void Client::CompleteConnect()
 				GoToSafeCoords(database.GetZoneID("bazaar"));
 			}
 
-			GoToSafeCoords(database.GetZoneID("arena"));
+			GoToSafeCoords(database.GetZoneID("qeytoqrg"));
 		}
 		return;
 	}
