@@ -702,17 +702,6 @@ void Client::CompleteConnect()
 		}
 		return;
 	}
-	// Betabuff exploiters TODO remove.
-	if (prev_last_login_time <= 1691724866 && GetLevel() > RuleI(Character, MaxLevel))
-	{
-		Kill();
-	}
-	else if (prev_last_login_time >= 1691724866 && GetLevel() > RuleI(Character, MaxLevel))
-	{
-		ClearPlayerInfoAndGrantStartingItems();
-		Kick();
-		WorldKick();
-	}
 }
 
 
