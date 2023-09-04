@@ -703,7 +703,7 @@ void Client::CompleteConnect()
 		return;
 	}
 
-	else if (IsHardcore() && m_epp.hardcore_death_time > 0)
+	else if (m_epp.hardcore_death_time > 0)
 	{
 		SetHardcoreDeathTimeStamp(0);
 		ClearPlayerInfoAndGrantStartingItems();
