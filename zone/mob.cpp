@@ -5308,9 +5308,9 @@ void Mob::SetHP(int32 hp)
 		if (CastToNPC()->fte_charid != 0 && CastToNPC()->HasEngageNotice() && ((float)cur_hp >= (float)max_hp * (0.997f)))
 		{
 			Client* c = entity_list.GetClientByCharID(CastToNPC()->fte_charid);
-			uint32 curtime = (Timer::GetCurrentTime() % 120);
-			uint32 lastAggroTime = CastToNPC()->GetAggroDeaggroTime() % 60;
-			if(!c || curtime >= lastAggroTime + 60)
+			uint32 curtime = (Timer::GetCurrentTime());
+			uint32 lastAggroTime = CastToNPC()->GetAggroDeaggroTime();
+			if(!c || lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000)
 			{
 				CastToNPC()->fte_charid = 0;
 				CastToNPC()->group_fte = 0;

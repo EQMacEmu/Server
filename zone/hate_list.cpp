@@ -138,6 +138,21 @@ void HateList::Wipe()
 
 	if (owner && owner->IsNPC())
 	{
+		if (owner->CastToNPC()->HasEngageNotice())
+		{
+			Client* c = entity_list.GetClientByCharID(owner->CastToNPC()->fte_charid);
+			uint32 curtime = (Timer::GetCurrentTime());
+			uint32 lastAggroTime = owner->CastToNPC()->GetAggroDeaggroTime();
+			if (!c || lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000)
+			{
+				owner->CastToNPC()->fte_charid = 0;
+				owner->CastToNPC()->group_fte = 0;
+				owner->CastToNPC()->raid_fte = 0;
+				entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+			}
+		}
+
+
 		if ((float)owner->GetHP() >= ((float)owner->GetMaxHP() * (owner->GetLevel() <= 5 ? 0.995f : 0.90f))) // reset FTE
 		{
 			owner->CastToNPC()->solo_group_fte = 0;

@@ -189,7 +189,7 @@ public:
 
 	uint8	GetZoneExpansion() { return newzone_data.expansion; }
 	uint16	GetPullLimit() {
-		if (zone && zone - IsReducedSpawnTimersEnabled())
+		if (IsReducedSpawnTimersEnabled())
 		{
 			return 4;
 		}
