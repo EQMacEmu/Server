@@ -93,6 +93,21 @@ float Mob::GetBaseEXP()
 		Log(Logs::General, Logs::EQMac, "%s was %0.1f percent damaged by a dire charmed pet (%d/%d). Exp gained is %0.1f percent of normal", 
 			GetName(), pet_dmg_pct * 100.0f, dire_pet_damage, total_damage, reduced_pct * 100.0f);
 	}
+	int32 damage_amount = 0;
+	Mob* top_damager = hate_list.GetDamageTop(damage_amount, false, false);
+	if (top_damager)
+	{
+		if (top_damager->IsPet())
+		{
+			float pet_dmg_pct = static_cast<float>(damage_amount) / total_damage;
+			if (pet_dmg_pct > 0.5f)
+			{
+				basexp *= 0.25f;
+				Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Exp reduced to 25 percent of normal", GetName());
+			}
+		}
+	}
+
 
 	return basexp;
 }
