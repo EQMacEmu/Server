@@ -463,7 +463,9 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 		IsRezzed(false);
 		Save();
 		database.TransactionCommit();
-		if (!IsEmpty()) {
+		if (client->IsHardcore())
+			corpse_decay_timer.Start(1000);
+		else if (!IsEmpty()) {
 			corpse_decay_timer.Start(RuleI(Character, CorpseDecayTimeMS));
 		}
 		else if (IsEmpty() && RuleB(Character, SacrificeCorpseDepop) && killedby == Killed_Sac &&

@@ -698,9 +698,17 @@ void Client::CompleteConnect()
 				GoToSafeCoords(database.GetZoneID("bazaar"));
 			}
 
-			GoToSafeCoords(database.GetZoneID("qeytoqrg"));
+			GoToSafeCoords(database.GetZoneID("arena"));
 		}
 		return;
+	}
+
+	else if (IsHardcore() && m_epp.hardcore_death_time > 0)
+	{
+		SetHardcoreDeathTimeStamp(0);
+		ClearPlayerInfoAndGrantStartingItems();
+		Kick();
+		WorldKick();
 	}
 }
 

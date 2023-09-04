@@ -512,15 +512,15 @@ void Client::ClearPlayerInfoAndGrantStartingItems()
 	{
 		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
 
-		if (i == EQ::invslot::GENERAL_END) {
+		if (i == EQ::invslot::GENERAL_END + 1) {
 			i = EQ::invbag::GENERAL_BAGS_BEGIN;
 			continue;
 		}
-		else if (i == EQ::invbag::CURSOR_BAG_END) {
+		else if (i == EQ::invbag::CURSOR_BAG_END + 1) {
 			i = EQ::invslot::BANK_BEGIN;
 			continue;
 		}
-		else if (i == EQ::invslot::BANK_END) {
+		else if (i == EQ::invslot::BANK_END + 1) {
 			i = EQ::invbag::BANK_BAGS_BEGIN;
 			continue;
 		}
