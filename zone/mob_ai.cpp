@@ -1357,11 +1357,11 @@ void Mob::AI_Process() {
 			listMob = *iter;
 			if (listMob->GetIgnoreStuckCount() > 0)
 			{
-				listMob->WipeHateList();
+				listMob->WipeHateList(true);
 			}
 			++iter;
 		}
-		WipeHateList();
+		WipeHateList(true);
 		return;
 	}
 
@@ -1417,7 +1417,7 @@ void Mob::AI_Process() {
 				GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
 				SetHP(GetMaxHP());
 				BuffFadeAll();
-				WipeHateList();
+				WipeHateList(true);
 				AIloiter_timer->Trigger();
 				return;
 			}

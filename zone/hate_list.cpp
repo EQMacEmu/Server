@@ -116,7 +116,7 @@ void HateList::CheckFrenzyHate()
 	}
 }
 
-void HateList::Wipe()
+void HateList::Wipe(bool from_memblur)
 {
 	if (list.size() > 0)
 	{
@@ -136,29 +136,26 @@ void HateList::Wipe()
 
 	}
 
-	if (owner && owner->IsNPC())
+	if (!from_memblur)
 	{
-		if (owner->CastToNPC()->HasEngageNotice())
+		if (owner && owner->IsNPC())
 		{
-			Client* c = entity_list.GetClientByCharID(owner->CastToNPC()->fte_charid);
-			uint32 curtime = (Timer::GetCurrentTime());
-			uint32 lastAggroTime = owner->CastToNPC()->GetAggroDeaggroTime();
-			if (!c || lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000)
+			if (owner->CastToNPC()->fte_charid != 0 && (float)owner->GetHP() >= ((float)owner->GetMaxHP() * (owner->GetLevel() <= 5 ? 0.995f : 0.90f))) // reset FTE
 			{
+				uint32 curtime = (Timer::GetCurrentTime());
+				uint32 lastAggroTime = owner->CastToNPC()->GetAggroDeaggroTime();
 				owner->CastToNPC()->fte_charid = 0;
 				owner->CastToNPC()->group_fte = 0;
 				owner->CastToNPC()->raid_fte = 0;
-				entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+				owner->CastToNPC()->solo_group_fte = 0;
+				owner->CastToNPC()->solo_raid_fte = 0;
+				owner->CastToNPC()->solo_fte_charid = 0;
+				owner->ssf_player_damage = 0;
+				if (owner->CastToNPC()->HasEngageNotice())
+				{
+					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+				}
 			}
-		}
-
-
-		if ((float)owner->GetHP() >= ((float)owner->GetMaxHP() * (owner->GetLevel() <= 5 ? 0.995f : 0.90f))) // reset FTE
-		{
-			owner->CastToNPC()->solo_group_fte = 0;
-			owner->CastToNPC()->solo_raid_fte = 0;
-			owner->CastToNPC()->solo_fte_charid = 0;
-			owner->ssf_player_damage = 0;
 		}
 	}
 
@@ -631,12 +628,12 @@ bool HateList::RemoveEnt(Mob *ent)
 	bool found = false;
 	auto iterator = list.begin();
 
-	while(iterator != list.end())
+	while (iterator != list.end())
 	{
-		if((*iterator)->ent == ent)
+		if ((*iterator)->ent == ent)
 		{
-			if(ent)
-			parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "0", 0);
+			if (ent)
+				parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "0", 0);
 			found = true;
 
 			delete (*iterator);
@@ -648,8 +645,28 @@ bool HateList::RemoveEnt(Mob *ent)
 	}
 	if (GetNumHaters() == 0)
 	{
+		if (owner && owner->IsNPC())
+		{
+			if (owner->CastToNPC()->fte_charid != 0 && (float)owner->GetHP() >= ((float)owner->GetMaxHP() * (owner->GetLevel() <= 5 ? 0.995f : 0.997f))) // reset FTE
+			{
+				uint32 curtime = (Timer::GetCurrentTime());
+				uint32 lastAggroTime = owner->CastToNPC()->GetAggroDeaggroTime();
+				owner->CastToNPC()->fte_charid = 0;
+				owner->CastToNPC()->group_fte = 0;
+				owner->CastToNPC()->raid_fte = 0;
+				owner->CastToNPC()->solo_group_fte = 0;
+				owner->CastToNPC()->solo_raid_fte = 0;
+				owner->CastToNPC()->solo_fte_charid = 0;
+				owner->ssf_player_damage = 0;
+				if (owner->CastToNPC()->HasEngageNotice())
+				{
+					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+				}
+			}
+		}
 		aggroDeaggroTime = Timer::GetCurrentTime();
 	}
+	
 	return found;
 }
 

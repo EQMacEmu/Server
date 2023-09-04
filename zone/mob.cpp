@@ -2208,12 +2208,12 @@ bool Mob::RemoveFromHateList(Mob* mob)
 	return bFound;
 }
 
-void Mob::WipeHateList()
+void Mob::WipeHateList(bool from_memblur)
 {
 	if (!hate_list.IsEmpty())
 	{
 		SetTarget(nullptr);
-		hate_list.Wipe();
+		hate_list.Wipe(from_memblur);
 		DamageTotalsWipe();
 	}
 }
@@ -5297,7 +5297,7 @@ void Mob::SetHP(int32 hp)
 
 	if (IsNPC())
 	{
-		if ((float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.90f))) // reset FTE
+		if ((float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f))) // reset FTE
 		{
 			CastToNPC()->solo_group_fte = 0;
 			CastToNPC()->solo_raid_fte = 0;
@@ -5305,17 +5305,27 @@ void Mob::SetHP(int32 hp)
 			ssf_player_damage = 0;
 		}
 
-		if (CastToNPC()->fte_charid != 0 && CastToNPC()->HasEngageNotice() && ((float)cur_hp >= (float)max_hp * (0.997f)))
+		if (CastToNPC()->fte_charid != 0 && (float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f)))
 		{
-			Client* c = entity_list.GetClientByCharID(CastToNPC()->fte_charid);
 			uint32 curtime = (Timer::GetCurrentTime());
 			uint32 lastAggroTime = CastToNPC()->GetAggroDeaggroTime();
-			if(!c || lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000)
+
+			//If we're engaged for 60 seconds, clear fte
+			if(lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0)
 			{
 				CastToNPC()->fte_charid = 0;
 				CastToNPC()->group_fte = 0;
 				CastToNPC()->raid_fte = 0;
-				entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
+				if(CastToNPC()->HasEngageNotice())
+					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
+			}
+			else if (hate_list.GetNumHaters() == 0)
+			{
+				CastToNPC()->fte_charid = 0;
+				CastToNPC()->group_fte = 0;
+				CastToNPC()->raid_fte = 0;
+				if (CastToNPC()->HasEngageNotice())
+					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
 			}
 			
 		}

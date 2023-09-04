@@ -248,8 +248,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 
 	npc_aggro = d->npc_aggro;
 
-	AI_Start();
-
 	d_melee_texture1 = d->d_melee_texture1;
 	d_melee_texture2 = d->d_melee_texture2;
 	memset(equipment, 0, sizeof(equipment));
@@ -407,6 +405,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	noQuestPause = false;
 	assisting = false;
 	pbaoe_damage = 0;
+	AI_Start();
 }
 
 NPC::~NPC()

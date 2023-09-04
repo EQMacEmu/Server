@@ -3336,6 +3336,36 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 		}
 	}
+	if (tmob->IsNPC())
+	{
+		if (tmob->CastToNPC()->HasEngageNotice() && tmob->CastToNPC()->fte_charid != 0)
+		{
+			bool is_same_group = false;
+			bool is_same_raid = false;
+			bool is_same_player = false;
+
+			//Check if the raid, group or player matches.
+			Raid *kr = entity_list.GetRaidByID(tmob->CastToNPC()->group_fte);
+			Group *kg = entity_list.GetGroupByID(tmob->CastToNPC()->raid_fte);
+			if (kr && kr == GetRaid())
+			{
+				is_same_raid = true;
+			}
+			else if (kg && kg == GetGroup())
+			{
+				is_same_group = true;
+			}
+			else if (tmob->CastToNPC()->fte_charid == CharacterID())
+			{
+				is_same_player = true;
+			}
+			//If we don't match the raid, group or same player, we see a message.
+			if (!is_same_raid && !is_same_group && !is_same_player)
+			{
+				Message(13, "This mob is currently engaged with another group, raid, or solo player.");
+			}
+		}
+	}
 	return;
 }
 

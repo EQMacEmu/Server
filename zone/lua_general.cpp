@@ -1274,7 +1274,7 @@ void lua_create_npc(luabind::adl::object table, float x, float y, float z, float
 	LuaCreateNPCParse(healscale, float, 0);
 	LuaCreateNPCParse(raid_target, bool, false);
 	LuaCreateNPCParse(probability, uint8, 0);
-
+	LuaCreateNPCParse(engage_notice, bool, false);
 	NPC* npc = new NPC(npc_type, nullptr, glm::vec4(x, y, z, heading), EQ::constants::GravityBehavior::Water);
 	entity_list.AddNPC(npc);
 }

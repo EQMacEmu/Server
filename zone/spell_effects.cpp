@@ -609,7 +609,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				entity_list.RemoveFromNPCTargets(this);
 				// charmed players can have hate lists.  So remove them also from their hatelist.
 				entity_list.RemoveFromClientHateLists(this);
-				WipeHateList();
+				WipeHateList(true);
 
 				EndShield();
 
@@ -1301,7 +1301,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				{
 					if(IsAIControlled())
 					{
-						WipeHateList();
+						WipeHateList(true);
 					}
 					Message(CC_Red, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
 				}
@@ -2826,7 +2826,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 				{
 					if(IsAIControlled())
 					{
-						WipeHateList();
+						WipeHateList(true);
 					}
 					Message(CC_Red, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
 				}
@@ -3269,7 +3269,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 					entity_list.RemoveDotsFromNPCs(this);
 					//entity_list.RemoveDebuffsFromNPCs(this);
 					entity_list.RemoveFromNPCTargets(this);
-					WipeHateList();
+					WipeHateList(true);
 					if (owner && owner->IsClient() && !GetSummonerID() && (!owner->GetOwnerID() || !owner->IsCharmed() || (owner->GetOwner() && owner->GetOwner()->IsClient())))
 					{
 						// PoP ench charms had a rare chance to attack non-enchanter targets on break (might be just CoD?)

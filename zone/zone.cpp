@@ -1485,6 +1485,29 @@ void Zone::StartShutdownTimer(uint32 set_time) {
 		autoshutdown_timer.Start(set_time, false);
 	}
 }
+bool Zone::IsReducedSpawnTimersEnabled() 
+{
+	if (!RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		return false;
+	}
+	return reducedspawntimers;
+}
+
+uint16 Zone::GetPullLimit()
+{
+	if (!RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		return pull_limit;
+	}
+
+	if (IsReducedSpawnTimersEnabled())
+	{
+		return RuleI(Quarm, RespawnReductionNewbiePullLimit);
+	}
+
+	return RuleI(Quarm, RespawnReductionStandardPullLimit);
+}
 
 bool Zone::Depop(bool StartSpawnTimer) {
 	std::map<uint32,NPCType *>::iterator itr;

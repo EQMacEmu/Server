@@ -118,13 +118,7 @@ public:
 	inline const uint32& GetMaxClients() { return pMaxClients; }
 
 	inline const bool IsReducedSpawnTimersZone() { return reducedspawntimers;  }
-	inline const bool IsReducedSpawnTimersEnabled() {
-		if (!RuleB(Quarm, EnableRespawnReductionSystem))
-		{
-			return false;
-		}
-		return reducedspawntimers;
-	}
+	inline bool IsReducedSpawnTimersEnabled();
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
 	SendAA_Struct*	GetAABySequence(uint32 seq) { return aas[seq]; }
@@ -188,13 +182,7 @@ public:
 	void	ClearMerchantLists();
 
 	uint8	GetZoneExpansion() { return newzone_data.expansion; }
-	uint16	GetPullLimit() {
-		if (IsReducedSpawnTimersEnabled())
-		{
-			return 4;
-		}
-		return pull_limit; 
-	}
+	uint16	GetPullLimit();
 
 	void	LoadLevelEXPMods();
 	void	LoadSkillDifficulty();

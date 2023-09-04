@@ -521,7 +521,7 @@ public:
 	bool CheckHateSummon(Mob* summoned);
 	void FaceTarget(Mob* MobToFace = 0);
 	void SetHeading(float iHeading) { if(m_Position.w != iHeading) { m_Position.w = iHeading;} }
-	void WipeHateList();
+	void WipeHateList(bool from_memblur = false);
 	void PrintHateListToClient(Client *who) { hate_list.PrintToClient(who); }
 	std::list<tHateEntry*>& GetHateList() { return hate_list.GetHateList(); }
 	bool CheckLosFN(Mob* other, bool spell_casting = false);
@@ -947,7 +947,7 @@ public:
 	uint32 npc_damage;
 	uint32 gm_damage;
 	uint32 pbaoe_damage;
-	void DamageTotalsWipe();
+	void DamageTotalsWipe(bool from_memblur = false);
 	void ReportDmgTotals(Client* client, bool corpse = false, bool xp = false, bool faction = false, int32 dmg_amt = 0);
 	float  GetBaseEXP();
 	static bool IsPlayableRace(uint16 race);

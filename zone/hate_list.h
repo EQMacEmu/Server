@@ -48,7 +48,7 @@ public:
 	bool RemoveEnt(Mob *ent);
 	void RemoveFeigned();
 	// Remove all
-	void Wipe();
+	void Wipe(bool from_memblur = false);
 	// ???
 	void DoFactionHits(int32 nfl_id, bool &success);
 	// Gets Hate amount for mob
