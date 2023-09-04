@@ -69,7 +69,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 		"showhelm					"  // 17
 		"FROM                       "
 		"character_data             "
-		"WHERE `account_id` = %i AND is_deleted = 0 AND e_hardcore_death_time = 0 ORDER BY `name` LIMIT %d   ", account_id, limit);
+		"WHERE `account_id` = %i AND is_deleted = 0 ORDER BY `name` LIMIT %d   ", account_id, limit);
 	auto results = database.QueryDatabase(cquery); int char_num = 0;
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		PlayerProfile_Struct pp;
