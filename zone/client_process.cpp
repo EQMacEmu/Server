@@ -944,6 +944,10 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		if (!(ml.classes_required & (1 << (GetClass() - 1))))
 			continue;
 
+		item = database.GetItem(ml.item);
+		if (!item)
+			continue;
+
 		int32 fac = merch ? merch->GetPrimaryFaction() : 0;
 		int32 facmod = GetModCharacterFactionLevel(fac);
 		if(IsInvisible(merch))
