@@ -703,7 +703,7 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	if (!RuleB(Quarm, EnableChecksumEnforcement))
 	{
 		Log(Logs::Detail, Logs::WorldServer, "Checksum is disabled! But its value is here: %lld", checksum);
-		return;
+		return true;
 	}
 
 
