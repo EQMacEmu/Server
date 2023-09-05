@@ -93,21 +93,6 @@ float Mob::GetBaseEXP()
 		Log(Logs::General, Logs::EQMac, "%s was %0.1f percent damaged by a dire charmed pet (%d/%d). Exp gained is %0.1f percent of normal", 
 			GetName(), pet_dmg_pct * 100.0f, dire_pet_damage, total_damage, reduced_pct * 100.0f);
 	}
-	int32 damage_amount = 0;
-	Mob* top_damager = hate_list.GetDamageTop(damage_amount, false, false);
-	if (top_damager)
-	{
-		if (top_damager->IsPet())
-		{
-			float pet_dmg_pct = static_cast<float>(damage_amount) / total_damage;
-			if (pet_dmg_pct > 0.5f)
-			{
-				basexp *= 0.25f;
-				Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Exp reduced to 25 percent of normal", GetName());
-			}
-		}
-	}
-
 
 	return basexp;
 }
@@ -223,6 +208,27 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		{
 			Log(Logs::Moderate, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
 			add_exp *= reduction_mult;
+		}
+	}
+	if (RuleB(Quarm, EnablePetExperienceSplit))
+	{
+		if (killed_mob && !HasGroup() && !is_split)
+		{
+			int32 damage_amount = 0;
+			Mob* top_damager = killed_mob->GetDamageTop(damage_amount, false, false);
+			if (top_damager)
+			{
+				if (top_damager->IsPet())
+				{
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f)
+					{
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet takes 50% of experience value.", killed_mob->GetCleanName());
+
+						add_exp = (float)add_exp * 0.5f;
+					}
+				}
+			}
 		}
 	}
 
@@ -932,6 +938,27 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 						gs.weighted_levels += cmember->GetLevel();
 					}
 					Log(Logs::Detail, Logs::Group, "%s was added to close_membercount", cmember->GetName());
+				}
+			}
+		}
+	}
+
+	if (RuleB(Quarm, EnablePetExperienceSplit))
+	{
+		if (killed_mob)
+		{
+			int32 damage_amount = 0;
+			Mob* top_damager = killed_mob->GetDamageTop(damage_amount, false, false);
+			if (top_damager)
+			{
+				if (top_damager->IsPet())
+				{
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f)
+					{
+						gs.weighted_levels += top_damager->GetLevel();
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
+					}
 				}
 			}
 		}

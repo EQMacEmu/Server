@@ -3891,6 +3891,15 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		}
 	}
 
+	if (RuleB(Quarm, EnableSpellSixLevelRule))
+	{
+		//Prathun's post just says If target is an NPC and caster is far below target's level, set level modifier to 1000.
+		if (leveldiff > 6 && IsNPC())
+		{
+			level_mod = 1000;
+		}
+	}
+
 	//Add our level, resist and -spell resist modifier to our roll chance
 	resist_chance += level_mod;
 	resist_chance += resist_modifier;

@@ -214,6 +214,8 @@ RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters who
 RULE_BOOL(Quarm, EnableSpellSixLevelRule, false)
 RULE_INT(Quarm, RespawnReductionNewbiePullLimit, 4)
 RULE_INT(Quarm, RespawnReductionStandardPullLimit, 15)
+RULE_BOOL(Quarm, EnablePetExperienceSplit, true) // Accurate from Classic Launch until Luclin. Enables pet experience weights in groups (or 50% if solo) if a single pet deals more than 50% damage to a target out of all contributing damage.
+RULE_BOOL(Quarm, EnableChecksumEnforcement, true) // Enables or disables the dll checksum enforcement.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

@@ -687,6 +687,7 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 
 bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 {
+
 	if(GetClientVersionBit() > EQ::versions::ClientVersionBit::bit_MacPC || GetAdmin() >= 80)
 		return true;
 
@@ -698,6 +699,13 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 
 	Checksum_Struct *cs=(Checksum_Struct *)app->pBuffer;
 	uint64 checksum = cs->checksum;
+
+	if (!RuleB(Quarm, EnableChecksumEnforcement))
+	{
+		Log(Logs::Detail, Logs::WorldServer, "Checksum is disabled! But its value is here: %lld", checksum);
+		return;
+	}
+
 
 	std::string custom_checksum_name = "CustomChecksum";
 	std::string custom_checksum_val = "";
