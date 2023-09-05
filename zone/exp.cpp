@@ -818,6 +818,9 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 		case 6:
 			groupmod = 1.1f;
 			break;
+		case 7:
+			groupmod = 1.12f;
+			break;
 		}
 	}
     else if (RuleB(AlKabor, VeliousGroupEXPBonuses))
@@ -839,6 +842,9 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 			break;
 		case 6:
 			groupmod = 1.2f;
+			break;
+		case 7:
+			groupmod = 1.24f;
 			break;
 		}
 	}
@@ -872,7 +878,7 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 	Log(Logs::Detail, Logs::Group, "Group Base XP: %d GroupMod: %0.2f Final XP: %0.2f", exp, groupmod, groupexp);
 
 	// 6th member is free in the split under mid-Ykesha+ era rules, but not on AK or under classic rules
-	if (!RuleB(AlKabor, Count6thGroupMember) && gs.close_membercount == 6)
+	if (!RuleB(AlKabor, Count6thGroupMember) && gs.close_membercount >= 6)
 	{
 		gs.weighted_levels -= minlevel;
 	}
@@ -956,6 +962,8 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
 					if (pet_dmg_pct > 0.5f)
 					{
+						++gs.membercount;
+						++gs.close_membercount;
 						gs.weighted_levels += top_damager->GetLevel();
 						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
 					}
