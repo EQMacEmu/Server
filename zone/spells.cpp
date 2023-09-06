@@ -3894,9 +3894,12 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 	if (RuleB(Quarm, EnableSpellSixLevelRule))
 	{
 		//Prathun's post just says If target is an NPC and caster is far below target's level, set level modifier to 1000.
-		if (leveldiff > 6 && IsNPC())
+		if (caster)
 		{
-			level_mod = 1000;
+			if (IsNPC() && GetLevel() < std::max(caster->GetLevel() + 7, (int)(caster->GetLevel() * 1.25f)))
+			{
+				level_mod = 1000;
+			}
 		}
 	}
 
