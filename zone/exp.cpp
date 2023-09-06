@@ -223,7 +223,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
 					if (pet_dmg_pct > 0.5f)
 					{
-						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet takes 50% of experience value.", killed_mob->GetCleanName());
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet takes 50 percent of experience value.", killed_mob->GetCleanName());
 
 						add_exp = (float)add_exp * 0.5f;
 					}
@@ -965,7 +965,7 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 						++gs.membercount;
 						++gs.close_membercount;
 						gs.weighted_levels += top_damager->GetLevel();
-						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
 					}
 				}
 			}
