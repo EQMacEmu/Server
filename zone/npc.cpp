@@ -1328,7 +1328,7 @@ void NPC::PickPocket(Client* thief)
 			if (item)
 			{
 				inst = database.CreateItem(item, citem->charges);
-				if (citem->equip_slot == EQ::invslot::slotGeneral1 && !item->Magic && item->NoDrop != 0 && !inst->IsType(EQ::item::ItemClassBag) && !thief->CheckLoreConflict(item))
+				if (citem->equip_slot == EQ::invslot::slotGeneral1 && !item->Magic && item->NoDrop != 0 && !inst->IsType(EQ::item::ItemClassBag) && !thief->CheckLoreConflict(item) && citem->min_looter_level == 0)
 				{
 					steal_items[x] = item->ID;
 					if (inst->IsStackable())
