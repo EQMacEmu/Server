@@ -1632,7 +1632,7 @@ void Mob::AI_Process() {
 			}
 
 			// max mobs in kite code
-			if (ai_think && GetTarget() && GetTarget()->IsClient() && (zone->GetNumAggroedNPCs() > zone->GetPullLimit()))
+			if (ai_think && GetTarget() && GetTarget()->IsClient() && (zone->GetNumAggroedNPCs() > zone->GetPullLimit()) && entity_list.GetTopHateCount(GetTarget()) >= zone->GetPullLimit())
 			{
 				int limit = zone->GetPullLimit();
 				int limit2 = limit * 15 / 10;

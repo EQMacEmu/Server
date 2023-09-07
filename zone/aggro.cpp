@@ -699,7 +699,7 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 			continue;
 
 		// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
-		if (zone->GetNumAggroedNPCs() >= zone->GetPullLimit() && npc->GetAggroDeaggroTime() < 30000
+		if (npc->GetAggroDeaggroTime() < 30000
 			&& entity_list.GetTopHateCount(attacker) >= zone->GetPullLimit())
 		{
 			continue;
