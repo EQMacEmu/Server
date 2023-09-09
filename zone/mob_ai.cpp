@@ -1647,10 +1647,12 @@ void Mob::AI_Process() {
 				{
 					if (GetAggroDeaggroTime() > 30000)
 					{
-						if (zone->random.Roll(5))
+						if (zone->random.Roll(5) && DistanceSquared(this->GetPosition(), GetTarget()->GetPosition()) < (500.0f*500.0f))
+						{
 							GMMove(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());	// warping like this was actually very common on AK
+						}
 						else
-							WipeHateList();
+							//WipeHateList();
 
 						return;
 					}

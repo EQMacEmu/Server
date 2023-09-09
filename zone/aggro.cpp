@@ -698,12 +698,12 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 		if(npc->CheckAggro(attacker) || npc->GetSpecialAbility(IMMUNE_AGGRO))
 			continue;
 
-		// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
-		if (npc->GetAggroDeaggroTime() < 30000
-			&& entity_list.GetTopHateCount(attacker) >= zone->GetPullLimit())
-		{
-			continue;
-		}
+		//// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
+		//if (npc->GetAggroDeaggroTime() < 30000
+		//	&& entity_list.GetTopHateCount(attacker) >= zone->GetPullLimit())
+		//{
+		//	continue;
+		//}
 
 		uint32 npc_faction = npc->GetNPCFactionID();
 		uint32 sender_faction = sender->CastToNPC()->GetNPCFactionID();
