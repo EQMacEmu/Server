@@ -1108,7 +1108,11 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		Log(Logs::General, Logs::WorldServer, "%s already has %d characters. OPCharCreate returning false.", name, charcount);
 		return false;
 	}
-	
+
+	if (database.isNamedReserved(GetAccountID(), name)) {
+		Log(Logs::General, Logs::WorldServer, "%s is already reserved by accountID: %d. OPCharCreate returning false.", name, GetAccountID());
+		return false;
+	}
 
 	PlayerProfile_Struct pp;
 	EQ::InventoryProfile inv;

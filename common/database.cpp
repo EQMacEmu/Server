@@ -885,6 +885,30 @@ void Database::GetCharName(uint32 char_id, char* name) {
 	}
 }
 
+/**
+ * Checks if the input name is reserved relative to the input account_id
+ */
+bool Database::isNamedReserved(uint32 account_id, char* name) {
+	std::string query = StringFormat("SELECT account_id FROM `account_name_reservation` WHERE name='%s'", name);
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return true; // be defensive on error condition
+	}
+
+	if (results.RowCount() == 0) {
+		return false; // no reservation for name found
+	}
+
+	auto row = results.begin();
+	uint32 reserved_by = static_cast<uint32>(atoul(row[0]));
+	if (account_id == reserved_by) {
+		return false; // name is reserved for this account_id so we can return false
+	} else {
+		return true; // name is reserved but not for this account_id so we return true
+	};
+}
+
 bool Database::LoadVariables() {
 	auto results = QueryDatabase(StringFormat("SELECT varname, value, unix_timestamp() FROM variables where unix_timestamp(ts) >= %d", varcache.last_update));
 
