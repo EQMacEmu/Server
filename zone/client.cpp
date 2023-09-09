@@ -6120,40 +6120,51 @@ void Client::SetRaceStartingSkills()
 	case DWARF:
 	{
 		m_pp.skills[EQ::skills::SkillSenseHeading] = 50; //Even if we set this to 0, Intel client sets this to 50 anyway. Confirmed this is correct for era.
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSenseHeading, 50);
 		break;
 	}
 	case DARK_ELF:
 	{
 		m_pp.skills[EQ::skills::SkillHide] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
 		break;
 	}
 	case GNOME:
 	{
 		m_pp.skills[EQ::skills::SkillTinkering] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillTinkering, 50);
 		break;
 	}
 	case HALFLING:
 	{
 		m_pp.skills[EQ::skills::SkillHide] = 50;
 		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSneak, 50);
 		break;
 	}
 	case IKSAR:
 	{
 		m_pp.skills[EQ::skills::SkillForage] = 50;
 		m_pp.skills[EQ::skills::SkillSwimming] = 100;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillForage, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSwimming, 100);
 		break;
 	}
 	case WOOD_ELF:
 	{
 		m_pp.skills[EQ::skills::SkillForage] = 50;
 		m_pp.skills[EQ::skills::SkillHide] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillForage, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
 		break;
 	}
 	case VAHSHIR:
 	{
 		m_pp.skills[EQ::skills::SkillSafeFall] = 50;
 		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSafeFall, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSneak, 50);
 		break;
 	}
 	}
