@@ -68,7 +68,7 @@ void Client::SendGuildSpawnAppearance() {
 	UpdateWho();
 }
 
-std::string Client::getGuildName() {
+std::string Client::GetGuildName() {
 	std::string guild_string = "";
 	if (this->GuildID() != GUILD_NONE) {
 		guild_mgr.GetGuildNameByID(c->GuildID(), guild_string);
