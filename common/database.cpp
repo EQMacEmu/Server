@@ -888,8 +888,8 @@ void Database::GetCharName(uint32 char_id, char* name) {
 /**
  * Checks if the input name is reserved relative to the input account_id
  */
-bool Database::isNamedReserved(uint32 account_id, char* name) {
-	std::string query = StringFormat("SELECT account_id FROM `account_name_reservation` WHERE name='%s'", name);
+bool Database::IsCharacterNameReserved(uint32 account_id, const char* input_character_name) {
+	std::string query = StringFormat("SELECT account_id FROM `account_name_reservation` WHERE name='%s'", input_character_name);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {

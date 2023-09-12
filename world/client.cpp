@@ -1109,7 +1109,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		return false;
 	}
 
-	if (database.isNamedReserved(GetAccountID(), name)) {
+	if (database.IsCharacterNameReserved(GetAccountID(), Strings::Escape(name).c_str())) {
 		Log(Logs::General, Logs::WorldServer, "%s is already reserved by accountID: %d. OPCharCreate returning false.", name, GetAccountID());
 		return false;
 	}
