@@ -106,7 +106,7 @@ public:
 
 	/* Character Creation */
 	bool	SaveCharacterCreate(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp);
-
+	bool    isNamedReserved(uint32 account_id, char* name);
 	bool	MoveCharacterToZone(const char* charname, const char* zonename);
 	bool	MoveCharacterToZone(const char* charname, const char* zonename,uint32 zoneid);
 	bool	MoveCharacterToZone(uint32 iCharID, const char* iZonename);
