@@ -125,7 +125,7 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
                                     "snow_chance1, snow_chance2, snow_chance3, snow_chance4, " // 4
                                     "snow_duration1, snow_duration2, snow_duration3, snow_duration4, " // 4
 									"skylock, skip_los, music, expansion, dragaggro, never_idle, castdungeon, " 
-									"pull_limit, reducedspawntimers, graveyard_time, max_z " // 8
+									"pull_limit, graveyard_time, max_z, reducedspawntimers " // 8
                                     "FROM zone WHERE zoneidnumber = {} ", zoneid);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
