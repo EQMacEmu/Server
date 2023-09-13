@@ -68,6 +68,14 @@ void Client::SendGuildSpawnAppearance() {
 	UpdateWho();
 }
 
+std::string Client::GetGuildName() {
+	std::string guild_string = "";
+	if (this->GuildID() != GUILD_NONE) {
+		guild_mgr.GetGuildNameByID(c->GuildID(), guild_string);
+	}
+	return guild_string;
+}
+
 void Client::SendGuildList() {
 	auto outapp = new EQApplicationPacket(OP_GuildsList);
 

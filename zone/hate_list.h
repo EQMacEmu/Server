@@ -107,6 +107,9 @@ public:
 
 	void ReportDmgTotals(Mob* mob, bool corpse, bool xp, bool faction, int32 dmg_amt);
 
+	void HandleFTEEngage(Client* client);
+	void HandleFTEDisengage();
+
 protected:
 	tHateEntry* Find(Mob *ent);
 	int32 GetHateBonus(tHateEntry *entry, bool combatRange, bool firstInRange = false, float distSquared = -1.0f);

@@ -579,6 +579,7 @@ public:
 	void	SendGuildList();
 	void	SendPlayerGuild();
 	void	RefreshGuildInfo();
+	std::string GetGuildName();
 
 
 	void	SendManaUpdatePacket();

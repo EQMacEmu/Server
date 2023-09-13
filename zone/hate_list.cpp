@@ -22,6 +22,7 @@
 #include "mob.h"
 #include "guild_mgr.h"
 #include "raids.h"
+#include "queryserv.h"
 
 #include "../common/rulesys.h"
 
@@ -33,6 +34,7 @@
 #include <stdlib.h>
 #include <list>
 
+extern QueryServ* QServ;
 extern Zone *zone;
 
 HateList::HateList()
@@ -151,15 +153,27 @@ void HateList::Wipe(bool from_memblur)
 				owner->CastToNPC()->solo_raid_fte = 0;
 				owner->CastToNPC()->solo_fte_charid = 0;
 				owner->ssf_player_damage = 0;
-				if (owner->CastToNPC()->HasEngageNotice())
-				{
-					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+				if (owner->CastToNPC()->HasEngageNotice()) {
+					HandleFTEDisengage();
 				}
 			}
 		}
 	}
 
 	ignoreStuckCount = 0;
+}
+
+void HateList::HandleFTEEngage(Client* client) {
+	std::string guild_string = client->getGuildName();
+	if (!guild_string.empty()) {
+		entity_list.Message(CC_Default, 15, "%s of <%s> engages %s!", client->GetCleanName(), guild_string.c_str(), owner->GetCleanName());
+		QServ->QSFirstToEngageEvent(client->CharacterID(), guild_string, owner->GetCleanName(), true)
+	}
+}
+
+void HateList::HandleFTEDisengage() {
+	entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+	QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false)
 }
 
 bool HateList::IsOnHateList(Mob *mob)
@@ -595,15 +609,8 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 					bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
 					if (send_engage_notice)
 					{
-						bool has_guild_name = false;
-						std::string guild_string = "";
-						if (c->GuildID() != GUILD_NONE)
-						{
-							guild_mgr.GetGuildNameByID(c->GuildID(), guild_string);
-							has_guild_name = !guild_string.empty();
-						}
-						if(has_guild_name)
-							entity_list.Message(CC_Default, 15, "%s of <%s> engages %s!", c->GetCleanName(), guild_string.c_str(), owner->GetCleanName() );
+						HandleFTEEngage(c);
+						QServ->QSLootRecords()
 					}
 				}
 			}
@@ -658,9 +665,8 @@ bool HateList::RemoveEnt(Mob *ent)
 				owner->CastToNPC()->solo_raid_fte = 0;
 				owner->CastToNPC()->solo_fte_charid = 0;
 				owner->ssf_player_damage = 0;
-				if (owner->CastToNPC()->HasEngageNotice())
-				{
-					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
+				if (owner->CastToNPC()->HasEngageNotice()) {
+					HandleFTEDisengage();
 				}
 			}
 		}

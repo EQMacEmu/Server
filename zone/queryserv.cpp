@@ -48,6 +48,15 @@ void QueryServ::PlayerLogEvent(int Event_Type, int Character_ID, std::string Eve
 	SendQuery(query);
 }
 
+void QueryServ::QSFirstToEngageEvent(uint32 char_id, std::string guild_name, std::string mob_name, bool engaged)
+{
+	int engageValue = engaged ? 1 : 0;
+	std::string query = StringFormat(
+			"INSERT INTO `qs_player_fte_events` (char_id, guild_name, mob_name, engaged, time) VALUES (%i, '%s', '%s', %i, now())",
+			char_id, Strings::Escape(guild_name).c_str(), Strings::Escape(mob_name).c_str(), engageValue);
+	SendQuery(query);
+}
+
 void QueryServ::QSQGlobalUpdate(uint32 char_id, uint32 zone_id, const char* varname, const char* newvalue)
 {
 	char action[8];

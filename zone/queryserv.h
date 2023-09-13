@@ -31,6 +31,8 @@ class QueryServ {
 		void SendQuery(std::string Query);
 		void PlayerLogEvent(int Event_Type, int Character_ID, std::string Event_Desc);
 
+		void QSFirstToEngageEvent(uint32 char_id, std::string guild_name, std::string mob_name, bool engaged);
+
 		void QSQGlobalUpdate(uint32 char_id, uint32 zone_id, const char* varname, const char* newvalue);
 		void QSAAPurchases(uint32 char_id, uint32 zone_id, char aa_type[8], char aa_name[128], uint32 aa_id, uint32 cost);
 		void QSAARate(uint32 char_id, uint32 aapoints, uint32 last_unspentAA);

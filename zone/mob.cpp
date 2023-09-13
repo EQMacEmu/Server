@@ -5316,18 +5316,19 @@ void Mob::SetHP(int32 hp)
 				CastToNPC()->fte_charid = 0;
 				CastToNPC()->group_fte = 0;
 				CastToNPC()->raid_fte = 0;
-				if(CastToNPC()->HasEngageNotice())
-					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
+				if (CastToNPC()->HasEngageNotice()) {
+					hate_list->HandleFTEDisengage();
+				}
 			}
 			else if (hate_list.GetNumHaters() == 0)
 			{
 				CastToNPC()->fte_charid = 0;
 				CastToNPC()->group_fte = 0;
 				CastToNPC()->raid_fte = 0;
-				if (CastToNPC()->HasEngageNotice())
-					entity_list.Message(CC_Default, 15, "%s is no longer engaged!", GetCleanName());
+				if (CastToNPC()->HasEngageNotice()) {
+					hate_list->HandleFTEDisengage();
+				}
 			}
-			
 		}
 	}
 }
