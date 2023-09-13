@@ -70,8 +70,8 @@ void Client::SendGuildSpawnAppearance() {
 
 std::string Client::GetGuildName() {
 	std::string guild_string = "";
-	if (this->GuildID() != GUILD_NONE) {
-		guild_mgr.GetGuildNameByID(c->GuildID(), guild_string);
+	if (GuildID() != GUILD_NONE) {
+		guild_mgr.GetGuildNameByID(GuildID(), guild_string);
 	}
 	return guild_string;
 }

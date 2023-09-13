@@ -164,16 +164,24 @@ void HateList::Wipe(bool from_memblur)
 }
 
 void HateList::HandleFTEEngage(Client* client) {
-	std::string guild_string = client->getGuildName();
-	if (!guild_string.empty()) {
+	if (!client)
+		return;
+
+	if (!client->IsClient())
+		return;
+
+	std::string guild_string = client->GetGuildName();
+	if (!guild_string.empty()) 
+	{
 		entity_list.Message(CC_Default, 15, "%s of <%s> engages %s!", client->GetCleanName(), guild_string.c_str(), owner->GetCleanName());
-		QServ->QSFirstToEngageEvent(client->CharacterID(), guild_string, owner->GetCleanName(), true)
+		QServ->QSFirstToEngageEvent(client->CharacterID(), guild_string, owner->GetCleanName(), true);
 	}
 }
 
-void HateList::HandleFTEDisengage() {
+void HateList::HandleFTEDisengage() 
+{
 	entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
-	QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false)
+	QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false);
 }
 
 bool HateList::IsOnHateList(Mob *mob)
@@ -586,6 +594,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 		}
 
 		bool no_fte = owner->CastToNPC()->fte_charid == 0 && owner->CastToNPC()->raid_fte == 0 && owner->CastToNPC()->group_fte == 0;
+		bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
 		if (no_fte && (ent->IsClient() || ent->IsPlayerOwned()))
 		{
 			Mob* oos = ent->GetOwnerOrSelf();
@@ -594,23 +603,24 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 				Client* c = oos->CastToClient();
 				if (c)
 				{
-					owner->CastToNPC()->fte_charid = c->CharacterID();
+					if (!send_engage_notice || c && c->GuildID() != GUILD_NONE && send_engage_notice)
+					{
+						owner->CastToNPC()->fte_charid = c->CharacterID();
 
-					Raid *kr = entity_list.GetRaidByClient(c);
-					Group *kg = entity_list.GetGroupByClient(c);
-					if (kr)
-					{
-						owner->CastToNPC()->raid_fte = kr->GetID();
-					}
-					else if (kg)
-					{
-						owner->CastToNPC()->group_fte = kg->GetID();
-					}
-					bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
-					if (send_engage_notice)
-					{
-						HandleFTEEngage(c);
-						QServ->QSLootRecords()
+						Raid *kr = entity_list.GetRaidByClient(c);
+						Group *kg = entity_list.GetGroupByClient(c);
+						if (kr)
+						{
+							owner->CastToNPC()->raid_fte = kr->GetID();
+						}
+						else if (kg)
+						{
+							owner->CastToNPC()->group_fte = kg->GetID();
+						}
+						if (send_engage_notice)
+						{
+							HandleFTEEngage(c);
+						}
 					}
 				}
 			}

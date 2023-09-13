@@ -5317,7 +5317,7 @@ void Mob::SetHP(int32 hp)
 				CastToNPC()->group_fte = 0;
 				CastToNPC()->raid_fte = 0;
 				if (CastToNPC()->HasEngageNotice()) {
-					hate_list->HandleFTEDisengage();
+					CastToNPC()->HandleFTEDisengage();
 				}
 			}
 			else if (hate_list.GetNumHaters() == 0)
@@ -5326,7 +5326,7 @@ void Mob::SetHP(int32 hp)
 				CastToNPC()->group_fte = 0;
 				CastToNPC()->raid_fte = 0;
 				if (CastToNPC()->HasEngageNotice()) {
-					hate_list->HandleFTEDisengage();
+					CastToNPC()->HandleFTEDisengage();
 				}
 			}
 		}
