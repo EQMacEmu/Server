@@ -189,7 +189,6 @@ public:
 		if (!mob->IsAIControlled()) {
 			return true;
 		}
-
 		//Send a movement packet when you start moving		
 		double current_time  = static_cast<double>(Timer::GetCurrentTime()) / 1000.0;
 		float  current_float_speed = 0.0f;
@@ -520,7 +519,6 @@ public:
 		if (!mob->IsAIControlled()) {
 			return true;
 		}
-
 		//Send a movement packet when you start moving		
 		double current_time = static_cast<double>(Timer::GetCurrentTime()) / 1000.0;
 		float  current_float_speed = 0;
@@ -1241,7 +1239,7 @@ void MobMovementManager::UpdatePath(Mob *who, float x, float y, float z, MobMove
 	if (who->IsBoat()) {
 		UpdatePathBoat(who, x, y, z, mob_movement_mode);
 	}
-	else if ((who->IsNPC() && who->CastToNPC()->IsUnderwaterOnly()) || zone->IsWaterZone(who->GetZ())) {
+	else if ((who->IsNPC() && who->CastToNPC()->IsUnderwaterOnly()) || zone->IsWaterZone(who->GetZ()) || (zone->HasWaterMap() && zone->watermap->InLiquid(who->GetPosition()))) {
 		UpdatePathUnderwater(who, x, y, z, mob_movement_mode);
 	}
 	// If we can fly, and we have a target and we have LoS, simply fly to them.
@@ -1461,9 +1459,10 @@ void MobMovementManager::UpdatePathUnderwater(Mob *who, float x, float y, float 
 {
 	auto eiter = _impl->Entries.find(who);
 	auto &ent  = (*eiter);
-	bool underwater_mob = who->IsNPC() && who->CastToNPC()->IsUnderwaterOnly();
-	if ((underwater_mob || (zone->IsWaterZone(who->GetZ()) && zone->IsWaterZone(z)) || (zone->watermap->InLiquid(who->GetPosition()) && zone->watermap->InLiquid(glm::vec3(x, y, z)))) &&
-		zone->zonemap->CheckLoS(who->GetPosition(), glm::vec3(x, y, z))) {
+	bool underwater_mob = who->IsNPC() && (who->CastToNPC()->IsUnderwaterOnly() || (zone->IsWaterZone(who->GetZ()) && zone->IsWaterZone(z)) ||
+		(zone->HasWaterMap() && zone->watermap->InLiquid(who->GetPosition()) && zone->watermap->InLiquid(glm::vec3(x, y, z))));
+
+	if (underwater_mob && zone->zonemap->CheckLoS(who->GetPosition(), glm::vec3(x, y, z))) {
 		PushSwimTo(ent.second, x, y, z, movement_mode);
 		return;
 	}
@@ -1526,7 +1525,9 @@ void MobMovementManager::UpdatePathUnderwater(Mob *who, float x, float y, float 
 				));
 		}
 		else {
-			if (underwater_mob || (zone->IsWaterZone(previous_pos.z) && zone->IsWaterZone(next_node.pos.z)) || (zone->watermap->InLiquid(previous_pos) && zone->watermap->InLiquid(next_node.pos)))
+			if (underwater_mob || (zone->IsWaterZone(previous_pos.z) && zone->IsWaterZone(next_node.pos.z)) 
+				|| (zone->watermap->InLiquid(previous_pos) && zone->watermap->InLiquid(next_node.pos))
+			)
 				PushSwimTo(ent.second, next_node.pos.x, next_node.pos.y, next_node.pos.z, movement_mode);
 			else
 				PushMoveTo(ent.second, next_node.pos.x, next_node.pos.y, next_node.pos.z, movement_mode);

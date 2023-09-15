@@ -74,6 +74,7 @@ public:
 	IPathfinder() { }
 	virtual ~IPathfinder() { }
 
+	virtual bool IsUsingNavMesh() = 0;
 	virtual IPath FindRoute(const glm::vec3 &start, const glm::vec3 &end, bool &partial, bool &stuck, int flags = PathingNotDisabled) = 0;
 	virtual IPath FindPath(const glm::vec3 &start, const glm::vec3 &end, bool &partial, bool &stuck, const PathfinderOptions& opts) = 0;
 	virtual glm::vec3 GetRandomLocation(const glm::vec3 &start, int flags = PathingNotDisabled) = 0;
