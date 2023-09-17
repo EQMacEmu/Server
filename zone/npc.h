@@ -451,6 +451,17 @@ public:
 	uint32 group_fte;
 	uint32 fte_charid;
 
+	uint32 guild_fte;
+	
+	// IDs of the guilds who are currently locked out from triggering FTE messages for this NPC and their last disengage time.
+	std::map<uint32, uint32> guild_fte_lockouts;
+
+	bool IsGuildInFTELockout(uint32 in_guild_id);
+
+	void InsertGuildFTELockout(uint32 in_guild_id);
+
+	void ProcessGuildFTELockouts();
+
 	// IDs of the first group or player who aggroed this NPC.
 	uint32 solo_raid_fte;
 	uint32 solo_group_fte;
