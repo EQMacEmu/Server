@@ -1731,9 +1731,9 @@ void Mob::AI_Process() {
 										float ceiling = zone->zonemap->FindCeiling(dest, nullptr);
 										float ground = zone->zonemap->FindGround(dest, nullptr);
 
-										if (dest.z < (ground + GetZOffset()))
+										if (ground != BEST_Z_INVALID && dest.z < (ground + GetZOffset()))
 											dest.z = ground + GetZOffset();
-										if (dest.z > ceiling) {
+										if (ceiling != BEST_Z_INVALID && dest.z > ceiling) {
 											dest.z = ceiling - 1.0f;
 										}
 										m_Navigation.z = dest.z;
