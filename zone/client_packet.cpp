@@ -3037,7 +3037,11 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
 	auto seccount = seconds.count();
 	auto distDivTime = 0.;
-	if (dist > 5.0 && seccount >= 1.0)
+
+	float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
+	float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
+	float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
+	if (dist > distThreshold && seccount >= secondElapsedThreshold)
 	{
 		distDivTime = dist / seccount;
 	}
@@ -3049,16 +3053,30 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	bool is_exempt_correct = false;
 
-	if (distFromExpected < 125.0 && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+	if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
 	{
 		is_exempt_correct = true;
 		ExpectedRewindPos = glm::vec3(0, 0, 0);
 	}
 	auto speed = GetRunspeed();
-	if (distDivTime >= 125.f && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED)
+	float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
+	float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
+	float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+
+	float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
+	float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
+
+	if (speed >= highSpeedValueThreshold)
+		distDivTimeThreshold = distDivTimeHighSpeedThreshold;
+
+	if (speed >= bardSpeedValueThreshold)
+		distDivTimeThreshold = distDivTimeBardSpeedThreshold;
+
+
+	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED)
 	{
-		std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime);
-		worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str());
+		std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) +  "playerSpeed: " + std::to_string(speed);
+		worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
 		database.SetHackerFlag(this->account_name, this->name, warped.c_str());
 	}
 

@@ -217,6 +217,14 @@ RULE_INT(Quarm, RespawnReductionStandardPullLimit, 15)
 RULE_BOOL(Quarm, EnablePetExperienceSplit, true) // Accurate from Classic Launch until Luclin. Enables pet experience weights in groups (or 50% if solo) if a single pet deals more than 50% damage to a target out of all contributing damage.
 RULE_BOOL(Quarm, EnableChecksumEnforcement, true) // Enables or disables the dll checksum enforcement.
 RULE_INT(Quarm, GuildFTELockoutTimeMS, 300000)
+RULE_REAL(Quarm, SpeedieDistThreshold, 5.0)
+RULE_REAL(Quarm, SpeedieSecondElapsedThreshold, 1.0)
+RULE_REAL(Quarm, SpeedieDistFromExpectedThreshold, 125)
+RULE_REAL(Quarm, SpeedieSlowerDistDivTime, 125)
+RULE_REAL(Quarm, SpeedieHigherDistDivTime, 140)
+RULE_REAL(Quarm, SpeedieBardDistDivTime, 160.)
+RULE_REAL(Quarm, SpeedieHighSpeedThreshold, 1.1)
+RULE_REAL(Quarm, SpeedieBardSpeedThreshold, 1.3)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
