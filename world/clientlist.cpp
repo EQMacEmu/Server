@@ -465,7 +465,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 				fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
 				if (cle->LSID() && strlen(cle->LSName()) > 0)
 					fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
-				if (cle->CharID() && strlen(cle->name) > 0 && strlen(database.GetZoneName(cle->zone)) > 0)
+				if (cle->CharID() && strlen(cle->name()) > 0 && strlen(database.GetZoneName(cle->zone())) > 0)
 					fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ( {} )", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
 			}
 			if (out.size() >= 3072) {
