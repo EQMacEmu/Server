@@ -339,6 +339,8 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	is_player_corpse	= true;
 	is_locked			= false;
 	being_looted_by	= 0xFFFFFFFF;
+	legacy_item_loot_lock = false;
+
 	char_id			= client->CharacterID();
 	corpse_db_id	= 0;
 	player_corpse_depop			= false;
@@ -652,6 +654,7 @@ Corpse::~Corpse() {
 		safe_delete(item);
 	}
 	itemlist.clear();
+	being_looted_by_legacy_items.clear();
 }
 
 /*
@@ -1129,13 +1132,14 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		}
 	}
 
+	bool contains_legacy_item = ContainsLegacyItem();
 	uint8 Loot_Request_Type = 1;
 	bool loot_coin = false;
 	std::string tmp;
 	if(database.GetVariable("LootCoin", tmp))
 		loot_coin = tmp[0] == 1 && tmp[1] == '\0';
 
-	if (this->being_looted_by != 0xFFFFFFFF && this->being_looted_by != client->GetID()) {
+	if (this->being_looted_by != 0xFFFFFFFF && this->being_looted_by != client->GetID() && !contains_legacy_item) {
 		SendLootReqErrorPacket(client, 0);
 		Loot_Request_Type = 0;
 	}
@@ -1162,7 +1166,11 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	}
 
 	if(Loot_Request_Type >= 2 || (Loot_Request_Type == 1 && client->Admin() >= AccountStatus::GMAdmin && client->GetGM())) {
-		this->being_looted_by = client->GetID();
+		if (contains_legacy_item) {
+			this->being_looted_by_legacy_items.insert(client->GetID())
+		} else {
+			this->being_looted_by = client->GetID();
+		}
 		auto outapp = new EQApplicationPacket(OP_MoneyOnCorpse, sizeof(moneyOnCorpseStruct));
 		moneyOnCorpseStruct* d = (moneyOnCorpseStruct*)outapp->pBuffer;
 
@@ -1294,9 +1302,29 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	client->QueuePacket(app);
 }
 
+bool Corpse::ContainsLegacyItem() {
+	if (!IsPlayerCorpse()) {
+		for (const auto& item_data : itemlist) {
+			if (item_data->min_looter_level != 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	/* This gets sent no matter what as a sort of ACK */
 	client->QueuePacket(app);
+
+	// handle legacy loot items w/ multiple looters
+	bool contains_legacy_item = ContainsLegacyItem();
+	if (contains_legacy_item && IsLegacyLootItemLocked()) {
+		client->Message(CC_Red, "Error: Legacy item is being looted");
+		SendEndLootErrorPacket(client);
+		return;
+	}
+	SetLegacyLootItemLock(true);
 
 	if (!loot_cooldown_timer.Check()) {
 		SendEndLootErrorPacket(client);
@@ -1320,7 +1348,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 
 	LootingItem_Struct* lootitem = (LootingItem_Struct*)app->pBuffer;
 
-	if (this->being_looted_by != client->GetID()) {
+	if (this->being_looted_by != client->GetID() && !contains_legacy_item) {
 		client->Message(CC_Red, "Error: Corpse::LootItem: BeingLootedBy != client");
 		SendEndLootErrorPacket(client);
 		return;
@@ -1378,6 +1406,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				client->Message(CC_Red, "This item is from a charmed pet, which is not allowed during a solo or self found run.");
 				SendEndLootErrorPacket(client);
 				ResetLooter();
+				if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 				delete inst;
 				return;
 			}
@@ -1390,6 +1419,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				client->Message(CC_Red, "You cannot loot this type of legacy item. Required character level: %i", item_data->min_looter_level);
 				SendEndLootErrorPacket(client);
 				ResetLooter();
+				if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 				delete inst;
 				return;
 			}
@@ -1399,6 +1429,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				client->Message(CC_Red, "This is a legacy item. You've already looted a legacy item of this type already on this character.");
 				SendEndLootErrorPacket(client);
 				ResetLooter();
+				if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 				delete inst;
 				return;
 			}
@@ -1410,6 +1441,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 			client->Message_StringID(0, LOOT_LORE_ERROR);
 			SendEndLootErrorPacket(client);
 			ResetLooter();
+			if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 			delete inst;
 			return;
 		}
@@ -1426,6 +1458,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 						client->Message(CC_Default, "You cannot loot this container. The %s inside is a Lore Item and you already have one.", bag_item->Name);
 						SendEndLootErrorPacket(client);
 						ResetLooter();
+						if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 						delete inst;
 						return;
 					}
@@ -1449,11 +1482,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				client->DiscoverItem(inst->GetItem()->ID);
 		}
 
-
 		/* First add it to the looter - this will do the bag contents too */
 		if (lootitem && lootitem->auto_loot) {
-			if (!client->AutoPutLootInInventory(*inst, true, true, bag_item_data))
+			if (!client->AutoPutLootInInventory(*inst, true, true, bag_item_data)) {
 				client->PutLootInInventory(EQ::invslot::slotCursor, *inst, bag_item_data);
+			}
 		}
 		else {
 			client->PutLootInInventory(EQ::invslot::slotCursor, *inst, bag_item_data);
@@ -1477,6 +1510,16 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 					RemoveItem(bag_item_data[i]);
 				}
 			}
+		}
+
+		if (contains_legacy_item) {
+			// send packets to other clients trying to loot the legacy item to cancel their loot
+			for (const uint16_t client_id : being_looted_by_legacy_items) {
+				Client* client = entity_list.GetClientByID(client_id);
+				SendLootReqErrorPacket(client, 0);
+			}
+			SetLegacyLootItemLock(false);
+			ResetLegacyLootSet();
 		}
 
 		if (GetPlayerKillItem() != -1){
@@ -1512,6 +1555,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	else {
 		SendEndLootErrorPacket(client);
 		safe_delete(inst);
+		if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 		return;
 	}
 
@@ -1521,6 +1565,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		QServ->QSLootRecords(client->CharacterID(), corpse_name, "ITEM", client->GetZoneID(), item->ID, item->Name, inst->GetCharges(), GetPlatinum(), GetGold(), GetSilver(), GetCopper());
 	}
 
+	if (contains_legacy_item) { SetLegacyLootItemLock(false); }
 	safe_delete(inst);
 }
 
