@@ -144,15 +144,14 @@ void HateList::Wipe(bool from_memblur)
 	{
 		if (owner && owner->IsNPC())
 		{
+			if (owner->CastToNPC()->HasEngageNotice()) {
+				HandleFTEDisengage();
+			}
 			if (owner->CastToNPC()->fte_charid != 0) // reset FTE
 			{
-				if (owner->CastToNPC()->HasEngageNotice()) {
-					HandleFTEDisengage();
-				}
 				owner->CastToNPC()->fte_charid = 0;
 				owner->CastToNPC()->group_fte = 0;
 				owner->CastToNPC()->raid_fte = 0;
-				owner->CastToNPC()->guild_fte = GUILD_NONE;
 				owner->CastToNPC()->solo_group_fte = 0;
 				owner->CastToNPC()->solo_raid_fte = 0;
 				owner->CastToNPC()->solo_fte_charid = 0;
@@ -175,11 +174,13 @@ void HateList::HandleFTEEngage(Client* client) {
 	if (client->GuildID() == GUILD_NONE)
 		return; 
 
+	if (client->GuildID() == 0)
+		return;
+
 	if (owner->IsNPC())
 	{
 		if (!owner->CastToNPC()->IsGuildInFTELockout(client->GuildID()))
 		{
-
 			std::string guild_string = client->GetGuildName();
 			if (!guild_string.empty())
 			{
@@ -195,9 +196,21 @@ void HateList::HandleFTEDisengage()
 {
 	if (owner->IsNPC())
 	{
-		owner->CastToNPC()->InsertGuildFTELockout(owner->CastToNPC()->guild_fte);
-		entity_list.Message(CC_Default, 15, "%s is no longer engaged!", owner->GetCleanName());
-		QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false);
+		if (owner->CastToNPC()->HasEngageNotice())
+		{
+			std::string guild_string = "";
+			guild_mgr.GetGuildNameByID(owner->CastToNPC()->guild_fte, guild_string);
+			if (!guild_string.empty())
+			{
+				if (!owner->CastToNPC()->IsGuildInFTELockout(owner->CastToNPC()->guild_fte))
+				{
+					owner->CastToNPC()->InsertGuildFTELockout(owner->CastToNPC()->guild_fte);
+					owner->CastToNPC()->guild_fte = GUILD_NONE;
+					entity_list.Message(CC_Default, 15, "%s is no longer engaged with %s!", owner->GetCleanName(), guild_string.c_str());
+					QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false);
+				}
+			}
+		}
 	}
 }
 
@@ -223,13 +236,40 @@ tHateEntry *HateList::Find(Mob *ent)
 void HateList::Set(Mob* other, int32 in_hate, int32 in_dam)
 {
 	tHateEntry *p = Find(other);
-	if(p)
+	if (p)
 	{
-		if(in_dam > -1)
+		if (in_dam > -1)
 			p->damage = in_dam;
 
-		if(in_hate > -1)
+		if (in_hate > -1)
 			p->hate = in_hate;
+		if (owner->IsNPC())
+		{
+			bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
+			if (send_engage_notice && p->ent)
+			{
+				bool no_guild_fte = owner->CastToNPC()->guild_fte == GUILD_NONE;
+				if (no_guild_fte && (p->ent->IsClient() || p->ent->IsPlayerOwned()))
+				{
+					Mob* oos = p->ent->GetOwnerOrSelf();
+					if (oos && oos->IsClient())
+					{
+						Client* c = oos->CastToClient();
+						if (c)
+						{
+							if (c && c->GuildID() != GUILD_NONE)
+							{
+								int guild_id = c->GuildID();
+								if (!owner->CastToNPC()->IsGuildInFTELockout(guild_id))
+								{
+									HandleFTEEngage(c);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	else
 	{
@@ -755,20 +795,16 @@ bool HateList::RemoveEnt(Mob *ent)
 	{
 		if (owner && owner->IsNPC())
 		{
-			if (owner->CastToNPC()->fte_charid != 0) // reset FTE
-			{
-				if (owner->CastToNPC()->HasEngageNotice()) {
-					HandleFTEDisengage();
-				}
-				owner->CastToNPC()->fte_charid = 0;
-				owner->CastToNPC()->group_fte = 0;
-				owner->CastToNPC()->raid_fte = 0;
-				owner->CastToNPC()->guild_fte = GUILD_NONE;
-				owner->CastToNPC()->solo_group_fte = 0;
-				owner->CastToNPC()->solo_raid_fte = 0;
-				owner->CastToNPC()->solo_fte_charid = 0;
-				owner->ssf_player_damage = 0;
+			if (owner->CastToNPC()->HasEngageNotice()) {
+				HandleFTEDisengage();
 			}
+			owner->CastToNPC()->fte_charid = 0;
+			owner->CastToNPC()->group_fte = 0;
+			owner->CastToNPC()->raid_fte = 0;
+			owner->CastToNPC()->solo_group_fte = 0;
+			owner->CastToNPC()->solo_raid_fte = 0;
+			owner->CastToNPC()->solo_fte_charid = 0;
+			owner->ssf_player_damage = 0;
 		}
 		aggroDeaggroTime = Timer::GetCurrentTime();
 		aggroTime = 0xFFFFFFFF;
@@ -798,7 +834,6 @@ bool HateList::RemoveEnt(Mob *ent)
 				owner->CastToNPC()->fte_charid = 0;
 				owner->CastToNPC()->group_fte = 0;
 				owner->CastToNPC()->raid_fte = 0;
-				owner->CastToNPC()->guild_fte = GUILD_NONE;
 				owner->CastToNPC()->solo_group_fte = 0;
 				owner->CastToNPC()->solo_raid_fte = 0;
 				owner->CastToNPC()->solo_fte_charid = 0;

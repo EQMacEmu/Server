@@ -460,7 +460,7 @@ public:
 
 	void InsertGuildFTELockout(uint32 in_guild_id);
 
-	void ProcessGuildFTELockouts();
+	void ProcessFTE();
 
 	// IDs of the first group or player who aggroed this NPC.
 	uint32 solo_raid_fte;
