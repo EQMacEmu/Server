@@ -715,7 +715,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 		}
 
 		// This is the packet header data.
-		uint16 plid = fromid;
+		uint32 plid = fromid;
 		uint16 playerineqstring = WHOALL_PLAYERS;
 		const char line2[] = "---------------------------";
 		uint8 unknown35 = 0x0A;
