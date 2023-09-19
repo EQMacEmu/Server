@@ -6490,7 +6490,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 void Client::Handle_OP_Petition(const EQApplicationPacket *app)
 {
 	if (!RuleB(Petitions, PetitionSystemActive)) {
-		Message(CC_Default, "Petition reporting is disabled on this server.");
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
 		return;
 	}
 
@@ -6536,6 +6536,11 @@ void Client::Handle_OP_PetitionCheckIn(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionCheckIn, size=%i, expected %i", app->size, sizeof(Petition_Struct));
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	Petition_Struct* inpet = (Petition_Struct*)app->pBuffer;
 
 	Petition* pet = petition_list.GetPetitionByID(inpet->petnumber);
@@ -6557,6 +6562,11 @@ void Client::Handle_OP_PetitionCheckout(const EQApplicationPacket *app)
 		std::cout << "Wrong size: OP_PetitionCheckout, size=" << app->size << ", expected " << sizeof(uint32) << std::endl;
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	if (!worldserver.Connected())
 		Message(CC_Default, "Error: World server disconnected");
 	else {
@@ -6580,6 +6590,12 @@ void Client::Handle_OP_PetitionDelete(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionDelete, size=%i, expected %i", app->size, sizeof(PetitionUpdate_Struct));
 		return;
 	}
+
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	auto outapp = new EQApplicationPacket(OP_PetitionRefresh, sizeof(PetitionUpdate_Struct));
 	PetitionUpdate_Struct* pet = (PetitionUpdate_Struct*)outapp->pBuffer;
 	pet->petnumber = *((int*)app->pBuffer);
