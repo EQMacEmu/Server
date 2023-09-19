@@ -459,12 +459,15 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			if (addnewline) {
 				fmt::format_to(out, newline);
 			}
-			fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
-			fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
-			if (cle->LSID())
-				fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
-			if (cle->CharID())
-				fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			if (strlen(cle->AccountName()) > 0 && strlen(inet_ntoa(in)) > 0)
+			{
+				fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
+				fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
+				if (cle->LSID() && strlen(cle->LSName()) > 0)
+					fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
+				if (cle->CharID() && strlen(cle->name) > 0 && strlen(database.GetZoneName(cle->zone)) > 0)
+					fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ( {} )", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			}
 			if (out.size() >= 3072) {
 				auto output = fmt::to_string(out);
 				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
