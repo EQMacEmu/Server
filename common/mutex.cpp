@@ -137,11 +137,19 @@ void Mutex::unlock() {
 }
 
 
-LockMutex::LockMutex(Mutex* in_mut, bool iLock) {
+LockMutex::LockMutex(Mutex* in_mut, bool iLock, bool iTryLock) {
 	mut = in_mut;
-	locked = iLock;
-	if (locked) {
-		mut->lock();
+	if (iLock) {
+		if (iTryLock) {
+			locked = mut->trylock();
+		}
+		else {
+			mut->lock();
+			locked = true;
+		}
+	}
+	else {
+		locked = false;
 	}
 }
 
@@ -152,17 +160,22 @@ LockMutex::~LockMutex() {
 }
 
 void LockMutex::unlock() {
-	if (locked)
+	if (locked) {
 		mut->unlock();
-	locked = false;
+		locked = false;
+	}
 }
 
 void LockMutex::lock() {
-	if (!locked)
+	if (!locked) {
 		mut->lock();
-	locked = true;
+		locked = true;
+	}
 }
 
+bool LockMutex::isLocked() const {
+	return locked;
+}
 
 MRMutex::MRMutex() {
 	rl = 0;

@@ -120,15 +120,18 @@ class Corpse : public Mob {
 	bool	CanPlayerLoot(int charid);
 	bool    ContainsLegacyItem();
 
+
 	inline void	Lock()				{ is_locked = true; }
 	inline void	UnLock()			{ is_locked = false; }
 	inline bool	IsLocked()			{ return is_locked; }
 	inline void	ResetLooter()		{ being_looted_by = 0xFFFFFFFF; }
 	inline bool	IsBeingLooted()		{ return (being_looted_by != 0xFFFFFFFF); }
 
-	inline bool ResetLegacyLootSet() { being_looted_by_legacy_items.clear(); }
-	inline bool IsLegacyLootItemLocked() { return legacy_item_loot_lock; };
-	inline bool SetLegacyLootItemLock(bool isLegacyLootItemLocked) { legacy_item_loot_lock = isLegacyLootItemLocked; }
+	/* Legacy item looting methods */
+	std::unordered_set<uint16> GetLegacyItemLooters() { return legacy_item_looter_client_id_set; }
+	inline void ResetLegacyItemLooterSet() { legacy_item_looter_client_id_set.clear(); }
+	void AddLegacyItemLooter(uint16 client_id) { legacy_item_looter_client_id_set.insert(client_id); }
+	inline bool RemoveLegacyItemLooter(uint16 client_id) { legacy_item_looter_client_id_set.erase(client_id); }
 
 	/* Mob */
 	void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
@@ -168,7 +171,7 @@ private:
 	uint32		platinum;
 	bool		player_corpse_depop; /* Sets up Corpse::Process to depop the player corpse */
 	uint32		being_looted_by; /* Determines what the corpse is being looted by internally for logic */
-	std::unordered_set<uint16> being_looted_by_legacy_items; /* Determines what the corpse is being looted by internally for logic */
+	std::unordered_set<uint16> legacy_item_looter_client_id_set; /* Determines what the corpse is being looted by internally for logic */
 	bool        legacy_item_loot_lock;
 	uint32		rez_experience; /* Amount of experience that the corpse would rez for */
 	uint32		gm_rez_experience; /* Amount of experience that the corpse would rez for from a GM*/
@@ -190,6 +193,7 @@ private:
 	uint32		rez_time; /* How much of the rez timer remains */
 	bool		is_owner_online;
 	uint32		time_of_death;
+	Mutex		legacy_item_loot_mutex;
 };
 
 #endif

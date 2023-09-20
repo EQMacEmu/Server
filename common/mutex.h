@@ -45,10 +45,11 @@ private:
 
 class LockMutex {
 public:
-	LockMutex(Mutex* in_mut, bool iLock = true);
+	LockMutex(Mutex* in_mut, bool iLock = true, bool iTryLock = false);
 	~LockMutex();
 	void unlock();
 	void lock();
+	bool isLocked() const;
 private:
 	bool	locked;
 	Mutex*	mut;
