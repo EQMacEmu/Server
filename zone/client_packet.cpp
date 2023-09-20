@@ -3038,6 +3038,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	auto seccount = seconds.count();
 	auto distDivTime = 0.;
 
+	float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
+	float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
+
 	float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
 	float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
 	float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
@@ -3072,12 +3075,32 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if (speed >= bardSpeedValueThreshold)
 		distDivTimeThreshold = distDivTimeBardSpeedThreshold;
 
+	bool within_previous_zone_point = false;
 
-	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED)
+	bool has_boat = false;
+	
+	Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
+	if (boat) //These lil boats run fast!!
 	{
-		std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) +  "playerSpeed: " + std::to_string(speed);
-		worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
-		database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+		if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+		{
+			has_boat = true;
+		}
+	}
+
+	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED && !has_boat)
+	{
+
+		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
+		ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+
+		if (!previous_zone_point || !current_zone_point)
+		{
+
+			std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
+			worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+			database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+		}
 	}
 
 
