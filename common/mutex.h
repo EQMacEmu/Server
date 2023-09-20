@@ -18,11 +18,11 @@
 #ifndef MYMUTEX_H
 #define MYMUTEX_H
 #ifdef _WINDOWS
-	#include <winsock2.h>
+#include <winsock2.h>
 	#include <windows.h>
 #else
-	#include <pthread.h>
-	#include "../common/unix.h"
+#include <pthread.h>
+#include "../common/unix.h"
 #endif
 #include "../common/types.h"
 
@@ -45,11 +45,10 @@ private:
 
 class LockMutex {
 public:
-	LockMutex(Mutex* in_mut, bool iLock = true, bool iTryLock = false);
+	LockMutex(Mutex* in_mut, bool iLock = true);
 	~LockMutex();
 	void unlock();
 	void lock();
-	bool isLocked() const;
 private:
 	bool	locked;
 	Mutex*	mut;
@@ -81,4 +80,3 @@ private:
 };
 
 #endif
-

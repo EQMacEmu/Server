@@ -129,8 +129,9 @@ class Corpse : public Mob {
 
 	/* Legacy item looting methods */
 	std::unordered_set<uint16> GetLegacyItemLooters() { return legacy_item_looter_client_id_set; }
+	inline bool IsLegacyItemLooter(uint16 client_id) { return legacy_item_looter_client_id_set.count(); }
 	inline void ResetLegacyItemLooterSet() { legacy_item_looter_client_id_set.clear(); }
-	void AddLegacyItemLooter(uint16 client_id) { legacy_item_looter_client_id_set.insert(client_id); }
+	inline void AddLegacyItemLooter(uint16 client_id) { legacy_item_looter_client_id_set.insert(client_id); }
 	inline bool RemoveLegacyItemLooter(uint16 client_id) { legacy_item_looter_client_id_set.erase(client_id); }
 
 	/* Mob */
@@ -192,7 +193,6 @@ private:
 	uint32		rez_time; /* How much of the rez timer remains */
 	bool		is_owner_online;
 	uint32		time_of_death;
-	Mutex		legacy_item_loot_mutex;
 };
 
 #endif

@@ -1329,22 +1329,13 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		return;
 	}
 
-	// handle legacy loot items w/ multiple looters
-	if (contains_legacy_item) {
-		LockMutex lock(&legacy_item_loot_mutex, true, true);
-		if (!lock.isLocked()) {
-			client->Message(CC_Red, "Error: Legacy item is being looted");
-			SendEndLootErrorPacket(client);
-			RemoveLegacyItemLooter(client->GetID());
-			return;
-		}
-	}
-
 	/* To prevent item loss for a player using 'Loot All' who doesn't have inventory space for all their items. */
 	if (RuleB(Character, CheckCursorEmptyWhenLooting) && !client->GetInv().CursorEmpty()) {
 		client->Message(CC_Red, "You may not loot an item while you have an item on your cursor.");
 		SendEndLootErrorPacket(client);
-		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
+		if (contains_legacy_item) {
+			RemoveLegacyItemLooter(client->GetID());
+		}
 		/* Unlock corpse for others */
 		if (this->being_looted_by == client->GetID()) {
 			ResetLooter();
@@ -1359,6 +1350,11 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		SendEndLootErrorPacket(client);
 		return;
 	}
+	if (contains_legacy_item && !IsLegacyItemLooter(client->GetID())) {
+		client->Message(CC_Red, "Error: Corpse::LootItem: client NOT in legacy looters set");
+		SendEndLootErrorPacket(client);
+		return;
+	}
 	if (IsPlayerCorpse() && !CanPlayerLoot(client->CharacterID()) && !become_npc && (char_id != client->CharacterID() && client->Admin() < AccountStatus::GMLeadAdmin)) {
 		client->Message(CC_Red, "Error: This is a player corpse and you don't own it.");
 		SendEndLootErrorPacket(client);
@@ -1366,7 +1362,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 	if (is_locked && client->Admin() < AccountStatus::GMAdmin) {
 		SendLootReqErrorPacket(client, 0);
-		RemoveLegacyItemLooter(client->GetID());
+		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
 		client->Message(CC_Red, "Error: Corpse locked by GM.");
 		return;
 	}
@@ -1374,6 +1370,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		client->Message(CC_Red, "Error: You cannot loot any more items from this corpse.");
 		SendEndLootErrorPacket(client);
 		ResetLooter();
+		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
 		return;
 	}
 	const EQ::ItemData* item = nullptr;
@@ -1405,7 +1402,6 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 
 	if (client && inst && item_data) {
-
 		if (item_data->pet || item_data->quest)
 		{
 			if (client->IsSoloOnly() || client->IsSelfFound())
@@ -1560,6 +1556,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 	else {
 		SendEndLootErrorPacket(client);
+		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
 		safe_delete(inst);
 		return;
 	}

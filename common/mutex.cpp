@@ -70,17 +70,17 @@ Mutex::Mutex() {
 	std::cout << "Constructing Mutex" << std::endl;
 #endif
 #ifdef _WINDOWS
-    InitializeCriticalSection(&CSMutex);
+	InitializeCriticalSection(&CSMutex);
 #else
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
+	pthread_mutexattr_t attr;
+	pthread_mutexattr_init(&attr);
 #if defined(__CYGWIN__) || defined(__APPLE__) || defined(FREEBSD)
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #else
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-#endif    
-    pthread_mutex_init(&CSMutex, &attr);
-    pthread_mutexattr_destroy(&attr);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+#endif
+	pthread_mutex_init(&CSMutex, &attr);
+	pthread_mutexattr_destroy(&attr);
 #endif
 }
 
@@ -102,11 +102,11 @@ void Mutex::lock() {
 		#endif
 	}
 #else
-	#ifdef _WINDOWS
-		EnterCriticalSection(&CSMutex);
-	#else
-		pthread_mutex_lock(&CSMutex);
-	#endif
+#ifdef _WINDOWS
+	EnterCriticalSection(&CSMutex);
+#else
+	pthread_mutex_lock(&CSMutex);
+#endif
 #endif
 }
 
@@ -137,19 +137,11 @@ void Mutex::unlock() {
 }
 
 
-LockMutex::LockMutex(Mutex* in_mut, bool iLock, bool iTryLock) {
+LockMutex::LockMutex(Mutex* in_mut, bool iLock) {
 	mut = in_mut;
-	if (iLock) {
-		if (iTryLock) {
-			locked = mut->trylock();
-		}
-		else {
-			mut->lock();
-			locked = true;
-		}
-	}
-	else {
-		locked = false;
+	locked = iLock;
+	if (locked) {
+		mut->lock();
 	}
 }
 
@@ -160,22 +152,17 @@ LockMutex::~LockMutex() {
 }
 
 void LockMutex::unlock() {
-	if (locked) {
+	if (locked)
 		mut->unlock();
-		locked = false;
-	}
+	locked = false;
 }
 
 void LockMutex::lock() {
-	if (!locked) {
+	if (!locked)
 		mut->lock();
-		locked = true;
-	}
+	locked = true;
 }
 
-bool LockMutex::isLocked() const {
-	return locked;
-}
 
 MRMutex::MRMutex() {
 	rl = 0;
@@ -271,4 +258,3 @@ int32 MRMutex::WriteLockCount() {
 	MCounters.unlock();
 	return ret;
 }
-
