@@ -1588,6 +1588,9 @@ void Corpse::EndLoot(Client* client, const EQApplicationPacket* app)
 	safe_delete(outapp);
 
 	ResetLooter();
+	if (this->ContainsLegacyItem()) {
+		RemoveLegacyItemLooter(client->GetID());
+	}
 	if (this->IsEmpty())
 	{
 		Delete();
