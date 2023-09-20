@@ -393,7 +393,7 @@ glm::vec3 PathfinderNavmesh::GetRandomLocation(const glm::vec3 &start, int flags
 		return glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 
-	dtStatus result = m_impl->query->findRandomPointAroundCircle(start_ref, &current_location[0], 100.f, &filter, []() { return (float)zone->random.Real(0.0, 1.0); }, &randomRef, point);
+	dtStatus result = m_impl->query->findRandomPoint(&filter, []() { return (float)zone->random.Real(0.0, 1.0); }, &randomRef, point);
 	if (dtStatusSucceed(result) && randomRef)
 	{
 		return glm::vec3(point[0], point[2], point[1]);
@@ -406,6 +406,7 @@ void PathfinderNavmesh::DebugCommand(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help"))
 	{
+		c->Message(CC_Yellow, "This zone is using NavMesh.");
 		c->Message(CC_Default, "#path show: Plots a path from the user to their target.");
 		return;
 	}

@@ -273,12 +273,12 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	add_exp = static_cast<uint32>(add_exp * hbm);  // applies to level exp only
 
 	uint32 requiredxp = GetEXPForLevel(GetLevel() + 1) - GetEXPForLevel(GetLevel());
-	float xp_cap = (float)requiredxp * 0.13f; //13% of total XP is our cap
+	uint32 xp_cap = requiredxp / 8u;	// kill exp cap is 12.5%
 
 	if (add_exp > xp_cap)
 	{
 		add_exp = xp_cap;
-		Log(Logs::Moderate, Logs::EQMac, "Exp capped to 13 percent of level exp");
+		Log(Logs::Moderate, Logs::EQMac, "Exp capped to 12.5 percent of level exp");
 	}
 
 	if (killed_mob->IsZomm())
@@ -322,10 +322,10 @@ void Client::AddEXPPercent(uint8 percent, uint8 level) {
 	uint32 requiredxp = GetEXPForLevel(level+1) - GetEXPForLevel(level);
 	float tmpxp = requiredxp * (percent/100.0);
 	uint32 newxp = (uint32)tmpxp;
-	AddQuestEXP(newxp);
+	AddQuestEXP(newxp, true);
 }
 
-void Client::AddQuestEXP(uint32 in_add_exp) {
+void Client::AddQuestEXP(uint32 in_add_exp, bool bypass_cap) {
 
 	// Quest handle method. This divides up AA XP, but does not apply bonuses/modifiers. The quest writer will do that.
 
@@ -351,6 +351,14 @@ void Client::AddQuestEXP(uint32 in_add_exp) {
 		add_aaxp = add_exp * m_epp.perAA / 100;
 		//take that amount away from regular exp
 		add_exp -= add_aaxp;
+	}
+
+	if (!bypass_cap)
+	{
+		// Quest exp is capped to 25% of the player's level
+		uint32 cap_exp = (GetEXPForLevel(GetLevel() + 1) - GetEXPForLevel(GetLevel())) / 4u;
+		if (add_exp > cap_exp)
+			add_exp = cap_exp;
 	}
 
 	uint32 exp = GetEXP() + add_exp;
@@ -1172,15 +1180,18 @@ bool Client::IsInLevelRange(uint8 maxlevel)
 {
 	if(IsMule())
 		return false;
-
-	uint8 max_level = GetLevel()*1.5 + 0.5;
-	if(max_level < 6)
-		max_level = 6;
-
-	if (max_level >= maxlevel) 
+	
+	// EQ supposedly had a minimum group range at very low levels.  What this should be is not known exactly.
+	// The EQ Official Player's Guide says it was 3 but a PoP era log shows a level 10 grouping with a level 6.
+	// I have a hunch they may have enlarged it in Luclin along with the newbie changes.  Setting this to 4 for now
+	if (maxlevel < 6u)	// allow level 1s to group with level 5s
 		return true;
-	else
-		return false;
+	else if (maxlevel < 10u && GetLevel() > (maxlevel - 5u))	// allow a minimum of a -4 difference
+		return true;
+	else if (GetLevel() >= (maxlevel * 10u / 15u))	// this rounding allows a level 40 to group with a 61 which is correct.  some sources online are inaccurate
+		return true;
+
+	return false;
 }
 
 void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killedby)

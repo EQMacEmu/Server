@@ -459,15 +459,17 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			if (addnewline) {
 				fmt::format_to(out, newline);
 			}
-			fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
-			fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
-			if (cle->LSID())
-				fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
-			if (cle->CharID())
-				fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			if (cle->AccountID() && cle->AccountName() && cle->AccountName()[0] != 0 && inet_ntoa(in) && inet_ntoa(in)[0] != 0 && strlen(inet_ntoa(in)) > 0)
+			{
+				fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
+				fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
+				if (cle && cle->LSID() && cle->LSName() && cle->LSName()[0] != 0)
+					fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
+				if (cle && cle->CharID() && cle->name() && cle->name()[0] != 0 && database.GetZoneName(cle->zone()) && database.GetZoneName(cle->zone())[0] != 0)
+					fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ( {} )", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			}
 			if (out.size() >= 3072) {
-				auto output = fmt::to_string(out);
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 				addnewline = false;
 				out.clear();
 			}
@@ -713,7 +715,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 		}
 
 		// This is the packet header data.
-		uint16 plid = fromid;
+		uint32 plid = fromid;
 		uint16 playerineqstring = WHOALL_PLAYERS;
 		const char line2[] = "---------------------------";
 		uint8 unknown35 = 0x0A;

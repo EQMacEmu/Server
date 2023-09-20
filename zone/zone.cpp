@@ -1724,6 +1724,99 @@ ZonePoint* Zone::GetClosestZonePoint(const glm::vec3& location, const char* to_n
 	return GetClosestZonePoint(location, database.GetZoneID(to_name), client, max_distance);
 }
 
+ZonePoint* Zone::GetClosestTargetZonePointSameZone(float x, float y, float z, Client* client, float max_distance) {
+	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
+	ZonePoint* closest_zp = nullptr;
+	float closest_dist = FLT_MAX;
+	float max_distance2 = max_distance * max_distance;
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		ZonePoint* zp = iterator.GetData();
+		uint32 mask_test = client->ClientVersionBit();
+
+		if (!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_zone_id != GetZoneID())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_x == -BEST_Z_INVALID || zp->target_x == BEST_Z_INVALID || zp->target_y == -BEST_Z_INVALID || zp->target_y == BEST_Z_INVALID)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float delta_x = zp->target_x - x;
+		float delta_y = zp->target_y - y;
+
+		float dist = delta_x * delta_x + delta_y * delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+		if (dist < closest_dist)
+		{
+			closest_zp = zp;
+			closest_dist = dist;
+		}
+		iterator.Advance();
+	}
+	if (closest_dist > max_distance2)
+		closest_zp = nullptr;
+
+	return closest_zp;
+}
+
+
+ZonePoint* Zone::GetClosestZonePointSameZone(float x, float y, float z, Client* client, float max_distance) {
+	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
+	ZonePoint* closest_zp = nullptr;
+	float closest_dist = FLT_MAX;
+	float max_distance2 = max_distance * max_distance;
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		ZonePoint* zp = iterator.GetData();
+		uint32 mask_test = client->ClientVersionBit();
+
+		if (!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_zone_id != GetZoneID())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->x == -BEST_Z_INVALID || zp->x == BEST_Z_INVALID || zp->y == -BEST_Z_INVALID || zp->y == BEST_Z_INVALID)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float delta_x = zp->x - x;
+		float delta_y = zp->y - y;
+
+		float dist = delta_x * delta_x + delta_y * delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+		if (dist < closest_dist)
+		{
+			closest_zp = zp;
+			closest_dist = dist;
+		}
+		iterator.Advance();
+	}
+	if (closest_dist > max_distance2)
+		closest_zp = nullptr;
+
+	return closest_zp;
+}
+
 ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Client* client, float max_distance) {
 	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
 	ZonePoint* closest_zp = nullptr;

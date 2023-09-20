@@ -134,6 +134,8 @@ public:
 	ZonePoint* GetClosestZonePoint(const glm::vec3& location, const char* to_name, Client *client, float max_distance = 40000.0f);
 	ZonePoint* GetClosestZonePoint(const glm::vec3& location, uint32	to, Client *client, float max_distance = 40000.0f);
 	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestTargetZonePointSameZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePointSameZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
 	SpawnGroupList spawn_group_list;
 
 	Timer GetInitgridsTimer();

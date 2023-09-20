@@ -730,10 +730,6 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Updated Spell Checksum is GOOD!");
 		}
-		else if(checksum == 29639760219562021)
-		{
-			Log(Logs::Detail, Logs::WorldServer, "Exe Checksum is GOOD!");
-		}
 		else if (checksum == custom_checksum_ll)
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Custom Checksum is GOOD!");

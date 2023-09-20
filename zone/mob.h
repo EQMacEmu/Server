@@ -510,6 +510,9 @@ public:
 	Mob* GetHateTop() { return hate_list.GetTop();}
 	void HandleFTEEngage(Client* c) { return hate_list.HandleFTEEngage(c); }
 	void HandleFTEDisengage() { return hate_list.HandleFTEDisengage(); }
+	bool IsCharacterOnHateList(uint32 character_id) { return hate_list.IsCharacterOnHateList(character_id); }
+	bool IsGroupOnHateList(uint32 group_id) { return hate_list.IsGroupOnHateList(group_id); }
+	bool IsRaidOnHateList(uint32 raid_id) { return hate_list.IsRaidOnHateList(raid_id); }
 	Mob* GetDamageTop(int32& return_dmg, bool combine_pet_dmg = false, bool clients_only = false) { return hate_list.GetDamageTop(return_dmg, combine_pet_dmg, clients_only); }
 	Mob* GetHateRandom() { return hate_list.GetRandom();}
 	Client* GetHateRandomClient(int32 max_dist = 0) { return hate_list.GetRandomClient(max_dist); }
@@ -517,6 +520,7 @@ public:
 	int GetNumHaters() { return hate_list.GetNumHaters(); }
 	int GetHateN(int n) { return hate_list.GetHateN(n); }
 	uint32 GetAggroDeaggroTime() { return hate_list.GetAggroDeaggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
+	uint32 GetAggroTime() { return hate_list.GetAggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
 	bool IsEngaged() { return engaged; }	// returns true only if actively chasing/fighting a target; returns false if ignoring all haters on hate list or list is empty
 	uint32 GetIgnoreStuckCount() { return hate_list.GetIgnoreStuckCount(); }	// return how many times the NPC ignored all haters so we can unstick them if they get stuck
 	bool HateSummon(Mob* summoned = nullptr);

@@ -3022,6 +3022,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
+
 	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
 	bool bSkip = false;
 	if (m_LastLocation == glm::vec3())
@@ -3041,7 +3042,14 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
 	auto seccount = seconds.count();
 	auto distDivTime = 0.;
-	if (dist > 5.0 && seccount >= 1.0)
+
+	float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
+	float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
+
+	float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
+	float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
+	float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
+	if (dist > distThreshold && seccount >= secondElapsedThreshold)
 	{
 		distDivTime = dist / seccount;
 	}
@@ -3053,17 +3061,51 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	bool is_exempt_correct = false;
 
-	if (distFromExpected < 125.0 && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+	if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
 	{
 		is_exempt_correct = true;
 		ExpectedRewindPos = glm::vec3(0, 0, 0);
 	}
 	auto speed = GetRunspeed();
-	if (distDivTime >= 125.f && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED)
+	float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
+	float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
+	float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+
+	float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
+	float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
+
+	if (speed >= highSpeedValueThreshold)
+		distDivTimeThreshold = distDivTimeHighSpeedThreshold;
+
+	if (speed >= bardSpeedValueThreshold)
+		distDivTimeThreshold = distDivTimeBardSpeedThreshold;
+
+	bool within_previous_zone_point = false;
+
+	bool has_boat = false;
+	
+	Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
+	if (boat) //These lil boats run fast!!
 	{
-		std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime);
-		worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str());
-		database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+		if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+		{
+			has_boat = true;
+		}
+	}
+
+	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED && !has_boat)
+	{
+
+		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
+		ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+
+		if (!previous_zone_point || !current_zone_point)
+		{
+
+			std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
+			worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+			database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+		}
 	}
 
 
@@ -6494,7 +6536,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 void Client::Handle_OP_Petition(const EQApplicationPacket *app)
 {
 	if (!RuleB(Petitions, PetitionSystemActive)) {
-		Message(CC_Default, "Petition reporting is disabled on this server.");
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
 		return;
 	}
 
@@ -6540,6 +6582,11 @@ void Client::Handle_OP_PetitionCheckIn(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionCheckIn, size=%i, expected %i", app->size, sizeof(Petition_Struct));
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	Petition_Struct* inpet = (Petition_Struct*)app->pBuffer;
 
 	Petition* pet = petition_list.GetPetitionByID(inpet->petnumber);
@@ -6561,6 +6608,11 @@ void Client::Handle_OP_PetitionCheckout(const EQApplicationPacket *app)
 		std::cout << "Wrong size: OP_PetitionCheckout, size=" << app->size << ", expected " << sizeof(uint32) << std::endl;
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	if (!worldserver.Connected())
 		Message(CC_Default, "Error: World server disconnected");
 	else {
@@ -6584,6 +6636,12 @@ void Client::Handle_OP_PetitionDelete(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionDelete, size=%i, expected %i", app->size, sizeof(PetitionUpdate_Struct));
 		return;
 	}
+
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	auto outapp = new EQApplicationPacket(OP_PetitionRefresh, sizeof(PetitionUpdate_Struct));
 	PetitionUpdate_Struct* pet = (PetitionUpdate_Struct*)outapp->pBuffer;
 	pet->petnumber = *((int*)app->pBuffer);

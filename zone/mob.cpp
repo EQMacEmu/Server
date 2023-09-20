@@ -5294,41 +5294,4 @@ void Mob::SetHP(int32 hp)
 		cur_hp = max_hp; 
 	else 
 		cur_hp = hp;
-
-	if (IsNPC())
-	{
-		if ((float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f))) // reset FTE
-		{
-			CastToNPC()->solo_group_fte = 0;
-			CastToNPC()->solo_raid_fte = 0;
-			CastToNPC()->solo_fte_charid = 0;
-			ssf_player_damage = 0;
-		}
-
-		if (CastToNPC()->fte_charid != 0 && (float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f)))
-		{
-			uint32 curtime = (Timer::GetCurrentTime());
-			uint32 lastAggroTime = CastToNPC()->GetAggroDeaggroTime();
-
-			//If we're engaged for 60 seconds, clear fte
-			if(lastAggroTime != 0xFFFFFFFF && curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0)
-			{
-				CastToNPC()->fte_charid = 0;
-				CastToNPC()->group_fte = 0;
-				CastToNPC()->raid_fte = 0;
-				if (CastToNPC()->HasEngageNotice()) {
-					CastToNPC()->HandleFTEDisengage();
-				}
-			}
-			else if (hate_list.GetNumHaters() == 0)
-			{
-				CastToNPC()->fte_charid = 0;
-				CastToNPC()->group_fte = 0;
-				CastToNPC()->raid_fte = 0;
-				if (CastToNPC()->HasEngageNotice()) {
-					CastToNPC()->HandleFTEDisengage();
-				}
-			}
-		}
-	}
 }

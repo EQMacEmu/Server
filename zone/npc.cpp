@@ -35,6 +35,7 @@
 #include "aa.h"
 #include "client.h"
 #include "entity.h"
+#include "guild_mgr.h"
 #include "npc.h"
 #include "string_ids.h"
 #include "spawn2.h"
@@ -154,6 +155,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	swarmInfoPtr = nullptr;
 	spellscale = d->spellscale;
 	healscale = d->healscale;
+	guild_fte = GUILD_NONE;
 
 	pAggroRange = d->aggroradius;
 	pAssistRange = d->assistradius;
@@ -514,6 +516,8 @@ bool NPC::Process()
 	}
 
 	SpellProcess();
+
+	ProcessFTE();
 
 	if(tic_timer.Check())
 	{
@@ -2715,4 +2719,113 @@ void NPC::SetSkill(EQ::skills::SkillType skill_num, uint16 value)
 		return;
 	
 	skills[skill_num] = value;
+}
+
+bool NPC::IsGuildInFTELockout(uint32 guild_id)
+{
+	if (guild_id == GUILD_NONE || guild_id == 0)
+		return true;
+
+	auto itr = guild_fte_lockouts.find(guild_id);
+
+	if (itr != guild_fte_lockouts.end())
+		return true;
+
+	return false;
+}
+
+void NPC::InsertGuildFTELockout(uint32 guild_id)
+{
+
+	if (guild_id == GUILD_NONE || guild_id == 0)
+		return;
+
+	auto itr = guild_fte_lockouts.find(guild_id);
+
+	if (itr != guild_fte_lockouts.end())
+		return;
+
+	guild_fte_lockouts[guild_id] = Timer::GetCurrentTime();
+
+}
+
+void NPC::ProcessFTE()
+{
+	//engage notice lockout processing
+	if (HasEngageNotice())
+	{
+		for (std::map<uint32, uint32>::iterator it = guild_fte_lockouts.begin(); it != guild_fte_lockouts.end();)
+		{
+			if (Timer::GetCurrentTime() >= it->second + RuleI(Quarm, GuildFTELockoutTimeMS))
+			{
+				std::string guild_string = "";
+				if (it->first != GUILD_NONE) {
+					guild_mgr.GetGuildNameByID(it->first, guild_string);
+				}
+				if (!guild_string.empty())
+				{
+					entity_list.Message(0, 15, "Guild %s is no longer FTE locked locked out of %s!", guild_string.c_str(), GetCleanName());
+				}
+				it = guild_fte_lockouts.erase(it);
+				continue;
+			}
+			it++;
+		}
+	}
+
+	//ssf damage tracking
+	if ((float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f))) // reset FTE
+	{
+		solo_group_fte = 0;
+		solo_raid_fte = 0;
+		solo_fte_charid = 0;
+		ssf_player_damage = 0;
+	}
+
+	//guild fte
+	bool send_engage_notice = HasEngageNotice();
+	if (send_engage_notice)
+	{
+		bool no_guild_fte = guild_fte == GUILD_NONE;
+		if (!no_guild_fte)
+		{
+			uint32 curtime = (Timer::GetCurrentTime());
+			uint32 lastAggroTime = GetAggroTime();
+			bool is_engaged = lastAggroTime != 0xFFFFFFFF;
+			bool engaged_too_long = false;
+			if (is_engaged)
+				engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+			bool no_haters = hate_list.GetNumHaters() == 0;
+
+			//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
+			if (engaged_too_long || no_haters)
+			{
+				if (HasEngageNotice()) {
+					Gate();
+					Heal();
+					WipeHateList(false); // This will call FTEDisengage, which clears guild_fte
+				}
+			}
+		}
+	}
+
+	bool no_fte = fte_charid == 0 && raid_fte == 0 && group_fte == 0;
+	if (!no_fte)
+	{
+		uint32 curtime = (Timer::GetCurrentTime());
+		uint32 lastAggroTime = GetAggroTime();
+		bool is_engaged = lastAggroTime != 0xFFFFFFFF;
+		bool engaged_too_long = false;
+		if (is_engaged)
+			engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+		bool no_haters = hate_list.GetNumHaters() == 0;
+
+		//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
+		if (engaged_too_long || no_haters)
+		{
+			fte_charid = 0;
+			group_fte = 0;
+			raid_fte = 0;
+		}
+	}
 }

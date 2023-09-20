@@ -1033,7 +1033,8 @@ void Mob::FixZ(bool force) {
 	float max_fix_z = 20.0f + GetZOffset();
 
 	NPCFlyMode = (CastToNPC()->GetFlyMode() == 1 || CastToNPC()->GetFlyMode() == 2);
-	bool underwater_mob = IsNPC() && CastToNPC()->IsUnderwaterOnly();
+	bool underwater_mob = IsNPC() && (CastToNPC()->IsUnderwaterOnly() || zone->IsWaterZone(m_Position.z)
+		|| (zone->HasWaterMap() && (zone->watermap->InLiquid(glm::vec3(m_Position.x, m_Position.y, m_Position.z)))));
 	if (!underwater_mob && !NPCFlyMode && !IsBoat() && zone->HasMap()) {
 		glm::vec3 dest(m_Position.x, m_Position.y, m_Position.z);
 		float newz = zone->zonemap->FindBestZ(dest, nullptr, 20.0f, GetZOffset());
