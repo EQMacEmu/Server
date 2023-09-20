@@ -172,7 +172,6 @@ private:
 	bool		player_corpse_depop; /* Sets up Corpse::Process to depop the player corpse */
 	uint32		being_looted_by; /* Determines what the corpse is being looted by internally for logic */
 	std::unordered_set<uint16> legacy_item_looter_client_id_set; /* Determines what the corpse is being looted by internally for logic */
-	bool        legacy_item_loot_lock;
 	uint32		rez_experience; /* Amount of experience that the corpse would rez for */
 	uint32		gm_rez_experience; /* Amount of experience that the corpse would rez for from a GM*/
 	bool		rez; /*Sets if a corpse has been rezzed or not to determine if XP should be given*/

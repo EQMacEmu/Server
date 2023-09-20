@@ -339,7 +339,6 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	is_player_corpse	= true;
 	is_locked			= false;
 	being_looted_by	= 0xFFFFFFFF;
-	legacy_item_loot_lock = false;
 
 	char_id			= client->CharacterID();
 	corpse_db_id	= 0;
@@ -1367,6 +1366,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 	if (is_locked && client->Admin() < AccountStatus::GMAdmin) {
 		SendLootReqErrorPacket(client, 0);
+		RemoveLegacyItemLooter(client->GetID());
 		client->Message(CC_Red, "Error: Corpse locked by GM.");
 		return;
 	}
