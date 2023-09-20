@@ -1362,7 +1362,6 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 	if (is_locked && client->Admin() < AccountStatus::GMAdmin) {
 		SendLootReqErrorPacket(client, 0);
-		if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
 		client->Message(CC_Red, "Error: Corpse locked by GM.");
 		return;
 	}
