@@ -18,11 +18,11 @@
 #ifndef MYMUTEX_H
 #define MYMUTEX_H
 #ifdef _WINDOWS
-#include <winsock2.h>
+	#include <winsock2.h>
 	#include <windows.h>
 #else
-#include <pthread.h>
-#include "../common/unix.h"
+	#include <pthread.h>
+	#include "../common/unix.h"
 #endif
 #include "../common/types.h"
 
@@ -80,3 +80,4 @@ private:
 };
 
 #endif
+

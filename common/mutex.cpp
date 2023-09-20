@@ -70,17 +70,17 @@ Mutex::Mutex() {
 	std::cout << "Constructing Mutex" << std::endl;
 #endif
 #ifdef _WINDOWS
-	InitializeCriticalSection(&CSMutex);
+    InitializeCriticalSection(&CSMutex);
 #else
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
 #if defined(__CYGWIN__) || defined(__APPLE__) || defined(FREEBSD)
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #else
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-#endif
-	pthread_mutex_init(&CSMutex, &attr);
-	pthread_mutexattr_destroy(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+#endif    
+    pthread_mutex_init(&CSMutex, &attr);
+    pthread_mutexattr_destroy(&attr);
 #endif
 }
 
@@ -102,11 +102,11 @@ void Mutex::lock() {
 		#endif
 	}
 #else
-#ifdef _WINDOWS
-	EnterCriticalSection(&CSMutex);
-#else
-	pthread_mutex_lock(&CSMutex);
-#endif
+	#ifdef _WINDOWS
+		EnterCriticalSection(&CSMutex);
+	#else
+		pthread_mutex_lock(&CSMutex);
+	#endif
 #endif
 }
 
@@ -258,3 +258,4 @@ int32 MRMutex::WriteLockCount() {
 	MCounters.unlock();
 	return ret;
 }
+
