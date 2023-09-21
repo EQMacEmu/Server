@@ -163,9 +163,12 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 	}
 }
 
-Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time, bool is_player_drop)
+Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time, bool is_player_drop, Client* client)
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
 {
+	if (is_player_drop && client) {
+		m_character_id = client->CharacterID();
+	}
 	user = 0;
 	last_user = 0;
 

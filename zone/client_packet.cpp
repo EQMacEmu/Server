@@ -2833,9 +2833,10 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
-		if (entity->CastToObject()->IsPlayerDrop())
+		Object* object = entity->CastToObject();
+		if (object->IsPlayerDrop())
 		{
-			if (IsSelfFound() || IsSoloOnly())
+			if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID())
 			{
 				Message(CC_Red, "You cannot pick up dropped player items because you are performing a self found or solo challenge.");
 				auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
@@ -2847,8 +2848,6 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 				return;
 			}
 		}
-
-		Object* object = entity->CastToObject();
 
 		object->HandleClick(this, click_object);
 
@@ -3022,7 +3021,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
-
 	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
 	bool bSkip = false;
 	if (m_LastLocation == glm::vec3())
@@ -3042,6 +3040,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
 	auto seccount = seconds.count();
 	auto distDivTime = 0.;
+
 
 	float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
 	float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
