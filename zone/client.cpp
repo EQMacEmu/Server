@@ -2282,7 +2282,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 
 	if (bindmob->IsClient()) {
 		Client* bind_client = bindmob->CastToClient();
-		if (bind_client->IsSoloOnly()) {
+		if (bind_client->IsSoloOnly() && bind_client != this) {
 			this->Message(CC_Red, "This player is running the Solo Only ruleset. You cannot bind wound.");
 			outapp = new EQApplicationPacket(OP_Bind_Wound, sizeof(BindWound_Struct));
 			BindWound_Struct *bind_out = (BindWound_Struct *)outapp->pBuffer;
@@ -2292,7 +2292,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 			return false;
 		}
 
-		if (IsSelfFound() != bind_client->CastToClient()->IsSelfFound())
+		if (IsSelfFound() != bind_client->CastToClient()->IsSelfFound() && bind_client != this)
 		{
 			Message(CC_Red, "The player's Self Found flag does not match yours. You cannot bind wound.");
 			
