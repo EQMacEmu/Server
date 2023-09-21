@@ -46,6 +46,8 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 
 	// Initialize members
 	m_id = id;
@@ -78,6 +80,8 @@ Object::Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,
 
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 	m_max_x=max_x;
 	m_max_y=max_y;
 	m_min_x=min_x;
@@ -113,6 +117,8 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 {
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 
 	// Initialize members
 	m_id	= 0;
@@ -168,6 +174,10 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 {
 	if (is_player_drop && client) {
 		m_character_id = client->CharacterID();
+		m_ssf_ruleset = client->IsSoloOnly() || client->IsSelfFound()
+	} else {
+		m_character_id = 0;
+		m_ssf_ruleset = false;
 	}
 	user = 0;
 	last_user = 0;
@@ -236,6 +246,8 @@ Object::Object(const char *model, float x, float y, float z, float heading, uint
 {
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 	EQ::ItemInstance* inst = new EQ::ItemInstance(ItemInstWorldContainer);
 
 	// Initialize members
