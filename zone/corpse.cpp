@@ -1980,3 +1980,23 @@ void Corpse::RevokeConsent()
 		safe_delete(pack);
 	}
 }
+
+void Corpse::AddLegacyItemLooter(uint16 client_id)
+{
+	auto itr = legacy_item_looter_client_id_set.find(client_id);
+
+	if (itr == legacy_item_looter_client_id_set.end())
+	{
+		legacy_item_looter_client_id_set.insert(client_id);
+	}
+}
+
+void Corpse::RemoveLegacyItemLooter(uint16 client_id)
+{
+	auto itr = legacy_item_looter_client_id_set.find(client_id);
+	
+	if (itr != legacy_item_looter_client_id_set.end())
+	{
+		legacy_item_looter_client_id_set.erase(client_id);
+	}
+}
