@@ -1231,7 +1231,7 @@ uint8 Database::GetZoneRandomLoc(uint32 zoneID) {
 
 bool Database::CheckNameFilter(const char* name, bool surname) {
 	// Rule 1: Name length constraints.
-	//         - If surname: at least 3 characters.
+	//         - If surname: at least 3 characters and must not start with a '`'.
 	//         - Otherwise: between 4 and 15 characters (inclusive).
 	// Rule 2: For surnames only: One '`' character is allowed but not more.
 	//         Otherwise, only alphabet characters are allowed in the name.
@@ -1251,6 +1251,11 @@ bool Database::CheckNameFilter(const char* name, bool surname) {
 		if (!name || strlen(name) < 4 || strlen(name) > 15) {
 			return false;
 		}
+	}
+
+	// Ensure a surname doesn't start with a backtick.
+	if (surname && !str_name.empty() && str_name[0] == '`') {
+		return false;
 	}
 
 	// Rule 2: Check for allowed characters and optional backtick for surnames.
