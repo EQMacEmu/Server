@@ -2764,7 +2764,7 @@ void NPC::ProcessFTE()
 				}
 				if (!guild_string.empty())
 				{
-					entity_list.Message(0, 15, "Guild %s is no longer FTE locked locked out of %s!", guild_string.c_str(), GetCleanName());
+					entity_list.Message(0, 15, "Guild %s is no longer FTE locked out of %s!", guild_string.c_str(), GetCleanName());
 				}
 				it = guild_fte_lockouts.erase(it);
 				continue;
