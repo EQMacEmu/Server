@@ -174,13 +174,10 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 {
 	if (is_player_drop && client) {
 		m_character_id = client->CharacterID();
-		m_ssf_ruleset = client->IsSoloOnly() || client->IsSelfFound()
+		m_ssf_ruleset = client->IsSoloOnly() || client->IsSelfFound();
 	} else {
 		m_character_id = 0;
 		m_ssf_ruleset = false;
-	}
-	else{
-		m_character_id = 0;
 	}
 	user = 0;
 	last_user = 0;
