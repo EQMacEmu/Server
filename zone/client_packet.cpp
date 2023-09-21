@@ -8405,15 +8405,19 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 
 	char *c = nullptr;
 	bool first = true;
-	for (c = surname->lastname; *c; c++)
-	{
-		if (first)
-		{
+	for (c = surname->lastname; *c; c++) {
+		if (first) {
 			*c = toupper(*c);
 			first = false;
 		}
-		else
-		{
+		else if (*c == '`') { // if we find a backtick, don't modify the next character's capitalization
+			// If this is the last character, we can break out of the loop
+			if (*(c+1) == '\0')
+				break;
+
+			c++; // Move to the next character
+		}
+		else {
 			*c = tolower(*c);
 		}
 	}
