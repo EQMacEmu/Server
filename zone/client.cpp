@@ -2278,7 +2278,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 		safe_delete(outapp);
 		return false;
 	}
-
+  
 	if (!fail)
 	{
 		outapp = new EQApplicationPacket(OP_Bind_Wound, sizeof(BindWound_Struct));
