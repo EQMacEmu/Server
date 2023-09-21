@@ -167,10 +167,9 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
 {
 	if (is_player_drop && client) {
-		user = client->CharacterID();
-	} else {
-		user = 0;
+		m_character_id = client->CharacterID();
 	}
+	user = 0;
 	last_user = 0;
 
 	// Initialize members

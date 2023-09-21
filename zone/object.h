@@ -133,7 +133,6 @@ public:
 	virtual uint16 VarSave();
 	virtual void SetID(uint16 set_id);
 
-	uint32 GetUser() { return user; }
 	void ClearUser() { user = 0; }
 
 	uint32 GetDBID();

@@ -388,7 +388,6 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 		Message_StringID(CC_Yellow, DROPPED_ITEM);
 	}
 
-	this->CharacterID()
 	// Package as zone object
 	Object *object = new Object(inst, coords.x, coords.y, coords.z, coords.w ,decay_time, true, this);
 	entity_list.AddObject(object, true);

@@ -2832,7 +2832,7 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		Object* object = entity->CastToObject();
 		if (object->IsPlayerDrop())
 		{
-			if ((IsSelfFound() || IsSoloOnly()) && object->GetUser() != this->CharacterID())
+			if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID())
 			{
 				Message(CC_Red, "You cannot pick up dropped player items because you are performing a self found or solo challenge.");
 				auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
