@@ -3099,7 +3099,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
 		ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
 
-		if (!previous_zone_point || !current_zone_point)
+		if (!previous_zone_point && !current_zone_point)
 		{
 
 			std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
