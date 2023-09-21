@@ -3093,7 +3093,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		}
 	}
 
-	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && client_state == CLIENT_CONNECTED && !has_boat)
+	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
 	{
 
 		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
