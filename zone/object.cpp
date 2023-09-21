@@ -48,7 +48,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 	last_user = 0;
 	m_character_id = 0;
 	m_ssf_ruleset = false;
-
+   
 	// Initialize members
 	m_id = id;
 	m_type = type;
@@ -179,6 +179,9 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 		m_character_id = 0;
 		m_ssf_ruleset = false;
 	}
+	else{
+		m_character_id = 0;
+	}
 	user = 0;
 	last_user = 0;
 
@@ -247,6 +250,7 @@ Object::Object(const char *model, float x, float y, float z, float heading, uint
 	user = 0;
 	last_user = 0;
 	m_character_id = 0;
+   
 	m_ssf_ruleset = false;
 	EQ::ItemInstance* inst = new EQ::ItemInstance(ItemInstWorldContainer);
 
@@ -257,6 +261,7 @@ Object::Object(const char *model, float x, float y, float z, float heading, uint
 	m_icon	= 0;
 	m_inuse	= false;
 	m_ground_spawn = false;
+	m_is_player_drop = false;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
 	m_data.heading = heading;
