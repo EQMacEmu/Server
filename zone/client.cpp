@@ -2297,6 +2297,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 			}
 			if (!msg.empty()) {
 				this->Message(CC_Red, msg.c_str());
+				// DO NOT CHANGE - any other packet order will cause client bugs / crashes.
 				bind_out->type = 3;
 				QueuePacket(outapp);
 				bind_out->type = 1;
