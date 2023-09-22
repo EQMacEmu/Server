@@ -94,7 +94,7 @@ public:
 	uint32 GetAggroTime() { return aggroTime == 0xFFFFFFFF ? 0xFFFFFFFF : aggroTime; }
 
 
-	uint32 SetAggroTime(uint32 in_time) { aggroTime = in_time; }
+	void SetAggroTime(uint32 in_time) { aggroTime = in_time; }
 
 
 
