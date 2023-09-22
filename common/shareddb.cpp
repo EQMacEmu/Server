@@ -556,6 +556,17 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 				item.ElemDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::elemdmgamt]));
 			}
 		}
+		else
+		{
+			//Bane Damage
+			item.BaneDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::banedmgamt]));
+			item.BaneDmgBody = std::stoi(row[ItemField::banedmgbody]);
+			item.BaneDmgRace = std::stoi(row[ItemField::banedmgrace]);
+
+			// Elemental Damage
+			item.ElemDmgType = static_cast<uint8>(std::stoul(row[ItemField::elemdmgtype]));
+			item.ElemDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::elemdmgamt]));
+		}
 
 		// Combat
 		item.Damage = static_cast<uint8>(std::stoul(row[ItemField::damage]));
@@ -567,20 +578,24 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Deity = std::stoul(row[ItemField::deity]);
 		item.ItemClass = std::stoi(row[ItemField::itemclass]);
 		item.Races = std::stoi(row[ItemField::races]);
+		item.ReqLevel = static_cast<uint8>(std::stoul(row[ItemField::reqlevel]));
 		if (RuleB(AlKabor, EnableEraItemRules))
 		{
 			if (enabled_era >= (float)ExpansionEras::ClassicEQEra && enabled_era < (float)ExpansionEras::LuclinEQEra)
 			{
 				item.RecLevel = 0;
 				item.RecSkill = 0;
-				item.ReqLevel = 0;
 			}
 			else
 			{
 				item.RecLevel = static_cast<uint8>(std::stoul(row[ItemField::reclevel]));
 				item.RecSkill = static_cast<uint8>(std::stoul(row[ItemField::recskill]));
-				item.ReqLevel = static_cast<uint8>(std::stoul(row[ItemField::reqlevel]));
 			}
+		}
+		else
+		{
+			item.RecLevel = static_cast<uint8>(std::stoul(row[ItemField::reclevel]));
+			item.RecSkill = static_cast<uint8>(std::stoul(row[ItemField::recskill]));
 		}
 
 		item.Slots = std::stoi(row[ItemField::slots]);
@@ -598,6 +613,11 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 				item.SkillModValue = std::stoi(row[ItemField::skillmodvalue]);
 				item.SkillModType = std::stoul(row[ItemField::skillmodtype]);
 			}
+		}
+		else
+		{
+			item.SkillModValue = std::stoi(row[ItemField::skillmodvalue]);
+			item.SkillModType = std::stoul(row[ItemField::skillmodtype]);
 		}
 
 		// Bard
@@ -659,6 +679,14 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 				item.Focus.Level = static_cast<uint8>(std::stoul(row[ItemField::focuslevel]));
 				item.Focus.Level2 = static_cast<uint8>(std::stoul(row[ItemField::focuslevel2]));
 			}
+		}
+		else
+		{
+			// Focus Effect
+			item.Focus.Effect = std::stoi(row[ItemField::focuseffect]);
+			item.Focus.Type = std::stoi(row[ItemField::focustype]);
+			item.Focus.Level = static_cast<uint8>(std::stoul(row[ItemField::focuslevel]));
+			item.Focus.Level2 = static_cast<uint8>(std::stoul(row[ItemField::focuslevel2]));
 		}
 
 		// Proc Effect
