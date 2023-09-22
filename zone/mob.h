@@ -519,6 +519,7 @@ public:
 	Mob* GetHateMost(bool includeBonus = true) { return hate_list.GetMostHate(includeBonus);}
 	int GetNumHaters() { return hate_list.GetNumHaters(); }
 	int GetHateN(int n) { return hate_list.GetHateN(n); }
+	void SetAggroTime(uint32 in_time) { hate_list.SetAggroTime(in_time); }
 	uint32 GetAggroDeaggroTime() { return hate_list.GetAggroDeaggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
 	uint32 GetAggroTime() { return hate_list.GetAggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
 	bool IsEngaged() { return engaged; }	// returns true only if actively chasing/fighting a target; returns false if ignoring all haters on hate list or list is empty

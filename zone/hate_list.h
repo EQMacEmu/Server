@@ -94,6 +94,10 @@ public:
 	uint32 GetAggroTime() { return aggroTime == 0xFFFFFFFF ? 0xFFFFFFFF : aggroTime; }
 
 
+	uint32 SetAggroTime(uint32 in_time) { aggroTime = in_time; }
+
+
+
 	int AreaRampage(Mob *caster, Mob *target, int count, int damagePct = 100);
 
 	void SpellCast(Mob *caster, uint32 spell_id, float range, Mob *ae_center  = nullptr);

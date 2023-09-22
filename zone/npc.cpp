@@ -2804,6 +2804,7 @@ void NPC::ProcessFTE()
 					Gate();
 					Heal();
 					WipeHateList(false); // This will call FTEDisengage, which clears guild_fte
+					SetAggroTime(0xFFFFFFFF);
 				}
 			}
 		}

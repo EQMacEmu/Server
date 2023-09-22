@@ -124,7 +124,6 @@ void HateList::Wipe(bool from_memblur)
 	if (list.size() > 0)
 	{
 		aggroDeaggroTime = Timer::GetCurrentTime();
-		aggroTime = 0xFFFFFFFF;
 	}
 	auto iterator = list.begin();
 
@@ -146,6 +145,7 @@ void HateList::Wipe(bool from_memblur)
 		{
 			if (owner->CastToNPC()->HasEngageNotice()) {
 				HandleFTEDisengage();
+				aggroTime = 0xFFFFFFFF;
 			}
 			if (owner->CastToNPC()->fte_charid != 0) // reset FTE
 			{
