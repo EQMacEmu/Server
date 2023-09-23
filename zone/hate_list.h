@@ -74,6 +74,7 @@ public:
 	bool IsCharacterOnHateList(uint32 character_id);
 	bool IsGroupOnHateList(uint32 group_id);
 	bool IsRaidOnHateList(uint32 raid_id);
+	bool IsGuildOnHateList(uint32 guild_id);
 	// used to remove or add frenzy hate
 	void CheckFrenzyHate();
 	//Gets the target with the most hate regardless of things like frenzy etc.

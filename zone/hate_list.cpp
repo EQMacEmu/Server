@@ -461,7 +461,7 @@ bool HateList::IsGroupOnHateList(uint32 group_id)
 			if (potential_client->IsClient())
 			{
 				Client* c = potential_client->CastToClient();
-				if (c->GetGroup() != nullptr && c->GetGroup()->GetID() == group_id)
+				if (c && c->GetGroup() != nullptr && c->GetGroup()->GetID() == group_id)
 					return true;
 			}
 		}
@@ -484,7 +484,7 @@ bool HateList::IsRaidOnHateList(uint32 raid_id)
 			if (potential_client->IsClient())
 			{
 				Client* c = potential_client->CastToClient();
-				if (c->GetRaid() != nullptr && c->GetRaid()->GetID() == raid_id)
+				if (c && c->GetRaid() != nullptr && c->GetRaid()->GetID() == raid_id)
 					return true;
 			}
 		}
@@ -492,6 +492,30 @@ bool HateList::IsRaidOnHateList(uint32 raid_id)
 	}
 	return false;
 }
+
+bool HateList::IsGuildOnHateList(uint32 guild_id)
+{
+	if (guild_id == 0 || guild_id == GUILD_NONE)
+		return false;
+
+	auto iterator = list.begin();
+	while (iterator != list.end())
+	{
+		if ((*iterator)->ent != nullptr && ((*iterator)->ent->IsClient() || (*iterator)->ent->IsPlayerOwned()))
+		{
+			Mob* potential_client = (*iterator)->ent->GetOwnerOrSelf();
+			if (potential_client->IsClient())
+			{
+				Client* c = potential_client->CastToClient();
+				if (c && c->GuildID() == guild_id)
+					return true;
+			}
+		}
+		++iterator;
+	}
+	return false;
+}
+
 
 Mob* HateList::GetClosest(Mob *hater)
 {
@@ -722,6 +746,30 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 
 		bool no_fte = owner->CastToNPC()->fte_charid == 0 && owner->CastToNPC()->raid_fte == 0 && owner->CastToNPC()->group_fte == 0;
 		bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
+		if (send_engage_notice)
+		{
+			bool no_guild_fte = owner->CastToNPC()->guild_fte == GUILD_NONE;
+			if (no_guild_fte && (ent->IsClient() || ent->IsPlayerOwned()))
+			{
+				Mob* oos = ent->GetOwnerOrSelf();
+				if (oos && oos->IsClient())
+				{
+					Client* c = oos->CastToClient();
+					if (c)
+					{
+						if (c && c->GuildID() != GUILD_NONE)
+						{
+							int guild_id = c->GuildID();
+							if (!owner->CastToNPC()->IsGuildInFTELockout(guild_id))
+							{
+								HandleFTEEngage(c);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if (no_fte && (ent->IsClient() || ent->IsPlayerOwned()))
 		{
 			Mob* oos = ent->GetOwnerOrSelf();
@@ -743,14 +791,6 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 						else if (kg)
 						{
 							owner->CastToNPC()->group_fte = kg->GetID();
-						}
-						if (send_engage_notice)
-						{
-							int guild_id = c->GuildID();
-							if (!owner->CastToNPC()->IsGuildInFTELockout(guild_id))
-							{
-								HandleFTEEngage(c);
-							}
 						}
 					}
 				}
@@ -814,6 +854,7 @@ bool HateList::RemoveEnt(Mob *ent)
 		bool is_same_group = false;
 		bool is_same_raid = false;
 		bool is_same_player = false;
+		bool is_guild_on_hatelist = false;
 		bool no_fte = owner->CastToNPC()->fte_charid == 0 && owner->CastToNPC()->raid_fte == 0 && owner->CastToNPC()->group_fte == 0;
 		bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
 
@@ -826,11 +867,20 @@ bool HateList::RemoveEnt(Mob *ent)
 			if (owner->CastToNPC()->raid_fte != 0)
 				is_same_raid = IsRaidOnHateList(owner->CastToNPC()->raid_fte);
 
+			if (owner->CastToNPC()->HasEngageNotice()) {
+				if (owner->CastToNPC()->guild_fte != GUILD_NONE)
+				{
+					is_guild_on_hatelist = IsGuildOnHateList(owner->CastToNPC()->guild_fte);
+					if (!is_guild_on_hatelist)
+					{
+						HandleFTEDisengage();
+					}
+				}
+			}
+
 			if (!is_same_raid && !is_same_group && !is_same_player)
 			{
-				if (owner->CastToNPC()->HasEngageNotice()) {
-					HandleFTEDisengage();
-				}
+
 				owner->CastToNPC()->fte_charid = 0;
 				owner->CastToNPC()->group_fte = 0;
 				owner->CastToNPC()->raid_fte = 0;

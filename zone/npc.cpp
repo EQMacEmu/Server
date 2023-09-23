@@ -2794,18 +2794,15 @@ void NPC::ProcessFTE()
 			bool is_engaged = lastAggroTime != 0xFFFFFFFF;
 			bool engaged_too_long = false;
 			if (is_engaged)
-				engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+				engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
 			bool no_haters = hate_list.GetNumHaters() == 0;
-
+			bool valid_guild_on_hatelist = guild_fte != GUILD_NONE;
+			bool is_guild_on_hate_list = hate_list.IsGuildOnHateList(guild_fte);
 			//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
-			if (engaged_too_long || no_haters)
+			if (engaged_too_long || no_haters || valid_guild_on_hatelist && !is_guild_on_hate_list)
 			{
-				if (HasEngageNotice()) {
-					Gate();
-					Heal();
-					WipeHateList(false); // This will call FTEDisengage, which clears guild_fte
-					SetAggroTime(0xFFFFFFFF);
-				}
+				HandleFTEDisengage();
+				SetAggroTime(0xFFFFFFFF);
 			}
 		}
 	}
@@ -2818,7 +2815,7 @@ void NPC::ProcessFTE()
 		bool is_engaged = lastAggroTime != 0xFFFFFFFF;
 		bool engaged_too_long = false;
 		if (is_engaged)
-			engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+			engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
 		bool no_haters = hate_list.GetNumHaters() == 0;
 
 		//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
