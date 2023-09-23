@@ -169,6 +169,8 @@ void ZoneServer::LSSleepUpdate(uint32 zoneid){
 	}
 }
 
+extern void TriggerManualQuake();
+
 bool ZoneServer::Process() {
 	if (!tcpc->Connected())
 		return false;
@@ -1371,6 +1373,13 @@ bool ZoneServer::Process() {
 			{
 				Log(Logs::Detail, Logs::WorldServer, "Received ServerOP_LSAccountUpdate packet from zone");
 				loginserverlist.SendAccountUpdate(pack);
+				break;
+			}
+
+			case ServerOP_QuakeRequest:
+			{
+
+				TriggerManualQuake();
 				break;
 			}
 
