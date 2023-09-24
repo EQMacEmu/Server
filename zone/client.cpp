@@ -2213,6 +2213,10 @@ void Client::SetFeigned(bool in_feigned) {
 		{
 			SetPet(0);
 		}
+		// feign breaks charmed pets
+		if (GetPet() && GetPet()->IsCharmedPet()) {
+			FadePetCharmBuff();
+		}
 		SetHorseId(0);
 		feigned_time = Timer::GetCurrentTime();
 	}

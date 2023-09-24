@@ -1444,8 +1444,6 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						}
 						else
 						{
-							if (GetPet() && GetPet()->IsCharmedPet())
-								FadePetCharmBuff();
 							CastToClient()->SetFeigned(true);
 						}
 					}
