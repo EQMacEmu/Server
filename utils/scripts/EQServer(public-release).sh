@@ -734,6 +734,7 @@ else
 	ln -s $path/source/loginserver/login_util/login_opcodes_oldver.conf $path/login_opcodes_oldver.conf
 	ln -s $path/source/loginserver/login_util/login_opcodes_sod.conf $path/login_opcodes_sod.conf
 	ln -s $path/source/utils/patches/patch_Mac.conf $path/patch_Mac.conf
+ 	ln -s $path/source/utils/patches/chat_opcodes.conf $path/chat_opcodes.conf
 	ln -s $path/source/utils/patches/mail_opcodes.conf $path/mail_opcodes.conf
 	ln -s $path/source/utils/patches/opcodes.conf $path/opcodes.conf
 	ln -s $path/source/utils/patches/patch_Evolution.conf $path/patch_Evolution.conf
@@ -764,7 +765,6 @@ setupini)
 	echo 'user = '$dbuser >> login.ini
 	echo 'password = '$dbpass >> login.ini
 	echo 'subsystem = MySQL' >> login.ini
-	echo 'LSsettings_table = tblloginserversettings' >> login.ini
 	echo $'\r' >> login.ini
 	echo '[options]' >> login.ini
 	echo 'auto_account_create = TRUE' >> login.ini
@@ -796,6 +796,7 @@ setupini)
 	echo 'world_registration_table = tblWorldServerRegistration' >> login.ini
 	echo 'world_admin_registration_table = tblServerAdminRegistration' >> login.ini
 	echo 'world_server_type_table = tblServerListType' >> login.ini
+ 	echo 'loginserver_setting_table = tblloginserversettings' >> login.ini
 	
 	echo '[LoginServerDatabase]' > db.ini
 	echo 'host = '$dbIP >> db.ini
