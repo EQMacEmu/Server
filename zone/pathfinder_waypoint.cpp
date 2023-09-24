@@ -291,6 +291,7 @@ IPathfinder::IPath PathfinderWaypoint::FindPath(const glm::vec3& start, const gl
 			else
 				break;
 		}
+
 		CulledNodes = 0;
 		while ((Route.size() > 2) && (CulledNodes < 2))
 		{
@@ -461,33 +462,20 @@ std::deque<int> PathfinderWaypoint::FindRouteV2(int startID, int endID)
 glm::vec3 PathfinderWaypoint::GetRandomLocation(const glm::vec3 &start, int flags)
 {
 	if (m_impl->Nodes.size() > 0) {
-		std::deque<int> NodeList;
 
-		int TempNode;
-
-		for (auto &node : m_impl->Nodes) {
-			if ((std::abs(start.x - node.v.x) <= 100.0f) &&
-				(std::abs(start.y - node.v.y) <= 100.0f)) {
-				TempNode = node.id;
-				NodeList.push_back(TempNode);
-			}
-		}
-
-		if (!NodeList.empty()) {
-			auto idx = zone->random.Int(0, (int)NodeList.size() - 1);
-			auto &node = m_impl->Nodes[idx];
-			NodeList.clear();
-			return node.v;
-		}
+		auto idx = zone->random.Int(0, (int)m_impl->Nodes.size() - 1);
+		auto &node = m_impl->Nodes[idx];
+		return node.v;
 	}
 	
-	return glm::vec3();
+	return glm::vec3(0.0f);
 }
 
 void PathfinderWaypoint::DebugCommand(Client *c, const Seperator *sep)
 {
 	if(sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help"))
 	{
+		c->Message(CC_Yellow, "This zone is using path nodes from the .path file.");
 		c->Message(0, "Syntax: #path shownodes: Spawns a npc to represent every npc node.");
 		c->Message(0, "#path show: Shows all nodes");
 		c->Message(0, "#path info node_id: Gives information about node info (requires shownode target).");

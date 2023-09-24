@@ -77,6 +77,9 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 		if (skill == EQ::skills::SkillBash || skill == EQ::skills::SkillKick || skill == EQ::skills::SkillDragonPunch)
 			TryBashKickStun(defender, skill);			// put this here so the stun occurs before the damage
 
+		if (skill == EQ::skills::SkillBash && base == 1)
+			damage = 1;	// 0 skill bashes always do 1 damage (10 if it crits)
+
 		if (IsClient())
 			TryCriticalHit(defender, skill, damage);
 	}
@@ -208,11 +211,13 @@ void Mob::DoBash(Mob* defender)
 	if (defender == this || !defender)
 		return;
 
-	int base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillBash, GetSkill(EQ::skills::SkillBash));
+	uint16 skill_level = GetSkill(EQ::skills::SkillBash);
+	bool is_trained = skill_level > 0 && skill_level < 253;
+	int base = is_trained ? EQ::skills::GetSkillBaseDamage(EQ::skills::SkillBash, skill_level) : 1;
 	int hate = base;
 	bool shieldBash = false;
 
-	if (IsClient() && (GetClass() == WARRIOR || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == CLERIC))
+	if (is_trained && IsClient() && (GetClass() == WARRIOR || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == CLERIC))
 	{
 		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBash, GetTarget(), zone->skill_difficulty[EQ::skills::SkillBash].difficulty);
 
@@ -246,7 +251,6 @@ void Mob::DoBash(Mob* defender)
 		minDmg = DMG_INVUL;
 
 	DoSpecialAttackDamage(defender, EQ::skills::SkillBash, base, minDmg, hate, Animation::Slam);
-
 }
 
 void Mob::DoKick(Mob* defender)

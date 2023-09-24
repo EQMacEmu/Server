@@ -249,14 +249,20 @@ void Mob::CalculateNewFearpoint()
 	}
 
 	if (RuleB(Pathing, Fear) && zone->pathing) {
-		auto Node = zone->pathing->GetRandomLocation(glm::vec3(GetX(), GetY(), GetZ()), PathingNotDisabled ^ PathingZoneLine);
+		glm::vec3 Node;
+		int flags = PathingNotDisabled ^ PathingZoneLine;
+		if (IsNPC() && CastToNPC()->IsUnderwaterOnly() && !zone->IsWaterZone(GetZ()))
+			Node = glm::vec3(0.0f);
+		else
+			Node = zone->pathing->GetRandomLocation(glm::vec3(GetX(), GetY(), GetZ()), flags);
+
 		if (Node.x != 0.0f || Node.y != 0.0f || Node.z != 0.0f) {
 			Node.z = GetFixedZ(Node);
 			PathfinderOptions opts;
 			opts.smooth_path = true;
 			opts.step_size = RuleR(Pathing, NavmeshStepSize);
 			opts.offset = GetZOffset();
-			opts.flags = PathingNotDisabled ^ PathingZoneLine;
+			opts.flags = flags;
 			auto partial = false;
 			auto stuck = false;
 			auto route = zone->pathing->FindPath(
@@ -266,32 +272,73 @@ void Mob::CalculateNewFearpoint()
 				stuck,
 				opts
 			);
-			if (stuck) {
-				curfp = false;
-			} else if (route.size() > 2 || CheckLosFN(Node.x, Node.y, Node.z, 6.0)) {
-				// iterate the route, to make sure no LOS failures
-				auto iter = route.begin();
-				glm::vec3 previous_pos(GetX(), GetY(), GetZ());
-				bool have_los = true;
-				while (iter != route.end() && have_los == true) {
-					auto &current_node = (*iter);
-					iter++;
+			glm::vec3 last_good_loc = Node;
+			int route_size = route.size();
+			int route_count = 0;
+			bool have_los = true;
 
-					if (iter == route.end()) {
-						continue;
-					}
-
-					previous_pos = current_node.pos;
-					auto &next_node = (*iter);
-
-					if (next_node.teleport)
-						continue;
-
-					if (!zone->zonemap->CheckLoS(previous_pos, next_node.pos))
-						have_los = false;
+			if (route_size == 2)
+			{
+				// FindPath() often fails to compute a route in some places, so to prevent running through walls we need to check LOS on all 2 node routes
+				// size 2 route usually means FindPath() bugged out.  sometimes it returns locs outside the geometry
+				if (CheckLosFN(Node.x, Node.y, Node.z, 6.0))
+				{
+					Log(Logs::Moderate, Logs::Pathing, "Direct route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+					m_FearWalkTarget = last_good_loc;
+					curfp = true;
+					return;
 				}
-				if (have_los) {
-					m_FearWalkTarget = Node;
+				else
+				{
+					Log(Logs::Moderate, Logs::Pathing, "FindRoute() returned single hop route to destination without LOS: %0.1f, %0.1f, %0.1f for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+				}
+				// use fallback logic if LOS fails
+			}
+			else if (!stuck)
+			{
+				if (zone->pathing->IsUsingNavMesh())
+				{
+					// if nav mesh zone, check route for LOS failures to prevent mobs ending up outside of playable area
+					// only checking the last few hops because LOS will often fail in a valid route which can result in mobs getting undesirably trapped
+					auto iter = route.begin();
+					glm::vec3 previous_pos(GetX(), GetY(), GetZ());
+					while (iter != route.end() && have_los == true) {
+						auto &current_node = (*iter);
+						iter++;
+						route_count++;
+
+						if (iter == route.end()) {
+							continue;
+						}
+
+						previous_pos = current_node.pos;
+						auto &next_node = (*iter);
+
+						if (next_node.teleport)
+							continue;
+
+						if ((route_size - route_count) < 5 && !zone->zonemap->CheckLoS(previous_pos, next_node.pos))
+						{
+							//Shout("Loc %0.1f, %0.1f, %0.1f TO %0.1f, %0.1f, %0.1f FAILED LOS", previous_pos.x, previous_pos.y, previous_pos.z, next_node.pos.x, next_node.pos.y, next_node.pos.z);
+							have_los = false;
+							break;
+						}
+						else
+						{
+							last_good_loc = next_node.pos;
+							//Shout("Loc %0.1f, %0.1f, %0.1f TO %0.1f, %0.1f, %0.1f has LOS or not checking", previous_pos.x, previous_pos.y, previous_pos.z, next_node.pos.x, next_node.pos.y, next_node.pos.z);
+						}
+					}
+				}
+
+				if (have_los || route_count > 2)
+				{
+					if (have_los)
+						Log(Logs::Moderate, Logs::Pathing, "Route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s; route size: %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_size);
+					else
+						Log(Logs::Moderate, Logs::Pathing, "Using truncated route to fearpoint %0.1f, %0.1f, %0.1f for %s; node count: %i; route size %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_count, route_size);
+
+					m_FearWalkTarget = last_good_loc;
 					curfp = true;
 					return;
 				}
@@ -299,9 +346,12 @@ void Mob::CalculateNewFearpoint()
 		}
 	}
 
+
+	// fallback logic if pathing system can't be used
 	bool inliquid = zone->HasWaterMap() && zone->watermap->InLiquid(glm::vec3(GetPosition())) || zone->IsWaterZone(GetZ());
 	bool stay_inliquid = (inliquid && IsNPC() && CastToNPC()->IsUnderwaterOnly());
 	bool levitating = IsClient() && (FindType(SE_Levitate) || flymode != EQ::constants::GravityBehavior::Ground);
+	bool open_outdoor_zone = !zone->CanCastDungeon() && !zone->IsCity();
 
 	int loop = 0;
 	float ranx, rany, ranz;
@@ -316,12 +366,25 @@ void Mob::CalculateNewFearpoint()
 	{
 		int ran = 250 - (loop * 2);
 		loop++;
-		ranx = GetX() + zone->random.Int(0, ran - 1) - zone->random.Int(0, ran - 1);
-		rany = GetY() + zone->random.Int(0, ran - 1) - zone->random.Int(0, ran - 1);
+		if (open_outdoor_zone && loop < 20) // try a distant loc first; other way will likely pick a close loc
+		{
+			ranx = zone->random.Int(0, ran);
+			rany = zone->random.Int(0, ran);
+			if (ranx + rany < 200)
+				continue;
+
+			ranx = GetX() + (zone->random.Int(0, 1) == 1 ? ranx : -ranx);
+			rany = GetY() + (zone->random.Int(0, 1) == 1 ? rany : -rany);
+		}
+		else
+		{
+			ranx = GetX() + zone->random.Int(0, ran - 1) - zone->random.Int(0, ran - 1);
+			rany = GetY() + zone->random.Int(0, ran - 1) - zone->random.Int(0, ran - 1);
+		}
 		ranz = BEST_Z_INVALID;
 		glm::vec3 newloc(ranx, rany, ceil != BEST_Z_INVALID ? ceil : GetZ());
 
-		if (stay_inliquid || levitating) {
+		if (stay_inliquid || levitating || (loop > 50 && inliquid)) {
 			if (zone->zonemap->CheckLoS(myloc, newloc)) {
 				ranz = GetZ();
 				curfp = true;
@@ -346,6 +409,9 @@ void Mob::CalculateNewFearpoint()
 		}
 	}
 	if (curfp)
+	{
 		m_FearWalkTarget = glm::vec3(ranx, rany, ranz);
+		Log(Logs::Moderate, Logs::Pathing, "Non-pathed fearpoint %0.1f, %0.1f, %0.1f selected for %s", ranx, rany, ranz, GetName());
+	}
 }
 
