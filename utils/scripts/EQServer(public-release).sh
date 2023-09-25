@@ -441,7 +441,6 @@ backup)
 	cp $path/source/loginserver/login_util/login_opcodes_oldver.conf $backups
 	cp $path/source/loginserver/login_util/login_opcodes_sod.conf $backups
 	cp $path/source/utils/patches/patch_Mac.conf $backups
-	cp $path/source/utils/patches/mail_opcodes.conf $backups
 	cp $path/source/utils/patches/opcodes.conf $backups
 	cp $path/source/utils/patches/patch_Evolution.conf $backups
 
@@ -735,7 +734,6 @@ else
 	ln -s $path/source/loginserver/login_util/login_opcodes_sod.conf $path/login_opcodes_sod.conf
 	ln -s $path/source/utils/patches/patch_Mac.conf $path/patch_Mac.conf
  	ln -s $path/source/utils/patches/chat_opcodes.conf $path/chat_opcodes.conf
-	ln -s $path/source/utils/patches/mail_opcodes.conf $path/mail_opcodes.conf
 	ln -s $path/source/utils/patches/opcodes.conf $path/opcodes.conf
 	ln -s $path/source/utils/patches/patch_Evolution.conf $path/patch_Evolution.conf
 	echo Server Binaries..
