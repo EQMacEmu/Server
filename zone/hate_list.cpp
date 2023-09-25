@@ -855,39 +855,42 @@ bool HateList::RemoveEnt(Mob *ent)
 		bool is_same_raid = false;
 		bool is_same_player = false;
 		bool is_guild_on_hatelist = false;
-		bool no_fte = owner->CastToNPC()->fte_charid == 0 && owner->CastToNPC()->raid_fte == 0 && owner->CastToNPC()->group_fte == 0;
-		bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
-
-		if (owner && owner->IsNPC() && !no_fte)
+		if (owner && owner->IsNPC())
 		{
-			if (owner->CastToNPC()->fte_charid != 0)
-				is_same_player = IsCharacterOnHateList(owner->CastToNPC()->fte_charid);
-			if (owner->CastToNPC()->group_fte != 0)
-				is_same_group = IsGroupOnHateList(owner->CastToNPC()->group_fte);
-			if (owner->CastToNPC()->raid_fte != 0)
-				is_same_raid = IsRaidOnHateList(owner->CastToNPC()->raid_fte);
+			bool no_fte = owner->CastToNPC()->fte_charid == 0 && owner->CastToNPC()->raid_fte == 0 && owner->CastToNPC()->group_fte == 0;
+			bool send_engage_notice = owner->CastToNPC()->HasEngageNotice();
 
-			if (owner->CastToNPC()->HasEngageNotice()) {
-				if (owner->CastToNPC()->guild_fte != GUILD_NONE)
-				{
-					is_guild_on_hatelist = IsGuildOnHateList(owner->CastToNPC()->guild_fte);
-					if (!is_guild_on_hatelist)
+			if (owner && owner->IsNPC() && !no_fte)
+			{
+				if (owner->CastToNPC()->fte_charid != 0)
+					is_same_player = IsCharacterOnHateList(owner->CastToNPC()->fte_charid);
+				if (owner->CastToNPC()->group_fte != 0)
+					is_same_group = IsGroupOnHateList(owner->CastToNPC()->group_fte);
+				if (owner->CastToNPC()->raid_fte != 0)
+					is_same_raid = IsRaidOnHateList(owner->CastToNPC()->raid_fte);
+
+				if (owner->CastToNPC()->HasEngageNotice()) {
+					if (owner->CastToNPC()->guild_fte != GUILD_NONE)
 					{
-						HandleFTEDisengage();
+						is_guild_on_hatelist = IsGuildOnHateList(owner->CastToNPC()->guild_fte);
+						if (!is_guild_on_hatelist)
+						{
+							HandleFTEDisengage();
+						}
 					}
 				}
-			}
 
-			if (!is_same_raid && !is_same_group && !is_same_player)
-			{
+				if (!is_same_raid && !is_same_group && !is_same_player)
+				{
 
-				owner->CastToNPC()->fte_charid = 0;
-				owner->CastToNPC()->group_fte = 0;
-				owner->CastToNPC()->raid_fte = 0;
-				owner->CastToNPC()->solo_group_fte = 0;
-				owner->CastToNPC()->solo_raid_fte = 0;
-				owner->CastToNPC()->solo_fte_charid = 0;
-				owner->ssf_player_damage = 0;
+					owner->CastToNPC()->fte_charid = 0;
+					owner->CastToNPC()->group_fte = 0;
+					owner->CastToNPC()->raid_fte = 0;
+					owner->CastToNPC()->solo_group_fte = 0;
+					owner->CastToNPC()->solo_raid_fte = 0;
+					owner->CastToNPC()->solo_fte_charid = 0;
+					owner->ssf_player_damage = 0;
+				}
 			}
 		}
 	}
