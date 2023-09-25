@@ -1615,15 +1615,15 @@ int32 Mob::CheckHealAggroAmount(uint16 spell_id, Mob* target, uint32 heal_possib
 				{
 					if (heal_possible < val)
 						val = heal_possible;		// aggro is based on amount healed, not including crits/focii/AA multipliers
-
-					if (val > 0)
-						val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
-
-					if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
-						val = 800;
-					else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
-						val = 1500;
-
+					if (RuleB(Quarm, VeliousEraAggroCaps))
+					{
+						if (val > 0)
+							val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
+						if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
+							val = 800;
+						else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
+							val = 1500;
+					}
 					AggroAmount += val;
 				}
 				break;
