@@ -7766,7 +7766,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 
 	if (Admin() > 0 && tmpmer_used)
 	{
-		Message(CC_Red, "That isn't in't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
+		Message(CC_Red, "That item isn't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
 		return;
