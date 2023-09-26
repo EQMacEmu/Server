@@ -2833,11 +2833,16 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
+
 		Object* object = entity->CastToObject();
 		if (object->IsPlayerDrop())
 		{
 			std::string msg;
-			if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID()) {
+			if (Admin() > 0)
+			{
+				msg = "You cannot pick up dropped player items because you're a GM and that would make the players around you a sad panda.";
+			}
+			else if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID()) {
 				msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
 			}
 			else if (object->IsSSFRuleSet()) {
@@ -3646,6 +3651,13 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
 {
+	if (Admin() > 0)
+	{
+		std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
+		Message(CC_Red, msg.c_str());
+		return;
+	}
+
 	DropItem(EQ::invslot::slotCursor);
 	return;
 }
@@ -4992,6 +5004,13 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	// If we've received the packet and it's valid, then we're either going to join the group or fail in some way. 
 	// In either case, the invite should be cleared so just do it now.
 	Log(Logs::General, Logs::Group, "%s is clearing the group invite.", GetName());
@@ -5175,6 +5194,13 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	if (Invitee == this)
 	{
 		Message_StringID(CC_Default, GROUP_INVITEE_SELF);
@@ -5191,6 +5217,12 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 			if (Invitee->CastToClient()->IsSoloOnly())
 			{
 				Message(CC_Red, "This player has solo mode enabled, and cannot group with you.");
+				return;
+			}
+			if (Invitee->CastToClient()->Admin() > 0)
+			{
+				Message(CC_Red, "You are being invited by a GM. This will never work.");
+				database.SetHackerFlag(Invitee->CastToClient()->AccountName(), Invitee->CastToClient()->GetCleanName(), "GM attempted to join a group or raid.");
 				return;
 			}
 			if (!Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
@@ -6771,6 +6803,13 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
@@ -6785,6 +6824,12 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			if (i->IsSoloOnly())
 			{
 				Message(CC_Red, "This player is solo only and cannot be invited to the raid.");
+				return;
+			}
+
+			if (i->Admin() > 0)
+			{
+				Message(CC_Red, "This player is a GM and cannot join your raid.");
 				return;
 			}
 
@@ -7719,6 +7764,14 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0 && tmpmer_used)
+	{
+		Message(CC_Red, "That isn't in't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		return;
+	}
+
 	// This makes sure the vendor deletes charged items from their lists properly.
 	uint8 tmp_qty = 0;
 	// Temp merchantlist
@@ -7914,6 +7967,8 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 			sizeof(Merchant_Purchase_Struct), app->size);
 		return;
 	}
+
+
 	RDTSC_Timer t1(true);
 	Merchant_Purchase_Struct* mp = (Merchant_Purchase_Struct*)app->pBuffer;
 
@@ -7932,6 +7987,23 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	uint32 itemid = GetItemIDAt(mp->itemslot);
 	if (itemid == 0)
 		return;
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "Just use commands. You're literally a GM, silly goose.");
+		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
+		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
+
+		mco->itemslot = mp->itemslot;
+		mco->npcid = vendor->GetID();
+		mco->quantity = mp->quantity;
+		mco->price = 0;
+		mco->playerid = this->GetID();
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
 	const EQ::ItemData* item = database.GetItem(itemid);
 	EQ::ItemInstance* inst = GetInv().GetItem(mp->itemslot);
 	if (!item || !inst){
@@ -8798,6 +8870,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 	if(zone->GetZoneID() != bazaar)
 		return;
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot use the bazaar. Use the dev server for that.");
+		return;
+	}
+
 	uint16 code = app->pBuffer[0];
 	uint32 max_items = 80;
 
@@ -8853,6 +8931,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 			if (IsSoloOnly() || IsSelfFound())
 			{
 				Message(CC_Red, "You are solo or self found only, and cannot list or sell items in The Bazaar.");
+				return;
+			}
+			if (Admin() > 0)
+			{
+				Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+				database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
 				return;
 			}
 			GetItems_Struct* gis = GetTraderItems();
@@ -8985,6 +9069,13 @@ void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app)
 		Message(CC_Red, "You are solo or self found only, and cannot purchase items from The Bazaar.");
 		return;
 	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
+		return;
+	}
 	// Bazaar Trader:
 	//
 	// Client has elected to buy an item from a Trader
@@ -9051,6 +9142,13 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
+		if (Admin() > 0)
+		{
+			Message(CC_Red, "You are a GM. You cannot trade with other players. Use the dev server for that.");
+			database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to trade with another player instead of using GM commands.");
+			return;
+		}
+
 
 		if (tradee->CastToClient()->IsSoloOnly())
 		{
@@ -9060,15 +9158,18 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
+		if (tradee->CastToClient()->Admin() > 0)
+		{
+			Message(CC_User_YouMissOther, "You attempt to trade with a GM, but miss!");
+			return;
+		}
+
 		if (tradee->CastToClient()->IsSelfFound() == true || IsSelfFound() == true)
 		{
-			if (tradee->CastToClient()->IsSelfFound() != IsSelfFound())
-			{
-				Message(CC_Red, "This player does not match your self-found flags. You cannot trade with them.");
-				FinishTrade(this);
-				trade->Reset();
-				return;
-			}
+			Message(CC_Red, "This player is doing a self found run. You cannot trade with them.");
+			FinishTrade(this);
+			trade->Reset();
+			return;
 		}
 
 		if (trade->state != TradeNone && trade->state != Requesting) {

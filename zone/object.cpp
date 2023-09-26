@@ -630,6 +630,13 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 		sender->QueuePacket(outapp);
 		safe_delete(outapp);
 
+		if (sender->Admin() > 0)
+		{
+			std::string msg = "You can't interact with a tradeskill container as a GM. Yes. We thought of this one, too.";
+			sender->Message(CC_Red, msg.c_str());
+			return false;
+		}
+
 		//if the object already had a user, we are done
 		if (user != 0)
 		{
