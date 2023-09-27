@@ -52,8 +52,8 @@ enum {
 	RaidCommandRemoveLooter = 24, //in use
 };
 
-#define MAX_RAID_GROUPS 10
-#define MAX_RAID_MEMBERS 60
+#define MAX_RAID_GROUPS 12
+#define MAX_RAID_MEMBERS 72
 
 struct RaidMember{
 	char membername[64];
