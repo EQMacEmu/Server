@@ -4044,6 +4044,12 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (GetRevoked())
+	{
+		Message(CC_Default, "You have been revoked. You may not send Emote messages.");
+		return;
+	}
+
 	// Calculate new packet dimensions
 	Emote_Struct* in = (Emote_Struct*)app->pBuffer;
 	in->message[1023] = '\0';
@@ -4067,7 +4073,6 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 	memcpy(&out->message[len_name], in->message, len_msg);
 
 	entity_list.QueueCloseClients(this, outapp, true, RuleI(Range, Emote), 0, true, FilterSocials);
-
 	safe_delete(outapp);
 	return;
 }

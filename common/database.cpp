@@ -385,6 +385,22 @@ bool Database::UnDeleteCharacter(const char *name) {
 	return true;
 }
 
+bool Database::SetIPExemption(const char *name, uint8 amount) {
+	std::string query = StringFormat("UPDATE account SET ip_exemption_multiplier = %d where name='%s'", amount, Strings::Escape(name).c_str());
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return false;
+	}
+
+	if (results.RowsAffected() == 0) {
+		return false;
+	}
+
+	return true;
+}
+
 bool Database::SetMule(const char *name, uint8 toggle) {
 	std::string query = StringFormat("UPDATE account SET mule = %d, expansion = 12 where name='%s' AND status < 80", toggle, Strings::Escape(name).c_str());
 

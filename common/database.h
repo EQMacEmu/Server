@@ -165,6 +165,7 @@ public:
 	bool	GetAccountRestriction(uint32 acctid, uint16& expansion, bool& mule);
 	void	ClearAllConsented();
 	void	ClearAllConsented(char* oname, uint32 corpse_id, LinkedList<ConsentDenied_Struct*>* purged);
+	bool	SetIPExemption(const char* accountname, uint8 amount);
 	bool	SetMule(const char* accountname, uint8 toggle);
 	bool	SetExpansion(const char* accountname, uint8 toggle);
 

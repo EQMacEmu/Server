@@ -868,7 +868,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Shout: { /* Shout */
 		Mob *sender = this;
-
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Shout.");
+			return;
+		}
 		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		break;
 	}
@@ -903,6 +907,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		}
 		else if(!RuleB(Chat, ServerWideAuction)) {
 			Mob *sender = this;
+
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not send Auction messages.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -945,6 +955,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		else
 		{
 			Mob *sender = this;
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not talk in Out Of Character.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -1031,8 +1046,14 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		Mob* sender = this;
 		if (GetPet() && FindType(SE_VoiceGraft))
 			sender = GetPet();
-
-		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been revoked. You may not talk on say, except to NPCs directly.");
+		}
+		else
+		{
+			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		}
 		parse->EventPlayer(EVENT_SAY, this, message, language);
 
 		if (sender != this)
