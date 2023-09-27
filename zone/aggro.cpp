@@ -1427,7 +1427,16 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 					nonDamageHate += standardSpellHate;
 				break;
 			}
-			//case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			{
+				if (RuleB(Quarm, PreLuclinDiseaseCounterAggro))
+				{
+					if (IsSlowSpell(spell_id))
+						break;
+					nonDamageHate += standardSpellHate;
+				}
+				break;
+			}
 			case SE_PoisonCounter:
 			{
 				nonDamageHate += standardSpellHate;

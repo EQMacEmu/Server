@@ -212,6 +212,7 @@ RULE_INT(Quarm, HardcoreDeathBroadcastLevel, 30) // Defaults to level 30. A serv
 RULE_BOOL(Quarm, EnableRespawnReductionSystem, false) //10 to 60 seconds
 RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters whom are flagged as hardcore will be deleted after their untimely death with no way to recover them.
 RULE_BOOL(Quarm, EnableSpellSixLevelRule, false)
+RULE_BOOL(Quarm, PreLuclinDiseaseCounterAggro, true)
 RULE_INT(Quarm, RespawnReductionNewbiePullLimit, 4)
 RULE_INT(Quarm, RespawnReductionStandardPullLimit, 15)
 RULE_BOOL(Quarm, EnablePetExperienceSplit, true) // Accurate from Classic Launch until Luclin. Enables pet experience weights in groups (or 50% if solo) if a single pet deals more than 50% damage to a target out of all contributing damage.
