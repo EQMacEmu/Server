@@ -612,7 +612,7 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 			if (msg)
 			{
 				Message(CC_User_SpellFailure, msg);
-				InterruptSpell(INTERRUPT_SPELL, CC_User_Spells, spell_id, false, false);
+				InterruptSpell(0, CC_User_Spells, spell_id, false, false);
 			}
 			else
 			{
@@ -990,7 +990,7 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 		{
 			// when the client stops their own song, this function is called with SONG_ENDS and we shouldn't send a duplicate message
 			// when we use InterruptSpell()'s overload above, this functions is called with SONG_ENDS_ABRUPTLY but this also creates an extra message
-			if (message != SONG_ENDS && message != SONG_ENDS_ABRUPTLY)
+			if (message && message != SONG_ENDS && message != SONG_ENDS_ABRUPTLY)
 			{
 				// the interrupt message
 				auto outapp = new EQApplicationPacket(OP_InterruptCast, sizeof(InterruptCast_Struct));

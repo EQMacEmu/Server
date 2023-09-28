@@ -425,8 +425,7 @@ struct CastSpell_Struct
 	/*002*/	uint16	spell_id;
 	/*004*/	uint16	inventoryslot;  // slot for clicky item, 0xFFFF = normal cast
 	/*006*/	uint16	target_id;
-	/*008*/ uint16  cs_unknown1;
-	/*010*/ uint16  cs_unknown2;
+	/*008*/ uint32  spell_crc;
 	/*012*/
 };
 
