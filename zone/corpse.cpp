@@ -370,7 +370,7 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	/* Check Rule to see if we can leave corpses */
 	if(!RuleB(Character, LeaveNakedCorpses) ||
 		RuleB(Character, LeaveCorpses) &&
-		GetLevel() >= RuleI(Character, DeathItemLossLevel)) {
+		GetLevel() >= RuleI(Character, DeathItemLossLevel) || RuleB(Character, LeaveCorpses) && client->IsHardcore() && GetLevel() >= RuleI(Quarm, HardcoreDeathLevel)){
 		// cash
 		SetCash(pp->copper, pp->silver, pp->gold, pp->platinum);
 		pp->copper = 0;

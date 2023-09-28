@@ -1285,7 +1285,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	}
 
 	// We're in the middle of a trade and are not leaving a corpse.
-	if (trade && (GetGM() || !RuleB(Character, LeaveCorpses) || GetLevel() < RuleI(Character, DeathItemLossLevel)))
+	if (trade && (GetGM() || !RuleB(Character, LeaveCorpses) || IsHardcore() && GetLevel() < RuleI(Quarm, HardcoreDeathLevel) || GetLevel() < RuleI(Character, DeathItemLossLevel)))
 	{
 		Mob *with = trade->With();
 		if (with && with->IsClient()) 
@@ -1444,7 +1444,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 		}
 		
 		UnmemSpellAll(false);
-		if((RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel)) || RuleB(Character, LeaveNakedCorpses))
+		if((RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel)) || RuleB(Character, LeaveNakedCorpses) || IsHardcore() && previous_level >= RuleI(Quarm, HardcoreDeathLevel))
 		{
 
 			// If we've died on a boat, make sure corpse falls overboard.
