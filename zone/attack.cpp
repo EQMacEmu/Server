@@ -1423,6 +1423,8 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	SetMana(GetMaxMana());
 
+	uint32 previous_level = GetLevel();
+
 	bool LeftCorpse = false;
 
 	// now we apply the exp loss, unmem their spells, and make a corpse
@@ -1444,14 +1446,6 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 		UnmemSpellAll(false);
 		if((RuleB(Character, LeaveCorpses) && GetLevel() >= RuleI(Character, DeathItemLossLevel)) || RuleB(Character, LeaveNakedCorpses))
 		{
-			if (IsHardcore())
-			{
-				// Delete the character on next character select retrieval, so it can be hidden from owned characters. Purge these periodically.
-				uint64 death_timestamp = std::time(nullptr);
-				SetHardcoreDeathTimeStamp(death_timestamp);
-				if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
-					worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.");
-			}
 
 			// If we've died on a boat, make sure corpse falls overboard.
 			if(GetBoatNPCID() != 0)
@@ -1510,6 +1504,15 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	} else {
 		BuffFadeDetrimental();
+	}
+
+	if (IsHardcore() && previous_level >= RuleI(Quarm, HardcoreDeathLevel))
+	{
+		// Delete the character on next character select retrieval, so it can be hidden from owned characters or wiped, depending on rules. Purge these periodically.
+		uint64 death_timestamp = std::time(nullptr);
+		SetHardcoreDeathTimeStamp(death_timestamp);
+		if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
+			worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.", GetCleanName(), previous_level);
 	}
 
 	/*

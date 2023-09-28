@@ -208,7 +208,8 @@ RULE_INT(Quarm, RespawnReductionLowerBoundMax, 400000) //60 to 400 seconds
 RULE_INT(Quarm, RespawnReductionHigherBoundMax, 60000) //10 to 60 seconds
 RULE_INT(Quarm, RespawnReductionLowerBound, 30000) //30s
 RULE_INT(Quarm, RespawnReductionHigherBound, 60000) //60s
-RULE_INT(Quarm, HardcoreDeathBroadcastLevel, 30) // Defaults to level 30. A serverwide message is generated when someone dies after this level milestone.
+RULE_INT(Quarm, HardcoreDeathLevel, 1) // Defaults to level 1. The level in which someone will be wiped upon dying if hardcore.
+RULE_INT(Quarm, HardcoreDeathBroadcastLevel, 15) // Defaults to level 15. A serverwide message is generated when someone dies after this level milestone.
 RULE_BOOL(Quarm, EnableRespawnReductionSystem, false) //10 to 60 seconds
 RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters whom are flagged as hardcore will be deleted after their untimely death with no way to recover them.
 RULE_BOOL(Quarm, EnableSpellSixLevelRule, false)
