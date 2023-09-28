@@ -222,8 +222,8 @@ int command_init(void)
 		command_add("gender", "[0/1/2] - Change your or your target's gender to male/female/neuter.", AccountStatus::QuestMaster, command_gender) ||
 		command_add("getvariable", "[varname] - Get the value of a variable from the database.", AccountStatus::GMCoder, command_getvariable) ||
 		command_add("ginfo", "- get group info on target.", AccountStatus::QuestTroupe, command_ginfo) ||
-		command_add("giveitem", "[reason] [itemid] [charges] - Summon an item onto your target's cursor. Charges are optional.", AccountStatus::GMLeadAdmin, command_giveitem) ||
-		command_add("givemoney", "[reason] [pp] [gp] [sp] [cp] - Gives specified amount of money to the target player.", AccountStatus::GMLeadAdmin, command_givemoney) ||
+		command_add("giveitem", "[itemid] [charges] [reason] - Summon an item onto your target's cursor. Charges are optional.", AccountStatus::GMLeadAdmin, command_giveitem) ||
+		command_add("givemoney", "[pp] [gp] [sp] [cp] [reason]  - Gives specified amount of money to the target player.", AccountStatus::GMLeadAdmin, command_givemoney) ||
 		command_add("giveplayerfaction", "[factionid] [factionvalue] - Gives the target player faction with the given faction. (Acts as a hit).", AccountStatus::GMMgmt, command_giveplayerfaction) ||
 		command_add("globalview", "Lists all qglobals in cache if you were to do a quest with this target.", AccountStatus::GMStaff, command_globalview) ||
 		command_add("gm", "- Turn player target's or your GM flag on or off.", AccountStatus::GMStaff, command_gm) ||
@@ -6842,8 +6842,14 @@ void command_summonitem(Client *c, const Seperator *sep)
 }
 
 void command_giveitem(Client *c, const Seperator *sep){
-	if (!sep->IsNumber(2)) {
-		c->Message(CC_Red, "Usage: #giveitem [reason] [item id] [charges], charges are optional. Reason is required.");
+	if (!sep->IsNumber(1)) {
+		c->Message(CC_Red, "Usage: #giveitem [item id] [charges] [reason], charges are optional, reason is required.");
+	}
+	else if (sep->arg[2][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(2) &&sep->arg[3][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (c->GetTarget() == nullptr) {
 		c->Message(CC_Red, "You must target a client to give the item to.");
@@ -6853,7 +6859,7 @@ void command_giveitem(Client *c, const Seperator *sep){
 	}
 	else {
 		Client *t = c->GetTarget()->CastToClient();
-		uint32 itemid = atoi(sep->arg[2]);
+		uint32 itemid = atoi(sep->arg[1]);
 		int16 item_status = 0;
 		const EQ::ItemData* item = database.GetItem(itemid);
 		if (item) {
@@ -6861,7 +6867,7 @@ void command_giveitem(Client *c, const Seperator *sep){
 		}
 
 		int16 charges = 0;
-		if (sep->argnum<3 || !sep->IsNumber(3))
+		if (sep->argnum<2 || !sep->IsNumber(2))
 		{
 			if(item && database.ItemQuantityType(itemid) == EQ::item::Quantity_Charges)
 			{
@@ -6873,7 +6879,7 @@ void command_giveitem(Client *c, const Seperator *sep){
 			}
 		}
 		else
-			charges = atoi(sep->arg[3]);
+			charges = atoi(sep->arg[2]);
 
 		//No rent GM Uber Sword
 		if (item_status > c->Admin() || (c->Admin() < 80 && itemid == 2661))
@@ -6884,8 +6890,20 @@ void command_giveitem(Client *c, const Seperator *sep){
 }
 
 void command_givemoney(Client *c, const Seperator *sep){
-	if (!sep->IsNumber(2)) {	//as long as the first one is a number, we'll just let atoi convert the rest to 0 or a number
-		c->Message(CC_Red, "Usage: #Usage: #givemoney [reason] [pp] [gp] [sp] [cp] - Reason is required.");
+	if (!sep->IsNumber(1)) {	//as long as the first one is a number, we'll just let atoi convert the rest to 0 or a number
+		c->Message(CC_Red, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp] [reason] - Reason is required");
+	}
+	else if (sep->IsNumber(1) && sep->arg[3][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(2) && sep->arg[3][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(3) && sep->arg[4][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(4) && sep->arg[5][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (c->GetTarget() == nullptr) {
 		c->Message(CC_Red, "You must target a player to give money to.");
@@ -6895,8 +6913,8 @@ void command_givemoney(Client *c, const Seperator *sep){
 	}
 	else {
 		//TODO: update this to the client, otherwise the client doesn't show any weight change until you zone, move an item, etc
-		c->GetTarget()->CastToClient()->AddMoneyToPP(atoi(sep->arg[5]), atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]), true);
-		c->Message(CC_Default, "Added %i Platinum, %i Gold, %i Silver, and %i Copper to %s's inventory.", atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), atoi(sep->arg[5]), c->GetTarget()->GetName());
+		c->GetTarget()->CastToClient()->AddMoneyToPP(atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]), atoi(sep->arg[1]), true);
+		c->Message(CC_Default, "Added %i Platinum, %i Gold, %i Silver, and %i Copper to %s's inventory.", atoi(sep->arg[1]), atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), c->GetTarget()->GetName());
 	}
 }
 
