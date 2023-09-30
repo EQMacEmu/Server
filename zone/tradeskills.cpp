@@ -736,6 +736,8 @@ bool Client::CanIncreaseTradeskill(EQ::skills::SkillType tradeskill) {
 
 	if (rawskill >= maxskill) //Max skill sanity check
 		return false;
+	if (rawskill >= RuleI(Quarm, MaxTradeskillCap)) //Max skill sanity check
+		return false;
 
 	uint8 Baking	= (GetRawSkill(EQ::skills::SkillBaking) > 200) ? 1 : 0;
 	uint8 Smithing	= (GetRawSkill(EQ::skills::SkillBlacksmithing) > 200) ? 1 : 0;

@@ -1508,11 +1508,13 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	if (IsHardcore() && previous_level >= RuleI(Quarm, HardcoreDeathLevel))
 	{
+		if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
+			worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.", GetCleanName(), previous_level);
+
 		// Delete the character on next character select retrieval, so it can be hidden from owned characters or wiped, depending on rules. Purge these periodically.
 		uint64 death_timestamp = std::time(nullptr);
 		SetHardcoreDeathTimeStamp(death_timestamp);
-		if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
-			worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.", GetCleanName(), previous_level);
+		ClearPlayerInfoAndGrantStartingItems(false);
 	}
 
 	/*

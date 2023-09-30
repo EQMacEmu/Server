@@ -6893,7 +6893,7 @@ void command_givemoney(Client *c, const Seperator *sep){
 	if (!sep->IsNumber(1)) {	//as long as the first one is a number, we'll just let atoi convert the rest to 0 or a number
 		c->Message(CC_Red, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp] [reason] - Reason is required");
 	}
-	else if (sep->IsNumber(1) && sep->arg[3][0] == 0) {
+	else if (sep->IsNumber(1) && sep->arg[2][0] == 0) {
 		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (sep->IsNumber(2) && sep->arg[3][0] == 0) {
@@ -6903,6 +6903,9 @@ void command_givemoney(Client *c, const Seperator *sep){
 		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (sep->IsNumber(4) && sep->arg[5][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(5)) {
 		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (c->GetTarget() == nullptr) {

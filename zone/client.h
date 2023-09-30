@@ -118,7 +118,8 @@ typedef enum {
 	GateToBindPoint, // Always send RequestClientZoneChange_Struct to client: Gate spell or Translocate To Bind Point spell
 	SummonPC, // In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
 	Rewind, // Summon to /rewind location.
-	EvacToSafeCoords
+	EvacToSafeCoords,
+	ForceZoneToBindPoint
 } ZoneMode;
 
 typedef enum {
@@ -542,6 +543,7 @@ public:
 	void SacrificeConfirm(Client* caster);
 	void Sacrifice(Client* caster);
 	void GoToDeath();
+	void ForceGoToDeath();
 	void SetZoning(bool in) { zoning = in; }
 
 	FACTION_VALUE GetReverseFactionCon(Mob* iOther);
@@ -740,7 +742,7 @@ public:
 	void	SetMaterial(int16 slot_id, uint32 item_id);
 	int32	GetItemIDAt(int16 slot_id);
 	bool	FindOnCursor(uint32 item_id);
-	void	ClearPlayerInfoAndGrantStartingItems();
+	void	ClearPlayerInfoAndGrantStartingItems(bool goto_death = true);
 	bool	PutItemInInventory(int16 slot_id, const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursor(const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop = false);

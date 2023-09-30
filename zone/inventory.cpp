@@ -468,7 +468,7 @@ void Client::ResetStartingSkills()
 	SetClassLanguages();
 }
 
-void Client::ClearPlayerInfoAndGrantStartingItems()
+void Client::ClearPlayerInfoAndGrantStartingItems(bool goto_death)
 {
 
 	//Clear player's money.
@@ -542,8 +542,13 @@ void Client::ClearPlayerInfoAndGrantStartingItems()
 	SetLevel(1, true);
 	SetEXP(0, 0);
 
+	SetHardcoreDeathTimeStamp(0);
 	//Their state is likely all sorts of messed up. Commit immediately (Save) and then...
 	Save(1);
+	if (goto_death)
+	{
+		ForceGoToDeath();
+	}
 }
 
 // Remove item from inventory

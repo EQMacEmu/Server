@@ -707,8 +707,7 @@ void Client::CompleteConnect()
 	{
 		SetHardcoreDeathTimeStamp(0);
 		ClearPlayerInfoAndGrantStartingItems();
-		Kick();
-		WorldKick();
+		ForceGoToDeath();
 	}
 }
 
