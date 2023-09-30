@@ -1332,7 +1332,20 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	dead = true;
 
 	ClearTimersOnDeath();
-
+	if (IsHardcore())
+	{
+		if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
+		{
+			if (killerMob)
+			{
+				worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died to %s! They were level %i.", GetCleanName(), killerMob->GetCleanName(), GetLevel());
+			}
+			else
+			{
+				worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.", GetCleanName(), GetLevel());
+			}
+		}
+	}
 	bool dueling = IsDueling();
 	if (killerMob != nullptr)
 	{
@@ -1508,8 +1521,6 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	if (IsHardcore() && previous_level >= RuleI(Quarm, HardcoreDeathLevel))
 	{
-		if (GetLevel() >= RuleI(Quarm, HardcoreDeathBroadcastLevel))
-			worldserver.SendEmoteMessage(0, 0, 15, "[Hardcore] %s has died! They were level %i.", GetCleanName(), previous_level);
 
 		// Delete the character on next character select retrieval, so it can be hidden from owned characters or wiped, depending on rules. Purge these periodically.
 		uint64 death_timestamp = std::time(nullptr);
