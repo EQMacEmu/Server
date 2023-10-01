@@ -390,15 +390,15 @@ int main(int argc, char** argv) {
 
 			//check the factory for any new incoming streams.
 			while ((eqss = eqsf.Pop())) {
-				////pull the stream out of the factory and give it to the stream identifier
-				////which will figure out what patch they are running, and set up the dynamic
-				////structures and opcodes for that patch.
-				//struct in_addr	in;
-				//if (eqss == nullptr)
-				//	continue;
-				//in.s_addr = eqss->GetRemoteIP();
-				//Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqss->GetRemotePort()));
-				//stream_identifier.AddStream(eqss);	//takes the stream
+				//pull the stream out of the factory and give it to the stream identifier
+				//which will figure out what patch they are running, and set up the dynamic
+				//structures and opcodes for that patch.
+				struct in_addr	in;
+				if (eqss == nullptr)
+					continue;
+				in.s_addr = eqss->GetRemoteIP();
+				Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqss->GetRemotePort()));
+				stream_identifier.AddStream(eqss);	//takes the stream
 			}
 
 			//check the factory for any new incoming streams.
