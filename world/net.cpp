@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
 	uint8 ReconnectCounter = 100;
-	//EQStream* eqs;
+	EQStream* eqs;
 	EQOldStream* eqos;
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
@@ -437,20 +437,20 @@ int main(int argc, char** argv) {
 
 		int i = 5;
 		////check the factory for any new incoming streams.
-		//while ((eqs = eqsf.Pop())) {
-		//	//pull the stream out of the factory and give it to the stream identifier
-		//	//which will figure out what patch they are running, and set up the dynamic
-		//	//structures and opcodes for that patch.
-		//	struct in_addr	in{};
-		//	if (eqs == nullptr)
-		//		continue;
-		//	in.s_addr = eqs->GetRemoteIP();
-		//	LogInfo("New connection from {0}:{1}", inet_ntoa(in),ntohs(eqs->GetRemotePort()));
-		//	stream_identifier.AddStream(eqs);	//takes the stream
-		//	i++;
-		//	if (i == 5)
-		//		break;
-		//}
+		while ((eqs = eqsf.Pop())) {
+			//pull the stream out of the factory and give it to the stream identifier
+			//which will figure out what patch they are running, and set up the dynamic
+			//structures and opcodes for that patch.
+			//struct in_addr	in{};
+			//if (eqs == nullptr)
+			//	continue;
+			//in.s_addr = eqs->GetRemoteIP();
+			//LogInfo("New connection from {0}:{1}", inet_ntoa(in),ntohs(eqs->GetRemotePort()));
+			//stream_identifier.AddStream(eqs);	//takes the stream
+			//i++;
+			//if (i == 5)
+			//	break;
+		}
 		i = 0;
 		//check the factory for any new incoming streams.
 		while ((eqos = eqsf.PopOld())) {
