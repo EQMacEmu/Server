@@ -19,7 +19,7 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 		Record *r = *cur;
 		if (r != nullptr)
 			r->stream->ReleaseFromUse();
-		delete r;
+		safe_delete(r);
 	}
 	oldcur = m_oldstreams.begin();
 	oldend = m_oldstreams.end();
@@ -27,7 +27,7 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 		OldRecord *r = *oldcur;
 		if (r != nullptr)
 			r->stream->ReleaseFromUse();
-		delete r;
+		safe_delete(r);
 	}
 
 	std::vector<Patch *>::iterator curp, endp;
@@ -35,12 +35,14 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 	curp = m_patches.begin();
 	endp = m_patches.end();
 	for(; curp != endp; ++curp) {
-		delete *curp;
+		Patch* patch = *curp;
+		safe_delete(patch);
 	}
 	oldcurp = m_oldpatches.begin();
 	oldendp = m_oldpatches.end();
 	for(; oldcurp != oldendp; ++oldcurp) {
-		delete *oldcurp;
+		OldPatch* patch = *oldcurp;
+		safe_delete(patch);
 	}
 }
 
@@ -80,7 +82,7 @@ void EQStreamIdentifier::Process() {
 			//this stream has failed to match any pattern in our timeframe.
 			Log(Logs::General, Logs::Netcode, "[IDENTIFY] Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 			continue;
 		}
@@ -114,7 +116,7 @@ void EQStreamIdentifier::Process() {
 				break;
 			}
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 			continue;
 		}
@@ -170,7 +172,7 @@ void EQStreamIdentifier::Process() {
 		//if we found a match, or were not able to identify it
 		if(found_one || all_ready) {
 			//cannot print ip/port here. r->stream is invalid.
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 		} else {
 			++cur;
@@ -188,7 +190,7 @@ void EQStreamIdentifier::Process() {
 			//this stream has failed to match any pattern in our timeframe.
 			Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 			continue;
 		}
@@ -221,7 +223,7 @@ void EQStreamIdentifier::Process() {
 				break;
 			}
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 			continue;
 		}
@@ -238,43 +240,49 @@ void EQStreamIdentifier::Process() {
 			OldPatch *p = *oldcurp;
 
 			//ask the stream to see if it matches the supplied signature
-			EQStream::MatchState res = r->stream->CheckSignature(&p->signature);
-			switch(res) {
-			case EQStream::MatchNotReady:
-				//the stream has not received enough packets to compare with this signature
-//				_log(NET__IDENT_TRACE, "%s:%d: Tried patch %s, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
-				all_ready = false;
-				break;
-			case EQStream::MatchSuccessful: {
-				//yay, a match.
+			if (r)
+			{
+				EQStream::MatchState res = r->stream->CheckSignature(&p->signature);
+				switch (res) {
+				case EQStream::MatchNotReady:
+					//the stream has not received enough packets to compare with this signature
+	//				_log(NET__IDENT_TRACE, "%s:%d: Tried patch %s, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					all_ready = false;
+					break;
+				case EQStream::MatchSuccessful: {
+					//yay, a match.
 
-				Log(Logs::Detail, Logs::Netcode, "Identified stream %s:%d with signature %s", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					Log(Logs::Detail, Logs::Netcode, "Identified stream %s:%d with signature %s", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
 
-				//might want to do something less-specific here... some day..
-				EQStreamInterface *s = new EQStreamProxy(r->stream, p->structs, p->opcodes);
-				m_identified.push(s);
+					//might want to do something less-specific here... some day..
+					EQStreamInterface *s = new EQStreamProxy(r->stream, p->structs, p->opcodes);
+					m_identified.push(s);
 
-				found_one = true;
-				break;
-			}
-			case EQStream::MatchFailed:
-				//do nothing...
-				Log(Logs::Detail, Logs::Netcode, "%s:%d: Tried patch %s, and it did not match.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
-				break;
+					found_one = true;
+					break;
+				}
+				case EQStream::MatchFailed:
+					//do nothing...
+					Log(Logs::Detail, Logs::Netcode, "%s:%d: Tried patch %s, and it did not match.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					break;
+				}
 			}
 		}
 
 		//if we checked all patches and did not find a match.
 		if(all_ready && !found_one) {
 			//the stream cannot be identified.
-			Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d, no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
-			r->stream->ReleaseFromUse();
+			if (r)
+			{
+				Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d, no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+				r->stream->ReleaseFromUse();
+			}
 		}
 
 		//if we found a match, or were not able to identify it
 		if(found_one || all_ready) {
 			//cannot print ip/port here. r->stream is invalid.
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 		} else {
 			++oldcur;
