@@ -279,8 +279,8 @@ timeval sleep_time;
 						}
 					}
 				}
+				MStreams.unlock();
 			}
-			MStreams.unlock();
 		}
 	}
 }
