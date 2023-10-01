@@ -249,8 +249,11 @@ timeval sleep_time;
 					if(curstream != nullptr)
 					{
 						//dont bother processing incoming packets for closed connections
-						if(curstream->CheckClosed())
-							curstream = nullptr;
+						if (curstream->CheckClosed())
+						{
+							Streams.erase(stream_itr);
+							safe_delete(curstream);
+						}
 						else
 							curstream->PutInUse();
 						MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
@@ -264,8 +267,11 @@ timeval sleep_time;
 					}
 					else if(oldcurstream != nullptr)
 					{
-						if(oldcurstream->CheckClosed())
-							oldcurstream = nullptr;
+						if (oldcurstream->CheckClosed())
+						{
+							OldStreams.erase(oldstream_itr);
+							safe_delete(oldcurstream);
+						}
 						else
 							oldcurstream->PutInUse();
 
@@ -312,7 +318,7 @@ void EQStreamFactory::CheckTimeout()
 				auto temp = stream_itr;
 				++stream_itr;
 				//let whoever has the stream outside delete it
-				delete temp->second;
+				safe_delete(s);
 				Streams.erase(temp);
 				continue;
 			}
@@ -337,7 +343,7 @@ void EQStreamFactory::CheckTimeout()
 				auto temp = oldstream_itr;
 				++oldstream_itr;
 				//let whoever has the stream outside delete it
-				delete temp->second;
+				safe_delete(s);
 				OldStreams.erase(temp);
 				continue;
 			}
