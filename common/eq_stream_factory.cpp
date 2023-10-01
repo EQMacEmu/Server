@@ -437,6 +437,7 @@ void EQStreamFactory::WriterLoop()
 			old_wants_write.push_back(oldstream_itr->second);
 			//}						
 		}
+		MStreams.unlock();
 		//do the actual writes
 		cur = wants_write.begin();
 		end = wants_write.end();
@@ -453,6 +454,10 @@ void EQStreamFactory::WriterLoop()
 			(*oldcur)->SendPacketQueue();
 			(*oldcur)->ReleaseFromUse();
 		}
+
+		Sleep(10);
+
+		MStreams.lock();
 		stream_count = Streams.size() + OldStreams.size();
 		MStreams.unlock();
 		if (!stream_count) {
