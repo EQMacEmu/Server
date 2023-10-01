@@ -359,8 +359,8 @@ void EQStreamFactory::CheckTimeout()
 
 void EQStreamFactory::WriterLoop()
 {
-	std::vector<EQStream *> wants_write;
-	std::vector<EQStream *>::iterator cur,end;
+	//std::vector<EQStream *> wants_write;
+	//std::vector<EQStream *>::iterator cur,end;
 	std::vector<EQOldStream *> old_wants_write;
 	std::vector<EQOldStream *>::iterator oldcur,oldend;
 	bool decay=false;
@@ -378,31 +378,31 @@ void EQStreamFactory::WriterLoop()
 		if (!WriterRunning)
 			break;
 		MWriterRunning.unlock();
+
+		//wants_write.clear();
+
 		decay=DecayTimer.Check();
 
 		//copy streams into a seperate list so we dont have to keep
 		//MStreams locked while we are writting
 		MStreams.lock();
-
-		wants_write.clear();
-
 		old_wants_write.clear();
-		for(auto stream_itr = Streams.begin();stream_itr != Streams.end();stream_itr++) {
-			// If it's time to decay the bytes sent, then let's do it before we try to write
-			if (decay)
-				stream_itr->second->Decay();
+		//for(auto stream_itr = Streams.begin();stream_itr != Streams.end();stream_itr++) {
+		//	// If it's time to decay the bytes sent, then let's do it before we try to write
+		//	if (decay)
+		//		stream_itr->second->Decay();
 
-			//bullshit checking, to see if this is really happening, GDB seems to think so...
-			if(stream_itr->second == nullptr) {
-				fprintf(stderr, "ERROR: nullptr Stream encountered in EQStreamFactory::WriterLoop for: %i:%i", stream_itr->first.first, stream_itr->first.second);
-				continue;
-			}
+		//	//bullshit checking, to see if this is really happening, GDB seems to think so...
+		//	if(stream_itr->second == nullptr) {
+		//		fprintf(stderr, "ERROR: nullptr Stream encountered in EQStreamFactory::WriterLoop for: %i:%i", stream_itr->first.first, stream_itr->first.second);
+		//		continue;
+		//	}
 
-			if (stream_itr->second->HasOutgoingData()) {
-				stream_itr->second->PutInUse();
-				wants_write.push_back(stream_itr->second);
-			}
-		}
+		//	if (stream_itr->second->HasOutgoingData()) {
+		//		stream_itr->second->PutInUse();
+		//		wants_write.push_back(stream_itr->second);
+		//	}
+		//}
 		for(auto oldstream_itr = OldStreams.begin();oldstream_itr != OldStreams.end();oldstream_itr++) {
 
 			//bullshit checking, to see if this is really happening, GDB seems to think so...
@@ -420,13 +420,13 @@ void EQStreamFactory::WriterLoop()
 			//}						
 		}
 		//do the actual writes
-		cur = wants_write.begin();
+	/*	cur = wants_write.begin();
 		end = wants_write.end();
 
 		for(; cur != end; ++cur) {
 			(*cur)->Write(sock);
 			(*cur)->ReleaseFromUse();
-		}
+		}*/
 
 		//do the actual writes
 		oldcur = old_wants_write.begin();
