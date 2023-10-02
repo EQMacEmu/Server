@@ -102,18 +102,17 @@ bool EQStreamFactory::Open()
 
 EQStream *EQStreamFactory::Pop()
 {
-	EQStream *s = nullptr;
+	EQStream* s = nullptr;
 	MNewStreams.lock();
-	if (!NewStreams.empty()) {
-		s = NewStreams.front();
-		NewStreams.pop();
-		try {
-			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
+	if (NewStreams.size()) {
+		auto itr = NewStreams.begin();
+
+		if (itr != NewStreams.end())
+		{
+			s = itr->second;
+			if (s) {
+				s->PutInUse();
+			}
 		}
 	}
 	MNewStreams.unlock();
@@ -121,20 +120,40 @@ EQStream *EQStreamFactory::Pop()
 	return s;
 }
 
-void EQStreamFactory::PushOld(EQOldStream *s)
+void EQStreamFactory::PushOld(std::pair<uint32, uint16> in_ip_port, EQOldStream *s)
 {
 	//cout << "Push():Locking MNewStreams" << endl;
 	MNewStreams.lock();
-	NewOldStreams.push(s);
+	auto itr = NewOldStreams.find(in_ip_port);
+	if (itr != NewOldStreams.end())
+	{
+		EQOldStream* pendingStream = itr->second;
+		if (pendingStream)
+		{
+			safe_delete(pendingStream);
+		}
+		NewOldStreams.erase(itr);
+	}
+	NewOldStreams[in_ip_port] = s;
 	MNewStreams.unlock();
 	//cout << "Push(): Unlocking MNewStreams" << endl;
 }
 
 
-void EQStreamFactory::Push(EQStream *s)
+void EQStreamFactory::Push(std::pair<uint32, uint16> in_ip_port, EQStream *s)
 {
 	MNewStreams.lock();
-	NewStreams.push(s);
+	auto itr = NewStreams.find(in_ip_port);
+	if (itr != NewStreams.end())
+	{
+		EQStream* pendingStream = itr->second;
+		if (pendingStream)
+		{
+			safe_delete(pendingStream);
+		}
+		NewStreams.erase(itr);
+	}
+	NewStreams[in_ip_port] = s;
 	MNewStreams.unlock();
 }
 
@@ -145,15 +164,14 @@ EQOldStream *EQStreamFactory::PopOld()
 	//cout << "Pop():Locking MNewStreams" << endl;
 	MNewStreams.lock();
 	if (NewOldStreams.size()) {
-		s = NewOldStreams.front();
-		NewOldStreams.pop();
-		try {
-			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
+		auto itr = NewOldStreams.begin();
+
+		if (itr != NewOldStreams.end())
+		{
+			s = itr->second;
+			if (s) {
+				s->PutInUse();
+			}
 		}
 	}
 	MNewStreams.unlock();
@@ -161,6 +179,45 @@ EQOldStream *EQStreamFactory::PopOld()
 
 	return s;
 }
+
+void EQStreamFactory::RemoveOldByKey(std::pair<uint32, uint16> in_ip_port)
+{
+	MNewStreams.lock();
+	if (NewOldStreams.size()) {
+		auto itr = NewOldStreams.find(in_ip_port);
+
+		if (itr != NewOldStreams.end())
+		{
+			EQOldStream* s = itr->second;
+			if (s) {
+				s->ReleaseFromUse();
+				s->Close();
+				NewOldStreams.erase(itr);
+			}
+		}
+	}
+	MNewStreams.unlock();
+}
+
+void EQStreamFactory::RemoveByKey(std::pair<uint32, uint16> in_ip_port)
+{
+	MNewStreams.lock();
+	if (NewStreams.size()) {
+		auto itr = NewStreams.find(in_ip_port);
+
+		if (itr != NewStreams.end())
+		{
+			EQStream* s = itr->second;
+			if (s) {
+				s->ReleaseFromUse();
+				s->Close();
+				NewStreams.erase(itr);
+			}
+		}
+	}
+	MNewStreams.unlock();
+}
+
 
 void EQStreamFactory::ReaderLoop()
 {
@@ -229,7 +286,7 @@ void EQStreamFactory::ReaderLoop()
 						s->SetStreamType(OldStream);
 						OldStreams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
 						WriterWork.Signal();
-						PushOld(s);
+						PushOld(streamPair, s);
 						//s->AddBytesRecv(length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
 						s->ReceiveData(buffer, length);
@@ -241,8 +298,10 @@ void EQStreamFactory::ReaderLoop()
 						{
 							if (oldcurstream->CheckClosed())
 							{
-								OldStreams.erase(oldstream_itr);
-								oldcurstream = nullptr;
+								oldcurstream->Close();
+								OldStreams.erase(oldstream_itr);								
+								RemoveOldByKey(streamPair);
+								safe_delete(oldcurstream);
 							}
 							else
 								oldcurstream->PutInUse();
@@ -256,6 +315,7 @@ void EQStreamFactory::ReaderLoop()
 						else
 						{
 							OldStreams.erase(oldstream_itr);
+							RemoveOldByKey(streamPair);
 						}
 
 					}
@@ -269,7 +329,7 @@ void EQStreamFactory::ReaderLoop()
 						s->SetStreamType(StreamType);
 						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
 						WriterWork.Signal();
-						Push(s);
+						Push(streamPair, s);
 						s->AddBytesRecv(length);
 						s->Process(buffer, length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
@@ -284,7 +344,8 @@ void EQStreamFactory::ReaderLoop()
 							if (curstream->CheckClosed())
 							{
 								Streams.erase(stream_itr);
-								curstream = nullptr;
+								RemoveByKey(streamPair);
+								safe_delete(curstream);
 							}
 							else
 								curstream->PutInUse();
@@ -300,6 +361,7 @@ void EQStreamFactory::ReaderLoop()
 						else
 						{
 							Streams.erase(stream_itr);
+							RemoveByKey(streamPair);
 							MStreams.unlock();
 						}
 					}
@@ -437,7 +499,6 @@ void EQStreamFactory::WriterLoop()
 			old_wants_write.push_back(oldstream_itr->second);
 			//}						
 		}
-		MStreams.unlock();
 		//do the actual writes
 		cur = wants_write.begin();
 		end = wants_write.end();
@@ -455,11 +516,9 @@ void EQStreamFactory::WriterLoop()
 			(*oldcur)->ReleaseFromUse();
 		}
 
-		Sleep(10);
-
-		MStreams.lock();
 		stream_count = Streams.size() + OldStreams.size();
 		MStreams.unlock();
+		Sleep(10);
 		if (!stream_count) {
 			WriterWork.Wait();
 		}
