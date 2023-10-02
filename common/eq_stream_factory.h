@@ -26,7 +26,7 @@ class EQStreamFactory : private Timeoutable {
 
 		EQStreamType StreamType;
 
-		std::map<std::pair<uint32, uint16>,EQStream *> NewStreams;
+		std::queue<EQStream *> NewStreams;
 		Mutex MNewStreams;
 
 		std::map<std::pair<uint32, uint16>,EQStream *> Streams;
@@ -34,7 +34,7 @@ class EQStreamFactory : private Timeoutable {
 
 		Mutex MWritingStreams;
 
-		std::map<std::pair<uint32, uint16>,EQOldStream *> NewOldStreams;
+		std::queue<EQOldStream *> NewOldStreams;
 
 		std::map<std::pair<uint32, uint16>,EQOldStream *> OldStreams;
 
@@ -49,13 +49,10 @@ class EQStreamFactory : private Timeoutable {
 		EQStreamFactory(EQStreamType type, int port, uint32 timeout = 61000);
 
 		EQStream *Pop();
-		void Push(std::pair<uint32, uint16> in_ip_port, EQStream * s);
+		void Push(EQStream *s);
 
 		EQOldStream *PopOld();
-		void PushOld(std::pair<uint32, uint16> in_ip_port, EQOldStream * s);
-
-		void RemoveOldByKey(std::pair<uint32, uint16> in_ip_port);
-		void RemoveByKey(std::pair<uint32, uint16> in_ip_port);
+		void PushOld(EQOldStream *s);
 
 		bool Open();
 		bool Open(unsigned long port) { Port=port; return Open(); }
