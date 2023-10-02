@@ -365,6 +365,8 @@ int main(int argc, char** argv) {
 			//which will figure out what patch they are running, and set up the dynamic
 			//structures and opcodes for that patch.
 			struct in_addr	in{};
+			if (eqs == nullptr)
+				continue;
 			in.s_addr = eqs->GetRemoteIP();
 			LogInfo("New connection from {0}:{1}", inet_ntoa(in),ntohs(eqs->GetRemotePort()));
 			stream_identifier.AddStream(eqs);	//takes the stream
@@ -378,6 +380,8 @@ int main(int argc, char** argv) {
 			//pull the stream out of the factory and give it to the stream identifier
 			//which will figure out what patch they are running, and set up the dynamic
 			//structures and opcodes for that patch.
+			if (eqos == nullptr)
+				continue;
 			struct in_addr	in{};
 			in.s_addr = eqos->GetRemoteIP();
 			Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqos->GetRemotePort()));
