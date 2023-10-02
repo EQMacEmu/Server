@@ -140,6 +140,16 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 			return;
 		}
 	}
+	auto itr = spec.onsuccess.begin();
+	while (itr != spec.onsuccess.end())
+	{
+		auto tsitem = database.GetItem(itr->first);
+		if (!tsitem)
+		{
+			user->Message(CC_Red, "This combine would result in an item that is out of era or unavailable.");
+			return;
+		}
+	}
 
 	//now clean out the containers.
 	if(worldcontainer) {
