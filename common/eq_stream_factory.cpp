@@ -192,7 +192,8 @@ timeval sleep_time;
 		if ((num=select(sock+1,&readset,nullptr,nullptr,&sleep_time))<0) {
 			// What do we wanna do?
 			continue;
-		} else if (num==0)
+		}
+		else if (num == 0)
 			continue;
 
 		if(sock == -1)
@@ -206,22 +207,24 @@ timeval sleep_time;
 #endif
 			{
 				// What do we wanna do?
-			} else {
+			}
+			else {
+
 				MStreams.lock();
-				stream_itr = Streams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-				oldstream_itr = OldStreams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-				if (stream_itr == Streams.end() && oldstream_itr == OldStreams.end()) {
+				bool bIsNewStream = false;
+
 					if (buffer[1]==OP_SessionRequest) {
-						EQStream *s = new EQStream(from);
-						s->SetStreamType(StreamType);
-						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)]=s;
-						WriterWork.Signal();
-						Push(s);
-						s->AddBytesRecv(length);
-						s->Process(buffer,length);
-						s->SetLastPacketTime(Timer::GetCurrentTime());
+					bIsNewStream = true;
 					}
-					else {
+
+				auto streamPair = std::make_pair(from.sin_addr.s_addr, from.sin_port);
+
+				if (!bIsNewStream)
+				{
+					//stream_itr = Streams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
+					oldstream_itr = OldStreams.find(streamPair);
+					if (oldstream_itr == OldStreams.end())
+					{
 						EQOldStream *s = new EQOldStream(from, sock);
 						s->SetStreamType(OldStream);
 						OldStreams[std::make_pair(from.sin_addr.s_addr, from.sin_port)]=s;
@@ -231,26 +234,58 @@ timeval sleep_time;
 						s->SetLastPacketTime(Timer::GetCurrentTime());
 						s->ReceiveData(buffer,length);
 					}
+					else
+					{
+						EQOldStream *oldcurstream = oldstream_itr->second;
+						if (oldcurstream != nullptr)
+						{
+							if (oldcurstream->CheckClosed())
+							{
+								OldStreams.erase(oldstream_itr);
+								oldcurstream = nullptr;
+							}
+							else
+								oldcurstream->PutInUse();
+							if (oldcurstream) {
+								//oldcurstream->AddBytesRecv(length);
+								oldcurstream->ParceEQPacket(length, buffer);
+								oldcurstream->SetLastPacketTime(Timer::GetCurrentTime());
+								oldcurstream->ReleaseFromUse();
+							}
+						}
+						else
+						{
+							OldStreams.erase(oldstream_itr);
+						}
 
+					}
 					MStreams.unlock();
-				} else {
-
-					//newstr
+				}
+				else // newstr
+				{
 					stream_itr = Streams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-					EQStream *curstream = nullptr;
-					if(stream_itr != Streams.end())
-					curstream = stream_itr->second;
-					//oldstr
-					oldstream_itr = OldStreams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-					EQOldStream *oldcurstream = nullptr;
-					if(oldstream_itr != OldStreams.end())
-					oldcurstream = oldstream_itr->second;
+					if (stream_itr == Streams.end()) {
+						EQStream *s = new EQStream(from);
+						s->SetStreamType(StreamType);
+						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
+						WriterWork.Signal();
+						Push(s);
+						s->AddBytesRecv(length);
+						s->Process(buffer, length);
+						s->SetLastPacketTime(Timer::GetCurrentTime());
+						MStreams.unlock();
+					}
+					else {
+						EQStream *curstream = stream_itr->second;
 
 					if(curstream != nullptr)
 					{
 						//dont bother processing incoming packets for closed connections
 						if(curstream->CheckClosed())
+							{
+								Streams.erase(stream_itr);
 							curstream = nullptr;
+							}
 						else
 							curstream->PutInUse();
 						MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
@@ -262,30 +297,16 @@ timeval sleep_time;
 							curstream->ReleaseFromUse();
 						}
 					}
-					else if(oldcurstream != nullptr)
-					{
-						if(oldcurstream->CheckClosed())
-							oldcurstream = nullptr;
-						else
-							oldcurstream->PutInUse();
-
-						MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
-
-						if(oldcurstream) {
-							//oldcurstream->AddBytesRecv(length);
-							oldcurstream->ParceEQPacket(length, buffer);
-							oldcurstream->SetLastPacketTime(Timer::GetCurrentTime());
-							oldcurstream->ReleaseFromUse();
-						}
-					}
 					else
 					{
+							Streams.erase(stream_itr);
 						MStreams.unlock();
 					}
 				}
 			}
 		}
 	}
+}
 }
 
 void EQStreamFactory::CheckTimeout()
@@ -307,13 +328,16 @@ void EQStreamFactory::CheckTimeout()
 		if (state==CLOSED) {
 			if (s->IsInUse()) {
 				//give it a little time for everybody to finish with it
-			} else {
+			}
+			else {
 				//everybody is done, we can delete it now
-				auto temp = stream_itr;
-				++stream_itr;
 				//let whoever has the stream outside delete it
-				delete temp->second;
-				Streams.erase(temp);
+				if (s)
+				{
+					delete s;
+					s = nullptr;
+				}
+				stream_itr = Streams.erase(stream_itr);
 				continue;
 			}
 		}
@@ -331,14 +355,17 @@ void EQStreamFactory::CheckTimeout()
 		if (state==CLOSED) {
 			if (s->IsInUse()) {
 				//give it a little time for everybody to finish with it
-			} else {
+			}
+			else {
 				//everybody is done, we can delete it now
 				//cout << "Removing connection" << endl;
-				auto temp = oldstream_itr;
-				++oldstream_itr;
 				//let whoever has the stream outside delete it
-				delete temp->second;
-				OldStreams.erase(temp);
+				if (s)
+				{
+					delete s;
+					s = nullptr;
+				}
+				oldstream_itr = OldStreams.erase(oldstream_itr);
 				continue;
 			}
 		}
@@ -370,14 +397,14 @@ void EQStreamFactory::WriterLoop()
 			break;
 		MWriterRunning.unlock();
 
-		wants_write.clear();
-		old_wants_write.clear();
-
 		decay=DecayTimer.Check();
 
 		//copy streams into a seperate list so we dont have to keep
 		//MStreams locked while we are writting
 		MStreams.lock();
+
+		wants_write.clear();
+		old_wants_write.clear();
 		for(auto stream_itr = Streams.begin();stream_itr != Streams.end();stream_itr++) {
 			// If it's time to decay the bytes sent, then let's do it before we try to write
 			if (decay)
