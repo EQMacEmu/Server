@@ -149,6 +149,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 			user->Message(CC_Red, "This combine would result in an item that is out of era or unavailable.");
 			return;
 		}
+		itr++;
 	}
 
 	//now clean out the containers.
