@@ -102,6 +102,7 @@ bool EQStreamFactory::Open()
 
 EQStream *EQStreamFactory::Pop()
 {
+	MStreams.lock();
 	EQStream *s = nullptr;
 	MNewStreams.lock();
 	if (!NewStreams.empty()) {
@@ -117,6 +118,7 @@ EQStream *EQStreamFactory::Pop()
 		}
 	}
 	MNewStreams.unlock();
+	MStreams.unlock();
 
 	return s;
 }
@@ -141,6 +143,7 @@ void EQStreamFactory::Push(EQStream *s)
 
 EQOldStream *EQStreamFactory::PopOld()
 {
+	MStreams.lock();
 	EQOldStream *s = nullptr;
 	//cout << "Pop():Locking MNewStreams" << endl;
 	MNewStreams.lock();
@@ -157,6 +160,7 @@ EQOldStream *EQStreamFactory::PopOld()
 		}
 	}
 	MNewStreams.unlock();
+	MStreams.unlock();
 	//cout << "Pop(): Unlocking MNewStreams" << endl;
 
 	return s;
@@ -288,7 +292,6 @@ void EQStreamFactory::ReaderLoop()
 							}
 							else
 								curstream->PutInUse();
-							MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
 
 							if (curstream) {
 								curstream->AddBytesRecv(length);
@@ -296,6 +299,7 @@ void EQStreamFactory::ReaderLoop()
 								curstream->SetLastPacketTime(Timer::GetCurrentTime());
 								curstream->ReleaseFromUse();
 							}
+							MStreams.unlock();	//the in use flag prevents the stream from being deleted while we are using it.
 						}
 						else
 						{
