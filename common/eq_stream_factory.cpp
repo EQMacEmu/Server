@@ -104,6 +104,7 @@ EQStream *EQStreamFactory::Pop()
 {
 	EQStream* s = nullptr;
 	MNewStreams.lock();
+
 	if (NewStreams.size()) {
 		auto itr = NewStreams.begin();
 
@@ -113,6 +114,7 @@ EQStream *EQStreamFactory::Pop()
 			if (s) {
 				s->PutInUse();
 			}
+			NewStreams.erase(itr);
 		}
 	}
 	MNewStreams.unlock();
@@ -172,6 +174,7 @@ EQOldStream *EQStreamFactory::PopOld()
 			if (s) {
 				s->PutInUse();
 			}
+			NewOldStreams.erase(itr);
 		}
 	}
 	MNewStreams.unlock();
