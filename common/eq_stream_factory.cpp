@@ -371,6 +371,7 @@ void EQStreamFactory::CheckTimeout()
 		++oldstream_itr;
 	}
 	MStreams.unlock();
+	Sleep(10);
 }
 
 void EQStreamFactory::WriterLoop()
@@ -452,10 +453,11 @@ void EQStreamFactory::WriterLoop()
 			(*oldcur)->ReleaseFromUse();
 		}
 
-		Sleep(10);
-
 		stream_count = Streams.size() + OldStreams.size();
 		MStreams.unlock();
+
+
+		Sleep(10);
 		if (!stream_count) {
 			WriterWork.Wait();
 		}
