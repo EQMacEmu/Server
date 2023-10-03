@@ -105,16 +105,13 @@ EQStream *EQStreamFactory::Pop()
 	MStreams.lock();
 	EQStream *s = nullptr;
 	MNewStreams.lock();
-	if (!NewStreams.empty()) {
-		s = NewStreams.front();
+	if (NewStreams.size()) {
+		auto frontstream = NewStreams.front();
 		NewStreams.pop();
-		try {
+		if (frontstream != nullptr)
+		{
+			s = frontstream;
 			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
 		}
 	}
 	MNewStreams.unlock();
@@ -148,15 +145,12 @@ EQOldStream *EQStreamFactory::PopOld()
 	//cout << "Pop():Locking MNewStreams" << endl;
 	MNewStreams.lock();
 	if (NewOldStreams.size()) {
-		s = NewOldStreams.front();
+		auto frontstream = NewOldStreams.front();
 		NewOldStreams.pop();
-		try {
+		if (frontstream != nullptr)
+		{
+			s = frontstream;
 			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
 		}
 	}
 	MNewStreams.unlock();
@@ -441,7 +435,6 @@ void EQStreamFactory::WriterLoop()
 			old_wants_write.push_back(oldstream_itr->second);
 			//}						
 		}
-		MStreams.unlock();
 		//do the actual writes
 		cur = wants_write.begin();
 		end = wants_write.end();
@@ -461,7 +454,6 @@ void EQStreamFactory::WriterLoop()
 
 		Sleep(10);
 
-		MStreams.lock();
 		stream_count = Streams.size() + OldStreams.size();
 		MStreams.unlock();
 		if (!stream_count) {
