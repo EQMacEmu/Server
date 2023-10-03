@@ -7653,6 +7653,20 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	int merchantid;
 	bool tmpmer_used = false;
 	Mob* tmp = entity_list.GetMob(mp->npcid);
+	if (!tmp)
+	{
+		// This prevents the client from bugging if we have to return but also sends a bogus message.
+		auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
+		Merchant_Sell_Struct* mss = (Merchant_Sell_Struct*)returnapp->pBuffer;
+		mss->itemslot = 0;
+		mss->npcid = mp->npcid;
+		mss->playerid = GetID();
+		mss->price = 0;
+		mss->quantity = 0;
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		SendMerchantEnd();
+	}
 
 	// This prevents the client from bugging if we have to return but also sends a bogus message.
 	auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
