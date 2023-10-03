@@ -6111,8 +6111,8 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		return;
 	}
 	else {
-		std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
-		Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
+		//std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
+		//Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
 		Corpse::SendLootReqErrorPacket(this);
 	}
 	return;
