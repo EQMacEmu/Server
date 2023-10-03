@@ -7666,6 +7666,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
 		SendMerchantEnd();
+		return;
 	}
 
 	// This prevents the client from bugging if we have to return but also sends a bogus message.
