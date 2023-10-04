@@ -381,7 +381,7 @@ void EQStreamFactory::WriterLoop()
 					stream_itr->first.first, stream_itr->first.second);
 				continue;
 			}
-
+			stream_itr->second->CheckTimers();
 			//if (stream_itr->second->HasOutgoingData()) {
 			havework = true;
 			stream_itr->second->PutInUse();
