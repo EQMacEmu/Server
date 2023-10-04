@@ -62,7 +62,7 @@ ClientManager::~ClientManager()
 void ClientManager::Process()
 {
 	ProcessDisconnect();
-	std::shared_ptr<EQOldStream> oldcur = old_stream->PopOld();
+	EQOldStream* oldcur = old_stream->PopOld();
 	if (old_stream) {
 		while (oldcur)
 		{
@@ -98,7 +98,7 @@ void ClientManager::ProcessDisconnect()
 	list<Client*>::iterator iter = clients.begin();
 	while(iter != clients.end())
 	{
-		std::shared_ptr<EQStreamInterface> c = (*iter)->GetConnection();
+		EQStreamInterface *c = (*iter)->GetConnection();
 		if (c->CheckState(CLOSED))
 		{
 			c->ReleaseFromUse();

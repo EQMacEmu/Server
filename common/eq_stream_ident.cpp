@@ -290,12 +290,12 @@ void EQStreamIdentifier::Process() {
 	}	//end foreach stream
 }
 
-void EQStreamIdentifier::AddStream(std::shared_ptr<EQStream> eqs) {
-	m_streams.emplace_back(new Record(eqs));
+void EQStreamIdentifier::AddStream(EQStream *&eqs) {
+	m_streams.push_back(new Record(eqs));
 	eqs = nullptr;
 }
 
-void EQStreamIdentifier::AddOldStream(std::shared_ptr<EQOldStream> eqs) {
+void EQStreamIdentifier::AddOldStream(EQOldStream *&eqs) {
 	m_oldstreams.push_back(new OldRecord(eqs));
 	eqs = nullptr;
 }
@@ -308,14 +308,14 @@ EQStreamInterface *EQStreamIdentifier::PopIdentified() {
 	return(res);
 }
 
-EQStreamIdentifier::Record::Record(std::shared_ptr<EQStream> s)
+EQStreamIdentifier::Record::Record(EQStream *s)
 :	stream(std::move(s)),
 	expire(STREAM_IDENT_WAIT_MS)
 {
 	expire.Start();
 }
 
-EQStreamIdentifier::OldRecord::OldRecord(std::shared_ptr<EQOldStream> s)
+EQStreamIdentifier::OldRecord::OldRecord(EQOldStream *s)
 :	stream(s),
 	expire(STREAM_IDENT_WAIT_MS)
 {
