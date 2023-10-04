@@ -107,8 +107,8 @@ std::shared_ptr<EQStream> EQStreamFactory::Pop()
 	if (!NewStreams.empty()) {
 		s = NewStreams.front();
 		NewStreams.pop();
-			s->PutInUse();
-		}
+		s->PutInUse();
+	}
 	MNewStreams.unlock();
 
 	return s;
@@ -157,8 +157,10 @@ void EQStreamFactory::ReaderLoop()
 	ReaderRunning = true;
 	while (sock != -1) {
 		MReaderRunning.lock();
-		if (!ReaderRunning)
+		if (!ReaderRunning) {
+			MReaderRunning.unlock();
 			break;
+		}
 		MReaderRunning.unlock();
 
 		FD_ZERO(&readset);
@@ -193,14 +195,14 @@ void EQStreamFactory::ReaderLoop()
 
 					stream_itr = Streams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
 					if (stream_itr == Streams.end()) {
-							std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
-							s->SetStreamType(StreamType);
-							Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
-							WriterWork.Signal();
-							Push(s);
-							s->AddBytesRecv(length);
-							s->Process(buffer, length);
-							s->SetLastPacketTime(Timer::GetCurrentTime());
+						std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
+						s->SetStreamType(StreamType);
+						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
+						WriterWork.Signal();
+						Push(s);
+						s->AddBytesRecv(length);
+						s->Process(buffer, length);
+						s->SetLastPacketTime(Timer::GetCurrentTime());
 						MStreams.unlock();
 					}
 					else {
@@ -275,10 +277,11 @@ void EQStreamFactory::CheckTimeout()
 		if (state == CLOSED) {
 			if (s->IsInUse()) {
 				//give it a little time for everybody to finish with it
-			} else {
+			}
+			else {
 				//everybody is done, we can delete it now
 				auto temp = stream_itr;
-		++stream_itr;
+				++stream_itr;
 				temp->second = nullptr;
 				Streams.erase(temp);
 				continue;
@@ -380,9 +383,9 @@ void EQStreamFactory::WriterLoop()
 			}
 
 			//if (stream_itr->second->HasOutgoingData()) {
-				havework = true;
-				stream_itr->second->PutInUse();
-				old_wants_write.push_back(stream_itr->second);
+			havework = true;
+			stream_itr->second->PutInUse();
+			old_wants_write.push_back(stream_itr->second);
 			//}
 		}
 
@@ -409,7 +412,7 @@ void EQStreamFactory::WriterLoop()
 		Sleep(10);
 
 		MStreams.lock();
-		stream_count = Streams.size();
+		stream_count = OldStreams.size() + Streams.size();
 		MStreams.unlock();
 		if (!stream_count) {
 			WriterWork.Wait();
