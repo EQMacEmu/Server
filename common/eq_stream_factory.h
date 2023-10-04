@@ -2,6 +2,7 @@
 
 #define _EQSTREAMFACTORY_H
 
+#include <memory>
 #include <queue>
 #include <map>
 
@@ -26,17 +27,15 @@ class EQStreamFactory : private Timeoutable {
 
 		EQStreamType StreamType;
 
-		std::queue<EQStream *> NewStreams;
+		std::queue<std::shared_ptr<EQStream>> NewStreams;
 		Mutex MNewStreams;
 
-		std::map<std::pair<uint32, uint16>,EQStream *> Streams;
+		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>> Streams;
 		Mutex MStreams;
 
-		Mutex MWritingStreams;
+		std::queue<std::shared_ptr<EQOldStream>> NewOldStreams;
 
-		std::queue<EQOldStream *> NewOldStreams;
-
-		std::map<std::pair<uint32, uint16>,EQOldStream *> OldStreams;
+		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>> OldStreams;
 
 		virtual void CheckTimeout();
 
@@ -48,11 +47,11 @@ class EQStreamFactory : private Timeoutable {
 		EQStreamFactory(EQStreamType type, uint32 timeout = 61000) : Timeoutable(5000), stream_timeout(timeout) { ReaderRunning=false; WriterRunning=false; StreamType=type; sock=-1; }
 		EQStreamFactory(EQStreamType type, int port, uint32 timeout = 61000);
 
-		EQStream *Pop();
-		void Push(EQStream *s);
+		std::shared_ptr<EQStream> Pop();
+		void Push(std::shared_ptr<EQStream> s);
 
-		EQOldStream *PopOld();
-		void PushOld(EQOldStream *s);
+		std::shared_ptr<EQOldStream> PopOld();
+		void PushOld(std::shared_ptr<EQOldStream> s);
 
 		bool Open();
 		bool Open(unsigned long port) { Port=port; return Open(); }

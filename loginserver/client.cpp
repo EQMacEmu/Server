@@ -28,9 +28,10 @@ extern EQCrypto eq_crypto;
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
 
-Client::Client(EQStreamInterface *c, ClientVersion v)
+Client::Client(std::shared_ptr<EQStreamInterface> c, ClientVersion v)
 {
 	connection = c;
+	macversion = pc;
 	version = v;
 	status = cs_not_sent_session_ready;
 	account_id = 0;
