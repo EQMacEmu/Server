@@ -4,7 +4,6 @@
 
 #include "types.h"
 #include "eq_stream_intf.h"
-#include <memory>
 
 class EQStream;
 class EQOldStream;
