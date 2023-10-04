@@ -19,7 +19,7 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 		Record *r = *cur;
 		if (r != nullptr)
 			r->stream->ReleaseFromUse();
-		delete r;
+		safe_delete(r);
 	}
 	oldcur = m_oldstreams.begin();
 	oldend = m_oldstreams.end();
@@ -27,7 +27,7 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 		OldRecord *r = *oldcur;
 		if (r != nullptr)
 			r->stream->ReleaseFromUse();
-		delete r;
+		safe_delete(r);
 	}
 
 	std::vector<Patch *>::iterator curp, endp;
@@ -35,12 +35,12 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 	curp = m_patches.begin();
 	endp = m_patches.end();
 	for(; curp != endp; ++curp) {
-		delete *curp;
+		safe_delete(r);
 	}
 	oldcurp = m_oldpatches.begin();
 	oldendp = m_oldpatches.end();
 	for(; oldcurp != oldendp; ++oldcurp) {
-		delete *oldcurp;
+		safe_delete(r);
 	}
 }
 
@@ -80,7 +80,7 @@ void EQStreamIdentifier::Process() {
 			//this stream has failed to match any pattern in our timeframe.
 			Log(Logs::General, Logs::Netcode, "[IDENTIFY] Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 			continue;
 		}
@@ -114,7 +114,7 @@ void EQStreamIdentifier::Process() {
 				break;
 			}
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 			continue;
 		}
@@ -170,7 +170,7 @@ void EQStreamIdentifier::Process() {
 		//if we found a match, or were not able to identify it
 		if(found_one || all_ready) {
 			//cannot print ip/port here. r->stream is invalid.
-			delete r;
+			safe_delete(r);
 			cur = m_streams.erase(cur);
 		} else {
 			++cur;
@@ -188,7 +188,7 @@ void EQStreamIdentifier::Process() {
 			//this stream has failed to match any pattern in our timeframe.
 			Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 			continue;
 		}
@@ -221,7 +221,7 @@ void EQStreamIdentifier::Process() {
 				break;
 			}
 			r->stream->ReleaseFromUse();
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 			continue;
 		}
@@ -281,7 +281,7 @@ void EQStreamIdentifier::Process() {
 		//if we found a match, or were not able to identify it
 		if(found_one || all_ready) {
 			//cannot print ip/port here. r->stream is invalid.
-			delete r;
+			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
 		} else {
 			++oldcur;
