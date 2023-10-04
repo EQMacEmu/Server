@@ -21,8 +21,8 @@ public:
 	void RegisterOldPatch(const EQStream::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs);
 	//main processing interface
 	void Process();
-	void AddStream(EQStream *& eqs);
-	void AddOldStream(EQOldStream *& eqs);
+	void AddStream(std::shared_ptr<EQStream> eqs);
+	void AddOldStream(std::shared_ptr<EQOldStream>);
 	EQStreamInterface *PopIdentified();
 
 protected:
@@ -40,8 +40,8 @@ protected:
 	//pending streams..
 	class Record {
 	public:
-		Record(EQStream *s);
-		EQStream *stream;		//we own this
+		Record(std::shared_ptr<EQStream> s);
+		std::shared_ptr<EQStream> stream;		//we own this
 		Timer expire;
 	};
 	std::vector<Record *> m_streams;	//we own these objects, and the streams contained in them.
@@ -62,8 +62,8 @@ protected:
 	//pending streams..
 	class OldRecord {
 	public:
-		OldRecord(EQOldStream *s);
-		EQOldStream *stream;		//we own this
+		OldRecord(std::shared_ptr<EQOldStream> s);
+		std::shared_ptr<EQOldStream> stream;		//we own this
 		Timer expire;
 	};
 	std::vector<OldRecord *> m_oldstreams;	//we own these objects, and the streams contained in them.

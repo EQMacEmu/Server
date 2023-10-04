@@ -5,26 +5,22 @@
 #include "struct_strategy.h"
 
 
-EQStreamProxy::EQStreamProxy(EQStream *&stream, const StructStrategy *structs, OpcodeManager **opcodes)
+EQStreamProxy::EQStreamProxy(std::shared_ptr<EQStream> &stream, const StructStrategy *structs, OpcodeManager **opcodes)
 :	m_stream(stream),
 	m_structs(structs),
 	m_opcodes(opcodes)
 {
 	stream = nullptr;	//take the stream.
-
-	EQStream* m_pStream = (EQStream*)m_stream;
-	m_pStream->SetOpcodeManager(m_opcodes);
+	m_stream->SetOpcodeManager(m_opcodes);
 }
 
-EQStreamProxy::EQStreamProxy(EQOldStream *&stream, const StructStrategy *structs, OpcodeManager **opcodes)
+EQStreamProxy::EQStreamProxy(std::shared_ptr<EQOldStream> &stream, const StructStrategy *structs, OpcodeManager **opcodes)
 :	m_stream(stream),
 	m_structs(structs),
 	m_opcodes(opcodes)
 {
 	stream = nullptr;	//take the stream.
-
-	EQOldStream* m_pStream = (EQOldStream*)m_stream;
-	m_pStream->SetOpcodeManager(m_opcodes);
+	m_stream->SetOpcodeManager(m_opcodes);
 }
 
 EQStreamProxy::~EQStreamProxy() {
@@ -40,6 +36,10 @@ const EQ::versions::ClientVersion EQStreamProxy::ClientVersion() const
 	return m_structs->ClientVersion();
 }
 
+void EQStreamProxy::SetOpcodeManager(OpcodeManager **opm)
+{
+	return m_stream->SetOpcodeManager(opm);
+}
 void EQStreamProxy::QueuePacket(const EQApplicationPacket *p, bool ack_req) {
 	if(p == nullptr)
 		return;
