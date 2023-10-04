@@ -97,10 +97,12 @@ Group::~Group()
 }
 
 void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum, Client *splitter, bool share) {
-	if(!copper && !silver && !gold && !platinum)
+	if (!copper && !silver && !gold && !platinum) {
 		return;
+	}
 
 	uint8 member_count = 0;
+
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] && members[i]->IsClient()) {
 			member_count++;
@@ -111,49 +113,55 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 		return;
 	}
 
-	// get remainder of coin types.
+	// Calculate split and remainder for each coin type
+	uint32 copper_split = copper / member_count;
 	uint32 copper_remainder = copper % member_count;
+	uint32 silver_split = silver / member_count;
 	uint32 silver_remainder = silver % member_count;
+	uint32 gold_split = gold / member_count;
 	uint32 gold_remainder = gold % member_count;
+	uint32 platinum_split = platinum / member_count;
 	uint32 platinum_remainder = platinum % member_count;
-
-	// calculate coin split plus remainder for splitter or a random member of group.
-	auto splitter_copper = ((copper - copper_remainder) / member_count) + copper_remainder;
-	auto splitter_silver = ((silver - silver_remainder) / member_count) + silver_remainder;
-	auto splitter_gold = ((gold - gold_remainder) / member_count) + gold_remainder;
-	auto splitter_platinum = ((platinum - platinum_remainder) / member_count) + platinum_remainder;
-
-	// calculate coin split minus remainder for rest of group.
-	auto copper_split = (copper - copper_remainder) / member_count;
-	auto silver_split = (silver - silver_remainder) / member_count;
-	auto gold_split = (gold - gold_remainder) / member_count;
-	auto platinum_split = (platinum - platinum_remainder) / member_count;
-
+	
 	uint8 random_member = zone->random.Int(0, member_count - 1);
 
+
+
+	// Loop through the group members to split the coins.
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] && members[i]->IsClient()) { // If Group Member is Client
+			Client* member_client = members[i]->CastToClient();
+
+			uint32 receive_copper = copper_split;
+			uint32 receive_silver = silver_split;
+			uint32 receive_gold = gold_split;
+			uint32 receive_platinum = platinum_split;
+
+			// if /split is used then splitter gets the remainder + split.
+			// if /autosplit is used then random players in the group will get the remainder + split.
+			if(share ? member_client == splitter : member_client == members[random_member]) {
+				receive_copper += copper_remainder;
+				receive_silver += silver_remainder;
+				receive_gold += gold_remainder;
+				receive_platinum += platinum_remainder;
+			}
+
+			// the group member other than the character doing the /split only gets this message "(splitter) shares the money with the group"
+			if (share && member_client != splitter) {
+				member_client->Message_StringID(CC_Green, SHARE_MONEY, splitter->GetCleanName());
+			}
+
+			// Check if there are any coins to add to the player's purse.
+			if (receive_copper || receive_silver || receive_gold || receive_platinum) {
+				member_client->AddMoneyToPP(receive_copper, receive_silver, receive_gold, receive_platinum, true);
+				member_client->Message_StringID(CC_Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(receive_platinum, receive_gold, receive_silver, receive_copper).c_str());
+			}
+
 			if (RuleB(QueryServ, PlayerLogMoneyTransactions))
 			{
 				uint32 fromid = splitter ? splitter->CharacterID() : 0;
 				uint32 copper = (platinum_split * 1000) + (gold_split * 100) + (silver_split * 10) + copper_split;
 				QServ->QSCoinMove(fromid, members[i]->CastToClient()->CharacterID(), 0, 100, copper);
-			}
-
-			if (share ? members[i] != splitter : members[i] != members[random_member]) {
-				// if /split is used, send message to group that the coin were shared.  message is excluded for /autosplit.
-				if (share) {
-					members[i]->CastToClient()->Message_StringID(CC_Green, SHARE_MONEY, splitter->GetCleanName());
-				}
-
-				if (copper_split || silver_split || gold_split || platinum_split) {
-					members[i]->CastToClient()->AddMoneyToPP(copper_split, silver_split, gold_split, platinum_split, true);
-					members[i]->CastToClient()->Message_StringID(CC_Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(platinum_split, gold_split, silver_split, copper_split).c_str());
-				}
-			}
-			else { // either the splitter (/split) or a random member (/autosplit) gets this portion that includes the remainder.
-				members[i]->CastToClient()->AddMoneyToPP(splitter_copper, splitter_silver, splitter_gold, splitter_platinum, true);
-				members[i]->CastToClient()->Message_StringID(CC_Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(splitter_platinum, splitter_gold, splitter_silver, splitter_copper).c_str());
 			}
 		}
 	}
