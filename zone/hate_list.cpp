@@ -328,6 +328,7 @@ Mob* HateList::GetDamageTopSingleMob(int32& return_dmg) {
 			top_dmg = dmg;
 			top_mob = m;
 		}
+		++iterator;
 	}
 	return_dmg = top_dmg;
 	return top_mob;

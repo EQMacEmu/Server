@@ -67,7 +67,7 @@ public:
 	// Gets Hate amount for mob
 	int32 GetEntDamage(Mob *ent, bool combine_pet_dmg = false);
 	// get the top damage single mob (including pets and npcs), no group or raid
-	Mob *HateList::GetDamageTopSingleMob(int32& return_dmg)
+	Mob *HateList::GetDamageTopSingleMob(int32& return_dmg);
 	// gets top mob or nullptr if hate list empty
 	Mob *GetDamageTop(int32& return_dmg, bool combine_pet_dmg = true, bool clients_only = false);
 	// used to check if mob is on hatelist
