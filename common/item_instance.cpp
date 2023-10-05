@@ -503,6 +503,8 @@ bool EQ::ItemInstance::IsSlotAllowed(int16 slot_id, EQ::InventoryProfile &inv) c
 		{
 			if (m_item->ItemType == item::ItemTypeArrow || m_item->ItemType == item::ItemTypeSmallThrowing)
 				return true;
+			if (m_item->Range)
+				return true;
 		}
 		if (m_item->ItemType == item::ItemTypeUnknown4) // type 28 isn't actually used on any items but this logic is in the client
 			return true;
