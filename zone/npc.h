@@ -605,8 +605,8 @@ private:
 	float corner_x;
 	float corner_y;
 	// assume true until otherwise flagged false
-	bool has_waypoint_depart_evt = true;
-	bool has_waypoint_arrive_evt = true;
+	bool has_waypoint_depart_evt;
+	bool has_waypoint_arrive_evt;
 };
 
 #endif
