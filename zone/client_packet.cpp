@@ -3051,7 +3051,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
 
 		bool shouldTryHackCheck = !exemptHackCount;
-		auto currentTime = std::chrono::high_resolution_clock::now();
 		auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
 		auto seccount = seconds.count();
 		auto distDivTime = 0.;
