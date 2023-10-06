@@ -3043,10 +3043,10 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 		bSkip = true;
 	}		
-	std::chrono::time_point<std::chrono::steady_clock> currentTime;
+
 	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		currentTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
 		double dist = DistanceNoZ(m_LastLocation, newPosition);
 		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
 
@@ -3198,7 +3198,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
 		auto current_update_time = std::chrono::high_resolution_clock::now();
-		auto timeDiff = std::chrono::duration<double>(currentTime - last_position_update_time);
+		auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
 		if (timeDiff.count() >= 1.0)
 		{
 			last_position_update_time = current_update_time;
