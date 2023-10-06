@@ -3042,9 +3042,11 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		m_Position.z = newPosition.z;
 
 		bSkip = true;
-	}
+	}		
+	std::chrono::time_point<std::chrono::steady_clock> currentTime;
 	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
+		currentTime = std::chrono::high_resolution_clock::now();
 		double dist = DistanceNoZ(m_LastLocation, newPosition);
 		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
 
@@ -3193,12 +3195,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_Position.y = ppu->y_pos;
 	m_Position.z = (float)ppu->z_pos/10.0f;
 	m_RewindLocation = m_Position;
-	auto current_update_time = std::chrono::high_resolution_clock::now();
-	auto timeDiff = std::chrono::duration<double>(currentTime - last_position_update_time);
-	if (timeDiff.count() >= 1.0)
+	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		last_position_update_time = current_update_time;
-		m_LastLocation = m_Position;
+		auto current_update_time = std::chrono::high_resolution_clock::now();
+		auto timeDiff = std::chrono::duration<double>(currentTime - last_position_update_time);
+		if (timeDiff.count() >= 1.0)
+		{
+			last_position_update_time = current_update_time;
+			m_LastLocation = m_Position;
+		}
 	}
 	//auto old_anim = animation;
 	animation = ppu->anim_type;
