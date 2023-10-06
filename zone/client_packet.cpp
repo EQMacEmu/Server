@@ -3043,81 +3043,83 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 		bSkip = true;
 	}
-	double dist = DistanceNoZ(m_LastLocation, newPosition);
-	double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
-
-	bool shouldTryHackCheck = !exemptHackCount;
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
-	auto seccount = seconds.count();
-	auto distDivTime = 0.;
-
-
-	float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
-	float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
-
-	float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
-	float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
-	float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
-	if (dist > distThreshold && seccount >= secondElapsedThreshold)
+	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		distDivTime = dist / seccount;
-	}
+		double dist = DistanceNoZ(m_LastLocation, newPosition);
+		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
 
-	/*
-		If the PPU was a large jump, such as a cross zone gate or Call of Hero,
-			just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
-	*/
+		bool shouldTryHackCheck = !exemptHackCount;
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
+		auto seccount = seconds.count();
+		auto distDivTime = 0.;
 
-	bool is_exempt_correct = false;
 
-	if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
-	{
-		is_exempt_correct = true;
-		ExpectedRewindPos = glm::vec3(0, 0, 0);
-	}
-	auto speed = GetRunspeed();
-	float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
-	float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
-	float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+		float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
+		float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
 
-	float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
-	float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
-
-	if (speed >= highSpeedValueThreshold)
-		distDivTimeThreshold = distDivTimeHighSpeedThreshold;
-
-	if (speed >= bardSpeedValueThreshold)
-		distDivTimeThreshold = distDivTimeBardSpeedThreshold;
-
-	bool within_previous_zone_point = false;
-
-	bool has_boat = false;
-	
-	Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
-	if (boat) //These lil boats run fast!!
-	{
-		if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+		float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
+		float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
+		float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
+		if (dist > distThreshold && seccount >= secondElapsedThreshold)
 		{
-			has_boat = true;
+			distDivTime = dist / seccount;
 		}
-	}
 
-	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
-	{
+		/*
+			If the PPU was a large jump, such as a cross zone gate or Call of Hero,
+				just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
+		*/
 
-		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
-		ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+		bool is_exempt_correct = false;
 
-		if (!previous_zone_point && !current_zone_point)
+		if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+		{
+			is_exempt_correct = true;
+			ExpectedRewindPos = glm::vec3(0, 0, 0);
+		}
+		auto speed = GetRunspeed();
+		float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
+		float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
+		float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+
+		float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
+		float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
+
+		if (speed >= highSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeHighSpeedThreshold;
+
+		if (speed >= bardSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeBardSpeedThreshold;
+
+		bool within_previous_zone_point = false;
+
+		bool has_boat = false;
+
+		Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
+		if (boat) //These lil boats run fast!!
+		{
+			if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+			{
+				has_boat = true;
+			}
+		}
+
+		if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
 		{
 
-			std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
-			worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
-			database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+			ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
+			ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+
+			if (!previous_zone_point && !current_zone_point)
+			{
+
+				std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
+				worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+				database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+			}
 		}
 	}
-
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos/10.0f));

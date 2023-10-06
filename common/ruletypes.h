@@ -221,6 +221,7 @@ RULE_BOOL(Quarm, EnableChecksumEnforcement, true) // Enables or disables the dll
 RULE_INT(Quarm, GuildFTELockoutTimeMS, 300000)
 RULE_BOOL(Quarm, VeliousEraAggroCaps, false) // Use Velious Era Aggro 
 RULE_INT(Quarm, GuildFTEDisengageTimeMS, 60000)
+RULE_BOOL(Quarm, EnableProjectSpeedie, false)
 RULE_REAL(Quarm, SpeedieDistThreshold, 5.0)
 RULE_REAL(Quarm, SpeedieSecondElapsedThreshold, 1.0)
 RULE_REAL(Quarm, SpeedieDistFromExpectedThreshold, 125)
