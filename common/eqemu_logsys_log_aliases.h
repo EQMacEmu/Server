@@ -880,6 +880,12 @@
 #define LogDeathDetail(message, ...) do {\
 } while (0)
 
+#define LogQuestErrors(message, ...) do {\
+} while (0)
+
+#define LogQuestErrorsDetail(message, ...) do {\
+} while (0)
+
 #define Log(debug_level, log_category, message, ...) do {\
 } while (0)
 
