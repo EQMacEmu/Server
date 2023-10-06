@@ -6682,7 +6682,7 @@ void command_wpevtflagreset(Client *c, const Seperator *sep) {
 
 	NPC *n = t->CastToNPC();
 	n->SetHasWaypointArriveEvt(true);
-	n->SetHasWaypointArriveEvt(false);
+	n->SetHasWaypointDepartEvt(true);
 }
 
 void command_wpadd(Client *c, const Seperator *sep)
