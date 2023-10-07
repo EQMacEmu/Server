@@ -335,21 +335,24 @@ bool ZoneServer::Process() {
 					for (auto it = vec.begin(); it != vec.end(); ++it)
 					{
 						ClientListEntry *cle = *it;
-						uint32 groupid = database.GetGroupID(cle->name());
-						if (cle->Online() == CLE_Status_Zoning && groupid == gcm->groupid && !cle->TellQueueFull())
+						if (cle)
 						{
-							// queue group chat message
-							size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
-							ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
-							memset(scm, 0, struct_size);
-							strcpy(scm->deliverto, cle->name());
-							strcpy(scm->from, gcm->from);
-							scm->chan_num = ChatChannel_Group;
-							scm->language = gcm->language;
-							scm->lang_skill = gcm->lang_skill;
-							strcpy(scm->message, gcm->message);
-							scm->queued = 1;
-							cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							uint32 groupid = cle->GroupID();
+							if (cle->Online() == CLE_Status_Zoning && groupid == gcm->groupid && !cle->TellQueueFull())
+							{
+								// queue group chat message
+								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
+								ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
+								memset(scm, 0, struct_size);
+								strcpy(scm->deliverto, cle->name());
+								strcpy(scm->from, gcm->from);
+								scm->chan_num = ChatChannel_Group;
+								scm->language = gcm->language;
+								scm->lang_skill = gcm->lang_skill;
+								strcpy(scm->message, gcm->message);
+								scm->queued = 1;
+								cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							}
 						}
 					}
 				}
