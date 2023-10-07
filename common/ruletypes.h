@@ -206,8 +206,14 @@ RULE_INT(Quarm, RespawnReductionLowerBoundMin, 60001) //60 to 400 seconds
 RULE_INT(Quarm, RespawnReductionHigherBoundMin, 10000) //10 to 60 seconds
 RULE_INT(Quarm, RespawnReductionLowerBoundMax, 400000) //60 to 400 seconds
 RULE_INT(Quarm, RespawnReductionHigherBoundMax, 60000) //10 to 60 seconds
-RULE_INT(Quarm, RespawnReductionLowerBound, 30000) //30s
+RULE_INT(Quarm, RespawnReductionLowerBound, 12000) //12s
 RULE_INT(Quarm, RespawnReductionHigherBound, 60000) //60s
+RULE_INT(Quarm, RespawnReductionDungeonLowerBoundMin, 300000) //300 to 899 seconds
+RULE_INT(Quarm, RespawnReductionDungeonHigherBoundMin, 900000) //900 to 2400 seconds
+RULE_INT(Quarm, RespawnReductionDungeonLowerBoundMax, 899000) //300 to 899 seconds
+RULE_INT(Quarm, RespawnReductionDungeonHigherBoundMax, 2400000) //900 to 2400 seconds
+RULE_INT(Quarm, RespawnReductionDungeonLowerBound, 300000) //300s
+RULE_INT(Quarm, RespawnReductionDungeonHigherBound, 500000) //500s
 RULE_INT(Quarm, HardcoreDeathLevel, 1) // Defaults to level 1. The level in which someone will be wiped upon dying if hardcore.
 RULE_INT(Quarm, HardcoreDeathBroadcastLevel, 15) // Defaults to level 15. A serverwide message is generated when someone dies after this level milestone.
 RULE_BOOL(Quarm, EnableRespawnReductionSystem, false) //10 to 60 seconds
@@ -216,6 +222,7 @@ RULE_BOOL(Quarm, EnableSpellSixLevelRule, false)
 RULE_BOOL(Quarm, PreLuclinDiseaseCounterAggro, true)
 RULE_INT(Quarm, RespawnReductionNewbiePullLimit, 4)
 RULE_INT(Quarm, RespawnReductionStandardPullLimit, 15)
+RULE_INT(Quarm, RespawnReductionDungeonPullLimit, 15)
 RULE_BOOL(Quarm, EnablePetExperienceSplit, true) // Accurate from Classic Launch until Luclin. Enables pet experience weights in groups (or 50% if solo) if a single pet deals more than 50% damage to a target out of all contributing damage.
 RULE_BOOL(Quarm, EnableChecksumEnforcement, true) // Enables or disables the dll checksum enforcement.
 RULE_INT(Quarm, GuildFTELockoutTimeMS, 300000)

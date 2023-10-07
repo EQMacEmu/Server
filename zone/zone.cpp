@@ -1503,8 +1503,13 @@ uint16 Zone::GetPullLimit()
 
 	if (IsReducedSpawnTimersEnabled())
 	{
+		if (CanCastDungeon())
+		{
+			return RuleI(Quarm, RespawnReductionDungeonPullLimit);
+		}
 		return RuleI(Quarm, RespawnReductionNewbiePullLimit);
 	}
+
 
 	return RuleI(Quarm, RespawnReductionStandardPullLimit);
 }

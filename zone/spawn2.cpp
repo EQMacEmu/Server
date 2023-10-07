@@ -110,10 +110,21 @@ uint32 Spawn2::resetTimer()
 	{
 		if (zone->IsReducedSpawnTimersZone())
 		{
-			if (rspawn >= RuleI(Quarm, RespawnReductionHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionHigherBoundMax))
-				rspawn = RuleI(Quarm, RespawnReductionHigherBound);
-			else if (rspawn >= RuleI(Quarm, RespawnReductionLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionLowerBoundMax))
-				rspawn = RuleI(Quarm, RespawnReductionLowerBound);
+			if (zone->CanCastDungeon())
+			{
+				if (rspawn >= RuleI(Quarm, RespawnReductionDungeonHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionDungeonHigherBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionDungeonHigherBound);
+				else if (rspawn >= RuleI(Quarm, RespawnReductionDungeonLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionDungeonLowerBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionDungeonLowerBound);
+			}
+			else
+			{
+
+				if (rspawn >= RuleI(Quarm, RespawnReductionHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionHigherBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionHigherBound);
+				else if (rspawn >= RuleI(Quarm, RespawnReductionLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionLowerBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionLowerBound);
+			}
 		}
 	}
 
