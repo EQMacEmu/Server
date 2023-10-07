@@ -3244,7 +3244,7 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 	{
 		if (damage > 0 && spell_id != SPELL_UNKNOWN)
 		{
-			if (attacker && attacker->IsClient()) {
+			if (attacker && attacker->IsClient() && attacker != this) {
 				attacker->Message_StringID(MT_WornOff, YOUR_HIT_DOT, GetCleanName(), itoa(damage),
 					spells[spell_id].name);
 			}
