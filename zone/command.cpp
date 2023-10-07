@@ -434,6 +434,7 @@ int command_init(void)
 		command_add("wp", "[add/delete] [grid_num] [pause] [wp_num] [-h] - Add/delete a waypoint to/from a wandering grid.", AccountStatus::GMImpossible, command_wp) ||
 		command_add("wpadd", "[pause] [-h] - Add your current location as a waypoint to your NPC target's AI path.", AccountStatus::GMImpossible, command_wpadd) ||
 		command_add("wpinfo", "- Show waypoint info about your NPC target.", AccountStatus::GMImpossible, command_wpinfo) ||
+		command_add("wpevtflagreset", "- Resets arrive/depart event flags to reload them from file for your NPC target", AccountStatus::GMImpossible, command_wpevtflagreset) ||
 
 		command_add("xpinfo", "- Show XP info about your current target.", AccountStatus::GMStaff, command_xpinfo) ||
 
@@ -6669,6 +6670,19 @@ void command_wpinfo(Client *c, const Seperator *sep){
 
 	NPC *n = t->CastToNPC();
 	n->DisplayWaypointInfo(c);
+}
+
+void command_wpevtflagreset(Client *c, const Seperator *sep) {
+	Mob *t = c->GetTarget();
+
+	if (t == nullptr || !t->IsNPC()) {
+		c->Message(CC_Default, "You must target an NPC to use this.");
+		return;
+	}
+
+	NPC *n = t->CastToNPC();
+	n->SetHasWaypointArriveEvt(true);
+	n->SetHasWaypointDepartEvt(true);
 }
 
 void command_wpadd(Client *c, const Seperator *sep)

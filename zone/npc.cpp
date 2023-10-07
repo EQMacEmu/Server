@@ -407,6 +407,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	noQuestPause = false;
 	assisting = false;
 	pbaoe_damage = 0;
+	has_waypoint_depart_evt = true;
+	has_waypoint_arrive_evt = true;
 	AI_Start();
 }
 
