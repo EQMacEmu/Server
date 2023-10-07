@@ -429,6 +429,7 @@
 #define DOORS_NO_PICK				7564	//You must have a lock pick in your inventory to do this.
 #define CURRENT_SPELL_EFFECTS		8757	//%1's current spell effects:
 #define BUFF_MINUTES_REMAINING		8799	//%1 (%2 minutes remaining)
+#define YOUR_HIT_DOT				9072	//%1 has taken %2 damage from your %3.
 #define AE_RAMPAGE					11015	//%1 goes on a WILD RAMPAGE!
 #define GROUP_IS_FULL				12000	//You cannot join that group, it is full.
 #define GROUP_REMOVED				12001   //You have been removed from the group.

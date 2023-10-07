@@ -3240,6 +3240,16 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 		if(!died)
 			GenerateDamagePackets(attacker, FromDamageShield, damage, spell_id, skill_id, false);
 	}
+	else
+	{
+		if (damage > 0 && spell_id != SPELL_UNKNOWN)
+		{
+			if (attacker->IsClient()) {
+				attacker->Message_StringID(MT_WornOff, YOUR_HIT_DOT, GetCleanName(), itoa(damage),
+					spells[spell_id].name);
+			}
+		}
+	}
 
 	if (died)
 	{
