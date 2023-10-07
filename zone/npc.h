@@ -471,11 +471,6 @@ public:
 
 	std::string GetSpawnedString();
 
-	bool	GetHasWaypointDepartEvt() { return has_waypoint_depart_evt; }
-	void	SetHasWaypointDepartEvt(bool has_evt) { has_waypoint_depart_evt = has_evt; }
-	bool	GetHasWaypointArriveEvt() { return has_waypoint_arrive_evt; }
-	void	SetHasWaypointArriveEvt(bool has_evt) { has_waypoint_arrive_evt = has_evt; }
-
 protected:
 
 	const NPCType*	NPCTypedata;
@@ -604,9 +599,6 @@ private:
 	float wall_normal2_y;
 	float corner_x;
 	float corner_y;
-	// assume true until otherwise flagged false
-	bool has_waypoint_depart_evt;
-	bool has_waypoint_arrive_evt;
 };
 
 #endif

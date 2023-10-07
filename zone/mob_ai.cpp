@@ -2285,10 +2285,7 @@ void NPC::AI_DoMovement() {
 					//kick off event_waypoint arrive
 					char temp[16];
 					sprintf(temp, "%d", cur_wp);
-					if (GetHasWaypointArriveEvt()) {
-						int has_evt = parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), nullptr, temp, 0);
-						SetHasWaypointArriveEvt(has_evt);
-					}
+					parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), nullptr, temp, 0);
 					if (!AIwalking_timer->Enabled()) {
 						AI_SetupNextWaypoint();
 					}
@@ -2397,10 +2394,7 @@ void NPC::AI_SetupNextWaypoint() {
 		//kick off event_waypoint depart
 		char temp[16];
 		sprintf(temp, "%d", cur_wp);
-		if (GetHasWaypointDepartEvt()) {
-			int has_evt = parse->EventNPC(EVENT_WAYPOINT_DEPART, CastToNPC(), nullptr, temp, 0);
-			SetHasWaypointDepartEvt(has_evt);
-		}
+		parse->EventNPC(EVENT_WAYPOINT_DEPART, CastToNPC(), nullptr, temp, 0);
 
 		//setup our next waypoint, if we are still on our normal grid
 		//remember that the quest event above could have done anything it wanted with our grid
