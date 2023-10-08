@@ -1225,8 +1225,9 @@ void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killed
 	{
 		exploss = 0;
 	}
-	else if( killerMob )
+	else if( killerMob && spell != 940 ) //ManaConvert
 	{
+
 		if( killerMob->IsClient() )
 		{
 			exploss = 0;
@@ -1236,6 +1237,9 @@ void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killed
 			exploss = 0;
 		}
 	}
+
+	if (spell == 940) // ManaConvert causes EXP loss. Sorry.
+		return;
 
 	if (killedby == Killed_DUEL || killedby == Killed_PVP || killedby == Killed_Self)
 	{
