@@ -2780,8 +2780,10 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (cm->targetname[63] != 0)
+	if (strlen(cm->targetname) > 63)
+	{
 		return;
+	}
 
 	uint8 skill_in_language = 100;
 	if (cm->language < MAX_PP_LANGUAGE)
