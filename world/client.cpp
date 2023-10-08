@@ -688,9 +688,13 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 {
 
-	if(GetClientVersionBit() > EQ::versions::ClientVersionBit::bit_MacPC || GetAdmin() >= 80)
+	if (GetClientVersionBit() > EQ::versions::ClientVersionBit::bit_MacPC || GetAdmin() >= 80)
+	{
+		Checksum_Struct *cs_gm = (Checksum_Struct *)app->pBuffer;
+		uint64 checksum_gm = cs_gm->checksum;
+		Log(Logs::Detail, Logs::WorldServer, "Checksum is disabled for GMs! But its value is here: %lld", checksum_gm);
 		return true;
-
+	}
 	if (app->size != sizeof(Checksum_Struct)) 
 	{
 		Log(Logs::Detail, Logs::WorldServer, "Checksum packet is BAD!");
