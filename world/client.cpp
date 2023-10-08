@@ -322,7 +322,7 @@ bool Client::HandleNameApprovalPacket(const EQApplicationPacket *app)
 
 	NameApproval_Struct *na = (NameApproval_Struct *)app->pBuffer;
 
-	strn0cpy(char_name, na->name, 64);
+	strncpy(char_name, na->name, 64);
 	uint16 race = na->race;
 	uint16 class_ = na->class_;
 

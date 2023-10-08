@@ -1918,7 +1918,7 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 				ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
 				strcpy(szp->adminname, this->GetName());
 				szp->adminrank = this->Admin();
-				strn0cpy(szp->name, gms->charname, 64);
+				strcpy(szp->name, gms->charname);
 				strcpy(szp->zone, zone->GetShortName());
 				szp->x_pos = (float)gms->x;
 				szp->y_pos = (float)gms->y;

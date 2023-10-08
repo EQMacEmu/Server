@@ -1112,7 +1112,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	auto results = database.QueryDatabase(query);
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		admin = atoi(row[0]);
-		strn0cpy(account_name, row[1], 30);
+		strncpy(account_name, row[1], 30);
 		lsaccountid = atoi(row[2]);
 		gmspeed = atoi(row[3]);
 		revoked = atoi(row[4]);
@@ -2450,15 +2450,15 @@ void Client::Handle_OP_Bug(const EQApplicationPacket *app)
 		{
 			bug_report = new struct BugReport_Struct;
 			IntelBugStruct* intelbug = (IntelBugStruct*)app->pBuffer;
-			strn0cpy(bug_report->reporter_name, intelbug->reporter_name, 64);
-			strn0cpy(bug_report->bug_report, intelbug->bug_report, 1024);
+			strcpy(bug_report->reporter_name, intelbug->reporter_name);
+			strcpy(bug_report->bug_report, intelbug->bug_report);
 			bug_report->pos_x = GetX();
 			bug_report->pos_y = GetY();
 			bug_report->pos_z = GetZ();
 			bug_report->heading = GetHeading();
 			memset(bug_report->target_name,0,64);
 			if(GetTarget())
-				strn0cpy(bug_report->target_name,GetTarget()->GetName(),64);
+				strncpy(bug_report->target_name,GetTarget()->GetName(),64);
 		}
 		else if(app->size == sizeof(BugReport_Struct))
 		{
@@ -2779,9 +2779,6 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 		std::cout << "Wrong size " << app->size << ", should be " << sizeof(ChannelMessage_Struct) << "+ on 0x" << std::hex << std::setfill('0') << std::setw(4) << app->GetOpcode() << std::dec << std::endl;
 		return;
 	}
-
-	if (cm->targetname[63] != 0)
-		return;
 
 	uint8 skill_in_language = 100;
 	if (cm->language < MAX_PP_LANGUAGE)
@@ -3287,13 +3284,13 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 		{
 			Message_StringID(CC_Default, CONSENT_DENIED, c->name);
 			char ownername[64];
-			strn0cpy(ownername, GetName(), 64);
+			strcpy(ownername, GetName());
 			Consent(0, ownername, c->name, true);
 
 			auto pack = new ServerPacket(ServerOP_ConsentDeny, sizeof(ServerOP_ConsentDeny_Struct));
 			ServerOP_ConsentDeny_Struct* scs = (ServerOP_ConsentDeny_Struct*)pack->pBuffer;
-			strn0cpy(scs->grantname, c->name, 64);
-			strn0cpy(scs->ownername, GetName(), 64);
+			strcpy(scs->grantname, c->name);
+			strcpy(scs->ownername, GetName());
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
 			return;
@@ -3302,8 +3299,8 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 		{
 			auto pack = new ServerPacket(ServerOP_Consent, sizeof(ServerOP_Consent_Struct));
 			ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)pack->pBuffer;
-			strn0cpy(scs->grantname, c->name, 64);
-			strn0cpy(scs->ownername, GetName(), 64);
+			strcpy(scs->grantname, c->name);
+			strcpy(scs->ownername, GetName());
 			scs->message_string_id = 0;
 			scs->permission = 1;
 			scs->zone_id = zone->GetZoneID();
@@ -4372,8 +4369,8 @@ void Client::Handle_OP_GMFind(const EQApplicationPacket *app)
 	auto outapp = new EQApplicationPacket(OP_GMFind, sizeof(GMSummon_Struct));
 	GMSummon_Struct* foundplayer = (GMSummon_Struct*)outapp->pBuffer;
 	//Copy the constants
-	strn0cpy(foundplayer->charname, request->charname, 64);
-	strn0cpy(foundplayer->gmname, request->gmname, 64);
+	strcpy(foundplayer->charname, request->charname);
+	strcpy(foundplayer->gmname, request->gmname);
 	//Check if the NPC exits intrazone...
 	Mob* gt = entity_list.GetMob(request->charname);
 	if (gt != 0) {
@@ -4414,8 +4411,8 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 		auto pack = new ServerPacket(ServerOP_GMGoto, sizeof(ServerGMGoto_Struct));
 		memset(pack->pBuffer, 0, pack->size);
 		ServerGMGoto_Struct* wsgmg = (ServerGMGoto_Struct*)pack->pBuffer;
-		strn0cpy(wsgmg->myname, this->GetName(), 64);
-		strn0cpy(wsgmg->gotoname, gmg->charname, 64);
+		strcpy(wsgmg->myname, this->GetName());
+		strcpy(wsgmg->gotoname, gmg->charname);
 		wsgmg->admin = admin;
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -4463,8 +4460,8 @@ void Client::Handle_OP_GMKick(const EQApplicationPacket *app)
 		else {
 			auto pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
 			ServerKickPlayer_Struct* skp = (ServerKickPlayer_Struct*)pack->pBuffer;
-			strn0cpy(skp->adminname, gmk->gmname, 64);
-			strn0cpy(skp->name, gmk->name, 64);
+			strcpy(skp->adminname, gmk->gmname);
+			strcpy(skp->name, gmk->name);
 			skp->adminrank = this->Admin();
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
@@ -4506,8 +4503,8 @@ void Client::Handle_OP_GMKill(const EQApplicationPacket *app)
 		else {
 			auto pack = new ServerPacket(ServerOP_KillPlayer, sizeof(ServerKillPlayer_Struct));
 			ServerKillPlayer_Struct* skp = (ServerKillPlayer_Struct*)pack->pBuffer;
-			strn0cpy(skp->gmname, gmk->gmname, 64);
-			strn0cpy(skp->target, gmk->name, 64);
+			strcpy(skp->gmname, gmk->gmname);
+			strcpy(skp->target, gmk->name);
 			skp->admin = this->Admin();
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
@@ -4579,7 +4576,7 @@ void Client::Handle_OP_GMNameChange(const EQApplicationPacket *app)
 
 	}
 	database.UpdateName(gmn->oldname, gmn->newname);
-	strn0cpy(client->name, gmn->newname, 64);
+	strcpy(client->name, gmn->newname);
 	client->Save();
 
 	if (gmn->badname == 1) {
@@ -4775,7 +4772,7 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 	if (zname == nullptr)
 		target_zone[0] = 0;
 	else
-		strn0cpy(target_zone, zname, 32);
+		strcpy(target_zone, zname);
 
 	// this both loads the safe points and does a sanity check on zone name
 	if (!database.GetSafePoints(target_zone, &target_x, &target_y, &target_z, &target_heading, &minstatus, &minlevel)) {
@@ -4784,7 +4781,7 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 
 	auto outapp = new EQApplicationPacket(OP_GMZoneRequest, sizeof(GMZoneRequest_Struct));
 	auto *gmzr2 = (GMZoneRequest_Struct*)outapp->pBuffer;
-	strn0cpy(gmzr2->charname, this->GetName(), 64);
+	strcpy(gmzr2->charname, this->GetName());
 	gmzr2->zone_id = gmzr->zone_id;
 	gmzr2->x = target_x;
 	gmzr2->y = target_y;
@@ -5078,8 +5075,8 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 					//Invite the inviter into the group first.....dont ask
 					auto outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 					GroupJoin_Struct* outgj = (GroupJoin_Struct*)outapp->pBuffer;
-					strn0cpy(outgj->membername, inviter->GetName(), 64);
-					strn0cpy(outgj->yourname, inviter->GetName(), 64);
+					strcpy(outgj->membername, inviter->GetName());
+					strcpy(outgj->yourname, inviter->GetName());
 					outgj->action = groupActInviteInitial; // 'You have formed the group'.
 					inviter->CastToClient()->QueuePacket(outapp);
 					safe_delete(outapp);
@@ -5136,8 +5133,8 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 			//Invite the inviter into the group first.....dont ask
 			auto outapp = new EQApplicationPacket(OP_GroupUpdate, sizeof(GroupJoin_Struct));
 			GroupJoin_Struct* outgj = (GroupJoin_Struct*)outapp->pBuffer;
-			strn0cpy(outgj->membername, inviter->GetName(), 64);
-			strn0cpy(outgj->yourname, inviter->GetName(), 64);
+			strcpy(outgj->membername, inviter->GetName());
+			strcpy(outgj->yourname, inviter->GetName());
 			outgj->action = groupActInviteInitial; // 'You have formed the group'.
 			inviter->CastToClient()->QueuePacket(outapp);
 			safe_delete(outapp);
@@ -5168,7 +5165,7 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 		gj->gid = group->GetID();
 		gj->zoneid = zone->GetZoneID();
-		strncpy(gj->member_name, GetName(), 64);
+		strcpy(gj->member_name, GetName());
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 
@@ -5283,8 +5280,8 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 			{
 				auto outapp = new EQApplicationPacket(OP_GroupCancelInvite, sizeof(GroupCancel_Struct));
 				GroupCancel_Struct* GroupUnInvite = (GroupCancel_Struct*)outapp->pBuffer;
-				strn0cpy(GroupUnInvite->name1, this->GetName(), 64);
-				strn0cpy(GroupUnInvite->name2, Invitee->GetName(), 64);
+				strcpy(GroupUnInvite->name1, this->GetName());
+				strcpy(GroupUnInvite->name2, Invitee->GetName());
 				GroupUnInvite->toggle = 2;
 				QueuePacket(outapp);
 				safe_delete(outapp);
@@ -5614,7 +5611,7 @@ void Client::Handle_OP_GuildLeader(const EQApplicationPacket *app)
 
 		//NOTE: we could do cross-zone lookups here...
 		char target[64];
-		strn0cpy(target, gml->name, 64);
+		strcpy(target, gml->name);
 
 		Client* newleader = entity_list.GetClientByName(target);
 		if (newleader) {
@@ -5711,7 +5708,7 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 			auto outapp = new EQApplicationPacket(OP_GuildRemove, sizeof(GuildRemove_Struct));
 			GuildRemove_Struct* gm = (GuildRemove_Struct*)outapp->pBuffer;
 			gm->guildeqid = guid;
-			strn0cpy(gm->Removee, gc->othername, 64);
+			strcpy(gm->Removee, gc->othername);
 			Message(CC_Default, "%s successfully removed from your guild.", gc->othername);
 			entity_list.QueueClientsGuild(this, outapp, false, GuildID());
 			safe_delete(outapp);
@@ -6824,18 +6821,6 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 	}
 
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
-
-	if (ri->leader_name[63] != 0)
-	{
-		return;
-	}
-
-
-	if (ri->player_name[63] != 0)
-	{
-		return;
-	}
-
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
 	switch (ri->action)
@@ -6899,8 +6884,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
 			rg->action = RaidCommandSendDisband;
-			strn0cpy(rg->leader_name, ri->player_name, 64);
-			strn0cpy(rg->player_name, ri->player_name, 64);
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 			return;
@@ -6918,8 +6903,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
 			rg->action = RaidCommandSendDisband;
-			strn0cpy(rg->leader_name, ri->player_name, 64);
-			strn0cpy(rg->player_name, ri->player_name, 64);
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 			Message(CC_Red, "The leader is solo only and cannot be invited to the raid? What's going on here, friend?");
@@ -6932,8 +6917,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
 			rg->action = RaidCommandSendDisband;
-			strn0cpy(rg->leader_name, ri->player_name, 64);
-			strn0cpy(rg->player_name, ri->player_name, 64);
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 			Message(CC_Red, "The leader player's self found flag does not match yours. You cannot be invited to the raid.");
@@ -7079,8 +7064,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
 			rg->action = RaidCommandRaidDisband;
-			strn0cpy(rg->leader_name, this->GetName(), 64);
-			strn0cpy(rg->player_name, this->GetName(), 64);
+			strcpy(rg->leader_name, this->GetName());
+			strcpy(rg->player_name, this->GetName());
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 		}
@@ -7222,7 +7207,7 @@ void Client::Handle_OP_RandomReq(const EQApplicationPacket *app)
 	rr->low = randLow;
 	rr->high = randHigh;
 	rr->result = randResult;
-	strn0cpy(rr->name, GetName(), 64);
+	strcpy(rr->name, GetName());
 	entity_list.QueueCloseClients(this, outapp, false, 400);
 	safe_delete(outapp);
 	return;
@@ -9637,22 +9622,10 @@ void Client::Handle_OP_SoulMarkUpdate(const EQApplicationPacket *app)
 	}
 	SoulMarkUpdate_Struct* in = (SoulMarkUpdate_Struct*)app->pBuffer;
 
-	if (in->acctname[31] != 0)
-		return;
-
-	if (in->gmacctname[31] != 0)
-		return;
-
-	if (in->gmname[63] != 0)
-		return;
-
-	if (in->charname[63] != 0)
-		return;
-
 	auto pack = new ServerPacket(ServerOP_Soulmark, sizeof(ServerRequestSoulMark_Struct));
 	ServerRequestSoulMark_Struct* scs = (ServerRequestSoulMark_Struct*)pack->pBuffer;
-	strn0cpy(scs->name, GetCleanName(), 64);
-	strn0cpy(scs->entry.interrogatename, in->charname, 64);
+	strcpy(scs->name, GetCleanName());
+	strcpy(scs->entry.interrogatename, in->charname);
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 	return;
