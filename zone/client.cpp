@@ -751,9 +751,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		targetname = (!GetTarget()) ? "" : GetTarget()->GetName();
 	}
 
+	char target_msg_name[64];
+	strn0cpy(target_msg_name, targetname, 64);
 	if(RuleB(Chat, EnableAntiSpam))
 	{
-		if(strcmp(targetname, "discard") != 0)
+		if(strcmp(target_msg_name, "discard") != 0)
 		{
 			if(chan_num == ChatChannel_Shout || chan_num == ChatChannel_Auction || chan_num == ChatChannel_OOC || chan_num == ChatChannel_Tell)
 			{
@@ -809,11 +811,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		strcpy(sem->message, message);
 		sem->minstatus = this->Admin();
 		sem->type = chan_num;
-		if(targetname != 0)
-			strcpy(sem->to, targetname);
+		if(target_msg_name != 0)
+			strn0cpy(sem->to, target_msg_name, 64);
 
 		if(GetName() != 0)
-			strcpy(sem->from, GetName());
+			strn0cpy(sem->from, GetName(), 64);
 
 		pack->Deflate();
 		if(worldserver.Connected())
@@ -842,7 +844,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 			Message_StringID(MT_DefaultText, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
 			Message(CC_Default, "Error: You dont have permission to speak to the guild.");
-		else if (!worldserver.SendChannelMessage(this, targetname, chan_num, GuildID(), language, lang_skill, message))
+		else if (!worldserver.SendChannelMessage(this, target_msg_name, chan_num, GuildID(), language, lang_skill, message))
 			Message(CC_Default, "Error: World server disconnected");
 		break;
 	}
@@ -881,7 +883,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		{
 			if(!global_channel_timer.Check())
 			{
-				if(strlen(targetname) == 0)
+				if(strlen(target_msg_name) == 0)
 					ChannelMessageReceived(chan_num, language, lang_skill, message, "discard"); //Fast typer or spammer??
 				else
 					return;
@@ -923,7 +925,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		{
 			if(!global_channel_timer.Check())
 			{
-				if(strlen(targetname) == 0)
+				if(strlen(target_msg_name) == 0)
 					ChannelMessageReceived(chan_num, language, lang_skill, message, "discard"); //Fast typer or spammer??
 				else
 					return;
@@ -969,7 +971,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	case ChatChannel_GMSAY: { /* GM Say */
 		if (!(admin >= AccountStatus::QuestTroupe))
 			Message(CC_Default, "Error: Only GMs can use this channel");
-		else if (!worldserver.SendChannelMessage(this, targetname, chan_num, 0, language, lang_skill, message))
+		else if (!worldserver.SendChannelMessage(this, target_msg_name, chan_num, 0, language, lang_skill, message))
 			Message(CC_Default, "Error: World server disconnected");
 		break;
 	}
@@ -990,14 +992,15 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 			}
 
 			// allow tells to corpses
-			if (targetname) {
+			if (target_msg_name) {
 				if (GetTarget() && GetTarget()->IsCorpse() && GetTarget()->CastToCorpse()->IsPlayerCorpse()) {
-					if (strcasecmp(targetname,GetTarget()->CastToCorpse()->GetName()) == 0) {
+					if (strcasecmp(target_msg_name,GetTarget()->CastToCorpse()->GetName()) == 0) {
 						if (strcasecmp(GetTarget()->CastToCorpse()->GetOwnerName(),GetName()) == 0) {
 							Message_StringID(MT_DefaultText, TALKING_TO_SELF);
 							return;
 						} else {
-							targetname = GetTarget()->CastToCorpse()->GetOwnerName();
+							memset(target_msg_name, 0, 64);
+							strn0cpy(target_msg_name, GetTarget()->CastToCorpse()->GetOwnerName(), 64);
 						}
 					}
 				}
@@ -1005,19 +1008,19 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			char target_name[64];
 
-			if(targetname)
+			if(target_msg_name)
 			{
-				size_t i = strlen(targetname);
+				size_t i = strlen(target_msg_name);
 				int x;
 				for(x = 0; x < i; ++x)
 				{
-					if(targetname[x] == '%')
+					if(target_msg_name[x] == '%')
 					{
 						target_name[x] = '/';
 					}
 					else
 					{
-						target_name[x] = targetname[x];
+						target_name[x] = target_msg_name[x];
 					}
 				}
 				target_name[x] = '\0';
@@ -1102,12 +1105,12 @@ void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num
 		strcpy(cm->sender, "ZServer");
 	else {
 		CleanMobName(from, message_sender);
-		strcpy(cm->sender, message_sender);
+		strn0cpy(cm->sender, message_sender, 64);
 	}
 	if (to != 0)
-		strcpy((char *) cm->targetname, to);
+		strn0cpy((char *) cm->targetname, to, 64);
 	else if (chan_num == ChatChannel_Tell)
-		strcpy(cm->targetname, m_pp.name);
+		strn0cpy(cm->targetname, m_pp.name, 64);
 	else
 		cm->targetname[0] = 0;
 
@@ -1270,12 +1273,12 @@ void Client::UpdateWho(uint8 remove) {
 	scl->wid = this->GetWID();
 	scl->IP = this->GetIP();
 	scl->charid = this->CharacterID();
-	strcpy(scl->name, this->GetName());
+	strncpy(scl->name, this->GetName(), 64);
 
 	scl->gm = GetGM();
 	scl->Admin = this->Admin();
 	scl->AccountID = this->AccountID();
-	strcpy(scl->AccountName, this->AccountName());
+	strn0cpy(scl->AccountName, this->AccountName(), 64);
 	scl->LSAccountID = this->LSAccountID();
 	strn0cpy(scl->lskey, lskey, sizeof(scl->lskey));
 	scl->zone = zone->GetZoneID();
@@ -1312,7 +1315,7 @@ void Client::WhoAll(Who_All_Struct* whom) {
 		ServerWhoAll_Struct* whoall = (ServerWhoAll_Struct*) pack->pBuffer;
 		whoall->admin = this->Admin();
 		whoall->fromid=this->GetID();
-		strcpy(whoall->from, this->GetName());
+		strn0cpy(whoall->from, this->GetName(), 64);
 		strn0cpy(whoall->whom, whom->whom, 64);
 		whoall->lvllow = whom->lvllow;
 		whoall->lvlhigh = whom->lvlhigh;
@@ -1336,8 +1339,8 @@ void Client::FriendsWho(char *FriendsString) {
 		    new ServerPacket(ServerOP_FriendsWho, sizeof(ServerFriendsWho_Struct) + strlen(FriendsString));
 		ServerFriendsWho_Struct* FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
 		FriendsWho->FromID = this->GetID();
-		strcpy(FriendsWho->FromName, GetName());
-		strcpy(FriendsWho->FriendsString, FriendsString);
+		strncpy(FriendsWho->FromName, GetName(), 64);
+		strncpy(FriendsWho->FriendsString, FriendsString, 64);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -1516,9 +1519,9 @@ void Client::ChangeLastName(const char* in_lastname) {
 	strn0cpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name));
 	auto outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
 	GMLastName_Struct* gmn = (GMLastName_Struct*)outapp->pBuffer;
-	strcpy(gmn->name, name);
-	strcpy(gmn->gmname, name);
-	strcpy(gmn->lastname, in_lastname);
+	strn0cpy(gmn->name, name, 64);
+	strn0cpy(gmn->gmname, name, 64);
+	strn0cpy(gmn->lastname, in_lastname, 64);
 	gmn->unknown[0]=1;
 	gmn->unknown[1]=1;
 	gmn->unknown[2]=1;
@@ -1544,7 +1547,7 @@ bool Client::ChangeFirstName(const char* in_firstname, const char* gmname)
 	// update pp
 	memset(m_pp.name, 0, sizeof(m_pp.name));
 	snprintf(m_pp.name, sizeof(m_pp.name), "%s", in_firstname);
-	strcpy(name, m_pp.name);
+	strn0cpy(name, m_pp.name, 64);
 	Save();
 
 	// send name update packet
@@ -2204,7 +2207,7 @@ void Client::SetPVP(bool toggle) {
 void Client::WorldKick() {
 	auto outapp = new EQApplicationPacket(OP_GMKick, sizeof(GMKick_Struct));
 	GMKick_Struct* gmk = (GMKick_Struct *)outapp->pBuffer;
-	strcpy(gmk->name,GetName());
+	strn0cpy(gmk->name,GetName(), 64);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	Kick();
@@ -2213,7 +2216,7 @@ void Client::WorldKick() {
 void Client::GMKill() {
 	auto outapp = new EQApplicationPacket(OP_GMKill, sizeof(GMKill_Struct));
 	GMKill_Struct* gmk = (GMKill_Struct *)outapp->pBuffer;
-	strcpy(gmk->name,GetName());
+	strn0cpy(gmk->name,GetName(), 64);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
@@ -3130,7 +3133,7 @@ void Client::SendOPTranslocateConfirm(Mob *Caster, uint16 SpellID) {
 	auto outapp = new EQApplicationPacket(OP_Translocate, sizeof(Translocate_Struct));
 	Translocate_Struct *ts = (Translocate_Struct*)outapp->pBuffer;
 
-	strcpy(ts->Caster, Caster->GetName());
+	strn0cpy(ts->Caster, Caster->GetName(), 64);
 	PendingTranslocateData.spell_id = ts->SpellID = SpellID;
 	uint32 zoneid = database.GetZoneID(Spell.teleport_zone);
 
@@ -4177,7 +4180,7 @@ void Client::Doppelganger(uint16 spell_id, Mob *target, const char *name_overrid
 	made_npc = new NPCType;
 	memcpy(made_npc, npc_type, sizeof(NPCType));
 
-	strcpy(made_npc->name, name_override);
+	strncpy(made_npc->name, name_override, 64);
 	made_npc->level = GetLevel();
 	made_npc->race = GetRace();
 	made_npc->gender = GetGender();
@@ -4960,7 +4963,7 @@ void Client::SetBoatID(uint32 boatid)
 
 void Client::SetBoatName(const char* boatname)
 {
-	strncpy(m_pp.boat, boatname, 32);
+	strn0cpy(m_pp.boat, boatname, 32);
 }
 
 void Client::QuestReward(Mob* target, int32 copper, int32 silver, int32 gold, int32 platinum, int16 itemid, int32 exp, bool faction) 
@@ -5122,7 +5125,7 @@ void Client::SendSoulMarks(SoulMarkList_Struct* SMS)
 	memset(outapp->pBuffer, 0, sizeof(outapp->pBuffer));
 	SoulMarkList_Struct* soulmarks = (SoulMarkList_Struct*)outapp->pBuffer;
 	memcpy(&soulmarks->entries, SMS->entries, 12 * sizeof(SoulMarkEntry_Struct));
-	strncpy(soulmarks->interrogatename, SMS->interrogatename, 64);
+	strn0cpy(soulmarks->interrogatename, SMS->interrogatename, 64);
 	QueuePacket(outapp);
 	safe_delete(outapp);	
 }
