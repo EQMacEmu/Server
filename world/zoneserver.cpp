@@ -471,39 +471,40 @@ bool ZoneServer::Process() {
 			case ServerOP_RaidSay: {
 				zoneserver_list.SendPacket(pack); // broadcast to zones
 
+				// Temp disabled: implement raid / raid group say in tell queue.
 				// check for characters zoning and queue messages
-				ServerRaidMessage_Struct* srm = (ServerRaidMessage_Struct*)pack->pBuffer;
-				if (srm->rid != 0)
-				{
-					std::vector<ClientListEntry *> vec;
-					client_list.GetClients("", vec);
-					for (auto it = vec.begin(); it != vec.end(); ++it)
-					{
-						ClientListEntry *cle = *it;
-						if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
-						{
-							uint32 raidid, groupid;
-							if (database.GetRaidGroupID(cle->name(), &raidid, &groupid))
-							{
-								if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid))
-								{
-									// queue chat message
-									size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(srm->message) + 1;
-									ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
-									memset(scm, 0, struct_size);
-									strcpy(scm->deliverto, cle->name());
-									strcpy(scm->from, srm->from);
-									strcpy(scm->message, srm->message);
-									scm->language = srm->language;
-									scm->lang_skill = srm->lang_skill;
-									scm->chan_num = pack->opcode == ServerOP_RaidGroupSay ? ChatChannel_Group : ChatChannel_Raid;
-									scm->queued = 1;
-									cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
-								}
-							}
-						}
-					}
-				}
+				//ServerRaidMessage_Struct* srm = (ServerRaidMessage_Struct*)pack->pBuffer;
+				//if (srm->rid != 0)
+				//{
+				//	std::vector<ClientListEntry *> vec;
+				//	client_list.GetClients("", vec);
+				//	for (auto it = vec.begin(); it != vec.end(); ++it)
+				//	{
+				//		ClientListEntry *cle = *it;
+				//		if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
+				//		{
+				//			uint32 raidid, groupid;
+				//			if (database.GetRaidGroupID(cle->name(), &raidid, &groupid))
+				//			{
+				//				if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid))
+				//				{
+				//					// queue chat message
+				//					size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(srm->message) + 1;
+				//					ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
+				//					memset(scm, 0, struct_size);
+				//					strcpy(scm->deliverto, cle->name());
+				//					strcpy(scm->from, srm->from);
+				//					strcpy(scm->message, srm->message);
+				//					scm->language = srm->language;
+				//					scm->lang_skill = srm->lang_skill;
+				//					scm->chan_num = pack->opcode == ServerOP_RaidGroupSay ? ChatChannel_Group : ChatChannel_Raid;
+				//					scm->queued = 1;
+				//					cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
 
 				break;
 			}
