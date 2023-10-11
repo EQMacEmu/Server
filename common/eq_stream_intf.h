@@ -15,7 +15,7 @@ typedef enum {
 } EQStreamState;
 
 class EQApplicationPacket;
-class OpcodeManager;
+
 class EQStreamInterface {
 public:
 	virtual ~EQStreamInterface() {}
@@ -31,7 +31,6 @@ public:
 	virtual uint16 GetRemotePort() const = 0;
 	virtual bool CheckState(EQStreamState state) = 0;
 	virtual std::string Describe() const = 0;
-	virtual void SetOpcodeManager(OpcodeManager **opm) = 0;
 
 	virtual const uint32 GetBytesSent() const { return 0; }
 	virtual const uint32 GetBytesRecieved() const { return 0; }
