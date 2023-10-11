@@ -1024,6 +1024,7 @@ public:
 	void SetShowHelm(bool value) { m_pp.showhelm = value; }
 	bool SpillBeer();
 	void AddLootedLegacyItem(uint16 item_id);
+	bool RemoveLootedLegacyItem(uint16 item_id);
 	bool CheckLegacyItemLooted(uint16 item_id);
 	void LoadLootedLegacyItems();
 	void ResetSkill(EQ::skills::SkillType skillid, bool reset_timer = false);

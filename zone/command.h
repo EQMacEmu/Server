@@ -224,6 +224,7 @@ void command_reloadtraps(Client *c, const Seperator *sep);
 void command_reloadworld(Client *c, const Seperator *sep);
 void command_reloadworldrules(Client *c, const Seperator *sep);
 void command_reloadzps(Client *c, const Seperator *sep);
+void command_removelegacyitem(Client *c, const Seperator *sep);
 void command_repop(Client *c, const Seperator *sep);
 void command_repopclose(Client *c, const Seperator *sep);
 void command_resetaa(Client *c,const Seperator *sep);

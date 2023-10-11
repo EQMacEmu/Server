@@ -6403,3 +6403,23 @@ void Client::AddLootedLegacyItem(uint16 item_id)
 	looted_legacy_items.insert(item_id);
 	
 }
+
+bool Client::RemoveLootedLegacyItem(uint16 item_id)
+{
+	if (!CheckLegacyItemLooted(item_id))
+		return false;
+
+	std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", character_id, item_id);
+
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return false;
+	}
+
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		looted_legacy_items.erase(it);
+	}
+	return true;
+}

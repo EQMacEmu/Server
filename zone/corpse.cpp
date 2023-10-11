@@ -1400,45 +1400,6 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		}
 	}
 
-	if (client && inst && item_data) {
-		if (item_data->pet || item_data->quest)
-		{
-			if (client->IsSoloOnly() || client->IsSelfFound())
-			{
-				client->Message(CC_Red, "This item is from a charmed pet, which is not allowed during a solo or self found run.");
-				SendEndLootErrorPacket(client);
-				ResetLooter();
-				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
-				delete inst;
-				return;
-			}
-		}
-
-		if (!IsPlayerCorpse() && item_data->min_looter_level != 0)
-		{
-			if (client->GetLevel() < item_data->min_looter_level)
-			{
-				client->Message(CC_Red, "You cannot loot this type of legacy item. Required character level: %i", item_data->min_looter_level);
-				SendEndLootErrorPacket(client);
-				ResetLooter();
-				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
-				delete inst;
-				return;
-			}
-
-			if (client->CheckLegacyItemLooted(item_data->item_id))
-			{
-				client->Message(CC_Red, "This is a legacy item. You've already looted a legacy item of this type already on this character.");
-				SendEndLootErrorPacket(client);
-				ResetLooter();
-				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
-				delete inst;
-				return;
-			}
-
-			client->AddLootedLegacyItem(item_data->item_id);
-		}
-
 		if (client->CheckLoreConflict(item)) {
 			client->Message_StringID(0, LOOT_LORE_ERROR);
 			SendEndLootErrorPacket(client);
@@ -1466,6 +1427,45 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 					}
 				}
 			}
+		}
+
+		if (client && inst && item_data) {
+			if (item_data->pet || item_data->quest)
+			{
+				if (client->IsSoloOnly() || client->IsSelfFound())
+				{
+					client->Message(CC_Red, "This item is from a charmed pet, which is not allowed during a solo or self found run.");
+					SendEndLootErrorPacket(client);
+					ResetLooter();
+					if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
+					delete inst;
+					return;
+				}
+			}
+
+		if (!IsPlayerCorpse() && item_data->min_looter_level != 0)
+		{
+			if (client->GetLevel() < item_data->min_looter_level)
+			{
+				client->Message(CC_Red, "You cannot loot this type of legacy item. Required character level: %i", item_data->min_looter_level);
+				SendEndLootErrorPacket(client);
+				ResetLooter();
+				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
+				delete inst;
+				return;
+			}
+
+			if (client->CheckLegacyItemLooted(item_data->item_id))
+			{
+				client->Message(CC_Red, "This is a legacy item. You've already looted a legacy item of this type already on this character.");
+				SendEndLootErrorPacket(client);
+				ResetLooter();
+				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetID()); }
+				delete inst;
+				return;
+			}
+
+			client->AddLootedLegacyItem(item_data->item_id);
 		}
 
 		char buf[88];

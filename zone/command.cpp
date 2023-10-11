@@ -349,6 +349,7 @@ int command_init(void)
 		command_add("reloadtraps", "- Repops all traps in the current zone.", AccountStatus::QuestTroupe, command_reloadtraps) ||
 		command_add("reloadworld", "[0|1] - Clear quest cache and reload all rules (0 - no repop, 1 - repop).", AccountStatus::GMImpossible, command_reloadworld) ||
 		command_add("reloadzps", "- Reload zone points from database", AccountStatus::GMLeadAdmin, command_reloadzps) ||
+		command_add("removelegacyitem", "- Remove a legacy item from your target [itemid], or specify a [charid] [itemid] to remove the flag of.", AccountStatus::GMAdmin, command_removelegacyitem) ||
 		command_add("repop", "[delay] - Repop the zone with optional delay.", AccountStatus::GMLeadAdmin, command_repop) ||
 		command_add("repopclose", "[distance in units] Repops only NPC's nearby for fast development purposes", AccountStatus::GMAdmin, command_repopclose) ||
 		command_add("resetaa", "- Resets a Player's AA in their profile and refunds spent AA's to unspent, disconnects player.", AccountStatus::GMImpossible, command_resetaa) ||
@@ -11380,7 +11381,54 @@ void command_betabuff(Client* c, const Seperator* sep)
 	}
 }
 
+void command_removelegacyitem(Client* c, const Seperator* sep) {
+	if (sep->IsNumber(1) && sep->arg[2] == 0)
+	{
+		Mob* target = c->GetTarget();
+		if (target && target->IsClient())
+		{
+			Client* target_client = target->CastToClient();
+			bool res = target_client->RemoveLootedLegacyItem(atoi(sep->arg[1]));
+			if(!res)
+			{
+				c->Message(MT_System, "Unable to remove legacy item %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				return;
+			}
+			else
+			{
+				c->Message(MT_System, "Successfully removed legacy item id flag %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				return;
+			}
+		}
+		else
+		{
+			c->Message(MT_Shout, "You need a target for this GM command.");
+			return;
+		}
+	}
+	else if (sep->IsNumber(1) && sep->IsNumber(2))
+	{
+		char target_name[64] = { 0 };
+		target_name[0] = '\0';
+		database.GetCharName(atoi(sep->arg[1]), target_name);
+		if (target_name[0] == '\0')
+		{
+			c->Message(MT_Shout, "This is not a valid character to perform this interaction on!");
+			return;
+		}
 
+		std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", atoi(sep->arg[1]), atoi(sep->arg[2]));
+
+		auto results = database.QueryDatabase(query);
+		if (!results.Success()) {
+			c->Message(MT_System, "Unable to run query!");
+			return;
+		}
+		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %i from %s.", target_name);
+		return;
+	}
+	c->Message(MT_Shout, "Usage: #removelegacyitem [charid] [itemid] or #removelegacyitem [itemid] with a Client targeted.");
+}
 
 //Please keep this at the bottom of command.cpp! Feel free to use this for temporary commands used in testing :)
 void command_testcommand(Client *c, const Seperator *sep)
