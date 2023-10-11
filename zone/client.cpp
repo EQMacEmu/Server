@@ -2314,7 +2314,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 		if (bindmob->IsClient()) {
 			Client* bind_client = bindmob->CastToClient();
 			std::string msg;
-			if (bind_client->IsSoloOnly()) {
+			if (bind_client->IsSoloOnly() && this != bind_client) {
 				msg = "This player is running the Solo Only ruleset. You cannot bind wound.";
 			}
 			else if (IsSelfFound() != bind_client->CastToClient()->IsSelfFound()) {
