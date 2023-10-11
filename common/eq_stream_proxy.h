@@ -4,7 +4,6 @@
 
 #include "types.h"
 #include "eq_stream_intf.h"
-#include <memory>
 
 class EQStream;
 class EQOldStream;
@@ -15,8 +14,8 @@ class EQApplicationPacket;
 class EQStreamProxy : public EQStreamInterface {
 public:
 	//takes ownership of the stream.
-	EQStreamProxy(std::shared_ptr<EQStream> &stream, const StructStrategy *structs, OpcodeManager **opcodes);
-	EQStreamProxy(std::shared_ptr<EQOldStream> &stream, const StructStrategy *structs, OpcodeManager **opcodes);
+	EQStreamProxy(EQStream *&stream, const StructStrategy *structs, OpcodeManager **opcodes);
+	EQStreamProxy(EQOldStream *&stream, const StructStrategy *structs, OpcodeManager **opcodes);
 	virtual ~EQStreamProxy();
 
 	//EQStreamInterface:
@@ -32,15 +31,14 @@ public:
 	virtual std::string Describe() const;
 	virtual const EQ::versions::ClientVersion ClientVersion() const;
 	virtual bool IsInUse();
-	virtual void SetOpcodeManager(OpcodeManager **opm);
+
 	virtual const uint32 GetBytesSent() const;
 	virtual const uint32 GetBytesRecieved() const;
 	virtual const uint32 GetBytesSentPerSecond() const;
 	virtual const uint32 GetBytesRecvPerSecond() const;
 
 protected:
-	std::shared_ptr<EQStreamInterface> const					m_stream;	//we own this stream object.
-
+	EQStreamInterface *const					m_stream;	//we own this stream object.
 	const StructStrategy *const		m_structs;	//we do not own this object.
 	//this is a pointer to a pointer to make it less likely that a packet will
 	//reference an invalid opcode manager when they are being reloaded.
