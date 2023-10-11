@@ -800,11 +800,17 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		strcpy(sem->message, message);
 		sem->minstatus = this->Admin();
 		sem->type = chan_num;
-		if(targetname != 0)
-			strcpy(sem->to, targetname);
+		if (targetname != 0)
+		{
+			strncpy(sem->to, targetname, 64);
+			sem->to[63] = 0;
+		}
 
-		if(GetName() != 0)
-			strcpy(sem->from, GetName());
+		if (GetName() != 0)
+		{
+			strncpy(sem->from, GetName(), 64);
+			sem->from[63] = 0;
+		}
 
 		pack->Deflate();
 		if(worldserver.Connected())
@@ -1138,19 +1144,34 @@ void Client::SetMaxHP() {
 	Save();
 }
 
-void Client::SetSkill(EQ::skills::SkillType skillid, uint16 value) {
+void Client::SetSkill(EQ::skills::SkillType skillid, uint16 value, bool silent) {
 	if (skillid > EQ::skills::HIGHEST_SKILL)
 		return;
 	m_pp.skills[skillid] = value; // We need to be able to #setskill 254 and 255 to reset skills
 
 	database.SaveCharacterSkill(this->CharacterID(), skillid, value);
 
-	auto outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
-	SkillUpdate_Struct* skill = (SkillUpdate_Struct*)outapp->pBuffer;
-	skill->skillId=skillid;
-	skill->value=value;
-	QueuePacket(outapp);
-	safe_delete(outapp);
+	if (silent) 
+	{
+		// this packet doesn't print a message on the client
+		auto outapp = new EQApplicationPacket(OP_SkillUpdate2, sizeof(SkillUpdate2_Struct));
+		SkillUpdate2_Struct *pkt = (SkillUpdate2_Struct *)outapp->pBuffer;
+		pkt->entity_id = GetID();
+		pkt->skillId = skillid;
+		pkt->value = value;
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+	else
+	{
+		// this packet prints a string: You have become better at %1! (%2)
+		auto outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
+		SkillUpdate_Struct *skill = (SkillUpdate_Struct *)outapp->pBuffer;
+		skill->skillId = skillid;
+		skill->value = value;
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
 }
 
 void Client::ResetSkill(EQ::skills::SkillType skillid, bool reset_timer) 

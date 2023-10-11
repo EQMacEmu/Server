@@ -1783,7 +1783,12 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 				Log(Logs::Detail, Logs::Combat, "Tried to train a new skill %d which is invalid for this race/class.", skill);
 				return;
 			}
-			SetSkill(skill, t_level);
+			// solar: the client code uses the level required as the initial skill level of a newly acquired skill.  it is believed
+			// that the initial level of a skill should be the player's current level instead, but this puts the client window out
+			// of sync with the real value.  currently we are following the client logic so it stays in sync.
+			// TODO: this is a workaround for not being able to differentiate between a value 0 skill and an untrained (254) skill
+			t_level = t_level == 1 ? 1 : std::min((uint16)GetLevel(), MaxSkill(skill));
+			SetSkill(skill, t_level, true);
 		} else {
 			switch(skill) {
 			case EQ::skills::SkillBrewing:
@@ -1797,7 +1802,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			case EQ::skills::SkillPottery:
 				if(skilllevel >= RuleI(Skills, MaxTrainTradeskills)) {
 					Message_StringID(CC_Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
-					SetSkill(skill, skilllevel);
+					SetSkill(skill, skilllevel, true);
 					return;
 				}
 				break;
@@ -1808,7 +1813,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			case EQ::skills::SkillSpecializeEvocation:
 				if(skilllevel >= RuleI(Skills, MaxTrainSpecializations)) {
 					Message_StringID(CC_Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
-					SetSkill(skill, skilllevel);
+					SetSkill(skill, skilllevel, true);
 					return;
 				}
 			default:
@@ -1820,7 +1825,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			{
 				// Don't allow training over max skill level
 				Message_StringID(CC_Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
-				SetSkill(skill, skilllevel);
+				SetSkill(skill, skilllevel, true);
 				return;
 			}
 
@@ -1831,7 +1836,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 				{
 					// Restrict specialization training to follow the rules
 					Message_StringID(CC_Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
-					SetSkill(skill, skilllevel);
+					SetSkill(skill, skilllevel, true);
 					return;
 				}
 			}
@@ -1843,7 +1848,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			if(AdjustedSkillLevel > 0)
 				Cost = AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel / 100;
 
-			SetSkill(skill, skilllevel + 1);
+			SetSkill(skill, skilllevel + 1, true);
 
 
 		}
