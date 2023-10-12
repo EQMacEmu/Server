@@ -11424,7 +11424,7 @@ void command_removelegacyitem(Client* c, const Seperator* sep) {
 			c->Message(MT_System, "Unable to run query!");
 			return;
 		}
-		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %i from %s.", target_name);
+		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %i from %s.", sep->arg[2], target_name);
 		return;
 	}
 	c->Message(MT_Shout, "Usage: #removelegacyitem [charid] [itemid] or #removelegacyitem [itemid] with a Client targeted.");
