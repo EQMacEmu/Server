@@ -1584,7 +1584,7 @@ bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int
 		(whom->guildid >= 0 && client->GuildID() == whom->guildid && guild_not_anon) || // guild#
 		(whom->guildid == -3 && client->LFG() && not_anon)))) && // lfg
 		(whomlen == 0 || 
-		((tmpZone != 0 && admin >= gmwholist && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
+		((tmpZone != 0 && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
 		strncasecmp(client->name(),whom->whom, whomlen) == 0 || // name
 		(strncasecmp(guild_mgr.GetGuildName(client->GuildID()), whom->whom, whomlen) == 0 && guild_not_anon)|| // This is used by who all guild
 		(admin >= gmwholist && strncasecmp(client->AccountName(), whom->whom, whomlen) == 0)))) // account (GM only)
