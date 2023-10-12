@@ -2069,27 +2069,18 @@ int32 NPC::GetHPRegen()
 {
 	uint32 bonus = 0;
 	if(GetAppearance() == eaSitting)
-			bonus+=3;
+		bonus = 1;
 
-	if((GetHP() < GetMaxHP()) && !IsPet()) 
+	if (GetHP() < GetMaxHP())
 	{
 		// OOC
-		if(!IsEngaged())
+		if(!IsEngaged() && (!IsPet() || (!IsCharmedPet() && !IsDireCharmed())))
 		{
 			return(GetNPCHPRegen() + bonus); // hp_regen + spell/item regen + sitting bonus
-		// In Combat
-		} 
+		}
 		else
 			return(GetCombatHPRegen() + (GetNPCHPRegen() - hp_regen)); // combat_regen + spell/item regen
 	} 
-	// Pet
-	else if(GetHP() < GetMaxHP() && GetOwnerID() !=0) 
-	{
-		if (!IsEngaged() && !IsCharmedPet() && !IsDireCharmed())
-			return(GetNPCHPRegen() + bonus + (GetLevel()/5));
-		else
-			return(GetCombatHPRegen() + (GetNPCHPRegen() - hp_regen));
-	}
 	else
 		return 0;
 }
@@ -2098,28 +2089,17 @@ int32 NPC::GetManaRegen()
 {
 	uint32 bonus = 0;
 	if(GetAppearance() == eaSitting)
-	bonus+=3;
+		bonus += 3;	// made-up, prob should not exist
 
-	// Non-Pet
-	if((GetMana() < GetMaxMana()) && !IsPet()) 
+	if (GetMana() < GetMaxMana())
 	{
-		// OOC
-		if(!IsEngaged()) 
+		if (!IsEngaged())
 		{
 			return(GetNPCManaRegen() + bonus); // mana_regen + spell/item regen + sitting bonus
-		// In Combat
-		} 
+		}
 		else
 			return(GetCombatManaRegen() + (GetNPCManaRegen() - mana_regen)); // combat_regen + spell/item regen
 	} 
-	// Pet
-	else if(GetMana() < GetMaxMana() && GetOwnerID() !=0) 
-	{
-		if(!IsEngaged())
-			return(GetNPCManaRegen() + bonus + (GetLevel()/5));
-		else
-			return(GetCombatManaRegen() + (GetNPCManaRegen() - mana_regen));
-	}
 	else
 		return 0;
 }

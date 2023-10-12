@@ -824,17 +824,17 @@ struct DeleteSpawn_Struct
 
 /*
 ** Channel Message received or sent
-** Length: 144 Bytes + Variable Length + 1
+** Length: 136 Bytes + Variable Length up to 2048 bytes for the message
 ** OpCode: OP_ChannelMessage
 **
 */
 struct ChannelMessage_Struct
 {
 	/*000*/	char	targetname[64];		// Tell recipient
-	/*064*/	char	sender[64];			// The senders name (len might be wrong)
+	/*064*/	char	sender[64];			// The senders name
 	/*128*/	uint16	language;			// Language
 	/*130*/	uint16	chan_num;			// Channel
-	/*132*/	uint16	cm_unknown4;		// ***Placeholder
+	/*132*/	uint16	unused_align132;	// struct alignment padding
 	/*134*/	uint16	skill_in_language;	// The players skill in this language? might be wrong
 	/*136*/	char	message[0];			// Variable length message
 };
@@ -1479,6 +1479,14 @@ struct SkillUpdate_Struct {
 /*00*/	uint32 skillId;
 /*04*/	uint32 value;
 /*08*/
+};
+
+struct SkillUpdate2_Struct {
+	/*00*/	uint16 entity_id;
+	/*02*/	uint16 align1; // just alignment padding
+	/*04*/	int32 skillId;
+	/*08*/	int32 value;
+	/*12*/
 };
 
 struct ZoneUnavail_Struct {

@@ -108,12 +108,6 @@ bool Zone::Bootup(uint32 iZoneID, bool iStaticZone) {
 	zone->zonemap = Map::LoadMapFile(zone->map_name);
 	zone->watermap = WaterMap::LoadWaterMapfile(zone->map_name);
 	zone->pathing = IPathfinder::Load(zone->map_name);
-	if (zone->zonemap == nullptr || zone->watermap == nullptr) {
-		std::cerr << "Zone->Loading map files failed for Maps/" << zone->map_name << std::endl;
-		safe_delete(zone);
-		worldserver.SetZoneData(0);
-		return false;
-	}
 
 	std::string tmp;
 	if (database.GetVariable("loglevel", tmp)) {
@@ -1704,15 +1698,17 @@ ZonePoint* Zone::GetClosestZonePoint(const glm::vec3& location, uint32 to, Clien
 		iterator.Advance();
 	}
 
+	// solar 20231008 commented out, this is spamming up the log for legitimate ports/gates
+	// TODO: there are some issues with the client side things like succor and gate failures that may be making this worse and this fallthrough log spam could be useful to find error cases in the above code.
+	/*
 	if(closest_dist > 400.0f && closest_dist < max_distance2)
 	{
-
 		if(client)
 			client->CheatDetected(MQZoneUnknownDest, location.x, location.y, location.z); // Someone is trying to use /zone
 		LogInfo("WARNING: Closest zone point for zone id {} is {}, you might need to update your zone_points table if you dont arrive at the right spot.", to, closest_dist);
 		LogInfo("<Real Zone Points>. {} ", to_string(location).c_str());
-
 	}
+	*/
 
 	if(closest_dist > max_distance2)
 		closest_zp = nullptr;

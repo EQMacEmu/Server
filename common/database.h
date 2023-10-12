@@ -183,6 +183,7 @@ public:
 	char*	GetGroupLeadershipInfo(uint32 gid, char* leaderbuf);
 	std::string	GetGroupOldLeaderName(uint32 gid);
 	void	ClearGroupLeader(uint32 gid = 0);
+	bool	GetGroupMemberNames(uint32 group_id, char membername[MAX_GROUP_MEMBERS][64]);
 	
 
 	/*

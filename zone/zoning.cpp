@@ -222,11 +222,21 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			//they are zoning using a valid zone point, figure out coords
 
 			//999999 is a placeholder for 'same as where they were from'
-			if(zone_point->target_x == 999999)
-				dest_x = GetX();
+			//The client compile shows 1044 difference when zoning freport <-> nro.  this fixes server side when using 999999.
+			if (zone_point->target_x == 999999) {  
+				if (zone->GetZoneID() == freporte && zone_point->target_zone_id == nro) {
+					dest_x = GetX() + 1044;
+				}
+				else if (zone->GetZoneID() == nro && zone_point->target_zone_id == freporte) {
+					dest_x = GetX() - 1044;
+				}
+				else {
+					dest_x = GetX();
+				}
+			}
 			else
 				dest_x = zone_point->target_x;
-			if(zone_point->target_y == 999999)
+			if (zone_point->target_y == 999999)
 				dest_y = GetY();
 			else
 				dest_y = zone_point->target_y;

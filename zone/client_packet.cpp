@@ -2780,10 +2780,11 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (strlen(cm->targetname) > 63)
-	{
-		return;
-	}
+	// the client does not process these strings cleanly and if it doesn't crash from it first, it will send the garbage to the server and cause a crash here.
+	cm->targetname[63] = 0;
+	cm->sender[63] = 0;
+	if (app->size > 2184) // size is 136 + strlen(message) + 1 but the client adds an extra 4 bytes to the length when it sends the packet.
+		cm->message[2047] = 0; // the client also does this but only for this message field
 
 	uint8 skill_in_language = 100;
 	if (cm->language < MAX_PP_LANGUAGE)
@@ -8303,11 +8304,6 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	if (sa->type == AT_Invis) {
 		if (sa->parameter != 0)
 		{
-			if (!HasSkill(EQ::skills::SkillHide) && GetSkill(EQ::skills::SkillHide) == 0)
-			{
-				auto hack_str = fmt::format("Player sent OP_SpawnAppearance with AT_Invis: {} ", sa->parameter);
-				database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
-			}
 			return;
 		}
 		CommonBreakInvisNoSneak();
@@ -8696,31 +8692,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		else if (IsSenseExempted())
 		{
 			SetSenseExemption(false);
-		}
-		else if (GetBindSightTarget())
-		{
-			if (DistanceSquared(GetBindSightTarget()->GetPosition(), new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
-			{
-				if (DistanceSquared(m_Position, new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip + 40000))
-				{
-					auto hacker_str = fmt::format(" {} attempting to target something beyond the clip plane of {:.2f} units,"
-						" from ( {:.2f} , {:.2f} , {:.2f} ) to {} ( {:.2f} , {:.2f} , {:.2f} )", GetName(),
-						(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
-						GetX(), GetY(), GetZ(), new_tar->GetName(), new_tar->GetX(), new_tar->GetY(), new_tar->GetZ());
-					database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
-					SendTargetCommand(0);
-					SetTarget(nullptr);
-					return;
-				}
-			}
-		}
-		else if (DistanceSquared(m_Position, new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip + 40000))
-		{ // client will allow targeting something just beyond max clip just out of sight, so add another 200 for that.
-			auto hacker_str = fmt::format(" {} attempting to target something beyond the clip plane of {:.2f} units,"
-				" from ( {:.2f} , {:.2f} , {:.2f} to {} ( {:.2f} , {:.2f} , {:.2f} )", GetName(),
-				(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
-				GetX(), GetY(), GetZ(), new_tar->GetName(), new_tar->GetX(), new_tar->GetY(), new_tar->GetZ());
-			database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
 		}
 
 		if (new_tar != cur_tar && new_tar != this)

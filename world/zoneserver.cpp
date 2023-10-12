@@ -330,6 +330,10 @@ bool ZoneServer::Process() {
 				ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer; 
 				if (gcm->groupid != 0)
 				{
+					char membername[MAX_GROUP_MEMBERS][64]; // group member names
+					bool groupLoaded = false; // only query the database if there are clients zoning
+
+					// iterate client_list looking for clients that are zoning
 					std::vector<ClientListEntry *> vec;
 					client_list.GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it)

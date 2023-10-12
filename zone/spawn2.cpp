@@ -256,7 +256,13 @@ bool Spawn2::Process() {
 
 		currentnpcid = npcid;
 
-		if (rand_spawn)
+		// ignoring spawnpoint loc and using random loc for large outdoor zones; roambox NPCs are not supposed to be campable
+		// a bit hackish but works
+		bool open_outdoor_zone = (!zone->CanCastDungeon() && !zone->IsCity()) || qeynos2 || freporte || freportw || gfaydark;
+		if (open_outdoor_zone == kael || open_outdoor_zone == mischiefplane)
+			open_outdoor_zone = false;
+
+		if (rand_spawn || (spawn_group->roamdist && open_outdoor_zone))
 		{
 			uint8 count = 0;
 			z = BEST_Z_INVALID;
@@ -271,7 +277,8 @@ bool Spawn2::Process() {
 
 			if (z == BEST_Z_INVALID)
 			{
-				Log(Logs::General, Logs::Error, "Invalid BestZ for random spawn %d. They will not spawn.", spawn2_id);
+				Log(Logs::General, Logs::Error, "Invalid BestZ for random spawn %d", spawn2_id);
+				timer.Start(60000);	// try again later
 				return false;
 			}
 

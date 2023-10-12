@@ -25,6 +25,7 @@
 
 #include <string>
 
+#define MAX_GROUP_MEMBERS 6
 
 //SpawnAppearance types:
 #define AT_Die			0	// this causes the client to keel over and zone to bind point
