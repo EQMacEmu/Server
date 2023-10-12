@@ -641,6 +641,7 @@ bool IsHarmonySpell(uint16 spell_id);
 bool IsPacifySpell(uint16 spell_id);
 bool IsLullSpell(uint16 spell_id);
 bool IsMemBlurSpell(uint16 spell_id);
+bool IsBardAOEDamageSpell(uint16 spell_id);
 bool IsAEMemBlurSpell(uint16 spell_id);
 bool IsCrowdControlSpell(uint16 spell_id);
 bool IsPercentalHealSpell(uint16 spell_id);
