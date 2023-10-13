@@ -1161,7 +1161,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (curmob->IsNPC() && caster->IsAttackAllowed(curmob, true, spell_id))
 					++targets_hit;
-				Log(Logs::Moderate, Logs::Spells, "Bard Damaging AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
+				Log(Logs::Moderate, Logs::Spells, "Bard Damaging AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, bard_aoe_cap, curmob->GetCleanName());
 			}
 		}
 		else 
