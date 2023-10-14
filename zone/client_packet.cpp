@@ -2099,6 +2099,13 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 		return;
 	}
 
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot autoattack as a GM.");
+		return;
+	}
+
 	if (app->pBuffer[0] == 0)
 	{
 		auto_attack = false;
@@ -2589,7 +2596,14 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (Admin() > 20 && GetGM() && IsValidSpell(castspell->spell_id)) {
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot cast spells as a GM.");
+		InterruptSpell(castspell->spell_id);
+		return;
+	}
+
+	if (Admin() > 0 && IsValidSpell(castspell->spell_id)) {
 		Mob* SpellTarget = entity_list.GetMob(castspell->target_id);
 		char szArguments[64];
 		sprintf(szArguments, "ID %i (%s), Slot %i, InvSlot %i", castspell->spell_id, spells[castspell->spell_id].name, castspell->slot, castspell->inventoryslot);
@@ -3254,6 +3268,13 @@ void Client::Handle_OP_CombatAbility(const EQApplicationPacket *app)
 {
 	if (app->size != sizeof(CombatAbility_Struct)) {
 		std::cout << "Wrong size on OP_CombatAbility. Got: " << app->size << ", Expected: " << sizeof(CombatAbility_Struct) << std::endl;
+		return;
+	}
+
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot use abilities or thrown items as a GM.");
 		return;
 	}
 
