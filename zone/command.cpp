@@ -4031,8 +4031,8 @@ void command_corpse(Client *c, const Seperator *sep)
 	std::string help17 = "  #corpse reset - Resets looter status on targetted corpse for debugging.";
 	std::string help18 = "  #corpse backups - List of current target's corpse backups.";
 	std::string help19 = "  #corpse restore [corpse_id] - Summons the specified corpse from a player's backups.";
-
-	std::string help[] = { help0, help1, help2, help3, help4, help5, help6, help7, help8, help9, help10, help11, help12, help13, help14, help15, help16, help17, help18, help19 };
+	std::string help20 = "  #corpse summonall [name] - Summons all of [name]'s oldest buried corpse, if any exist.";
+	std::string help[] = { help0, help1, help2, help3, help4, help5, help6, help7, help8, help9, help10, help11, help12, help13, help14, help15, help16, help17, help18, help19, help20 };
 
 	Mob *target = c->GetTarget();
 
@@ -4335,6 +4335,39 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			c->Message(CC_Default, "Insufficient status to summon backup corpses.");
+		}
+	}
+	else if (strcasecmp(sep->arg[1], "summonall") == 0)
+	{
+		if (sep->arg[2][0] != 0 && !sep->IsNumber(2))
+		{
+			std::string summon_corpse_char_name = sep->arg[2];
+			auto corpse_list_copy = entity_list.GetCorpseList();
+			int nCorpseCount = 0;
+			for (auto corpse : corpse_list_copy)
+			{
+				Corpse* pCorpse = corpse.second;
+				if (pCorpse && pCorpse->IsPlayerCorpse())
+				{
+					if (strcmp(pCorpse->GetOwnerName(), summon_corpse_char_name.c_str()) == 0)
+					{
+						pCorpse->GMMove(c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+						nCorpseCount++;
+					}
+				}
+			}
+			if (nCorpseCount > 0)
+			{
+				c->Message(CC_Default, "Summoned %d corpses to your location from player %s", nCorpseCount, summon_corpse_char_name.c_str());
+			}
+			else
+			{
+				c->Message(CC_Red, "No corpses with name %s exist in this zone.", summon_corpse_char_name.c_str());
+			}
+		}
+		else
+		{
+			c->Message(CC_Red, "Invalid character ID or parameter count for #corpse summonall");
 		}
 	}
 	else
