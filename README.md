@@ -8,3 +8,6 @@ https://github.com/EQMacEmu/Maps
 
 Database:
 https://github.com/SecretsOTheP/EQMacEmu/tree/main/utils/sql/database_full
+
+Database Testing:
+ - Download & install MariaDB 10.3
