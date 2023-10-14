@@ -629,6 +629,9 @@ void Client::CompleteConnect()
 	entity_list.SendIllusionedPlayers(this);
 
 	conn_state = ClientConnectFinished;
+	initial_z_position = m_Position.z;
+	accidentalfall_timer.Enable();
+	accidentalfall_timer.Start(RuleI(Quarm, AccidentalFallTimerMS));
 	database.SetAccountActive(AccountID());
 
 	if (GetGroup())
@@ -3757,13 +3760,26 @@ void Client::Handle_OP_Damage(const EQApplicationPacket *app)
 		SendHPUpdate();
 		return;
 	}
-
 	else if (zone->GetZoneID() == tutorial || zone->GetZoneID() == load)
 	{
 		return;
 	}
 	else
 	{
+		if (accidentalfall_timer.Enabled())
+		{
+			if (accidentalfall_timer.Check())
+			{
+				float z_prev = initial_z_position;
+				float z_cur = m_Position.z;
+				if (z_cur <= z_prev + RuleR(Quarm, AccidentalFallUnitDist) || z_cur >= z_prev + -RuleR(Quarm, AccidentalFallUnitDist))
+				{
+					SendHPUpdate();
+					return;
+				}
+			}
+		}
+
 		SetHP(GetHP() - (damage * RuleR(Character, EnvironmentDamageMulipliter)));
 
 		/* EVENT_ENVIRONMENTAL_DAMAGE */

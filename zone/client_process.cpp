@@ -74,6 +74,15 @@ bool Client::Process() {
 			SendAllPackets();
 		}
 
+		//Accidental falling timer.
+		if (accidentalfall_timer.Enabled())
+		{
+			if (accidentalfall_timer.Check())
+			{
+				accidentalfall_timer.Disable();
+			}
+		}
+
 		if(dead)
 		{
 			SetHP(-100);

@@ -1172,6 +1172,7 @@ private:
 	uint16				BoatID;
 	uint32				account_creation;
 	uint8				firstlogon;
+	float initial_z_position;
 	bool	Trader;
 	std::string	BuyerWelcomeMessage;
 	bool	AbilityTimer;
@@ -1225,6 +1226,7 @@ private:
 	Timer process_timer;
 	Timer stamina_timer;
 	Timer zoneinpacket_timer;
+	Timer accidentalfall_timer;
 	Timer linkdead_timer;
 	Timer dead_timer;
 	Timer global_channel_timer;

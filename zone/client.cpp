@@ -125,6 +125,7 @@ Client::Client(EQStreamInterface* ieqs)
 	process_timer(100),
 	stamina_timer(40000),
 	zoneinpacket_timer(1000),
+	accidentalfall_timer(15000),
 	linkdead_timer(RuleI(Zone,ClientLinkdeadMS)),
 	dead_timer(2000),
 	global_channel_timer(1000),
@@ -163,6 +164,8 @@ Client::Client(EQStreamInterface* ieqs)
 	feigned = false;
 	berserk = false;
 	dead = false;
+	initial_z_position = 0;
+	accidentalfall_timer.Disable();
 	is_client_moving = false;
 	eqs = ieqs;
 	ip = eqs->GetRemoteIP();
