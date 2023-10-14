@@ -980,11 +980,6 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		break;
 	}
 	case ChatChannel_Tell: { /* Tell */
-			if(GetRevoked())
-			{
-				Message(CC_Default, "You have been revoked. You may not send tells.");
-				return;
-			}
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
@@ -1319,6 +1314,7 @@ void Client::UpdateWho(uint8 remove) {
 	scl->mule = this->IsMule();
 	scl->AFK = this->AFK;
 	scl->Trader = this->IsTrader();
+	scl->Revoked = this->GetRevoked();
 
 	worldserver.SendPacket(pack);
 	safe_delete(pack);

@@ -391,6 +391,7 @@ struct ServerClientList_Struct {
 	bool	mule;
 	bool	AFK;
 	bool	Trader;
+	bool	Revoked;
 };
 
 struct ServerClientListKeepAlive_Struct {

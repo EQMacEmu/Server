@@ -625,6 +625,9 @@ bool ZoneServer::Process() {
 								strcpy(scm->deliverto, scm->from);
 								sender->Server()->SendPacket(pack);
 							} else {
+								if (cle && sender->Revoked() && cle->Admin() <= 0)
+									break;
+
 								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(scm->message) + 1;
 								ServerChannelMessage_Struct *temp = (ServerChannelMessage_Struct *) new uchar[struct_size];
 								memset(temp, 0, struct_size); // just in case, was seeing some corrupt messages, but it shouldn't happen
@@ -646,7 +649,18 @@ bool ZoneServer::Process() {
 							zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, CC_Default, fmt::format(" {} is not contactable at this time'", scm->to).c_str());
 					}
 					else
+					{
+						if (scm->chan_num == ChatChannel_Tell) {
+							ClientListEntry* sender = client_list.FindCharacter(scm->from);
+							if (cle && sender && sender->Revoked() && cle->Admin() <= 0)
+							{
+								if (scm->chan_num == ChatChannel_Tell)
+									zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, CC_Default, "You are server muted, and aren't able to send a message to anyone but a CSR.");
+								break;
+							}
+						}
 						cle->Server()->SendPacket(pack);
+					}
 				}
 				else {
 					if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
