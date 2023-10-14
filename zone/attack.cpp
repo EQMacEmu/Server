@@ -1436,8 +1436,6 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	if (killerMob && !killerMob->IsClient() && !killerMob->IsPlayerOwned())
 		SetMana(GetMaxMana());
-	else if(GetMaxMana() > 0)
-		SetMana(1);
 
 	uint32 previous_level = GetLevel();
 
