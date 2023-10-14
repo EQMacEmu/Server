@@ -1055,9 +1055,10 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 					return false;
 				}
 
-				if (c1->IsSoloOnly() || c2->IsSoloOnly())
+				if (c2->IsSoloOnly())
 				{
-					// if either are solo only don't allow.
+					// if the target is solo, don't allow anyone to buff it
+					// if the caster is solo, it's fine if they try to buff someone
 					return false;
 				}
 
