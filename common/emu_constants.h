@@ -298,8 +298,7 @@ enum QuakeType : uint8_t
 {
 	QuakeDisabled = 0,
 	QuakeFTE = 1,
-	QuakeExtraMob = 2,
-	QuakeDPSRace = 3,
+	QuakeDPSRace = 2,
 	QuakeMax
 };
 

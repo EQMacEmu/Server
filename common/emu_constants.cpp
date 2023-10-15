@@ -309,9 +309,9 @@ std::string QuakeTypeToString(QuakeType in_type)
 	case QuakeType::QuakeDPSRace:
 		out_stringtype = "DPS Race";
 		break;
-	case QuakeType::QuakeExtraMob:
-		out_stringtype = "Extra Target for Server Rotation";
-		break;
+	//case QuakeType::QuakeExtraMob:
+	//	out_stringtype = "Extra Target for Server Rotation";
+	//	break;
 	case QuakeType::QuakeDisabled:
 	case QuakeType::QuakeMax:
 	default:
