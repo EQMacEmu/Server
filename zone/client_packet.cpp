@@ -2864,8 +2864,14 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 			{
 				msg = "You cannot pick up dropped player items because you're a GM and that would make the players around you a sad panda.";
 			}
-			else if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID()) {
-				msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
+			else if ((IsSelfFound() || IsSoloOnly()))
+			{
+				// If the client is self found or solo, don't allow them to pick up the item, unless they are the one that dropped it
+				if(object->GetCharacterDropperID() != this->CharacterID()))
+				{
+					msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
+				}
+				// The else case does not set a msg because they are allowed to pick it up if they dropped it
 			}
 			else if (object->IsSSFRuleSet()) {
 				msg = "You cannot pick up this item because it was dropped by a player performing a self found or solo challenge.";
