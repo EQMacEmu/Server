@@ -716,7 +716,14 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 		// If the cursor is empty, we have to send an item packet or we'll desync.
 		if (!PushItemOnCursor(*inst))
 		{
-			Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			if (inst)
+			{
+				auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+				Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+				Message(CC_Red, broken_string.c_str());
+				Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			}
 			return false;
 		}
 
@@ -724,7 +731,7 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 	}
 	else
 	{
-		if (!GetGM())
+		if (Admin() == 0)
 		{
 			// There are items on the cursor, so we don't want to send packet updates. But,
 			// we do want to enforce the client's rules about items on the cursor. No dupe items,
@@ -739,7 +746,10 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 				}
 				else
 				{
-					Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d is a duplicate. It will be deleted.", inst->GetID());
+					auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+					Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+					if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+					Message(CC_Red, broken_string.c_str());
 					return false;
 				}
 			}
@@ -748,7 +758,14 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 		inst->SetCursorQueue(false);
 		if (!PushItemOnCursor(*inst))
 		{
-			Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			if (inst)
+			{
+				Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+				auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+				Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+				Message(CC_Red, broken_string.c_str());
+			}
 			return false;
 		}
 	}
