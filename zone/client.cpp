@@ -2247,6 +2247,7 @@ void Client::SetFeigned(bool in_feigned) {
 			entity_list.ClearFeignAggro(this);
 	}
 	feigned=in_feigned;
+	entity_list.NotifyFeigned(this, feigned);
  }
 
 void Client::LogMerchant(Client* player, Mob* merchant, uint32 quantity, uint32 price, const EQ::ItemData* item, bool buying)

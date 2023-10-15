@@ -1891,12 +1891,6 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		respawn2->DeathReset(true);
 	}
 
-	// Do faction hits to any player on the hatelist, so long as a player damaged us.
-	if (GetNPCFactionID() > 0 && player_damaged)
-	{
-		hate_list.DoFactionHits(GetNPCFactionID(), faction);
-	}
-
 	// Killer is whoever gets corpse rights. Corpse will be left if killer is a player.
 	int32 dmg_amt = 0;
 	Mob* killer = nullptr;
@@ -1994,6 +1988,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		Log(Logs::Moderate, Logs::Death, "Killer is NULL or is a NPC. No corpse will be left.");
 	}
 
+	// Do faction hits to players on hatelist so long as killer is client and npc didn't get killing blow
+	if (GetNPCFactionID() > 0 && player_damaged && killer && (killer != oos || killer->IsClient()))
+	{
+		hate_list.DoFactionHits(GetNPCFactionID(), faction);
+	}
 	
 	hate_list.ReportDmgTotals(this, corpse, xp, faction, dmg_amt);
 	BuffFadeAll();

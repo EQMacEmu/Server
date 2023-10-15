@@ -527,6 +527,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 		}
 		p->hate = in_hate;
 		p->bFrenzy = bFrenzy;
+		p->feignedBeforeFleeing = false;
 		list.push_back(p);
 		parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "1", 0);
 		Log(Logs::Moderate, Logs::Aggro, "%s is creating %d damage and %d hate on %s hatelist.", ent->GetName(), in_dam, in_hate, owner->GetName());
@@ -579,7 +580,6 @@ void HateList::DoFactionHits(int32 nfl_id, bool &success) {
 	while(iterator != list.end())
 	{
 		Client *p;
-
 		if ((*iterator)->ent && (*iterator)->ent->IsClient())
 			p = (*iterator)->ent->CastToClient();
 		else
@@ -587,8 +587,10 @@ void HateList::DoFactionHits(int32 nfl_id, bool &success) {
 
 		if (p)
 		{
-			if (!p->IsFeigned() || (owner->IsFleeing() && !owner->IsRooted() && (Distance(owner->GetPosition(), p->GetPosition()) < 100.0f)))
-			p->SetFactionLevel(p->CharacterID(), nfl_id);
+			bool feignedBeforeFleeing = (*iterator)->feignedBeforeFleeing;
+			if (!p->IsFeigned() || (!feignedBeforeFleeing && owner->IsFleeing() && !owner->IsRooted() && (Distance(owner->GetPosition(), p->GetPosition()) < 100.0f))) {
+				p->SetFactionLevel(p->CharacterID(), nfl_id);
+			}
 			success = true;
 		}
 		++iterator;

@@ -801,6 +801,8 @@ public:
 	void SetMoved(bool val) { moved = val; }
 
 	inline bool			CheckAggro(Mob* other) { return hate_list.IsOnHateList(other); }
+	inline tHateEntry*	GetHateEntryFor(Mob* ent) { return hate_list.Find(ent); }
+
 	float				CalculateHeadingToTarget(float in_x, float in_y) { return HeadingAngleToMob(in_x, in_y); }
 	float				CalculatePitchToTarget(glm::vec3 loc);
 	virtual void		WalkTo(float x, float y, float z);

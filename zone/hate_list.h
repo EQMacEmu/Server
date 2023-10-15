@@ -32,6 +32,7 @@ struct tHateEntry
 	float dist_squared;
 	uint32 last_damage;
 	uint32 last_hate;
+	bool feignedBeforeFleeing;
 };
 
 class HateList
@@ -107,8 +108,9 @@ public:
 
 	void ReportDmgTotals(Mob* mob, bool corpse, bool xp, bool faction, int32 dmg_amt);
 
+	tHateEntry* Find(Mob* ent);
+
 protected:
-	tHateEntry* Find(Mob *ent);
 	int32 GetHateBonus(tHateEntry *entry, bool combatRange, bool firstInRange = false, float distSquared = -1.0f);
 	int32 GetEntPetDamage(Mob* ent);
 private:

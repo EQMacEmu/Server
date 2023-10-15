@@ -3174,6 +3174,23 @@ void EntityList::ClearAggro(Mob* targ)
 	}
 }
 
+void EntityList::NotifyFeigned(Mob* targ, bool feigned) {
+	auto it = npc_list.begin();
+	while (it != npc_list.end()) {
+		tHateEntry* hateEntry = it->second->GetHateEntryFor(targ);
+		if (hateEntry) {
+			if (feigned) {
+				if (!it->second->IsFleeing()) {
+					hateEntry->feignedBeforeFleeing = true;
+				}
+			}
+			else {
+				hateEntry->feignedBeforeFleeing = false;
+			}
+		}
+	}
+}
+
 // this is called when the player stands up
 // stun_elapsed is the number of miliseconds elapsed since stun timer has started; 0 if client not stunned
 void EntityList::ClearFeignAggro(Mob *targ)
