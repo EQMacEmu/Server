@@ -237,6 +237,9 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NP
 		corpse_delay_timer.Start(GetDecayTime() + 1000);
 	}
 
+	if(RuleB(Quarm, CorpseUnlockIsHalvedDecayTime))
+		corpse_delay_timer.Start(GetDecayTime() / 2);
+
 	for (int i = 0; i < MAX_LOOTERS; i++) {
 		initial_allowed_looters[i] = 0;
 	}
