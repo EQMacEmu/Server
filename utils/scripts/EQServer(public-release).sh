@@ -526,6 +526,7 @@ downloadQuests)
 	else
 		echo dir does not exist, grabbing clone from git...
 		git clone https://github.com/EQMacEmu/peqmacquests $path/quests
+  		cp -r $path/source/utils/defaults/plugins $path/quests/plugins
 		ln -s $path/quests/plugins $path/plugins
 		ln -s $path/quests/lua_modules $path/lua_modules
 	fi
