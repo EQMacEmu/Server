@@ -636,17 +636,17 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 				bool is_failed_cast = false;
 				const char* fail_message = nullptr;
 
-				if (spell_target->IsSoloOnly())
+				if (spell_target->CastToClient()->IsSoloOnly())
 				{
 					// if the target is solo, don't allow anyone to buff it
 					// if the caster is solo, it's fine if they try to buff someone
 					is_failed_cast = true;
 					fail_message = SOLO_PLAYER_ERROR;
 				} 
-				if (spell_target->IsSelfFound())
+				if (spell_target->CastToClient()->IsSelfFound())
 				{
-					bool can_get_experience = caster->IsInLevelRange(spell_target->GetLevel2());
-					bool compatible = caster->IsSelfFound() == spell_target->IsSelfFound();
+					bool can_get_experience = caster->IsInLevelRange(spell_target->CastToClient()->GetLevel2());
+					bool compatible = caster->IsSelfFound() == spell_target->CastToClient()->IsSelfFound();
 					if (!compatible)
 					{
 						is_failed_cast = true;
