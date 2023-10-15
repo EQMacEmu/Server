@@ -629,6 +629,9 @@ void Client::CompleteConnect()
 	entity_list.SendIllusionedPlayers(this);
 
 	conn_state = ClientConnectFinished;
+	initial_z_position = m_Position.z;
+	accidentalfall_timer.Enable();
+	accidentalfall_timer.Start(RuleI(Quarm, AccidentalFallTimerMS));
 	database.SetAccountActive(AccountID());
 
 	if (GetGroup())
@@ -707,8 +710,7 @@ void Client::CompleteConnect()
 	{
 		SetHardcoreDeathTimeStamp(0);
 		ClearPlayerInfoAndGrantStartingItems();
-		Kick();
-		WorldKick();
+		ForceGoToDeath();
 	}
 }
 
@@ -2100,6 +2102,13 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 		return;
 	}
 
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot autoattack as a GM.");
+		return;
+	}
+
 	if (app->pBuffer[0] == 0)
 	{
 		auto_attack = false;
@@ -2590,7 +2599,14 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (Admin() > 20 && GetGM() && IsValidSpell(castspell->spell_id)) {
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot cast spells as a GM.");
+		InterruptSpell(castspell->spell_id);
+		return;
+	}
+
+	if (Admin() > 0 && IsValidSpell(castspell->spell_id)) {
 		Mob* SpellTarget = entity_list.GetMob(castspell->target_id);
 		char szArguments[64];
 		sprintf(szArguments, "ID %i (%s), Slot %i, InvSlot %i", castspell->spell_id, spells[castspell->spell_id].name, castspell->slot, castspell->inventoryslot);
@@ -2781,6 +2797,12 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 		return;
 	}
 
+	// the client does not process these strings cleanly and if it doesn't crash from it first, it will send the garbage to the server and cause a crash here.
+	cm->targetname[63] = 0;
+	cm->sender[63] = 0;
+	if (app->size > 2184) // size is 136 + strlen(message) + 1 but the client adds an extra 4 bytes to the length when it sends the packet.
+		cm->message[2047] = 0; // the client also does this but only for this message field
+
 	uint8 skill_in_language = 100;
 	if (cm->language < MAX_PP_LANGUAGE)
 	{
@@ -2833,15 +2855,20 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
+
 		Object* object = entity->CastToObject();
 		if (object->IsPlayerDrop())
 		{
 			std::string msg;
-			if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID()) {
-				msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge."
+			if (Admin() > 0)
+			{
+				msg = "You cannot pick up dropped player items because you're a GM and that would make the players around you a sad panda.";
+			}
+			else if ((IsSelfFound() || IsSoloOnly()) && object->GetCharacterDropperID() != this->CharacterID()) {
+				msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
 			}
 			else if (object->IsSSFRuleSet()) {
-				msg = "You cannot pick up this item because it was dropped by a player performing a self found or solo challenge."
+				msg = "You cannot pick up this item because it was dropped by a player performing a self found or solo challenge.";
 			}
 			if (!msg.empty())
 			{
@@ -3038,82 +3065,85 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		m_Position.z = newPosition.z;
 
 		bSkip = true;
-	}
-	double dist = DistanceNoZ(m_LastLocation, newPosition);
-	double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
+	}		
 
-	bool shouldTryHackCheck = !exemptHackCount;
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
-	auto seccount = seconds.count();
-	auto distDivTime = 0.;
-
-
-	float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
-	float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
-
-	float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
-	float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
-	float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
-	if (dist > distThreshold && seccount >= secondElapsedThreshold)
+	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		distDivTime = dist / seccount;
-	}
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		double dist = DistanceNoZ(m_LastLocation, newPosition);
+		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
 
-	/*
-		If the PPU was a large jump, such as a cross zone gate or Call of Hero,
-			just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
-	*/
+		bool shouldTryHackCheck = !exemptHackCount;
+		auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
+		auto seccount = seconds.count();
+		auto distDivTime = 0.;
 
-	bool is_exempt_correct = false;
 
-	if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
-	{
-		is_exempt_correct = true;
-		ExpectedRewindPos = glm::vec3(0, 0, 0);
-	}
-	auto speed = GetRunspeed();
-	float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
-	float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
-	float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+		float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
+		float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
 
-	float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
-	float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
-
-	if (speed >= highSpeedValueThreshold)
-		distDivTimeThreshold = distDivTimeHighSpeedThreshold;
-
-	if (speed >= bardSpeedValueThreshold)
-		distDivTimeThreshold = distDivTimeBardSpeedThreshold;
-
-	bool within_previous_zone_point = false;
-
-	bool has_boat = false;
-	
-	Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
-	if (boat) //These lil boats run fast!!
-	{
-		if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+		float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
+		float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
+		float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
+		if (dist > distThreshold && seccount >= secondElapsedThreshold)
 		{
-			has_boat = true;
+			distDivTime = dist / seccount;
 		}
-	}
 
-	if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
-	{
+		/*
+			If the PPU was a large jump, such as a cross zone gate or Call of Hero,
+				just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
+		*/
 
-		ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
-		ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+		bool is_exempt_correct = false;
 
-		if (!previous_zone_point && !current_zone_point)
+		if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+		{
+			is_exempt_correct = true;
+			ExpectedRewindPos = glm::vec3(0, 0, 0);
+		}
+		auto speed = GetRunspeed();
+		float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
+		float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
+		float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+
+		float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
+		float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
+
+		if (speed >= highSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeHighSpeedThreshold;
+
+		if (speed >= bardSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeBardSpeedThreshold;
+
+		bool within_previous_zone_point = false;
+
+		bool has_boat = false;
+
+		Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
+		if (boat) //These lil boats run fast!!
+		{
+			if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+			{
+				has_boat = true;
+			}
+		}
+
+		if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
 		{
 
-			std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
-			worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
-			database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+			ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
+			ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+
+			if (!previous_zone_point && !current_zone_point)
+			{
+
+				std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
+				worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+				//database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+			}
 		}
 	}
-
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos/10.0f));
@@ -3187,12 +3217,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_Position.y = ppu->y_pos;
 	m_Position.z = (float)ppu->z_pos/10.0f;
 	m_RewindLocation = m_Position;
-	auto current_update_time = std::chrono::high_resolution_clock::now();
-	auto timeDiff = std::chrono::duration<double>(currentTime - last_position_update_time);
-	if (timeDiff.count() >= 1.0)
+	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		last_position_update_time = current_update_time;
-		m_LastLocation = m_Position;
+		auto current_update_time = std::chrono::high_resolution_clock::now();
+		auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
+		if (timeDiff.count() >= 1.0)
+		{
+			last_position_update_time = current_update_time;
+			m_LastLocation = m_Position;
+		}
 	}
 	//auto old_anim = animation;
 	animation = ppu->anim_type;
@@ -3238,6 +3271,13 @@ void Client::Handle_OP_CombatAbility(const EQApplicationPacket *app)
 {
 	if (app->size != sizeof(CombatAbility_Struct)) {
 		std::cout << "Wrong size on OP_CombatAbility. Got: " << app->size << ", Expected: " << sizeof(CombatAbility_Struct) << std::endl;
+		return;
+	}
+
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot use abilities or thrown items as a GM.");
 		return;
 	}
 
@@ -3646,6 +3686,13 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
 {
+	if (Admin() > 0)
+	{
+		std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
+		Message(CC_Red, msg.c_str());
+		return;
+	}
+
 	DropItem(EQ::invslot::slotCursor);
 	return;
 }
@@ -3713,13 +3760,26 @@ void Client::Handle_OP_Damage(const EQApplicationPacket *app)
 		SendHPUpdate();
 		return;
 	}
-
 	else if (zone->GetZoneID() == tutorial || zone->GetZoneID() == load)
 	{
 		return;
 	}
 	else
 	{
+		if (accidentalfall_timer.Enabled())
+		{
+			if (accidentalfall_timer.Check())
+			{
+				float z_prev = initial_z_position;
+				float z_cur = m_Position.z;
+				if (z_cur <= z_prev + RuleR(Quarm, AccidentalFallUnitDist) || z_cur >= z_prev + -RuleR(Quarm, AccidentalFallUnitDist))
+				{
+					SendHPUpdate();
+					return;
+				}
+			}
+		}
+
 		SetHP(GetHP() - (damage * RuleR(Character, EnvironmentDamageMulipliter)));
 
 		/* EVENT_ENVIRONMENTAL_DAMAGE */
@@ -4032,6 +4092,12 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (GetRevoked())
+	{
+		Message(CC_Default, "You have been revoked. You may not send Emote messages.");
+		return;
+	}
+
 	// Calculate new packet dimensions
 	Emote_Struct* in = (Emote_Struct*)app->pBuffer;
 	in->message[1023] = '\0';
@@ -4055,7 +4121,6 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 	memcpy(&out->message[len_name], in->message, len_msg);
 
 	entity_list.QueueCloseClients(this, outapp, true, RuleI(Range, Emote), 0, true, FilterSocials);
-
 	safe_delete(outapp);
 	return;
 }
@@ -4992,6 +5057,13 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	// If we've received the packet and it's valid, then we're either going to join the group or fail in some way. 
 	// In either case, the invite should be cleared so just do it now.
 	Log(Logs::General, Logs::Group, "%s is clearing the group invite.", GetName());
@@ -5175,6 +5247,13 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	if (Invitee == this)
 	{
 		Message_StringID(CC_Default, GROUP_INVITEE_SELF);
@@ -5191,6 +5270,12 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 			if (Invitee->CastToClient()->IsSoloOnly())
 			{
 				Message(CC_Red, "This player has solo mode enabled, and cannot group with you.");
+				return;
+			}
+			if (Invitee->CastToClient()->Admin() > 0)
+			{
+				Message(CC_Red, "You are being invited by a GM. This will never work.");
+				database.SetHackerFlag(Invitee->CastToClient()->AccountName(), Invitee->CastToClient()->GetCleanName(), "GM attempted to join a group or raid.");
 				return;
 			}
 			if (!Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
@@ -6075,8 +6160,8 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		return;
 	}
 	else {
-		std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
-		Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
+		//std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
+		//Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
 		Corpse::SendLootReqErrorPacket(this);
 	}
 	return;
@@ -6771,6 +6856,13 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
@@ -6785,6 +6877,12 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			if (i->IsSoloOnly())
 			{
 				Message(CC_Red, "This player is solo only and cannot be invited to the raid.");
+				return;
+			}
+
+			if (i->Admin() > 0)
+			{
+				Message(CC_Red, "This player is a GM and cannot join your raid.");
 				return;
 			}
 
@@ -7604,6 +7702,21 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	int merchantid;
 	bool tmpmer_used = false;
 	Mob* tmp = entity_list.GetMob(mp->npcid);
+	if (!tmp)
+	{
+		// This prevents the client from bugging if we have to return but also sends a bogus message.
+		auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
+		Merchant_Sell_Struct* mss = (Merchant_Sell_Struct*)returnapp->pBuffer;
+		mss->itemslot = 0;
+		mss->npcid = mp->npcid;
+		mss->playerid = GetID();
+		mss->price = 0;
+		mss->quantity = 0;
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		SendMerchantEnd();
+		return;
+	}
 
 	// This prevents the client from bugging if we have to return but also sends a bogus message.
 	auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
@@ -7714,6 +7827,14 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	if (CheckLoreConflict(item))
 	{
 		Message_StringID(CC_Default, DUPE_LORE_MERCHANT, tmp->GetCleanName());
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		return;
+	}
+
+	if (Admin() > 0 && tmpmer_used)
+	{
+		Message(CC_Red, "That item isn't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
 		return;
@@ -7914,6 +8035,8 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 			sizeof(Merchant_Purchase_Struct), app->size);
 		return;
 	}
+
+
 	RDTSC_Timer t1(true);
 	Merchant_Purchase_Struct* mp = (Merchant_Purchase_Struct*)app->pBuffer;
 
@@ -7932,6 +8055,23 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	uint32 itemid = GetItemIDAt(mp->itemslot);
 	if (itemid == 0)
 		return;
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "Just use commands. You're literally a GM, silly goose.");
+		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
+		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
+
+		mco->itemslot = mp->itemslot;
+		mco->npcid = vendor->GetID();
+		mco->quantity = mp->quantity;
+		mco->price = 0;
+		mco->playerid = this->GetID();
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
 	const EQ::ItemData* item = database.GetItem(itemid);
 	EQ::ItemInstance* inst = GetInv().GetItem(mp->itemslot);
 	if (!item || !inst){
@@ -8201,11 +8341,6 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	if (sa->type == AT_Invis) {
 		if (sa->parameter != 0)
 		{
-			if (!HasSkill(EQ::skills::SkillHide) && GetSkill(EQ::skills::SkillHide) == 0)
-			{
-				auto hack_str = fmt::format("Player sent OP_SpawnAppearance with AT_Invis: {} ", sa->parameter);
-				database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
-			}
 			return;
 		}
 		CommonBreakInvisNoSneak();
@@ -8599,31 +8734,6 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			SetSenseExemption(false);
 		}
-		else if (GetBindSightTarget())
-		{
-			if (DistanceSquared(GetBindSightTarget()->GetPosition(), new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip))
-			{
-				if (DistanceSquared(m_Position, new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip + 40000))
-				{
-					auto hacker_str = fmt::format(" {} attempting to target something beyond the clip plane of {:.2f} units,"
-						" from ( {:.2f} , {:.2f} , {:.2f} ) to {} ( {:.2f} , {:.2f} , {:.2f} )", GetName(),
-						(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
-						GetX(), GetY(), GetZ(), new_tar->GetName(), new_tar->GetX(), new_tar->GetY(), new_tar->GetZ());
-					database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
-					SendTargetCommand(0);
-					SetTarget(nullptr);
-					return;
-				}
-			}
-		}
-		else if (DistanceSquared(m_Position, new_tar->GetPosition()) > (zone->newzone_data.maxclip*zone->newzone_data.maxclip + 40000))
-		{ // client will allow targeting something just beyond max clip just out of sight, so add another 200 for that.
-			auto hacker_str = fmt::format(" {} attempting to target something beyond the clip plane of {:.2f} units,"
-				" from ( {:.2f} , {:.2f} , {:.2f} to {} ( {:.2f} , {:.2f} , {:.2f} )", GetName(),
-				(zone->newzone_data.maxclip*zone->newzone_data.maxclip),
-				GetX(), GetY(), GetZ(), new_tar->GetName(), new_tar->GetX(), new_tar->GetY(), new_tar->GetZ());
-			database.SetMQDetectionFlag(AccountName(), GetName(), hacker_str, zone->GetShortName());
-		}
 
 		if (new_tar != cur_tar && new_tar != this)
 		{
@@ -8802,6 +8912,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 	if(zone->GetZoneID() != bazaar)
 		return;
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot use the bazaar. Use the dev server for that.");
+		return;
+	}
+
 	uint16 code = app->pBuffer[0];
 	uint32 max_items = 80;
 
@@ -8857,6 +8973,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 			if (IsSoloOnly() || IsSelfFound())
 			{
 				Message(CC_Red, "You are solo or self found only, and cannot list or sell items in The Bazaar.");
+				return;
+			}
+			if (Admin() > 0)
+			{
+				Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+				database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
 				return;
 			}
 			GetItems_Struct* gis = GetTraderItems();
@@ -8989,6 +9111,13 @@ void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app)
 		Message(CC_Red, "You are solo or self found only, and cannot purchase items from The Bazaar.");
 		return;
 	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
+		return;
+	}
 	// Bazaar Trader:
 	//
 	// Client has elected to buy an item from a Trader
@@ -9055,6 +9184,13 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
+		if (Admin() > 0)
+		{
+			Message(CC_Red, "You are a GM. You cannot trade with other players. Use the dev server for that.");
+			database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to trade with another player instead of using GM commands.");
+			return;
+		}
+
 
 		if (tradee->CastToClient()->IsSoloOnly())
 		{
@@ -9064,15 +9200,18 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			return;
 		}
 
+		if (tradee->CastToClient()->Admin() > 0)
+		{
+			Message(CC_User_YouMissOther, "You attempt to trade with a GM, but miss!");
+			return;
+		}
+
 		if (tradee->CastToClient()->IsSelfFound() == true || IsSelfFound() == true)
 		{
-			if (tradee->CastToClient()->IsSelfFound() != IsSelfFound())
-			{
-				Message(CC_Red, "This player does not match your self-found flags. You cannot trade with them.");
-				FinishTrade(this);
-				trade->Reset();
-				return;
-			}
+			Message(CC_Red, "This player is doing a self found run. You cannot trade with them.");
+			FinishTrade(this);
+			trade->Reset();
+			return;
 		}
 
 		if (trade->state != TradeNone && trade->state != Requesting) {

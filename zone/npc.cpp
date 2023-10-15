@@ -2069,27 +2069,18 @@ int32 NPC::GetHPRegen()
 {
 	uint32 bonus = 0;
 	if(GetAppearance() == eaSitting)
-			bonus+=3;
+		bonus = 1;
 
-	if((GetHP() < GetMaxHP()) && !IsPet()) 
+	if (GetHP() < GetMaxHP())
 	{
 		// OOC
-		if(!IsEngaged())
+		if(!IsEngaged() && (!IsPet() || (!IsCharmedPet() && !IsDireCharmed())))
 		{
 			return(GetNPCHPRegen() + bonus); // hp_regen + spell/item regen + sitting bonus
-		// In Combat
-		} 
+		}
 		else
 			return(GetCombatHPRegen() + (GetNPCHPRegen() - hp_regen)); // combat_regen + spell/item regen
 	} 
-	// Pet
-	else if(GetHP() < GetMaxHP() && GetOwnerID() !=0) 
-	{
-		if (!IsEngaged() && !IsCharmedPet() && !IsDireCharmed())
-			return(GetNPCHPRegen() + bonus + (GetLevel()/5));
-		else
-			return(GetCombatHPRegen() + (GetNPCHPRegen() - hp_regen));
-	}
 	else
 		return 0;
 }
@@ -2098,28 +2089,17 @@ int32 NPC::GetManaRegen()
 {
 	uint32 bonus = 0;
 	if(GetAppearance() == eaSitting)
-	bonus+=3;
+		bonus += 3;	// made-up, prob should not exist
 
-	// Non-Pet
-	if((GetMana() < GetMaxMana()) && !IsPet()) 
+	if (GetMana() < GetMaxMana())
 	{
-		// OOC
-		if(!IsEngaged()) 
+		if (!IsEngaged())
 		{
 			return(GetNPCManaRegen() + bonus); // mana_regen + spell/item regen + sitting bonus
-		// In Combat
-		} 
+		}
 		else
 			return(GetCombatManaRegen() + (GetNPCManaRegen() - mana_regen)); // combat_regen + spell/item regen
 	} 
-	// Pet
-	else if(GetMana() < GetMaxMana() && GetOwnerID() !=0) 
-	{
-		if(!IsEngaged())
-			return(GetNPCManaRegen() + bonus + (GetLevel()/5));
-		else
-			return(GetCombatManaRegen() + (GetNPCManaRegen() - mana_regen));
-	}
 	else
 		return 0;
 }
@@ -2794,17 +2774,15 @@ void NPC::ProcessFTE()
 			bool is_engaged = lastAggroTime != 0xFFFFFFFF;
 			bool engaged_too_long = false;
 			if (is_engaged)
-				engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+				engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
 			bool no_haters = hate_list.GetNumHaters() == 0;
-
+			bool valid_guild_on_hatelist = guild_fte != GUILD_NONE;
+			bool is_guild_on_hate_list = hate_list.IsGuildOnHateList(guild_fte);
 			//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
-			if (engaged_too_long || no_haters)
+			if (engaged_too_long || no_haters || valid_guild_on_hatelist && !is_guild_on_hate_list)
 			{
-				if (HasEngageNotice()) {
-					Gate();
-					Heal();
-					WipeHateList(false); // This will call FTEDisengage, which clears guild_fte
-				}
+				HandleFTEDisengage();
+				SetAggroTime(0xFFFFFFFF);
 			}
 		}
 	}
@@ -2817,7 +2795,7 @@ void NPC::ProcessFTE()
 		bool is_engaged = lastAggroTime != 0xFFFFFFFF;
 		bool engaged_too_long = false;
 		if (is_engaged)
-			engaged_too_long = curtime >= lastAggroTime + 60000 && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+			engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
 		bool no_haters = hate_list.GetNumHaters() == 0;
 
 		//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.

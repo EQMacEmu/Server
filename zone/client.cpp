@@ -125,6 +125,7 @@ Client::Client(EQStreamInterface* ieqs)
 	process_timer(100),
 	stamina_timer(40000),
 	zoneinpacket_timer(1000),
+	accidentalfall_timer(15000),
 	linkdead_timer(RuleI(Zone,ClientLinkdeadMS)),
 	dead_timer(2000),
 	global_channel_timer(1000),
@@ -163,6 +164,8 @@ Client::Client(EQStreamInterface* ieqs)
 	feigned = false;
 	berserk = false;
 	dead = false;
+	initial_z_position = 0;
+	accidentalfall_timer.Disable();
 	is_client_moving = false;
 	eqs = ieqs;
 	ip = eqs->GetRemoteIP();
@@ -809,11 +812,17 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		strcpy(sem->message, message);
 		sem->minstatus = this->Admin();
 		sem->type = chan_num;
-		if(targetname != 0)
-			strcpy(sem->to, targetname);
+		if (targetname != 0)
+		{
+			strncpy(sem->to, targetname, 64);
+			sem->to[63] = 0;
+		}
 
-		if(GetName() != 0)
-			strcpy(sem->from, GetName());
+		if (GetName() != 0)
+		{
+			strncpy(sem->from, GetName(), 64);
+			sem->from[63] = 0;
+		}
 
 		pack->Deflate();
 		if(worldserver.Connected())
@@ -868,7 +877,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Shout: { /* Shout */
 		Mob *sender = this;
-
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Shout.");
+			return;
+		}
 		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		break;
 	}
@@ -903,6 +916,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		}
 		else if(!RuleB(Chat, ServerWideAuction)) {
 			Mob *sender = this;
+
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not send Auction messages.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -945,6 +964,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		else
 		{
 			Mob *sender = this;
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not talk in Out Of Character.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -959,11 +983,6 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		break;
 	}
 	case ChatChannel_Tell: { /* Tell */
-			if(GetRevoked())
-			{
-				Message(CC_Default, "You have been revoked. You may not send tells.");
-				return;
-			}
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
@@ -1031,8 +1050,14 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		Mob* sender = this;
 		if (GetPet() && FindType(SE_VoiceGraft))
 			sender = GetPet();
-
-		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been revoked. You may not talk on say, except to NPCs directly.");
+		}
+		else
+		{
+			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		}
 		parse->EventPlayer(EVENT_SAY, this, message, language);
 
 		if (sender != this)
@@ -1147,19 +1172,34 @@ void Client::SetMaxHP() {
 	Save();
 }
 
-void Client::SetSkill(EQ::skills::SkillType skillid, uint16 value) {
+void Client::SetSkill(EQ::skills::SkillType skillid, uint16 value, bool silent) {
 	if (skillid > EQ::skills::HIGHEST_SKILL)
 		return;
 	m_pp.skills[skillid] = value; // We need to be able to #setskill 254 and 255 to reset skills
 
 	database.SaveCharacterSkill(this->CharacterID(), skillid, value);
 
-	auto outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
-	SkillUpdate_Struct* skill = (SkillUpdate_Struct*)outapp->pBuffer;
-	skill->skillId=skillid;
-	skill->value=value;
-	QueuePacket(outapp);
-	safe_delete(outapp);
+	if (silent) 
+	{
+		// this packet doesn't print a message on the client
+		auto outapp = new EQApplicationPacket(OP_SkillUpdate2, sizeof(SkillUpdate2_Struct));
+		SkillUpdate2_Struct *pkt = (SkillUpdate2_Struct *)outapp->pBuffer;
+		pkt->entity_id = GetID();
+		pkt->skillId = skillid;
+		pkt->value = value;
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
+	else
+	{
+		// this packet prints a string: You have become better at %1! (%2)
+		auto outapp = new EQApplicationPacket(OP_SkillUpdate, sizeof(SkillUpdate_Struct));
+		SkillUpdate_Struct *skill = (SkillUpdate_Struct *)outapp->pBuffer;
+		skill->skillId = skillid;
+		skill->value = value;
+		QueuePacket(outapp);
+		safe_delete(outapp);
+	}
 }
 
 void Client::ResetSkill(EQ::skills::SkillType skillid, bool reset_timer) 
@@ -1277,6 +1317,7 @@ void Client::UpdateWho(uint8 remove) {
 	scl->mule = this->IsMule();
 	scl->AFK = this->AFK;
 	scl->Trader = this->IsTrader();
+	scl->Revoked = this->GetRevoked();
 
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -2222,6 +2263,10 @@ void Client::SetFeigned(bool in_feigned) {
 		{
 			SetPet(0);
 		}
+		// feign breaks charmed pets
+		if (GetPet() && GetPet()->IsCharmedPet()) {
+			FadePetCharmBuff();
+		}
 		SetHorseId(0);
 		feigned_time = Timer::GetCurrentTime();
 	}
@@ -2289,7 +2334,7 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 		if (bindmob->IsClient()) {
 			Client* bind_client = bindmob->CastToClient();
 			std::string msg;
-			if (bind_client->IsSoloOnly()) {
+			if (bind_client->IsSoloOnly() && this != bind_client) {
 				msg = "This player is running the Solo Only ruleset. You cannot bind wound.";
 			}
 			else if (IsSelfFound() != bind_client->CastToClient()->IsSelfFound()) {
@@ -6377,4 +6422,120 @@ void Client::AddLootedLegacyItem(uint16 item_id)
 	}
 	looted_legacy_items.insert(item_id);
 	
+}
+
+bool Client::RemoveLootedLegacyItem(uint16 item_id)
+{
+	if (!CheckLegacyItemLooted(item_id))
+		return false;
+
+	std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", character_id, item_id);
+
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return false;
+	}
+
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		looted_legacy_items.erase(it);
+	}
+	return true;
+}
+
+
+void Client::ShowLegacyItemsLooted(Client* to)
+{
+	if (!to)
+		return;
+
+	to->Message(CC_Yellow, "Showing all legacy loot lockouts / items for %s..", GetCleanName());
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Item Flags On Character:");
+	for(auto looted_legacy_item : looted_legacy_items)
+	{
+		const EQ::ItemData* itemdata = database.GetItem(looted_legacy_item);
+		if (itemdata)
+		{
+			to->Message(CC_Yellow, "ID %d : Name %s", itemdata->ID, itemdata->Name);
+		}
+	}
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Items On Character:");
+	
+	std::string query = StringFormat("SELECT id, name FROM items "
+		"WHERE legacy_item = 1 ORDER BY id", character_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+
+		to->Message(CC_Yellow, "======");
+		return;
+	}
+
+	std::map<uint16, std::string> item_ids_to_names;
+	std::map<uint16, uint32> item_ids_to_quantity;
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+	{
+		auto itr = item_ids_to_names.find(atoi(row[0]));
+
+		if (itr == item_ids_to_names.end())
+			item_ids_to_names[atoi(row[0])] = std::string(row[1]);
+
+		auto itr2 = item_ids_to_quantity.find(atoi(row[0]));
+
+		if (itr2 == item_ids_to_quantity.end())
+			item_ids_to_quantity[atoi(row[0])] = 0;
+	}
+
+	for (int16 i = EQ::invslot::SLOT_BEGIN; i <= EQ::invbag::BANK_BAGS_END;)
+	{
+		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
+
+		if (i == EQ::invslot::GENERAL_END + 1) {
+			i = EQ::invbag::GENERAL_BAGS_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invbag::CURSOR_BAG_END + 1) {
+			i = EQ::invslot::BANK_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invslot::BANK_END + 1) {
+			i = EQ::invbag::BANK_BAGS_BEGIN;
+			continue;
+		}
+
+		if (newinv)
+		{
+			if (newinv->GetItem())
+			{
+				auto quantityItr = item_ids_to_quantity.find(newinv->GetItem()->ID);
+				if (quantityItr != item_ids_to_quantity.end())
+				{
+					int countQuantity = quantityItr->second + 1;
+					item_ids_to_quantity[newinv->GetItem()->ID] = countQuantity;
+				}
+			}
+		}
+		i++;
+	}
+
+	for (auto itemids : item_ids_to_names)
+	{
+		auto itr3 = item_ids_to_quantity.find(itemids.first);
+		if (itr3 != item_ids_to_quantity.end())
+		{
+			if (itr3->second > 0)
+			{
+				const EQ::ItemData* item_data = database.GetItem(itemids.first);
+				if (item_data)
+				{
+					to->Message(CC_Yellow, "ID %d || Name %s || Quantity %d ", item_data->ID, item_data->Name, itr3->second);
+				}
+			}
+		}
+	}	
+	to->Message(CC_Yellow, "======");
+
 }

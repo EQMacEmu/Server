@@ -222,8 +222,8 @@ int command_init(void)
 		command_add("gender", "[0/1/2] - Change your or your target's gender to male/female/neuter.", AccountStatus::QuestMaster, command_gender) ||
 		command_add("getvariable", "[varname] - Get the value of a variable from the database.", AccountStatus::GMCoder, command_getvariable) ||
 		command_add("ginfo", "- get group info on target.", AccountStatus::QuestTroupe, command_ginfo) ||
-		command_add("giveitem", "[itemid] [charges] - Summon an item onto your target's cursor. Charges are optional.", AccountStatus::GMLeadAdmin, command_giveitem) ||
-		command_add("givemoney", "[pp] [gp] [sp] [cp] - Gives specified amount of money to the target player.", AccountStatus::GMLeadAdmin, command_givemoney) ||
+		command_add("giveitem", "[itemid] [charges] [reason] - Summon an item onto your target's cursor. Charges are optional.", AccountStatus::GMLeadAdmin, command_giveitem) ||
+		command_add("givemoney", "[pp] [gp] [sp] [cp] [reason]  - Gives specified amount of money to the target player.", AccountStatus::GMLeadAdmin, command_givemoney) ||
 		command_add("giveplayerfaction", "[factionid] [factionvalue] - Gives the target player faction with the given faction. (Acts as a hit).", AccountStatus::GMMgmt, command_giveplayerfaction) ||
 		command_add("globalview", "Lists all qglobals in cache if you were to do a quest with this target.", AccountStatus::GMStaff, command_globalview) ||
 		command_add("gm", "- Turn player target's or your GM flag on or off.", AccountStatus::GMStaff, command_gm) ||
@@ -250,12 +250,15 @@ int command_init(void)
 		command_add("hp", "- Refresh your HP bar from the server.", AccountStatus::Max, command_hp) ||
 
 		command_add("interrogateinv", "- use [help] argument for available options.", AccountStatus::GMLeadAdmin, command_interrogateinv) ||
+		command_add("interrogatelegacy", "- Interrogates legacy items of your current target", AccountStatus::GMAdmin, command_interrogatelegacy) ||
+
 		command_add("interrupt", "[message id] [color] - Interrupt your casting. Arguments are optional.", AccountStatus::EQSupport, command_interrupt) ||
 		command_add("invul", "[on/off] - Turn player target's or your invulnerable flag on or off", AccountStatus::QuestTroupe, command_invul) ||
 		command_add("ipban", "[IP address] - Ban IP by character name.", AccountStatus::GMMgmt, command_ipban) ||
 #ifdef IPC
 		command_add("ipc", "- Toggle an NPC's interactive flag.", AccountStatus::GMImpossible, command_ipc) ||
 #endif
+		command_add("ipexemption", "[accountname] [exemption] - Set IP exemption amount for accountname by amount. Accounts default to 1.", AccountStatus::GMAdmin, command_ipexemption) ||
 		command_add("iplookup", "[charname] - Look up IP address of charname.", AccountStatus::GMStaff, command_iplookup) ||
 		command_add("iteminfo", "- Get information about the item on your cursor.", AccountStatus::Guide, command_iteminfo) ||
 		command_add("itemsearch", "[search criteria] - Search for an item.", AccountStatus::GMAdmin, command_itemsearch) ||
@@ -329,6 +332,7 @@ int command_init(void)
 
 		command_add("qglobal", "[on/off/view] - Toggles qglobal functionality on an NPC.", AccountStatus::GMImpossible, command_qglobal) ||
 		command_add("qtest", "- QueryServ testing command.", AccountStatus::GMTester, command_qtest) ||
+		command_add("quaketrigger", "- Triggers an earthquake manually", AccountStatus::GMImpossible, command_quaketrigger) ||
 		command_add("questerrors", "Shows quest errors.",AccountStatus::Player, command_questerrors) ||
 
 		command_add("race", "[racenum] - Change your or your target's race. Use racenum 0 to return to normal.", AccountStatus::QuestMaster, command_race) ||
@@ -347,6 +351,7 @@ int command_init(void)
 		command_add("reloadtraps", "- Repops all traps in the current zone.", AccountStatus::QuestTroupe, command_reloadtraps) ||
 		command_add("reloadworld", "[0|1] - Clear quest cache and reload all rules (0 - no repop, 1 - repop).", AccountStatus::GMImpossible, command_reloadworld) ||
 		command_add("reloadzps", "- Reload zone points from database", AccountStatus::GMLeadAdmin, command_reloadzps) ||
+		command_add("removelegacyitem", "- Remove a legacy item from your target [itemid], or specify a [charid] [itemid] to remove the flag of.", AccountStatus::GMAdmin, command_removelegacyitem) ||
 		command_add("repop", "[delay] - Repop the zone with optional delay.", AccountStatus::GMLeadAdmin, command_repop) ||
 		command_add("repopclose", "[distance in units] Repops only NPC's nearby for fast development purposes", AccountStatus::GMAdmin, command_repopclose) ||
 		command_add("resetaa", "- Resets a Player's AA in their profile and refunds spent AA's to unspent, disconnects player.", AccountStatus::GMImpossible, command_resetaa) ||
@@ -4028,8 +4033,8 @@ void command_corpse(Client *c, const Seperator *sep)
 	std::string help17 = "  #corpse reset - Resets looter status on targetted corpse for debugging.";
 	std::string help18 = "  #corpse backups - List of current target's corpse backups.";
 	std::string help19 = "  #corpse restore [corpse_id] - Summons the specified corpse from a player's backups.";
-
-	std::string help[] = { help0, help1, help2, help3, help4, help5, help6, help7, help8, help9, help10, help11, help12, help13, help14, help15, help16, help17, help18, help19 };
+	std::string help20 = "  #corpse summonall [name] - Summons all of [name]'s oldest buried corpse, if any exist.";
+	std::string help[] = { help0, help1, help2, help3, help4, help5, help6, help7, help8, help9, help10, help11, help12, help13, help14, help15, help16, help17, help18, help19, help20 };
 
 	Mob *target = c->GetTarget();
 
@@ -4332,6 +4337,39 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			c->Message(CC_Default, "Insufficient status to summon backup corpses.");
+		}
+	}
+	else if (strcasecmp(sep->arg[1], "summonall") == 0)
+	{
+		if (sep->arg[2][0] != 0 && !sep->IsNumber(2))
+		{
+			std::string summon_corpse_char_name = sep->arg[2];
+			auto corpse_list_copy = entity_list.GetCorpseList();
+			int nCorpseCount = 0;
+			for (auto corpse : corpse_list_copy)
+			{
+				Corpse* pCorpse = corpse.second;
+				if (pCorpse && pCorpse->IsPlayerCorpse())
+				{
+					if (strcmp(pCorpse->GetOwnerName(), summon_corpse_char_name.c_str()) == 0)
+					{
+						pCorpse->GMMove(c->GetX(), c->GetY(), c->GetZ(), c->GetHeading());
+						nCorpseCount++;
+					}
+				}
+			}
+			if (nCorpseCount > 0)
+			{
+				c->Message(CC_Default, "Summoned %d corpses to your location from player %s", nCorpseCount, summon_corpse_char_name.c_str());
+			}
+			else
+			{
+				c->Message(CC_Red, "No corpses with name %s exist in this zone.", summon_corpse_char_name.c_str());
+			}
+		}
+		else
+		{
+			c->Message(CC_Red, "Invalid character ID or parameter count for #corpse summonall");
 		}
 	}
 	else
@@ -6841,7 +6879,13 @@ void command_summonitem(Client *c, const Seperator *sep)
 
 void command_giveitem(Client *c, const Seperator *sep){
 	if (!sep->IsNumber(1)) {
-		c->Message(CC_Red, "Usage: #summonitem [item id] [charges], charges are optional");
+		c->Message(CC_Red, "Usage: #giveitem [item id] [charges] [reason], charges are optional, reason is required.");
+	}
+	else if (sep->arg[2][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(2) &&sep->arg[3][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (c->GetTarget() == nullptr) {
 		c->Message(CC_Red, "You must target a client to give the item to.");
@@ -6883,7 +6927,22 @@ void command_giveitem(Client *c, const Seperator *sep){
 
 void command_givemoney(Client *c, const Seperator *sep){
 	if (!sep->IsNumber(1)) {	//as long as the first one is a number, we'll just let atoi convert the rest to 0 or a number
-		c->Message(CC_Red, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp]");
+		c->Message(CC_Red, "Usage: #Usage: #givemoney [pp] [gp] [sp] [cp] [reason] - Reason is required");
+	}
+	else if (sep->IsNumber(1) && sep->arg[2][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(2) && sep->arg[3][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(3) && sep->arg[4][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(4) && sep->arg[5][0] == 0) {
+		c->Message(CC_Red, "Reason is required.");
+	}
+	else if (sep->IsNumber(5)) {
+		c->Message(CC_Red, "Reason is required.");
 	}
 	else if (c->GetTarget() == nullptr) {
 		c->Message(CC_Red, "You must target a player to give money to.");
@@ -10633,7 +10692,28 @@ void command_mule(Client *c, const Seperator *sep)
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: mule [accountname] [0/1]");
+		c->Message(CC_Default, "Usage: #mule [accountname] [0/1]");
+	}
+}
+
+void command_ipexemption(Client *c, const Seperator *sep)
+{
+	if (sep->arg[1][0] != 0 && sep->arg[2][0] != 0 && sep->IsNumber(2))
+	{
+		uint8 amount = atoi(sep->arg[2]);
+
+		if (!database.SetIPExemption(sep->arg[1], amount))
+		{
+			c->Message(CC_Red, "%s could not be set. Check the spelling of their account name.", sep->arg[1]);
+		}
+		else
+		{
+			c->Message(CC_Green, "%s has has their IP exemption amount set to %s!", sep->arg[1], sep->arg[2]);
+		}
+	}
+	else
+	{
+		c->Message(CC_Default, "Usage: #ipexemption [accountname] [amount]");
 	}
 }
 
@@ -11026,6 +11106,12 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 	}
 }
 
+void command_quaketrigger(Client* c, const Seperator* sep)
+{
+	ServerPacket pack(ServerOP_QuakeRequest, 0);
+	worldserver.SendPacket(&pack);
+}
+
 void command_betabuff(Client* c, const Seperator* sep)
 {
 	//Arguments?
@@ -11330,7 +11416,65 @@ void command_betabuff(Client* c, const Seperator* sep)
 	}
 }
 
+void command_removelegacyitem(Client* c, const Seperator* sep) {
+	if (sep->IsNumber(1) && sep->arg[2] == 0)
+	{
+		Mob* target = c->GetTarget();
+		if (target && target->IsClient())
+		{
+			Client* target_client = target->CastToClient();
+			bool res = target_client->RemoveLootedLegacyItem(atoi(sep->arg[1]));
+			if(!res)
+			{
+				c->Message(MT_System, "Unable to remove legacy item %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				return;
+			}
+			else
+			{
+				c->Message(MT_System, "Successfully removed legacy item id flag %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				return;
+			}
+		}
+		else
+		{
+			c->Message(MT_Shout, "You need a target for this GM command.");
+			return;
+		}
+	}
+	else if (sep->IsNumber(1) && sep->IsNumber(2))
+	{
+		char target_name[64] = { 0 };
+		target_name[0] = '\0';
+		database.GetCharName(atoi(sep->arg[1]), target_name);
+		if (target_name[0] == '\0')
+		{
+			c->Message(MT_Shout, "This is not a valid character to perform this interaction on!");
+			return;
+		}
 
+		std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", atoi(sep->arg[1]), atoi(sep->arg[2]));
+
+		auto results = database.QueryDatabase(query);
+		if (!results.Success()) {
+			c->Message(MT_System, "Unable to run query!");
+			return;
+		}
+		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %i from %s.", sep->arg[2], target_name);
+		return;
+	}
+	c->Message(MT_Shout, "Usage: #removelegacyitem [charid] [itemid] or #removelegacyitem [itemid] with a Client targeted.");
+}
+
+void command_interrogatelegacy(Client* c, const Seperator* sep) {
+	if (c && c->GetTarget() && c->GetTarget()->IsClient())
+	{
+		c->GetTarget()->CastToClient()->ShowLegacyItemsLooted(c);
+	}
+	else
+	{
+		c->Message(MT_Shout, "Error: requires a client target!");
+	}
+}
 
 //Please keep this at the bottom of command.cpp! Feel free to use this for temporary commands used in testing :)
 void command_testcommand(Client *c, const Seperator *sep)

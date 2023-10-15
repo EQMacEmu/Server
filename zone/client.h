@@ -118,7 +118,8 @@ typedef enum {
 	GateToBindPoint, // Always send RequestClientZoneChange_Struct to client: Gate spell or Translocate To Bind Point spell
 	SummonPC, // In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
 	Rewind, // Summon to /rewind location.
-	EvacToSafeCoords
+	EvacToSafeCoords,
+	ForceZoneToBindPoint
 } ZoneMode;
 
 typedef enum {
@@ -542,6 +543,7 @@ public:
 	void SacrificeConfirm(Client* caster);
 	void Sacrifice(Client* caster);
 	void GoToDeath();
+	void ForceGoToDeath();
 	void SetZoning(bool in) { zoning = in; }
 
 	FACTION_VALUE GetReverseFactionCon(Mob* iOther);
@@ -626,7 +628,7 @@ public:
 	uint32	GetRawSkill(EQ::skills::SkillType skill_id) const { if (skill_id <= EQ::skills::HIGHEST_SKILL) { return(m_pp.skills[skill_id]); } return 0; }
 	bool	HasSkill(EQ::skills::SkillType skill_id) const;
 	bool	CanHaveSkill(EQ::skills::SkillType skill_id) const;
-	void	SetSkill(EQ::skills::SkillType skill_num, uint16 value);
+	void	SetSkill(EQ::skills::SkillType skill_num, uint16 value, bool silent = false);
 	void	AddSkill(EQ::skills::SkillType skillid, uint16 value);
 	void	CheckSpecializeIncrease(uint16 spell_id);
 	void	CheckSongSkillIncrease(uint16 spell_id);
@@ -740,7 +742,7 @@ public:
 	void	SetMaterial(int16 slot_id, uint32 item_id);
 	int32	GetItemIDAt(int16 slot_id);
 	bool	FindOnCursor(uint32 item_id);
-	void	ClearPlayerInfoAndGrantStartingItems();
+	void	ClearPlayerInfoAndGrantStartingItems(bool goto_death = true);
 	bool	PutItemInInventory(int16 slot_id, const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursor(const EQ::ItemInstance& inst, bool client_update = false);
 	bool	PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop = false);
@@ -1022,6 +1024,8 @@ public:
 	void SetShowHelm(bool value) { m_pp.showhelm = value; }
 	bool SpillBeer();
 	void AddLootedLegacyItem(uint16 item_id);
+	bool RemoveLootedLegacyItem(uint16 item_id);
+	void ShowLegacyItemsLooted(Client* to);
 	bool CheckLegacyItemLooted(uint16 item_id);
 	void LoadLootedLegacyItems();
 	void ResetSkill(EQ::skills::SkillType skillid, bool reset_timer = false);
@@ -1169,6 +1173,7 @@ private:
 	uint16				BoatID;
 	uint32				account_creation;
 	uint8				firstlogon;
+	float initial_z_position;
 	bool	Trader;
 	std::string	BuyerWelcomeMessage;
 	bool	AbilityTimer;
@@ -1222,6 +1227,7 @@ private:
 	Timer process_timer;
 	Timer stamina_timer;
 	Timer zoneinpacket_timer;
+	Timer accidentalfall_timer;
 	Timer linkdead_timer;
 	Timer dead_timer;
 	Timer global_channel_timer;

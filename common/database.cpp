@@ -88,7 +88,7 @@ Database::~Database()
 	Return the account id or zero if no account matches.
 	Zero will also be returned if there is a database error.
 */
-uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus) {
+uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus, bool* oRevoked) {
 
 	if(strlen(name) >= 50 || strlen(password) >= 50)
 		return(0);
@@ -100,7 +100,7 @@ uint32 Database::CheckLogin(const char* name, const char* password, int16* oStat
 	DoEscapeString(temporary_password, password, strlen(password));
 
 	std::string query = fmt::format(
-		"SELECT id, status FROM account WHERE name= '{}' AND password is not null "
+		"SELECT id, status, revoked FROM account WHERE name= '{}' AND password is not null "
 		"and length(password) > 0 and (password = '{}' or password = MD5('{}'))",
 		temporary_username, 
 		temporary_password, 
@@ -119,6 +119,9 @@ uint32 Database::CheckLogin(const char* name, const char* password, int16* oStat
 
 	if (oStatus)
 		*oStatus = std::stoi(row[1]);
+
+	if (oRevoked)
+		*oRevoked = std::stoi(row[2]);
 
 	return id;
 }
@@ -371,6 +374,22 @@ bool Database::MarkCharacterDeleted(char *name) {
 
 bool Database::UnDeleteCharacter(const char *name) {
 	std::string query = StringFormat("UPDATE character_data SET is_deleted = 0 where name='%s'", Strings::Escape(name).c_str());
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return false;
+	}
+
+	if (results.RowsAffected() == 0) {
+		return false;
+	}
+
+	return true;
+}
+
+bool Database::SetIPExemption(const char *name, uint8 amount) {
+	std::string query = StringFormat("UPDATE account SET ip_exemption_multiplier = %d where name='%s'", amount, Strings::Escape(name).c_str());
 
 	auto results = QueryDatabase(query);
 
@@ -1335,9 +1354,9 @@ bool Database::AddToNameFilter(const char* name) {
 	return true;
 }
 
-uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus) {
+uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, bool* oRevoked) {
 	uint32 account_id = 0;
-	std::string query = StringFormat("SELECT id, name, status FROM account WHERE lsaccount_id=%i", iLSID);
+	std::string query = StringFormat("SELECT id, name, status, revoked FROM account WHERE lsaccount_id=%i", iLSID);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {
@@ -1354,14 +1373,16 @@ uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* o
 			strcpy(oAccountName, row[1]);
 		if (oStatus)
 			*oStatus = atoi(row[2]);
+		if (oRevoked)
+			*oRevoked = atoi(row[3]);
 	}
 
 	return account_id;
 }
 
-void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus) {
+void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, bool* oRevoked) {
 	
-	std::string query = StringFormat("SELECT name, status FROM account WHERE id=%i", id);
+	std::string query = StringFormat("SELECT name, status, revoked FROM account WHERE id=%i", id);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()){
@@ -1377,6 +1398,8 @@ void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus) {
 		strcpy(oAccountName, row[0]);
 	if (oStatus)
 		*oStatus = atoi(row[1]);
+	if (oRevoked)
+		*oRevoked = atoi(row[2]);
 }
 
 void Database::ClearMerchantTemp(){
@@ -1871,6 +1894,31 @@ uint32 Database::GetGroupID(const char* name){
 	auto row = results.begin();
 
 	return atoi(row[0]);
+}
+
+bool Database::GetGroupMemberNames(uint32 group_id, char membername[6][64])
+{
+	std::string query = StringFormat("SELECT name FROM group_id WHERE groupid = %lu", (unsigned long)group_id);
+	auto results = QueryDatabase(query);
+	if (!results.Success())
+		return false;
+
+	if (results.RowCount() == 0) {
+		Log(Logs::General, Logs::Error, "Error getting group members for group %lu: %s", (unsigned long)group_id, results.ErrorMessage().c_str());
+		return false;
+	}
+
+	int memberIndex = 0;
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		if (!row[0])
+			continue;
+
+		strn0cpy(membername[memberIndex], row[0], 64);
+
+		memberIndex++;
+	}
+
+	return true;
 }
 
 uint32 Database::GetGroupIDByAccount(uint32 accountid, std::string &charname) {

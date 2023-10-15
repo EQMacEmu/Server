@@ -489,7 +489,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 
 
 void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
-	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version);
+	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version, false);
 
 	clientlist.Append(tmp);
 }
@@ -590,14 +590,15 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 		iterator.Advance();
 	}
 	int16 tmpadmin;
+	bool tmprevoked = false;
 
 	//Log.LogDebugType(Logs::Detail, Logs::WorldServer,"Login with '%s' and '%s'", iName, iPassword);
 
-	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin);
+	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin, &tmprevoked);
 	if (accid) {
 		uint32 lsid = 0;
 		database.GetAccountIDByName(iName, &tmpadmin, &lsid);
-		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2);
+		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2, tmprevoked);
 		clientlist.Append(tmp);
 		return tmp;
 	}
@@ -1584,7 +1585,7 @@ bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int
 		(whom->guildid >= 0 && client->GuildID() == whom->guildid && guild_not_anon) || // guild#
 		(whom->guildid == -3 && client->LFG() && not_anon)))) && // lfg
 		(whomlen == 0 || 
-		((tmpZone != 0 && admin >= gmwholist && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
+		((tmpZone != 0 && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
 		strncasecmp(client->name(),whom->whom, whomlen) == 0 || // name
 		(strncasecmp(guild_mgr.GetGuildName(client->GuildID()), whom->whom, whomlen) == 0 && guild_not_anon)|| // This is used by who all guild
 		(admin >= gmwholist && strncasecmp(client->AccountName(), whom->whom, whomlen) == 0)))) // account (GM only)

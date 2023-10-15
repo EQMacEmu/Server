@@ -1055,13 +1055,14 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 					return false;
 				}
 
-				if (c1->IsSoloOnly() || c2->IsSoloOnly())
+				if (c2->IsSoloOnly())
 				{
-					// if either are solo only don't allow.
+					// if the target is solo, don't allow anyone to buff it
+					// if the caster is solo, it's fine if they try to buff someone
 					return false;
 				}
 
-				if (c1->IsSelfFound() == true || c2->IsSelfFound() == true)
+				if (c2->IsSelfFound() == true)
 				{
 					bool can_get_experience = c1->IsInLevelRange(c2->GetLevel2());
 					bool compatible = c1->IsSelfFound() == c2->IsSelfFound();
@@ -1427,7 +1428,16 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 					nonDamageHate += standardSpellHate;
 				break;
 			}
-			//case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			{
+				if (RuleB(Quarm, PreLuclinDiseaseCounterAggro))
+				{
+					if (IsSlowSpell(spell_id))
+						break;
+					nonDamageHate += standardSpellHate;
+				}
+				break;
+			}
 			case SE_PoisonCounter:
 			{
 				nonDamageHate += standardSpellHate;
@@ -1615,15 +1625,15 @@ int32 Mob::CheckHealAggroAmount(uint16 spell_id, Mob* target, uint32 heal_possib
 				{
 					if (heal_possible < val)
 						val = heal_possible;		// aggro is based on amount healed, not including crits/focii/AA multipliers
-
-					if (val > 0)
-						val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
-
-					if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
-						val = 800;
-					else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
-						val = 1500;
-
+					if (RuleB(Quarm, VeliousEraAggroCaps))
+					{
+						if (val > 0)
+							val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
+						if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
+							val = 800;
+						else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
+							val = 1500;
+					}
 					AggroAmount += val;
 				}
 				break;

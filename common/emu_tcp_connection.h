@@ -101,4 +101,3 @@ protected:
 #endif /*EmuTCPCONNECTION_H_*/
 
 
-

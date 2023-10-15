@@ -276,6 +276,15 @@ bool IsMemBlurSpell(uint16 spell_id)
 	return IsEffectInSpell(spell_id, SE_WipeHateList);
 }
 
+bool IsBardAOEDamageSpell(uint16 spell_id)
+{
+	if (IsValidSpell(spell_id) && GetSpellLevel(spell_id, BARD) < 100 && IsDamageSpell(spell_id) && spells[spell_id].aoerange > 0)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool IsAEMemBlurSpell(uint16 spell_id)
 {
 	if (IsValidSpell(spell_id) && IsMemBlurSpell(spell_id) &&

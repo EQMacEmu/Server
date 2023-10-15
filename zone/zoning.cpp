@@ -68,6 +68,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 				break;
 			case GateToBindPoint:
 			case ZoneToBindPoint:
+			case ForceZoneToBindPoint:
 				target_zone_id = m_pp.binds[0].zoneId;
 				break;
 			case ZoneUnsolicited: //client came up with this on its own.
@@ -97,7 +98,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		};
 	}
 	else {
-		if (zone_mode == EvacToSafeCoords && zonesummon_id > 0) {
+		if ((zone_mode == EvacToSafeCoords || zone_mode == ForceZoneToBindPoint) && zonesummon_id > 0) {
 			target_zone_id = zonesummon_id;
 		}
 		else {
@@ -193,6 +194,11 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		dest_y = m_pp.binds[0].y;
 		dest_z = m_pp.binds[0].z;
 		dest_h = m_pp.binds[0].heading;
+	case ForceZoneToBindPoint:
+		dest_x = m_pp.binds[0].x;
+		dest_y = m_pp.binds[0].y;
+		dest_z = m_pp.binds[0].z;
+		dest_h = m_pp.binds[0].heading;
 		break;
 	case ZoneToBindPoint:
 		dest_x = m_pp.binds[0].x;
@@ -216,11 +222,21 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			//they are zoning using a valid zone point, figure out coords
 
 			//999999 is a placeholder for 'same as where they were from'
-			if(zone_point->target_x == 999999)
-				dest_x = GetX();
+			//The client compile shows 1044 difference when zoning freport <-> nro.  this fixes server side when using 999999.
+			if (zone_point->target_x == 999999) {  
+				if (zone->GetZoneID() == freporte && zone_point->target_zone_id == nro) {
+					dest_x = GetX() + 1044;
+				}
+				else if (zone->GetZoneID() == nro && zone_point->target_zone_id == freporte) {
+					dest_x = GetX() - 1044;
+				}
+				else {
+					dest_x = GetX();
+				}
+			}
 			else
 				dest_x = zone_point->target_x;
-			if(zone_point->target_y == 999999)
+			if (zone_point->target_y == 999999)
 				dest_y = GetY();
 			else
 				dest_y = zone_point->target_y;
@@ -449,6 +465,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 		case GateToBindPoint:
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
+		case ForceZoneToBindPoint:
 		case EvacToSafeCoords:
 		case ZoneToSafeCoords:
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
@@ -510,6 +527,15 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			y = safePoint.y;
 			z = safePoint.z;
 			heading = safePoint.w;
+			break;
+		case ForceZoneToBindPoint:
+			x = m_Position.x = m_pp.binds[0].x;
+			y = m_Position.y = m_pp.binds[0].y;
+			z = m_Position.z = m_pp.binds[0].z;
+			heading = m_pp.binds[0].heading;
+			m_Position.w = heading * 0.5f;
+
+			zonesummon_ignorerestrictions = 1;
 			break;
 		case GMSummon:
 			m_Position = glm::vec4(x, y, z, heading);
@@ -665,6 +691,31 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			outapp->priority = 6;
 			FastQueuePacket(&outapp);
 		}
+		else if (zm == ForceZoneToBindPoint)
+		{
+			Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (FZTBP). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
+			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
+			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*)outapp->pBuffer;
+
+			if (this->GetZoneID() == qeynos) {
+				gmg->zone_id = qeynos2;
+			}
+			else {
+				gmg->zone_id = qeynos;
+			}
+
+			gmg->x = x;
+			gmg->y = y;
+			gmg->z = z;
+			gmg->heading = heading;
+			gmg->type = 0x01;				// '0x01' was an observed value for the type field, not sure of meaning
+
+			// we hide the real zoneid we want to evac/succor to here
+			zonesummon_id = zoneID;
+
+			outapp->priority = 6;
+			FastQueuePacket(&outapp);
+		}
 		else {
 			if(zoneID == GetZoneID()) {
 				Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (GOTO). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
@@ -695,7 +746,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 		//They aren't needed and it keeps behavior on next zone attempt from being undefined.
 		if(zoneID == zone->GetZoneID())
 		{
-			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint)
+			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint && zm != ForceZoneToBindPoint)
 			{
 				m_ZoneSummonLocation = glm::vec4();
 				zonesummon_id = 0;
@@ -791,10 +842,15 @@ void Client::GoToDeath() {
 	zone_mode = ZoneToBindPoint;
 
 	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ZoneToBindPoint);
-	if (IsHardcore())
-	{
-		WorldKick();
-	}
+
+}
+
+void Client::ForceGoToDeath() {
+	//Client will request a zone in EQMac era clients, but let's make sure they get there:
+	zone_mode = ForceZoneToBindPoint;
+
+	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ForceZoneToBindPoint);
+
 }
 
 void Client::SetZoneFlag(uint32 zone_id) {

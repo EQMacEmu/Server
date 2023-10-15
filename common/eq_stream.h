@@ -336,7 +336,7 @@ class EQStream : public EQStreamInterface {
 		virtual bool CheckState(EQStreamState state) { return GetState() == state; }
 		virtual std::string Describe() const { return("Direct EQStream"); }
 
-		void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
+		virtual void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
 
 		void CheckTimeout(uint32 now, uint32 timeout=30000);
 		bool HasOutgoingData();
@@ -568,7 +568,7 @@ class EQOldStream : public EQStreamInterface {
 		void CheckTimeout(uint32 now, uint32 timeout=10000);
 		void SetState(EQStreamState state);
 		void SetLastPacketTime(uint32 t) {LastPacket=t;}
-		void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
+		virtual void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
 		void _SendDisconnect();
 		void SetTimeOut(bool time) { bTimeout = time; }
 		bool GetTimeOut() { return bTimeout; }

@@ -706,61 +706,64 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 			}
 			else if(item && quest_npc == false) 
 			{
-				// if it was not a NO DROP (or if a GM is trading), let the pet have it
-				if(GetGM() || npc->IsPet())
+				if (Admin() == 0)
 				{
-					// pets need to look inside bags and try to equip items found there
-					if(item->IsClassBag() && item->BagSlots > 0)
+				// if it was not a NO DROP (or if a GM is trading), let the pet have it
+					if (GetGM() || npc->IsPet())
 					{
-						for(int16 bslot = EQ::invbag::SLOT_BEGIN; bslot < item->BagSlots; bslot++)
+						// pets need to look inside bags and try to equip items found there
+						if (item->IsClassBag() && item->BagSlots > 0)
 						{
-							const EQ::ItemInstance* baginst = inst->GetItem(bslot);
-							if (baginst) {
-								const EQ::ItemData* bagitem = baginst->GetItem();
-								if (bagitem && (GetGM() || npc->IsPet()))
-								{
-									if(GetGM())
+							for (int16 bslot = EQ::invbag::SLOT_BEGIN; bslot < item->BagSlots; bslot++)
+							{
+								const EQ::ItemInstance* baginst = inst->GetItem(bslot);
+								if (baginst) {
+									const EQ::ItemData* bagitem = baginst->GetItem();
+									if (bagitem && (GetGM() || npc->IsPet()))
 									{
-										npc->AddLootDrop(bagitem, &npc->itemlist,baginst->GetCharges(), 0, 255, true, true);
-										Log(Logs::General, Logs::Trading, "GM: Adding loot item %s (bag) to non-Quest NPC %s", bagitem->Name, npc->GetName());
+										if (GetGM())
+										{
+											npc->AddLootDrop(bagitem, &npc->itemlist, baginst->GetCharges(), 0, 255, true, true);
+											Log(Logs::General, Logs::Trading, "GM: Adding loot item %s (bag) to non-Quest NPC %s", bagitem->Name, npc->GetName());
+										}
+										// Destroy duplicate and nodrop items on charmed pets.
+										else if (bagitem->NoDrop != 0 &&
+											(!npc->IsCharmedPet() || (npc->IsCharmedPet() && npc->CountQuestItem(bagitem->ID) == 0)))
+										{
+											npc->AddPetLoot(bagitem->ID, baginst->GetCharges());
+											Log(Logs::General, Logs::Trading, "Adding loot item %s (bag) to non-Quest pet %s", bagitem->Name, npc->GetName());
+										}
 									}
-									// Destroy duplicate and nodrop items on charmed pets.
-									else if(bagitem->NoDrop != 0 && 
-										(!npc->IsCharmedPet() || (npc->IsCharmedPet() && npc->CountQuestItem(bagitem->ID) == 0)))
+									else if (RuleB(NPC, ReturnNonQuestItems))
 									{
-										npc->AddPetLoot(bagitem->ID, baginst->GetCharges());
-										Log(Logs::General, Logs::Trading, "Adding loot item %s (bag) to non-Quest pet %s", bagitem->Name, npc->GetName());
+										SummonItem(baginst->GetID(), baginst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
+										if (npc->CanTalk())
+											npc->Say_StringID(NO_NEED_FOR_ITEM, GetName());
+										Log(Logs::General, Logs::Trading, "Non-Quest NPC %s is returning %s (bag) because it does not require it.", npc->GetName(), bagitem->Name);
 									}
-								}
-								else if (RuleB(NPC, ReturnNonQuestItems)) 
-								{
-									SummonItem(baginst->GetID(), baginst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
-									if(npc->CanTalk())
-										npc->Say_StringID(NO_NEED_FOR_ITEM, GetName());
-									Log(Logs::General, Logs::Trading, "Non-Quest NPC %s is returning %s (bag) because it does not require it.", npc->GetName(), bagitem->Name);
-								}
-								else
-								{
-									if(bagitem->NoDrop != 0 && npc->CountQuestItem(bagitem->ID) == 0)
+									else
 									{
-										npc->AddQuestLoot(bagitem->ID, baginst->GetCharges());
-										Log(Logs::General, Logs::Trading, "Adding loot item %s (bag) to non-Quest NPC %s", bagitem->Name, npc->GetName());
+										if (bagitem->NoDrop != 0 && npc->CountQuestItem(bagitem->ID) == 0)
+										{
+											npc->AddQuestLoot(bagitem->ID, baginst->GetCharges());
+											Log(Logs::General, Logs::Trading, "Adding loot item %s (bag) to non-Quest NPC %s", bagitem->Name, npc->GetName());
+										}
 									}
 								}
 							}
 						}
-					}
-					if(GetGM())
-					{
-						npc->AddLootDrop(item, &npc->itemlist,inst->GetCharges(), 0, 255, true, true);
-						Log(Logs::General, Logs::Trading, "GM: Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
-					}
-					// Destroy duplicate and nodrop items on charmed pets.
-					else if(item->NoDrop != 0 && 
-						(!npc->IsCharmedPet() || (npc->IsCharmedPet() && npc->CountQuestItem(item->ID) == 0)))
-					{
-						npc->AddPetLoot(item->ID, inst->GetCharges());
-						Log(Logs::General, Logs::Trading, "Adding loot item %s to non-Quest pet %s", item->Name, npc->GetName());
+						if (GetGM())
+						{
+							npc->AddLootDrop(item, &npc->itemlist, inst->GetCharges(), 0, 255, true, true);
+							Log(Logs::General, Logs::Trading, "GM: Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
+						}
+						// Destroy duplicate and nodrop items on charmed pets.
+						else if (item->NoDrop != 0 &&
+							(!npc->IsCharmedPet() || (npc->IsCharmedPet() && npc->CountQuestItem(item->ID) == 0)))
+						{
+							npc->AddPetLoot(item->ID, inst->GetCharges());
+							Log(Logs::General, Logs::Trading, "Adding loot item %s to non-Quest pet %s", item->Name, npc->GetName());
+						}
 					}
 				}
 				// Return items being handed into a non-quest NPC if the rule is true
@@ -776,10 +779,13 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 				// Add items to loottable without equipping and mark as quest.
 				else
 				{
-					if(GetGM() || (item->NoDrop != 0 && npc->CountQuestItem(item->ID) == 0))
+					if (Admin() == 0)
 					{
-						npc->AddQuestLoot(item->ID, inst->GetCharges());
-						Log(Logs::General, Logs::Trading, "Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
+						if (GetGM() || (item->NoDrop != 0 && npc->CountQuestItem(item->ID) == 0))
+						{
+							npc->AddQuestLoot(item->ID, inst->GetCharges());
+							Log(Logs::General, Logs::Trading, "Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
+						}
 					}
 				}
 			}

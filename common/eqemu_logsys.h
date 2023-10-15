@@ -216,6 +216,7 @@ public:
 			- This would pipe the same category and debug level to all output formats, but the internal memory reference of log_settings would
 				be checked against to see if that piped output is set to actually process it for the category and debug level
 	*/
+
 	void Out(
 		Logs::DebugLevel debug_level,
 		uint16 log_category,

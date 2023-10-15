@@ -169,6 +169,8 @@ void ZoneServer::LSSleepUpdate(uint32 zoneid){
 	}
 }
 
+extern void TriggerManualQuake();
+
 bool ZoneServer::Process() {
 	if (!tcpc->Connected())
 		return false;
@@ -328,26 +330,33 @@ bool ZoneServer::Process() {
 				ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer; 
 				if (gcm->groupid != 0)
 				{
+					char membername[MAX_GROUP_MEMBERS][64]; // group member names
+					bool groupLoaded = false; // only query the database if there are clients zoning
+
+					// iterate client_list looking for clients that are zoning
 					std::vector<ClientListEntry *> vec;
 					client_list.GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it)
 					{
 						ClientListEntry *cle = *it;
-						uint32 groupid = database.GetGroupID(cle->name());
-						if (cle->Online() == CLE_Status_Zoning && groupid == gcm->groupid && !cle->TellQueueFull())
+						if (cle)
 						{
-							// queue group chat message
-							size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
-							ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
-							memset(scm, 0, struct_size);
-							strcpy(scm->deliverto, cle->name());
-							strcpy(scm->from, gcm->from);
-							scm->chan_num = ChatChannel_Group;
-							scm->language = gcm->language;
-							scm->lang_skill = gcm->lang_skill;
-							strcpy(scm->message, gcm->message);
-							scm->queued = 1;
-							cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							uint32 groupid = cle->GroupID();
+							if (cle->Online() == CLE_Status_Zoning && groupid == gcm->groupid && !cle->TellQueueFull())
+							{
+								// queue group chat message
+								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
+								ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
+								memset(scm, 0, struct_size);
+								strcpy(scm->deliverto, cle->name());
+								strcpy(scm->from, gcm->from);
+								scm->chan_num = ChatChannel_Group;
+								scm->language = gcm->language;
+								scm->lang_skill = gcm->lang_skill;
+								strcpy(scm->message, gcm->message);
+								scm->queued = 1;
+								cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							}
 						}
 					}
 				}
@@ -466,39 +475,40 @@ bool ZoneServer::Process() {
 			case ServerOP_RaidSay: {
 				zoneserver_list.SendPacket(pack); // broadcast to zones
 
+				// Temp disabled: implement raid / raid group say in tell queue.
 				// check for characters zoning and queue messages
-				ServerRaidMessage_Struct* srm = (ServerRaidMessage_Struct*)pack->pBuffer;
-				if (srm->rid != 0)
-				{
-					std::vector<ClientListEntry *> vec;
-					client_list.GetClients("", vec);
-					for (auto it = vec.begin(); it != vec.end(); ++it)
-					{
-						ClientListEntry *cle = *it;
-						if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
-						{
-							uint32 raidid, groupid;
-							if (database.GetRaidGroupID(cle->name(), &raidid, &groupid))
-							{
-								if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid))
-								{
-									// queue chat message
-									size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(srm->message) + 1;
-									ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
-									memset(scm, 0, struct_size);
-									strcpy(scm->deliverto, cle->name());
-									strcpy(scm->from, srm->from);
-									strcpy(scm->message, srm->message);
-									scm->language = srm->language;
-									scm->lang_skill = srm->lang_skill;
-									scm->chan_num = pack->opcode == ServerOP_RaidGroupSay ? ChatChannel_Group : ChatChannel_Raid;
-									scm->queued = 1;
-									cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
-								}
-							}
-						}
-					}
-				}
+				//ServerRaidMessage_Struct* srm = (ServerRaidMessage_Struct*)pack->pBuffer;
+				//if (srm->rid != 0)
+				//{
+				//	std::vector<ClientListEntry *> vec;
+				//	client_list.GetClients("", vec);
+				//	for (auto it = vec.begin(); it != vec.end(); ++it)
+				//	{
+				//		ClientListEntry *cle = *it;
+				//		if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
+				//		{
+				//			uint32 raidid, groupid;
+				//			if (database.GetRaidGroupID(cle->name(), &raidid, &groupid))
+				//			{
+				//				if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid))
+				//				{
+				//					// queue chat message
+				//					size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(srm->message) + 1;
+				//					ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
+				//					memset(scm, 0, struct_size);
+				//					strcpy(scm->deliverto, cle->name());
+				//					strcpy(scm->from, srm->from);
+				//					strcpy(scm->message, srm->message);
+				//					scm->language = srm->language;
+				//					scm->lang_skill = srm->lang_skill;
+				//					scm->chan_num = pack->opcode == ServerOP_RaidGroupSay ? ChatChannel_Group : ChatChannel_Raid;
+				//					scm->queued = 1;
+				//					cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+				//				}
+				//			}
+				//		}
+				//	}
+				//}
 
 				break;
 			}
@@ -615,6 +625,9 @@ bool ZoneServer::Process() {
 								strcpy(scm->deliverto, scm->from);
 								sender->Server()->SendPacket(pack);
 							} else {
+								if (cle && sender->Revoked() && cle->Admin() <= 0)
+									break;
+
 								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(scm->message) + 1;
 								ServerChannelMessage_Struct *temp = (ServerChannelMessage_Struct *) new uchar[struct_size];
 								memset(temp, 0, struct_size); // just in case, was seeing some corrupt messages, but it shouldn't happen
@@ -636,7 +649,18 @@ bool ZoneServer::Process() {
 							zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, CC_Default, fmt::format(" {} is not contactable at this time'", scm->to).c_str());
 					}
 					else
+					{
+						if (scm->chan_num == ChatChannel_Tell) {
+							ClientListEntry* sender = client_list.FindCharacter(scm->from);
+							if (cle && sender && sender->Revoked() && cle->Admin() <= 0)
+							{
+								if (scm->chan_num == ChatChannel_Tell)
+									zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, CC_Default, "You are server muted, and aren't able to send a message to anyone but a CSR.");
+								break;
+							}
+						}
 						cle->Server()->SendPacket(pack);
+					}
 				}
 				else {
 					if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
@@ -1371,6 +1395,13 @@ bool ZoneServer::Process() {
 			{
 				Log(Logs::Detail, Logs::WorldServer, "Received ServerOP_LSAccountUpdate packet from zone");
 				loginserverlist.SendAccountUpdate(pack);
+				break;
+			}
+
+			case ServerOP_QuakeRequest:
+			{
+
+				TriggerManualQuake();
 				break;
 			}
 

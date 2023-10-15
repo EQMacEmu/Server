@@ -130,6 +130,51 @@ void LoadDatabaseConnections()
 	}
 }
 
+Timer NextQuakeTimer(900000);
+Timer DisableQuakeTimer(900000);
+
+void TriggerManualQuake()
+{
+	uint32 cur_time = Timer::GetTimeSeconds();
+	database.SaveNextQuakeTime(next_quake);
+
+	NextQuakeTimer.Enable();
+	NextQuakeTimer.Start((next_quake.next_start_timestamp - cur_time) * 1000);
+
+	std::string motd_str = "Welcome to Project Quarm! ";
+	motd_str += "The ";
+	motd_str += QuakeTypeToString(next_quake.quake_type).c_str();
+	motd_str += " earthquake ruleset is currently in effect.";
+
+	database.SetVariable("MOTD", motd_str.c_str());
+
+	auto pack2 = new ServerPacket(ServerOP_Motd, sizeof(ServerMotd_Struct));
+	auto mss = (ServerMotd_Struct*)pack2->pBuffer;
+	strn0cpy(mss->myname, "Druzzil", sizeof(mss->myname));
+	strn0cpy(mss->motd, motd_str.c_str(), sizeof(mss->motd));
+
+	zoneserver_list.SendPacket(pack2);
+
+	//Roleplay flavor text, go!
+	zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Red, "Druzzil Ro's voice echoes in your mind, 'Mortals... they always aren't content with what they have, aren't they?'");
+	zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player, CC_Yellow, "Druzzil Ro's projection alters time and space. The effective ruleset changes to: %s", QuakeTypeToString(next_quake.quake_type).c_str());
+
+	//Inform of imminent quake. This happens after the MOTD so zone denizens are informed again with relevant information.
+	auto pack = new ServerPacket(ServerOP_QuakeImminent, sizeof(ServerEarthquakeImminent_Struct));
+	ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
+	seis->quake_type = next_quake.quake_type;
+	seis->next_start_timestamp = next_quake.next_start_timestamp;
+	seis->start_timestamp = next_quake.start_timestamp;
+	zoneserver_list.SendPacket(pack);
+
+	safe_delete(pack2);
+	safe_delete(pack);
+
+	//Timer needs to be set to enforce MOTD rules.
+	DisableQuakeTimer.Enable();
+	DisableQuakeTimer.Start(((next_quake.start_timestamp - cur_time) + RuleI(Quarm, QuakeEndTimeDuration)) * 1000);
+}
+
 void LoadServerConfig()
 {
 	// Load server configuration
@@ -309,10 +354,9 @@ int main(int argc, char** argv) {
 	EQTimeTimer.Start(600000);
 
 	memset(&next_quake, 0, sizeof(ServerEarthquakeImminent_Struct));
-	Timer NextQuakeTimer(900000);
 	NextQuakeTimer.Disable();
-	Timer DisableQuakeTimer(900000);
 	DisableQuakeTimer.Disable();
+
 
 	if (RuleB(Quarm, EnableQuakes))
 	{
@@ -383,8 +427,8 @@ int main(int argc, char** argv) {
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
 	uint8 ReconnectCounter = 100;
-	EQStream* eqs;
-	EQOldStream* eqos;
+	std::shared_ptr<EQStream> eqs;
+	std::shared_ptr<EQOldStream> eqos;
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
 

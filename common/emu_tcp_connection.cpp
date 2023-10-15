@@ -851,4 +851,3 @@ bool EmuTCPConnection::RecvData(char* errbuf) {
 
 	return(true);
 }
-

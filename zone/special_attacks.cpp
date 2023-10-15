@@ -1708,7 +1708,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 				return;
 			}
 
-			if (instillTarget->IsNPC() && instillTarget->CastToNPC()->GetSpecialAbility(IMMUNE_AGGRO))
+			if (instillTarget->IsNPC() && instillTarget->CastToNPC()->GetSpecialAbility(IMMUNE_AGGRO) || !IsAttackAllowed(instillTarget))
 				return;
 
 			// base damage is 2, this function scales it up some based on skill level

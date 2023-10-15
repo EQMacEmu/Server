@@ -513,12 +513,14 @@ public:
 	bool IsCharacterOnHateList(uint32 character_id) { return hate_list.IsCharacterOnHateList(character_id); }
 	bool IsGroupOnHateList(uint32 group_id) { return hate_list.IsGroupOnHateList(group_id); }
 	bool IsRaidOnHateList(uint32 raid_id) { return hate_list.IsRaidOnHateList(raid_id); }
+	Mob* GetDamageTopSingleMob(int32& return_dmg) { return hate_list.GetDamageTopSingleMob(return_dmg); }
 	Mob* GetDamageTop(int32& return_dmg, bool combine_pet_dmg = false, bool clients_only = false) { return hate_list.GetDamageTop(return_dmg, combine_pet_dmg, clients_only); }
 	Mob* GetHateRandom() { return hate_list.GetRandom();}
 	Client* GetHateRandomClient(int32 max_dist = 0) { return hate_list.GetRandomClient(max_dist); }
 	Mob* GetHateMost(bool includeBonus = true) { return hate_list.GetMostHate(includeBonus);}
 	int GetNumHaters() { return hate_list.GetNumHaters(); }
 	int GetHateN(int n) { return hate_list.GetHateN(n); }
+	void SetAggroTime(uint32 in_time) { hate_list.SetAggroTime(in_time); }
 	uint32 GetAggroDeaggroTime() { return hate_list.GetAggroDeaggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
 	uint32 GetAggroTime() { return hate_list.GetAggroTime(); }	// time since aggro started (if engaged) or time since aggro ended (if not engaged)
 	bool IsEngaged() { return engaged; }	// returns true only if actively chasing/fighting a target; returns false if ignoring all haters on hate list or list is empty

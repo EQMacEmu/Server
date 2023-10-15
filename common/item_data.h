@@ -315,6 +315,7 @@ namespace EQ
 		uint8	FVNoDrop;		// Firiona Vie nodrop flag
 		float	min_expansion;	//What expansion this item becomes unlocked in.
 		float	max_expansion;	//What expansion this item becomes unavailable in.
+		uint8	legacy_item;
 
 		bool IsEquipable(uint16 Race, uint16 Class) const;
 		bool IsClassCommon() const;
