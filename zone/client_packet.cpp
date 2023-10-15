@@ -8545,7 +8545,7 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 			*c = toupper(*c);
 			first = false;
 		}
-		else if (*c == '`') { // if we find a backtick, don't modify the next character's capitalization
+		else if (*c == '`' || *c == '\'') { // if we find a backtick, don't modify the next character's capitalization
 			// If this is the last character, we can break out of the loop
 			if (*(c+1) == '\0')
 				break;
