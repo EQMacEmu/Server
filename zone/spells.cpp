@@ -556,6 +556,7 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 		return true;
 	}
 
+	Client *caster = CastToClient();
 	Mob *spell_target = entity_list.GetMob(spell_targetid);
 
 	if (!(IsClient() && CastToClient()->GetGM()))
@@ -620,6 +621,53 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 			}
 			return false;
 		}
+
+		// Interrupt spell casts that are targetting self found or solo if they're not allowed
+		// Already know caster is a client from the first check in this function
+		if(spell_target && spell_target->IsClient())					
+		{
+			// Only fail if it's beneficial - don't want to fail on detrimental for pvp purposes
+			if(IsBeneficialSpell(spell_id))
+			{
+				const char* SOLO_PLAYER_ERROR = "Unable to cast spells on solo players.";
+				const char* SELF_FOUND_ERROR = "Unable to cast spells on self found players.";
+				const char* LEVEL_ERROR = "This self found player is not close enough to your level.";
+
+				bool is_failed_cast = false;
+				const char* fail_message = nullptr;
+
+				if (spell_target->IsSoloOnly())
+				{
+					// if the target is solo, don't allow anyone to buff it
+					// if the caster is solo, it's fine if they try to buff someone
+					is_failed_cast = true;
+					fail_message = SOLO_PLAYER_ERROR;
+				} 
+				if (spell_target->IsSelfFound())
+				{
+					bool can_get_experience = caster->IsInLevelRange(spell_target->GetLevel2());
+					bool compatible = caster->IsSelfFound() == spell_target->IsSelfFound();
+					if (!compatible)
+					{
+						is_failed_cast = true;
+						fail_message = SELF_FOUND_ERROR;
+					}
+					else if(compatible && !can_get_experience)
+					{
+						is_failed_cast = true;
+						fail_message = LEVEL_ERROR;
+					}
+				}
+				if (is_failed_cast)
+				{
+					Message(CC_User_SpellFailure, fail_message);
+					InterruptSpell(CANNOT_AFFECT_PC, CC_User_SpellFailure, spell_id, false, false);
+					return false;
+				}
+			}
+		}
+
+		
 	}
 
 	// if already buffed with a horse buff, cancel the casting of a new horse buff with a fizzle style packet so that the bridle acts as a gem refreshing clicky
