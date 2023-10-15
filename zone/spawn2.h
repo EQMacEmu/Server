@@ -86,6 +86,7 @@ private:
 	uint32	spawngroup_id_;
 	uint32	currentnpcid;
 	NPC*	npcthis;
+	uint32	last_level_attempt;
 	float	x;
 	float	y;
 	float	z;
