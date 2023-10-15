@@ -712,6 +712,9 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.min_expansion = std::stof(row[ItemField::min_expansion]);
 		item.max_expansion = std::stof(row[ItemField::max_expansion]);
 
+		//Is Legacy Item?
+		item.legacy_item = static_cast<uint8>(std::stoul(row[ItemField::legacy_item]));
+
         try {
             hash.insert(item.ID, item);
         } catch(std::exception &ex) {

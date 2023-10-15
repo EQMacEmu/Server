@@ -250,6 +250,8 @@ int command_init(void)
 		command_add("hp", "- Refresh your HP bar from the server.", AccountStatus::Max, command_hp) ||
 
 		command_add("interrogateinv", "- use [help] argument for available options.", AccountStatus::GMLeadAdmin, command_interrogateinv) ||
+		command_add("interrogatelegacy", "- Interrogates legacy items of your current target", AccountStatus::GMAdmin, command_interrogatelegacy) ||
+
 		command_add("interrupt", "[message id] [color] - Interrupt your casting. Arguments are optional.", AccountStatus::EQSupport, command_interrupt) ||
 		command_add("invul", "[on/off] - Turn player target's or your invulnerable flag on or off", AccountStatus::QuestTroupe, command_invul) ||
 		command_add("ipban", "[IP address] - Ban IP by character name.", AccountStatus::GMMgmt, command_ipban) ||
@@ -11461,6 +11463,17 @@ void command_removelegacyitem(Client* c, const Seperator* sep) {
 		return;
 	}
 	c->Message(MT_Shout, "Usage: #removelegacyitem [charid] [itemid] or #removelegacyitem [itemid] with a Client targeted.");
+}
+
+void command_interrogatelegacy(Client* c, const Seperator* sep) {
+	if (c && c->GetTarget() && c->GetTarget()->IsClient())
+	{
+		c->GetTarget()->CastToClient()->ShowLegacyItemsLooted(c);
+	}
+	else
+	{
+		c->Message(MT_Shout, "Error: requires a client target!");
+	}
 }
 
 //Please keep this at the bottom of command.cpp! Feel free to use this for temporary commands used in testing :)

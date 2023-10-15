@@ -6443,3 +6443,99 @@ bool Client::RemoveLootedLegacyItem(uint16 item_id)
 	}
 	return true;
 }
+
+
+void Client::ShowLegacyItemsLooted(Client* to)
+{
+	if (!to)
+		return;
+
+	to->Message(CC_Yellow, "Showing all legacy loot lockouts / items for %s..", GetCleanName());
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Item Flags On Character:");
+	for(auto looted_legacy_item : looted_legacy_items)
+	{
+		const EQ::ItemData* itemdata = database.GetItem(looted_legacy_item);
+		if (itemdata)
+		{
+			to->Message(CC_Yellow, "ID %d : Name %s", itemdata->ID, itemdata->Name);
+		}
+	}
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Items On Character:");
+	
+	std::string query = StringFormat("SELECT id, name FROM items "
+		"WHERE legacy_item = 1 ORDER BY id", character_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+
+		to->Message(CC_Yellow, "======");
+		return;
+	}
+
+	std::map<uint16, std::string> item_ids_to_names;
+	std::map<uint16, uint32> item_ids_to_quantity;
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+	{
+		auto itr = item_ids_to_names.find(atoi(row[0]));
+
+		if (itr == item_ids_to_names.end())
+			item_ids_to_names[atoi(row[0])] = std::string(row[1]);
+
+		auto itr2 = item_ids_to_quantity.find(atoi(row[0]));
+
+		if (itr2 == item_ids_to_quantity.end())
+			item_ids_to_quantity[atoi(row[0])] = 0;
+	}
+
+	for (int16 i = EQ::invslot::SLOT_BEGIN; i <= EQ::invbag::BANK_BAGS_END;)
+	{
+		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
+
+		if (i == EQ::invslot::GENERAL_END + 1) {
+			i = EQ::invbag::GENERAL_BAGS_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invbag::CURSOR_BAG_END + 1) {
+			i = EQ::invslot::BANK_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invslot::BANK_END + 1) {
+			i = EQ::invbag::BANK_BAGS_BEGIN;
+			continue;
+		}
+
+		if (newinv)
+		{
+			if (newinv->GetItem())
+			{
+				auto quantityItr = item_ids_to_quantity.find(newinv->GetItem()->ID);
+				if (quantityItr != item_ids_to_quantity.end())
+				{
+					int countQuantity = quantityItr->second + 1;
+					item_ids_to_quantity[newinv->GetItem()->ID] = countQuantity;
+				}
+			}
+		}
+		i++;
+	}
+
+	for (auto itemids : item_ids_to_names)
+	{
+		auto itr3 = item_ids_to_quantity.find(itemids.first);
+		if (itr3 != item_ids_to_quantity.end())
+		{
+			if (itr3->second > 0)
+			{
+				const EQ::ItemData* item_data = database.GetItem(itemids.first);
+				if (item_data)
+				{
+					to->Message(CC_Yellow, "ID %d || Name %s || Quantity %d ", item_data->ID, item_data->Name, itr3->second);
+				}
+			}
+		}
+	}	
+	to->Message(CC_Yellow, "======");
+
+}

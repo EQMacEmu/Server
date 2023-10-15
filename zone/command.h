@@ -136,6 +136,7 @@ void command_hideme(Client *c, const Seperator *sep);
 void command_hotfix(Client *c, const Seperator *sep);
 void command_hp(Client *c, const Seperator *sep);
 void command_interrogateinv(Client *c, const Seperator *sep);
+void command_interrogatelegacy(Client *c, const Seperator *sep);
 void command_interrupt(Client *c, const Seperator *sep);
 void command_invul(Client *c, const Seperator *sep);
 void command_ipban(Client *c, const Seperator *sep);
