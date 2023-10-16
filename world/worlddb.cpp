@@ -549,7 +549,7 @@ bool WorldDatabase::GITInfo()
 	char* buf = NULL;
 	size_t len = 0;
 	fflush(NULL);
-	std::string gitParseHead = StringFormat("git --git-dir=%s rev-parse rev-parse HEAD", source_path);
+	std::string gitParseHead = StringFormat("git --git-dir=%s rev-parse HEAD", source_path);
 	fhash = popen(gitParseHead.c_str(), "r");
 
 	while (getline(&buf, &len, fhash) != -1)
