@@ -41,7 +41,7 @@ float Mob::GetBaseEXP()
 
 	float exp = EXP_FORMULA;
 
-	float zemmod = 75.0;
+	float zemmod = 75.0f;
 	if(zone->newzone_data.zone_exp_multiplier >= 0)
 	{
 		zemmod = zone->newzone_data.zone_exp_multiplier * 100;
@@ -50,11 +50,11 @@ float Mob::GetBaseEXP()
 	if (GetLevel() < 6 && zemmod < 100.0f)
 		zemmod = 100.0f;
 
-	float server_bonus = 1.0;
+	float server_bonus = 1.0f;
 
 	// AK had a permanent 20% XP increase.
 	if (RuleB(AlKabor, ServerExpBonus))
-		server_bonus += 0.20;
+		server_bonus += 0.20f;
 	float npc_pct = 1.0f;
 	if (IsNPC())
 		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
@@ -120,6 +120,9 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	float totalmod = RuleR(Character, ExpMultiplier);	// should be 1.0 for non-custom
 	float aa_mult = RuleR(Character, AAExpMultiplier);	// should be 1.0 for non-custom
 	float aa_lvl_mod = 1.0f;	// level_exp_mods table
+	float class_mult = 1.0f;	// since we don't factor class into exp required for level like Sony did, we have to add exp on kills.  does not apply to AAs
+	if (GetClass() == WARRIOR) class_mult = 10.0f / 9.0f;
+	if (GetClass() == ROGUE) class_mult = 10.0f / 9.05f;
 
 	// This logic replicates the Spetember 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
@@ -245,7 +248,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		add_aaxp = static_cast<uint32>(add_aaxp * race_mult * aa_lvl_mod * aa_mult);
 	}
 
-	add_exp = static_cast<uint32>(add_exp * hbm);  // applies to level exp only
+	add_exp = static_cast<uint32>(add_exp * hbm * class_mult);  // applies to level exp only
 
 	uint32 requiredxp = GetEXPForLevel(GetLevel() + 1) - GetEXPForLevel(GetLevel());
 	uint32 xp_cap = requiredxp / 8u;	// kill exp cap is 12.5%
@@ -266,7 +269,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (add_aaxp)
 		Log(Logs::Moderate, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  AARule: %0.2f  Race: %0.2f", lb_mult, hbm, mlm, con_mult, totalmod, aa_mult, race_mult);
 	else
-		Log(Logs::Moderate, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f", lb_mult, hbm, mlm, con_mult, totalmod);
+		Log(Logs::Moderate, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  Class: %0.4f", lb_mult, hbm, mlm, con_mult, totalmod, class_mult);
 
 	uint32 new_exp = GetEXP() + add_exp;
 	uint32 old_aaexp = GetAAXP();

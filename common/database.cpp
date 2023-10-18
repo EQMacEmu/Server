@@ -1820,6 +1820,31 @@ uint32 Database::GetGroupID(const char* name){
 	return atoi(row[0]);
 }
 
+bool Database::GetGroupMemberNames(uint32 group_id, char membername[6][64])
+{
+	std::string query = StringFormat("SELECT name FROM group_id WHERE groupid = %lu", (unsigned long)group_id);
+	auto results = QueryDatabase(query);
+	if (!results.Success())
+		return false;
+
+	if (results.RowCount() == 0) {
+		Log(Logs::General, Logs::Error, "Error getting group members for group %lu: %s", (unsigned long)group_id, results.ErrorMessage().c_str());
+		return false;
+	}
+
+	int memberIndex = 0;
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		if (!row[0])
+			continue;
+
+		strn0cpy(membername[memberIndex], row[0], 64);
+
+		memberIndex++;
+	}
+
+	return true;
+}
+
 uint32 Database::GetGroupIDByAccount(uint32 accountid, std::string &charname) {
 	std::string query = StringFormat("SELECT groupid, name from group_id where accountid='%d'", accountid);
 	auto results = QueryDatabase(query);

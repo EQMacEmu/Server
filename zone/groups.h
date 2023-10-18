@@ -27,8 +27,6 @@ class Client;
 class EQApplicationPacket;
 class Mob;
 
-#define MAX_GROUP_MEMBERS 6
-
 class GroupIDConsumer {
 public:
 	GroupIDConsumer() { id = 0; }

@@ -187,18 +187,6 @@ struct Spawn_Struct
 	/*0224*/
 };
 
-//New ChannelMessage_Struct struct
-struct ChannelMessage_Struct
-{
-	/*000*/	char	targetname[64];		// Tell recipient
-	/*064*/	char	sender[64];			// The senders name (len might be wrong)
-	/*128*/	uint16	language;			// Language
-	/*130*/	uint16	chan_num;			// Channel
-	/*132*/	uint16	cm_unknown4;		// ***Placeholder
-	/*134*/	uint16	skill_in_language;	// The players skill in this language? might be wrong
-	/*136*/	char	message[0];			// Variable length message
-};
-
 struct SpawnHPUpdate_Struct
 {
 	/*000*/ uint32  spawn_id;		// Comment: Id of spawn to update

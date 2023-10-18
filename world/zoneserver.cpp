@@ -328,26 +328,52 @@ bool ZoneServer::Process() {
 				ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer; 
 				if (gcm->groupid != 0)
 				{
+					char membername[MAX_GROUP_MEMBERS][64]; // group member names
+					bool groupLoaded = false; // only query the database if there are clients zoning
+
+					// iterate client_list looking for clients that are zoning
 					std::vector<ClientListEntry *> vec;
 					client_list.GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it)
 					{
 						ClientListEntry *cle = *it;
-						uint32 groupid = database.GetGroupID(cle->name());
-						if (cle->Online() == CLE_Status_Zoning && groupid == gcm->groupid && !cle->TellQueueFull())
+						if (cle && cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
 						{
-							// queue group chat message
-							size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
-							ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
-							memset(scm, 0, struct_size);
-							strcpy(scm->deliverto, cle->name());
-							strcpy(scm->from, gcm->from);
-							scm->chan_num = ChatChannel_Group;
-							scm->language = gcm->language;
-							scm->lang_skill = gcm->lang_skill;
-							strcpy(scm->message, gcm->message);
-							scm->queued = 1;
-							cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							// this client is zoning, it may be a member of the group this message was intended for
+							if (!groupLoaded)
+							{
+								// only try to load group member names once
+								groupLoaded = true;
+								memset(membername, 0, sizeof(membername));
+								database.GetGroupMemberNames(gcm->groupid, membername);
+							}
+							
+							// check if this CLE is a member of the group by iterating the member list
+							bool queueMessage = false;
+							for (int memberIndex = 0; memberIndex < MAX_GROUP_MEMBERS; memberIndex++)
+							{
+								if (membername[memberIndex] && *membername[memberIndex] && !strcmp(membername[memberIndex], cle->name()))
+								{
+									queueMessage = true;
+									break;
+								}
+							}
+							
+							if (queueMessage)
+							{
+								// queue group chat message
+								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
+								ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
+								memset(scm, 0, struct_size);
+								strcpy(scm->deliverto, cle->name());
+								strcpy(scm->from, gcm->from);
+								scm->chan_num = ChatChannel_Group;
+								scm->language = gcm->language;
+								scm->lang_skill = gcm->lang_skill;
+								strcpy(scm->message, gcm->message);
+								scm->queued = 1;
+								cle->PushToTellQueue(scm); // deallocation is handled in processing or deconstructor
+							}
 						}
 					}
 				}
