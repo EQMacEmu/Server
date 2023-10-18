@@ -7714,6 +7714,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		mss->npcid = mp->npcid;
 		mss->playerid = GetID();
 		mss->price = 0;
+		mss->IsSold = 1;
 		mss->quantity = 0;
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
@@ -7728,6 +7729,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	mss->npcid=tmp->GetID();
 	mss->playerid=GetID();
 	mss->price=0;
+	mss->IsSold=1;
 	mss->quantity=0;
 
 	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != MERCHANT)
@@ -8065,9 +8067,9 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
 		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
 
-		mco->itemslot = mp->itemslot;
+		mco->itemslot = 0;
 		mco->npcid = vendor->GetID();
-		mco->quantity = mp->quantity;
+		mco->quantity = 0;
 		mco->price = 0;
 		mco->playerid = this->GetID();
 		QueuePacket(outapp);
