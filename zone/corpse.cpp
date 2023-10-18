@@ -54,9 +54,12 @@ extern WorldServer worldserver;
 extern QueryServ* QServ;
 
 void Corpse::SendEndLootErrorPacket(Client* client) {
-	auto outapp = new EQApplicationPacket(OP_LootComplete, 0);
-	client->QueuePacket(outapp);
-	safe_delete(outapp);
+	if (client)
+	{
+		auto outapp = new EQApplicationPacket(OP_LootComplete, 0);
+		client->QueuePacket(outapp);
+		safe_delete(outapp);
+	}
 }
 
 void Corpse::SendLootReqErrorPacket(Client* client, uint8 response) {
@@ -1317,6 +1320,10 @@ bool Corpse::ContainsLegacyItem() {
 
 void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	/* This gets sent no matter what as a sort of ACK */
+	if (!client)
+	{
+		return;
+	}
 	client->QueuePacket(app);
 
 	bool contains_legacy_item = ContainsLegacyItem();
@@ -1521,7 +1528,10 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 			// send packets to other clients trying to loot the legacy item to cancel their loot
 			for (const uint16_t client_id : GetLegacyItemLooters()) {
 				Client* other_client = entity_list.GetClientByID(client_id);
-				SendEndLootErrorPacket(other_client);
+				if (other_client)
+				{
+					SendEndLootErrorPacket(other_client);
+				}
 			}
 			ResetLegacyItemLooterSet();
 		}
