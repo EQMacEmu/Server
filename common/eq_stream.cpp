@@ -2624,6 +2624,8 @@ void EQOldStream::SendPacketQueue(bool Block)
 	}
 	if (sentpacket > 0)
 		keep_alive_timer->Start(450);
+	else if(!keep_alive_timer->Enabled())
+		keep_alive_timer->Start(3000);
 	// ************ Processing finished ************ //
 	MOutboundQueue.unlock();
 }
