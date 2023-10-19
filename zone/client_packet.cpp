@@ -5695,7 +5695,14 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 	}
 	GuildCommand_Struct* gc = (GuildCommand_Struct*)app->pBuffer;
 	if (!IsInAGuild())
-		Message(CC_Default, "Error: You arent in a guild!");
+		Message(CC_Default, "Error: You are not in a guild!");
+
+	if (GuildID() == 1)
+	{
+		Message(CC_Default, "You can't leave this guild. File a petition for more information.");
+		return;
+	}
+
 	// we can always remove ourself, otherwise, our rank needs remove permissions
 	else if (strcasecmp(gc->othername, GetName()) != 0 &&
 		!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_REMOVE))

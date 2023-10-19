@@ -391,7 +391,7 @@ struct ServerClientList_Struct {
 	bool	mule;
 	bool	AFK;
 	bool	Trader;
-	bool	Revoked;
+	int8	Revoked;
 };
 
 struct ServerClientListKeepAlive_Struct {
@@ -690,7 +690,7 @@ struct ServerLockZone_Struct {
 struct RevokeStruct {
 	char adminname[64];
 	char name[64];
-	bool toggle; //0 off 1 on
+	int8 toggle; //0 off 1 on
 };
 
 struct ServerGroupIDReply_Struct {

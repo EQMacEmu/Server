@@ -489,7 +489,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 
 
 void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
-	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version, false);
+	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version, 0);
 
 	clientlist.Append(tmp);
 }
@@ -590,7 +590,7 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 		iterator.Advance();
 	}
 	int16 tmpadmin;
-	bool tmprevoked = false;
+	int8 tmprevoked = false;
 
 	//Log.LogDebugType(Logs::Detail, Logs::WorldServer,"Login with '%s' and '%s'", iName, iPassword);
 

@@ -7289,7 +7289,7 @@ void command_revoke(Client *c, const Seperator *sep)
 		return;
 	}
 
-	int flag = sep->arg[2][0] == '1' ? true : false;
+	int flag = atoi(sep->arg[2]);
 	std::string query = StringFormat("UPDATE account SET revoked = %d WHERE id = %i", flag, characterID);
 	auto results = database.QueryDatabase(query);
 
@@ -11426,12 +11426,12 @@ void command_removelegacyitem(Client* c, const Seperator* sep) {
 			bool res = target_client->RemoveLootedLegacyItem(atoi(sep->arg[1]));
 			if(!res)
 			{
-				c->Message(MT_System, "Unable to remove legacy item %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				c->Message(MT_System, "Unable to remove legacy item %d from %s.", atoi(sep->arg[1]), target->GetCleanName());
 				return;
 			}
 			else
 			{
-				c->Message(MT_System, "Successfully removed legacy item id flag %i from %s.", atoi(sep->arg[0]), target->GetCleanName());
+				c->Message(MT_System, "Successfully removed legacy item id flag %d from %s.", atoi(sep->arg[1]), target->GetCleanName());
 				return;
 			}
 		}
@@ -11452,14 +11452,14 @@ void command_removelegacyitem(Client* c, const Seperator* sep) {
 			return;
 		}
 
-		std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", atoi(sep->arg[1]), atoi(sep->arg[2]));
+		std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %d AND item_id = %d", atoi(sep->arg[1]), atoi(sep->arg[2]));
 
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
 			c->Message(MT_System, "Unable to run query!");
 			return;
 		}
-		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %i from %s.", sep->arg[2], target_name);
+		c->Message(MT_System, "Successfully attempted to remove legacy item id flag %d from %s.", sep->arg[2], target_name);
 		return;
 	}
 	c->Message(MT_Shout, "Usage: #removelegacyitem [charid] [itemid] or #removelegacyitem [itemid] with a Client targeted.");

@@ -125,7 +125,7 @@ void Database::GetAccountStatus(Client *client) {
 	client->SetAccountStatus(atoi(row[0]));
 	client->SetHideMe(atoi(row[1]) != 0);
 	client->SetKarma(atoi(row[2]));
-	client->SetRevoked((atoi(row[3])==1?true:false));
+	client->SetRevoked((atoi(row[3])));
 
 	LogDebug("Set account status to [{0}], hideme to [{1}] and karma to [{2}] for [{3}]", client->GetAccountStatus(), client->GetHideMe(), client->GetKarma(), client->GetName().c_str());
 

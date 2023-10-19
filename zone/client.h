@@ -263,8 +263,8 @@ public:
 	void SendSound(uint16 soundID);
 	bool CanIncreaseTradeskill(EQ::skills::SkillType tradeskill);
 
-	bool			GetRevoked() const { return revoked; }
-	void			SetRevoked(bool rev) { revoked = rev; }
+	int8			GetRevoked() const { return revoked; }
+	void			SetRevoked(int8 rev) { revoked = rev; }
 	inline uint32	GetIP()			const { return ip; }
 	inline bool		GetHideMe()			const { return gmhideme; }
 	void			SetHideMe(bool hm);
@@ -1164,7 +1164,7 @@ private:
 	bool				gminvul;
 	bool				medding;
 	uint16				horseId;
-	bool				revoked;
+	int8				revoked;
 	uint32				pQueuedSaveWorkID;
 	uint16				pClientSideTarget;
 	int32				weight;

@@ -847,6 +847,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	switch(chan_num)
 	{
 	case ChatChannel_Guild: { /* Guild Chat */
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Guild.");
+			return;
+		}
+
 		if (!IsInAGuild())
 			Message_StringID(MT_DefaultText, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
@@ -856,6 +862,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		break;
 	}
 	case ChatChannel_Group: { /* Group Chat */
+
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Group.");
+			return;
+		}
 		Raid* raid = entity_list.GetRaidByClient(this);
 		if(raid) {
 			raid->RaidGroupSay((const char*) message, this, language, lang_skill);
@@ -870,6 +882,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Raid: { /* Raid Say */
 		Raid* raid = entity_list.GetRaidByClient(this);
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Raid Say.");
+			return;
+		}
+
 		if(raid){
 			raid->RaidSay((const char*) message, this, language, lang_skill);
 		}

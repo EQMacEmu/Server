@@ -88,7 +88,7 @@ Database::~Database()
 	Return the account id or zero if no account matches.
 	Zero will also be returned if there is a database error.
 */
-uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus, bool* oRevoked) {
+uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus, int8* oRevoked) {
 
 	if(strlen(name) >= 50 || strlen(password) >= 50)
 		return(0);
@@ -1340,7 +1340,7 @@ bool Database::AddToNameFilter(const char* name) {
 	return true;
 }
 
-uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, bool* oRevoked) {
+uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, int8* oRevoked) {
 	uint32 account_id = 0;
 	std::string query = StringFormat("SELECT id, name, status, revoked FROM account WHERE lsaccount_id=%i", iLSID);
 	auto results = QueryDatabase(query);
@@ -1366,7 +1366,7 @@ uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* o
 	return account_id;
 }
 
-void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, bool* oRevoked) {
+void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, int8* oRevoked) {
 	
 	std::string query = StringFormat("SELECT name, status, revoked FROM account WHERE id=%i", id);
 	auto results = QueryDatabase(query);

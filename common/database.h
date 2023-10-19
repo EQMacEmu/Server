@@ -149,8 +149,8 @@ public:
 	/*
 	* Account Related
 	*/
-	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, bool* oRevoked = 0);
-	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0, bool* oRevoked = 0);
+	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, int8* oRevoked = 0);
+	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0, int8* oRevoked = 0);
 	int16	CheckStatus(uint32 account_id);
 	int16	CheckExemption(uint32 account_id);
 	uint32	CreateAccount(const char* name, const char* password, int16 status, uint32 lsaccount_id = 0);
@@ -158,7 +158,7 @@ public:
 	bool	SetAccountStatus(const char* name, int16 status);
 	bool	SetAccountStatus(const std::string& account_name, int16 status);
 	bool	SetLocalPassword(uint32 accid, const char* password);
-	uint32	GetAccountIDFromLSID(uint32 iLSID, char* oAccountName = 0, int16* oStatus = 0, bool* oRevoked = 0);
+	uint32	GetAccountIDFromLSID(uint32 iLSID, char* oAccountName = 0, int16* oStatus = 0, int8* oRevoked = 0);
 	bool	UpdateLiveChar(char* charname,uint32 lsaccount_id);
 	bool	GetLiveChar(uint32 account_id, char* cname);
 	bool	GetLiveCharByLSID(uint32 ls_id, char* cname);

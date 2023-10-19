@@ -21,7 +21,7 @@ struct ServerClientList_Struct;
 
 class ClientListEntry {
 public:
-	ClientListEntry(uint32 id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin = 0, uint32 ip = 0, uint8 local=0, uint8 version=0, bool revoked = false);
+	ClientListEntry(uint32 id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin = 0, uint32 ip = 0, uint8 local=0, uint8 version=0, int8 revoked = false);
 	ClientListEntry(uint32 id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline);
 	~ClientListEntry();
 	bool	CheckStale();
@@ -91,7 +91,7 @@ public:
 	inline bool			mule() const { return pmule; }
 	inline bool		AFK() const { return pAFK;  }
 	inline bool		Trader() const { return pTrader; }
-	inline bool		Revoked() const { return pRevoked; }
+	inline int8		Revoked() const { return pRevoked; }
 
 	inline bool TellQueueFull() const { return tell_queue.size() >= RuleI(World, TellQueueSize); }
 	inline bool TellQueueEmpty() const { return tell_queue.empty(); }
@@ -146,7 +146,7 @@ private:
 	bool	pmule;
 	bool	pAFK;
 	bool	pTrader;
-	bool	pRevoked;
+	int8	pRevoked;
 
 	// Tell Queue -- really a vector :D
 	std::vector<ServerChannelMessage_Struct *> tell_queue;

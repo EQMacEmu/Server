@@ -34,7 +34,7 @@ extern ZSList zoneserver_list;
 extern ClientList		client_list;
 extern volatile bool RunLoops;
 
-ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version, bool revoked)
+ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version, int8 revoked)
 : id(in_id)
 {
 	ClearVars(true);
@@ -254,7 +254,7 @@ void ClientListEntry::ClearVars(bool iAll) {
 	pmule = false;
 	pAFK = false;
 	pTrader = false;
-	pRevoked = false;
+	pRevoked = 0;
 }
 
 void ClientListEntry::Camp(ZoneServer* iZS) {
