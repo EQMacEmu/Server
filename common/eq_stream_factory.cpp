@@ -107,7 +107,6 @@ std::shared_ptr<EQStream> EQStreamFactory::Pop()
 	if (!NewStreams.empty()) {
 		s = NewStreams.front();
 		NewStreams.pop();
-		s->PutInUse();
 	}
 	MNewStreams.unlock();
 
@@ -122,7 +121,6 @@ std::shared_ptr<EQOldStream> EQStreamFactory::PopOld()
 	if (!NewOldStreams.empty()) {
 		s = NewOldStreams.front();
 		NewOldStreams.pop();
-		s->PutInUse();
 	}
 	MNewStreams.unlock();
 
@@ -132,6 +130,7 @@ std::shared_ptr<EQOldStream> EQStreamFactory::PopOld()
 void EQStreamFactory::Push(std::shared_ptr<EQStream> s)
 {
 	MNewStreams.lock();
+	s->PutInUse();
 	NewStreams.push(s);
 	MNewStreams.unlock();
 }
@@ -139,6 +138,7 @@ void EQStreamFactory::Push(std::shared_ptr<EQStream> s)
 void EQStreamFactory::PushOld(std::shared_ptr<EQOldStream> s)
 {
 	MNewStreams.lock();
+	s->PutInUse();
 	NewOldStreams.push(s);
 	MNewStreams.unlock();
 }
@@ -198,8 +198,8 @@ void EQStreamFactory::ReaderLoop()
 						std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
 						s->SetStreamType(StreamType);
 						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
-						WriterWork.Signal();
 						Push(s);
+						WriterWork.Signal();
 						s->AddBytesRecv(length);
 						s->Process(buffer, length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
@@ -229,8 +229,8 @@ void EQStreamFactory::ReaderLoop()
 						std::shared_ptr<EQOldStream> s = std::make_shared<EQOldStream>(from, sock);
 						s->SetStreamType(StreamType);
 						OldStreams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
-						WriterWork.Signal();
 						PushOld(s);
+						WriterWork.Signal();
 						//s->AddBytesRecv(length);
 						s->ParceEQPacket(length, buffer);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
