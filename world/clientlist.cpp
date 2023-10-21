@@ -864,7 +864,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 						pidstring = WHOALL_USERPID;
 					plrace = cle->baserace();
 					zonestring = WHOALL_ZONE;
-					plzone = cle->zone();
+					plzone = database.GetClientZoneID(cle->zone());
 					
 					if (cle->LFG())
 						plflag = WHOALL_LFG;

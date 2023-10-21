@@ -206,6 +206,7 @@ public:
 	* General Queries
 	*/
 	bool	LoadZoneNames();
+	bool	LoadZoneFileNames();
 	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, uint32* graveyard_id = 0, uint16* graveyard_time = 0, uint32* maxclients = 0);
 	bool	GetZoneGraveyard(const uint32 graveyard_id, uint32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
 	uint32	GetZoneGraveyardID(uint32 zone_id);
@@ -214,6 +215,8 @@ public:
 	uint8	GetPEQZone(uint32 zoneID);
 	uint8	GetMinStatus(uint32 zone_id);
 	const char*	GetZoneName(uint32 zoneID, bool ErrorUnknown = false);
+	uint32 GetClientZoneID(uint32 zoneID);
+	const char* GetClientZoneName(const char* zone_name);
 	uint8	GetServerType();
 	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr, uint8* expansion = 0);
 	bool	GetSafePoints(uint32 zoneID, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr) { return GetSafePoints(GetZoneName(zoneID), safe_x, safe_y, safe_z, safe_heading, minstatus, minlevel, flag_needed); }
@@ -231,7 +234,7 @@ public:
 
 private:
 	std::map<uint32,std::string>	zonename_array;
-
+	std::map<std::string, std::string>	zonename_filename_array;
 	Mutex Mvarcache;
 	VarCache_Struct varcache;
 

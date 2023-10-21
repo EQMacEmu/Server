@@ -83,7 +83,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 		cs->race[char_num] = atoi(row[3]);
 		cs->gender[char_num] = atoi(row[2]);
 		cs->deity[char_num] = atoi(row[6]);
-		cs->zone[char_num] = atoi(row[16]);
+		cs->zone[char_num] = database.GetClientZoneID((uint16)atoi(row[16]));
 		cs->face[char_num] = atoi(row[15]);
 		cs->haircolor[char_num] = atoi(row[9]);
 		cs->beardcolor[char_num] = atoi(row[10]);
