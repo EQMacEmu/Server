@@ -246,6 +246,7 @@ int main(int argc, char** argv) {
 
 	LogInfo("Loading zone names");
 	database.LoadZoneNames();
+	database.LoadZoneFileNames();
 
 	LogInfo("Loading items");
 	if(!database.LoadItems(hotfix_name)) {

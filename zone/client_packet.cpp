@@ -854,6 +854,11 @@ void Client::Handle_Connect_OP_ReqNewZone(const EQApplicationPacket *app)
 	NewZone_Struct* nz = (NewZone_Struct*)outapp->pBuffer;
 	memcpy(outapp->pBuffer, &zone->newzone_data, sizeof(NewZone_Struct));
 	strcpy(nz->char_name, m_pp.name);
+	memset(nz->zone_short_name, 0, 32);
+	memset(nz->zone_short_name2, 0, 68);
+	strcpy(nz->zone_short_name, database.GetClientZoneName(zone->newzone_data.zone_short_name));
+	strcpy(nz->zone_short_name2, database.GetClientZoneName(zone->newzone_data.zone_short_name2));
+	nz->zone_id = database.GetClientZoneID(nz->zone_id);
 	Log(Logs::Detail, Logs::ZoneServer, "NewZone data for %s (%i) successfully sent.", zone->newzone_data.zone_short_name, zone->newzone_data.zone_id);
 
 	FastQueuePacket(&outapp);
@@ -1603,7 +1608,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	m_pp.timeentitledonaccount = database.GetTotalTimeEntitledOnAccount(AccountID()) / 1440;
 
 	FillPPItems();
-
+	uint32 zoneid_previous = m_pp.zone_id;
+	m_pp.zone_id = database.GetClientZoneID(m_pp.zone_id);
 	/* This checksum should disappear once dynamic structs are in... each struct strategy will do it */
 	CRC32::SetEQChecksum((unsigned char*)&m_pp, sizeof(PlayerProfile_Struct) - 4);
 	outapp = new EQApplicationPacket(OP_PlayerProfile, sizeof(PlayerProfile_Struct));
@@ -1727,6 +1733,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	memcpy(outapp->pBuffer, pps, sizeof(PlayerProfile_Struct) - 4);
 	safe_delete_array(pps);
+	m_pp.zone_id = zoneid_previous;
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
@@ -1743,7 +1750,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	
 	strcpy(sze->name, name);
 	strn0cpy(sze->Surname, lastname, 32);
-	sze->zoneID = zone->GetZoneID();
+	sze->zoneID = database.GetClientZoneID(zone->GetZoneID());
 	sze->x_pos = m_pp.x;
 	sze->y_pos = m_pp.y;
 	sze->z_pos = m_pp.z;

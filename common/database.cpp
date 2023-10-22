@@ -2447,3 +2447,58 @@ bool Database::NoRentExpired(const char* name) {
 
 	return (seconds>1800);
 }
+
+bool Database::LoadZoneFileNames() {
+
+	zonename_filename_array.clear();
+
+	std::string query("SELECT short_name, file_name FROM zone");
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success())
+	{
+		return false;
+	}
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+	{
+		if (row[1] && row[0] && strlen(row[1]) > 0 && strlen(row[1]) > 0)
+		{
+			std::string zoneshort = row[1];
+			std::string zonefile = row[0];
+			if (!zoneshort.empty() && !zonefile.empty())
+				zonename_filename_array.insert(std::pair<std::string, std::string>(zonefile, zoneshort));
+		}
+	}
+
+	return true;
+}
+
+uint32 Database::GetClientZoneID(uint32 zoneID) {
+	auto iter = zonename_array.find(zoneID);
+
+	if (iter != zonename_array.end())
+	{
+		auto iter2 = zonename_filename_array.find(iter->second.c_str());
+		if (iter2 != zonename_filename_array.end())
+		{
+			if (!iter2->second.empty())
+				return GetZoneID(iter2->second.c_str());
+		}
+	}
+
+	return zoneID;
+}
+
+const char* Database::GetClientZoneName(const char* zone_name) {
+	auto iter = zonename_filename_array.find(zone_name);
+
+	if (iter != zonename_filename_array.end())
+	{
+		if (!iter->second.empty())
+			return iter->second.c_str();
+	}
+
+	return zone_name;
+}

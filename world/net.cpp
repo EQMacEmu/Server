@@ -302,6 +302,7 @@ int main(int argc, char** argv) {
 
 	LogInfo("Loading zones..");
 	database.LoadZoneNames();
+	database.LoadZoneFileNames();
 	LogInfo("Clearing groups..");
 	database.ClearGroup();
 	LogInfo("Clearing raids..");
