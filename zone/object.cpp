@@ -428,9 +428,7 @@ void Object::CreateSpawnPacket(EQApplicationPacket* app)
 	safe_delete_array(app->pBuffer);
 	app->pBuffer = new uchar[sizeof(Object_Struct)];
 	app->size = sizeof(Object_Struct);
-	Object_Struct* objData = (Object_Struct*)app->pBuffer;
 	memcpy(app->pBuffer, &m_data, app->size);
-	objData->zone_id = database.GetClientZoneID(objData->zone_id);
 }
 
 void Object::CreateDeSpawnPacket(EQApplicationPacket* app)

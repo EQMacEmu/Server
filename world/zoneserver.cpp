@@ -1002,13 +1002,11 @@ bool ZoneServer::Process() {
 			}
 			case ServerOP_ReloadRules: {
 				zoneserver_list.SendPacket(pack);
-				database.LoadZoneFileNames();
 				RuleManager::Instance()->LoadRules(&database, "default");
 				break;
 			}
 			case ServerOP_ReloadRulesWorld:
 			{
-				database.LoadZoneFileNames();
 				RuleManager::Instance()->LoadRules(&database, "default");
 				break;
 			}
