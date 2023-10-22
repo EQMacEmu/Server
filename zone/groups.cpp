@@ -103,7 +103,6 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 
 	if (share && splitter->IsSelfFound()) {
 		splitter->Message(CC_Red, "The /split function is not allowed in a self found group.");
-		SendEndLootErrorPacket(splitter);
 		return;
 	}
 
