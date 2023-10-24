@@ -2760,6 +2760,7 @@ void NPC::ProcessFTE()
 		solo_raid_fte = 0;
 		solo_fte_charid = 0;
 		ssf_player_damage = 0;
+		ssf_ds_damage = 0;
 	}
 
 	//guild fte

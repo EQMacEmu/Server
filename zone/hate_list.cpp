@@ -156,7 +156,7 @@ void HateList::Wipe(bool from_memblur)
 				owner->CastToNPC()->solo_raid_fte = 0;
 				owner->CastToNPC()->solo_fte_charid = 0;
 				owner->ssf_player_damage = 0;
-
+				owner->ssf_ds_damage = 0;
 			}
 		}
 	}
@@ -873,6 +873,7 @@ bool HateList::RemoveEnt(Mob *ent)
 			owner->CastToNPC()->solo_raid_fte = 0;
 			owner->CastToNPC()->solo_fte_charid = 0;
 			owner->ssf_player_damage = 0;
+			owner->ssf_ds_damage = 0;
 		}
 		aggroDeaggroTime = Timer::GetCurrentTime();
 		aggroTime = 0xFFFFFFFF;
@@ -918,6 +919,7 @@ bool HateList::RemoveEnt(Mob *ent)
 					owner->CastToNPC()->solo_raid_fte = 0;
 					owner->CastToNPC()->solo_fte_charid = 0;
 					owner->ssf_player_damage = 0;
+					owner->ssf_ds_damage = 0;
 				}
 			}
 		}

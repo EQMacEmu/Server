@@ -387,6 +387,7 @@ Mob::Mob(const char* in_name,
 	feared = false;
 	player_damage = 0;
 	ssf_player_damage = 0;
+	ssf_ds_damage = 0;
 	dire_pet_damage = 0;
 	total_damage = 0;
 	ds_damage = 0;

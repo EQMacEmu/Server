@@ -3088,6 +3088,10 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 					if (is_solo_fte_credit || is_raid_solo_fte_credit || is_group_solo_fte_credit)
 					{
 						ssf_player_damage += damage;
+						if (FromDamageShield)
+						{
+							ssf_ds_damage += damage;
+						}
 					}
 				}
 
@@ -5229,5 +5233,8 @@ void Mob::DamageTotalsWipe(bool from_memblur)
 	gm_damage = 0;
 	pbaoe_damage = 0;
 	if(!from_memblur)
+	{
 		ssf_player_damage = 0;
+		ssf_ds_damage = 0;
+	}
 }
