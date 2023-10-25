@@ -1125,6 +1125,13 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		return;
 	}
 
+	if (zone && zone->IsTrivialLootCodeEnabled() && !IsPlayerCorpse() && client && client->GetLevelCon(GetLevel()) == CON_GREEN)
+	{
+		SendLootReqErrorPacket(client, 0);
+		client->Message(CC_Red, "Trivial Loot Code is enabled in this zone. You are unable to loot any NPC that is considered green to you.");
+		return;
+	}
+
 	if(being_looted_by == 0) { 
 		being_looted_by = 0xFFFFFFFF; 
 	}

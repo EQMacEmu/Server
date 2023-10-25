@@ -689,7 +689,7 @@ void Client::CompleteConnect()
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
 		if (m_pp.expansions & LuclinEQ)
 		{
-			GoToSafeCoords(database.GetZoneID("bazaar"));
+			GoToSafeCoords(database.GetZoneID("arena"));
 		}
 		else
 		{

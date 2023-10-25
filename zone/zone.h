@@ -118,6 +118,7 @@ public:
 	inline const uint32& GetMaxClients() { return pMaxClients; }
 
 	inline const bool IsReducedSpawnTimersZone() { return reducedspawntimers;  }
+	inline const bool IsTrivialLootCodeEnabled() { return trivial_loot_code; }
 	inline bool IsReducedSpawnTimersEnabled();
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
@@ -346,6 +347,8 @@ private:
 	uint16	pull_limit;
 
 	bool	reducedspawntimers;
+
+	bool	trivial_loot_code;
 
 	bool	staticzone;
 	bool	gottime;
