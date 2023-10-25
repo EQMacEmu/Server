@@ -1083,6 +1083,14 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 			case SE_SummonPet:
 			case SE_Familiar:
 			{
+				if (!caster)
+					break;
+
+				if (caster->GetHP() < 0)
+				{
+					break;
+				}
+
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Summon %s: %s", (effect==SE_Familiar)?"Familiar":"Pet", spell.teleport_zone);
 #endif
