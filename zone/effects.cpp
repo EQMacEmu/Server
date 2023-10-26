@@ -1140,9 +1140,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		uint16 ae_caster_id = center && !initial_cast ? center->GetID() : 0;
 
 		//if we get here... cast the spell.
+
+		bool enable_bard_limit = RuleB(Quarm, EnableBardDamagingAOECap);
+
 		if (IsTargetableAESpell(spell_id) && detrimental && !IsHarmonySpell(spell_id) && (!IsMemBlurSpell(spell_id) || IsMezSpell(spell_id))) 
 		{
-			if (targets_hit < MAX_TARGETS_ALLOWED || curmob->IsClient())
+			if (targets_hit < MAX_TARGETS_ALLOWED || curmob->IsClient() && !curmob->CastToClient()->GetHideMe())
 			{
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (curmob->IsNPC() && caster->IsAttackAllowed(curmob, true, spell_id))
@@ -1150,10 +1153,29 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				Log(Logs::Moderate, Logs::Spells, "Targeted AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
 			}
 		}
+		else if (enable_bard_limit && IsBardAOEDamageSpell(spell_id))
+		{
+			uint32 bard_aoe_cap = RuleI(Quarm, BardDamagingAOECap);
+			if (targets_hit < bard_aoe_cap || curmob->IsClient() && !curmob->CastToClient()->GetHideMe())
+			{
+				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
+				if (curmob->IsNPC() && caster->IsAttackAllowed(curmob, true, spell_id))
+					++targets_hit;
+				Log(Logs::Moderate, Logs::Spells, "Bard Damaging AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, bard_aoe_cap, curmob->GetCleanName());
+			}
+		}
 		else 
 		{
-			Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
-			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
+
+			if (curmob->IsClient() && curmob->CastToClient()->GetHideMe())
+			{
+				Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: Skipping GM %s with spell %i", curmob->GetCleanName(), spell_id);
+			}
+			else
+			{
+				Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
+				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
+			}
 		}
 	}
 

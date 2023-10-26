@@ -698,12 +698,12 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 		if(npc->CheckAggro(attacker) || npc->GetSpecialAbility(IMMUNE_AGGRO))
 			continue;
 
-		// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
-		if (zone->GetNumAggroedNPCs() >= zone->GetPullLimit() && npc->GetAggroDeaggroTime() < 30000
-			&& entity_list.GetTopHateCount(attacker) >= zone->GetPullLimit())
-		{
-			continue;
-		}
+		//// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
+		//if (npc->GetAggroDeaggroTime() < 30000
+		//	&& entity_list.GetTopHateCount(attacker) >= zone->GetPullLimit())
+		//{
+		//	continue;
+		//}
 
 		uint32 npc_faction = npc->GetNPCFactionID();
 		uint32 sender_faction = sender->CastToNPC()->GetNPCFactionID();
@@ -1055,8 +1055,24 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 					return false;
 				}
 
+				if (c2->IsSoloOnly())
+				{
+					// if the target is solo, don't allow anyone to buff it
+					// if the caster is solo, it's fine if they try to buff someone
+					return false;
+				}
+
+				if (c2->IsSelfFound() == true)
+				{
+					bool can_get_experience = c1->IsInLevelRange(c2->GetLevel2());
+					bool compatible = c1->IsSelfFound() == c2->IsSelfFound();
+					if (!compatible || compatible && !can_get_experience)
+						return false;
+				}
+
 				if (c1->GetPVP() == c2->GetPVP())
 					return true;
+
 			}
 			else if(_NPC(mob2))				// client to npc
 			{
@@ -1412,7 +1428,16 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 					nonDamageHate += standardSpellHate;
 				break;
 			}
-			//case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			{
+				if (RuleB(Quarm, PreLuclinDiseaseCounterAggro))
+				{
+					if (IsSlowSpell(spell_id))
+						break;
+					nonDamageHate += standardSpellHate;
+				}
+				break;
+			}
 			case SE_PoisonCounter:
 			{
 				nonDamageHate += standardSpellHate;
@@ -1600,15 +1625,15 @@ int32 Mob::CheckHealAggroAmount(uint16 spell_id, Mob* target, uint32 heal_possib
 				{
 					if (heal_possible < val)
 						val = heal_possible;		// aggro is based on amount healed, not including crits/focii/AA multipliers
-
-					if (val > 0)
-						val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
-
-					if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
-						val = 800;
-					else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
-						val = 1500;
-
+					if (RuleB(Quarm, VeliousEraAggroCaps))
+					{
+						if (val > 0)
+							val = 1 + 2 * val / 3;		// heal aggro is 2/3rds amount healed
+						if (tlevel <= 50 && val > 800)	// heal aggro is capped.  800 was stated in a patch note
+							val = 800;
+						else if (val > 1500)			// cap after level 50 is 1500 on EQLive as of 2015
+							val = 1500;
+					}
 					AggroAmount += val;
 				}
 				break;

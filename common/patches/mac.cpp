@@ -964,11 +964,15 @@ namespace Mac {
 			mac_pop_item->ReqLevel = item->ReqLevel; 
 			mac_pop_item->BardType = item->BardType;
 			mac_pop_item->BardValue = item->BardValue;
+
+			//Focus items did not exist before Planes of Power, so disable them.
 			if(item->Focus.Effect < 0)
+				mac_pop_item->FocusEffect = 0;
+			else if((RuleB(AlKabor, EnableEraItemRules)) && (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra))
 				mac_pop_item->FocusEffect = 0;
 			else
 				mac_pop_item->FocusEffect = item->Focus.Effect;
-
+			
 			if(item->ItemClass == 1)
 			{
 				mac_pop_item->container.BagType = item->BagType; 

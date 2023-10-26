@@ -26,6 +26,7 @@
 #include "types.h"
 #include "dbcore.h"
 #include "linked_list.h"
+#include "servertalk.h"
 #include "eq_packet_structs.h"
 
 #include <cmath>
@@ -105,7 +106,7 @@ public:
 
 	/* Character Creation */
 	bool	SaveCharacterCreate(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp);
-
+	bool    IsCharacterNameReserved(uint32 account_id, const char* input_character_name);
 	bool	MoveCharacterToZone(const char* charname, const char* zonename);
 	bool	MoveCharacterToZone(const char* charname, const char* zonename,uint32 zoneid);
 	bool	MoveCharacterToZone(uint32 iCharID, const char* iZonename);
@@ -131,7 +132,7 @@ public:
 	uint32	GetAccountIDByName(std::string account_name, int16* status = 0, uint32* lsid = 0);
 	void	GetAccountName(uint32 accountid, char* name, uint32* oLSAccountID = 0);
 	void	GetCharName(uint32 char_id, char* name);
-	uint32	GetCharacterInfo(const char* iName, uint32* oAccID = 0, uint32* oZoneID = 0, float* oX = 0, float* oY = 0, float* oZ = 0);
+	uint32	GetCharacterInfo(const char* iName, uint32* oAccID = 0, uint32* oZoneID = 0, float* oX = 0, float* oY = 0, float* oZ = 0, uint64* oDeathTime = 0);
 	uint32	GetCharacterID(const char *name);
 	bool	AddBannedIP(std::string banned_ip, std::string notes); //Add IP address to the banned_ips table.
 	bool	CheckBannedIPs(std::string login_ip); //Check incoming connection against banned IP table.
@@ -142,13 +143,14 @@ public:
 	void	ClearAccountActive(uint32 AccountID);
 	void	SetAccountActive(uint32 AccountID);
 	uint32	GetLevelByChar(const char* charname);
+	uint32	GetHardcoreStatus(const char* charname);
 	bool	NoRentExpired(const char* name);
 
 	/*
 	* Account Related
 	*/
-	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus);
-	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0);
+	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, int8* oRevoked = 0);
+	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0, int8* oRevoked = 0);
 	int16	CheckStatus(uint32 account_id);
 	int16	CheckExemption(uint32 account_id);
 	uint32	CreateAccount(const char* name, const char* password, int16 status, uint32 lsaccount_id = 0);
@@ -156,13 +158,14 @@ public:
 	bool	SetAccountStatus(const char* name, int16 status);
 	bool	SetAccountStatus(const std::string& account_name, int16 status);
 	bool	SetLocalPassword(uint32 accid, const char* password);
-	uint32	GetAccountIDFromLSID(uint32 iLSID, char* oAccountName = 0, int16* oStatus = 0);
+	uint32	GetAccountIDFromLSID(uint32 iLSID, char* oAccountName = 0, int16* oStatus = 0, int8* oRevoked = 0);
 	bool	UpdateLiveChar(char* charname,uint32 lsaccount_id);
 	bool	GetLiveChar(uint32 account_id, char* cname);
 	bool	GetLiveCharByLSID(uint32 ls_id, char* cname);
 	bool	GetAccountRestriction(uint32 acctid, uint16& expansion, bool& mule);
 	void	ClearAllConsented();
 	void	ClearAllConsented(char* oname, uint32 corpse_id, LinkedList<ConsentDenied_Struct*>* purged);
+	bool	SetIPExemption(const char* accountname, uint8 amount);
 	bool	SetMule(const char* accountname, uint8 toggle);
 	bool	SetExpansion(const char* accountname, uint8 toggle);
 
@@ -203,6 +206,7 @@ public:
 	* General Queries
 	*/
 	bool	LoadZoneNames();
+	bool	LoadZoneFileNames();
 	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, uint32* graveyard_id = 0, uint16* graveyard_time = 0, uint32* maxclients = 0);
 	bool	GetZoneGraveyard(const uint32 graveyard_id, uint32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
 	uint32	GetZoneGraveyardID(uint32 zone_id);
@@ -211,6 +215,8 @@ public:
 	uint8	GetPEQZone(uint32 zoneID);
 	uint8	GetMinStatus(uint32 zone_id);
 	const char*	GetZoneName(uint32 zoneID, bool ErrorUnknown = false);
+	uint32 GetClientZoneID(uint32 zoneID);
+	const char* GetClientZoneName(const char* zone_name);
 	uint8	GetServerType();
 	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr, uint8* expansion = 0);
 	bool	GetSafePoints(uint32 zoneID, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr) { return GetSafePoints(GetZoneName(zoneID), safe_x, safe_y, safe_z, safe_heading, minstatus, minlevel, flag_needed); }
@@ -220,13 +226,15 @@ public:
 	void	SetFirstLogon(uint32 CharID, uint8 firstlogon);
 	void	AddReport(std::string who, std::string against, std::string lines);
 	struct TimeOfDay_Struct		LoadTime(time_t &realtime);
+	bool LoadNextQuakeTime(ServerEarthquakeImminent_Struct &realtime);
+	bool SaveNextQuakeTime(ServerEarthquakeImminent_Struct & earthquake_struct);
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);
 	bool	AdjustSpawnTimes();
 	uint8   GetZoneRandomLoc(uint32 zoneid);
 
 private:
 	std::map<uint32,std::string>	zonename_array;
-
+	std::map<std::string, std::string>	zonename_filename_array;
 	Mutex Mvarcache;
 	VarCache_Struct varcache;
 

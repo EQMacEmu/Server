@@ -208,7 +208,7 @@ Clientlist::Clientlist(int ChatPort) {
 	}
 }
 
-Client::Client(EQStream *eqs) {
+Client::Client(std::shared_ptr<EQStream> eqs) {
 
 	ClientStream = eqs;
 
@@ -316,7 +316,7 @@ void Clientlist::CheckForStaleConnections(Client *c) {
 
 void Clientlist::Process()
 {
-	EQStream *eqs;
+	std::shared_ptr<EQStream> eqs;
 
 	// Pop sets PutInUse() for the stream.
 	while ((eqs = chatsf->Pop())) {

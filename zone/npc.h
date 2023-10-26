@@ -183,7 +183,7 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddLootDrop(const EQ::ItemData*dbitem, ItemList* itemlistconst, int8 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange = false, bool quest = false, bool pet = false, bool force_equip = false);
+	void	AddLootDrop(const EQ::ItemData*dbitem, ItemList* itemlistconst, int8 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange = false, bool quest = false, bool pet = false, bool force_equip = false, uint8 min_looter_level = 0);
 	void	AddItem(uint32 itemid, int8 charges, bool equipitem = true, bool quest = false);
 	void	AddLootTable();
 	void	AddLootTable(uint32 ldid);
@@ -441,7 +441,7 @@ public:
 	uint8 greed;		// merchant greed; default value of 0 means a 25% price markup
 	uint8 GetGreedPercent();
 
-	void CreateCorpse(Mob* killer, bool &corpse);
+	void CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse);
 	void GiveExp(Client* killer, bool &xp);
 	uint16 GetExpPercent() { return exp_pct; }
 	float GetPBAoEReduction(uint8 killer_level);
@@ -450,6 +450,23 @@ public:
 	uint32 raid_fte;
 	uint32 group_fte;
 	uint32 fte_charid;
+
+	uint32 guild_fte;
+	
+	// IDs of the guilds who are currently locked out from triggering FTE messages for this NPC and their last disengage time.
+	std::map<uint32, uint32> guild_fte_lockouts;
+
+	bool IsGuildInFTELockout(uint32 in_guild_id);
+
+	void InsertGuildFTELockout(uint32 in_guild_id);
+
+	void ProcessFTE();
+
+	// IDs of the first group or player who aggroed this NPC.
+	uint32 solo_raid_fte;
+	uint32 solo_group_fte;
+	uint32 solo_fte_charid;
+
 	bool ValidateFTE();
 
 	std::string GetSpawnedString();

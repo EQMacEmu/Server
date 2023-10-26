@@ -34,7 +34,7 @@ extern ZSList zoneserver_list;
 extern ClientList		client_list;
 extern volatile bool RunLoops;
 
-ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version)
+ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version, int8 revoked)
 : id(in_id)
 {
 	ClearVars(true);
@@ -49,6 +49,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 	pworldadmin = iWorldAdmin;
 	plocal=(local==1);
 	pversion = version;
+	pRevoked = revoked;
 }
 
 ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline)
@@ -68,6 +69,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 	padmin = scl->Admin;
 	//THIS IS FOR AN ALTERNATE LOGIN METHOD FOR RAPID TESTING. Hardcoded to the PC client because only PCs should be using this 'hackish' login method. Requires password field set in the database.
 	pversion = 2;
+	pRevoked = scl->Revoked;
 
 	if (iOnline >= CLE_Status_Zoning)
 		Update(iZS, scl, iOnline);
@@ -189,6 +191,7 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, int8
 	pmule = scl->mule;
 	pAFK = scl->AFK;
 	pTrader = scl->Trader;
+	pRevoked = scl->Revoked;
 
 	// Fields from the LFG Window
 	if((scl->LFGFromLevel != 0) && (scl->LFGToLevel != 0)) {
@@ -251,6 +254,7 @@ void ClientListEntry::ClearVars(bool iAll) {
 	pmule = false;
 	pAFK = false;
 	pTrader = false;
+	pRevoked = 0;
 }
 
 void ClientListEntry::Camp(ZoneServer* iZS) {
@@ -373,7 +377,7 @@ bool ClientListEntry::CheckAuth(const char* iName, MD5& iMD5Password) {
 bool ClientListEntry::CheckAuth(uint32 id, const char* iKey, uint32 ip) {
 	if (pIP==ip && strncmp(plskey, iKey,10) == 0){
 		paccountid = id;
-		database.GetAccountFromID(id,paccountname,&padmin);
+		database.GetAccountFromID(id,paccountname,&padmin,&pRevoked);
 		return true;
 	}
 	return false;

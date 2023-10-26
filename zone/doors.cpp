@@ -776,8 +776,8 @@ bool ZoneDatabase::LoadDoors(int32 iDoorCount, Door *into, const char *zone_name
                                     "dest_zone, dest_x, dest_y, dest_z, dest_heading, "
                                     "door_param, invert_state, incline, size, client_version_mask, altkeyitem, islift, "
 									"close_time, can_open "
-                                    "FROM doors WHERE zone = '%s' "
-                                    "ORDER BY doorid asc", zone_name);
+                                    "FROM doors WHERE zone = '%s' AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
+                                    "ORDER BY doorid asc", zone_name, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
 	auto results = QueryDatabase(query);
 	if (!results.Success()){
 		return false;

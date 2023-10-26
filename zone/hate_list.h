@@ -48,7 +48,7 @@ public:
 	bool RemoveEnt(Mob *ent);
 	void RemoveFeigned();
 	// Remove all
-	void Wipe();
+	void Wipe(bool from_memblur = false);
 	// ???
 	void DoFactionHits(int32 nfl_id, bool &success);
 	// Gets Hate amount for mob
@@ -66,11 +66,17 @@ public:
 	Mob *GetClosestNPC(Mob *hater = nullptr);
 	// Gets Hate amount for mob
 	int32 GetEntDamage(Mob *ent, bool combine_pet_dmg = false);
+	// get the top damage single mob (including pets and npcs), no group or raid
+	Mob *GetDamageTopSingleMob(int32& return_dmg);
 	// gets top mob or nullptr if hate list empty
 	Mob *GetDamageTop(int32& return_dmg, bool combine_pet_dmg = true, bool clients_only = false);
 	// used to check if mob is on hatelist
 	bool IsOnHateList(Mob *);
 	bool IsClientOnHateList();
+	bool IsCharacterOnHateList(uint32 character_id);
+	bool IsGroupOnHateList(uint32 group_id);
+	bool IsRaidOnHateList(uint32 raid_id);
+	bool IsGuildOnHateList(uint32 guild_id);
 	// used to remove or add frenzy hate
 	void CheckFrenzyHate();
 	//Gets the target with the most hate regardless of things like frenzy etc.
@@ -87,6 +93,13 @@ public:
 	Mob* GetFirstMobInRange();
 	// time since aggro started (if engaged) or time since aggro ended (if not engaged) or 0xFFFFFFFF if never aggroed
 	uint32 GetAggroDeaggroTime() { return aggroDeaggroTime == 0xFFFFFFFF ? 0xFFFFFFFF : Timer::GetCurrentTime() - aggroDeaggroTime; }
+	// time since aggro started (if engaged) or 0xFFFFFFFF if never aggroed
+	uint32 GetAggroTime() { return aggroTime == 0xFFFFFFFF ? 0xFFFFFFFF : aggroTime; }
+
+
+	void SetAggroTime(uint32 in_time) { aggroTime = in_time; }
+
+
 
 	int AreaRampage(Mob *caster, Mob *target, int count, int damagePct = 100);
 
@@ -107,6 +120,9 @@ public:
 
 	void ReportDmgTotals(Mob* mob, bool corpse, bool xp, bool faction, int32 dmg_amt);
 
+	void HandleFTEEngage(Client* client);
+	void HandleFTEDisengage();
+
 protected:
 	tHateEntry* Find(Mob *ent);
 	int32 GetHateBonus(tHateEntry *entry, bool combatRange, bool firstInRange = false, float distSquared = -1.0f);
@@ -119,6 +135,7 @@ private:
 	int32 sitOutsideBonus;
 	bool rememberDistantMobs;
 	bool nobodyInMeleeRange;
+	uint32 aggroTime;
 	uint32 aggroDeaggroTime;
 	bool allHatersIgnored;
 	bool hasFeignedHaters;

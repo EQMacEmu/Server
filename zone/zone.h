@@ -117,6 +117,9 @@ public:
 	inline const uint16& graveyard_timer() { return pgraveyard_timer;  }
 	inline const uint32& GetMaxClients() { return pMaxClients; }
 
+	inline const bool IsReducedSpawnTimersZone() { return reducedspawntimers;  }
+	inline const bool IsTrivialLootCodeEnabled() { return trivial_loot_code; }
+	inline bool IsReducedSpawnTimersEnabled();
 	void	LoadAAs();
 	int		GetTotalAAs() { return totalAAs; }
 	SendAA_Struct*	GetAABySequence(uint32 seq) { return aas[seq]; }
@@ -132,6 +135,8 @@ public:
 	ZonePoint* GetClosestZonePoint(const glm::vec3& location, const char* to_name, Client *client, float max_distance = 40000.0f);
 	ZonePoint* GetClosestZonePoint(const glm::vec3& location, uint32	to, Client *client, float max_distance = 40000.0f);
 	ZonePoint* GetClosestZonePointWithoutZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestTargetZonePointSameZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
+	ZonePoint* GetClosestZonePointSameZone(float x, float y, float z, Client *client, float max_distance = 40000.0f);
 	SpawnGroupList spawn_group_list;
 
 	Timer GetInitgridsTimer();
@@ -141,7 +146,7 @@ public:
 
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
-
+	bool	ResetEngageNotificationTargets(uint32 in_respawn_timer);
 	bool	Depop(bool StartSpawnTimer = false);
 	void	Repop();
 	void	RepopClose(const glm::vec4& client_position, uint32 repop_distance);
@@ -180,7 +185,7 @@ public:
 	void	ClearMerchantLists();
 
 	uint8	GetZoneExpansion() { return newzone_data.expansion; }
-	uint16	GetPullLimit() { return pull_limit; }
+	uint16	GetPullLimit();
 
 	void	LoadLevelEXPMods();
 	void	LoadSkillDifficulty();
@@ -235,6 +240,9 @@ public:
 	time_t	weather_timer;
 	uint8	weather_intensity;
 	uint8	zone_weather;
+
+	ServerEarthquakeImminent_Struct last_quake_struct;
+	Timer*	EndQuake_Timer;
 
 	uint8 loglevelvar;
 	uint8 merchantvar;
@@ -337,6 +345,10 @@ private:
 
 	uint16	aggroed_npcs;
 	uint16	pull_limit;
+
+	bool	reducedspawntimers;
+
+	bool	trivial_loot_code;
 
 	bool	staticzone;
 	bool	gottime;

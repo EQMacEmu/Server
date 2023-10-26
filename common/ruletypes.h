@@ -23,6 +23,7 @@
 RULE_CATEGORY(Character)
 RULE_BOOL(Character, CanCreate, true)
 RULE_INT ( Character, MaxLevel, 65 )
+RULE_INT ( Character, MaxBetaBuffLevel, 25)
 RULE_BOOL ( Character, PerCharacterQglobalMaxLevel, false) // This will check for qglobal 'CharMaxLevel' character qglobal (Type 5), if player tries to level beyond that point, it will not go beyond that level
 RULE_INT ( Character, MaxExpLevel, 0 ) //Sets the Max Level attainable via Experience
 RULE_INT ( Character, DeathExpLossLevel, 10 )	// Any level greater than this will lose exp on death
@@ -111,83 +112,141 @@ RULE_BOOL ( World, ClearTempMerchantlist, false) // Clears temp merchant items w
 RULE_INT ( World, AccountSessionLimit, 1 ) //Max number of characters allowed on at once from a single account (-1 is disabled)
 RULE_INT ( World, ExemptAccountLimitStatus, 100 ) //Min status required to be exempt from multi-session per account limiting (-1 is disabled)
 RULE_BOOL ( World, GMAccountIPList, false) // Check ip list against GM Accounts, AntiHack GM Accounts.
-RULE_INT ( World, MinGMAntiHackStatus, 1 ) //Minimum GM status to check against AntiHack list
-RULE_INT ( World, PVPSettings, 0) // Sets the PVP settings for the server, 1 = Rallos Zek RuleSet, 2 = Tallon/Vallon Zek Ruleset, 4 = Sullon Zek Ruleset, 6 = Discord Ruleset, anything above 6 is the Discord Ruleset without the no-drop restrictions removed. TODO: Edit IsAttackAllowed in Zone to accomodate for these rules.
-RULE_INT (World, FVNoDropFlag, 0) // Sets the Firiona Vie settings on the client. If set to 2, the flag will be set for GMs only, allowing trading of no-drop items.
-RULE_BOOL (World, IPLimitDisconnectAll, false)
-RULE_INT (World, TellQueueSize, 200) 
-RULE_BOOL (World, AdjustRespawnTimes, false) //Determines if spawntimes with a boot time variable take effect or not. Set to false in the db for emergency patches.
-RULE_INT (World, BootHour, 0) // Sets the in-game hour world will set when it first boots. 0-24 are valid options, where 0 disables this rule.
+RULE_INT(World, MinGMAntiHackStatus, 1) //Minimum GM status to check against AntiHack list
+RULE_INT(World, PVPSettings, 0) // Sets the PVP settings for the server, 1 = Rallos Zek RuleSet, 2 = Tallon/Vallon Zek Ruleset, 4 = Sullon Zek Ruleset, 6 = Discord Ruleset, anything above 6 is the Discord Ruleset without the no-drop restrictions removed. TODO: Edit IsAttackAllowed in Zone to accomodate for these rules.
+RULE_INT(World, FVNoDropFlag, 0) // Sets the Firiona Vie settings on the client. If set to 2, the flag will be set for GMs only, allowing trading of no-drop items.
+RULE_BOOL(World, IPLimitDisconnectAll, false)
+RULE_INT(World, TellQueueSize, 200)
+RULE_BOOL(World, AdjustRespawnTimes, false) //Determines if spawntimes with a boot time variable take effect or not. Set to false in the db for emergency patches.
+RULE_INT(World, BootHour, 0) // Sets the in-game hour world will set when it first boots. 0-24 are valid options, where 0 disables this rule.
 RULE_INT(World, StreamDataRate, 50) // Sets the datarate for EQOldStream. Defaults to 50.
 RULE_INT(World, WhoListLimit, 20) //The max players returned in /who all.
 RULE_INT(World, MuleToonLimit, 8) // The number of characters a mule account can create/access.
-RULE_BOOL( World, DontBootDynamics, false) // If true, dynamic zones will not boot when a player tries to enter them.
+RULE_BOOL(World, DontBootDynamics, false) // If true, dynamic zones will not boot when a player tries to enter them.
+RULE_REAL(World, CurrentExpansion, 6.0)
 RULE_CATEGORY_END()
 
-RULE_CATEGORY( Zone )
-RULE_INT ( Zone, ClientLinkdeadMS, 180000) //the time a client remains link dead on the server after a sudden disconnection
-RULE_BOOL ( Zone, EnableShadowrest, true ) // enables or disables the shadowrest zone feature for player corpses. Default is turned on.
-RULE_BOOL ( Zone, UsePlayerCorpseBackups, true) // Keeps backups of player corpses.
-RULE_INT ( Zone, MQWarpExemptStatus, -1 ) // Required status level to exempt the MQWarpDetector. Set to -1 to disable this feature.
-RULE_INT ( Zone, MQZoneExemptStatus, -1 ) // Required status level to exempt the MQZoneDetector. Set to -1 to disable this feature.
-RULE_INT ( Zone, MQGateExemptStatus, -1 ) // Required status level to exempt the MQGateDetector. Set to -1 to disable this feature.
-RULE_INT ( Zone, MQGhostExemptStatus, -1 ) // Required status level to exempt the MGhostDetector. Set to -1 to disable this feature.
-RULE_BOOL ( Zone, EnableMQWarpDetector, false ) // Enable the MQWarp Detector. Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQZoneDetector, true ) // Enable the MQZone Detector. Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQGateDetector, true ) // Enable the MQGate Detector. Set to False to disable this feature.
-RULE_BOOL ( Zone, EnableMQGhostDetector, true ) // Enable the MQGhost Detector. Set to False to disable this feature.
-RULE_REAL ( Zone, MQWarpDetectionDistanceFactor, 9.0) //clients move at 4.4 about if in a straight line but with movement and to acct for lag we raise it a bit
-RULE_BOOL ( Zone, MarkMQWarpLT, false )
-RULE_INT ( Zone, AutoShutdownDelay, 5000 ) //How long a dynamic zone stays loaded while empty.  if the zone database field is longer then that is used instead
-RULE_INT ( Zone, PEQZoneReuseTime, 900 )	//How long, in seconds, until you can reuse the #peqzone command.
-RULE_INT ( Zone, PEQZoneDebuff1, 4454 )		//First debuff casted by #peqzone Default is Cursed Keeper's Blight.
-RULE_INT ( Zone, PEQZoneDebuff2, 2209 )		//Second debuff casted by #peqzone Default is Tendrils of Apathy.
-RULE_BOOL ( Zone, UsePEQZoneDebuffs, true )	//Will determine if #peqzone will debuff players or not when used.
-RULE_BOOL ( Zone, LevelBasedEXPMods, true) // Allows you to use the level_exp_mods table in consideration to your players EXP hits.  This is used for Hell Level Balance Modifiers used for Luclin era hell level smoothing.  Make all the rows 1.0 for Velious era exp
-RULE_INT ( Zone, WeatherTimer, 600) // Weather timer when no duration is available
-RULE_INT (Zone, SpawnEventMin, 5) // When strict is set in spawn_events, specifies the max EQ minutes into the trigger hour a spawn_event will fire.
-RULE_REAL ( Zone, GroupEXPRange, 500 )
-RULE_BOOL ( Zone, IdleWhenEmpty, true) // After timer is expired, if zone is empty it will idle. Boat zones are excluded, as this will break boat functionality.
-RULE_INT ( Zone, IdleTimer, 600000) // 10 minutes
-RULE_INT ( Zone, BoatDistance, 50) //In zones where boat name is not set in the PP, this is how far away from the boat the client must be to move them to the boat's current location.
-RULE_BOOL ( Zone, EnableNexusPortals, true)
-RULE_INT ( Zone, NexusTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
-RULE_INT ( Zone, NexusScionTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
+RULE_CATEGORY(Zone)
+RULE_INT(Zone, ClientLinkdeadMS, 180000) //the time a client remains link dead on the server after a sudden disconnection
+RULE_BOOL(Zone, EnableShadowrest, true) // enables or disables the shadowrest zone feature for player corpses. Default is turned on.
+RULE_BOOL(Zone, UsePlayerCorpseBackups, true) // Keeps backups of player corpses.
+RULE_INT(Zone, MQWarpExemptStatus, -1) // Required status level to exempt the MQWarpDetector. Set to -1 to disable this feature.
+RULE_INT(Zone, MQZoneExemptStatus, -1) // Required status level to exempt the MQZoneDetector. Set to -1 to disable this feature.
+RULE_INT(Zone, MQGateExemptStatus, -1) // Required status level to exempt the MQGateDetector. Set to -1 to disable this feature.
+RULE_INT(Zone, MQGhostExemptStatus, -1) // Required status level to exempt the MGhostDetector. Set to -1 to disable this feature.
+RULE_BOOL(Zone, EnableMQWarpDetector, false) // Enable the MQWarp Detector. Set to False to disable this feature.
+RULE_BOOL(Zone, EnableMQZoneDetector, true) // Enable the MQZone Detector. Set to False to disable this feature.
+RULE_BOOL(Zone, EnableMQGateDetector, true) // Enable the MQGate Detector. Set to False to disable this feature.
+RULE_BOOL(Zone, EnableMQGhostDetector, true) // Enable the MQGhost Detector. Set to False to disable this feature.
+RULE_REAL(Zone, MQWarpDetectionDistanceFactor, 9.0) //clients move at 4.4 about if in a straight line but with movement and to acct for lag we raise it a bit
+RULE_BOOL(Zone, MarkMQWarpLT, false)
+RULE_INT(Zone, AutoShutdownDelay, 5000) //How long a dynamic zone stays loaded while empty.  if the zone database field is longer then that is used instead
+RULE_INT(Zone, PEQZoneReuseTime, 900)	//How long, in seconds, until you can reuse the #peqzone command.
+RULE_INT(Zone, PEQZoneDebuff1, 4454)		//First debuff casted by #peqzone Default is Cursed Keeper's Blight.
+RULE_INT(Zone, PEQZoneDebuff2, 2209)		//Second debuff casted by #peqzone Default is Tendrils of Apathy.
+RULE_BOOL(Zone, UsePEQZoneDebuffs, true)	//Will determine if #peqzone will debuff players or not when used.
+RULE_BOOL(Zone, LevelBasedEXPMods, true) // Allows you to use the level_exp_mods table in consideration to your players EXP hits.  This is used for Hell Level Balance Modifiers used for Luclin era hell level smoothing.  Make all the rows 1.0 for Velious era exp
+RULE_INT(Zone, WeatherTimer, 600) // Weather timer when no duration is available
+RULE_INT(Zone, SpawnEventMin, 5) // When strict is set in spawn_events, specifies the max EQ minutes into the trigger hour a spawn_event will fire.
+RULE_REAL(Zone, GroupEXPRange, 500)
+RULE_BOOL(Zone, IdleWhenEmpty, true) // After timer is expired, if zone is empty it will idle. Boat zones are excluded, as this will break boat functionality.
+RULE_INT(Zone, IdleTimer, 600000) // 10 minutes
+RULE_INT(Zone, BoatDistance, 50) //In zones where boat name is not set in the PP, this is how far away from the boat the client must be to move them to the boat's current location.
+RULE_BOOL(Zone, EnableNexusPortals, true)
+RULE_INT(Zone, NexusTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
+RULE_INT(Zone, NexusScionTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
 RULE_CATEGORY_END()
 
-RULE_CATEGORY( AlKabor )
-RULE_BOOL( AlKabor, AllowPetPull, false) // Allow Green Pet Pull (AK behavior is true)
-RULE_BOOL( AlKabor, AllowTickSplit, false) //AK behavior is true
-RULE_BOOL ( AlKabor, StripBuffsOnLowHP, true) //AK behavior is true
-RULE_BOOL ( AlKabor, OutOfRangeGroupXPBonus, false) //AK behavior is true. When true, players out of range of the kill will still count towards the group bonus. (They will not receive XP.)  This enables the exploit that allowed a soloing player to recieve the entire 2.6x group bonus
-RULE_BOOL ( AlKabor, VeliousGroupEXPBonuses, false) // AK behavior is false.  If true, use the Velious to mid PoP era group exp bonus. (2% for 2 members, up to 20% for 6 members)  This was the case from Jan 2001 to June 2003 on PC.  (prior to that was a 6 man bonus of 10%)  False will use the post June 2003 bonus of 20% per aditional member up to 80%
-RULE_BOOL ( AlKabor, GroupEXPBonuses, false) //AK behavior is true. When true, the "broken" 4-6 member group bonuses will be used.  Note: ClassicGroupEXPBonuses must be false for this to work
-RULE_BOOL ( AlKabor, Count6thGroupMember, true) //AK behavior is true. When true, the 6th member of the group will count towards the split, thus reducing the XP everybody gets.  Note: this should be false if using the post June 2003 PC era exp rules is intended
-RULE_BOOL ( AlKabor, GreensGiveXPToGroup, true) //AK behavior is true. When true, lower level players will receive group XP when a green mob to the higher players is killed. 
-RULE_BOOL (AlKabor, GreenExpBonus, true) // AK is (supposedly) true.  When true, any group member that the mob is green to will have their weighted division split reduced to that of the highest level player who does get exp, resulting in a larger share to those who get exp from the mob.  This results in higher level players being able to powerlevel even more effectively.  no hard evidence is known of this however
-RULE_BOOL( AlKabor, AllowCharmPetRaidTanks, true) // AK behavior is true.  If false, NPCs will ignore charmed pets once MaxEntitiesCharmTanks players get on an NPC's hate list as per April 2003 patch.
-RULE_INT( AlKabor, MaxEntitiesCharmTanks, 8) // If AllowCharmPetRaidTanks is false, this is the max number of entities on an NPC's hate list before the NPC will ignore charmed pets.  April 2003 patch set this to 4 on Live.
-RULE_BOOL ( AlKabor, AllowPriceIncWhileBrowsing, true) // AK behavior is true. If true, this allows Bazaar traders to increase the price of an item while another player is browsing their wares.
-RULE_INT ( AlKabor, LevelCorpsesAlwaysSpawn, 55) // AK behavior is 55. The level NPC corpses will not poof even if a NPC was top hate/final blow.
-RULE_BOOL( AlKabor, NPCsSendHPUpdatesPerTic, false) // AK behavior is true. NPCs will only send HP updates every tic or when targeted instead of real time.
-RULE_BOOL( AlKabor, NoMaxWhoGuild, true) // AK behavior is false. If true, /who all guild# will return without a limit.
-RULE_BOOL( AlKabor, ServerExpBonus, true) // AK behavior is true.  This grants a multiplicative 20% experience bonus that was unique to AK
-RULE_REAL( AlKabor, LightBlueExpMod, 100.0) // Make sure they are all 100.0 for accurate experience gains.  Exp scaling by level is handled in the exp routines
-RULE_REAL( AlKabor, BlueExpMod, 100.0) 
-RULE_REAL( AlKabor, WhiteExpMod, 100.0)
-RULE_REAL( AlKabor, YellowExpMod, 100.0) 
-RULE_REAL( AlKabor, RedExpMod, 100.0) 
-RULE_BOOL (AlKabor, RememberAir, true) //AK behavior is true. //If zoning from one underwater area to another, remember air_remaining value. If false, it's set to 100.
-RULE_BOOL (AlKabor, ClickyHateExploit, false) // AK behavior is true. When true, it allows Invis Vs Animals clicky items to generate massive hate. 
-RULE_BOOL (AlKabor, InvulnHateReduction, false) // DA spells seemed to have reduced hate on AK by an unknown amount; if true this will halve the hate
-RULE_BOOL (AlKabor, ReduceAEExp, true) // AK behavior is true.  Reduce the amount of experience gained when NPC is killed with a PBAoE spell.  Applies to NPCs around level 35 to 55
-RULE_BOOL (AlKabor, RaceEffectsAASplit, true) // AK behavior is true.  If true then race exp penalties (and bonus in case of halfling) will modify AA Exp ONLY when AA Exp is under 100%
-RULE_BOOL (AlKabor, NoDropRemoveTradeskill, true) // AK behavior is true.  If true then no drop items will be delete if container is closed.  If false, it will not delete for the original player only.
-RULE_BOOL (AlKabor, ReducedMonkAC, true) // AK behavior is true.  Monks had a low AC softcap from October 16 2002 to April 8 2003 which made them squishy.  Sony partially unnerfed them in April 03.
-RULE_BOOL (AlKabor, BlockProjectileCorners, true) // AK behavior is true.  If an NPC was in a corner, arrows and bolts would not hit them.
-RULE_BOOL (AlKabor, BlockProjectileWalls, true) // AK behavior is true.  If an NPC was walled, then arrows and bolts had to be fired from an angle parallel to the wall in order to hit them. (if this is true, corners will also block)
+RULE_CATEGORY(AlKabor)
+RULE_BOOL(AlKabor, AllowPetPull, false) // Allow Green Pet Pull (AK behavior is true)
+RULE_BOOL(AlKabor, AllowTickSplit, false) //AK behavior is true
+RULE_BOOL(AlKabor, StripBuffsOnLowHP, true) //AK behavior is true
+RULE_BOOL(AlKabor, OutOfRangeGroupXPBonus, false) //AK behavior is true. When true, players out of range of the kill will still count towards the group bonus. (They will not receive XP.)  This enables the exploit that allowed a soloing player to recieve the entire 2.6x group bonus
+RULE_BOOL(AlKabor, ClassicGroupEXPBonuses, false) // AK behavior is false.  If true, use the Clsasic to 1 month into Velious era group exp bonus. (2% for 2 members, up to 10% for 6 members)  This was the case from Launch until to Jan 2001 on PC.  False will use the Velious double bonus rules if enabled, or the post June 2003 bonus of 10% per additional member up to 80% if both Velious and Classic rules are disabled.
+RULE_BOOL(AlKabor, VeliousGroupEXPBonuses, false) // AK behavior is false.  If true, use the Velious to mid PoP era group exp bonus. (2% for 2 members, up to 20% for 6 members)  This was the case from Jan 2001 to June 2003 on PC.  (prior to that was a 6 man bonus of 10%)  False will use the post June 2003 bonus of 20% per additional member up to 80%
+RULE_BOOL(AlKabor, GroupEXPBonuses, false) //AK behavior is true. When true, the "broken" 4-6 member group bonuses will be used.  Note: ClassicGroupEXPBonuses must be false for this to work
+RULE_BOOL(AlKabor, Count6thGroupMember, true) //AK behavior is true. When true, the 6th member of the group will count towards the split, thus reducing the XP everybody gets.  Note: this should be false if using the post June 2003 PC era exp rules is intended
+RULE_BOOL(AlKabor, GreensGiveXPToGroup, true) //AK behavior is true. When true, lower level players will receive group XP when a green mob to the higher players is killed. 
+RULE_BOOL(AlKabor, GreenExpBonus, true) // AK is (supposedly) true.  When true, any group member that the mob is green to will have their weighted division split reduced to that of the highest level player who does get exp, resulting in a larger share to those who get exp from the mob.  This results in higher level players being able to powerlevel even more effectively.  no hard evidence is known of this however
+RULE_BOOL(AlKabor, AllowCharmPetRaidTanks, true) // AK behavior is true.  If false, NPCs will ignore charmed pets once MaxEntitiesCharmTanks players get on an NPC's hate list as per April 2003 patch.
+RULE_INT(AlKabor, MaxEntitiesCharmTanks, 8) // If AllowCharmPetRaidTanks is false, this is the max number of entities on an NPC's hate list before the NPC will ignore charmed pets.  April 2003 patch set this to 4 on Live.
+RULE_BOOL(AlKabor, AllowPriceIncWhileBrowsing, true) // AK behavior is true. If true, this allows Bazaar traders to increase the price of an item while another player is browsing their wares.
+RULE_INT(AlKabor, LevelCorpsesAlwaysSpawn, 55) // AK behavior is 55. The level NPC corpses will not poof even if a NPC was top hate/final blow.
+RULE_BOOL(AlKabor, NPCsSendHPUpdatesPerTic, false) // AK behavior is true. NPCs will only send HP updates every tic or when targeted instead of real time.
+RULE_BOOL(AlKabor, NoMaxWhoGuild, true) // AK behavior is false. If true, /who all guild# will return without a limit.
+RULE_BOOL(AlKabor, ServerExpBonus, true) // AK behavior is true.  This grants a multiplicative 20% experience bonus that was unique to AK
+RULE_REAL(AlKabor, LightBlueExpMod, 100.0) // Make sure they are all 100.0 for accurate experience gains.  Exp scaling by level is handled in the exp routines
+RULE_REAL(AlKabor, BlueExpMod, 100.0)
+RULE_REAL(AlKabor, WhiteExpMod, 100.0)
+RULE_REAL(AlKabor, YellowExpMod, 100.0)
+RULE_REAL(AlKabor, RedExpMod, 100.0)
+RULE_BOOL(AlKabor, RememberAir, true) //AK behavior is true. //If zoning from one underwater area to another, remember air_remaining value. If false, it's set to 100.
+RULE_BOOL(AlKabor, ClickyHateExploit, false) // AK behavior is true. When true, it allows Invis Vs Animals clicky items to generate massive hate. 
+RULE_BOOL(AlKabor, InvulnHateReduction, false) // DA spells seemed to have reduced hate on AK by an unknown amount; if true this will halve the hate
+RULE_BOOL(AlKabor, ReduceAEExp, true) // AK behavior is true.  Reduce the amount of experience gained when NPC is killed with a PBAoE spell.  Applies to NPCs around level 35 to 55
+RULE_BOOL(AlKabor, RaceEffectsAASplit, true) // AK behavior is true.  If true then race exp penalties (and bonus in case of halfling) will modify AA Exp ONLY when AA Exp is under 100%
+RULE_BOOL(AlKabor, NoDropRemoveTradeskill, true) // AK behavior is true.  If true then no drop items will be delete if container is closed.  If false, it will not delete for the original player only.
+RULE_BOOL(AlKabor, ReducedMonkAC, true) // AK behavior is true.  Monks had a low AC softcap from October 16 2002 to April 8 2003 which made them squishy.  Sony partially unnerfed them in April 03.
+RULE_BOOL(AlKabor, BlockProjectileCorners, true) // AK behavior is true.  If an NPC was in a corner, arrows and bolts would not hit them.
+RULE_BOOL(AlKabor, BlockProjectileWalls, true) // AK behavior is true.  If an NPC was walled, then arrows and bolts had to be fired from an angle parallel to the wall in order to hit them. (if this is true, corners will also block)
+RULE_BOOL(AlKabor, EnableMobLevelModifier, true) // AK behavior is true.  If true, enable the September 4 & 6 2002 patch exp modifications that granted a large experience bonus to kills within +/-5 levels of the player for level 51+ players
+RULE_BOOL(AlKabor, EnableEraItemRules, false) // AK behavior is false. If true, disable item data in the era they did not exist in.
+RULE_BOOL(AlKabor, EnableLuclinHarmonyResistOverride, true) // AK behavior is true. If true, enable the late Luclin Harmony resist override.
+RULE_BOOL(AlKabor, EnableLatePlanesHarmonyNerf, true) // AK behavior is true. If true, enable the late Planes of Power Harmony nerf
 RULE_CATEGORY_END()
 
+
+RULE_CATEGORY(Quarm)
+RULE_BOOL(Quarm, EnableQuakes, true) // Quarm default is true. If false, disable the auto-quake system.
+RULE_INT(Quarm, QuakeMinVariance, 604800) // 7 Days
+RULE_INT(Quarm, QuakeMaxVariance, 864000) // 10 Days
+RULE_INT(Quarm, QuakeRepopDelay, 900) // 15 Minutes
+RULE_INT(Quarm, QuakeEndTimeDuration, 84600) // 24 Hour
+RULE_INT(Quarm, RespawnReductionLowerBoundMin, 60001) //60 to 400 seconds
+RULE_INT(Quarm, RespawnReductionHigherBoundMin, 10000) //10 to 60 seconds
+RULE_INT(Quarm, RespawnReductionLowerBoundMax, 400000) //60 to 400 seconds
+RULE_INT(Quarm, RespawnReductionHigherBoundMax, 60000) //10 to 60 seconds
+RULE_INT(Quarm, RespawnReductionLowerBound, 12000) //12s
+RULE_INT(Quarm, RespawnReductionHigherBound, 60000) //60s
+RULE_INT(Quarm, RespawnReductionDungeonLowerBoundMin, 300000) //300 to 899 seconds
+RULE_INT(Quarm, RespawnReductionDungeonHigherBoundMin, 900000) //900 to 2400 seconds
+RULE_INT(Quarm, RespawnReductionDungeonLowerBoundMax, 899000) //300 to 899 seconds
+RULE_INT(Quarm, RespawnReductionDungeonHigherBoundMax, 2400000) //900 to 2400 seconds
+RULE_INT(Quarm, RespawnReductionDungeonLowerBound, 300000) //300s
+RULE_INT(Quarm, RespawnReductionDungeonHigherBound, 500000) //500s
+RULE_INT(Quarm, HardcoreDeathLevel, 1) // Defaults to level 1. The level in which someone will be wiped upon dying if hardcore.
+RULE_INT(Quarm, HardcoreDeathBroadcastLevel, 15) // Defaults to level 15. A serverwide message is generated when someone dies after this level milestone.
+RULE_BOOL(Quarm, EnableRespawnReductionSystem, false) //10 to 60 seconds
+RULE_BOOL(Quarm, DeleteHCCharactersAfterDeath, false) // If true, characters whom are flagged as hardcore will be deleted after their untimely death with no way to recover them.
+RULE_BOOL(Quarm, EnableSpellSixLevelRule, false)
+RULE_BOOL(Quarm, PreLuclinDiseaseCounterAggro, true)
+RULE_INT(Quarm, RespawnReductionNewbiePullLimit, 4)
+RULE_INT(Quarm, RespawnReductionStandardPullLimit, 15)
+RULE_INT(Quarm, RespawnReductionDungeonPullLimit, 15)
+RULE_BOOL(Quarm, EnablePetExperienceSplit, true) // Accurate from Classic Launch until Luclin. Enables pet experience weights in groups (or 50% if solo) if a single pet deals more than 50% damage to a target out of all contributing damage.
+RULE_BOOL(Quarm, EnableChecksumEnforcement, true) // Enables or disables the dll checksum enforcement.
+RULE_INT(Quarm, GuildFTELockoutTimeMS, 300000)
+RULE_BOOL(Quarm, VeliousEraAggroCaps, false) // Use Velious Era Aggro 
+RULE_INT(Quarm, GuildFTEDisengageTimeMS, 60000)
+RULE_BOOL(Quarm, EnableProjectSpeedie, false)
+RULE_REAL(Quarm, SpeedieDistThreshold, 5.0)
+RULE_REAL(Quarm, SpeedieSecondElapsedThreshold, 1.0)
+RULE_REAL(Quarm, SpeedieDistFromExpectedThreshold, 125)
+RULE_REAL(Quarm, SpeedieDistFromZonePointThreshold, 200)
+RULE_REAL(Quarm, SpeedieDistFromBoatThreshold, 200)
+RULE_REAL(Quarm, SpeedieSlowerDistDivTime, 125)
+RULE_REAL(Quarm, SpeedieHigherDistDivTime, 140)
+RULE_REAL(Quarm, SpeedieBardDistDivTime, 160.)
+RULE_REAL(Quarm, SpeedieHighSpeedThreshold, 1.1)
+RULE_REAL(Quarm, SpeedieBardSpeedThreshold, 1.3)
+RULE_INT(Quarm, MaxTradeskillCap, 200) // During Classic until late Kunark, this should remain 200.
+RULE_BOOL(Quarm, NoPlayerDamagePetPenalty, false) // During Classic through Velious, true in Luclin+
+RULE_BOOL(Quarm, EnableBardDamagingAOECap, true)
+RULE_INT(Quarm, BardDamagingAOECap, 4)
+RULE_BOOL(Quarm, CorpseUnlockIsHalvedDecayTime, true)
+RULE_INT(Quarm, AccidentalFallTimerMS, 15000) // Length of initial zonein fall protection, in MS.
+RULE_REAL(Quarm, AccidentalFallUnitDist, 50.0) // Length of initial zonein fall protection, in MS.
+RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
 //enable these to help prevent mob hopping when they are pathing

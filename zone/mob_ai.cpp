@@ -1357,11 +1357,11 @@ void Mob::AI_Process() {
 			listMob = *iter;
 			if (listMob->GetIgnoreStuckCount() > 0)
 			{
-				listMob->WipeHateList();
+				listMob->WipeHateList(true);
 			}
 			++iter;
 		}
-		WipeHateList();
+		WipeHateList(true);
 		return;
 	}
 
@@ -1417,7 +1417,7 @@ void Mob::AI_Process() {
 				GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
 				SetHP(GetMaxHP());
 				BuffFadeAll();
-				WipeHateList();
+				WipeHateList(true);
 				AIloiter_timer->Trigger();
 				return;
 			}
@@ -1632,7 +1632,7 @@ void Mob::AI_Process() {
 			}
 
 			// max mobs in kite code
-			if (ai_think && GetTarget() && GetTarget()->IsClient() && zone->GetNumAggroedNPCs() > zone->GetPullLimit())
+			if (ai_think && GetTarget() && GetTarget()->IsClient() && (zone->GetNumAggroedNPCs() > zone->GetPullLimit()) && entity_list.GetTopHateCount(GetTarget()) >= zone->GetPullLimit())
 			{
 				int limit = zone->GetPullLimit();
 				int limit2 = limit * 15 / 10;
@@ -1647,10 +1647,12 @@ void Mob::AI_Process() {
 				{
 					if (GetAggroDeaggroTime() > 30000)
 					{
-						if (zone->random.Roll(5))
+						if (zone->random.Roll(5) && DistanceSquared(this->GetPosition(), GetTarget()->GetPosition()) < (500.0f*500.0f))
+						{
 							GMMove(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());	// warping like this was actually very common on AK
+						}
 						else
-							WipeHateList();
+							//WipeHateList();
 
 						return;
 					}

@@ -629,6 +629,9 @@ void Client::CompleteConnect()
 	entity_list.SendIllusionedPlayers(this);
 
 	conn_state = ClientConnectFinished;
+	initial_z_position = m_Position.z;
+	accidentalfall_timer.Enable();
+	accidentalfall_timer.Start(RuleI(Quarm, AccidentalFallTimerMS));
 	database.SetAccountActive(AccountID());
 
 	if (GetGroup())
@@ -686,7 +689,7 @@ void Client::CompleteConnect()
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
 		if (m_pp.expansions & LuclinEQ)
 		{
-			GoToSafeCoords(database.GetZoneID("bazaar"));
+			GoToSafeCoords(database.GetZoneID("arena"));
 		}
 		else
 		{
@@ -701,6 +704,13 @@ void Client::CompleteConnect()
 			GoToSafeCoords(database.GetZoneID("arena"));
 		}
 		return;
+	}
+
+	else if (m_epp.hardcore_death_time > 0)
+	{
+		SetHardcoreDeathTimeStamp(0);
+		ClearPlayerInfoAndGrantStartingItems();
+		ForceGoToDeath();
 	}
 }
 
@@ -844,6 +854,11 @@ void Client::Handle_Connect_OP_ReqNewZone(const EQApplicationPacket *app)
 	NewZone_Struct* nz = (NewZone_Struct*)outapp->pBuffer;
 	memcpy(outapp->pBuffer, &zone->newzone_data, sizeof(NewZone_Struct));
 	strcpy(nz->char_name, m_pp.name);
+	memset(nz->zone_short_name, 0, 32);
+	memset(nz->zone_short_name2, 0, 68);
+	strcpy(nz->zone_short_name, database.GetClientZoneName(zone->newzone_data.zone_short_name));
+	strcpy(nz->zone_short_name2, database.GetClientZoneName(zone->newzone_data.zone_short_name2));
+	nz->zone_id = database.GetClientZoneID(nz->zone_id);
 	Log(Logs::Detail, Logs::ZoneServer, "NewZone data for %s (%i) successfully sent.", zone->newzone_data.zone_short_name, zone->newzone_data.zone_id);
 
 	FastQueuePacket(&outapp);
@@ -1139,6 +1154,14 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	database.LoadCharacterMemmedSpells(cid, &m_pp);  /* Load Character Memorized Spells */
 	database.LoadCharacterLanguages(cid, &m_pp); /* Load Character Languages */
 
+	bool deletenorent = database.NoRentExpired(GetName());
+	if (loaditems && deletenorent) {
+		// client was offline for more than 30 minutes, delete no rent items
+		// we do this here to avoid NO RENT weapons / armor from displaying
+		// from the ServerZoneEntry_Struct sent further down in this method.
+		RemoveNoRent(false);
+	}
+
 	if (m_pp.platinum_cursor > 0 || m_pp.silver_cursor > 0 || m_pp.gold_cursor > 0 || m_pp.copper_cursor > 0) {
 		bool changed = false;
 		uint64 new_coin = 0;
@@ -1224,6 +1247,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	/* Load Character Key Ring */
 	KeyRingLoad();
+
+	/*Load Looted Legacy Items*/
+	LoadLootedLegacyItems();
+
+	prev_last_login_time = m_pp.lastlogin;
 		
 	/* Set Total Seconds Played */
 	m_pp.lastlogin = time(nullptr);
@@ -1251,6 +1279,9 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/* Set Mob variables for spawn */
 	class_ = m_pp.class_;
 	level = m_pp.level;
+	last_position_update_time = std::chrono::high_resolution_clock::now();
+	m_RewindLocation = glm::vec3();
+	m_LastLocation = glm::vec3();
 	m_Position.x = m_pp.x;
 	m_Position.y = m_pp.y;
 	m_Position.z = m_pp.z;
@@ -1577,7 +1608,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	m_pp.timeentitledonaccount = database.GetTotalTimeEntitledOnAccount(AccountID()) / 1440;
 
 	FillPPItems();
-
+	uint32 zoneid_previous = m_pp.zone_id;
+	m_pp.zone_id = database.GetClientZoneID(m_pp.zone_id);
 	/* This checksum should disappear once dynamic structs are in... each struct strategy will do it */
 	CRC32::SetEQChecksum((unsigned char*)&m_pp, sizeof(PlayerProfile_Struct) - 4);
 	outapp = new EQApplicationPacket(OP_PlayerProfile, sizeof(PlayerProfile_Struct));
@@ -1701,6 +1733,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	memcpy(outapp->pBuffer, pps, sizeof(PlayerProfile_Struct) - 4);
 	safe_delete_array(pps);
+	m_pp.zone_id = zoneid_previous;
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
@@ -1717,7 +1750,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	
 	strcpy(sze->name, name);
 	strn0cpy(sze->Surname, lastname, 32);
-	sze->zoneID = zone->GetZoneID();
+	sze->zoneID = database.GetClientZoneID(zone->GetZoneID());
 	sze->x_pos = m_pp.x;
 	sze->y_pos = m_pp.y;
 	sze->z_pos = m_pp.z;
@@ -1846,10 +1879,6 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 				safe_delete(inst);
 			}
 		}
-
-		bool deletenorent = database.NoRentExpired(GetName());
-		if(deletenorent)
-			RemoveNoRent(false); //client was offline for more than 30 minutes, delete no rent items
 
 		RemoveDuplicateLore(false);
 		MoveSlotNotAllowed(false);
@@ -2077,6 +2106,13 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 {
 	if (app->size != 4) {
 		Log(Logs::General, Logs::Error, "OP size error: OP_AutoAttack expected:4 got:%i", app->size);
+		return;
+	}
+
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot autoattack as a GM.");
 		return;
 	}
 
@@ -2570,7 +2606,14 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		return;
 	}
 
-	if (Admin() > 20 && GetGM() && IsValidSpell(castspell->spell_id)) {
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot cast spells as a GM.");
+		InterruptSpell(castspell->spell_id);
+		return;
+	}
+
+	if (Admin() > 0 && IsValidSpell(castspell->spell_id)) {
 		Mob* SpellTarget = entity_list.GetMob(castspell->target_id);
 		char szArguments[64];
 		sprintf(szArguments, "ID %i (%s), Slot %i, InvSlot %i", castspell->spell_id, spells[castspell->spell_id].name, castspell->slot, castspell->inventoryslot);
@@ -2819,7 +2862,36 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
 	Entity* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
+
 		Object* object = entity->CastToObject();
+		if (object->IsPlayerDrop())
+		{
+			std::string msg;
+			if (Admin() > 0)
+			{
+				msg = "You cannot pick up dropped player items because you're a GM and that would make the players around you a sad panda.";
+			}
+			else if ((IsSelfFound() || IsSoloOnly()))
+			{
+				// If the client is self found or solo, don't allow them to pick up the item, unless they are the one that dropped it
+				if(object->GetCharacterDropperID() != this->CharacterID())
+				{
+					msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
+				}
+				// The else case does not set a msg because they are allowed to pick it up if they dropped it
+			}
+			if (!msg.empty())
+			{
+				Message(CC_Red, msg.c_str());
+				auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
+				ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
+				loreitem->player_id = click_object->player_id;
+				loreitem->drop_id = 0xFFFFFFFF;
+				QueuePacket(outapp);
+				safe_delete(outapp);
+				return;
+			}
+		}
 
 		object->HandleClick(this, click_object);
 
@@ -2993,6 +3065,95 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
+	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
+	bool bSkip = false;
+	if (m_LastLocation == glm::vec3())
+	{
+		m_LastLocation = newPosition;
+		m_Position.x = newPosition.x;
+		m_Position.y = newPosition.y;
+		m_Position.z = newPosition.z;
+
+		bSkip = true;
+	}		
+
+	if (RuleB(Quarm, EnableProjectSpeedie))
+	{
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		double dist = DistanceNoZ(m_LastLocation, newPosition);
+		double distFromExpected = DistanceNoZ(ExpectedRewindPos, newPosition);
+
+		bool shouldTryHackCheck = !exemptHackCount;
+		auto seconds = std::chrono::duration<double>(currentTime - last_position_update_time);
+		auto seccount = seconds.count();
+		auto distDivTime = 0.;
+
+
+		float distFromZonePointThreshold = RuleR(Quarm, SpeedieDistFromZonePointThreshold);
+		float distFromBoatThreshold = RuleR(Quarm, SpeedieDistFromBoatThreshold);
+
+		float distThreshold = RuleR(Quarm, SpeedieDistThreshold);
+		float secondElapsedThreshold = RuleR(Quarm, SpeedieSecondElapsedThreshold);
+		float speedieDistFromExpectedThreshold = RuleR(Quarm, SpeedieDistFromExpectedThreshold);
+		if (dist > distThreshold && seccount >= secondElapsedThreshold)
+		{
+			distDivTime = dist / seccount;
+		}
+
+		/*
+			If the PPU was a large jump, such as a cross zone gate or Call of Hero,
+				just update rewind coordinates to the new ppu coordinates. This will prevent exploitation.
+		*/
+
+		bool is_exempt_correct = false;
+
+		if (distFromExpected < speedieDistFromExpectedThreshold && ExpectedRewindPos != glm::vec3(0, 0, 0) && !bSkip)
+		{
+			is_exempt_correct = true;
+			ExpectedRewindPos = glm::vec3(0, 0, 0);
+		}
+		auto speed = GetRunspeed();
+		float distDivTimeThreshold = RuleR(Quarm, SpeedieSlowerDistDivTime);
+		float distDivTimeHighSpeedThreshold = RuleR(Quarm, SpeedieHigherDistDivTime);
+		float distDivTimeBardSpeedThreshold = RuleR(Quarm, SpeedieBardDistDivTime);
+
+		float highSpeedValueThreshold = RuleR(Quarm, SpeedieHighSpeedThreshold);
+		float bardSpeedValueThreshold = RuleR(Quarm, SpeedieBardSpeedThreshold);
+
+		if (speed >= highSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeHighSpeedThreshold;
+
+		if (speed >= bardSpeedValueThreshold)
+			distDivTimeThreshold = distDivTimeBardSpeedThreshold;
+
+		bool within_previous_zone_point = false;
+
+		bool has_boat = false;
+
+		Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
+		if (boat) //These lil boats run fast!!
+		{
+			if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
+			{
+				has_boat = true;
+			}
+		}
+
+		if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
+		{
+
+			ZonePoint* previous_zone_point = zone->GetClosestZonePointSameZone(m_LastLocation.x, m_LastLocation.y, m_LastLocation.z, this, distFromZonePointThreshold);
+			ZonePoint* current_zone_point = zone->GetClosestTargetZonePointSameZone(newPosition.x, newPosition.y, newPosition.z, this, distFromZonePointThreshold);
+
+			if (!previous_zone_point && !current_zone_point)
+			{
+
+				std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
+				worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+				//database.SetHackerFlag(this->account_name, this->name, warped.c_str());
+			}
+		}
+	}
 
 	if(proximity_timer.Check()) {
 		entity_list.ProcessMove(this, glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos/10.0f));
@@ -3065,6 +3226,17 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_Position.x = ppu->x_pos;
 	m_Position.y = ppu->y_pos;
 	m_Position.z = (float)ppu->z_pos/10.0f;
+	m_RewindLocation = m_Position;
+	if (RuleB(Quarm, EnableProjectSpeedie))
+	{
+		auto current_update_time = std::chrono::high_resolution_clock::now();
+		auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
+		if (timeDiff.count() >= 1.0)
+		{
+			last_position_update_time = current_update_time;
+			m_LastLocation = m_Position;
+		}
+	}
 	//auto old_anim = animation;
 	animation = ppu->anim_type;
 	// No need to check for loc change, our client only sends this packet if it has actually moved in some way.
@@ -3109,6 +3281,13 @@ void Client::Handle_OP_CombatAbility(const EQApplicationPacket *app)
 {
 	if (app->size != sizeof(CombatAbility_Struct)) {
 		std::cout << "Wrong size on OP_CombatAbility. Got: " << app->size << ", Expected: " << sizeof(CombatAbility_Struct) << std::endl;
+		return;
+	}
+
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You cannot use abilities or thrown items as a GM.");
 		return;
 	}
 
@@ -3236,6 +3415,59 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
+
+	if (tmob->IsClient())
+	{
+		Client* tmobClient = tmob->CastToClient();
+
+		bool self_found = tmobClient->IsSelfFound();
+		bool solo_only = tmobClient->IsSoloOnly();
+		bool hardcore = tmobClient->IsHardcore();
+		if (self_found || solo_only || hardcore)
+		{
+			std::string ruleset_string = "This player is running the";
+			if (solo_only)
+				ruleset_string += " solo ";
+			if (self_found)
+				ruleset_string += " self found ";
+			if (hardcore)
+				ruleset_string += " hardcore ";
+			ruleset_string += "ruleset.";
+
+			Message(0, ruleset_string.c_str());
+
+		}
+	}
+	if (tmob->IsNPC())
+	{
+		if (tmob->CastToNPC()->HasEngageNotice() && tmob->CastToNPC()->fte_charid != 0)
+		{
+			bool is_same_group = false;
+			bool is_same_raid = false;
+			bool is_same_player = false;
+
+			//Check if the raid, group or player matches.
+			Raid *kr = entity_list.GetRaidByID(tmob->CastToNPC()->group_fte);
+			Group *kg = entity_list.GetGroupByID(tmob->CastToNPC()->raid_fte);
+			if (kr && kr == GetRaid())
+			{
+				is_same_raid = true;
+			}
+			else if (kg && kg == GetGroup())
+			{
+				is_same_group = true;
+			}
+			else if (tmob->CastToNPC()->fte_charid == CharacterID())
+			{
+				is_same_player = true;
+			}
+			//If we don't match the raid, group or same player, we see a message.
+			if (!is_same_raid && !is_same_group && !is_same_player)
+			{
+				Message(13, "This mob is currently engaged with another group, raid, or solo player.");
+			}
+		}
+	}
 	return;
 }
 
@@ -3464,6 +3696,13 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
 {
+	if (Admin() > 0)
+	{
+		std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
+		Message(CC_Red, msg.c_str());
+		return;
+	}
+
 	DropItem(EQ::invslot::slotCursor);
 	return;
 }
@@ -3531,13 +3770,26 @@ void Client::Handle_OP_Damage(const EQApplicationPacket *app)
 		SendHPUpdate();
 		return;
 	}
-
 	else if (zone->GetZoneID() == tutorial || zone->GetZoneID() == load)
 	{
 		return;
 	}
 	else
 	{
+		if (accidentalfall_timer.Enabled())
+		{
+			if (accidentalfall_timer.Check())
+			{
+				float z_prev = initial_z_position;
+				float z_cur = m_Position.z;
+				if (z_cur <= z_prev + RuleR(Quarm, AccidentalFallUnitDist) || z_cur >= z_prev + -RuleR(Quarm, AccidentalFallUnitDist))
+				{
+					SendHPUpdate();
+					return;
+				}
+			}
+		}
+
 		SetHP(GetHP() - (damage * RuleR(Character, EnvironmentDamageMulipliter)));
 
 		/* EVENT_ENVIRONMENTAL_DAMAGE */
@@ -3850,6 +4102,12 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (GetRevoked())
+	{
+		Message(CC_Default, "You have been revoked. You may not send Emote messages.");
+		return;
+	}
+
 	// Calculate new packet dimensions
 	Emote_Struct* in = (Emote_Struct*)app->pBuffer;
 	in->message[1023] = '\0';
@@ -3873,7 +4131,6 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 	memcpy(&out->message[len_name], in->message, len_msg);
 
 	entity_list.QueueCloseClients(this, outapp, true, RuleI(Range, Emote), 0, true, FilterSocials);
-
 	safe_delete(outapp);
 	return;
 }
@@ -4804,6 +5061,19 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You are solo and thus cannot join a group.");
+		return;
+	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	// If we've received the packet and it's valid, then we're either going to join the group or fail in some way. 
 	// In either case, the invite should be cleared so just do it now.
 	Log(Logs::General, Logs::Group, "%s is clearing the group invite.", GetName());
@@ -4814,6 +5084,18 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 
 	if (inviter != nullptr && inviter->IsClient()) 
 	{
+		if (inviter->CastToClient()->IsSoloOnly())
+		{
+			Message(CC_Red, "The inviter is solo only. You cannot join.");
+			return;
+		}
+
+		if (IsSelfFound() != inviter->CastToClient()->IsSelfFound())
+		{
+			Message(CC_Red, "The inviting player's self found flag does not match yours. You cannot join the group.");
+			return;
+		}
+
 		strn0cpy(gf->name1, inviter->GetName(), 64);
 		strn0cpy(gf->name2, this->GetName(), 64);
 
@@ -4969,6 +5251,19 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	Mob *Invitee = entity_list.GetMob(gis->invitee_name);
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You have solo mode enabled, and cannot group with anyone.");
+		return;
+	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	if (Invitee == this)
 	{
 		Message_StringID(CC_Default, GROUP_INVITEE_SELF);
@@ -4977,6 +5272,22 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if (Invitee) {
 		if (Invitee->IsClient()) {
+			if (Invitee->CastToClient()->IsSelfFound() != IsSelfFound())
+			{
+				Message(CC_Red, "This player has a different self found enabled than you do, and cannot group with you.");
+				return;
+			}
+			if (Invitee->CastToClient()->IsSoloOnly())
+			{
+				Message(CC_Red, "This player has solo mode enabled, and cannot group with you.");
+				return;
+			}
+			if (Invitee->CastToClient()->Admin() > 0)
+			{
+				Message(CC_Red, "You are being invited by a GM. This will never work.");
+				database.SetHackerFlag(Invitee->CastToClient()->AccountName(), Invitee->CastToClient()->GetCleanName(), "GM attempted to join a group or raid.");
+				return;
+			}
 			if (!Invitee->IsGrouped() && !Invitee->IsRaidGrouped())
 			{
 				if (app->GetOpcode() == OP_GroupInvite2)
@@ -5034,8 +5345,11 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 	}
 	else
 	{
-		auto pack = new ServerPacket(ServerOP_GroupInvite, sizeof(GroupInvite_Struct));
-		memcpy(pack->pBuffer, gis, sizeof(GroupInvite_Struct));
+		auto pack = new ServerPacket(ServerOP_GroupInvite, sizeof(ServerGroupInvite_Struct));
+		ServerGroupInvite_Struct* sgis = (ServerGroupInvite_Struct*)pack->pBuffer;
+
+		memcpy(pack->pBuffer, gis, sizeof(ServerGroupInvite_Struct));
+		sgis->self_found = IsSelfFound();
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -5388,7 +5702,14 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 	}
 	GuildCommand_Struct* gc = (GuildCommand_Struct*)app->pBuffer;
 	if (!IsInAGuild())
-		Message(CC_Default, "Error: You arent in a guild!");
+		Message(CC_Default, "Error: You are not in a guild!");
+
+	if (GuildID() == 1)
+	{
+		Message(CC_Default, "You can't leave this guild. File a petition for more information.");
+		return;
+	}
+
 	// we can always remove ourself, otherwise, our rank needs remove permissions
 	else if (strcasecmp(gc->othername, GetName()) != 0 &&
 		!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_REMOVE))
@@ -5856,8 +6177,8 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		return;
 	}
 	else {
-		std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
-		Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
+		//std::cout << "npc == 0 LOOTING FOOKED3" << std::endl;
+		//Message(CC_Red, "Error: OP_LootRequest: Corpse not a corpse?");
 		Corpse::SendLootReqErrorPacket(this);
 	}
 	return;
@@ -6323,7 +6644,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 void Client::Handle_OP_Petition(const EQApplicationPacket *app)
 {
 	if (!RuleB(Petitions, PetitionSystemActive)) {
-		Message(CC_Default, "Petition reporting is disabled on this server.");
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
 		return;
 	}
 
@@ -6369,6 +6690,11 @@ void Client::Handle_OP_PetitionCheckIn(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionCheckIn, size=%i, expected %i", app->size, sizeof(Petition_Struct));
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	Petition_Struct* inpet = (Petition_Struct*)app->pBuffer;
 
 	Petition* pet = petition_list.GetPetitionByID(inpet->petnumber);
@@ -6390,6 +6716,11 @@ void Client::Handle_OP_PetitionCheckout(const EQApplicationPacket *app)
 		std::cout << "Wrong size: OP_PetitionCheckout, size=" << app->size << ", expected " << sizeof(uint32) << std::endl;
 		return;
 	}
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	if (!worldserver.Connected())
 		Message(CC_Default, "Error: World server disconnected");
 	else {
@@ -6413,6 +6744,12 @@ void Client::Handle_OP_PetitionDelete(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Error, "Wrong size: OP_PetitionDelete, size=%i, expected %i", app->size, sizeof(PetitionUpdate_Struct));
 		return;
 	}
+
+	if (!RuleB(Petitions, PetitionSystemActive)) {
+		Message(CC_Default, "Petitionining ingame is disabled. Please report petitions on the server's Discord using the ticketing system there.");
+		return;
+	}
+
 	auto outapp = new EQApplicationPacket(OP_PetitionRefresh, sizeof(PetitionUpdate_Struct));
 	PetitionUpdate_Struct* pet = (PetitionUpdate_Struct*)outapp->pBuffer;
 	pet->petnumber = *((int*)app->pBuffer);
@@ -6530,6 +6867,19 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (IsSoloOnly())
+	{
+		Message(CC_Red, "You are solo only and cannot be invited to the raid.");
+		return;
+	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. Do not join raids or groups.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to join a group or raid.");
+		return;
+	}
+
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
@@ -6540,6 +6890,26 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		Client *i = entity_list.GetClientByName(ri->player_name);
 		if (i)
 		{
+
+			if (i->IsSoloOnly())
+			{
+				Message(CC_Red, "This player is solo only and cannot be invited to the raid.");
+				return;
+			}
+
+			if (i->Admin() > 0)
+			{
+				Message(CC_Red, "This player is a GM and cannot join your raid.");
+				return;
+			}
+
+			if (IsSelfFound() != i->IsSelfFound())
+			{
+				Message(CC_Red, "This player's self found flag does not match yours, and cannot be invited to the raid.");
+				return;
+			}
+
+			
 			//This sends an "invite" to the client in question.
 			auto outapp = new EQApplicationPacket(OP_RaidInvite, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
@@ -6586,6 +6956,35 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			// fail
 			return;
 		}
+
+		if (leader->IsSoloOnly())
+		{
+			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
+			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
+			rg->action = RaidCommandSendDisband;
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
+			this->QueuePacket(outapp);
+			safe_delete(outapp);
+			Message(CC_Red, "The leader is solo only and cannot be invited to the raid? What's going on here, friend?");
+			return;
+		}
+
+		if (IsSelfFound() != leader->IsSelfFound())
+		{
+			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
+			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
+			rg->action = RaidCommandSendDisband;
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
+			this->QueuePacket(outapp);
+			safe_delete(outapp);
+			Message(CC_Red, "The leader player's self found flag does not match yours. You cannot be invited to the raid.");
+			return;
+		}
+
 		if (i)
 		{
 			if (IsRaidGrouped())
@@ -7320,6 +7719,22 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	int merchantid;
 	bool tmpmer_used = false;
 	Mob* tmp = entity_list.GetMob(mp->npcid);
+	if (!tmp)
+	{
+		// This prevents the client from bugging if we have to return but also sends a bogus message.
+		auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
+		Merchant_Sell_Struct* mss = (Merchant_Sell_Struct*)returnapp->pBuffer;
+		mss->itemslot = 0;
+		mss->npcid = mp->npcid;
+		mss->playerid = GetID();
+		mss->price = 0;
+		mss->IsSold = 1;
+		mss->quantity = 0;
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		SendMerchantEnd();
+		return;
+	}
 
 	// This prevents the client from bugging if we have to return but also sends a bogus message.
 	auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
@@ -7328,6 +7743,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	mss->npcid=tmp->GetID();
 	mss->playerid=GetID();
 	mss->price=0;
+	mss->IsSold=1;
 	mss->quantity=0;
 
 	if (tmp == 0 || !tmp->IsNPC() || tmp->GetClass() != MERCHANT)
@@ -7363,6 +7779,18 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			continue;
 		}
 
+		bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
+		bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
+
+		if (!expansion_enabled && !expansion_all)
+		{
+			continue;
+		}
+
+		const EQ::ItemData* item = database.GetItem(ml.item);
+		if (!item)
+			continue;
+
 		int32 fac = tmp ? tmp->GetPrimaryFaction() : 0;
 		int32 facmod = GetModCharacterFactionLevel(fac);
 		if(IsInvisible(tmp))
@@ -7387,17 +7815,20 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 	const EQ::ItemData* item = nullptr;
 	uint32 prevcharges = 0;
-	if (item_id == 0) { //check to see if its on the temporary table
-		std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
-		std::list<TempMerchantList>::const_iterator tmp_itr;
-		TempMerchantList ml;
-		for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr){
-			ml = *tmp_itr;
-			if (mp->itemslot == ml.slot){
-				item_id = ml.item;
-				tmpmer_used = true;
-				prevcharges = ml.charges;
-				break;
+	if (!IsSoloOnly() && !IsSelfFound())
+	{
+		if (item_id == 0) { //check to see if its on the temporary table
+			std::list<TempMerchantList> tmp_merlist = zone->tmpmerchanttable[tmp->GetNPCTypeID()];
+			std::list<TempMerchantList>::const_iterator tmp_itr;
+			TempMerchantList ml;
+			for (tmp_itr = tmp_merlist.begin(); tmp_itr != tmp_merlist.end(); ++tmp_itr) {
+				ml = *tmp_itr;
+				if (mp->itemslot == ml.slot) {
+					item_id = ml.item;
+					tmpmer_used = true;
+					prevcharges = ml.charges;
+					break;
+				}
 			}
 		}
 	}
@@ -7415,6 +7846,14 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	if (CheckLoreConflict(item))
 	{
 		Message_StringID(CC_Default, DUPE_LORE_MERCHANT, tmp->GetCleanName());
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		return;
+	}
+
+	if (Admin() > 0 && tmpmer_used)
+	{
+		Message(CC_Red, "That item isn't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
 		return;
@@ -7615,6 +8054,8 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 			sizeof(Merchant_Purchase_Struct), app->size);
 		return;
 	}
+
+
 	RDTSC_Timer t1(true);
 	Merchant_Purchase_Struct* mp = (Merchant_Purchase_Struct*)app->pBuffer;
 
@@ -7633,6 +8074,23 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	uint32 itemid = GetItemIDAt(mp->itemslot);
 	if (itemid == 0)
 		return;
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "Just use commands. You're literally a GM, silly goose.");
+		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
+		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
+
+		mco->itemslot = 0;
+		mco->npcid = vendor->GetID();
+		mco->quantity = 0;
+		mco->price = 0;
+		mco->playerid = this->GetID();
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
 	const EQ::ItemData* item = database.GetItem(itemid);
 	EQ::ItemInstance* inst = GetInv().GetItem(mp->itemslot);
 	if (!item || !inst){
@@ -8469,6 +8927,12 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 	if(zone->GetZoneID() != bazaar)
 		return;
 
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot use the bazaar. Use the dev server for that.");
+		return;
+	}
+
 	uint16 code = app->pBuffer[0];
 	uint32 max_items = 80;
 
@@ -8521,6 +8985,17 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 		if (ints->Code == BazaarTrader_StartTraderMode && app->size == sizeof(Trader_Struct))
 		{
+			if (IsSoloOnly() || IsSelfFound())
+			{
+				Message(CC_Red, "You are solo or self found only, and cannot list or sell items in The Bazaar.");
+				return;
+			}
+			if (Admin() > 0)
+			{
+				Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+				database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
+				return;
+			}
 			GetItems_Struct* gis = GetTraderItems();
 		//	bool TradeItemsValid = true;
 
@@ -8644,6 +9119,20 @@ void Client::Handle_OP_Trader(const EQApplicationPacket *app)
 
 void Client::Handle_OP_TraderBuy(const EQApplicationPacket *app) 
 {
+
+	if (IsSoloOnly() || IsSelfFound())
+	{
+		TradeRequestFailed(app);
+		Message(CC_Red, "You are solo or self found only, and cannot purchase items from The Bazaar.");
+		return;
+	}
+
+	if (Admin() > 0)
+	{
+		Message(CC_Red, "You are a GM. You cannot list items for sale. Use the dev server for that.");
+		database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to sell an item on the Bazaar.");
+		return;
+	}
 	// Bazaar Trader:
 	//
 	// Client has elected to buy an item from a Trader
@@ -8695,9 +9184,46 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 
 	if (tradee && tradee->IsClient()) 
 	{
-
 		if (IsFeigned())
 		{
+			FinishTrade(this);
+			trade->Reset();
+			return;
+		}
+
+		if (IsSoloOnly())
+		{
+			Message(CC_Red, "You are doing a solo-self-found run. You cannot trade with other players.");
+			FinishTrade(this);
+			trade->Reset();
+			return;
+		}
+
+		if (Admin() > 0)
+		{
+			Message(CC_Red, "You are a GM. You cannot trade with other players. Use the dev server for that.");
+			database.SetHackerFlag(account_name, GetCleanName(), "GM attempted to trade with another player instead of using GM commands.");
+			return;
+		}
+
+
+		if (tradee->CastToClient()->IsSoloOnly())
+		{
+			Message(CC_Red, "Your trade partner is doing a solo-self-found run. You cannot trade with them.");
+			FinishTrade(this);
+			trade->Reset();
+			return;
+		}
+
+		if (tradee->CastToClient()->Admin() > 0)
+		{
+			Message(CC_User_YouMissOther, "You attempt to trade with a GM, but miss!");
+			return;
+		}
+
+		if (tradee->CastToClient()->IsSelfFound() == true || IsSelfFound() == true)
+		{
+			Message(CC_Red, "This player is doing a self found run. You cannot trade with them.");
 			FinishTrade(this);
 			trade->Reset();
 			return;

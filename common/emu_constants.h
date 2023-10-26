@@ -294,5 +294,15 @@ enum ConsiderLevel : uint8 {
 };
 
 
+enum QuakeType : uint8_t
+{
+	QuakeDisabled = 0,
+	QuakeFTE = 1,
+	QuakeDPSRace = 2,
+	QuakeMax
+};
+
+std::string QuakeTypeToString(QuakeType in_type);
+
 
 #endif /*COMMON_EMU_CONSTANTS_H*/

@@ -165,7 +165,10 @@ void Client::SendCharInfo() {
 	}
 
 	seencharsel = true;
-
+	if (RuleB(Quarm, DeleteHCCharactersAfterDeath))
+	{
+		database.ClearHardcoreCharacters(GetAccountID());
+	}
 	// Send OP_SendCharInfo
 	auto outapp = new EQApplicationPacket(OP_SendCharInfo, sizeof(CharacterSelect_Struct));
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
@@ -270,9 +273,10 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		if (pZoning)
 		{
 			uint32 tmpaccid = 0;
+			uint64 tmpdeathtime = 0;
 			database.GetLiveCharByLSID(id, char_name);
-			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID);
-			if (charid == 0 || tmpaccid != GetAccountID()) {
+			charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID, 0, 0, 0, &tmpdeathtime);
+			if (charid == 0 || tmpdeathtime != 0 || tmpaccid != GetAccountID()) {
 				Log(Logs::Detail, Logs::WorldServer, "Could not get CharInfo for '%s'", char_name);
 				eqs->Close();
 				return true;
@@ -495,7 +499,8 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app) {
 	strn0cpy(char_name, ew->name, 64);
 
 	uint32 tmpaccid = 0;
-	charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID);
+	uint64 tmpdeathtime = 0;
+	charid = database.GetCharacterInfo(char_name, &tmpaccid, &zoneID, 0, 0, 0, &tmpdeathtime);
 	if (charid == 0 || tmpaccid != GetAccountID()) {
 		Log(Logs::Detail, Logs::WorldServer, "Could not get CharInfo for '%s'", char_name);
 		eqs->Close();
@@ -663,6 +668,7 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 
 	uint32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
 	uint32 level = database.GetLevelByChar((char*)app->pBuffer);
+	uint32 is_hardcore = database.GetHardcoreStatus((char*)app->pBuffer);
 	if(char_acct_id == GetAccountID()) {
 		Log(Logs::Detail, Logs::WorldServer,"Delete character: %s",app->pBuffer);
 		if(level >= 30)
@@ -681,9 +687,14 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 
 bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 {
-	if(GetClientVersionBit() > EQ::versions::ClientVersionBit::bit_MacPC || GetAdmin() >= 80)
-		return true;
 
+	if (GetClientVersionBit() > EQ::versions::ClientVersionBit::bit_MacPC || GetAdmin() >= 80)
+	{
+		Checksum_Struct *cs_gm = (Checksum_Struct *)app->pBuffer;
+		uint64 checksum_gm = cs_gm->checksum;
+		Log(Logs::Detail, Logs::WorldServer, "Checksum is disabled for GMs! But its value is here: %lld", checksum_gm);
+		return true;
+	}
 	if (app->size != sizeof(Checksum_Struct)) 
 	{
 		Log(Logs::Detail, Logs::WorldServer, "Checksum packet is BAD!");
@@ -692,6 +703,24 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 
 	Checksum_Struct *cs=(Checksum_Struct *)app->pBuffer;
 	uint64 checksum = cs->checksum;
+
+	if (!RuleB(Quarm, EnableChecksumEnforcement))
+	{
+		Log(Logs::Detail, Logs::WorldServer, "Checksum is disabled! But its value is here: %lld", checksum);
+		return true;
+	}
+
+
+	std::string custom_checksum_name = "CustomChecksum";
+	std::string custom_checksum_val = "";
+	database.GetVariable(custom_checksum_name, custom_checksum_val);
+
+	std::string prev_custom_checksum_name = "PreviousCustomChecksum";
+	std::string prev_custom_checksum_val = "";
+	database.GetVariable(prev_custom_checksum_name, prev_custom_checksum_val);
+
+	int64 custom_checksum_ll = atoll(custom_checksum_val.c_str());
+	int64 prev_custom_checksum_ll = atoll(prev_custom_checksum_val.c_str());
 
 	if(GetClientVersionBit() == EQ::versions::ClientVersionBit::bit_MacPC)
 	{
@@ -705,13 +734,17 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Updated Spell Checksum is GOOD!");
 		}
-		else if(checksum == 29639760219562021)
+		else if (checksum == custom_checksum_ll)
 		{
-			Log(Logs::Detail, Logs::WorldServer, "Exe Checksum is GOOD!");
+			Log(Logs::Detail, Logs::WorldServer, "Custom Checksum is GOOD!");
+		}
+		else if (checksum == prev_custom_checksum_ll)
+		{
+			Log(Logs::Detail, Logs::WorldServer, "Previous Custom Checksum is GOOD!");
 		}
 		else
 		{
-			Log(Logs::Detail, Logs::WorldServer, "Checksum is BAD!");
+			Log(Logs::Detail, Logs::WorldServer, "Checksum is BAD! %lld", checksum);
 			return false;
 		}
 	}
@@ -1076,6 +1109,11 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		return false;
 	}
 
+	if (database.IsCharacterNameReserved(GetAccountID(), Strings::Escape(name).c_str())) {
+		Log(Logs::General, Logs::WorldServer, "%s is already reserved by accountID: %d. OPCharCreate returning false.", name, GetAccountID());
+		return false;
+	}
+
 	PlayerProfile_Struct pp;
 	EQ::InventoryProfile inv;
 	time_t bday = time(nullptr);
@@ -1221,6 +1259,8 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 
 	Log(Logs::Detail, Logs::WorldServer, "Validating char creation info...");
 
+	int currentExpansions = RuleI(Character, DefaultExpansions);
+
 	RaceClassCombos class_combo;
 	bool found = false;
 	int combos = character_create_race_class_combos.size();
@@ -1228,7 +1268,8 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 		if (character_create_race_class_combos[i].Class == cc->class_ &&
 				character_create_race_class_combos[i].Race == cc->race &&
 				character_create_race_class_combos[i].Deity == cc->deity &&
-				character_create_race_class_combos[i].Zone == cc->start_zone) {
+				character_create_race_class_combos[i].Zone == cc->start_zone &&
+			(currentExpansions & character_create_race_class_combos[i].ExpansionRequired == character_create_race_class_combos[i].ExpansionRequired || character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];
 			found = true;
 			break;

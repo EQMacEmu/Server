@@ -246,6 +246,7 @@ int main(int argc, char** argv) {
 
 	LogInfo("Loading zone names");
 	database.LoadZoneNames();
+	database.LoadZoneFileNames();
 
 	LogInfo("Loading items");
 	if(!database.LoadItems(hotfix_name)) {
@@ -359,8 +360,8 @@ int main(int argc, char** argv) {
 	Timer quest_timers(100);
 	UpdateWindowTitle(nullptr);
 	bool worldwasconnected = worldserver.Connected();
-	EQStream* eqss;
-	EQOldStream* eqoss;
+	std::shared_ptr<EQStream> eqss;
+	std::shared_ptr<EQOldStream> eqoss;
 	EQStreamInterface *eqsi;
 	std::chrono::time_point<std::chrono::steady_clock> frame_prev = std::chrono::steady_clock::now();
 

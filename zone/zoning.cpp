@@ -68,6 +68,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 				break;
 			case GateToBindPoint:
 			case ZoneToBindPoint:
+			case ForceZoneToBindPoint:
 				target_zone_id = m_pp.binds[0].zoneId;
 				break;
 			case ZoneUnsolicited: //client came up with this on its own.
@@ -77,6 +78,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 					//we found a zone point, which is a reasonable distance away
 					//assume that is the one were going with.
 					target_zone_id = zone_point->target_zone_id;
+					zonesummon_id = zone_point->target_zone_id;
 				} 
 				else {
 					//unable to find a zone point... is there anything else
@@ -97,7 +99,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		};
 	}
 	else {
-		if (zone_mode == EvacToSafeCoords && zonesummon_id > 0) {
+		if ((zone_mode == EvacToSafeCoords || zone_mode == ForceZoneToBindPoint) && zonesummon_id > 0) {
 			target_zone_id = zonesummon_id;
 		}
 		else {
@@ -193,6 +195,11 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		dest_y = m_pp.binds[0].y;
 		dest_z = m_pp.binds[0].z;
 		dest_h = m_pp.binds[0].heading;
+	case ForceZoneToBindPoint:
+		dest_x = m_pp.binds[0].x;
+		dest_y = m_pp.binds[0].y;
+		dest_z = m_pp.binds[0].z;
+		dest_h = m_pp.binds[0].heading;
 		break;
 	case ZoneToBindPoint:
 		dest_x = m_pp.binds[0].x;
@@ -215,6 +222,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		if(zone_point != nullptr) {
 			//they are zoning using a valid zone point, figure out coords
 
+			zonesummon_id = zone_point->target_zone_id;
 			//999999 is a placeholder for 'same as where they were from'
 			//The client compile shows 1044 difference when zoning freport <-> nro.  this fixes server side when using 999999.
 			if (zone_point->target_x == 999999) {  
@@ -317,7 +325,7 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	auto outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
-	zc2->zoneID = zone->GetZoneID();
+	zc2->zoneID = database.GetClientZoneID(zone->GetZoneID());
 	zc2->success = ZONE_ERROR_NOTREADY;
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
@@ -339,7 +347,7 @@ void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
 	auto outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
-	zc2->zoneID = zc->zoneID;
+	zc2->zoneID = database.GetClientZoneID(zc->zoneID);;
 	zc2->success = err;
 	memset(zc2->error, 0xff, sizeof(zc2->error));
 	outapp->priority = 6;
@@ -358,6 +366,9 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 	//it takes care of all the activities which occur when a client zones out
 
 	SendLogoutPackets();
+
+	if (zonesummon_id != zone_id && zonesummon_id != 0)
+		zone_id = zonesummon_id;
 
 	/* QS: PlayerLogZone */
 	if (RuleB(QueryServ, PlayerLogZone)){
@@ -459,6 +470,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 		case GateToBindPoint:
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
+		case ForceZoneToBindPoint:
 		case EvacToSafeCoords:
 		case ZoneToSafeCoords:
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
@@ -487,6 +499,9 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 			Log(Logs::General, Logs::Error, "Client::ProcessMovePC received a reguest to perform an unsupported client zone operation.");
 			break;
 	}
+
+	exemptHackCount = true;
+	ExpectedRewindPos = glm::vec3(x, y, z);
 }
 
 void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
@@ -517,6 +532,15 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			y = safePoint.y;
 			z = safePoint.z;
 			heading = safePoint.w;
+			break;
+		case ForceZoneToBindPoint:
+			x = m_Position.x = m_pp.binds[0].x;
+			y = m_Position.y = m_pp.binds[0].y;
+			z = m_Position.z = m_pp.binds[0].z;
+			heading = m_pp.binds[0].heading;
+			m_Position.w = heading * 0.5f;
+
+			zonesummon_ignorerestrictions = 1;
 			break;
 		case GMSummon:
 			m_Position = glm::vec4(x, y, z, heading);
@@ -594,7 +618,16 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 
-			gmg->zone_id = zoneID;
+			zonesummon_id = zoneID;
+
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			if (zone->GetZoneID() != zoneID && clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
+			{
+				clientpresumedzoneid = 184;
+			}
+			if (clientpresumedzoneid == 184)
+				clientpresumedzoneid = 185;
+			gmg->zone_id = clientpresumedzoneid;
 
 			gmg->x = x;
 			gmg->y = y;
@@ -611,10 +644,17 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (ZTB). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
 			auto outapp = new EQApplicationPacket(OP_GMGoto, sizeof(GMGoto_Struct));
 			GMGoto_Struct* gmg = (GMGoto_Struct*) outapp->pBuffer;
-	
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			zonesummon_id = zoneID;
+			if (zone->GetZoneID() != zoneID && clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
+			{
+				clientpresumedzoneid = 184;
+			}
+			if (clientpresumedzoneid == 184)
+				clientpresumedzoneid = 185;
+			gmg->zoneID = clientpresumedzoneid;
 			strcpy(gmg->charname,this->name);
 			strcpy(gmg->gmname,this->name);
-			gmg->zoneID = zoneID;
 			gmg->x = x;
 			gmg->y = y;
 			gmg->z = z;
@@ -625,6 +665,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			// we hide the real zoneid we want to evac/succor to here
 			zonesummon_id = zoneID;
+
 			Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (GTB). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
 			if(zoneID == GetZoneID()) {
 				//Not doing inter-zone for same zone gates. Client is supposed to handle these, based on PP info it is fed.
@@ -637,8 +678,8 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*)outapp->pBuffer;
-
-			gmg->zone_id = zoneID;
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			gmg->zone_id = clientpresumedzoneid;
 			gmg->x = x;
 			gmg->y = y;
 			gmg->z = z;
@@ -653,12 +694,19 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 
-			if (this->GetZoneID() == qeynos) {
-				gmg->zone_id = qeynos2;
+			// we hide the real zoneid we want to evac/succor to here
+			zonesummon_id = zoneID;
+
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			gmg->zone_id = database.GetClientZoneID(zoneID);
+			if (clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
+			{
+				clientpresumedzoneid = 184;
 			}
-			else {
-				gmg->zone_id = qeynos;
-			}
+			if (clientpresumedzoneid == 184)
+				clientpresumedzoneid = 185;
+
+			gmg->zone_id = clientpresumedzoneid;
 
 			gmg->x = x;
 			gmg->y = y;
@@ -666,8 +714,34 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			gmg->heading = heading;
 			gmg->type = 0x01;				// '0x01' was an observed value for the type field, not sure of meaning
 
+			outapp->priority = 6;
+			FastQueuePacket(&outapp);
+		}
+		else if (zm == ForceZoneToBindPoint)
+		{
+			Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (FZTBP). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
+			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
+			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*)outapp->pBuffer;
+
 			// we hide the real zoneid we want to evac/succor to here
 			zonesummon_id = zoneID;
+
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			gmg->zone_id = database.GetClientZoneID(zoneID);
+			if (clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
+			{
+				clientpresumedzoneid = 184;
+			}
+			if (clientpresumedzoneid == 184)
+				clientpresumedzoneid = 185;
+
+			gmg->zone_id = clientpresumedzoneid;
+
+			gmg->x = x;
+			gmg->y = y;
+			gmg->z = z;
+			gmg->heading = heading;
+			gmg->type = 0x01;				// '0x01' was an observed value for the type field, not sure of meaning
 
 			outapp->priority = 6;
 			FastQueuePacket(&outapp);
@@ -685,12 +759,14 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
+			zonesummon_id = zoneID;
 
-			gmg->zone_id = zoneID;
+			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+			gmg->zone_id = clientpresumedzoneid;
 			gmg->x = x;
 			gmg->y = y;
 			gmg->z = z;
-			gmg->heading = heading * 2.0f; // this doubling is necessary because we are storing halved headings for players/mobs and this packet expects the normal 512 range heading
+			gmg->heading = heading;
 			gmg->type = 0x01;	//an observed value, not sure of meaning
 			outapp->priority = 6;
 			FastQueuePacket(&outapp);
@@ -702,7 +778,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 		//They aren't needed and it keeps behavior on next zone attempt from being undefined.
 		if(zoneID == zone->GetZoneID())
 		{
-			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint)
+			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint && zm != ForceZoneToBindPoint)
 			{
 				m_ZoneSummonLocation = glm::vec4();
 				zonesummon_id = 0;
@@ -796,7 +872,17 @@ void Client::GoToBind(uint8 bindnum) {
 void Client::GoToDeath() {
 	//Client will request a zone in EQMac era clients, but let's make sure they get there:
 	zone_mode = ZoneToBindPoint;
+
 	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ZoneToBindPoint);
+
+}
+
+void Client::ForceGoToDeath() {
+	//Client will request a zone in EQMac era clients, but let's make sure they get there:
+	zone_mode = ForceZoneToBindPoint;
+
+	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ForceZoneToBindPoint);
+
 }
 
 void Client::SetZoneFlag(uint32 zone_id) {

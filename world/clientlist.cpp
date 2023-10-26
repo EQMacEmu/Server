@@ -459,15 +459,17 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			if (addnewline) {
 				fmt::format_to(out, newline);
 			}
-			fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
-			fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
-			if (cle->LSID())
-				fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
-			if (cle->CharID())
-				fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			if (cle->AccountID() && cle->AccountName() && cle->AccountName()[0] != 0 && inet_ntoa(in) && inet_ntoa(in)[0] != 0 && strlen(inet_ntoa(in)) > 0)
+			{
+				fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
+				fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
+				if (cle && cle->LSID() && cle->LSName() && cle->LSName()[0] != 0)
+					fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
+				if (cle && cle->CharID() && cle->name() && cle->name()[0] != 0 && database.GetZoneName(cle->zone()) && database.GetZoneName(cle->zone())[0] != 0)
+					fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ( {} )", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+			}
 			if (out.size() >= 3072) {
-				auto output = fmt::to_string(out);
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 				addnewline = false;
 				out.clear();
 			}
@@ -487,7 +489,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 
 
 void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
-	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version);
+	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version, 0);
 
 	clientlist.Append(tmp);
 }
@@ -588,14 +590,15 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 		iterator.Advance();
 	}
 	int16 tmpadmin;
+	int8 tmprevoked = false;
 
 	//Log.LogDebugType(Logs::Detail, Logs::WorldServer,"Login with '%s' and '%s'", iName, iPassword);
 
-	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin);
+	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin, &tmprevoked);
 	if (accid) {
 		uint32 lsid = 0;
 		database.GetAccountIDByName(iName, &tmpadmin, &lsid);
-		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2);
+		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2, tmprevoked);
 		clientlist.Append(tmp);
 		return tmp;
 	}
@@ -713,7 +716,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 		}
 
 		// This is the packet header data.
-		uint16 plid = fromid;
+		uint32 plid = fromid;
 		uint16 playerineqstring = WHOALL_PLAYERS;
 		const char line2[] = "---------------------------";
 		uint8 unknown35 = 0x0A;
@@ -861,7 +864,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 						pidstring = WHOALL_USERPID;
 					plrace = cle->baserace();
 					zonestring = WHOALL_ZONE;
-					plzone = cle->zone();
+					plzone = database.GetClientZoneID(cle->zone());
 					
 					if (cle->LFG())
 						plflag = WHOALL_LFG;
@@ -1582,7 +1585,7 @@ bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int
 		(whom->guildid >= 0 && client->GuildID() == whom->guildid && guild_not_anon) || // guild#
 		(whom->guildid == -3 && client->LFG() && not_anon)))) && // lfg
 		(whomlen == 0 || 
-		((tmpZone != 0 && admin >= gmwholist && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
+		((tmpZone != 0 && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
 		strncasecmp(client->name(),whom->whom, whomlen) == 0 || // name
 		(strncasecmp(guild_mgr.GetGuildName(client->GuildID()), whom->whom, whomlen) == 0 && guild_not_anon)|| // This is used by who all guild
 		(admin >= gmwholist && strncasecmp(client->AccountName(), whom->whom, whomlen) == 0)))) // account (GM only)

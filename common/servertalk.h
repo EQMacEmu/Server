@@ -169,6 +169,9 @@
 #define ServerOP_CZMessagePlayer 0x4008
 #define ServerOP_ReloadWorld 0x4009
 #define ServerOP_ReloadLogs 0x4010
+#define ServerOP_QuakeImminent 0x4011
+#define ServerOP_QuakeRequest 0x4012
+
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013
 #define ServerOP_QSPlayerLogItemMoves				0x5014
@@ -388,6 +391,7 @@ struct ServerClientList_Struct {
 	bool	mule;
 	bool	AFK;
 	bool	Trader;
+	int8	Revoked;
 };
 
 struct ServerClientListKeepAlive_Struct {
@@ -686,7 +690,7 @@ struct ServerLockZone_Struct {
 struct RevokeStruct {
 	char adminname[64];
 	char name[64];
-	bool toggle; //0 off 1 on
+	int8 toggle; //0 off 1 on
 };
 
 struct ServerGroupIDReply_Struct {
@@ -1151,6 +1155,23 @@ struct ServerWeather_Struct {
 struct ServerFlagUpdate_Struct {
 	uint32 account_id;
 	int16 admin;
+};
+
+struct ServerGroupInvite_Struct {
+		/*000*/	char invitee_name[64];		// Comment: 
+		/*064*/	char inviter_name[64];		// Comment: 
+		/*128*/	char unknown[65];		// Comment: 
+		/*193*/
+
+		// Custom:
+		uint8 self_found;
+};
+
+struct ServerEarthquakeImminent_Struct {
+	uint32	start_timestamp; // Time the last quake began, in seconds. UNIX Timestamp. QuakeType enforcement is supposed to cease 84600 seconds following this time. Raid mobs are supposed to respawn 86400 seconds after this time. Actual type will be unknown and stored in memory.
+	uint32	next_start_timestamp; // Time the last quake began, in seconds. UNIX Timestamp. QuakeType enforcement is supposed to cease 84600 seconds following this time. Raid mobs are supposed to respawn 86400 seconds after this time. Actual type will be unknown and stored in memory.
+	
+	QuakeType quake_type; // Player-imposed ruleset with quake. uint8_t enum
 };
 
 #pragma pack()

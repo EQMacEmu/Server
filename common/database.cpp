@@ -18,7 +18,7 @@
 
 #include "../common/global_define.h"
 #include "../common/rulesys.h"
-
+#include "../common/servertalk.h"
 #include <ctype.h>
 #include <iomanip>
 #include <iostream>
@@ -88,7 +88,7 @@ Database::~Database()
 	Return the account id or zero if no account matches.
 	Zero will also be returned if there is a database error.
 */
-uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus) {
+uint32 Database::CheckLogin(const char* name, const char* password, int16* oStatus, int8* oRevoked) {
 
 	if(strlen(name) >= 50 || strlen(password) >= 50)
 		return(0);
@@ -100,7 +100,7 @@ uint32 Database::CheckLogin(const char* name, const char* password, int16* oStat
 	DoEscapeString(temporary_password, password, strlen(password));
 
 	std::string query = fmt::format(
-		"SELECT id, status FROM account WHERE name= '{}' AND password is not null "
+		"SELECT id, status, revoked FROM account WHERE name= '{}' AND password is not null "
 		"and length(password) > 0 and (password = '{}' or password = MD5('{}'))",
 		temporary_username, 
 		temporary_password, 
@@ -119,6 +119,9 @@ uint32 Database::CheckLogin(const char* name, const char* password, int16* oStat
 
 	if (oStatus)
 		*oStatus = std::stoi(row[1]);
+
+	if (oRevoked)
+		*oRevoked = std::stoi(row[2]);
 
 	return id;
 }
@@ -371,6 +374,22 @@ bool Database::MarkCharacterDeleted(char *name) {
 
 bool Database::UnDeleteCharacter(const char *name) {
 	std::string query = StringFormat("UPDATE character_data SET is_deleted = 0 where name='%s'", Strings::Escape(name).c_str());
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return false;
+	}
+
+	if (results.RowsAffected() == 0) {
+		return false;
+	}
+
+	return true;
+}
+
+bool Database::SetIPExemption(const char *name, uint8 amount) {
+	std::string query = StringFormat("UPDATE account SET ip_exemption_multiplier = %d where name='%s'", amount, Strings::Escape(name).c_str());
 
 	auto results = QueryDatabase(query);
 
@@ -794,6 +813,21 @@ uint32 Database::GetLevelByChar(const char* charname) {
 	return atoi(row[0]);
 }
 
+uint32 Database::GetHardcoreStatus(const char* charname) {
+	std::string query = StringFormat("SELECT `e_hardcore` FROM `character_data` WHERE name='%s'", Strings::Escape(charname).c_str());
+	auto results = QueryDatabase(query);
+	if (!results.Success()) {
+		return 0;
+	}
+
+	if (results.RowCount() != 1)
+		return 0;
+
+	auto row = results.begin();
+	return atoi(row[0]);
+}
+
+
 // Retrieve account_id for a given char_id
 uint32 Database::GetAccountIDByChar(uint32 char_id) {
 	std::string query = StringFormat("SELECT `account_id` FROM `character_data` WHERE `id` = %i LIMIT 1", char_id); 
@@ -868,6 +902,30 @@ void Database::GetCharName(uint32 char_id, char* name) {
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		strcpy(name, row[0]);
 	}
+}
+
+/**
+ * Checks if the input name is reserved relative to the input account_id
+ */
+bool Database::IsCharacterNameReserved(uint32 account_id, const char* input_character_name) {
+	std::string query = StringFormat("SELECT account_id FROM `account_name_reservation` WHERE name='%s'", input_character_name);
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return true; // be defensive on error condition
+	}
+
+	if (results.RowCount() == 0) {
+		return false; // no reservation for name found
+	}
+
+	auto row = results.begin();
+	uint32 reserved_by = static_cast<uint32>(atoul(row[0]));
+	if (account_id == reserved_by) {
+		return false; // name is reserved for this account_id so we can return false
+	} else {
+		return true; // name is reserved but not for this account_id so we return true
+	};
 }
 
 bool Database::LoadVariables() {
@@ -1282,9 +1340,9 @@ bool Database::AddToNameFilter(const char* name) {
 	return true;
 }
 
-uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus) {
+uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, int8* oRevoked) {
 	uint32 account_id = 0;
-	std::string query = StringFormat("SELECT id, name, status FROM account WHERE lsaccount_id=%i", iLSID);
+	std::string query = StringFormat("SELECT id, name, status, revoked FROM account WHERE lsaccount_id=%i", iLSID);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {
@@ -1301,14 +1359,16 @@ uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* o
 			strcpy(oAccountName, row[1]);
 		if (oStatus)
 			*oStatus = atoi(row[2]);
+		if (oRevoked)
+			*oRevoked = atoi(row[3]);
 	}
 
 	return account_id;
 }
 
-void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus) {
+void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, int8* oRevoked) {
 	
-	std::string query = StringFormat("SELECT name, status FROM account WHERE id=%i", id);
+	std::string query = StringFormat("SELECT name, status, revoked FROM account WHERE id=%i", id);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()){
@@ -1324,6 +1384,8 @@ void Database::GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus) {
 		strcpy(oAccountName, row[0]);
 	if (oStatus)
 		*oStatus = atoi(row[1]);
+	if (oRevoked)
+		*oRevoked = atoi(row[2]);
 }
 
 void Database::ClearMerchantTemp(){
@@ -1553,8 +1615,8 @@ uint8 Database::GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16
 	return base_cap;
 }
 
-uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZoneID, float* oX, float* oY, float* oZ) { 
-	std::string query = StringFormat("SELECT `id`, `account_id`, `zone_id`, `x`, `y`, `z` FROM `character_data` WHERE `name` = '%s'", iName);
+uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZoneID, float* oX, float* oY, float* oZ, uint64* oDeathTime) { 
+	std::string query = StringFormat("SELECT `id`, `account_id`, `zone_id`, `x`, `y`, `z`, `e_hardcore_death_time` FROM `character_data` WHERE `name` = '%s'", iName);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {
@@ -1571,7 +1633,7 @@ uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZo
 	if (oX){ *oX = atof(row[3]); }
 	if (oY){ *oY = atof(row[4]); }
 	if (oZ){ *oZ = atof(row[5]); }
-
+	if (oDeathTime) { *oDeathTime = atoll(row[6]); }
 	return charid;
 }
 
@@ -2166,6 +2228,84 @@ struct TimeOfDay_Struct Database::LoadTime(time_t &realtime)
 	return eqTime;
 }
 
+
+
+bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct)
+{
+
+
+	std::string query = StringFormat("SELECT start_timestamp, next_timestamp, ruleset FROM quake_data");
+	auto results = QueryDatabase(query);
+	EQ::Random random;
+
+	if (!results.Success() || results.RowCount() == 0)
+	{
+		random.Reseed();
+		QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled + 1, QuakeType::QuakeMax - 1));
+		uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
+		Log(Logs::Detail, Logs::WorldServer, "Loading quake time failed.  Using default rules values and a random ruleset...");
+		earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
+		earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
+		earthquake_struct.quake_type = ruleset;
+
+		std::string query1 = StringFormat("DELETE FROM quake_data");
+		auto results1 = QueryDatabase(query1);
+
+		std::string query2 = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
+		auto results2 = QueryDatabase(query2);
+		return false;
+	}
+
+	auto row = results.begin();
+	uint32 realtime_ = atoi(row[0]);
+	uint32 next_realtime_ = atoi(row[1]);
+	earthquake_struct.start_timestamp = realtime_;
+	earthquake_struct.next_start_timestamp = next_realtime_;
+	earthquake_struct.quake_type = (QuakeType)atoi(row[2]);
+
+	//Force-Prep the next quake update in 15 minutes, if we are recovering from a server downtime during a quake. Ideally this would never happen but patch days do happen.
+	if (Timer::GetTimeSeconds() < earthquake_struct.start_timestamp + RuleI(Quarm, QuakeEndTimeDuration))
+	{
+		Log(Logs::Detail, Logs::WorldServer, "Recovering-from-downtime within 24 hour window. Using default rules values and a random ruleset...");
+		QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled+1, QuakeType::QuakeMax-1));
+		uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
+		earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
+		earthquake_struct.quake_type = ruleset;
+		earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
+
+
+		std::string query1 = StringFormat("DELETE FROM quake_data");
+		auto results1 = QueryDatabase(query1);
+
+		std::string query2 = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
+		auto results2 = QueryDatabase(query2);
+		return false;
+	}
+
+	//Don't act on this data. Keep timer as-is.
+	return true;
+}
+
+//For usage on quake trigger. Does the 'fail logic' from above in the load process to set the next timer and current timer.
+bool Database::SaveNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct)
+{
+	EQ::Random random;
+	random.Reseed();
+	QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled + 1, QuakeType::QuakeMax - 1));
+	uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
+	earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
+	earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
+	earthquake_struct.quake_type = ruleset;
+
+
+	std::string query1 = StringFormat("DELETE FROM quake_data");
+	auto results1 = QueryDatabase(query1);
+
+	std::string query = StringFormat("REPLACE INTO quake_data (start_timestamp, next_timestamp, ruleset) VALUES (%i, %i, %i)", earthquake_struct.start_timestamp, earthquake_struct.next_start_timestamp, earthquake_struct.quake_type);
+	auto results = QueryDatabase(query);
+	return results.Success();
+}
+
 bool Database::SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year)
 {
 	std::string query = StringFormat("UPDATE eqtime set minute = %d, hour = %d, day = %d, month = %d, year = %d, realtime = %d limit 1", minute, hour, day, month, year, time(0));
@@ -2306,4 +2446,59 @@ bool Database::NoRentExpired(const char* name) {
 	uint32 seconds = atoi(row[0]);
 
 	return (seconds>1800);
+}
+
+bool Database::LoadZoneFileNames() {
+
+	zonename_filename_array.clear();
+
+	std::string query("SELECT short_name, file_name FROM zone");
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success())
+	{
+		return false;
+	}
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+	{
+		if (row[1] && row[0] && strlen(row[1]) > 0 && strlen(row[1]) > 0)
+		{
+			std::string zoneshort = row[1];
+			std::string zonefile = row[0];
+			if (!zoneshort.empty() && !zonefile.empty())
+				zonename_filename_array.insert(std::pair<std::string, std::string>(zonefile, zoneshort));
+		}
+	}
+
+	return true;
+}
+
+uint32 Database::GetClientZoneID(uint32 zoneID) {
+	auto iter = zonename_array.find(zoneID);
+
+	if (iter != zonename_array.end())
+	{
+		auto iter2 = zonename_filename_array.find(iter->second.c_str());
+		if (iter2 != zonename_filename_array.end())
+		{
+			if (!iter2->second.empty())
+				return GetZoneID(iter2->second.c_str());
+		}
+	}
+
+	return zoneID;
+}
+
+const char* Database::GetClientZoneName(const char* zone_name) {
+	auto iter = zonename_filename_array.find(zone_name);
+
+	if (iter != zonename_filename_array.end())
+	{
+		if (!iter->second.empty())
+			return iter->second.c_str();
+	}
+
+	return zone_name;
 }

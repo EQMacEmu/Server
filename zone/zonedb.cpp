@@ -108,7 +108,7 @@ bool ZoneDatabase::SaveZoneCFG(uint32 zoneid, NewZone_Struct* zd) {
 	return true;
 }
 
-bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit) {
+bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit, bool &reducedspawntimers, bool& trivial_loot_code) {
 
 	*map_filename = new char[100];
 	zone_data->zone_id = zoneid;
@@ -125,7 +125,7 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
                                     "snow_chance1, snow_chance2, snow_chance3, snow_chance4, " // 4
                                     "snow_duration1, snow_duration2, snow_duration3, snow_duration4, " // 4
 									"skylock, skip_los, music, expansion, dragaggro, never_idle, castdungeon, " 
-									"pull_limit, graveyard_time, max_z " // 8
+									"pull_limit, graveyard_time, max_z, reducedspawntimers, trivial_loot_code " // 8
                                     "FROM zone WHERE zoneidnumber = {} ", zoneid);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -231,7 +231,8 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
 	pull_limit = atoi(row[62]);
 	zone_data->graveyard_time = atoi(row[63]);
 	zone_data->max_z = atof(row[64]);
-
+	reducedspawntimers = atoi(row[65]);
+	trivial_loot_code = atoi(row[66]);
 	return true;
 }
 
@@ -808,7 +809,12 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		"showhelm,					"
 		"`e_aa_effects`,			"
 		"`e_percent_to_aa`,			"
-		"`e_expended_aa_spent`		"
+		"`e_expended_aa_spent`,		"
+		"`e_self_found`,			"
+		"`e_solo_only`,				"
+		"`e_hardcore`,				"
+		"`e_hardcore_death_time`,	"
+		"`e_betabuff_gear_flag`	    "
 		"FROM                       "
 		"character_data             "
 		"WHERE `id` = %i         ", character_id);
@@ -870,6 +876,11 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		m_epp->aa_effects = atoi(row[r]); r++;									 // "`e_aa_effects`,			"
 		m_epp->perAA = atoi(row[r]); r++;										 // "`e_percent_to_aa`,			"
 		m_epp->expended_aa = atoi(row[r]); r++;									 // "`e_expended_aa_spent`,		"
+		m_epp->self_found = atoi(row[r]); r++;									 // "`e_self_found`,			"
+		m_epp->solo_only = atoi(row[r]); r++;									 // "`e_solo_only`,				"
+		m_epp->hardcore = atoi(row[r]); r++;									 // "`e_hardcore`,				"
+		m_epp->hardcore_death_time = atoll(row[r]); r++;						 // "`e_hardcore_death_time",	"
+		m_epp->betabuff_gear_flag = atoi(row[r]); r++;							 // "`e_betabuff_gear_flag"		"
 	}
 	return true;
 }
@@ -971,6 +982,15 @@ bool ZoneDatabase::LoadCharacterSkills(uint32 character_id, PlayerProfile_Struct
 			pp->skills[i] = atoi(row[1]);
 		}
 	}
+	return true;
+}
+
+bool ZoneDatabase::DeleteCharacterSkills(uint32 character_id, PlayerProfile_Struct* pp) {
+	std::string query = StringFormat(
+		"DELETE FROM "
+		"`character_skills` "
+		"WHERE `id` = %u", character_id);
+	auto results = database.QueryDatabase(query);
 	return true;
 }
 
@@ -1156,7 +1176,12 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		" showhelm,					 "
 		" e_aa_effects,				 "
 		" e_percent_to_aa,			 "
-		" e_expended_aa_spent		 "
+		" e_expended_aa_spent,		 "
+		" e_self_found,				 "
+		" e_solo_only,				 "
+		" e_hardcore,				 "
+		" e_hardcore_death_time,     "
+		" e_betabuff_gear_flag		 "
 		")							 "
 		"VALUES ("
 		"%u,"  // id																" id,                        "
@@ -1212,11 +1237,16 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // aa_points					  pp->aapoints,							" aa_points,                 "
 		"%u,"  // boatid					  pp->boatid,							" boatid					 "
 		"'%s'," // `boatname`				  pp->boat,								" `boatname`,                "
-		"%u,"	//famished					  pp->famished							" famished					 "
-		"%u,"	//showhelm					  pp->showhelm							" showhelm					 "
+		"%u,"  // famished					  pp->famished							" famished					 "
+		"%u,"  // showhelm					  pp->showhelm							" showhelm					 "
 		"%u,"  // e_aa_effects
 		"%u,"  // e_percent_to_aa
-		"%u"   // e_expended_aa_spent
+		"%u,"  // e_expended_aa_spent
+		"%u,"  // e_self_found
+		"%u,"  // e_solo_only
+		"%u,"  // e_hardcore
+		"%lld," // e_hardcore_death_time
+		"%u"   // e_betabuff_gear_flag
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1275,7 +1305,12 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		pp->showhelm,					  // " showhelm					  "
 		m_epp->aa_effects,
 		m_epp->perAA,
-		m_epp->expended_aa
+		m_epp->expended_aa,
+		m_epp->self_found,
+		m_epp->solo_only,
+		m_epp->hardcore,
+		m_epp->hardcore_death_time,
+		m_epp->betabuff_gear_flag
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);
@@ -2263,6 +2298,14 @@ void ZoneDatabase::SavePetInfo(Client *client)
 			CharacterPetInventoryRepository::InsertMany(database, inventory);
 		}
 	}
+}
+
+void ZoneDatabase::RemoveAllFactions(Client *client) {
+
+	std::string query = StringFormat("DELETE FROM character_faction_values WHERE "
+		"id = %u",
+		client->CharacterID());
+	QueryDatabase(query);
 }
 
 
@@ -3377,6 +3420,7 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct
 		pcs->items[i].equip_slot = atoi(row[r++]);		// equip_slot,
 		pcs->items[i].item_id = atoul(row[r++]); 		// item_id,
 		pcs->items[i].charges = atoi(row[r++]); 		// charges,
+		pcs->items[i].min_looter_level = 0;
 		r = 0;
 		i++;
 	}
@@ -3855,6 +3899,55 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 			inst->SetCursorQueue(true);
 			Log(Logs::Moderate, Logs::Inventory, "SaveCursor: Sending out ItemPacket for non-queued cursor item %s", inst->GetItem()->Name);
 		}
+	}
+	return true;
+}
+
+
+bool ZoneDatabase::ResetStartingItems(Client* c, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level, int& return_zone_id)
+{
+	std::string starting_zone_query = StringFormat("SELECT zone_id FROM start_zones "
+		"WHERE (player_race = %i) AND (player_class = %i) AND "
+		"(player_deity = %i) AND (bind_id = %i)",
+		si_race, si_class, si_deity, si_current_zone);
+	auto starting_zone_query_results = QueryDatabase(starting_zone_query);
+	if (!starting_zone_query_results.Success())
+		return false;
+
+	if (starting_zone_query_results.RowCount() == 0)
+		return false;
+
+	auto starting_zone_id = atoi(starting_zone_query_results.begin()[0]);
+	
+	if (starting_zone_id == 0)
+		return false;
+
+	return_zone_id = starting_zone_id;
+
+	std::string query = StringFormat("SELECT itemid, item_charges, slot FROM starting_items "
+		"WHERE (race = %i or race = 0) AND (class = %i or class = 0) AND "
+		"(deityid = %i or deityid = 0) AND (zoneid = %i or zoneid = 0) AND "
+		"gm <= %i ORDER BY id",
+		si_race, si_class, si_deity, starting_zone_id, admin_level);
+	auto results = QueryDatabase(query);
+	if (!results.Success())
+		return false;
+
+	const EQ::ItemData* myitem;
+
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		int32 itemid = atoi(row[0]);
+		int32 charges = atoi(row[1]);
+		int32 slot = atoi(row[2]);
+		myitem = GetItem(itemid);
+
+		if (!myitem)
+			continue;
+
+		if (slot < 0)
+			slot = c->GetInv().FindFreeSlot(0, 0);
+
+		c->SummonItem(itemid, charges, slot);
 	}
 	return true;
 }

@@ -78,4 +78,3 @@ EmuTCPConnection *EmuTCPServer::FindConnection(uint32 iID) {
 	}
 	return(nullptr);
 }
-

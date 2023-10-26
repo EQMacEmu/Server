@@ -556,6 +556,7 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 		return true;
 	}
 
+	Client *caster = CastToClient();
 	Mob *spell_target = entity_list.GetMob(spell_targetid);
 
 	if (!(IsClient() && CastToClient()->GetGM()))
@@ -620,6 +621,53 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 			}
 			return false;
 		}
+
+		// Interrupt spell casts that are targetting self found or solo if they're not allowed
+		// Already know caster is a client from the first check in this function
+		if(spell_target && spell_target->IsClient())					
+		{
+			// Only fail if it's beneficial - don't want to fail on detrimental for pvp purposes
+			if(IsBeneficialSpell(spell_id))
+			{
+				const char* SOLO_PLAYER_ERROR = "Unable to cast spells on solo players.";
+				const char* SELF_FOUND_ERROR = "Unable to cast spells on self found players.";
+				const char* LEVEL_ERROR = "This self found player is not close enough to your level.";
+
+				bool is_failed_cast = false;
+				const char* fail_message = nullptr;
+
+				if (spell_target->CastToClient()->IsSoloOnly() && spell_target != this)
+				{
+					// if the target is solo, don't allow anyone to buff it
+					// if the caster is solo, it's fine if they try to buff someone
+					is_failed_cast = true;
+					fail_message = SOLO_PLAYER_ERROR;
+				} 
+				if (spell_target->CastToClient()->IsSelfFound() && spell_target != this)
+				{
+					bool can_get_experience = caster->IsInLevelRange(spell_target->CastToClient()->GetLevel2());
+					bool compatible = caster->IsSelfFound() == spell_target->CastToClient()->IsSelfFound();
+					if (!compatible)
+					{
+						is_failed_cast = true;
+						fail_message = SELF_FOUND_ERROR;
+					}
+					else if(compatible && !can_get_experience)
+					{
+						is_failed_cast = true;
+						fail_message = LEVEL_ERROR;
+					}
+				}
+				if (is_failed_cast)
+				{
+					Message(CC_User_SpellFailure, fail_message);
+					InterruptSpell(CANNOT_AFFECT_PC, CC_User_SpellFailure, spell_id, false, false);
+					return false;
+				}
+			}
+		}
+
+		
 	}
 
 	// if already buffed with a horse buff, cancel the casting of a new horse buff with a fizzle style packet so that the bridle acts as a gem refreshing clicky
@@ -2784,7 +2832,12 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 			// not important to check limit on SE_Lull as it doesn't have one and if the other components won't land, then SE_Lull wont either
 			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony)
 			{
-				if ((IsClient() && spelltar->IsNPC() && spells[spell_id].max[i] != 0 && spelltar->GetLevel() > spells[spell_id].max[i]) ||
+				bool is_spell_target_out_of_range = spelltar->GetLevel() > spells[spell_id].max[i];
+				if (!RuleB(AlKabor, EnableLatePlanesHarmonyNerf) && spell_id == 250)
+				{
+					is_spell_target_out_of_range = false;
+				}
+				if ((IsClient() && spelltar->IsNPC() && spells[spell_id].max[i] != 0 && is_spell_target_out_of_range) ||
 					spelltar->GetSpecialAbility(IMMUNE_PACIFY))
 				{
 					spelltar->PacifyImmune = true;
@@ -3877,10 +3930,25 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 	}
 
 	// Lull spells DO NOT use regular resists on initial cast, instead they use a value of 15.  Prathun pseudocode and live parses confirm.  Late luclin era change
-	if(IsHarmonySpell(spell_id))
+	if (RuleB(AlKabor, EnableLuclinHarmonyResistOverride))
 	{
-		target_resist = 15;
-		Log(Logs::Detail, Logs::Spells, "CheckResistSpell(): Spell: %d  Lull spell is overriding MR. target_resist is: %i resist_modifier is: %i", spell_id, target_resist, resist_modifier);
+		if (IsHarmonySpell(spell_id))
+		{
+			target_resist = 15;
+			Log(Logs::Detail, Logs::Spells, "CheckResistSpell(): Spell: %d  Lull spell is overriding MR. target_resist is: %i resist_modifier is: %i", spell_id, target_resist, resist_modifier);
+		}
+	}
+
+	if (RuleB(Quarm, EnableSpellSixLevelRule))
+	{
+		//Prathun's post just says If target is an NPC and caster is far below target's level, set level modifier to 1000.
+		if (caster)
+		{
+			if (IsNPC() && GetLevel() >= std::max(caster->GetLevel() + 7, (int)(caster->GetLevel() * 1.25f)))
+			{
+				level_mod = 1000;
+			}
+		}
 	}
 
 	//Add our level, resist and -spell resist modifier to our roll chance

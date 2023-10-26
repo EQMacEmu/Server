@@ -37,7 +37,7 @@ Spawn2::Spawn2(uint32 in_spawn2_id, uint32 spawngroup_id,
 	float in_x, float in_y, float in_z, float in_heading,
 	uint32 respawn, uint32 variance, uint32 timeleft, uint32 grid,
 	uint16 in_cond_id, int16 in_min_value, bool in_enabled, EmuAppearance anim, 
-	bool in_force_z, bool in_rand_spawn)
+	bool in_force_z, bool in_rand_spawn, bool in_raid_target_spawnpoint)
 : timer(100000), killcount(0)
 {
 	spawn2_id = in_spawn2_id;
@@ -56,6 +56,8 @@ Spawn2::Spawn2(uint32 in_spawn2_id, uint32 spawngroup_id,
 	this->anim = anim;
 	force_z = in_force_z;
 	rand_spawn = in_rand_spawn;
+	raid_target_spawnpoint = in_raid_target_spawnpoint;
+	last_level_attempt = 0;
 
 	if(timeleft == 0xFFFFFFFF) 
 	{
@@ -103,6 +105,30 @@ uint32 Spawn2::resetTimer()
 		//put a lower bound on it, not a lot of difference below 100, so set that as the bound.
 		if(rspawn < 100)
 			rspawn = 100;
+	}
+
+	if (RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		if (zone->IsReducedSpawnTimersZone())
+		{
+			if (zone->CanCastDungeon())
+			{
+				if (rspawn >= RuleI(Quarm, RespawnReductionDungeonHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionDungeonHigherBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionDungeonHigherBound);
+				else if (rspawn >= RuleI(Quarm, RespawnReductionDungeonLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionDungeonLowerBoundMax))
+					rspawn = RuleI(Quarm, RespawnReductionDungeonLowerBound);
+			}
+			else
+			{
+				if (last_level_attempt != 0 && last_level_attempt < 15)
+				{
+					if (rspawn >= RuleI(Quarm, RespawnReductionHigherBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionHigherBoundMax))
+						rspawn = RuleI(Quarm, RespawnReductionHigherBound);
+					else if (rspawn >= RuleI(Quarm, RespawnReductionLowerBoundMin) && rspawn <= RuleI(Quarm, RespawnReductionLowerBoundMax))
+						rspawn = RuleI(Quarm, RespawnReductionLowerBound);
+				}
+			}
+		}
 	}
 
 	return (rspawn);
@@ -283,6 +309,7 @@ bool Spawn2::Process() {
 		npc->SetSp2(spawngroup_id_);
 		npc->SaveGuardPointAnim(anim);
 		npc->SetAppearance((EmuAppearance)anim);
+		last_level_attempt = tmp->level;
 		entity_list.AddNPC(npc);
 		//this limit add must be done after the AddNPC since we need the entity ID.
 		entity_list.LimitAddNPC(npc);
@@ -518,11 +545,14 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"cond_value, "
 		"enabled, "
 		"animation, "
-		"force_z "
+		"force_z, "
+		"raid_target_spawnpoint "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s'",
-		zone_name
+		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
+		zone_name,
+		RuleR(World, CurrentExpansion),
+		RuleR(World, CurrentExpansion)
 		);
 	results = QueryDatabase(query);
 
@@ -563,7 +593,9 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 			atoi(row[10]), 								   // int16 in_min_value
 			perl_enabled, 								   // bool in_enabled
 			(EmuAppearance)atoi(row[12]),				   // EmuAppearance anim
-			atobool(row[13])							   // bool force_z
+			atobool(row[13]),							   // bool force_z
+			false,
+			atobool(row[14])							   // bool raid_target_spawnpoint
 			);
 
 		spawn2_list.Insert(new_spawn);
@@ -621,11 +653,14 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 		"cond_value, "
 		"enabled, "
 		"animation, "
-		"force_z "
+		"force_z, "
+		"raid_target_spawnpoint "
 		"FROM "
 		"spawn2 "
-		"WHERE zone = '%s'",
-		zone_name
+		"WHERE zone = '%s' AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
+		zone_name,
+		RuleR(World, CurrentExpansion),
+		RuleR(World, CurrentExpansion)
 	);
 	results = QueryDatabase(query);
 
@@ -657,7 +692,9 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 			atoi(row[10]), 								   // int16 in_min_value
 			perl_enabled, 								   // bool in_enabled
 			(EmuAppearance)atoi(row[12]),				   // EmuAppearance anim
-			atobool(row[13])							   // bool force_z
+			atobool(row[13]),							   // bool force_z
+			false,
+			atobool(row[14])							   // bool raid_target_spawnpoint
 		);
 
 		spawn2_list.Insert(new_spawn);
@@ -714,8 +751,9 @@ bool ZoneDatabase::PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*
 					1, 											   // int16 in_min_value
 					true, 										   // bool in_enabled
 					eaStanding,									   // EmuAppearance anim
-					true,										   // bool force_z 	
-					true										   // bool rand_spawn					  
+					true,										   // bool force_z
+					true,										   // bool rand_spawn		
+					false										   // bool raid_target_spawnpoint
 				);
 
 				spawn2_list.Insert(new_spawn);

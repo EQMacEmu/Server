@@ -470,6 +470,8 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
     for(auto row = results.begin(); row != results.end(); ++row) {
         memset(&item, 0, sizeof(EQ::ItemData));
 
+		float enabled_era = RuleR(World, CurrentExpansion);
+
 		// Unique Identifier
 		item.ID = std::stoul(row[ItemField::id]);
 
@@ -530,15 +532,41 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Mana = std::stoi(row[ItemField::mana]);
 		item.AC = std::stoi(row[ItemField::ac]);
 
-		//Bane Damage
-		item.BaneDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::banedmgamt]));
-		item.BaneDmgBody = std::stoi(row[ItemField::banedmgbody]);
-		item.BaneDmgRace = std::stoi(row[ItemField::banedmgrace]);
+		if (RuleB(AlKabor, EnableEraItemRules))
+		{
+			if (enabled_era >= (float)ExpansionEras::ClassicEQEra && enabled_era < (float)ExpansionEras::LuclinEQEra)
+			{
+				item.BaneDmgAmt = 0;
+				item.BaneDmgBody = 0;
+				item.BaneDmgRace = 0;
 
-		// Elemental Damage
-		item.ElemDmgType = static_cast<uint8>(std::stoul(row[ItemField::elemdmgtype]));
-		item.ElemDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::elemdmgamt]));
+				// Elemental Damage
+				item.ElemDmgType = 0;
+				item.ElemDmgAmt = 0;
+			}
+			else
+			{
+				//Bane Damage
+				item.BaneDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::banedmgamt]));
+				item.BaneDmgBody = std::stoi(row[ItemField::banedmgbody]);
+				item.BaneDmgRace = std::stoi(row[ItemField::banedmgrace]);
 
+				// Elemental Damage
+				item.ElemDmgType = static_cast<uint8>(std::stoul(row[ItemField::elemdmgtype]));
+				item.ElemDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::elemdmgamt]));
+			}
+		}
+		else
+		{
+			//Bane Damage
+			item.BaneDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::banedmgamt]));
+			item.BaneDmgBody = std::stoi(row[ItemField::banedmgbody]);
+			item.BaneDmgRace = std::stoi(row[ItemField::banedmgrace]);
+
+			// Elemental Damage
+			item.ElemDmgType = static_cast<uint8>(std::stoul(row[ItemField::elemdmgtype]));
+			item.ElemDmgAmt = static_cast<uint8>(std::stoul(row[ItemField::elemdmgamt]));
+		}
 
 		// Combat
 		item.Damage = static_cast<uint8>(std::stoul(row[ItemField::damage]));
@@ -550,14 +578,47 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Deity = std::stoul(row[ItemField::deity]);
 		item.ItemClass = std::stoi(row[ItemField::itemclass]);
 		item.Races = std::stoi(row[ItemField::races]);
-		item.RecLevel = static_cast<uint8>(std::stoul(row[ItemField::reclevel]));
-		item.RecSkill = static_cast<uint8>(std::stoul(row[ItemField::recskill]));
 		item.ReqLevel = static_cast<uint8>(std::stoul(row[ItemField::reqlevel]));
+		if (RuleB(AlKabor, EnableEraItemRules))
+		{
+			if (enabled_era >= (float)ExpansionEras::ClassicEQEra && enabled_era < (float)ExpansionEras::LuclinEQEra)
+			{
+				item.RecLevel = 0;
+				item.RecSkill = 0;
+			}
+			else
+			{
+				item.RecLevel = static_cast<uint8>(std::stoul(row[ItemField::reclevel]));
+				item.RecSkill = static_cast<uint8>(std::stoul(row[ItemField::recskill]));
+			}
+		}
+		else
+		{
+			item.RecLevel = static_cast<uint8>(std::stoul(row[ItemField::reclevel]));
+			item.RecSkill = static_cast<uint8>(std::stoul(row[ItemField::recskill]));
+		}
+
 		item.Slots = std::stoi(row[ItemField::slots]);
 
 		// Skill Modifier
-		item.SkillModValue = std::stoi(row[ItemField::skillmodvalue]);
-		item.SkillModType = std::stoul(row[ItemField::skillmodtype]);
+		if (RuleB(AlKabor, EnableEraItemRules))
+		{
+			if (enabled_era >= (float)ExpansionEras::ClassicEQEra && enabled_era < (float)ExpansionEras::LuclinEQEra)
+			{
+				item.SkillModValue = 0;
+				item.SkillModType = 0;
+			}
+			else
+			{
+				item.SkillModValue = std::stoi(row[ItemField::skillmodvalue]);
+				item.SkillModType = std::stoul(row[ItemField::skillmodtype]);
+			}
+		}
+		else
+		{
+			item.SkillModValue = std::stoi(row[ItemField::skillmodvalue]);
+			item.SkillModType = std::stoul(row[ItemField::skillmodtype]);
+		}
 
 		// Bard
 		item.BardType = std::stoul(row[ItemField::bardtype]);
@@ -600,11 +661,33 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.RecastDelay = std::stoul(row[ItemField::recastdelay]);
 		item.RecastType = std::stoul(row[ItemField::recasttype]);
 
-		// Focus Effect
-		item.Focus.Effect = std::stoi(row[ItemField::focuseffect]);
-		item.Focus.Type = std::stoi(row[ItemField::focustype]);
-		item.Focus.Level = static_cast<uint8>(std::stoul(row[ItemField::focuslevel]));
-		item.Focus.Level2 = static_cast<uint8>(std::stoul(row[ItemField::focuslevel2]));
+		if (RuleB(AlKabor, EnableEraItemRules))
+		{
+			if (enabled_era >= (float)ExpansionEras::ClassicEQEra && enabled_era < (float)ExpansionEras::LuclinEQEra) //Luclin
+			{
+				// Focus Effect
+				item.Focus.Effect = 0;
+				item.Focus.Type = 0;
+				item.Focus.Level = 0;
+				item.Focus.Level2 = 0;
+			}
+			else
+			{
+				// Focus Effect
+				item.Focus.Effect = std::stoi(row[ItemField::focuseffect]);
+				item.Focus.Type = std::stoi(row[ItemField::focustype]);
+				item.Focus.Level = static_cast<uint8>(std::stoul(row[ItemField::focuslevel]));
+				item.Focus.Level2 = static_cast<uint8>(std::stoul(row[ItemField::focuslevel2]));
+			}
+		}
+		else
+		{
+			// Focus Effect
+			item.Focus.Effect = std::stoi(row[ItemField::focuseffect]);
+			item.Focus.Type = std::stoi(row[ItemField::focustype]);
+			item.Focus.Level = static_cast<uint8>(std::stoul(row[ItemField::focuslevel]));
+			item.Focus.Level2 = static_cast<uint8>(std::stoul(row[ItemField::focuslevel2]));
+		}
 
 		// Proc Effect
 		item.Proc.Effect = std::stoi(row[ItemField::proceffect]);
@@ -624,6 +707,13 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Worn.Type = std::stoi(row[ItemField::worntype]);
 		item.Worn.Level = static_cast<uint8>(std::stoul(row[ItemField::wornlevel]));
 		item.Worn.Level2 = static_cast<uint8>(std::stoul(row[ItemField::wornlevel2]));
+		
+		//Expansion appears in
+		item.min_expansion = std::stof(row[ItemField::min_expansion]);
+		item.max_expansion = std::stof(row[ItemField::max_expansion]);
+
+		//Is Legacy Item?
+		item.legacy_item = static_cast<uint8>(std::stoul(row[ItemField::legacy_item]));
 
         try {
             hash.insert(item.ID, item);
@@ -641,8 +731,19 @@ const EQ::ItemData* SharedDatabase::GetItem(uint32 id)
 		return nullptr;
 	}
 
+
 	if(items_hash->exists(id)) {
-		return &(items_hash->at(id));
+		EQ::ItemData* returned_item = &(items_hash->at(id));
+
+		if (returned_item != nullptr)
+		{
+			bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
+			bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+			if (expansion_enabled || expansion_all)
+			{
+				return returned_item;
+			}
+		}
 	}
 
 	return nullptr;
@@ -660,7 +761,22 @@ const EQ::ItemData* SharedDatabase::IterateItems(uint32* id)
 		}
 
 		if(items_hash->exists(*id)) {
-			return &(items_hash->at((*id)++));
+			EQ::ItemData* returned_item = &(items_hash->at((*id)));
+
+			if (returned_item != nullptr)
+			{
+				bool expansion_enabled = RuleR(World, CurrentExpansion) >= returned_item->min_expansion && RuleR(World, CurrentExpansion) < returned_item->max_expansion;
+				bool expansion_all = returned_item->min_expansion == 0.0f && returned_item->max_expansion == 0.0f;
+				if (expansion_enabled || expansion_all)
+				{
+					++(*id);
+					return returned_item;
+				}
+				else
+				{
+					++(*id);
+				}
+			}
 		} else {
 			++(*id);
 		}
@@ -1611,7 +1727,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 
 	const std::string query = "SELECT lootdrop.id, lootdrop_entries.item_id, lootdrop_entries.item_charges, "
                             "lootdrop_entries.equip_item, lootdrop_entries.chance, lootdrop_entries.minlevel, "
-                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier FROM lootdrop JOIN lootdrop_entries "
+                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.min_expansion, lootdrop_entries.max_expansion, lootdrop_entries.min_looter_level FROM lootdrop JOIN lootdrop_entries "
                             "ON lootdrop.id = lootdrop_entries.lootdrop_id ORDER BY lootdrop_id";
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -1642,7 +1758,10 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
         ld->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
         ld->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
         ld->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
-
+		ld->Entries[current_entry].min_expansion = (std::stof(row[8]));
+		ld->Entries[current_entry].max_expansion = (std::stof(row[9]));
+		ld->Entries[current_entry].min_looter_level = (atoi(row[10]));
+		
         ++(ld->NumEntries);
         ++current_entry;
     }

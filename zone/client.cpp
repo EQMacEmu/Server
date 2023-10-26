@@ -33,7 +33,10 @@
 #include "../common/features.h"
 #include "../common/spdat.h"
 #include "../common/guilds.h"
+#include "../common/languages.h"
 #include "../common/rulesys.h"
+#include "../common/races.h"
+#include "../common/classes.h"
 #include "../common/strings.h"
 #include "../common/data_verification.h"
 #include "position.h"
@@ -122,6 +125,7 @@ Client::Client(EQStreamInterface* ieqs)
 	process_timer(100),
 	stamina_timer(40000),
 	zoneinpacket_timer(1000),
+	accidentalfall_timer(15000),
 	linkdead_timer(RuleI(Zone,ClientLinkdeadMS)),
 	dead_timer(2000),
 	global_channel_timer(1000),
@@ -160,6 +164,8 @@ Client::Client(EQStreamInterface* ieqs)
 	feigned = false;
 	berserk = false;
 	dead = false;
+	initial_z_position = 0;
+	accidentalfall_timer.Disable();
 	is_client_moving = false;
 	eqs = ieqs;
 	ip = eqs->GetRemoteIP();
@@ -169,6 +175,7 @@ Client::Client(EQStreamInterface* ieqs)
 	WithCustomer = false;
 	TraderSession = 0;
 	WID = 0;
+	gm_grid = nullptr;
 	account_id = 0;
 	admin = AccountStatus::Player;
 	lsaccountid = 0;
@@ -178,6 +185,7 @@ Client::Client(EQStreamInterface* ieqs)
 	guildrank = 0;
 	memset(lskey, 0, sizeof(lskey));
 	strcpy(account_name, "");
+	prev_last_login_time = 0;
 	tellsoff = false;
 	last_reported_mana = 0;
 	last_reported_endur = 0;
@@ -237,6 +245,10 @@ Client::Client(EQStreamInterface* ieqs)
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 	AttemptedMessages = 0;
 	TotalKarma = 0;
+	HackCount = 0;
+	last_position_update_time = std::chrono::high_resolution_clock::now();
+	exemptHackCount = false;
+	ExpectedRewindPos = glm::vec3();
 	m_ClientVersion = EQ::versions::Unknown;
 	m_ClientVersionBit = 0;
 	AggroCount = 0;
@@ -835,6 +847,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	switch(chan_num)
 	{
 	case ChatChannel_Guild: { /* Guild Chat */
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Guild.");
+			return;
+		}
+
 		if (!IsInAGuild())
 			Message_StringID(MT_DefaultText, GUILD_NOT_MEMBER2);	//You are not a member of any guild.
 		else if (!guild_mgr.CheckPermission(GuildID(), GuildRank(), GUILD_SPEAK))
@@ -844,6 +862,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		break;
 	}
 	case ChatChannel_Group: { /* Group Chat */
+
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Group.");
+			return;
+		}
 		Raid* raid = entity_list.GetRaidByClient(this);
 		if(raid) {
 			raid->RaidGroupSay((const char*) message, this, language, lang_skill);
@@ -858,6 +882,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Raid: { /* Raid Say */
 		Raid* raid = entity_list.GetRaidByClient(this);
+		if (GetRevoked() == 2)
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Raid Say.");
+			return;
+		}
+
 		if(raid){
 			raid->RaidSay((const char*) message, this, language, lang_skill);
 		}
@@ -865,7 +895,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Shout: { /* Shout */
 		Mob *sender = this;
-
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been muted. You may not talk on Shout.");
+			return;
+		}
 		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		break;
 	}
@@ -900,6 +934,12 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		}
 		else if(!RuleB(Chat, ServerWideAuction)) {
 			Mob *sender = this;
+
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not send Auction messages.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -942,6 +982,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		else
 		{
 			Mob *sender = this;
+			if (GetRevoked())
+			{
+				Message(CC_Default, "You have been revoked. You may not talk in Out Of Character.");
+				return;
+			}
 
 			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
 		}
@@ -956,11 +1001,6 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		break;
 	}
 	case ChatChannel_Tell: { /* Tell */
-			if(GetRevoked())
-			{
-				Message(CC_Default, "You have been revoked. You may not send tells.");
-				return;
-			}
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
@@ -1028,8 +1068,14 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		Mob* sender = this;
 		if (GetPet() && FindType(SE_VoiceGraft))
 			sender = GetPet();
-
-		entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		if (GetRevoked())
+		{
+			Message(CC_Default, "You have been revoked. You may not talk on say, except to NPCs directly.");
+		}
+		else
+		{
+			entity_list.ChannelMessage(sender, chan_num, language, lang_skill, message);
+		}
 		parse->EventPlayer(EVENT_SAY, this, message, language);
 
 		if (sender != this)
@@ -1289,6 +1335,7 @@ void Client::UpdateWho(uint8 remove) {
 	scl->mule = this->IsMule();
 	scl->AFK = this->AFK;
 	scl->Trader = this->IsTrader();
+	scl->Revoked = this->GetRevoked();
 
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -2292,15 +2339,37 @@ bool Client::BindWound(uint16 bindmob_id, bool start, bool fail)
 		bind_out->type = 5; // not in zone
 		QueuePacket(outapp);
 		safe_delete(outapp);
-
 		return false;
 	}
-
-	if(!fail) 
+  
+	if (!fail)
 	{
 		outapp = new EQApplicationPacket(OP_Bind_Wound, sizeof(BindWound_Struct));
 		BindWound_Struct *bind_out = (BindWound_Struct *) outapp->pBuffer;
 		bind_out->to = bindmob->GetID();
+
+		// Handle solo ruleset
+		if (bindmob->IsClient()) {
+			Client* bind_client = bindmob->CastToClient();
+			std::string msg;
+			if (bind_client->IsSoloOnly() && this != bind_client) {
+				msg = "This player is running the Solo Only ruleset. You cannot bind wound.";
+			}
+			else if (IsSelfFound() != bind_client->CastToClient()->IsSelfFound()) {
+				msg = "The player's Self Found flag does not match yours. You cannot bind wound.";
+			}
+			if (!msg.empty()) {
+				this->Message(CC_Red, msg.c_str());
+				// DO NOT CHANGE - any other packet order will cause client bugs / crashes.
+				bind_out->type = 3;
+				QueuePacket(outapp);
+				bind_out->type = 1;
+				QueuePacket(outapp);
+				safe_delete(outapp);
+				return false;
+			}
+		}
+
 		// Start bind
 		if(!bindwound_timer.Enabled()) 
 		{
@@ -6108,4 +6177,383 @@ bool Client::IsLockSavePosition() const
 void Client::SetLockSavePosition(bool lock_save_position)
 {
 	Client::m_lock_save_position = lock_save_position;
+}
+
+void Client::RemoveAllSkills()
+{
+	for (uint32 i = 0; i <= EQ::skills::HIGHEST_SKILL; ++i) {
+		m_pp.skills[i] = 0;
+	}
+	database.DeleteCharacterSkills(CharacterID(), &m_pp);
+}
+
+void Client::SetRaceStartingSkills()
+{
+	switch (m_pp.race)
+	{
+	case BARBARIAN:
+	case ERUDITE:
+	case HALF_ELF:
+	case HIGH_ELF:
+	case HUMAN:
+	case OGRE:
+	case TROLL:
+	{
+		// No Race Specific Skills
+		break;
+	}
+	case DWARF:
+	{
+		m_pp.skills[EQ::skills::SkillSenseHeading] = 50; //Even if we set this to 0, Intel client sets this to 50 anyway. Confirmed this is correct for era.
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSenseHeading, 50);
+		break;
+	}
+	case DARK_ELF:
+	{
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
+		break;
+	}
+	case GNOME:
+	{
+		m_pp.skills[EQ::skills::SkillTinkering] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillTinkering, 50);
+		break;
+	}
+	case HALFLING:
+	{
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSneak, 50);
+		break;
+	}
+	case IKSAR:
+	{
+		m_pp.skills[EQ::skills::SkillForage] = 50;
+		m_pp.skills[EQ::skills::SkillSwimming] = 100;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillForage, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSwimming, 100);
+		break;
+	}
+	case WOOD_ELF:
+	{
+		m_pp.skills[EQ::skills::SkillForage] = 50;
+		m_pp.skills[EQ::skills::SkillHide] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillForage, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillHide, 50);
+		break;
+	}
+	case VAHSHIR:
+	{
+		m_pp.skills[EQ::skills::SkillSafeFall] = 50;
+		m_pp.skills[EQ::skills::SkillSneak] = 50;
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSafeFall, 50);
+		database.SaveCharacterSkill(CharacterID(), EQ::skills::SkillSneak, 50);
+		break;
+	}
+	}
+}
+
+void Client::SetRacialLanguages()
+{
+	switch (m_pp.race)
+	{
+	case BARBARIAN:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_BARBARIAN] = 100;
+		break;
+	}
+	case DARK_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_ELVISH] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_ELDER_ELVISH] = 54;
+		m_pp.languages[LANG_ELVISH] = 54;
+		break;
+	}
+	case DWARF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DWARVISH] = 100;
+		m_pp.languages[LANG_GNOMISH] = 25;
+		break;
+	}
+	case ERUDITE:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ERUDIAN] = 100;
+		break;
+	}
+	case GNOME:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DWARVISH] = 25;
+		m_pp.languages[LANG_GNOMISH] = 100;
+		break;
+	}
+	case HALF_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case HALFLING:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_HALFLING] = 100;
+		break;
+	}
+	case HIGH_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_ELVISH] = 51;
+		m_pp.languages[LANG_ELDER_ELVISH] = 51;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case HUMAN:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		break;
+	}
+	case IKSAR:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_LIZARDMAN] = 100;
+		break;
+	}
+	case OGRE:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_OGRE] = 100;
+		break;
+	}
+	case TROLL:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_DARK_SPEECH] = 100;
+		m_pp.languages[LANG_TROLL] = 100;
+		break;
+	}
+	case WOOD_ELF:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_ELVISH] = 100;
+		break;
+	}
+	case VAHSHIR:
+	{
+		m_pp.languages[LANG_COMMON_TONGUE] = 100;
+		m_pp.languages[LANG_COMBINE_TONGUE] = 100;
+		m_pp.languages[LANG_ERUDIAN] = 32;
+		m_pp.languages[LANG_VAH_SHIR] = 100;
+		break;
+	}
+	}
+}
+
+void Client::SetClassLanguages()
+{
+	// we only need to handle one class, but custom server might want to do more
+	switch (m_pp.class_) {
+	case ROGUE:
+		m_pp.languages[LANG_THIEVES_CANT] = 100;
+		break;
+	default:
+		break;
+	}
+}
+
+
+uint8 Client::GetRaceArmorSize() 
+{
+
+	uint8 armorSize = 0;
+	int pRace = GetBaseRace();
+
+	switch (pRace)
+	{
+	case WOOD_ELF: // Small
+	case HIGH_ELF:
+	case DARK_ELF:
+	case DWARF:
+	case HALFLING:
+	case GNOME:
+		armorSize = 0;
+		break;
+	case BARBARIAN:  // Medium
+	case ERUDITE:
+	case HALF_ELF:
+	case IKSAR:
+	case HUMAN:
+		armorSize = 1;
+		break;
+	case TROLL: // Large
+	case OGRE:
+	case VAHSHIR:
+		armorSize = 2;
+		break;
+	}
+
+	return armorSize;
+}
+
+void Client::LoadLootedLegacyItems()
+{
+	std::string query = StringFormat("SELECT item_id FROM character_legacy_items "
+		"WHERE character_id = '%i' ORDER BY item_id", character_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return;
+	}
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+		looted_legacy_items.insert(atoi(row[0]));
+
+}
+
+bool Client::CheckLegacyItemLooted(uint16 item_id)
+{
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		return true;
+	}
+	return false;
+}
+
+void Client::AddLootedLegacyItem(uint16 item_id)
+{
+	if (CheckLegacyItemLooted(item_id))
+		return;
+
+	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id) VALUES (%i, %i)", character_id, item_id);
+
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return;
+	}
+	looted_legacy_items.insert(item_id);
+	
+}
+
+bool Client::RemoveLootedLegacyItem(uint16 item_id)
+{
+	if (!CheckLegacyItemLooted(item_id))
+		return false;
+
+	std::string query = StringFormat("DELETE FROM character_legacy_items WHERE character_id = %i AND item_id = %i", character_id, item_id);
+
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		return false;
+	}
+
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		looted_legacy_items.erase(it);
+	}
+	return true;
+}
+
+
+void Client::ShowLegacyItemsLooted(Client* to)
+{
+	if (!to)
+		return;
+
+	to->Message(CC_Yellow, "Showing all legacy loot lockouts / items for %s..", GetCleanName());
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Item Flags On Character:");
+	for(auto looted_legacy_item : looted_legacy_items)
+	{
+		const EQ::ItemData* itemdata = database.GetItem(looted_legacy_item);
+		if (itemdata)
+		{
+			to->Message(CC_Yellow, "ID %d : Name %s", itemdata->ID, itemdata->Name);
+		}
+	}
+	to->Message(CC_Yellow, "======");
+	to->Message(CC_Yellow, "Legacy Items On Character:");
+	
+	std::string query = StringFormat("SELECT id, name FROM items "
+		"WHERE legacy_item = 1 ORDER BY id", character_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success()) {
+
+		to->Message(CC_Yellow, "======");
+		return;
+	}
+
+	std::map<uint16, std::string> item_ids_to_names;
+	std::map<uint16, uint32> item_ids_to_quantity;
+
+	for (auto row = results.begin(); row != results.end(); ++row)
+	{
+		auto itr = item_ids_to_names.find(atoi(row[0]));
+
+		if (itr == item_ids_to_names.end())
+			item_ids_to_names[atoi(row[0])] = std::string(row[1]);
+
+		auto itr2 = item_ids_to_quantity.find(atoi(row[0]));
+
+		if (itr2 == item_ids_to_quantity.end())
+			item_ids_to_quantity[atoi(row[0])] = 0;
+	}
+
+	for (int16 i = EQ::invslot::SLOT_BEGIN; i <= EQ::invbag::BANK_BAGS_END;)
+	{
+		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
+
+		if (i == EQ::invslot::GENERAL_END + 1) {
+			i = EQ::invbag::GENERAL_BAGS_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invbag::CURSOR_BAG_END + 1) {
+			i = EQ::invslot::BANK_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invslot::BANK_END + 1) {
+			i = EQ::invbag::BANK_BAGS_BEGIN;
+			continue;
+		}
+
+		if (newinv)
+		{
+			if (newinv->GetItem())
+			{
+				auto quantityItr = item_ids_to_quantity.find(newinv->GetItem()->ID);
+				if (quantityItr != item_ids_to_quantity.end())
+				{
+					int countQuantity = quantityItr->second + 1;
+					item_ids_to_quantity[newinv->GetItem()->ID] = countQuantity;
+				}
+			}
+		}
+		i++;
+	}
+
+	for (auto itemids : item_ids_to_names)
+	{
+		auto itr3 = item_ids_to_quantity.find(itemids.first);
+		if (itr3 != item_ids_to_quantity.end())
+		{
+			if (itr3->second > 0)
+			{
+				const EQ::ItemData* item_data = database.GetItem(itemids.first);
+				if (item_data)
+				{
+					to->Message(CC_Yellow, "ID %d || Name %s || Quantity %d ", item_data->ID, item_data->Name, itr3->second);
+				}
+			}
+		}
+	}	
+	to->Message(CC_Yellow, "======");
+
 }

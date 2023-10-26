@@ -97,8 +97,9 @@ public:
 	Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,uint32 respawntimer);
 	// Loading object from client dropping item on ground
 	Object(Client* client, const EQ::ItemInstance* inst);
-	Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time = 300000);
+	Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time = 300000, bool is_player_drop = false, Client* client = nullptr);
 	Object(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time = 0);
+	Object(const char *model, uint32 char_id, float x, float y, float z, float heading, uint8 type, uint32 decay_time = 0);
 
 	// Destructor
 	~Object();
@@ -162,6 +163,10 @@ public:
 	uint16 GetSolidType();
 	void SetSolidType(uint16 size);
 
+	bool IsPlayerDrop() const { return m_is_player_drop; }
+	uint32 GetCharacterDropperID() const { return m_character_id; }
+	bool IsSSFRuleSet() const { return m_ssf_ruleset; }
+
 	const char* GetEntityVariable(const char *id);
 	void SetEntityVariable(const char *id, const char *m_var);
 	bool EntityVariableExists(const char *id);
@@ -184,6 +189,9 @@ protected:
 	float			m_z;
 	float			m_heading;
 	bool			m_ground_spawn;
+	bool			m_is_player_drop;
+	uint32          m_character_id;
+	bool            m_ssf_ruleset;
 
 	std::map<std::string, std::string> o_EntityVariables;
 

@@ -114,7 +114,7 @@ Mob::Mob(const char* in_name,
 	SetMoving(false);
 	moved=false;
 	m_RewindLocation = glm::vec3();
-
+	m_LastLocation = glm::vec3();
 	name[0]=0;
 	orig_name[0]=0;
 	clean_name[0]=0;
@@ -386,6 +386,8 @@ Mob::Mob(const char* in_name,
 	dire_charmed = false;
 	feared = false;
 	player_damage = 0;
+	ssf_player_damage = 0;
+	ssf_ds_damage = 0;
 	dire_pet_damage = 0;
 	total_damage = 0;
 	ds_damage = 0;
@@ -2207,12 +2209,12 @@ bool Mob::RemoveFromHateList(Mob* mob)
 	return bFound;
 }
 
-void Mob::WipeHateList()
+void Mob::WipeHateList(bool from_memblur)
 {
 	if (!hate_list.IsEmpty())
 	{
 		SetTarget(nullptr);
-		hate_list.Wipe();
+		hate_list.Wipe(from_memblur);
 		DamageTotalsWipe();
 	}
 }
@@ -4896,7 +4898,7 @@ void Mob::ReportDmgTotals(Client* client, bool corpse, bool xp, bool faction, in
 		return;
 
 	uint32 pet_damage = total_damage - (player_damage + npc_damage + gm_damage + ds_damage);
-	client->Message(CC_Yellow, "[GM Debug] %s damage report: TotalDmg: %d KillerGroupDmg: %d PlayerDmg: %d NPCDmg: %d PlayerPetDmg: %d DireCharmDmg: %d DSDmg: %d GMDmg: %d PBAoEDmg: %d", GetName(), total_damage, dmg_amt, player_damage, npc_damage, pet_damage, dire_pet_damage, ds_damage, gm_damage, pbaoe_damage);
+	client->Message(CC_Yellow, "[GM Debug] %s damage report: TotalDmg: %d KillerGroupDmg: %d PlayerDmg: %d NPCDmg: %d PlayerPetDmg: %d DireCharmDmg: %d DSDmg: %d GMDmg: %d PBAoEDmg: %d SSFDmg: %d SSFDSDmg: %d", GetName(), total_damage, dmg_amt, player_damage, npc_damage, pet_damage, dire_pet_damage, ds_damage, gm_damage, pbaoe_damage, ssf_player_damage, ssf_ds_damage);
 
 	if (corpse || xp || faction)
 	{
@@ -5285,4 +5287,12 @@ void Mob::SetRandomFeatures()
 			break;
 		}
 	}
+}
+
+void Mob::SetHP(int32 hp)
+{
+	if (hp >= max_hp)
+		cur_hp = max_hp; 
+	else 
+		cur_hp = hp;
 }

@@ -389,7 +389,7 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 	}
 
 	// Package as zone object
-	Object *object = new Object(inst, coords.x, coords.y, coords.z, coords.w ,decay_time);
+	Object *object = new Object(inst, coords.x, coords.y, coords.z, coords.w ,decay_time, true, this);
 	entity_list.AddObject(object, true);
 	object->Save();
 }
@@ -417,6 +417,138 @@ bool Client::FindOnCursor(uint32 item_id) {
 		}
 	}
 	return false;
+}
+
+void Client::ClearMoney()
+{
+
+
+	SendClientMoneyUpdate(0, -GetCopper());
+	SendClientMoneyUpdate(1, -GetSilver());
+	SendClientMoneyUpdate(2, -GetGold());
+	SendClientMoneyUpdate(3, -GetPlatinum());
+
+
+
+	m_pp.copper = 0;
+	m_pp.copper_bank = 0;
+	m_pp.copper_cursor = 0;
+	m_pp.silver = 0;
+	m_pp.silver_bank = 0;
+	m_pp.silver_cursor = 0;
+	m_pp.gold = 0;
+	m_pp.gold_bank = 0;
+	m_pp.gold_cursor = 0;
+	m_pp.platinum = 0;
+	m_pp.platinum_bank = 0;
+	m_pp.platinum_cursor = 0;
+	SaveCurrency();
+}
+
+void Client::ResetStartingSkills()
+{
+	m_pp.level2 = 1;
+	m_pp.points = 5;
+
+	//Set all skills to 0.
+	for (int s = 0; s <= EQ::skills::HIGHEST_SKILL; s++)
+	{
+		m_pp.skills[s] = 0;
+	}
+	//Set all languages to 0.
+	for (int l = 0; l <= MAX_PP_LANGUAGE; l++)
+	{
+		m_pp.languages[l] = 0;
+	}
+	
+	/* Set Racial and Class specific language and skills */
+	RemoveAllSkills();
+	SetRacialLanguages();
+	SetRaceStartingSkills();
+	SetClassLanguages();
+}
+
+void Client::ClearPlayerInfoAndGrantStartingItems(bool goto_death)
+{
+
+	//Clear player's money.
+	ClearMoney();
+
+	//Remove spells.
+	UnscribeSpellAll(false);
+	UnmemSpellAll(false);
+
+	//Fade all buffs.
+	BuffFadeAll(false, true);
+
+	//Clear AAs.
+	RefundAA();
+	SetAAPoints(0);
+	m_pp.aapoints_spent = 0;
+	
+	//Remove all factions.
+	database.RemoveAllFactions(this);
+	factionvalues.clear();
+
+	//Remove starting skills.
+	ResetStartingSkills();
+
+	//Remove all items from their trade if they're doing one.
+	Mob *Other = trade->With();
+	if (Other)
+	{
+		FinishTrade(this);
+
+		if (Other->IsClient())
+			Other->CastToClient()->FinishTrade(Other);
+
+		/* Reset both sides of the trade */
+		trade->Reset();
+		Other->trade->Reset();
+	}
+
+	//Delete all items from their inventory.
+	for (int16 i = EQ::invslot::SLOT_BEGIN; i <= EQ::invbag::BANK_BAGS_END;)
+	{
+		const EQ::ItemInstance* newinv = m_inv.GetItem(i);
+
+		if (i == EQ::invslot::GENERAL_END + 1) {
+			i = EQ::invbag::GENERAL_BAGS_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invbag::CURSOR_BAG_END + 1) {
+			i = EQ::invslot::BANK_BEGIN;
+			continue;
+		}
+		else if (i == EQ::invslot::BANK_END + 1) {
+			i = EQ::invbag::BANK_BAGS_BEGIN;
+			continue;
+		}
+
+		if (newinv)
+		{
+			DeleteItemInInventory(i, 0, true, true);
+		}
+
+		i++;
+	}
+
+	//Grant starting items to the player again, since we just removed their inventory.
+	int return_zone_id = 0;
+
+	database.ResetStartingItems(this, m_pp.race, m_pp.class_, m_pp.deity, m_pp.binds[4].zoneId, m_pp.name, Admin(), return_zone_id );
+
+	//Set Level / EXP to 0.
+	SetLevel(1, true);
+	SetEXP(0, 0);
+
+	SetHardcoreDeathTimeStamp(0);
+	//Their state is likely all sorts of messed up. Commit immediately (Save) and then...
+	Save(1);
+	if (goto_death)
+	{
+		ForceGoToDeath();
+	}
 }
 
 // Remove item from inventory
@@ -584,7 +716,14 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 		// If the cursor is empty, we have to send an item packet or we'll desync.
 		if (!PushItemOnCursor(*inst))
 		{
-			Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			if (inst)
+			{
+				auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+				Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+				Message(CC_Red, broken_string.c_str());
+				Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			}
 			return false;
 		}
 
@@ -592,7 +731,7 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 	}
 	else
 	{
-		if (!GetGM())
+		if (Admin() == 0)
 		{
 			// There are items on the cursor, so we don't want to send packet updates. But,
 			// we do want to enforce the client's rules about items on the cursor. No dupe items,
@@ -607,7 +746,10 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 				}
 				else
 				{
-					Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d is a duplicate. It will be deleted.", inst->GetID());
+					auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+					Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+					if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+					Message(CC_Red, broken_string.c_str());
 					return false;
 				}
 			}
@@ -616,7 +758,14 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 		inst->SetCursorQueue(false);
 		if (!PushItemOnCursor(*inst))
 		{
-			Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+			if (inst)
+			{
+				Log(Logs::General, Logs::Inventory, "Saving item %d to the cursor queue failed.", inst->GetID());
+				auto broken_string = fmt::format("Cursor queue full or item {} (qty {} ) is a duplicate. This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+				Log(Logs::General, Logs::Inventory, "Cursor queue has too many items or item %d (qty %d ) is a duplicate. It will be deleted.", inst->GetID(), inst->GetCharges());
+				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID()); }
+				Message(CC_Red, broken_string.c_str());
+			}
 			return false;
 		}
 	}

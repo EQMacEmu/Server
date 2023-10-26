@@ -74,6 +74,15 @@ bool Client::Process() {
 			SendAllPackets();
 		}
 
+		//Accidental falling timer.
+		if (accidentalfall_timer.Enabled())
+		{
+			if (accidentalfall_timer.Check())
+			{
+				accidentalfall_timer.Disable();
+			}
+		}
+
 		if(dead)
 		{
 			SetHP(-100);
@@ -930,10 +939,22 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		MerchantList ml = *itr;
 		ml.slot = i;
 
+		bool expansion_enabled = RuleR(World, CurrentExpansion) >= ml.min_expansion && RuleR(World, CurrentExpansion) < ml.max_expansion;
+		bool expansion_all = ml.min_expansion == 0.0f && ml.max_expansion == 0.0f;
+
+		if (!expansion_enabled && !expansion_all)
+		{
+			continue;
+		}
+
 		if (GetLevel() < ml.level_required)
 			continue;
 
 		if (!(ml.classes_required & (1 << (GetClass() - 1))))
+			continue;
+
+		item = database.GetItem(ml.item);
+		if (!item)
 			continue;
 
 		int32 fac = merch ? merch->GetPrimaryFaction() : 0;
@@ -987,44 +1008,47 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		merlist.push_back(ml);
 		++i;
 	}
-	std::list<TempMerchantList> origtmp_merlist = zone->tmpmerchanttable[npcid];
-	tmp_merlist.clear();
-	for (tmp_itr = origtmp_merlist.begin(); tmp_itr != origtmp_merlist.end(); ++tmp_itr) {
-		TempMerchantList ml = *tmp_itr;
-		item = database.GetItem(ml.item);
-		ml.slot = i;
-		if (item) {
-			int charges = 1;
-			if(database.ItemQuantityType(item->ID) == EQ::item::Quantity_Charges)
-			{
-				charges = zone->GetTempMerchantQtyNoSlot(npcid, item->ID);
-			}
-			EQ::ItemInstance* inst = database.CreateItem(item, charges);
-			if (inst) {
-				uint32 capped_charges = ml.charges > MERCHANT_CHARGE_CAP ? MERCHANT_CHARGE_CAP : ml.charges;
-				inst->SetPrice(item->Price * item->SellRate);
-				inst->SetMerchantSlot(ml.slot);
-				inst->SetMerchantCount(capped_charges);
-				inst->SetCharges(charges);
-		
-				if(inst) 
+	if (!IsSoloOnly() && !IsSelfFound())
+	{
+		std::list<TempMerchantList> origtmp_merlist = zone->tmpmerchanttable[npcid];
+		tmp_merlist.clear();
+		for (tmp_itr = origtmp_merlist.begin(); tmp_itr != origtmp_merlist.end(); ++tmp_itr) {
+			TempMerchantList ml = *tmp_itr;
+			item = database.GetItem(ml.item);
+			ml.slot = i;
+			if (item) {
+				int charges = 1;
+				if (database.ItemQuantityType(item->ID) == EQ::item::Quantity_Charges)
 				{
-					std::string packet = inst->Serialize(ml.slot-1);
-					ser_items[m] = packet;
-					size += packet.length();
-					m++;
+					charges = zone->GetTempMerchantQtyNoSlot(npcid, item->ID);
 				}
-				Log(Logs::Moderate, Logs::Trading, "TEMP (%d): %s was added to merchant in slot %d with %d count and %d charges and price %d", i, item->Name, ml.slot, capped_charges, charges, inst->GetPrice());
-			}
-		}
-		tmp_merlist.push_back(ml);
-		++i;
+				EQ::ItemInstance* inst = database.CreateItem(item, charges);
+				if (inst) {
+					uint32 capped_charges = ml.charges > MERCHANT_CHARGE_CAP ? MERCHANT_CHARGE_CAP : ml.charges;
+					inst->SetPrice(item->Price * item->SellRate);
+					inst->SetMerchantSlot(ml.slot);
+					inst->SetMerchantCount(capped_charges);
+					inst->SetCharges(charges);
 
-		// 80 inventory slots + 10 "hidden" items.
-		if (i > 89)
-		{
-			Log(Logs::Moderate, Logs::Trading, "Item at position %d is not being added.", i);
-			break;
+					if (inst)
+					{
+						std::string packet = inst->Serialize(ml.slot - 1);
+						ser_items[m] = packet;
+						size += packet.length();
+						m++;
+					}
+					Log(Logs::Moderate, Logs::Trading, "TEMP (%d): %s was added to merchant in slot %d with %d count and %d charges and price %d", i, item->Name, ml.slot, capped_charges, charges, inst->GetPrice());
+				}
+			}
+			tmp_merlist.push_back(ml);
+			++i;
+
+			// 80 inventory slots + 10 "hidden" items.
+			if (i > 89)
+			{
+				Log(Logs::Moderate, Logs::Trading, "Item at position %d is not being added.", i);
+				break;
+			}
 		}
 	}
 

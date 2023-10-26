@@ -1,0 +1,1 @@
+ALTER TABLE `character_data` ADD COLUMN `e_betabuff_gear_flag` tinyint(4) UNSIGNED NOT NULL DEFAULT 0 AFTER `e_hardcore_death_time`;

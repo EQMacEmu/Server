@@ -29,6 +29,28 @@ namespace EQ
 
 //#include "doors.h"
 
+enum class GridWanderType : uint8
+{
+	eGridCircular = 0,
+	eGridRandom10ClosestWaypoints = 1,
+	eGridRandom = 2,
+	eGridPatrol = 3,
+	eGridOneWayThenRepop = 4,
+	eGridRandom5LOS = 5,
+	eGridOneWayThenDepop = 6,
+	eGridWp0Centerpoint = 7,
+	eGridRandomCenterpoint = 8,
+	eGridRandomPath = 9
+};
+
+enum class GridPauseType : uint8
+{
+	eGridPauseRandomPlusHalf = 0,
+	eGridPauseFull = 1,
+	eGridPauseRandom = 2,
+};
+
+
 struct wplist {
 	int index;
 	float x;
@@ -37,6 +59,12 @@ struct wplist {
 	int pause;
 	float heading;
 	bool centerpoint;
+};
+
+struct DBGrid_Struct {
+	uint32 id;
+	GridWanderType wander_type;
+	GridPauseType pause_type;
 };
 
 #pragma pack(1)
@@ -190,6 +218,8 @@ public:
 	void LoadPetInfo(Client *c);
 	void SavePetInfo(Client *c);
 	void RemoveTempFactions(Client *c);
+	void RemoveAllFactions(Client *client);
+	bool ResetStartingItems(Client* c, uint32 si_race, uint32 si_class, uint32 si_deity, uint32 si_current_zone, char* si_name, int admin_level, int& return_zone_id);
 
 	/* Character Data Loaders  */
 	bool	LoadCharacterFactionValues(uint32 character_id, faction_map & val_list);
@@ -219,6 +249,7 @@ public:
 	bool	DeleteCharacterMemorizedSpell(uint32 character_id, uint32 spell_id, uint32 slot_id);
 	bool	DeleteCharacterAAs(uint32 character_id);
 	bool	DeleteCharacterConsent(char grantname[64], char ownername[64], uint32 corpse_id);
+	bool	DeleteCharacterSkills(uint32 character_id, PlayerProfile_Struct * pp);
 
 	/* Character Inventory  */
 	bool	SaveSoulboundItems(Client* client, std::list<EQ::ItemInstance*>::const_iterator &start, std::list<EQ::ItemInstance*>::const_iterator &end);
@@ -282,7 +313,7 @@ public:
 	uint32 CountAAEffects();
 
 	/* Zone related */
-	bool	GetZoneCFG(uint32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit);
+	bool	GetZoneCFG(uint32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit, bool &reducedspawntimers, bool& trivial_loot_code);
 	bool	SaveZoneCFG(uint32 zoneid, NewZone_Struct* zd);
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool		UpdateZoneSafeCoords(const char* zonename, const glm::vec3& location);
