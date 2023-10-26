@@ -299,8 +299,6 @@ public:
 	inline void SetMGB(bool val) { has_MGB = val; }
 	bool HasProjectIllusion() const { return has_ProjectIllusion ; }
 	inline void SetProjectIllusion(bool val) { has_ProjectIllusion  = val; }
-	inline bool HasEndurUpkeep() const { return endur_upkeep; }
-	inline void SetEndurUpkeep(bool val) { endur_upkeep = val; }
 	bool IsBuffed();
 	bool IsDebuffed();
 	bool IsPacified();
@@ -905,7 +903,6 @@ public:
 	Timer& GetAttackTimer() { return attack_timer; }
 	Timer& GetAttackDWTimer() { return attack_dw_timer; }
 	inline uint8 GetManaPercent() { return (uint8)((float)cur_mana / (float)max_mana * 100.0f); }
-	virtual uint8 GetEndurancePercent() { return 0; }
 	inline void SpawnPacketSent(bool val) { spawnpacket_sent = val; };
 
 	inline virtual bool IsBlockedBuff(int16 SpellID) { return false; }
@@ -1185,7 +1182,6 @@ protected:
 	bool has_ProjectIllusion;
 	bool last_los_check;
 	bool pseudo_rooted;
-	bool endur_upkeep;
 	glm::vec3 last_dest;
 
 	// Bind wound

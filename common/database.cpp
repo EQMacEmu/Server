@@ -517,14 +517,13 @@ bool Database::SaveCharacterCreate(uint32 character_id, uint32 account_id, Playe
 		"hunger_level,"
 		"thirst_level,"
 		"zone_id,"
-		"endurance,"
 		"air_remaining,"
 		"aa_points_spent,"
 		"aa_exp,"
 		"aa_points,"
 		"boatid,"
 		"boatname,"
-		"famished) "
+		"fatigue)"
 		"VALUES ("
 		"%u,"  // id					
 		"%u,"  // account_id			
@@ -572,14 +571,13 @@ bool Database::SaveCharacterCreate(uint32 character_id, uint32 account_id, Playe
 		"%i,"  // hunger_level			
 		"%i,"  // thirst_level					
 		"%u,"  // zone_id						
-		"%u,"  // endurance				
 		"%u,"  // air_remaining			
 		"%u,"  // aa_points_spent		
 		"%u,"  // aa_exp				
 		"%u,"  // aa_points				
-		"%u,"   // boatid		
-		"'%s',"  // boatname	
-		"%u"
+		"%u,"  // boatid		
+		"'%s',"// boatname	
+		"%i"   // fatigue
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -627,14 +625,13 @@ bool Database::SaveCharacterCreate(uint32 character_id, uint32 account_id, Playe
 		pp->hunger_level,				  // " hunger_level,              "
 		pp->thirst_level,				  // " thirst_level,              "
 		pp->zone_id,					  // " zone_id,                   "
-		pp->endurance,					  // " endurance,                 "
 		pp->air_remaining,				  // " air_remaining,             "
 		pp->aapoints_spent,				  // " aa_points_spent,           "
 		pp->expAA,						  // " aa_exp,                    "
 		pp->aapoints,					  // " aa_points,                 "
 		pp->boatid,						  // " boatid,					  "
-		Strings::Escape(pp->boat).c_str(),	  // " boatname                   "
-		pp->famished					  // " famished)				  "
+		Strings::Escape(pp->boat).c_str(),// " boatname,                  "
+		pp->fatigue						  // " fatigue					  "
 	);
 	auto results = QueryDatabase(query);
 	/* Save Bind Points */

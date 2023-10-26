@@ -1134,8 +1134,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.level			= 1;
 	pp.points			= 5;
 	pp.cur_hp			= 1000; // 1k hp during dev only
-	pp.hunger_level = 6000;
-	pp.thirst_level = 6000;
+	pp.hunger_level = 4500;
+	pp.thirst_level = 4500;
+	pp.fatigue = 0;
 
 	/* Set Racial and Class specific language and skills */
 	SetRacialLanguages(&pp);

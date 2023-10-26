@@ -163,9 +163,7 @@ struct StatBonuses {
 	int32	MaxHP;
 	int32	ManaRegen;
 	int32	ManaRegenUncapped; // for item bonus
-	int32	EnduranceRegen;
 	int32	Mana;
-	int32	Endurance;
 	int32	ATK;
 	int32	ATKUncapped; // for item bonus
 	//would it be worth it to create a Stat_Struct?
@@ -219,7 +217,6 @@ struct StatBonuses {
 	uint32	stringedMod;
 	uint32	songModCap;
 	int8	hatemod;
-	int32	EnduranceReduction;
 
 	int32	StrikeThrough;						// PoP: Strike Through %
 	int32	MeleeMitigation;					//i = Shielding
@@ -321,6 +318,7 @@ struct StatBonuses {
 	bool	IllusionPersistence;				// Causes illusions not to fade.
 	bool	WaterBreathing;
 	uint8	BreathLevel;
+	int32	FoodWater;							// SE_Hunger - stops food/water consumption
 };
 
 typedef struct

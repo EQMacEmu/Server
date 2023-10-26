@@ -43,15 +43,11 @@ RULE_REAL( Character, GroupExpMultiplier, 1.0 )
 RULE_REAL( Character, RaidExpMultiplier, 0.6 )	// showeq forum says raid exp was 60%
 RULE_REAL ( Character, EXPLossMultiplier, 1.0)
 RULE_INT ( Character, AutosaveIntervalS, 240 )	//0=disabled
-RULE_INT ( Character, ConsumptionValue, 6000) //How "full" each consumption of food or drink will make the player. EQEmu default is 6000.
-RULE_REAL ( Character, FoodLossPerUpdate, 75) // How much food/water you lose per stamina update
-RULE_INT ( Character, FamishedLevel, 120) // When famished reaches this value, we lose endurance and stop regen on HP/mana
 RULE_BOOL( Character, HealOnLevel, false)
 RULE_BOOL( Character, ManaOnLevel, false)
 RULE_BOOL( Character, FeignKillsPet, false)
 RULE_INT(Character, ItemManaRegenCap, 15)
 RULE_INT(Character, ItemATKCap, 250)
-RULE_INT ( Character, ItemEnduranceRegenCap, 15)
 RULE_INT ( Character, HasteCap, 100) // Haste cap for non-v3(overhaste) haste.
 RULE_BOOL ( Character, BindAnywhere, false)
 RULE_INT ( Character, MaxFearDurationForPlayerCharacter, 4) //4 tics, each tic calculates every 6 seconds.

@@ -107,14 +107,6 @@ EQStream *s = nullptr;
 	if (!NewStreams.empty()) {
 		s=NewStreams.front();
 		NewStreams.pop();
-		try {
-			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
-		}
 	}
 	MNewStreams.unlock();
 
@@ -125,6 +117,14 @@ void EQStreamFactory::PushOld(EQOldStream *s)
 {
 	//cout << "Push():Locking MNewStreams" << endl;
 	MNewStreams.lock();
+	try {
+		s->PutInUse();
+	}
+	catch (...) {
+		fprintf(stderr, "Catching Stream Crash.");
+		MNewStreams.unlock();
+		return;
+	}
 	NewOldStreams.push(s);
 	MNewStreams.unlock();
 	//cout << "Push(): Unlocking MNewStreams" << endl;
@@ -134,6 +134,14 @@ void EQStreamFactory::PushOld(EQOldStream *s)
 void EQStreamFactory::Push(EQStream *s)
 {
 	MNewStreams.lock();
+	try {
+		s->PutInUse();
+	}
+	catch (...) {
+		fprintf(stderr, "Catching Stream Crash.");
+		MNewStreams.unlock();
+		return;
+	}
 	NewStreams.push(s);
 	MNewStreams.unlock();
 }
@@ -147,14 +155,6 @@ EQOldStream *s=nullptr;
 	if (NewOldStreams.size()) {
 		s=NewOldStreams.front();
 		NewOldStreams.pop();
-		try {
-			s->PutInUse();
-		}
-		catch (...) {
-			fprintf(stderr, "Catching Stream Crash.");
-			MNewStreams.unlock();
-			return 0;
-		}
 	}
 	MNewStreams.unlock();
 	//cout << "Pop(): Unlocking MNewStreams" << endl;
@@ -215,8 +215,8 @@ timeval sleep_time;
 						EQStream *s = new EQStream(from);
 						s->SetStreamType(StreamType);
 						Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)]=s;
-						WriterWork.Signal();
 						Push(s);
+						WriterWork.Signal();
 						s->AddBytesRecv(length);
 						s->Process(buffer,length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
@@ -225,8 +225,8 @@ timeval sleep_time;
 						EQOldStream *s = new EQOldStream(from, sock);
 						s->SetStreamType(OldStream);
 						OldStreams[std::make_pair(from.sin_addr.s_addr, from.sin_port)]=s;
-						WriterWork.Signal();
 						PushOld(s);
+						WriterWork.Signal();
 						//s->AddBytesRecv(length);
 						s->SetLastPacketTime(Timer::GetCurrentTime());
 						s->ReceiveData(buffer,length);

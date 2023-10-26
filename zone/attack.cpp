@@ -839,6 +839,8 @@ bool Client::Attack(Mob* other, int hand, int damagePct)
 	AttackAnimation(skillinuse, hand, weapon);
 	Log(Logs::Detail, Logs::Combat, "Attacking with %s in slot %d using skill %d", weapon?weapon->GetItem()->Name:"Fist", hand, skillinuse);
 
+	AddWeaponAttackFatigue(weapon);
+
 	// Now figure out damage
 	int damage = 1;
 	uint8 mylevel = GetLevel();
@@ -3847,11 +3849,14 @@ bool Mob::TryRootFadeByDamage(int buffslot, Mob* attacker) {
 	if (!attacker || !spellbonuses.Root[0] || spellbonuses.Root[1] < 0)
 		return false;
 
-	if (IsDetrimentalSpell(spellbonuses.Root[1]) && spellbonuses.Root[1] != buffslot)
+	int root_buffslot = spellbonuses.Root[1];
+	uint16 root_spell_id = buffs[root_buffslot].spellid;
+
+	if (IsValidSpell(root_spell_id) && spells[root_spell_id].goodEffect == 0 && root_buffslot != buffslot)
 	{
 		int BreakChance = RuleI(Spells, RootBreakFromSpells);
 
-		BreakChance -= BreakChance*buffs[spellbonuses.Root[1]].RootBreakChance/100;
+		BreakChance -= BreakChance*buffs[root_buffslot].RootBreakChance/100;
 		int level_diff = attacker->GetLevel() - GetLevel();
 
 		BreakChance -= level_diff;

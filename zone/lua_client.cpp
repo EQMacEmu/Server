@@ -825,26 +825,6 @@ void Lua_Client::QuestReadBook(const char *text, int type) {
 	self->QuestReadBook(text, type);
 }
 
-int Lua_Client::GetEndurance() {
-	Lua_Safe_Call_Int();
-	return self->GetEndurance();
-}
-
-int Lua_Client::GetMaxEndurance() {
-	Lua_Safe_Call_Int();
-	return self->GetMaxEndurance();
-}
-
-int Lua_Client::GetEndurancePercent() {
-	Lua_Safe_Call_Int();
-	return self->GetEndurancePercent();
-}
-
-void Lua_Client::SetEndurance(int endur) {
-	Lua_Safe_Call_Void();
-	self->SetEndurance(endur);
-}
-
 void Lua_Client::SendOPTranslocateConfirm(Lua_Mob caster, int spell_id) {
 	Lua_Safe_Call_Void();
 	self->SendOPTranslocateConfirm(caster, spell_id);
@@ -1307,10 +1287,6 @@ luabind::scope lua_register_client() {
 		.def("KeyRingAdd", (void(Lua_Client::*)(uint32))&Lua_Client::KeyRingAdd)
 		.def("KeyRingCheck", (bool(Lua_Client::*)(uint32))&Lua_Client::KeyRingCheck)
 		.def("QuestReadBook", (void(Lua_Client::*)(const char *,int))&Lua_Client::QuestReadBook)
-		.def("GetEndurance", (int(Lua_Client::*)(void))&Lua_Client::GetEndurance)
-		.def("GetMaxEndurance", (int(Lua_Client::*)(void))&Lua_Client::GetMaxEndurance)
-		.def("GetEndurancePercent", (int(Lua_Client::*)(void))&Lua_Client::GetEndurancePercent)
-		.def("SetEndurance", (void(Lua_Client::*)(int))&Lua_Client::SetEndurance)
 		.def("SendOPTranslocateConfirm", (void(Lua_Client::*)(Lua_Mob,int))&Lua_Client::SendOPTranslocateConfirm)
 		.def("GetIP", (uint32(Lua_Client::*)(void))&Lua_Client::GetIP)
 		.def("AddLevelBasedExp", (void(Lua_Client::*)(int))&Lua_Client::AddLevelBasedExp)

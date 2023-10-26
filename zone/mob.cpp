@@ -376,7 +376,6 @@ Mob::Mob(const char* in_name,
 	m_DisableMelee = false;
 
 	emoteid = 0;
-	endur_upkeep = false;
 	combat_hp_regen = 0;
 	combat_mana_regen = 0;
 	iszomm = false;

@@ -675,7 +675,9 @@ void Client::CompleteConnect()
 		guild_mgr.RequestOnlineGuildMembers(this->CharacterID(), this->GuildID());
 	}
 
-	SendStaminaUpdate();
+	stamina_timer.Reset();
+	tic_timer.Reset();
+
 	SendClientVersion();
 	FixClientXP();
 	SendToBoat(true);
@@ -1463,10 +1465,6 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	SetHP(m_pp.cur_hp);
 
 	Mob::SetMana(m_pp.mana); // mob function doesn't send the packet
-	cur_end = m_pp.endurance;
-	if (cur_end > max_end)
-		cur_end = max_end;
-	m_pp.fatigue = GetFatiguePercent();
 
 	uint32 max_slots = GetMaxBuffSlots();
 	bool stripbuffs = false;
@@ -3307,71 +3305,60 @@ void Client::Handle_OP_Consume(const EQApplicationPacket *app)
 	}
 	Consume_Struct* pcs = (Consume_Struct*)app->pBuffer;
 	Log(Logs::Detail, Logs::Debug, "Hit Consume! How consumed: %i. Slot: %i. Type: %i", pcs->auto_consumed, pcs->slot, pcs->type);
-	int value = RuleI(Character, ConsumptionValue);
 
-	m_pp.fatigue = GetFatiguePercent();
-
-	// We don't want to change the pp for hunger or thirst, since we want to be able to go past the client's maximium value internally.
-	if (pcs->type == 0x01)
+	if (pcs->type != 1 && pcs->type != 2)
 	{
-		if (m_pp.hunger_level > value)
-		{
-			m_pp.hunger_level = value;
-			auto outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
-			Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-			sta->food = value;
-			sta->water = m_pp.thirst_level> value ? value : m_pp.thirst_level;
-			sta->fatigue = m_pp.fatigue;
-
-			QueuePacket(outapp, false);
-			safe_delete(outapp);
-			return;
-		}
-	}
-	else if (pcs->type == 0x02)
-	{
-		if (m_pp.thirst_level > value)
-		{
-			auto outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
-			Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-			sta->food = m_pp.hunger_level > value ? value : m_pp.hunger_level;
-			sta->water = value;
-			sta->fatigue = m_pp.fatigue;
-
-			QueuePacket(outapp, false);
-			safe_delete(outapp);
-			return;
-		}
-	}
-
-	EQ::ItemInstance *myitem = GetInv().GetItem(pcs->slot);
-	if (myitem == nullptr) {
-		Log(Logs::General, Logs::Error, "Consuming from empty slot %d", pcs->slot);
-		return;
-	}
-
-	const EQ::ItemData* eat_item = myitem->GetItem();
-	if (pcs->type == 0x01) {
-		if (eat_item->ItemType != EQ::item::ItemTypeFood) {
-			Log(Logs::General, Logs::Error, "%s tried to eat something that isn't food from slot %d : %s", name, pcs->slot, eat_item->Name);
-			return;
-		}
-		Consume(eat_item, EQ::item::ItemTypeFood, pcs->slot, (pcs->auto_consumed == 0xffffffff));
-	}
-	else if (pcs->type == 0x02) {
-		if (eat_item->ItemType != EQ::item::ItemTypeDrink) {
-			Log(Logs::General, Logs::Error, "%s tried to drink something that isn't a beverage from slot %d : %s", name, pcs->slot, eat_item->Name);
-			return;
-		}
-		Consume(eat_item, EQ::item::ItemTypeDrink, pcs->slot, (pcs->auto_consumed == 0xffffffff));
-	}
-	else {
 		Log(Logs::General, Logs::Error, "OP_Consume: unknown type, type:%i", (int)pcs->type);
 		return;
 	}
 
+	EQ::ItemInstance *myitem = GetInv().GetItem(pcs->slot);
+	if (myitem == nullptr)
+	{
+		Log(Logs::General, Logs::Error, "Consuming from empty slot %d", pcs->slot);
+		return;
+	}
+	const EQ::ItemData* consume_item = myitem->GetItem();
+	if (!consume_item)
+		return;
+
+	uint8 expectItemType = pcs->type == 1 ? EQ::item::ItemTypeFood : EQ::item::ItemTypeDrink;
+	if (consume_item->ItemType != expectItemType)
+	{
+		// I think this can happen when quickly swapping items in inventory, like after a forage
+		Log(Logs::General, Logs::Error, "%s tried to consume something that isn't food or drink from slot %d : %s", name, pcs->slot, consume_item->Name);
+		return;
+	}
+	
+	bool auto_consume = pcs->auto_consumed == -1;
+	int16 amountMod = auto_consume ? 100 : 50; // force feeding gives half as much fullness
+	int16 amount = amountMod * consume_item->CastTime;
+	int16 oldValue = consume_item->ItemType == EQ::item::ItemTypeFood ? GetHunger() : GetThirst();
+	int16 newValue = oldValue + amount;
+	if (!auto_consume && newValue > 6000)
+	{
+		newValue = 6000; // force feeding limits you to 6000 but auto eating can get you up to 32000
+	}
+
+	if (consume_item->ItemType == EQ::item::ItemTypeFood)
+	{
+		SetHunger(newValue);
+		Log(Logs::Detail, Logs::Inventory, "Eating from slot:%i", (int)pcs->slot);
+		if (!auto_consume) //no message if the client consumed for us
+			entity_list.MessageClose_StringID(this, true, 50, 0, EATING_MESSAGE, GetName(), consume_item->Name);
+	}
+	else
+	{
+		SetThirst(newValue);
+		Log(Logs::Detail, Logs::Inventory, "Drinking from slot:%i", (int)pcs->slot);
+		if (!auto_consume) //no message if the client consumed for us
+			entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), consume_item->Name);
+	}
+
+	//Message(MT_Broadcasts, "Consumed %s from slot %d auto_consume %d amount %d newValue %d", consume_item->Name, pcs->slot, auto_consume, amount, newValue);
+
+	DeleteItemInInventory(pcs->slot, 1, false);
 	SendStaminaUpdate();
-	return;
 }
 
 void Client::Handle_OP_ControlBoat(const EQApplicationPacket *app)
@@ -5625,7 +5612,6 @@ void Client::Handle_OP_InstillDoubt(const EQApplicationPacket *app)
 	p_timers.Start(pTimerInstillDoubt, InstillDoubtReuseTime - 1);
 
 	InstillDoubt(GetTarget());
-	CheckIncreaseSkill(EQ::skills::SkillIntimidation, GetTarget(), zone->skill_difficulty[EQ::skills::SkillIntimidation].difficulty);
 	return;
 }
 
@@ -5724,8 +5710,8 @@ void Client::Handle_OP_ItemLinkResponse(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Jump(const EQApplicationPacket *app)
 {
-	SetEndurance(GetEndurance() - (GetLevel()<20 ? (225 * GetLevel() / 100) : 50));
-	return;
+	SetFatigue(GetFatigue() + 10);
+	CalcBonuses();
 }
 
 void Client::Handle_OP_LeaveBoat(const EQApplicationPacket *app)

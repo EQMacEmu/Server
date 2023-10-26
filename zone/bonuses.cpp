@@ -99,7 +99,6 @@ void Client::CalcBonuses()
 
 	CalcMaxHP();
 	CalcMaxMana();
-	CalcMaxEndurance();
 
 	CalcAGI();	// AGI calc depends on max hp
 	CalcAC(); // AC depends on AGI
@@ -183,9 +182,6 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 	newbon->ManaRegenUncapped = newbon->ManaRegen;
 	if(newbon->ManaRegen > CalcManaRegenCap())
 		newbon->ManaRegen = CalcManaRegenCap();
-
-	if(newbon->EnduranceRegen > CalcEnduranceRegenCap())
-		newbon->EnduranceRegen = CalcEnduranceRegenCap();
 }
 
 void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
@@ -582,9 +578,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 			case SE_CurrentHP: //regens
 				newbon->HPRegen += base1;
 				break;
-			case SE_CurrentEndurance:
-				newbon->EnduranceRegen += base1;
-				break;
 			case SE_MovementSpeed:
 				newbon->movementspeed += base1;	//should we let these stack?
 				/*if (base1 > newbon->movementspeed)	//or should we use a total value?
@@ -786,9 +779,6 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 				break;
 			case SE_ChangeAggro:
 				newbon->hatemod += base1;
-				break;
-			case SE_EndurancePool:
-				newbon->Endurance += base1;
 				break;
 			case SE_ChannelChanceSpells:
 				newbon->ChannelChanceSpells += base1;
@@ -1091,13 +1081,15 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 			if(IsBlankSpellEffect(spell_id, i))
 				continue;
 
-			uint8 focus = IsFocusEffect(spell_id, i);
-			if (focus)
+			if (i == 0) // focus effects only work in the first slot
 			{
-				new_bonus->FocusEffects[focus] = spells[spell_id].effectid[i];
-				continue;
+				uint8 focus = IsFocusEffect(spell_id, i);
+				if (focus)
+				{
+					new_bonus->FocusEffects[focus] = spells[spell_id].effectid[i];
+					continue;
+				}
 			}
-
 		
 			effectid = spells[spell_id].effectid[i];
 			effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, ticsremaining, instrumentmod);
@@ -1119,10 +1111,6 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				if(effect_value > 0) {
 					new_bonus->HPRegen += effect_value;
 				}
-				break;
-
-			case SE_CurrentEndurance:
-				new_bonus->EnduranceRegen += effect_value;
 				break;
 
 			case SE_ChangeFrenzyRad:
@@ -1237,7 +1225,6 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 
 			case SE_Stamina:
 			{
-				new_bonus->EnduranceReduction += effect_value;
 				break;
 			}
 
@@ -1758,10 +1745,6 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				new_bonus->MaxHPChange += effect_value;
 				break;
 
-			case SE_EndurancePool:
-				new_bonus->Endurance += effect_value;
-				break;
-
 			case SE_HealRate: // Balance of Zebuxoruk
 				new_bonus->HealRate += -(100 - effect_value);
 				break;
@@ -2099,6 +2082,12 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 			case SE_WaterBreathing:
 			{
 				new_bonus->WaterBreathing = true;
+				break;
+			}
+
+			case SE_Hunger:
+			{
+				new_bonus->FoodWater = effect_value;
 				break;
 			}
 
