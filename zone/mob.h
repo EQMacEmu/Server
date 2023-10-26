@@ -949,6 +949,7 @@ public:
 	uint16 GetMerchantSession() { return MerchantSession; }
 	uint32 player_damage;
 	uint32 ssf_player_damage;
+	uint32 ssf_ds_damage;
 	uint32 dire_pet_damage;
 	uint32 total_damage;
 	uint32 ds_damage;

@@ -387,6 +387,7 @@ Mob::Mob(const char* in_name,
 	feared = false;
 	player_damage = 0;
 	ssf_player_damage = 0;
+	ssf_ds_damage = 0;
 	dire_pet_damage = 0;
 	total_damage = 0;
 	ds_damage = 0;
@@ -4897,7 +4898,7 @@ void Mob::ReportDmgTotals(Client* client, bool corpse, bool xp, bool faction, in
 		return;
 
 	uint32 pet_damage = total_damage - (player_damage + npc_damage + gm_damage + ds_damage);
-	client->Message(CC_Yellow, "[GM Debug] %s damage report: TotalDmg: %d KillerGroupDmg: %d PlayerDmg: %d NPCDmg: %d PlayerPetDmg: %d DireCharmDmg: %d DSDmg: %d GMDmg: %d PBAoEDmg: %d", GetName(), total_damage, dmg_amt, player_damage, npc_damage, pet_damage, dire_pet_damage, ds_damage, gm_damage, pbaoe_damage);
+	client->Message(CC_Yellow, "[GM Debug] %s damage report: TotalDmg: %d KillerGroupDmg: %d PlayerDmg: %d NPCDmg: %d PlayerPetDmg: %d DireCharmDmg: %d DSDmg: %d GMDmg: %d PBAoEDmg: %d SSFDmg: %d SSFDSDmg: %d", GetName(), total_damage, dmg_amt, player_damage, npc_damage, pet_damage, dire_pet_damage, ds_damage, gm_damage, pbaoe_damage, ssf_player_damage, ssf_ds_damage);
 
 	if (corpse || xp || faction)
 	{
