@@ -729,8 +729,8 @@ struct PlayerProfile_Struct
 	/*4948*/	uint32  birthday;
 	/*4952*/	uint32  lastlogin;
 	/*4956*/	uint32  timePlayedMin;
-	/*4960*/	int32    thirst_level;		// mac datatype is int8
-	/*4961*/    int32    hunger_level;		// mac datatype is int8
+	/*4960*/	int16    thirst_level;
+	/*4961*/    int16    hunger_level;
 	/*4962*/	int8   fatigue;
 	/*4963*/	uint8	pvp;				// Player PVP Flag
 	/*4964*/	uint8	level2;
@@ -786,10 +786,8 @@ struct PlayerProfile_Struct
 				char				title[32];			// length might be wrong
 				char				suffix[32];			// length might be wrong
 				uint32				guildid2;			//
-				uint32				famished;
 				uint32				boatid;
 				uint32				zone_change_count;	// Number of times user has zoned in their career (guessing)
-				uint32				endurance;
 				uint32				aapoints_spent;
 				SuspendedMinion_Struct	SuspendedMinion; // No longer in use
 				uint32				timeentitledonaccount;
@@ -1089,9 +1087,10 @@ struct SpawnHPUpdate_Struct2
 ** OpCode: 5741
 */
 struct Stamina_Struct {
-/*00*/ uint16 food;		// (low more hungry 127-0)
-/*02*/ uint16 water;	// (low more thirsty 127-0)
-/*04*/ uint16 fatigue;  // (low more 0-100)
+/*00*/ int16 food;		// clamped to 0 - 32000
+/*02*/ int16 water;		// clamped to 0 - 32000
+/*04*/ int8 fatigue;	// clamped to 0 - 100
+/*05*/ //uint8 pad1[3];	// just alignment padding
 };
 
 /*
@@ -1153,8 +1152,8 @@ struct BulkItemPacket_Struct
 struct Consume_Struct
 {
 	/*000*/ uint32 slot;
-	/*004*/ uint32 auto_consumed; // 0xffffffff when auto eating e7030000 when right click
-	/*008*/ uint32 c_unknown1;
+	/*004*/ int32 auto_consumed; // 0xffffffff (-1) when auto eating e7030000 (999) when right click
+	/*008*/ int32 c_unknown1; // -1
 	/*012*/ uint32 type; // 0x01=Food 0x02=Water
 	/*016*/
 };

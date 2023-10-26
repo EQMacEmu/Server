@@ -226,7 +226,6 @@ public:
 	bool	CanCastDungeon() const { return(can_castdungeon); }
 	bool	DragAggro() const {return(drag_aggro);}
 	bool	IsBoatZone();
-	bool	IsDesertZone();
 	bool	IsBindArea(float x_coord, float y_coord, float z_coord);
 	bool	SkipLoS() const { return(skip_los); }
 	bool	IsWaterZone(float z);

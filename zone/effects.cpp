@@ -338,7 +338,9 @@ int32 Client::GetActSpellCasttime(uint16 spell_id, int32 casttime)
 	std::string item_name; // not used
 
 	int32 aa_casting_time_mod = GetAACastingTimeModifier(spell_id, casttime);
-	int32 focus_casting_time_mod = casttime * (100 - GetFocusEffect(focusSpellHaste, spell_id, item_name)) / 100 - casttime;
+	// intentional sign bug reproduced here, the commented out line below would be the correct way but it's not how the client does it
+	//int32 focus_casting_time_mod = casttime * (100 - GetFocusEffect(focusSpellHaste, spell_id, item_name)) / 100 - casttime;
+	int32 focus_casting_time_mod = -(casttime * GetFocusEffect(focusSpellHaste, spell_id, item_name) / 100u); // this overflows if the haste focus is negative, matching the client calc
 
 	int32 modified_cast_time = casttime + aa_casting_time_mod + focus_casting_time_mod;
 	modified_cast_time = modified_cast_time < casttime / 2 ? casttime / 2 : modified_cast_time;

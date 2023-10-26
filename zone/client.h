@@ -488,22 +488,11 @@ public:
 	inline uint32 GetPlatinum() const { return m_pp.platinum; }
 
 
-	/*Endurance and such*/
-	void CalcMaxEndurance(); //This calculates the maximum endurance we can have
-	int32 CalcBaseEndurance(); //Calculates Base End
-	int32 CalcEnduranceRegen(); //Calculates endurance regen used in DoEnduranceRegen()
-	int32 GetEndurance() const {return cur_end;} //This gets our current endurance
-	int32 GetMaxEndurance() const {return max_end;} //This gets our endurance from the last CalcMaxEndurance() call
-	int32 CalcEnduranceRegenCap();
 	int32 CalcHPRegenCap();
-	inline uint8 GetEndurancePercent() { return (uint8)((float)cur_end / (float)max_end * 100.0f); }
-	inline uint8 GetFatiguePercent() { return (100 - GetEndurancePercent()); }
-	void SetEndurance(int32 newEnd);	//This sets the current endurance to the new value
-	void DoEnduranceRegen();	//This Regenerates endurance
-	void DoEnduranceUpkeep();	//does the endurance upkeep
-	void DoEnduranceStatPenalty();
-	uint8 CalculateEndurancePenalty();
 	uint16 CalculateLungCapacity();
+	int32 CalculateFatiguePenalty();
+	int8 GetFatigue() { return m_pp.fatigue; }
+	void SetFatigue(int8 in_fatigue);
 
 	//This gets the skill value of the item type equiped in the Primary Slot
 	uint16 GetPrimarySkillValue();
@@ -765,17 +754,19 @@ public:
 
 	void LeaveGroup();
 
-	bool Hungry() const {if (GetGM()) return false; return m_pp.hunger_level <= 3000;} //Stomach is below the auto-consume threeshold of 3000. 
-	bool Thirsty() const {if (GetGM()) return false; return m_pp.thirst_level <= 3000;}
-	bool Famished() const { if (GetGM()) return false; return m_pp.thirst_level <= 0 || m_pp.hunger_level <= 0; } //Stomach is empty, sickness is eminent.
-	bool FoodFamished() const { if (GetGM()) return false; return m_pp.hunger_level <= 0; }
-	bool WaterFamished() const { if (GetGM()) return false; return m_pp.thirst_level <= 0; }
-	bool FamishedSickness() const { if (GetGM()) return false; return m_pp.famished >= RuleI(Character, FamishedLevel) && Famished(); } //HP and Mana regen has stopped, Endurance will drop to 0.
-	int32 GetHunger() const { return m_pp.hunger_level; }
-	int32 GetThirst() const { return m_pp.thirst_level; }
-	void SetHunger(int32 in_hunger);
-	void SetThirst(int32 in_thirst);
-	void SetConsumption(int32 in_hunger, int32 in_thirst);
+	bool Hungry() const { return m_pp.hunger_level < 3000; } //Stomach is below the auto-consume threeshold of 3000. 
+	bool Thirsty() const { return m_pp.thirst_level < 3000; }
+	bool Famished() const { return m_pp.thirst_level <= 0 || m_pp.hunger_level <= 0; } //Stomach is empty
+	bool FoodFamished() const { return m_pp.hunger_level <= 0; }
+	bool WaterFamished() const { return m_pp.thirst_level <= 0; }
+	int16 GetHunger() const { return m_pp.hunger_level; }
+	int16 GetThirst() const { return m_pp.thirst_level; }
+	void SetHunger(int16 in_hunger);
+	void SetThirst(int16 in_thirst);
+	void SetConsumption(int16 in_hunger, int16 in_thirst);
+	void ProcessHungerThirst();
+	void ProcessFatigue();
+	void AddWeaponAttackFatigue(EQ::ItemInstance *weapon);
 
 	bool	CheckTradeLoreConflict(Client* other);
 	void	LinkDead();
@@ -922,7 +913,6 @@ public:
 	void LoadAccountFlags();
 	void SetAccountFlag(std::string flag, std::string val);
 	std::string GetAccountFlag(std::string flag);
-	void Consume(const EQ::ItemData *item, uint8 type, int16 slot, bool auto_consume);
 	void QuestReward(Mob* target, int32 copper = 0, int32 silver = 0, int32 gold = 0, int32 platinum = 0, int16 itemid = 0, int32 exp = 0, bool faction = false);
 	void QuestReward(Mob* target, const QuestReward_Struct& reward); // TODO: Fix faction processing
 	void RewindCommand();
@@ -1128,7 +1118,6 @@ private:
 	int32 CalcManaRegen(bool meditate = false);
 	void DoHPRegen();
 	void DoManaRegen();
-	void DoStaminaUpdate();
 
 	uint8 playeraction;
 
@@ -1182,9 +1171,6 @@ private:
 	uint32				TraderSession; //Used by bazaar traders to track which players are currently browsing their wares.
 	bool				WithCustomer;
 
-	int32 max_end;
-	int32 cur_end;
-
 	bool m_lock_save_position = false;
 public:
 	bool IsLockSavePosition() const;
@@ -1232,7 +1218,6 @@ private:
 	Timer dead_timer;
 	Timer global_channel_timer;
 	Timer fishing_timer;
-	Timer endupkeep_timer;
 	Timer autosave_timer;
 	Timer scanarea_timer;
 	Timer	proximity_timer;
@@ -1280,7 +1265,6 @@ private:
 	bool tgb;
 	bool instalog;
 	int32 last_reported_mana;
-	int32 last_reported_endur;
 
 	unsigned int AggroCount; // How many mobs are aggro on us.
 
@@ -1347,13 +1331,13 @@ private:
 	uint8 active_disc;
 	uint16 active_disc_spell;
 	bool rested; // Has been sitting for at least 60 seconds.
-	bool endurance_degen; //We're famished and endurance is actively dropping
 	int32 food_hp;
 	int32 drink_hp;
 	uint8 drowning;
 	uint16 wake_corpse_id; // Wake The Dead AA
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
+	int8 last_fatigue;
 };
 
 #endif

@@ -2337,28 +2337,6 @@ bool Zone::IsBoatZone()
 	return false;
 }
 
-bool Zone::IsDesertZone()
-{
-
-	if(!IsSpecialWeatherZone())
-	{
-		if(!HasWeather() && CanCastOutdoor() && !IsCity())
-			return true;
-
-		// These are zones that do get weather, but with a very little chance (<10%).
-		static const int16 desertzones[] = { nro, sro, oasis, lavastorm, shadeweaver, skyfire };
-
-		int8 desertzonessize = sizeof(desertzones) / sizeof(desertzones[0]);
-		for (int i = 0; i < desertzonessize; i++) {
-			if (GetZoneID() == desertzones[i]) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 bool Zone::IsBindArea(float x_coord, float y_coord, float z_coord)
 {
 	// Coords pulled from a client decompile.

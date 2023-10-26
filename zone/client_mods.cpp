@@ -99,7 +99,7 @@ int32 Client::LevelRegen(int level, bool is_sitting, bool is_resting, bool is_fe
 	}
 
 	// being either hungry or thirsty negates the passive regen from standing/sitting/feigning but can still benefit from level bonuses and resting
-	if (is_famished)	// the client checks to see if either food or water is 0 in pp, not for the advanced sickness that happens later
+	if (is_famished)	// the client checks to see if either food or water is 0 in pp
 	{
 		hp_regen_amount = 0;
 	}
@@ -1052,7 +1052,7 @@ int32 Client::CalcAlcoholPhysicalEffect()
 }
 
 int32 Client::CalcSTR() {
-	int32 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect();
+	int32 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect() - CalculateFatiguePenalty();
 
 	if (CalcAlcoholPhysicalEffect() == 0 && GetClass() == WARRIOR && IsBerserk())
 	{
@@ -1069,8 +1069,6 @@ int32 Client::CalcSTR() {
 	int m = GetMaxSTR();
 	if(STR > m)
 		STR = m;
-
-	STR -= CalculateEndurancePenalty();
 
 	return(STR);
 }
@@ -1098,7 +1096,7 @@ int32 Client::CalcSTA(bool unbuffed) {
 }
 
 int32 Client::CalcAGI() {
-	int32 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect();
+	int32 val = m_pp.AGI + itembonuses.AGI + spellbonuses.AGI - CalcAlcoholPhysicalEffect() - CalculateFatiguePenalty();
 	int32 mod = aabonuses.AGI;
 
 	int32 str = GetSTR();
@@ -1108,25 +1106,27 @@ int32 Client::CalcAGI() {
 	// Near death - from client decompile
 	if (GetMaxHP() > 0 && !dead)	// agi calculation depends on max hp calculation
 	{
-		if ((float)(cur_hp / max_hp) >= 0.2 || cur_hp >= 50.0)
+		if (cur_hp < max_hp && GetLevel() > 3)
 		{
-			if ((float)(cur_hp / max_hp) < 0.33000001 && cur_hp < 100.0)
+			if ((float)cur_hp / max_hp >= 0.2 || cur_hp >= 50.0)
 			{
-				encum_factor = 0.75;
+				if ((float)cur_hp / max_hp < 0.33000001 && cur_hp < 100.0)
+				{
+					encum_factor = 0.75;
+				}
 			}
-		}
-		else
-		{
-			encum_factor = 0.5;
+			else
+			{
+				encum_factor = 0.5;
+			}
 		}
 	}
 
 	//Encumbered penalty
-	if (IsEncumbered())
+	if (IsEncumbered() && GetZoneID() != bazaar)
 	{
 		//AGI is halved when we double our weight, zeroed (defaults to 1) when we triple it. this includes AGI from AAs
-		//casting to an int assumes this will be floor'd. without using floats & casting to int16, the calculation doesn't work right
-		encum_factor = fmaxf(0.0, encum_factor - (float)((float)(weight / 10 - str) / (float)(str + str)));
+		encum_factor = fmaxf(0.0, encum_factor - (weight / 10.0f - str) / (float)(str + str));
 	}
 	AGI = (val + mod) * encum_factor;
 
@@ -1137,13 +1137,11 @@ int32 Client::CalcAGI() {
 	if(AGI > m)
 		AGI = m;
 
-	AGI -= CalculateEndurancePenalty();
-
 	return(AGI);
 }
 
 int32 Client::CalcDEX() {
-	int32 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect();
+	int32 val = m_pp.DEX + itembonuses.DEX + spellbonuses.DEX - CalcAlcoholPhysicalEffect() - CalculateFatiguePenalty();
 
 	int32 mod = aabonuses.DEX;
 
@@ -1155,8 +1153,6 @@ int32 Client::CalcDEX() {
 	int m = GetMaxDEX();
 	if(DEX > m)
 		DEX = m;
-
-	DEX -= CalculateEndurancePenalty();
 
 	return(DEX);
 }
@@ -1801,82 +1797,6 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	return effectmod;
 }
 
-void Client::CalcMaxEndurance()
-{
-	max_end = CalcBaseEndurance() + spellbonuses.Endurance + itembonuses.Endurance + aabonuses.Endurance;
-
-	if (max_end < 0) {
-		max_end = 0;
-	}
-
-	if(max_end > 32767)
-		max_end = 32767;
-
-	if (cur_end > max_end) {
-		cur_end = max_end;
-	}
-}
-
-int32 Client::CalcBaseEndurance()
-{
-	int32 base_end = 0;
-
-		int Stats = GetSTR()+GetSTA()+GetDEX()+GetAGI();
-		int LevelBase = GetLevel() * 15;
-
-		int at_most_800 = Stats;
-		if(at_most_800 > 800)
-			at_most_800 = 800;
-
-		int Bonus400to800 = 0;
-		int HalfBonus400to800 = 0;
-		int Bonus800plus = 0;
-		int HalfBonus800plus = 0;
-
-		int BonusUpto800 = int( at_most_800 / 4 ) ;
-		if(Stats > 400) {
-			Bonus400to800 = int( (at_most_800 - 400) / 4 );
-			HalfBonus400to800 = int( std::max( ( at_most_800 - 400 ), 0 ) / 8 );
-
-			if(Stats > 800) {
-				Bonus800plus = int( (Stats - 800) / 8 ) * 2;
-				HalfBonus800plus = int( (Stats - 800) / 16 );
-			}
-		}
-		int bonus_sum = BonusUpto800 + Bonus400to800 + HalfBonus400to800 + Bonus800plus + HalfBonus800plus;
-
-		base_end = LevelBase;
-
-		//take all of the sums from above, then multiply by level*0.075
-		base_end += ( bonus_sum * 3 * GetLevel() ) / 40;
-
-	return base_end;
-}
-
-int32 Client::CalcEnduranceRegen() 
-{
-
-	//Regen completely halts when the player is hungry/thirsty according to the client.
-	if (FamishedSickness())
-		return 0;
-
-	int32 regen = int32(GetLevel() * 4 / 10) + 2;
-	regen += aabonuses.EnduranceRegen + spellbonuses.EnduranceRegen + itembonuses.EnduranceRegen;
-
-	return regen;
-}
-
-int32 Client::CalcEnduranceRegenCap() 
-{
-
-	if (FamishedSickness())
-		return 0;
-
-	int cap = (RuleI(Character, ItemEnduranceRegenCap));
-
-	return cap;
-}
-
 int Client::GetRawACNoShield(int &shield_ac, int spell_mod) const
 {
 	int ac = itembonuses.AC + spellbonuses.AC / spell_mod + aabonuses.AC;
@@ -1891,77 +1811,6 @@ int Client::GetRawACNoShield(int &shield_ac, int spell_mod) const
 		}
 	}
 	return ac;
-}
-
-void Client::DoEnduranceStatPenalty()
-{
-	uint8 endurance_ratio = GetEndurancePercent();
-	int32 stamina = GetSTA();
-	if (stamina >= 100 || endurance_ratio > 40)
-		return;
-
-	CalcSTA();
-	CalcSTR();
-	CalcAGI();
-	CalcDEX();
-	
-}
-
-uint8 Client::CalculateEndurancePenalty()
-{
-	int8 final = 0;
-	int32 stamina = GetSTA();
-	uint8 endurance_ratio = GetEndurancePercent();
-	if (stamina >= 100 || endurance_ratio >= 40)
-	{
-		return final;
-	}
-	else
-	{
-		int32 sta_difference = 100 - stamina;
-		uint8 base = 0;
-		//STA 90 - 99 < 10% Endurance
-		if (sta_difference < 11)
-		{
-			base = 10;
-		}
-		//STA 80 - 89 < 20% Endurance
-		else if (sta_difference > 10 && sta_difference < 21)
-		{
-			base = 20;
-		}
-		//STA 70 - 79 < 30% Endurance
-		else if (sta_difference > 20 && sta_difference < 31)
-		{
-			base = 30;
-		} 
-		//STA < 70 < 40% Endurance
-		else
-		{
-			base = 40;
-		}
-
-		int8 sta_bonus = 0;
-		uint8 penalty = 0;
-		sta_bonus = base - sta_difference;
-		if (endurance_ratio < (base - 10))
-		{
-			final = 10;
-		}
-		else if (endurance_ratio < base)
-		{
-			penalty = base - endurance_ratio;
-			if (penalty - sta_bonus > 0)
-			{
-				final = penalty - sta_bonus;
-			}
-		}
-
-		if(final > 0)
-			Log(Logs::Detail, Logs::Regen, "STR, AGI, and DEX are penalized %d due to low endurance.", final);
-
-		return final;
-	}
 }
 
 uint16 Client::CalculateLungCapacity()
@@ -1985,4 +1834,14 @@ uint16 Client::CalculateLungCapacity()
 	}
 
 	return lung_capacity;
+}
+
+int32 Client::CalculateFatiguePenalty()
+{
+	if (m_pp.fatigue > GetSTA())
+	{
+		return std::min(m_pp.fatigue - GetSTA(), 10);
+	}
+
+	return 0;
 }

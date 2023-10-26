@@ -10103,6 +10103,7 @@ void command_starve(Client *c, const Seperator *sep){
 		t = c;
 
 	t->SetConsumption(0,0);
+	t->SendStaminaUpdate();
 	c->Message(CC_Default, "Target starved.");
 
 }
