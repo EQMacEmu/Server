@@ -155,6 +155,9 @@ Client::Client(EQStreamInterface* ieqs)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
+
+	for (int aa_ix = 0; aa_ix < MAX_PP_AA_ARRAY; aa_ix++) { aa[aa_ix] = nullptr; }
+
 	character_id = 0;
 	zoneentry = nullptr;
 	conn_state = NoPacketsReceived;
