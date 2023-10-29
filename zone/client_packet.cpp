@@ -2872,10 +2872,10 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 			else if ((IsSelfFound() || IsSoloOnly()))
 			{
 				// If the client is self found or solo, don't allow them to pick up the item, unless they are the one that dropped it
-				if(object->GetCharacterDropperID() != this->CharacterID())
-				{
-					msg = "You cannot pick up dropped player items because you are performing a self found or solo challenge.";
-				}
+				//if(object->GetCharacterDropperID() != this->CharacterID())
+				//{
+					msg = "You cannot pick up dropped items because you are performing a self found or solo challenge.";
+				//}
 				// The else case does not set a msg because they are allowed to pick it up if they dropped it
 			}
 			if (!msg.empty())
