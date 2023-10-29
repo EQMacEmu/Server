@@ -2591,8 +2591,11 @@ void EntityList::UpdateWho(bool iSendFullUpdate)
 		++it;
 	}
 	if (!iSendFullUpdate) {
-		pack->size = sizeof(ServerClientListKeepAlive_Struct) + (sclka->numupdates * 4);
-		worldserver.SendPacket(pack);
+		if (sclka->numupdates > 0)
+		{
+			pack->size = sizeof(ServerClientListKeepAlive_Struct) + (sclka->numupdates * 4);
+			worldserver.SendPacket(pack);
+		}
 		safe_delete(pack);
 	}
 }

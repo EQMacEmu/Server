@@ -199,10 +199,6 @@ public:
 	void KeyRingAdd(uint32 item);
 	bool KeyRingCheck(uint32 item);
 	void QuestReadBook(const char *text, int type);
-	int GetEndurance();
-	int GetMaxEndurance();
-	int GetEndurancePercent();
-	void SetEndurance(int endur);
 	void SendOPTranslocateConfirm(Lua_Mob caster, int spell_id);
 	uint32 GetIP();
 	void AddLevelBasedExp(int exp_pct);

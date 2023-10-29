@@ -123,14 +123,13 @@ Client::Client(EQStreamInterface* ieqs)
 	hpupdate_timer(6000),
 	camp_timer(35000),
 	process_timer(100),
-	stamina_timer(40000),
+	stamina_timer(46000),
 	zoneinpacket_timer(1000),
 	accidentalfall_timer(15000),
 	linkdead_timer(RuleI(Zone,ClientLinkdeadMS)),
 	dead_timer(2000),
 	global_channel_timer(1000),
 	fishing_timer(8000),
-	endupkeep_timer(1000),
 	autosave_timer(RuleI(Character, AutosaveIntervalS) * 1000),
 	scanarea_timer(RuleI(Aggro, ClientAggroCheckInterval) * 1000),
 	proximity_timer(ClientProximity_interval),
@@ -156,6 +155,9 @@ Client::Client(EQStreamInterface* ieqs)
 {
 	for(int cf=0; cf < _FilterCount; cf++)
 		ClientFilters[cf] = FilterShow;
+
+	for (int aa_ix = 0; aa_ix < MAX_PP_AA_ARRAY; aa_ix++) { aa[aa_ix] = nullptr; }
+
 	character_id = 0;
 	zoneentry = nullptr;
 	conn_state = NoPacketsReceived;
@@ -188,7 +190,6 @@ Client::Client(EQStreamInterface* ieqs)
 	prev_last_login_time = 0;
 	tellsoff = false;
 	last_reported_mana = 0;
-	last_reported_endur = 0;
 	gmhideme = false;
 	AFK = false;
 	LFG = false;
@@ -252,7 +253,6 @@ Client::Client(EQStreamInterface* ieqs)
 	m_ClientVersion = EQ::versions::Unknown;
 	m_ClientVersionBit = 0;
 	AggroCount = 0;
-	cur_end = 0;
 
 	m_TimeSinceLastPositionCheck = 0;
 	m_DistanceSinceLastPositionCheck = 0.0f;
@@ -271,9 +271,6 @@ Client::Client(EQStreamInterface* ieqs)
 	PendingGuildInvitation = false;
 
 	client_distance_timer.Disable();
-
-	cur_end = 0;
-	max_end = 0;
 
 	InitializeBuffSlots();
 
@@ -324,7 +321,6 @@ Client::Client(EQStreamInterface* ieqs)
 	pet_interval[0] = 9999;
 	pet_count = 0;
 	rested = false;
-	endurance_degen = false;
 	camping = false;
 	camp_desktop = false;
 	food_hp = 0;
@@ -355,6 +351,7 @@ Client::Client(EQStreamInterface* ieqs)
 
 	wake_corpse_id = 0;
 	ranged_attack_leeway_timer.Disable();
+	last_fatigue = 0;
 }
 
 Client::~Client() {
@@ -550,7 +547,6 @@ bool Client::Save(uint8 iCommitNow) {
 	}
 
 	m_pp.mana = cur_mana;
-	m_pp.endurance = cur_end;
 
 	/* Save Character Currency */
 	database.SaveCharacterCurrency(CharacterID(), &m_pp);
@@ -586,8 +582,8 @@ bool Client::Save(uint8 iCommitNow) {
 
 	p_timers.Store(&database);
 
-	m_pp.hunger_level = EQ::Clamp(m_pp.hunger_level, 0, 50000);
-	m_pp.thirst_level = EQ::Clamp(m_pp.thirst_level, 0, 50000);
+	m_pp.hunger_level = EQ::Clamp(m_pp.hunger_level, (int16)0, (int16)32000);
+	m_pp.thirst_level = EQ::Clamp(m_pp.thirst_level, (int16)0, (int16)32000);
 	database.SaveCharacterData(this->CharacterID(), this->AccountID(), &m_pp, &m_epp); /* Save Character Data */
 
 	return true;
@@ -1437,7 +1433,6 @@ void Client::SendManaUpdatePacket() {
 		SendManaUpdate();
 
 		last_reported_mana = cur_mana;
-		last_reported_endur = cur_end;
 	}
 }
 
@@ -1454,15 +1449,12 @@ void Client::SendManaUpdate()
 
 void Client::SendStaminaUpdate()
 {
-	Log(Logs::Detail, Logs::Regen, "%s is setting endurance to %d Sending out an update.", GetName(), cur_end);
-	m_pp.fatigue = GetFatiguePercent();
-
 	auto outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
 	Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-	int value = RuleI(Character,ConsumptionValue);
-	sta->food = m_pp.hunger_level > value ? value : m_pp.hunger_level;
-	sta->water = m_pp.thirst_level> value ? value : m_pp.thirst_level;
+	sta->food = m_pp.hunger_level;
+	sta->water = m_pp.thirst_level;
 	sta->fatigue = m_pp.fatigue;
+	//Message(MT_Broadcasts, "OP_Stamina hunger %d thirst %d fatigue %d timer duration %d remaining %d", (int)sta->food, (int)sta->water, (int)sta->fatigue, stamina_timer.GetDuration(), stamina_timer.GetRemainingTime());
 	QueuePacket(outapp);
 	safe_delete(outapp);
 }
@@ -3041,23 +3033,6 @@ float Client::CalcPriceMod(Mob* other, bool reverse)
 	return priceMult;
 }
 
-void Client::SetEndurance(int32 newEnd)
-{
-	/*Endurance can't be less than 0 or greater than max*/
-	if(newEnd < 0)
-		newEnd = 0;
-	else if(newEnd > GetMaxEndurance()){
-		newEnd = GetMaxEndurance();
-	}
-
-	if (newEnd != cur_end)
-	{
-		cur_end = newEnd;
-		DoEnduranceStatPenalty();
-		SendStaminaUpdate();
-	}
-}
-
 void Client::SacrificeConfirm(Client *caster) {
 
 	auto outapp = new EQApplicationPacket(OP_Sacrifice, sizeof(Sacrifice_Struct));
@@ -4317,11 +4292,10 @@ void Client::SendStats(Client* client)
 		client->Message(CC_Default, " Mana: %i/%i  Mana Regen: %i/%i", GetMana(), GetMaxMana(), CalcManaRegen(), CalcManaRegenCap());
 	client->Message(CC_Default, "  X: %0.2f Y: %0.2f Z: %0.2f", GetX(), GetY(), GetZ());
 	client->Message(CC_Default, "  InWater: %d UnderWater: %d Air: %d WaterBreathing: %d Lung Capacity: %d", IsInWater(), IsUnderWater(), m_pp.air_remaining, spellbonuses.WaterBreathing || aabonuses.WaterBreathing || itembonuses.WaterBreathing, aabonuses.BreathLevel > 0 ? aabonuses.BreathLevel : 100);
-	client->Message(CC_Default, " End.: %i/%i  End. Regen: %i/%i",GetEndurance(), GetMaxEndurance(), CalcEnduranceRegen(), CalcEnduranceRegenCap());
 	client->Message(CC_Default, " STR: %i  STA: %i  AGI: %i DEX: %i  WIS: %i INT: %i  CHA: %i", GetSTR(), GetSTA(), GetAGI(), GetDEX(), GetWIS(), GetINT(), GetCHA());
 	client->Message(CC_Default, " PR: %i MR: %i  DR: %i FR: %i  CR: %i  ", GetPR(), GetMR(), GetDR(), GetFR(), GetCR());
 	client->Message(CC_Default, " Shielding: %i  Spell Shield: %i  DoT Shielding: %i Stun Resist: %i  Strikethrough: %i  Accuracy: %i", GetShielding(), GetSpellShield(), GetDoTShield(), GetStunResist(), GetStrikeThrough(), GetAccuracy());
-	client->Message(CC_Default, " Hunger: %i Thirst: %i IsFamished: %i FamishedVal: %i FamishedSickness: %i Rested: %i Drunk: %i", GetHunger(), GetThirst(), Famished(), m_pp.famished, FamishedSickness(), IsRested(), m_pp.intoxication);
+	client->Message(CC_Default, " Hunger: %i Thirst: %i IsFamished: %i Rested: %i Drunk: %i", GetHunger(), GetThirst(), Famished(), IsRested(), m_pp.intoxication);
 	client->Message(CC_Default, " Runspeed: %0.1f  Walkspeed: %0.1f Encumbered: %i", GetRunspeed(), GetWalkspeed(), IsEncumbered());
 	client->Message(CC_Default, " Boat: %s (EntityID %i : NPCID %i)", GetBoatName(), GetBoatID(), GetBoatNPCID());
 	if(GetClass() == PALADIN || GetClass() == SHADOWKNIGHT)
@@ -4357,7 +4331,7 @@ void Client::SendQuickStats(Client* client)
 {
 	client->Message(CC_Yellow, "~~~~~ %s %s ~~~~~", GetCleanName(), GetLastName());
 	client->Message(CC_Default, " Level: %i Class: %i Race: %i Size: %1.1f ModelSize: %1.1f BaseSize: %1.1f Weight: %d/%d  ", GetLevel(), GetClass(), GetRace(), GetSize(), GetModelSize(), GetBaseSize(), uint16(CalcCurrentWeight() / 10.0), GetSTR());
-	client->Message(CC_Default, " HP: %i/%i Per %0.2f HP Regen: %i/%i End.: %i/%i  End. Regen: %i/%i",GetHP(), GetMaxHP(), GetHPRatio(), CalcHPRegen(), CalcHPRegenCap(),GetEndurance(), GetMaxEndurance(), CalcEnduranceRegen(), CalcEnduranceRegenCap());
+	client->Message(CC_Default, " HP: %i/%i Per %0.2f HP Regen: %i/%i ",GetHP(), GetMaxHP(), GetHPRatio(), CalcHPRegen(), CalcHPRegenCap());
 	if(CalcMaxMana() > 0)
 		client->Message(CC_Default, " Mana: %i/%i  Mana Regen: %i/%i", GetMana(), GetMaxMana(), CalcManaRegen(), CalcManaRegenCap());
 	client->Message(CC_Default, " AC: %i ATK: %i Haste: %i / %i", CalcAC(), GetATK(), GetHaste(), RuleI(Character, HasteCap));
@@ -4910,85 +4884,20 @@ void Client::IncrementAA(int aa_id) {
 	CalcBonuses();
 }
 
-void Client::SetHunger(int32 in_hunger)
+void Client::SetHunger(int16 in_hunger)
 {
-	m_pp.hunger_level = in_hunger;
-	SendStaminaUpdate();
+	m_pp.hunger_level = in_hunger > 0 ? (in_hunger < 32000 ? in_hunger : 32000) : 0;
 }
 
-void Client::SetThirst(int32 in_thirst)
+void Client::SetThirst(int16 in_thirst)
 {
-	m_pp.thirst_level = in_thirst;
-	SendStaminaUpdate();
+	m_pp.thirst_level = in_thirst > 0 ? (in_thirst < 32000 ? in_thirst : 32000) : 0;
 }
 
-void Client::SetConsumption(int32 in_hunger, int32 in_thirst)
+void Client::SetConsumption(int16 in_hunger, int16 in_thirst)
 {
-	m_pp.hunger_level = in_hunger;
-	m_pp.thirst_level = in_thirst;
-	SendStaminaUpdate();
-}
-
-void Client::Consume(const EQ::ItemData *item, uint8 type, int16 slot, bool auto_consume)
-{
-	/* item->CastTime is the time in real world minutes the food/drink will last when clicked. If it is 
-	auto-consumed, that number is doubled.
-
-	EQ stomach is 6000 units.
-
-	Baseline characters (Humans, no mods) consume food/drink at a rate of about 50% (3000 units) of the 
-	"stomach" per hour, or about 0.83% (50 units) per minute. Once the player's "stomach" reaches 50% 
-	food/drink is auto-consumed by the client and we end up here. Server side, in Client::DoStaminaUpdate()
-	we subtract 75 units of food/water every time the race specific timer hits.
-
-	All penalities and mods including race, horses, deserts, and AAs are handled in Client::DoStaminaUpdate().
-
-	EQ stomach is 6000 units, which means for auto-consume we want to multiply CastTime by 100. 
-
-	Example: Bread Cakes has a CastTime of 30, which equates to 60 minutes auto-consumed or HALF
-	of the total stomach (since the stomach will go from 6000 to 0 in 2 hours.) 30*100 is 3000,
-	or half of 6000. Anything higher than CastTime 60 will overfill the stomach. We want to keep
-	track of the correct value in the pp (so those foods will have their full value), but before 
-	we send the packet it needs to be adjusted to 6000 max.
-	
-	There are rumors that some items like plains pebble or bale of hay will reduce food consumption,
-	but I found no hard evidence of that so I left them out. */
-	
-	if(!item) { return; }
-
-	int value = RuleI(Character,ConsumptionValue);
-	if(type == EQ::item::ItemTypeFood)
-	{
-		int32 food = item->CastTime*100;
-
-		if(!auto_consume)
-			food = food/2;
-
-		m_pp.hunger_level += food;
-		DeleteItemInInventory(slot, 1, false);
-
-		//Message(CC_Yellow, "%s consumed. Added %i to hunger (%i)", item->Name, food, m_pp.hunger_level);
-		if(!auto_consume) //no message if the client consumed for us
-			entity_list.MessageClose_StringID(this, true, 50, 0, EATING_MESSAGE, GetName(), item->Name);
-
-       Log(Logs::Detail, Logs::Inventory, "Eating from slot:%i", (int)slot);
-	}
-	else
-	{
-		int32 drink = item->CastTime*100;
-
-		if(!auto_consume)
-			drink = drink/2;
-
-		m_pp.thirst_level += drink;
-		DeleteItemInInventory(slot, 1, false);
-
-		//Message(CC_Yellow, "%s consumed. Added %i to thirst (%i)", item->Name, drink, m_pp.thirst_level);
-        if(!auto_consume) //no message if the client consumed for us
-			entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), item->Name);
-
-        Log(Logs::Detail, Logs::Inventory, "Drinking from slot:%i", (int)slot);
-   }
+	m_pp.hunger_level = in_hunger > 0 ? (in_hunger < 32000 ? in_hunger : 32000) : 0;
+	m_pp.thirst_level = in_thirst > 0 ? (in_thirst < 32000 ? in_thirst : 32000) : 0;
 }
 
 void Client::SetBoatID(uint32 boatid)
@@ -5795,10 +5704,9 @@ void Client::ShowRegenInfo(Client* message)
 		message->Message(CC_Default, "%s has no regen bonus.", GetName());
 	message->Message(CC_Default, "Total HP Regen: %d/%d From Spells: %d From Items: %d From AAs: %d", CalcHPRegen(), CalcHPRegenCap(), spellbonuses.HPRegen, itembonuses.HPRegen, aabonuses.HPRegen);
 	message->Message(CC_Default, "Total Mana Regen: %d/%d From Spells: %d From Items: %d From AAs: %d", CalcManaRegen(), CalcManaRegenCap(), spellbonuses.ManaRegen, itembonuses.ManaRegen, aabonuses.ManaRegen);
-	message->Message(CC_Default, "Total Endurance Regen: %d/%d From Spells: %d From Items: %d From AAs: %d", CalcEnduranceRegen(), CalcEnduranceRegenCap(), spellbonuses.EnduranceRegen, itembonuses.EnduranceRegen, aabonuses.EnduranceRegen);
 	message->Message(CC_Default, "%s %s food famished and %s water famished. They %s and %s rested.", GetName(), FoodFamished() ? "is" : "is not", WaterFamished() ? "is" : "is not", IsSitting() ? "sitting" : "standing", IsRested() ? "are" : "are not");
-	if (FamishedSickness())
-		message->Message(CC_Red, "This character is currently famished and has lowered HP/Mana regen and no endurance.");
+	if (Famished())
+		message->Message(CC_Red, "This character is currently famished and has lowered HP/Mana regen.");
 }
 
 void Client::ClearGroupInvite()
@@ -6153,7 +6061,7 @@ bool Client::IsInWater()
 	if (zone->GetZoneID() == powater && GetZ() < 0.0f)
 		return true;
 
-	auto inwater = glm::vec3(GetX(), GetY(), GetZ() + 0.5f);
+	auto inwater = glm::vec3(GetX(), GetY(), GetZ() + 0.1f);
 	if (zone->watermap->InLiquid(inwater))
 	{
 		return true;

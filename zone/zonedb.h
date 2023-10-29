@@ -169,7 +169,6 @@ struct TraderCharges_Struct {
 	int32 Charges[80];
 };
 
-
 namespace NPCSpawnTypes {
 	enum : uint8 {
 		CreateNewSpawn,

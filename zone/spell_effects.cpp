@@ -1951,28 +1951,6 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				break;
 			}
 
-			case SE_CurrentEndurance: {
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Current Endurance: %+i", effect_value);
-#endif
-				if(IsClient()) {
-					CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
-				}
-				break;
-			}
-
-			case SE_CurrentEnduranceOnce:
-			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Current Endurance Once: %+i", effect_value);
-#endif
-
-				if(IsClient()) {
-					CastToClient()->SetEndurance(CastToClient()->GetEndurance() + effect_value);
-				}
-				break;
-			}
-
 			case SE_BalanceHP: {
 				if(!caster)
 					break;
@@ -2085,6 +2063,18 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				break;
 			}
 
+			case SE_Stamina:
+			{
+				if (buffslot >= 0)
+					break;
+
+				if (IsClient())
+				{
+					CastToClient()->SetFatigue(CastToClient()->GetFatigue() + effect_value);
+				}
+				break;
+			}
+
 			// Handled Elsewhere
 			case SE_ReduceReuseTimer:
 			case SE_ExtraAttackChance:
@@ -2137,7 +2127,6 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 			case SE_ATK:
 			case SE_ArmorClass:
 			case SE_EndurancePool:
-			case SE_Stamina:
 			case SE_UltraVision:
 			case SE_InfraVision:
 			case SE_ManaPool:
@@ -2807,9 +2796,13 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 				break;
 			}
 
-			case SE_CurrentEndurance: {
-				// Handled with bonuses
-				break;
+			case SE_Stamina:
+			{
+				if (IsClient())
+				{
+					effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
+					CastToClient()->SetFatigue(CastToClient()->GetFatigue() + effect_value);
+				}
 			}
 
 			case SE_WipeHateList:
@@ -2948,12 +2941,6 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			}
 
 			case SE_Hunger: {
-				// this procedure gets called 7 times for every once that the stamina update occurs so we add 1/7 of the subtraction.
-				// It's far from perfect, but works without any unnecessary buff checks to bog down the server.
-				if(IsClient()) {
-					CastToClient()->m_pp.hunger_level += 1;
-					CastToClient()->m_pp.thirst_level += 1;
-				}
 				break;
 			}
 			case SE_Invisibility:
@@ -3981,9 +3968,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 			break;
 
 		case SE_LimitMinDur:
-			
-			if (focus_spell.base[i] > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration) && 
-				!(type == focusSpellHaste && spell_id == SPELL_PACIFY)) // Pacify gets haste according to the client, even if the duration limit isn't satisfied
+			if (focus_spell.base[i] > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
 			{
 				Log(Logs::Detail, Logs::Focus, "Focus %d only affects buffs with a min duration of %d.", focus_id, focus_spell.base[i]);
 				return(0);

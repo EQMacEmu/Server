@@ -83,7 +83,6 @@ SET(zone_sources
 	raids.cpp
 	raycast_mesh.cpp
 	spawn2.cpp
-	spawn2.h
 	spawngroup.cpp
 	special_attacks.cpp
 	spell_effects.cpp
@@ -153,7 +152,7 @@ SET(zone_headers
 	pathfinder_interface.h
 	pathfinder_nav_mesh.h
 	pathfinder_null.h
-	pathfinder_waypoint.cpp
+	pathfinder_waypoint.h
 	petitions.h
 	pets.h
 	position.h
@@ -165,7 +164,6 @@ SET(zone_headers
 	quest_parser_collection.h
 	raids.h
 	raycast_mesh.h
-	spawn2.cpp
 	spawn2.h
 	spawngroup.h
 	string_ids.h

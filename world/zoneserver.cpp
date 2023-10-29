@@ -1051,7 +1051,9 @@ bool ZoneServer::Process() {
 					online->online = 1;
 				else
 					online->online = 0;
-				zoneserver_list.FindByZoneID(online->zoneid)->SendPacket(pack);
+				auto target_zone = zoneserver_list.FindByZoneID(online->zoneid);
+				if (target_zone)
+					SendPacket(pack);
 				break;
 			}
 			//these opcodes get processed by the guild manager.

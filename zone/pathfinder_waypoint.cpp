@@ -477,8 +477,8 @@ void PathfinderWaypoint::DebugCommand(Client *c, const Seperator *sep)
 	{
 		c->Message(CC_Yellow, "This zone is using path nodes from the .path file.");
 		c->Message(0, "Syntax: #path shownodes: Spawns a npc to represent every npc node.");
-		c->Message(0, "#path show: Shows all nodes");
-		c->Message(0, "#path info node_id: Gives information about node info (requires shownode target).");
+		c->Message(0, "#path reload: Reload the path file.");
+		c->Message(0, "#path info: Gives information about node info (requires shownode target).");
 		return;
 	}
 	

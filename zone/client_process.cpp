@@ -66,7 +66,23 @@ extern EntityList entity_list;
 bool Client::Process() {
 	bool ret = true;
 
-	if(Connected() || IsLD())
+	if (linkdead_timer.Check())
+	{
+		if (ClientDataLoaded())
+		{
+			Raid *myraid = entity_list.GetRaidByClient(this);
+			if (myraid)
+			{
+				myraid->DisbandRaidMember(GetName());
+			}
+			if (IsGrouped())
+				LeaveGroup();
+			Save();
+		}
+		return false; //delete client
+	}
+
+	if (ClientDataLoaded() && (Connected() || IsLD()))
 	{
 		// try to send all packets that weren't sent before
 		if(!IsLD() && zoneinpacket_timer.Check())
@@ -147,19 +163,6 @@ bool Client::Process() {
 				myraid->MemberZoned(this);
 			}
 			return(false);
-		}
-
-		if(linkdead_timer.Check())
-		{
-			Raid *myraid = entity_list.GetRaidByClient(this);
-			if (myraid)
-			{
-				myraid->DisbandRaidMember(GetName());
-			}
-			if (IsGrouped())
-				LeaveGroup();
-			Save();
-			return false; //delete client
 		}
 
 		if (zoning_timer.Check())
@@ -479,9 +482,8 @@ bool Client::Process() {
 		}
 
 		SpellProcess();
-		if (endupkeep_timer.Check() && !dead){
-			DoEnduranceUpkeep();
-		}
+
+		ProcessHungerThirst();
 
 		if(disc_ability_timer.Check())
 		{
@@ -501,16 +503,10 @@ bool Client::Process() {
 
 		if (tic_timer.Check() && !dead) 
 		{
+			ProcessFatigue();
 			CalcMaxMana();
-			CalcMaxEndurance();
 			DoManaRegen();
-			DoEnduranceRegen();
 			BuffProcess();
-
-			if(stamina_timer.Check()) 
-			{
-				DoStaminaUpdate();
-			}
 
 			if (fishing_timer.Check()) 
 			{
@@ -614,7 +610,7 @@ bool Client::Process() {
 	//At this point, we are still connected, everything important has taken
 	//place, now check to see if anybody wants to aggro us.
 	// only if client is not feigned
-	if(ret && scanarea_timer.Check()) {
+	if (ClientDataLoaded() && ret && scanarea_timer.Check()) {
 		entity_list.CheckClientAggro(this);
 	}
 
@@ -1976,177 +1972,120 @@ void Client::DoManaRegen()
 	}
 }
 
-
-void Client::DoStaminaUpdate() {
-
-	//Change timers based on race. The shorter the timer, the more food is consumed.
-	if(stamina_timer.GetDuration() == 40000)
-	{
-		stamina_timer.Disable();
-		if(GetRace() == OGRE || GetRace() == TROLL || GetRace() == VAHSHIR || GetRace() == HALFLING)
-		{
-			stamina_timer.Start(45000);
-		}
-		else if(GetRace() == HUMAN || GetRace() == ERUDITE || GetRace() == HALF_ELF || GetRace() == IKSAR 
-				|| GetRace() == HIGH_ELF || GetRace() == BARBARIAN)
-		{
-			stamina_timer.Start(90000);
-		}
-		//DWF, DEF, ELF, and GNM
-		else
-		{
-			stamina_timer.Start(100000);
-		}
-	}
-
-	auto outapp = new EQApplicationPacket(OP_Stamina, sizeof(Stamina_Struct));
-	Stamina_Struct* sta = (Stamina_Struct*)outapp->pBuffer;
-
-	bool desert = false;
-	bool horse = false;
-	bool aamod = false;
-	//This is our stomach size. It probably shouldn't be changed from 6000. 
-	int value = RuleI(Character,ConsumptionValue);
-	if(!GetGM()) 
-	{
-		//Change this rule to raise or lower rate of food consumption.
-		float loss = RuleR(Character, FoodLossPerUpdate);
-
-		//Horse and desert penalities.
-		float waterloss = 0.0f;
-		if(GetHorseId() != 0)
-		{
-			loss += loss*2.0; 
-			horse = true;
-		}
-		if(zone->IsDesertZone())
-		{
-			waterloss = loss*2.0;
-			desert = true;
-		}
-
-		//AA bonus.
-		float cons_mod = 0.0f;
-		switch(GetAA(aaInnateMetabolism)){
-			case 1:
-				cons_mod = .10;
-				break;
-			case 2:
-				cons_mod = .25;
-				break;
-			case 3:
-				cons_mod = .50;
-				break;
-			default:
-				cons_mod = 0;
-				break;
-		}
-		if(cons_mod > 0)
-			aamod = true;
-		loss -= loss*cons_mod;
-
-		if (m_pp.hunger_level > 0)
-			m_pp.hunger_level-=(int)loss;
-		if (m_pp.thirst_level > 0)
-			m_pp.thirst_level-=(int)loss+(int)waterloss;
-
-		if (Famished())
-			m_pp.famished++; //We're famished.
-		else if (!Hungry() && !Thirsty() && m_pp.famished > 0)
-			m_pp.famished--; //We were famished but are recovering. 
-
-		if (m_pp.famished >= RuleI(Character, FamishedLevel))
-		{
-			if (!Hungry() && !Thirsty())
-			{
-				m_pp.famished = RuleI(Character, FamishedLevel) / 2; //We are above the client's auto-consume threshold. Reduce us back down to stage 2.
-			}
-			else if (FamishedSickness() && GetEndurance() > 0 && !endurance_degen)
-			{
-				//We are famished and are slowly losing endurance.
-				//Rate of End loss is 10 minutes (1% per tic) regardless of race. This is handled in SetEndurance()
-				endurance_degen = true;
-				Log(Logs::General, Logs::EQMac, "DoStaminaUpdate(): Setting endurance_degen to true.");
-			}
-		}
-
-		Log(Logs::Detail, Logs::EQMac, "%s has digested %f units of food and %f units of water. Our hunger is: %i and our thirst is: %i. Our race is: %i and timer is set to: %i. Famished is: %i. Endurance is: %i (%i percent) Fatigue is: %i Desert: %i Horse: %i AAMod: %i", GetName(), loss, loss+waterloss, m_pp.hunger_level, m_pp.thirst_level, GetRace(), stamina_timer.GetDuration(), Famished(), GetEndurance(), GetEndurancePercent(), GetFatiguePercent(), desert, horse, aamod);
-
-		m_pp.fatigue = GetFatiguePercent();
-		sta->food = m_pp.hunger_level > value ? value : m_pp.hunger_level;
-		sta->water = m_pp.thirst_level> value ? value : m_pp.thirst_level;
-		sta->fatigue = m_pp.fatigue;
-
-	}
-	else 
-	{
-		// No auto food/drink consumption for GMs
-		sta->food = value;
-		sta->water = value;
-		sta->fatigue = m_pp.fatigue;
-	}
-	FastQueuePacket(&outapp);
-}
-
-void Client::DoEnduranceRegen()
+void Client::ProcessHungerThirst()
 {
-	if(GetEndurance() >= GetMaxEndurance() && !endurance_degen)
+	// GM and BecomeNPC don't consume food/water
+	if (GetGM() || IsBecomeNPC())
+	{
+		SetHunger(32000);
+		SetThirst(32000);
 		return;
-
-	if ((GetEndurance() <= 0 || !Famished()) && endurance_degen)
-	{
-		endurance_degen = false;
-		Log(Logs::General, Logs::Regen, "DoEnduranceRegen(): Endurance is no longer being decreased due to famish.");
 	}
 
-	if (FamishedSickness() && endurance_degen)
+	// SE_Hunger effect from Song of Sustenance stops food/water consumption
+	if (spellbonuses.FoodWater)
 	{
-		int32 new_endurance = GetMaxEndurance() / 100;
-		if (new_endurance <= 0)
-			new_endurance = 1;
-		SetEndurance(GetEndurance() - new_endurance);
+		if (GetHunger() < 3500)
+			SetHunger(3500);
+		if (GetThirst() < 3500)
+			SetThirst(3500);
 	}
-	else
+
+	// timer
+	// 46000 ms base - 96600/103500/115000ms with AA
+	// 92000 ms(double) for monk class - 193200/207000/230000ms with AA
+	uint32 timer = GetClass() == MONK ? 92000 : 46000;
+	uint32 metabolismLevel = GetAA(aaInnateMetabolism);
+	if(metabolismLevel)
 	{
-		SetEndurance(GetEndurance() + CalcEnduranceRegen());
+		int mod = 100;
+		switch (metabolismLevel)
+		{
+		case 1:
+			mod = 110;
+			break;
+		case 2:
+			mod = 125;
+			break;
+		case 3:
+			mod = 150;
+			break;
+		}
+		timer += timer * mod / 100;
+	}
+	if (stamina_timer.GetDuration() != timer || !stamina_timer.Enabled())
+	{
+		stamina_timer.SetDuration(timer, true);
+	}
+
+	// digest some food/water
+	if (stamina_timer.Check())
+	{
+		// horse triples consumption of food and water
+		int32 consumption = GetHorseId() ? 96 : 32;
+		SetHunger(GetHunger() > consumption ? GetHunger() - consumption : 0);
+		SetThirst(GetThirst() > consumption ? GetThirst() - consumption : 0);
+		SendStaminaUpdate();
 	}
 }
 
-void Client::DoEnduranceUpkeep() {
+void Client::ProcessFatigue()
+{
+	// being out of food and/or drink increases fatigue
+	if (Famished())
+		SetFatigue(GetFatigue() + 1);
 
-	if (!HasEndurUpkeep())
-		return;
+	// running increases fatigue, animation is a weird name for velocity from the client position update packet
+	if(animation && runmode)
+		SetFatigue(GetFatigue() + 1);
 
-	int upkeep_sum = 0;
-	int cost_redux = spellbonuses.EnduranceReduction + itembonuses.EnduranceReduction + aabonuses.EnduranceReduction;
+	// swimming increases fatigue
+	if(IsInWater())
+		SetFatigue(GetFatigue() + 1);
 
-	bool has_effect = false;
-	uint32 buffs_i;
-	uint32 buff_count = GetMaxTotalSlots();
-	for (buffs_i = 0; buffs_i < buff_count; buffs_i++) {
-		if (buffs[buffs_i].spellid != SPELL_UNKNOWN) {
-			int upkeep = spells[buffs[buffs_i].spellid].EndurUpkeep;
-			if(upkeep > 0) {
-				has_effect = true;
-				if(cost_redux > 0) {
-					if(upkeep <= cost_redux)
-						continue;	//reduced to 0
-					upkeep -= cost_redux;
-				}
-				if((upkeep+upkeep_sum) > GetEndurance()) {
-					//they do not have enough to keep this one going.
-					BuffFadeBySlot(buffs_i);
-				} else {
-					upkeep_sum += upkeep;
-				}
-			}
-		}
+	// recovery
+	// the way this check is written, it will trigger if you're fully fatigued at 100 since 
+	// it can't go any higher, giving some recovery even while continuing to exercise
+	if (GetFatigue() > 0 && GetFatigue() == last_fatigue && !Famished())
+		SetFatigue(GetFatigue() - 10);
+	last_fatigue = GetFatigue();
+
+	CalcBonuses(); // STR/AGI/DEX depend on fatigue
+	SendStaminaUpdate();
+}
+
+void Client::AddWeaponAttackFatigue(EQ::ItemInstance *weapon)
+{
+	/*
+	Attacking with a weapon increases fatigue:
+
+	Weight > 100     : +2
+	Weight > 51-100  : +1
+
+	In addition, there is 33% chance to gain +1 fatigue, 50% chance if weight > 25
+	*/
+	uint8 weight = 0;
+	if (weapon && weapon->IsWeapon())
+	{
+		weight = weapon->GetItem()->Weight;
 	}
+	int fatigue_chance = weight > 25 ? 2 : 3;
 
-	if(upkeep_sum != 0){
-		SetEndurance(GetEndurance() - upkeep_sum);
-	}
+	if (weight > 100)
+		SetFatigue(GetFatigue() + 2);
+	else if (weight > 50)
+		SetFatigue(GetFatigue() + 1);
 
-	if (!has_effect)
-		SetEndurUpkeep(false);
+	if (zone->random.Roll(1.0f / fatigue_chance))
+		SetFatigue(GetFatigue() + 1);
+
+	CalcBonuses(); // STR/AGI/DEX depend on fatigue
+	//SendStaminaUpdate();
+}
+
+void Client::SetFatigue(int8 in_fatigue)
+{
+	//int8 old_fatigue = m_pp.fatigue;
+	m_pp.fatigue = in_fatigue > 0 ? (in_fatigue < 100 ? in_fatigue : 100) : 0;
+	//Message(MT_Broadcasts, "SetFatigue %d -> %d = %d", old_fatigue, in_fatigue, m_pp.fatigue);
 }
