@@ -142,7 +142,6 @@ class EQEmuConfig
 			
 			std::ifstream fconfig(EQEmuConfig::ConfigFile, std::ifstream::binary);
 			if (fconfig.fail()) {
-				LogError("%s", errno);
 				return false;
 			}
 
