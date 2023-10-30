@@ -141,10 +141,6 @@ class EQEmuConfig
 			}
 			
 			std::ifstream fconfig(EQEmuConfig::ConfigFile, std::ifstream::binary);
-			if (fconfig.fail()) {
-				return false;
-			}
-
 			try {
 				fconfig >> _config->_root;
 				_config->parse_config();
