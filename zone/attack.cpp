@@ -1352,11 +1352,11 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 			if (killerMob)
 			{
-				worldserver.SendEmoteMessage(0, 0, 15, "[%s] %s has died to %s! They were level %i.", rulesets, GetCleanName(), killerMob->GetCleanName(), GetLevel());
+				worldserver.SendEmoteMessage(0, 0, 15, "[%s] %s has died to %s! They were level %i.", rulesets.c_str(), GetCleanName(), killerMob->GetCleanName(), GetLevel());
 			}
 			else
 			{
-				worldserver.SendEmoteMessage(0, 0, 15, "[%s] %s has died! They were level %i.", rulesets, GetCleanName(), GetLevel());
+				worldserver.SendEmoteMessage(0, 0, 15, "[%s] %s has died! They were level %i.", rulesets.c_str(), GetCleanName(), GetLevel());
 			}
 		}
 	}
