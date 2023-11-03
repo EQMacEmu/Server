@@ -671,7 +671,7 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 	uint32 is_hardcore = database.GetHardcoreStatus((char*)app->pBuffer);
 	if(char_acct_id == GetAccountID()) {
 		Log(Logs::Detail, Logs::WorldServer,"Delete character: %s",app->pBuffer);
-		if(level >= 30)
+		if(level >= 10)
 		{
 			database.MarkCharacterDeleted((char *)app->pBuffer);
 		}
