@@ -946,7 +946,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		if (GetLevel() < ml.level_required)
 			continue;
 
-		if (!(ml.classes_required & (1 << (GetClass() - 1))))
+		if (!(ml.classes_required & (1 << (GetClass() - 1))) && GetClass() != 0)
 			continue;
 
 		item = database.GetItem(ml.item);

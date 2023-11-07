@@ -747,7 +747,12 @@ void WorldServer::Process() {
 
 			Mob *Invitee = entity_list.GetMob(gis->invitee_name);
 
-			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped() && Invitee->CastToClient()->IsSelfFound() == gis->self_found && !Invitee->CastToClient()->IsSoloOnly())
+			uint8 is_null_flag = 0;
+
+			if (Invitee && Invitee->IsClient() && Invitee->CastToClient()->GetBaseClass() == 0)
+				is_null_flag = 1;
+
+			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped() && gis->is_null == is_null_flag && Invitee->CastToClient()->IsSelfFound() == gis->self_found && !Invitee->CastToClient()->IsSoloOnly())
 			{
 				auto outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
 				memcpy(outapp->pBuffer, gis, sizeof(GroupInvite_Struct));

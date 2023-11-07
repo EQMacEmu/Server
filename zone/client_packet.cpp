@@ -3421,7 +3421,8 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 		bool self_found = tmobClient->IsSelfFound();
 		bool solo_only = tmobClient->IsSoloOnly();
 		bool hardcore = tmobClient->IsHardcore();
-		if (self_found || solo_only || hardcore)
+		bool player_null_class = tmobClient->GetBaseClass();
+		if (self_found || solo_only || hardcore || player_null_class)
 		{
 			std::string ruleset_string = "This player is running the";
 			if (solo_only)
@@ -3430,6 +3431,8 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 				ruleset_string += " self found ";
 			if (hardcore)
 				ruleset_string += " hardcore ";
+			if (player_null_class)
+				ruleset_string += " null class ";
 			ruleset_string += "ruleset.";
 
 			Message(0, ruleset_string.c_str());
@@ -5083,6 +5086,12 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 			return;
 		}
 
+		if (GetBaseClass() == 0 && GetBaseClass() != inviter->CastToClient()->GetBaseClass())
+		{
+			Message(CC_Red, "Player was null and the invite failed. In this case, quite literally, they're class 0.");
+			return;
+		}
+
 		strn0cpy(gf->name1, inviter->GetName(), 64);
 		strn0cpy(gf->name2, this->GetName(), 64);
 
@@ -5269,6 +5278,12 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 				Message(CC_Red, "This player has solo mode enabled, and cannot group with you.");
 				return;
 			}
+
+			if (GetBaseClass() == 0 && Invitee->CastToClient()->GetBaseClass() != GetBaseClass())
+			{
+				Message(CC_Red, "Class was null. Like, literally. Consider them for more information.");
+				return;
+			}
 			if (Invitee->CastToClient()->Admin() > 0)
 			{
 				Message(CC_Red, "You are being invited by a GM. This will never work.");
@@ -5337,6 +5352,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 		memcpy(pack->pBuffer, gis, sizeof(ServerGroupInvite_Struct));
 		sgis->self_found = IsSelfFound();
+		sgis->is_null = GetBaseClass() == 0;
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}
@@ -6895,6 +6911,13 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				return;
 			}
 
+			if (GetBaseClass() == 0 && GetBaseClass() != i->GetBaseClass())
+			{
+				Message(CC_Red, "Null exception... like, for a class null joining raids. Cannot join a raid. Like, not because the pointer is invalid (it very well is valid) but..");
+				return;
+			}
+
+
 			
 			//This sends an "invite" to the client in question.
 			auto outapp = new EQApplicationPacket(OP_RaidInvite, sizeof(RaidGeneral_Struct));
@@ -6968,6 +6991,20 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 			Message(CC_Red, "The leader player's self found flag does not match yours. You cannot be invited to the raid.");
+			return;
+		}
+
+		if (leader->GetBaseClass() == 0 && GetBaseClass() != leader->GetBaseClass())
+		{
+			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
+			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
+			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
+			rg->action = RaidCommandSendDisband;
+			strcpy(rg->leader_name, ri->player_name);
+			strcpy(rg->player_name, ri->player_name);
+			this->QueuePacket(outapp);
+			safe_delete(outapp);
+			Message(CC_Red, "Leader player was null? Just kidding, it's actually the case haha.");
 			return;
 		}
 

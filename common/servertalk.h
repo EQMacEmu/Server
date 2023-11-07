@@ -1165,6 +1165,8 @@ struct ServerGroupInvite_Struct {
 
 		// Custom:
 		uint8 self_found;
+		// Custom:
+		uint8 is_null;
 };
 
 struct ServerEarthquakeImminent_Struct {
