@@ -1921,6 +1921,39 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, uint8 chan_nu
 	return ret;
 }
 
+bool WorldServer::SendChannelMessage(const char* from, uint8 chan_num, uint32 guilddbid, uint8 language, uint8 lang_skill, const char* message, ...) {
+	if (!worldserver.Connected())
+		return false;
+	char buffer[512];
+
+	memcpy(buffer, message, 512);
+	buffer[511] = '\0';
+
+	auto pack = new ServerPacket(ServerOP_ChannelMessage, sizeof(ServerChannelMessage_Struct) + strlen(buffer) + 1);
+	ServerChannelMessage_Struct* scm = (ServerChannelMessage_Struct*)pack->pBuffer;
+
+	if (from == 0) {
+		strcpy(scm->from, "ZServer");
+		scm->fromadmin = 0;
+	}
+	else {
+		strn0cpy(scm->from, from, sizeof(scm->from));
+	}
+	scm->to[0] = 0;
+	scm->deliverto[0] = '\0';
+	scm->chan_num = chan_num;
+	scm->guilddbid = guilddbid;
+	scm->language = language;
+	scm->lang_skill = lang_skill;
+	strcpy(scm->message, buffer);
+
+	pack->Deflate();
+	bool ret = SendPacket(pack);
+	safe_delete(pack);
+	return ret;
+}
+
+
 bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, uint32 type, const char* message, ...) {
 	va_list argptr;
 	char buffer[256];
