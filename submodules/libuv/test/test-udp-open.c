@@ -27,6 +27,8 @@
 
 #ifndef _WIN32
 # include <unistd.h>
+# include <sys/socket.h>
+# include <sys/un.h>
 #endif
 
 static int send_cb_called = 0;
@@ -89,7 +91,7 @@ static void alloc_cb(uv_handle_t* handle,
 
 
 static void close_cb(uv_handle_t* handle) {
-  ASSERT(handle != NULL);
+  ASSERT_NOT_NULL(handle);
   close_cb_called++;
 }
 
@@ -107,13 +109,13 @@ static void recv_cb(uv_udp_t* handle,
 
   if (nread == 0) {
     /* Returning unused buffer. Don't count towards sv_recv_cb_called */
-    ASSERT(addr == NULL);
+    ASSERT_NULL(addr);
     return;
   }
 
   ASSERT(flags == 0);
 
-  ASSERT(addr != NULL);
+  ASSERT_NOT_NULL(addr);
   ASSERT(nread == 4);
   ASSERT(memcmp("PING", buf->base, nread) == 0);
 
@@ -125,17 +127,18 @@ static void recv_cb(uv_udp_t* handle,
 
 
 static void send_cb(uv_udp_send_t* req, int status) {
-  ASSERT(req != NULL);
+  ASSERT_NOT_NULL(req);
   ASSERT(status == 0);
 
   send_cb_called++;
+  uv_close((uv_handle_t*)req->handle, close_cb);
 }
 
 
 TEST_IMPL(udp_open) {
   struct sockaddr_in addr;
   uv_buf_t buf = uv_buf_init("PING", 4);
-  uv_udp_t client;
+  uv_udp_t client, client2;
   uv_os_sock_t sock;
   int r;
 
@@ -166,8 +169,6 @@ TEST_IMPL(udp_open) {
 
 #ifndef _WIN32
   {
-    uv_udp_t client2;
-
     r = uv_udp_init(uv_default_loop(), &client2);
     ASSERT(r == 0);
 
@@ -176,7 +177,9 @@ TEST_IMPL(udp_open) {
 
     uv_close((uv_handle_t*) &client2, NULL);
   }
-#endif  /* !_WIN32 */
+#else  /* _WIN32 */
+  (void)client2;
+#endif
 
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
@@ -215,3 +218,133 @@ TEST_IMPL(udp_open_twice) {
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
+
+TEST_IMPL(udp_open_bound) {
+  struct sockaddr_in addr;
+  uv_udp_t client;
+  uv_os_sock_t sock;
+  int r;
+
+  ASSERT(0 == uv_ip4_addr("127.0.0.1", TEST_PORT, &addr));
+
+  startup();
+  sock = create_udp_socket();
+
+  r = bind(sock, (struct sockaddr*) &addr, sizeof(addr));
+  ASSERT(r == 0);
+
+  r = uv_udp_init(uv_default_loop(), &client);
+  ASSERT(r == 0);
+
+  r = uv_udp_open(&client, sock);
+  ASSERT(r == 0);
+
+  r = uv_udp_recv_start(&client, alloc_cb, recv_cb);
+  ASSERT(r == 0);
+
+  uv_close((uv_handle_t*) &client, NULL);
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  MAKE_VALGRIND_HAPPY();
+  return 0;
+}
+
+TEST_IMPL(udp_open_connect) {
+  struct sockaddr_in addr;
+  uv_buf_t buf = uv_buf_init("PING", 4);
+  uv_udp_t client;
+  uv_udp_t server;
+  uv_os_sock_t sock;
+  int r;
+
+  ASSERT(0 == uv_ip4_addr("127.0.0.1", TEST_PORT, &addr));
+
+  startup();
+  sock = create_udp_socket();
+
+  r = uv_udp_init(uv_default_loop(), &client);
+  ASSERT(r == 0);
+
+  r = connect(sock, (const struct sockaddr*) &addr, sizeof(addr));
+  ASSERT(r == 0);
+
+  r = uv_udp_open(&client, sock);
+  ASSERT(r == 0);
+
+  r = uv_udp_init(uv_default_loop(), &server);
+  ASSERT(r == 0);
+
+  r = uv_udp_bind(&server, (const struct sockaddr*) &addr, 0);
+  ASSERT(r == 0);
+
+  r = uv_udp_recv_start(&server, alloc_cb, recv_cb);
+  ASSERT(r == 0);
+
+  r = uv_udp_send(&send_req,
+                  &client,
+                  &buf,
+                  1,
+                  NULL,
+                  send_cb);
+  ASSERT(r == 0);
+
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  ASSERT(send_cb_called == 1);
+  ASSERT(close_cb_called == 2);
+
+  ASSERT(client.send_queue_size == 0);
+
+  MAKE_VALGRIND_HAPPY();
+  return 0;
+}
+
+#ifndef _WIN32
+TEST_IMPL(udp_send_unix) {
+  /* Test that "uv_udp_send()" supports sending over
+     a "sockaddr_un" address. */
+  struct sockaddr_un addr;
+  uv_udp_t handle;
+  uv_udp_send_t req;
+  uv_loop_t* loop;
+  uv_buf_t buf = uv_buf_init("PING", 4);
+  int fd;
+  int r;
+
+  loop = uv_default_loop();
+
+  memset(&addr, 0, sizeof addr);
+  addr.sun_family = AF_UNIX;
+  ASSERT(strlen(TEST_PIPENAME) < sizeof(addr.sun_path));
+  memcpy(addr.sun_path, TEST_PIPENAME, strlen(TEST_PIPENAME));
+
+  fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  ASSERT(fd >= 0);
+
+  unlink(TEST_PIPENAME);
+  ASSERT(0 == bind(fd, (const struct sockaddr*)&addr, sizeof addr));
+  ASSERT(0 == listen(fd, 1));
+
+  r = uv_udp_init(loop, &handle);
+  ASSERT(r == 0);
+  r = uv_udp_open(&handle, fd);
+  ASSERT(r == 0);
+  uv_run(loop, UV_RUN_DEFAULT);
+
+  r = uv_udp_send(&req,
+                  &handle,
+                  &buf,
+                  1,
+                  (const struct sockaddr*) &addr,
+                  NULL);
+  ASSERT(r == 0);
+
+  uv_close((uv_handle_t*)&handle, NULL);
+  uv_run(loop, UV_RUN_DEFAULT);
+  close(fd);
+  unlink(TEST_PIPENAME);
+
+  MAKE_VALGRIND_HAPPY();
+  return 0;
+}
+#endif
