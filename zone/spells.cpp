@@ -3623,6 +3623,14 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 
 	if(IsCharmSpell(spell_id))
 	{
+		if (GetClass() == MERCHANT || GetClass() == BANKER || GetClass() >= WARRIORGM && GetClass() <= BEASTLORDGM)
+		{
+			Log(Logs::Detail, Logs::Spells, "We are immune to Charm spells. (Banker, Merchant, Guildmaster)");
+			caster->Message_StringID(CC_User_SpellFailure, CANNOT_CHARM);
+			ResistSpell(caster, spell_id, isProc);
+			return true;
+		}
+
 		if(GetSpecialAbility(UNCHARMABLE))
 		{
 			Log(Logs::Detail, Logs::Spells, "We are immune to Charm spells.");
