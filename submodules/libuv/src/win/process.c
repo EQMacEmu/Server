@@ -58,7 +58,6 @@ static const env_var_t required_vars[] = { /* keep me sorted */
   E_V("USERPROFILE"),
   E_V("WINDIR"),
 };
-static size_t n_required_vars = ARRAY_SIZE(required_vars);
 
 
 static HANDLE uv_global_job_handle_;
@@ -106,7 +105,7 @@ static void uv__init_global_job_handle(void) {
 }
 
 
-static int uv_utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
+static int uv__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
   int ws_len, r;
   WCHAR* ws;
 
@@ -138,7 +137,7 @@ static int uv_utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
 }
 
 
-static void uv_process_init(uv_loop_t* loop, uv_process_t* handle) {
+static void uv__process_init(uv_loop_t* loop, uv_process_t* handle) {
   uv__handle_init(loop, (uv_handle_t*) handle, UV_PROCESS);
   handle->exit_cb = NULL;
   handle->pid = 0;
@@ -170,7 +169,9 @@ static WCHAR* search_path_join_test(const WCHAR* dir,
                                     size_t cwd_len) {
   WCHAR *result, *result_pos;
   DWORD attrs;
-  if (dir_len > 2 && dir[0] == L'\\' && dir[1] == L'\\') {
+  if (dir_len > 2 &&
+      ((dir[0] == L'\\' || dir[0] == L'/') &&
+       (dir[1] == L'\\' || dir[1] == L'/'))) {
     /* It's a UNC path so ignore cwd */
     cwd_len = 0;
   } else if (dir_len >= 1 && (dir[0] == L'/' || dir[0] == L'\\')) {
@@ -643,7 +644,7 @@ int env_strncmp(const wchar_t* a, int na, const wchar_t* b) {
   assert(r==nb);
   B[nb] = L'\0';
 
-  while (1) {
+  for (;;) {
     wchar_t AA = *A++;
     wchar_t BB = *B++;
     if (AA < BB) {
@@ -692,7 +693,7 @@ int make_program_env(char* env_block[], WCHAR** dst_ptr) {
   WCHAR* dst_copy;
   WCHAR** ptr_copy;
   WCHAR** env_copy;
-  DWORD* required_vars_value_len = alloca(n_required_vars * sizeof(DWORD*));
+  DWORD required_vars_value_len[ARRAY_SIZE(required_vars)];
 
   /* first pass: determine size in UTF-16 */
   for (env = env_block; *env; env++) {
@@ -714,7 +715,7 @@ int make_program_env(char* env_block[], WCHAR** dst_ptr) {
 
   /* second pass: copy to UTF-16 environment block */
   dst_copy = (WCHAR*)uv__malloc(env_len * sizeof(WCHAR));
-  if (!dst_copy) {
+  if (dst_copy == NULL && env_len > 0) {
     return ERROR_OUTOFMEMORY;
   }
   env_copy = alloca(env_block_count * sizeof(WCHAR*));
@@ -739,13 +740,13 @@ int make_program_env(char* env_block[], WCHAR** dst_ptr) {
     }
   }
   *ptr_copy = NULL;
-  assert(env_len == (size_t) (ptr - dst_copy));
+  assert(env_len == 0 || env_len == (size_t) (ptr - dst_copy));
 
   /* sort our (UTF-16) copy */
   qsort(env_copy, env_block_count-1, sizeof(wchar_t*), qsort_wcscmp);
 
   /* third pass: check for required variables */
-  for (ptr_copy = env_copy, i = 0; i < n_required_vars; ) {
+  for (ptr_copy = env_copy, i = 0; i < ARRAY_SIZE(required_vars); ) {
     int cmp;
     if (!*ptr_copy) {
       cmp = -1;
@@ -778,10 +779,10 @@ int make_program_env(char* env_block[], WCHAR** dst_ptr) {
   }
 
   for (ptr = dst, ptr_copy = env_copy, i = 0;
-       *ptr_copy || i < n_required_vars;
+       *ptr_copy || i < ARRAY_SIZE(required_vars);
        ptr += len) {
     int cmp;
-    if (i >= n_required_vars) {
+    if (i >= ARRAY_SIZE(required_vars)) {
       cmp = 1;
     } else if (!*ptr_copy) {
       cmp = -1;
@@ -863,7 +864,7 @@ static void CALLBACK exit_wait_callback(void* data, BOOLEAN didTimeout) {
 
 
 /* Called on main thread after a child process has exited. */
-void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
+void uv__process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
   int64_t exit_code;
   DWORD status;
 
@@ -873,7 +874,7 @@ void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
   /* If we're closing, don't call the exit callback. Just schedule a close
    * callback now. */
   if (handle->flags & UV_HANDLE_CLOSING) {
-    uv_want_endgame(loop, (uv_handle_t*) handle);
+    uv__want_endgame(loop, (uv_handle_t*) handle);
     return;
   }
 
@@ -901,7 +902,7 @@ void uv_process_proc_exit(uv_loop_t* loop, uv_process_t* handle) {
 }
 
 
-void uv_process_close(uv_loop_t* loop, uv_process_t* handle) {
+void uv__process_close(uv_loop_t* loop, uv_process_t* handle) {
   uv__handle_closing(handle);
 
   if (handle->wait_handle != INVALID_HANDLE_VALUE) {
@@ -917,12 +918,12 @@ void uv_process_close(uv_loop_t* loop, uv_process_t* handle) {
   }
 
   if (!handle->exit_cb_pending) {
-    uv_want_endgame(loop, (uv_handle_t*)handle);
+    uv__want_endgame(loop, (uv_handle_t*)handle);
   }
 }
 
 
-void uv_process_endgame(uv_loop_t* loop, uv_process_t* handle) {
+void uv__process_endgame(uv_loop_t* loop, uv_process_t* handle) {
   assert(!handle->exit_cb_pending);
   assert(handle->flags & UV_HANDLE_CLOSING);
   assert(!(handle->flags & UV_HANDLE_CLOSED));
@@ -947,7 +948,7 @@ int uv_spawn(uv_loop_t* loop,
   PROCESS_INFORMATION info;
   DWORD process_flags;
 
-  uv_process_init(loop, process);
+  uv__process_init(loop, process);
   process->exit_cb = options->exit_cb;
 
   if (options->flags & (UV_PROCESS_SETGID | UV_PROCESS_SETUID)) {
@@ -968,7 +969,7 @@ int uv_spawn(uv_loop_t* loop,
                               UV_PROCESS_WINDOWS_HIDE_GUI |
                               UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS)));
 
-  err = uv_utf8_to_utf16_alloc(options->file, &application);
+  err = uv__utf8_to_utf16_alloc(options->file, &application);
   if (err)
     goto done;
 
@@ -987,7 +988,7 @@ int uv_spawn(uv_loop_t* loop,
 
   if (options->cwd) {
     /* Explicit cwd */
-    err = uv_utf8_to_utf16_alloc(options->cwd, &cwd);
+    err = uv__utf8_to_utf16_alloc(options->cwd, &cwd);
     if (err)
       goto done;
 
