@@ -194,6 +194,7 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY(Quarm)
 RULE_BOOL(Quarm, EnableQuakes, true) // Quarm default is true. If false, disable the auto-quake system.
+RULE_BOOL(Quarm, EnableQuakeDowntimeRecovery, false) // 24 Hour
 RULE_INT(Quarm, QuakeMinVariance, 604800) // 7 Days
 RULE_INT(Quarm, QuakeMaxVariance, 864000) // 10 Days
 RULE_INT(Quarm, QuakeRepopDelay, 900) // 15 Minutes
