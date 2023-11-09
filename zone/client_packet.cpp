@@ -3426,7 +3426,7 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 		bool self_found = tmobClient->IsSelfFound();
 		bool solo_only = tmobClient->IsSoloOnly();
 		bool hardcore = tmobClient->IsHardcore();
-		bool player_null_class = tmobClient->GetBaseClass();
+		bool player_null_class = tmobClient->GetBaseClass() == 0;
 		if (self_found || solo_only || hardcore || player_null_class)
 		{
 			std::string ruleset_string = "This player is running the";
