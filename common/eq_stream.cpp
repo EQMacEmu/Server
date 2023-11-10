@@ -1104,7 +1104,7 @@ void EQStream::Process(const unsigned char *buffer, const uint32 length)
 {
 static unsigned char newbuffer[2048];
 uint32 newlength=0;
-	if (EQProtocolPacket::ValidateCRC(buffer,length,Key)) {
+	//if (EQProtocolPacket::ValidateCRC(buffer,length,Key)) {
 		if (compressed) {
 			newlength=EQProtocolPacket::Decompress(buffer,length,newbuffer,2048);
 		} else {
@@ -1119,11 +1119,11 @@ uint32 newlength=0;
 		ProcessPacket(p);
 		delete p;
 		ProcessQueue();
-	} else {
-		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum" __L);
+	//} else {
+	//	Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum" __L);
 		//_SendDisconnect();
 		//SetState(CLOSED);
-	}
+	//}
 }
 
 long EQStream::GetNextAckToSend()
