@@ -6,6 +6,7 @@
 #include <queue>
 #include <map>
 #include <mutex>
+#include <condition_variable>
 
 #include "../common/eq_stream.h"
 #include "../common/condition.h"
