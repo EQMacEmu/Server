@@ -957,7 +957,7 @@ void EQStream::_SendDisconnect()
 
 void EQStream::InboundQueuePush(EQRawApplicationPacket *p)
 {
-  std::lock_guard<std::mutex> lock(MInboundQueue);
+	std::lock_guard<std::mutex> lock(MInboundQueue);
 	InboundQueue.push_back(p);
 }
 
@@ -2154,7 +2154,7 @@ void EQOldStream::MakeClosePacket()
 	resent. This is used by the EQ servers for HP and position updates among 
 	other things. WARNING: I havent tested this yet.
 */
-void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
+void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req, bool outboundAlreadyLocked)
 {
 	int16 restore_op = 0x0000;
 
@@ -2171,6 +2171,10 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		return;
 	}
 	bool bFragment= false; //This is set later on if fragseq should be increased at the end.
+	std::unique_lock<std::mutex> lock;
+	if (!outboundAlreadyLocked) {
+		lock = std::unique_lock<std::mutex>(MOutboundQueue);
+	}
 
 	/************ IF opcode is == 0xFFFF it is a request for pure ack creation ************/
 	if(app->GetRawOpcode() == 0xFFFF)
@@ -2184,14 +2188,12 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		}
 		//pack->dwOpCode = 0xFFFF;
 		keep_alive_timer->Start();
-		std::lock_guard<std::mutex> lock(MOutboundQueue);
 		SendQueue.push_back(pack);
 		return;
 	}
 	if (app->size == 19) {
 		if (app->opcode == 0x9f40) {
 			// we have a mob update opcode - see if the back of the sendqueue has one to add this to
-			std::lock_guard<std::mutex> lock(MOutboundQueue);
 			if (!SendQueue.empty()) {
 				EQOldPacket *oldpack;
 				oldpack = SendQueue.back();
@@ -2229,7 +2231,6 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		ack_req = true; // Fragmented packets must have ackreq set
 	}
 
-	std::lock_guard<std::mutex> lock(MOutboundQueue);
 	if(CheckState(EQStreamState::ESTABLISHED))
 	/************ PM STATE = ACTIVE ************/
 	{
@@ -2498,7 +2499,7 @@ void EQOldStream::SendPacketQueue(bool Block)
 		if ((no_ack_sent_timer->Check(0) || keep_alive_timer->Check()))
 		{
 			EQProtocolPacket app(0xFFFF, nullptr, 0);
-			MakeEQPacket(&app, true);
+			MakeEQPacket(&app, true, true); // outbound is already locked
 			no_ack_sent_timer->Disable();
 		}
 	} else if (GetState() == CLOSING) {

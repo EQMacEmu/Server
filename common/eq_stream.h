@@ -457,7 +457,7 @@ class EQOldStream : public EQStreamInterface {
 				
 		// parce/make packets
 		void ParceEQPacket(uint16 dwSize, uchar* pPacket);
-		void MakeEQPacket(EQProtocolPacket* app, bool ack_req=true); //Make a fragment eq packet and put them on the SQUEUE/RSQUEUE
+		void MakeEQPacket(EQProtocolPacket* app, bool ack_req=true, bool outboundAlreadyLocked=false); //Make a fragment eq packet and put them on the SQUEUE/RSQUEUE
 		void MakeClosePacket();
 		// Add ack to packet if requested
 		void AddAck(EQOldPacket *pack)
