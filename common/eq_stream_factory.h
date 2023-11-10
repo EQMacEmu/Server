@@ -5,6 +5,7 @@
 #include <memory>
 #include <queue>
 #include <map>
+#include <mutex>
 
 #include "../common/eq_stream.h"
 #include "../common/condition.h"
@@ -19,19 +20,19 @@ class EQStreamFactory : private Timeoutable {
 		int Port;
 
 		bool ReaderRunning;
-		Mutex MReaderRunning;
+		std::mutex MReaderRunning;
 		bool WriterRunning;
-		Mutex MWriterRunning;
+		std::mutex MWriterRunning;
 
-		Condition WriterWork;
+		std::condition_variable WriterWork;
 
 		EQStreamType StreamType;
 
 		std::queue<std::shared_ptr<EQStream>> NewStreams;
-		Mutex MNewStreams;
+		std::mutex MNewStreams;
 
 		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>> Streams;
-		Mutex MStreams;
+		std::mutex MStreams;
 
 		std::queue<std::shared_ptr<EQOldStream>> NewOldStreams;
 
@@ -60,9 +61,9 @@ class EQStreamFactory : private Timeoutable {
 		void ReaderLoop();
 		void WriterLoop();
 		void Stop() { StopReader(); StopWriter(); }
-		void StopReader() { MReaderRunning.lock(); ReaderRunning=false; MReaderRunning.unlock(); }
-		void StopWriter() { MWriterRunning.lock(); WriterRunning=false; MWriterRunning.unlock(); WriterWork.Signal(); }
-		void SignalWriter() { WriterWork.Signal(); }
+		void StopReader() { std::lock_guard<std::mutex> lock(MReaderRunning); ReaderRunning = false; }
+		void StopWriter() { std::unique_lock<std::mutex>(MWriterRunning); WriterRunning=false; MWriterRunning.unlock(); WriterWork.notify_one(); }
+		void SignalWriter() { WriterWork.notify_one(); }
 };
 
 #endif
