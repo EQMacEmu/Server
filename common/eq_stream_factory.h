@@ -15,6 +15,23 @@
 class EQStream;
 class Timer;
 
+class RecvBuffer {
+	private:
+		uint32 length;
+		std::unique_ptr<unsigned char[]> buffer;
+		sockaddr_in from;
+
+	public:
+		RecvBuffer(uint32 len, const unsigned char* buf, sockaddr_in& f) : length(len), from(f) {
+				buffer.reset(new unsigned char[len]);
+				memcpy(buffer.get(), buf, len);
+		}
+
+		unsigned char* Buffer() const { return buffer.get(); }
+		uint32 Length() const { return length; }
+		sockaddr_in& From() { return from; }
+};
+
 class EQStreamFactory : private Timeoutable {
 	private:
 		int sock;
@@ -22,22 +39,36 @@ class EQStreamFactory : private Timeoutable {
 
 		bool ReaderRunning;
 		std::mutex MReaderRunning;
-		bool WriterRunning;
-		std::mutex MWriterRunning;
+		bool WriterRunningNew;
+		bool WriterRunningOld;
+		std::mutex MWriterRunningNew;
+		std::mutex MWriterRunningOld;
 
-		std::condition_variable WriterWork;
+		std::condition_variable WriterWorkNew;
+		std::condition_variable WriterWorkOld;
 
 		EQStreamType StreamType;
 
 		std::queue<std::shared_ptr<EQStream>> NewStreams;
 		std::mutex MNewStreams;
+		std::mutex MNewOldStreams;
 
 		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>> Streams;
 		std::mutex MStreams;
+		std::mutex MOldStreams;
 
 		std::queue<std::shared_ptr<EQOldStream>> NewOldStreams;
 
 		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>> OldStreams;
+
+		std::thread ProcessNewThread;
+		std::thread WriterNewThread;
+		std::thread ProcessOldThread;
+		std::thread WriterOldThread;
+		std::mutex MNewRecvBuffers;
+		std::mutex MOldRecvBuffers;
+		std::queue<std::unique_ptr<RecvBuffer>> NewRecvBuffers;
+		std::queue<std::unique_ptr<RecvBuffer>> OldRecvBuffers;
 
 		virtual void CheckTimeout();
 
@@ -46,7 +77,7 @@ class EQStreamFactory : private Timeoutable {
 		uint32 stream_timeout;
 
 	public:
-		EQStreamFactory(EQStreamType type, uint32 timeout = 61000) : Timeoutable(5000), stream_timeout(timeout) { ReaderRunning=false; WriterRunning=false; StreamType=type; sock=-1; }
+		EQStreamFactory(EQStreamType type, uint32 timeout = 61000) : Timeoutable(5000), stream_timeout(timeout) { ReaderRunning=false; WriterRunningNew=false; WriterRunningOld=false; StreamType=type; sock=-1; }
 		EQStreamFactory(EQStreamType type, int port, uint32 timeout = 61000);
 
 		std::shared_ptr<EQStream> Pop();
@@ -60,11 +91,16 @@ class EQStreamFactory : private Timeoutable {
 		bool IsOpen() { return sock!=-1; }
 		void Close();
 		void ReaderLoop();
-		void WriterLoop();
-		void Stop() { StopReader(); StopWriter(); }
+		void ProcessLoopNew();
+		void ProcessLoopOld();
+		void WriterLoopNew();
+		void WriterLoopOld();
+		void Stop() { StopReader(); StopWriterNew(); StopWriterOld(); }
 		void StopReader() { std::lock_guard<std::mutex> lock(MReaderRunning); ReaderRunning = false; }
-		void StopWriter() { std::unique_lock<std::mutex>(MWriterRunning); WriterRunning=false; MWriterRunning.unlock(); WriterWork.notify_one(); }
-		void SignalWriter() { WriterWork.notify_one(); }
+		void StopWriterNew() { std::unique_lock<std::mutex>(MWriterRunningNew); WriterRunningNew=false; MWriterRunningNew.unlock(); WriterWorkNew.notify_one(); }
+		void StopWriterOld() { std::unique_lock<std::mutex>(MWriterRunningOld); WriterRunningOld=false; MWriterRunningOld.unlock(); WriterWorkOld.notify_one(); }
+		void SignalWriterNew() { WriterWorkNew.notify_one(); }
+		void SignalWriterOld() { WriterWorkOld.notify_one(); }
 };
 
 #endif
