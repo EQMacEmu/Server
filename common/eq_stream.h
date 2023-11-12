@@ -423,9 +423,7 @@ class EQOldStream : public EQStreamInterface {
 		~EQOldStream();
 
 	protected:
-		std::mutex MOutboundQueue;
 		std::mutex MOutboundOldQueue;
-		std::mutex MInboundQueue;
 		std::mutex MInboundOldQueue;
 		uint32 remote_ip;
 		uint16 remote_port;

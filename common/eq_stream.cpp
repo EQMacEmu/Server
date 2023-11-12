@@ -1120,7 +1120,12 @@ static unsigned char newbuffer[2048];
 		delete p;
 		ProcessQueue();
 	} else {
-		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum" __L);
+		/*std::string s = {};
+		for (uint32 i = 0; i < length; i++) {
+			int value = buffer[i];
+			s += fmt::format("{:02x} ", value);
+		}*/
+		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum: %s" __L);
 		//_SendDisconnect();
 		//SetState(CLOSED);
 	}
@@ -1316,11 +1321,10 @@ EQStream::SeqOrder EQStream::CompareSequence(uint16 expected_seq , uint16 seq)
 }
 
 void EQStream::SetState(EQStreamState state) {
-	MState.lock();
+	std::lock_guard<std::mutex> lock(MState);
 	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, State, state);
 	State=state;
 	stale_count=0;
-	MState.unlock();
 }
 
 
@@ -2733,17 +2737,15 @@ void EQOldStream::CheckTimeout(uint32 now, uint32 timeout) {
 }
 
 void EQOldStream::SetState(EQStreamState state) {
-	MState.lock();
+	std::lock_guard<std::mutex> lock(MState);
 
 	if(pm_state == CLOSED)
 	{
-		MState.unlock();
 		return;
 	}
 
 	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, pm_state, state);
 	pm_state=state;
-	MState.unlock();
 }
 
 void EQOldStream::SetStreamType(EQStreamType type)
