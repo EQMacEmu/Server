@@ -59,9 +59,11 @@ struct RaidMember{
 	char membername[64];
 	Client *member;
 	uint32 GroupNumber;
+	uint32 guildid;
 	uint8 _class;
 	uint8 level;
 	bool IsGroupLeader;
+	bool IsGuildOfficer;
 	bool IsRaidLeader;
 	bool IsLooter;
 };
@@ -97,6 +99,9 @@ public:
 	uint32	GetFreeGroup();
 	uint8	GroupCount(uint32 gid);
 	uint8	RaidCount();
+	uint32	GetPresentMembersFromGuildID(uint32 guild_id);
+	bool	IsGuildOfficerInRaidOfGuild(uint32 guild_id);
+	bool	CanRaidEngageRaidTarget(uint32 guild_id);
 	uint32	GetHighestLevel();
 	uint32	GetHighestLevel2();
 	uint32	GetLowestLevel();

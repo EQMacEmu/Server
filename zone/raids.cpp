@@ -83,10 +83,10 @@ void Raid::AddMember(Client *c, uint32 group, bool rleader, bool groupleader, bo
 
 	std::string query = StringFormat("INSERT INTO raid_members SET raidid = %lu, charid = %lu, "
                                     "groupid = %lu, _class = %d, level = %d, name = '%s', "
-                                    "isgroupleader = %d, israidleader = %d, islooter = %d",
+                                    "isgroupleader = %d, israidleader = %d, islooter = %d, guild_id=%d, isofficer=%d ",
                                     (unsigned long)GetID(), (unsigned long)c->CharacterID(),
                                     (unsigned long)group, c->GetClass(), c->GetLevel(),
-                                    c->GetName(), groupleader, rleader, looter);
+                                    c->GetName(), groupleader, rleader, looter, c->GuildID(), c->GuildRank());
     auto results = database.QueryDatabase(query);
 
 	if(!results.Success()) {
@@ -511,6 +511,68 @@ uint8 Raid::RaidCount()
 			count++;
 	}
 	return count;
+}
+
+bool Raid::IsGuildOfficerInRaidOfGuild(uint32 guild_id)
+{
+	if (guild_id == GUILD_NONE)
+	{
+		return false;
+	}
+
+	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if (members[x].IsGuildOfficer && members[x].guildid == guild_id)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Raid::CanRaidEngageRaidTarget(uint32 guild_id)
+{
+	bool has_raid_officer = IsGuildOfficerInRaidOfGuild(guild_id);
+
+	if (!has_raid_officer)
+		return false;
+
+	uint32 present_members = GetPresentMembersFromGuildID(guild_id);
+	uint32 raid_count = RaidCount();
+
+	if (present_members < RuleI(Quarm, AutomatedRaidRotationRaidGuildMemberCountRequirement))
+		return false;
+
+	if (raid_count < RuleI(Quarm, AutomatedRaidRotationRaidNonMemberCountRequirement))
+		return false;
+
+	return true;
+}
+
+uint32 Raid::GetPresentMembersFromGuildID(uint32 guild_id)
+{
+	if (guild_id == 0 || guild_id == GUILD_NONE)
+	{
+		return 0;
+	}
+
+	uint32 membercount = 0;
+
+	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if (strlen(members[x].membername) > 0)
+		{
+			uint32 guild_id = members[x].guildid;
+			uint32 member_level = members[x].level >= RuleI(Quarm, AutomatedRaidRotationRaidGuildLevelRequirement);
+
+			if (guild_id != 0 && guild_id != GUILD_NONE && guild_id == guild_id)
+			{
+				membercount++;
+			}
+		}
+	}
+
+	return membercount;
 }
 
 uint32 Raid::GetGroup(const char *name)
@@ -1595,7 +1657,7 @@ bool Raid::LearnMembers()
 	memset(members, 0, (sizeof(RaidMember)*MAX_RAID_MEMBERS));
 
 	std::string query = StringFormat("SELECT name, groupid, _class, level, "
-                                    "isgroupleader, israidleader, islooter "
+                                    "isgroupleader, israidleader, islooter, guild_id, isofficer "
                                     "FROM raid_members WHERE raidid = %lu",
                                     (unsigned long)GetID());
     auto results = database.QueryDatabase(query);
@@ -1628,6 +1690,8 @@ bool Raid::LearnMembers()
         members[index].IsGroupLeader = atoi(row[4]);
         members[index].IsRaidLeader = atoi(row[5]);
         members[index].IsLooter = atoi(row[6]);
+		members[index].guildid = atoi(row[7]);
+		members[index].IsGuildOfficer = atoi(row[8]);
         ++index;
     }
 
