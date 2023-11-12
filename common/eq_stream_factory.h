@@ -62,6 +62,7 @@ class EQStreamFactory : private Timeoutable {
 
 		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>> OldStreams;
 
+		std::thread ReaderThread;
 		std::thread ProcessNewThread;
 		std::thread WriterNewThread;
 		std::thread ProcessOldThread;

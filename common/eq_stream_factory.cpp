@@ -4,7 +4,6 @@
 
 #ifdef _WINDOWS
 #include <winsock2.h>
-#include <process.h>
 #include <io.h>
 #include <stdio.h>
 #else
@@ -13,22 +12,12 @@
 #include <sys/select.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <pthread.h>
 #endif
 
 #include <iostream>
 #include <fcntl.h>
 
 #include "op_codes.h"
-
-ThreadReturnType EQStreamFactoryReaderLoop(void *eqfs)
-{
-	EQStreamFactory *fs = (EQStreamFactory *)eqfs;
-
-	fs->ReaderLoop();
-
-	THREAD_RETURN(nullptr);
-}
 
 EQStreamFactory::EQStreamFactory(EQStreamType type, int port, uint32 timeout)
 	: Timeoutable(5000), stream_timeout(timeout)
@@ -49,6 +38,7 @@ void EQStreamFactory::Close()
 #endif
 	sock = -1;
 
+	ReaderThread.join();
 	ProcessNewThread.join();
 	ProcessOldThread.join();
 	WriterNewThread.join();
@@ -85,13 +75,8 @@ bool EQStreamFactory::Open()
 #else
 	fcntl(sock, F_SETFL, O_NONBLOCK);
 #endif
-	//moved these because on windows the output was delayed and causing the console window to look bad
-#ifdef _WINDOWS
-	_beginthread(EQStreamFactoryReaderLoop, 0, this);
-#else
-	pthread_create(&t1, nullptr, EQStreamFactoryReaderLoop, this);
-#endif
 
+	ReaderThread = std::thread(&EQStreamFactory::ReaderLoop, this);
 	ProcessNewThread = std::thread(&EQStreamFactory::ProcessLoopNew, this);
 	WriterNewThread = std::thread(&EQStreamFactory::WriterLoopNew, this);
 	ProcessOldThread = std::thread(&EQStreamFactory::ProcessLoopOld, this);
@@ -151,6 +136,7 @@ void EQStreamFactory::ReaderLoop()
 	while (sock != -1) {
 		std::unique_lock<std::mutex> reader_lock(MReaderRunning);
 		if (!ReaderRunning) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			break;
 		}
 		reader_lock.unlock();
@@ -162,10 +148,13 @@ void EQStreamFactory::ReaderLoop()
 		sleep_time.tv_usec = 0;
 		if ((num = select(sock + 1, &readset, nullptr, nullptr, &sleep_time)) < 0) {
 			// What do we wanna do?
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			continue;
 		}
-		else if (num == 0)
+		else if (num == 0) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			continue;
+		}
 
 		if (sock == -1)
 			break;		//somebody closed us while we were sleeping.
@@ -185,13 +174,15 @@ void EQStreamFactory::ReaderLoop()
 					auto data = std::make_unique<RecvBuffer>(length, buffer, from);
 					std::lock_guard<std::mutex> lock(MNewRecvBuffers);
 					NewRecvBuffers.push(std::move(data));
-					continue;
 				}
-
-				auto data = std::make_unique<RecvBuffer>(length, buffer, from);
-				std::lock_guard<std::mutex> lock(MOldRecvBuffers);
-				OldRecvBuffers.push(std::move(data));
+				else {
+					auto data = std::make_unique<RecvBuffer>(length, buffer, from);
+					std::lock_guard<std::mutex> lock(MOldRecvBuffers);
+					OldRecvBuffers.push(std::move(data));
+				}
 			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 }
