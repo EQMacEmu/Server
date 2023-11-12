@@ -7,6 +7,7 @@
 #include <map>
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 #include "../common/eq_stream.h"
 #include "../common/condition.h"
