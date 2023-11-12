@@ -7070,6 +7070,19 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				// need to create a raid
 				Group *lg = leader->GetGroup();
 				Group *g = GetGroup();
+
+				if (g)
+				{
+					// Verify group before performing actions on it.
+					g->UpdatePlayer(this);
+				}
+
+				if (g && g->GroupCount() < 2)
+				{
+					i->Message(CC_Red, "Invite failed, group does not have enough members to be invited.");
+					return;
+				}
+
 				r = new Raid(leader);
 				entity_list.AddRaid(r);
 				r->SetRaidDetails();
@@ -7126,7 +7139,6 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 				groupFree = r->GetFreeGroup();
 				if (g) 
 				{
-					// New raid, add invitee and their group.
 					r->AddGroupToRaid(leader, this, g, groupFree);
 				} 
 				else 
