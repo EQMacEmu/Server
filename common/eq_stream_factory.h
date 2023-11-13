@@ -21,11 +21,11 @@ class RecvBuffer {
 		bool isnew;
 		uint32 length;
 		std::unique_ptr<unsigned char[]> buffer;
-		std::pair<ULONG, USHORT> streamkey;
+		std::pair<unsigned long, unsigned short> streamkey;
 		sockaddr_in from;
 
 	public:
-		RecvBuffer(bool isnew, uint32 len, const unsigned char* buf, std::pair<ULONG, USHORT> key, sockaddr_in& f) : isnew(isnew), length(len), streamkey(key), from(f) {
+		RecvBuffer(bool isnew, uint32 len, const unsigned char* buf, std::pair<unsigned long, unsigned short> key, sockaddr_in& f) : isnew(isnew), length(len), streamkey(key), from(f) {
 				buffer.reset(new unsigned char[len]);
 				memcpy(buffer.get(), buf, len);
 		}
