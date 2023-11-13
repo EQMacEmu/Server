@@ -407,7 +407,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 				break;
 			}
 			uint16 seq=ntohs(*(uint16 *)(p->pBuffer));
-			MOutboundQueue.lock();
+			std::lock_guard<std::mutex> lock(MOutboundQueue);
 
 			if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
 				Log(Logs::Detail, Logs::Netcode, _L "Pre-OOA Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
@@ -454,7 +454,6 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
 				Log(Logs::Detail, Logs::Netcode, _L "Post-OOA Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
 			}
-			MOutboundQueue.unlock();
 		}
 		break;
 		case OP_SessionStatRequest: {
@@ -567,18 +566,18 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 
 	// Convert the EQApplicationPacket to 1 or more EQProtocolPackets
 	if (p->size>(MaxLen-8)) { // proto-op(2), seq(2), app-op(2) ... data ... crc(2)
-		LogNetcode(_L "Making oversized packet, len [{0}]" __L, p->Size());
+		Log(Logs::General, Logs::Netcode, _L "Making oversized packet, len [%d]" __L, p->Size());
 
 		auto tmpbuff = new unsigned char[p->size + 3];
 		length = p->serialize(opcode, tmpbuff);
 		if (length != p->Size())
-			LogNetcode(_L "Packet adjustment, len [{0}] to [{1}]" __L, p->Size(), length);
+			Log(Logs::General, Logs::Netcode, _L "Packet adjustment, len [%d] to [%d]" __L, p->Size(), length);
 
 		auto out = new EQProtocolPacket(OP_Fragment, nullptr, MaxLen - 4);
 		*(uint32 *)(out->pBuffer + 2) = htonl(length);
 		used = MaxLen - 10;
 		memcpy(out->pBuffer + 6, tmpbuff, used);
-		LogNetcode(_L "First fragment: used [{0}]/[{1}]. Payload size [{2}] in the packet" __L, used, length, p->size);
+		Log(Logs::General, Logs::Netcode, _L "First fragment: used [%d]/[%d]. Payload size [%d] in the packet" __L, used, length, p->size);
 		SequencedPush(out);
 
 		while (used<length) {
@@ -588,7 +587,7 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 			out->size = chunksize + 2;
 			SequencedPush(out);
 			used += chunksize;
-			LogNetcode(_L "Subsequent fragment: len [{0}], used [{1}]/[{2}]." __L, chunksize, used, length);
+			Log(Logs::General, Logs::Netcode, _L "Subsequent fragment: len [%d], used [%d]/[%d]." __L, chunksize, used, length);
 		}
 		delete p;
 		delete[] tmpbuff;
@@ -607,48 +606,46 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 
 void EQStream::SequencedPush(EQProtocolPacket * p)
 {
-		MOutboundQueue.lock();
+		std::lock_guard<std::mutex> lock(MOutboundQueue);
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			LogNetcode( _L "Pre-Push Invalid Sequenced queue: BS [{0}] + SQ [{1}] != NOS [{2}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			Log(Logs::General, Logs::Netcode, _L "Pre-Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			LogNetcode(_L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [{0}] > SQ [{1}]" __L, NextSequencedSend, SequencedQueue.size());
+			Log(Logs::General, Logs::Netcode, _L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 
-		LogNetcode(_L "Pushing sequenced packet [{0}] of length [{1}]. Base Seq is [{2}]." __L, NextOutSeq, p->size, SequencedBase);
+		Log(Logs::General, Logs::Netcode, _L "Pushing sequenced packet [%d] of length [%d]. Base Seq is [%d]." __L, NextOutSeq, p->size, SequencedBase);
 		*(uint16*)(p->pBuffer) = htons(NextOutSeq);
 		SequencedQueue.push_back(p);
 		NextOutSeq++;
 
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			LogNetcode(_L "Push Invalid Sequenced queue: BS [{0}] + SQ [{1}] != NOS [{2}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			Log(Logs::General, Logs::Netcode, _L "Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			LogNetcode(_L "Push Next Send Sequence is beyond the end of the queue NSS [{0}] > SQ [{1}]" __L, NextSequencedSend, SequencedQueue.size());
+			Log(Logs::General, Logs::Netcode, _L "Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
 		}
-		MOutboundQueue.unlock();
 }
 
 
 void EQStream::NonSequencedPush(EQProtocolPacket *p)
 {
-	MOutboundQueue.lock();
-	LogNetcode(_L "Pushing non-sequenced packet of length [{0}]" __L, p->size);
+	std::lock_guard<std::mutex> lock(MOutboundQueue);
+	Log(Logs::General, Logs::Netcode, _L "Pushing non-sequenced packet of length [%d]" __L, p->size);
 	NonSequencedQueue.push(p);
-	MOutboundQueue.unlock();
 }
 
 void EQStream::SendAck(uint16 seq)
 {
 uint16 Seq=htons(seq);
-	LogNetcodeDetail(_L "Sending ack with sequence [{0}]" __L, seq);
+	Log(Logs::Detail, Logs::Netcode, _L "Sending ack with sequence [%d]" __L, seq);
 	SetLastAckSent(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_Ack,(unsigned char *)&Seq,sizeof(uint16)));
 }
 
 void EQStream::SendOutOfOrderAck(uint16 seq)
 {
-	LogNetcodeDetail(_L "Sending out of order ack with sequence [{0}]" __L, seq);
+	Log(Logs::Detail, Logs::Netcode, _L "Sending out of order ack with sequence [%d]" __L, seq);
 	uint16 Seq=htons(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_OutOfOrderAck,(unsigned char *)&Seq,sizeof(uint16)));
 }
@@ -660,21 +657,26 @@ void EQStream::Write(int eq_fd)
 	std::deque<EQProtocolPacket *>::iterator sitr;
 
 	// Check our rate to make sure we can send more
-	MRate.lock();
+	std::unique_lock<std::mutex> ratelock(MRate);
 	int32 threshold=RateThreshold;
-	MRate.unlock();
+	ratelock.unlock();
 	if (BytesWritten > threshold) {
 		return;
 	}
 
 	// If we got more packets to we need to ack, send an ack on the highest one
-	MAcks.lock();
-	if (CompareSequence(LastAckSent, NextAckToSend) == SeqFuture)
+	std::unique_lock<std::mutex> ackslock(MAcks);
+	if (CompareSequence(LastAckSent, NextAckToSend) == SeqFuture) {
+		ackslock.unlock();
 		SendAck(NextAckToSend);
-	MAcks.unlock();
+	}
+
+	if (ackslock.owns_lock()) {
+		ackslock.unlock();
+	}
 
 	// Lock the outbound queues while we process
-	MOutboundQueue.lock();
+	std::unique_lock<std::mutex> outlock(MOutboundQueue);
 
 	// Place to hold the base packet t combine into
 	EQProtocolPacket *p=nullptr;
@@ -834,7 +836,7 @@ void EQStream::Write(int eq_fd)
 	}
 
 	// Unlock the queue
-	MOutboundQueue.unlock();
+	outlock.unlock();
 
 	if (!ReadyToSend.empty()) {
 		LastSent = Timer::GetCurrentTime();
@@ -960,22 +962,21 @@ void EQStream::_SendDisconnect()
 
 void EQStream::InboundQueuePush(EQRawApplicationPacket *p)
 {
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundQueue);
 	InboundQueue.push_back(p);
-	MInboundQueue.unlock();
 }
 
 EQApplicationPacket *EQStream::PopPacket()
 {
 EQRawApplicationPacket *p=nullptr;
 
-	MInboundQueue.lock();
+	std::unique_lock<std::mutex> inlock(MInboundQueue);
 	if (!InboundQueue.empty()) {
 		auto itr = InboundQueue.begin();
 		p=*itr;
 		InboundQueue.erase(itr);
 	}
-	MInboundQueue.unlock();
+	inlock.unlock();
 
 	if (p) {
 		if (OpMgr != nullptr && *OpMgr != nullptr) {
@@ -994,13 +995,13 @@ EQRawApplicationPacket *EQStream::PopRawPacket()
 {
 EQRawApplicationPacket *p=nullptr;
 
-	MInboundQueue.lock();
+	std::unique_lock<std::mutex> inlock(MInboundQueue);
 	if (!InboundQueue.empty()) {
 		auto itr = InboundQueue.begin();
 		p=*itr;
 		InboundQueue.erase(itr);
 	}
-	MInboundQueue.unlock();
+	inlock.unlock();
 
 	//resolve the opcode if we can.
 	if(p) {
@@ -1021,12 +1022,11 @@ EQRawApplicationPacket *EQStream::PeekPacket()
 {
 EQRawApplicationPacket *p=nullptr;
 
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundQueue);
 	if (!InboundQueue.empty()) {
 		auto itr = InboundQueue.begin();
 		p=*itr;
 	}
-	MInboundQueue.unlock();
 
 	return p;
 }
@@ -1037,7 +1037,7 @@ EQApplicationPacket *p=nullptr;
 
 	Log(Logs::Detail, Logs::Netcode, _L "Clearing inbound queue" __L);
 
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundQueue);
 	if (!InboundQueue.empty()) {
 		std::vector<EQRawApplicationPacket *>::iterator itr;
 		for(itr=InboundQueue.begin();itr!=InboundQueue.end();++itr) {
@@ -1046,25 +1046,23 @@ EQApplicationPacket *p=nullptr;
 		}
 		InboundQueue.clear();
 	}
-	MInboundQueue.unlock();
 }
 
 bool EQStream::HasOutgoingData()
 {
 	bool flag;
 
-	MOutboundQueue.lock();
+	std::unique_lock<std::mutex> outlock(MOutboundQueue);
 	flag=(!NonSequencedQueue.empty());
 	if (!flag) {
 		//not only wait until we send it all, but wait until they ack everything.
 		flag = !SequencedQueue.empty();
 	}
-	MOutboundQueue.unlock();
+	outlock.unlock();
 
 	if (!flag) {
-		MAcks.lock();
+		std::lock_guard<std::mutex> lock(MAcks);
 		flag= (NextAckToSend>LastAckSent);
-		MAcks.unlock();
 	}
 
 	return flag;
@@ -1076,7 +1074,7 @@ EQProtocolPacket *p=nullptr;
 
 	Log(Logs::Detail, Logs::Netcode, _L "Clearing outbound queue" __L);
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundQueue);
 	while(!NonSequencedQueue.empty()) {
 		delete NonSequencedQueue.front();
 		NonSequencedQueue.pop();
@@ -1089,7 +1087,6 @@ EQProtocolPacket *p=nullptr;
 		}
 		SequencedQueue.clear();
 	}
-	MOutboundQueue.unlock();
 }
 
 void EQStream::PacketQueueClear()
@@ -1111,7 +1108,7 @@ EQProtocolPacket *p=nullptr;
 void EQStream::Process(const unsigned char *buffer, const uint32 length)
 {
 static unsigned char newbuffer[2048];
-uint32 newlength=0;
+	uint32 newlength=0;
 	if (EQProtocolPacket::ValidateCRC(buffer,length,Key)) {
 		if (compressed) {
 			newlength=EQProtocolPacket::Decompress(buffer,length,newbuffer,2048);
@@ -1128,7 +1125,12 @@ uint32 newlength=0;
 		delete p;
 		ProcessQueue();
 	} else {
-		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum" __L);
+		/*std::string s = {};
+		for (uint32 i = 0; i < length; i++) {
+			int value = buffer[i];
+			s += fmt::format("{:02x} ", value);
+		}*/
+		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum: %s" __L);
 		//_SendDisconnect();
 		//SetState(CLOSED);
 	}
@@ -1136,27 +1138,25 @@ uint32 newlength=0;
 
 long EQStream::GetNextAckToSend()
 {
-	MAcks.lock();
+	std::lock_guard<std::mutex> lock(MAcks);
 	long l=NextAckToSend;
-	MAcks.unlock();
 
 	return l;
 }
 
 long EQStream::GetLastAckSent()
 {
-	MAcks.lock();
+	std::lock_guard<std::mutex> lock(MAcks);
 	long l=LastAckSent;
-	MAcks.unlock();
 
 	return l;
 }
 
 void EQStream::AckPackets(uint16 seq)
 {
-std::deque<EQProtocolPacket *>::iterator itr, tmp;
+	std::deque<EQProtocolPacket *>::iterator itr, tmp;
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundQueue);
 	stream_startup = false;
 	//do a bit of sanity checking.
 	if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
@@ -1203,24 +1203,20 @@ std::deque<EQProtocolPacket *>::iterator itr, tmp;
 			Log(Logs::Detail, Logs::Netcode, _L "Post-Ack Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
 		}
 	}
-
-	MOutboundQueue.unlock();
 }
 
 void EQStream::SetNextAckToSend(uint32 seq)
 {
-	MAcks.lock();
+	std::lock_guard<std::mutex> lock(MAcks);
 	Log(Logs::Detail, Logs::Netcode, _L "Set Next Ack To Send to %lu" __L, (unsigned long)seq);
 	NextAckToSend=seq;
-	MAcks.unlock();
 }
 
 void EQStream::SetLastAckSent(uint32 seq)
 {
-	MAcks.lock();
+	std::lock_guard<std::mutex> lock(MAcks);
 	Log(Logs::Detail, Logs::Netcode, _L "Set Last Ack Sent to %lu" __L, (unsigned long)seq);
 	LastAckSent=seq;
-	MAcks.unlock();
 }
 
 void EQStream::ProcessQueue()
@@ -1330,11 +1326,10 @@ EQStream::SeqOrder EQStream::CompareSequence(uint16 expected_seq , uint16 seq)
 }
 
 void EQStream::SetState(EQStreamState state) {
-	MState.lock();
+	std::lock_guard<std::mutex> lock(MState);
 	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, State, state);
 	State=state;
 	stale_count=0;
-	MState.unlock();
 }
 
 
@@ -1388,9 +1383,8 @@ void EQStream::CheckTimeout(uint32 now, uint32 timeout) {
 
 void EQStream::Decay()
 {
-	MRate.lock();
+	std::lock_guard<std::mutex> lock(MRate);
 	uint32 rate=DecayRate;
-	MRate.unlock();
 	if (BytesWritten>0) {
 		BytesWritten-=rate;
 		if (BytesWritten<0)
@@ -1402,24 +1396,22 @@ void EQStream::AdjustRates(uint32 average_delta)
 {
 	if(GetExecutablePlatform() == ExePlatformWorld || GetExecutablePlatform() == ExePlatformZone || GetExecutablePlatform() == ExePlatformUCS) {
 		if (average_delta && (average_delta <= AVERAGE_DELTA_MAX)) {
-			MRate.lock();
+			std::lock_guard<std::mutex> lock(MRate);
 			RateThreshold=RATEBASE/average_delta;
 			DecayRate=DECAYBASE/average_delta;
 			Log(Logs::Detail, Logs::Netcode, _L "Adjusting data rate to thresh %d, decay %d based on avg delta %d" __L, 
 				RateThreshold, DecayRate, average_delta);
-			MRate.unlock();
 		} else {
 			Log(Logs::Detail, Logs::Netcode, _L "Not adjusting data rate because avg delta over max (%d > %d)" __L, 
 				average_delta, AVERAGE_DELTA_MAX);
 		}
 	} else {
 		if (average_delta) {
-			MRate.lock();
+			std::lock_guard<std::mutex> lock(MRate);
 			RateThreshold=RATEBASE/average_delta;
 			DecayRate=DECAYBASE/average_delta;
 			Log(Logs::Detail, Logs::Netcode, _L "Adjusting data rate to thresh %d, decay %d based on avg delta %d" __L, 
 				RateThreshold, DecayRate, average_delta);
-			MRate.unlock();
 		}
 	}
 }
@@ -1446,7 +1438,7 @@ EQStream::MatchState EQStream::CheckSignature(const Signature *sig) {
 	EQRawApplicationPacket *p = nullptr;
 	MatchState res = MatchNotReady;
 
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundQueue);
 	if (!InboundQueue.empty()) {
 		//this is already getting hackish...
 		p = InboundQueue.front();
@@ -1478,7 +1470,6 @@ EQStream::MatchState EQStream::CheckSignature(const Signature *sig) {
 			res = MatchFailed;
 		}
 	}
-	MInboundQueue.unlock();
 
 	return(res);
 }
@@ -1707,7 +1698,7 @@ EQOldStream::~EQOldStream()
 
 void EQOldStream::ResendBefore(uint16 dwARQ)
 {
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	//Log(Logs::Detail, Logs::Netcode, _L "Resend Before Called %d B0." __L, dwARQ);
 	std::deque<EQOldPacket*>::iterator it;
 	for (it = SendQueue.begin(); it != SendQueue.end();)
@@ -1736,14 +1727,12 @@ void EQOldStream::ResendBefore(uint16 dwARQ)
 		}
 		it++;
 	}
-
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::ResendRequest(uint16 count_size, const uchar* bits, uint16 arsp_start) {
 	if (count_size == 0 || bits == nullptr)
 		return;
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	int j = 0;
 	int i = 0;
 	std::deque<EQOldPacket*>::iterator it;
@@ -1779,12 +1768,11 @@ void EQOldStream::ResendRequest(uint16 count_size, const uchar* bits, uint16 ars
 			it++;
 		}
 	}
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::IncomingARSP(uint16 dwARSP) 
-{ 
-	MOutboundQueue.lock();
+{
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	EQOldPacket* pack = 0;
 	
 	//Log(Logs::Detail, Logs::Netcode, _L "ARSP Received %d. ARSP0" __L, dwARSP);
@@ -1823,8 +1811,6 @@ void EQOldStream::IncomingARSP(uint16 dwARSP)
 			it++;
 		}
 	}
-
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::IncomingARQ(uint16 dwARQ) 
@@ -1860,8 +1846,8 @@ void EQOldStream::ParceEQPacket(uint16 dwSize, uchar* pPacket)
 {
 	if(pm_state != EQStreamState::ESTABLISHED)
 		return;
-			        
-	MInboundQueue.lock();
+
+	std::lock_guard<std::mutex> lock(MInboundOldQueue);
 	/************ DECODE PACKET ************/
 	EQOldPacket* pack = new EQOldPacket(pPacket, dwSize);
 	pack->DecodePacket(dwSize, pPacket);
@@ -1870,13 +1856,13 @@ void EQOldStream::ParceEQPacket(uint16 dwSize, uchar* pPacket)
 		safe_delete(pack);//delete pack;
 	}
 	CheckBufferedPackets();
-	MInboundQueue.unlock();
 }
 
 void EQOldStream::RemoveData()
 {
-	MInboundQueue.lock();
-	MOutboundQueue.lock();
+	std::lock(MInboundOldQueue, MOutboundOldQueue);
+	std::lock_guard<std::mutex> inlock(MInboundOldQueue, std::adopt_lock);
+	std::lock_guard<std::mutex> outlock(MOutboundOldQueue, std::adopt_lock);
 	EQRawApplicationPacket* p = 0;	
 	std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
 	while (itr != OutQueue.end()) {
@@ -1897,8 +1883,6 @@ void EQOldStream::RemoveData()
 		safe_delete(p);
 		packit = SendQueue.erase(packit);
 	}
-	MInboundQueue.unlock();
-	MOutboundQueue.unlock();
 }
 
 /*
@@ -2181,7 +2165,7 @@ void EQOldStream::MakeClosePacket()
 	resent. This is used by the EQ servers for HP and position updates among 
 	other things. WARNING: I havent tested this yet.
 */
-void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
+void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req, bool outboundAlreadyLocked)
 {
 	int16 restore_op = 0x0000;
 
@@ -2198,6 +2182,10 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		return;
 	}
 	bool bFragment= false; //This is set later on if fragseq should be increased at the end.
+	std::unique_lock<std::mutex> lock;
+	if (!outboundAlreadyLocked) {
+		lock = std::unique_lock<std::mutex>(MOutboundOldQueue);
+	}
 
 	/************ IF opcode is == 0xFFFF it is a request for pure ack creation ************/
 	if(app->GetRawOpcode() == 0xFFFF)
@@ -2211,15 +2199,12 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		}
 		//pack->dwOpCode = 0xFFFF;
 		keep_alive_timer->Start();
-		MOutboundQueue.lock();
 		SendQueue.push_back(pack);
-		MOutboundQueue.unlock();
 		return;
 	}
 	if (app->size == 19) {
 		if (app->opcode == 0x9f40) {
 			// we have a mob update opcode - see if the back of the sendqueue has one to add this to
-			MOutboundQueue.lock();
 			if (!SendQueue.empty()) {
 				EQOldPacket *oldpack;
 				oldpack = SendQueue.back();
@@ -2241,13 +2226,11 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 						oldpack->dwExtraSize = (uint16)(4 + count * 15);
 						oldpack->pExtra = newdata;
 						delete[] olddata;
-						MOutboundQueue.unlock();
 						return;
 					}
 				}
 
 			}
-			MOutboundQueue.unlock();
 		}
 	}
 
@@ -2259,7 +2242,6 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		ack_req = true; // Fragmented packets must have ackreq set
 	}
 
-	MOutboundQueue.lock();
 	if(CheckState(EQStreamState::ESTABLISHED))
 	/************ PM STATE = ACTIVE ************/
 	{
@@ -2372,9 +2354,7 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req)
 		}
 		app->pBuffer -= app->size; //Restore ptr.
 		app->opcode = restore_op;
-			        
 	} //end if
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::CheckTimers(void)
@@ -2441,13 +2421,13 @@ void EQOldStream::FastQueuePacket(EQApplicationPacket **p, bool ack_req)
 EQApplicationPacket *EQOldStream::PopPacket()
 {
 	EQRawApplicationPacket *p=nullptr;
-	MInboundQueue.lock();
+	std::unique_lock<std::mutex> inlock(MInboundOldQueue);
 	if (OutQueue.size()) {
-	std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
-	p=*itr;
-	OutQueue.erase(itr);
+		std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
+		p=*itr;
+		OutQueue.erase(itr);
 	}
-	MInboundQueue.unlock();
+	inlock.unlock();
 
 	if(p)
 	{
@@ -2475,7 +2455,7 @@ EQRawApplicationPacket *p=nullptr;
 
 Log(Logs::Detail, Logs::Netcode, _L "Clearing inbound queue" __L);
 
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundOldQueue);
 	std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
 	while (itr != OutQueue.end()) {
 			safe_delete(*itr);
@@ -2486,8 +2466,6 @@ Log(Logs::Detail, Logs::Netcode, _L "Clearing inbound queue" __L);
 		safe_delete(buffered_packets[i]);
 	}
 	buffered_packets.clear();
-
-	MInboundQueue.unlock();
 }
 
 void EQOldStream::OutboundQueueClear()
@@ -2496,7 +2474,7 @@ void EQOldStream::OutboundQueueClear()
 
 	Log(Logs::Detail, Logs::Netcode, _L "Clearing outbound & resend queue" __L);
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	for (auto packit = SendQueue.begin(); packit != SendQueue.end();)
 	{
 		auto p = (*packit);
@@ -2505,8 +2483,6 @@ void EQOldStream::OutboundQueueClear()
 		packit = SendQueue.erase(packit);
 	}
 	SendQueue.clear();
-
-	MOutboundQueue.unlock();
 }
 void EQOldStream::ReceiveData(uchar* buf, int len)
 {
@@ -2514,10 +2490,10 @@ void EQOldStream::ReceiveData(uchar* buf, int len)
 }
 
 void EQOldStream::SendPacketQueue(bool Block)
-{	
-	MOutboundQueue.lock();
+{
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	// Get first send packet on queue and send it!
-	EQOldPacket* pack = 0;    
+	EQOldPacket* pack = 0;
 	sockaddr_in to;	
 	uint32 size;
 	uchar* data;
@@ -2534,7 +2510,7 @@ void EQOldStream::SendPacketQueue(bool Block)
 		if ((no_ack_sent_timer->Check(0) || keep_alive_timer->Check()))
 		{
 			EQProtocolPacket app(0xFFFF, nullptr, 0);
-			MakeEQPacket(&app, true);
+			MakeEQPacket(&app, true, true); // outbound is already locked
 			no_ack_sent_timer->Disable();
 		}
 	} else if (GetState() == CLOSING) {
@@ -2627,7 +2603,6 @@ void EQOldStream::SendPacketQueue(bool Block)
 	else if(!keep_alive_timer->Enabled())
 		keep_alive_timer->Start(3000);
 	// ************ Processing finished ************ //
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::FlagPacketQueueForResend()
@@ -2635,7 +2610,7 @@ void EQOldStream::FlagPacketQueueForResend()
 	if (GetState() == CLOSED)
 		return;
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 
 	uint32 size;
 	uchar* data;
@@ -2660,7 +2635,6 @@ void EQOldStream::FlagPacketQueueForResend()
 	}
 
 	// ************ Connection finished ************ //
-	MOutboundQueue.unlock();
 }
 
 void EQOldStream::ClearPacketQueue()
@@ -2668,7 +2642,7 @@ void EQOldStream::ClearPacketQueue()
 	if (GetState() == CLOSED)
 		return;
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 
 	for (auto packit = SendQueue.begin(); packit != SendQueue.end();)
 	{
@@ -2677,7 +2651,6 @@ void EQOldStream::ClearPacketQueue()
 		safe_delete(p);
 		packit = SendQueue.erase(packit);
 	}
-	MOutboundQueue.unlock();
 
 }
 
@@ -2686,7 +2659,7 @@ void EQOldStream::FinalizePacketQueue()
 	if(GetState() == CLOSED)
 		return;
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	// Send out our existing queue
 	EQOldPacket* p = 0;    
 	sockaddr_in to;	
@@ -2718,16 +2691,14 @@ void EQOldStream::FinalizePacketQueue()
 		}
 	}
 	// ************ Connection finished ************ //
-	MOutboundQueue.unlock();
 }
 
 bool EQOldStream::HasOutgoingData()
 {
 	bool flag;
 
-	MOutboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	flag=!(SendQueue.empty());
-	MOutboundQueue.unlock();
 	return flag;
 }
 
@@ -2771,17 +2742,15 @@ void EQOldStream::CheckTimeout(uint32 now, uint32 timeout) {
 }
 
 void EQOldStream::SetState(EQStreamState state) {
-	MState.lock();
+	std::lock_guard<std::mutex> lock(MState);
 
 	if(pm_state == CLOSED)
 	{
-		MState.unlock();
 		return;
 	}
 
 	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, pm_state, state);
 	pm_state=state;
-	MState.unlock();
 }
 
 void EQOldStream::SetStreamType(EQStreamType type)
@@ -2795,7 +2764,7 @@ void EQOldStream::SetStreamType(EQStreamType type)
 EQStream::MatchState EQOldStream::CheckSignature(const EQStream::Signature *sig) {
 	EQRawApplicationPacket *p = nullptr;
 	EQStream::MatchState res = EQStream::MatchState::MatchNotReady;
-	MInboundQueue.lock();
+	std::lock_guard<std::mutex> lock(MInboundOldQueue);
 	if (!OutQueue.empty()) {
 		//this is already getting hackish...
 		std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
@@ -2826,7 +2795,6 @@ EQStream::MatchState EQOldStream::CheckSignature(const EQStream::Signature *sig)
 			res = EQStream::MatchState::MatchFailed;
 		}
 	}
-	MInboundQueue.unlock();
 
 	return(res);
 }
@@ -2839,9 +2807,9 @@ void EQOldStream::Close() {
 	if(HasOutgoingData()) {
 		//there is pending data, wait for it to go out.
 		Log(Logs::Detail, Logs::Netcode, _L "Stream requested to Close(), but there is pending data, waiting for it." __L);
-		MOutboundQueue.lock();
+		std::unique_lock<std::mutex> outlock(MOutboundOldQueue);
 		MakeClosePacket();
-		MOutboundQueue.unlock();
+		outlock.unlock();
 		keep_alive_timer->Stop();
 		FlagPacketQueueForResend();
 		SetState(CLOSING);
