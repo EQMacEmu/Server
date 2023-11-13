@@ -33,7 +33,7 @@ class RecvBuffer {
 		bool IsNew() const { return isnew; }
 		unsigned char* Buffer() const { return buffer.get(); }
 		uint32 Length() const { return length; }
-		const std::pair<ULONG, USHORT>& StreamKey() const { return streamkey; }
+		const std::pair<unsigned long, unsigned short>& StreamKey() const { return streamkey; }
 		const sockaddr_in& From() const { return from; }
 };
 
