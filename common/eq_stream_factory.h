@@ -18,19 +18,23 @@ class Timer;
 
 class RecvBuffer {
 	private:
+		bool isnew;
 		uint32 length;
 		std::unique_ptr<unsigned char[]> buffer;
+		std::pair<ULONG, USHORT> streamkey;
 		sockaddr_in from;
 
 	public:
-		RecvBuffer(uint32 len, const unsigned char* buf, sockaddr_in& f) : length(len), from(f) {
+		RecvBuffer(bool isnew, uint32 len, const unsigned char* buf, std::pair<ULONG, USHORT> key, sockaddr_in& f) : isnew(isnew), length(len), streamkey(key), from(f) {
 				buffer.reset(new unsigned char[len]);
 				memcpy(buffer.get(), buf, len);
 		}
 
+		bool IsNew() const { return isnew; }
 		unsigned char* Buffer() const { return buffer.get(); }
 		uint32 Length() const { return length; }
-		sockaddr_in& From() { return from; }
+		const std::pair<ULONG, USHORT>& StreamKey() const { return streamkey; }
+		const sockaddr_in& From() const { return from; }
 };
 
 class EQStreamFactory : private Timeoutable {

@@ -169,16 +169,39 @@ void EQStreamFactory::ReaderLoop()
 				// What do we wanna do?
 			}
 			else {
+				bool hasNewStream = false;
+				bool hasOldStream = false;
+				auto streamKey = std::make_pair(from.sin_addr.s_addr, from.sin_port);
 
-				if (buffer[1] == OP_SessionRequest) {
-					auto data = std::make_unique<RecvBuffer>(length, buffer, from);
-					std::lock_guard<std::mutex> lock(MNewRecvBuffers);
-					NewRecvBuffers.push(std::move(data));
+				{
+					std::lock_guard<std::mutex> lock(MStreams), lock2(MOldStreams);
+					hasNewStream = Streams.find(streamKey) != Streams.end();
+					hasOldStream = OldStreams.find(streamKey) != OldStreams.end();
+				}
+
+				if (hasNewStream == false && hasOldStream == false) {
+					if (buffer[1] == OP_SessionRequest) {
+						auto data = std::make_unique<RecvBuffer>(true, length, buffer, streamKey, from);
+						std::lock_guard<std::mutex> lock(MNewRecvBuffers);
+						NewRecvBuffers.push(std::move(data));
+					}
+					else {
+						auto data = std::make_unique<RecvBuffer>(true, length, buffer, streamKey, from);
+						std::lock_guard<std::mutex> lock(MOldRecvBuffers);
+						OldRecvBuffers.push(std::move(data));
+					}
 				}
 				else {
-					auto data = std::make_unique<RecvBuffer>(length, buffer, from);
-					std::lock_guard<std::mutex> lock(MOldRecvBuffers);
-					OldRecvBuffers.push(std::move(data));
+					if (hasNewStream) {
+						auto data = std::make_unique<RecvBuffer>(false, length, buffer, streamKey, from);
+						std::lock_guard<std::mutex> lock(MNewRecvBuffers);
+						NewRecvBuffers.push(std::move(data));
+					}
+					else if (hasOldStream) {
+						auto data = std::make_unique<RecvBuffer>(false, length, buffer, streamKey, from);
+						std::lock_guard<std::mutex> lock(MOldRecvBuffers);
+						OldRecvBuffers.push(std::move(data));
+					}
 				}
 			}
 
@@ -208,11 +231,10 @@ void EQStreamFactory::ProcessLoopNew()
 		const auto buffer = recvBuffer->Buffer();
 		std::lock_guard<std::mutex> lock(MStreams);
 
-		stream_itr = Streams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-		if (stream_itr == Streams.end()) {
+		if (recvBuffer->IsNew()) {
 			std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
 			s->SetStreamType(StreamType);
-			Streams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
+			Streams[recvBuffer->StreamKey()] = s;
 			WriterWorkNew.notify_one();
 			Push(s);
 			s->AddBytesRecv(length);
@@ -220,12 +242,16 @@ void EQStreamFactory::ProcessLoopNew()
 			s->SetLastPacketTime(Timer::GetCurrentTime());
 		}
 		else {
+			stream_itr = Streams.find(recvBuffer->StreamKey());
 			std::shared_ptr<EQStream> curstream = stream_itr->second;
+
 			//dont bother processing incoming packets for closed connections
-			if (curstream->CheckClosed())
-				curstream = nullptr;
-			else
-				curstream->PutInUse();
+			if (curstream != nullptr) {
+				if (curstream->CheckClosed())
+					curstream = nullptr;
+				else
+					curstream->PutInUse();
+			}
 
 			if (curstream) {
 				curstream->AddBytesRecv(length);
@@ -261,11 +287,10 @@ void EQStreamFactory::ProcessLoopOld()
 		auto buffer = recvBuffer->Buffer();
 		std::lock_guard<std::mutex> lock(MOldStreams);
 
-		oldstream_itr = OldStreams.find(std::make_pair(from.sin_addr.s_addr, from.sin_port));
-		if (oldstream_itr == OldStreams.end()) {
+		if (recvBuffer->IsNew()) {
 			std::shared_ptr<EQOldStream> s = std::make_shared<EQOldStream>(from, sock);
 			s->SetStreamType(StreamType);
-			OldStreams[std::make_pair(from.sin_addr.s_addr, from.sin_port)] = s;
+			OldStreams[recvBuffer->StreamKey()] = s;
 			WriterWorkOld.notify_one();
 			PushOld(s);
 			//s->AddBytesRecv(length);
@@ -273,12 +298,16 @@ void EQStreamFactory::ProcessLoopOld()
 			s->SetLastPacketTime(Timer::GetCurrentTime());
 		}
 		else {
+			oldstream_itr = OldStreams.find(recvBuffer->StreamKey());
 			std::shared_ptr<EQOldStream> curstream = oldstream_itr->second;
+
 			//dont bother processing incoming packets for closed connections
-			if (curstream->CheckClosed())
-				curstream = nullptr;
-			else
-				curstream->PutInUse();
+			if (curstream != nullptr) {
+				if (curstream->CheckClosed())
+					curstream = nullptr;
+				else
+					curstream->PutInUse();
+			}
 
 			if (curstream) {
 				//curstream->AddBytesRecv(length);
