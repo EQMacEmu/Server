@@ -566,18 +566,18 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 
 	// Convert the EQApplicationPacket to 1 or more EQProtocolPackets
 	if (p->size>(MaxLen-8)) { // proto-op(2), seq(2), app-op(2) ... data ... crc(2)
-		LogNetcode(_L "Making oversized packet, len [{0}]" __L, p->Size());
+		Log(Logs::General, Logs::Netcode, _L "Making oversized packet, len [%d]" __L, p->Size());
 
 		auto tmpbuff = new unsigned char[p->size + 3];
 		length = p->serialize(opcode, tmpbuff);
 		if (length != p->Size())
-			LogNetcode(_L "Packet adjustment, len [{0}] to [{1}]" __L, p->Size(), length);
+			Log(Logs::General, Logs::Netcode, _L "Packet adjustment, len [%d] to [%d]" __L, p->Size(), length);
 
 		auto out = new EQProtocolPacket(OP_Fragment, nullptr, MaxLen - 4);
 		*(uint32 *)(out->pBuffer + 2) = htonl(length);
 		used = MaxLen - 10;
 		memcpy(out->pBuffer + 6, tmpbuff, used);
-		LogNetcode(_L "First fragment: used [{0}]/[{1}]. Payload size [{2}] in the packet" __L, used, length, p->size);
+		Log(Logs::General, Logs::Netcode, _L "First fragment: used [%d]/[%d]. Payload size [%d] in the packet" __L, used, length, p->size);
 		SequencedPush(out);
 
 		while (used<length) {
@@ -587,7 +587,7 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 			out->size = chunksize + 2;
 			SequencedPush(out);
 			used += chunksize;
-			LogNetcode(_L "Subsequent fragment: len [{0}], used [{1}]/[{2}]." __L, chunksize, used, length);
+			Log(Logs::General, Logs::Netcode, _L "Subsequent fragment: len [%d], used [%d]/[%d]." __L, chunksize, used, length);
 		}
 		delete p;
 		delete[] tmpbuff;
@@ -608,22 +608,22 @@ void EQStream::SequencedPush(EQProtocolPacket * p)
 {
 		std::lock_guard<std::mutex> lock(MOutboundQueue);
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			LogNetcode( _L "Pre-Push Invalid Sequenced queue: BS [{0}] + SQ [{1}] != NOS [{2}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			Log(Logs::General, Logs::Netcode, _L "Pre-Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			LogNetcode(_L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [{0}] > SQ [{1}]" __L, NextSequencedSend, SequencedQueue.size());
+			Log(Logs::General, Logs::Netcode, _L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 
-		LogNetcode(_L "Pushing sequenced packet [{0}] of length [{1}]. Base Seq is [{2}]." __L, NextOutSeq, p->size, SequencedBase);
+		Log(Logs::General, Logs::Netcode, _L "Pushing sequenced packet [%d] of length [%d]. Base Seq is [%d]." __L, NextOutSeq, p->size, SequencedBase);
 		*(uint16*)(p->pBuffer) = htons(NextOutSeq);
 		SequencedQueue.push_back(p);
 		NextOutSeq++;
 
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			LogNetcode(_L "Push Invalid Sequenced queue: BS [{0}] + SQ [{1}] != NOS [{2}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			Log(Logs::General, Logs::Netcode, _L "Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			LogNetcode(_L "Push Next Send Sequence is beyond the end of the queue NSS [{0}] > SQ [{1}]" __L, NextSequencedSend, SequencedQueue.size());
+			Log(Logs::General, Logs::Netcode, _L "Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 }
 
@@ -631,21 +631,21 @@ void EQStream::SequencedPush(EQProtocolPacket * p)
 void EQStream::NonSequencedPush(EQProtocolPacket *p)
 {
 	std::lock_guard<std::mutex> lock(MOutboundQueue);
-	LogNetcode(_L "Pushing non-sequenced packet of length [{0}]" __L, p->size);
+	Log(Logs::General, Logs::Netcode, _L "Pushing non-sequenced packet of length [%d]" __L, p->size);
 	NonSequencedQueue.push(p);
 }
 
 void EQStream::SendAck(uint16 seq)
 {
 uint16 Seq=htons(seq);
-	LogNetcodeDetail(_L "Sending ack with sequence [{0}]" __L, seq);
+	Log(Logs::Detail, Logs::Netcode, _L "Sending ack with sequence [%d]" __L, seq);
 	SetLastAckSent(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_Ack,(unsigned char *)&Seq,sizeof(uint16)));
 }
 
 void EQStream::SendOutOfOrderAck(uint16 seq)
 {
-	LogNetcodeDetail(_L "Sending out of order ack with sequence [{0}]" __L, seq);
+	Log(Logs::Detail, Logs::Netcode, _L "Sending out of order ack with sequence [%d]" __L, seq);
 	uint16 Seq=htons(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_OutOfOrderAck,(unsigned char *)&Seq,sizeof(uint16)));
 }
@@ -666,9 +666,14 @@ void EQStream::Write(int eq_fd)
 
 	// If we got more packets to we need to ack, send an ack on the highest one
 	std::unique_lock<std::mutex> ackslock(MAcks);
-	if (CompareSequence(LastAckSent, NextAckToSend) == SeqFuture)
+	if (CompareSequence(LastAckSent, NextAckToSend) == SeqFuture) {
+		ackslock.unlock();
 		SendAck(NextAckToSend);
-	ackslock.unlock();
+	}
+
+	if (ackslock.owns_lock()) {
+		ackslock.unlock();
+	}
 
 	// Lock the outbound queues while we process
 	std::unique_lock<std::mutex> outlock(MOutboundQueue);
