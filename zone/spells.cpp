@@ -1110,7 +1110,6 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 		return;
 	}
 
-	bool bard_song_mode = false;
 	bool regain_conc = false;
 	Mob *spell_target = entity_list.GetMob(target_id);
 	// here we do different things if this is a bard casting a bard song
@@ -1133,7 +1132,6 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 					bardsong_target_id = spell_target->GetID();
 				bardsong_timer.Start(6000);
 				Log(Logs::Detail, Logs::Spells, "Bard song %d started: slot %d, target id %d", bardsong, bardsong_slot, bardsong_target_id);
-				bard_song_mode = true;
 			}
 		}
 	}
@@ -1161,7 +1159,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 					return;
 				}
 
-				float distance_moved, d_x, d_y;
+				float d_x, d_y;
 				if (GetX() != GetSpellX() || GetY() != GetSpellY())
 				{
 					d_x = std::abs(std::abs(GetX()) - std::abs(GetSpellX()));
@@ -1262,39 +1260,10 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 			return;
 		}
 
-		Client* clienttarget = GetTarget()->CastToClient();
-		Group* group = entity_list.GetGroupByClient(clienttarget);
-		if(group) 
+		if (!GetTarget()->InSameGroup(this))
 		{
-			if(!group->IsGroupMember(clienttarget)) 
-			{
-				InterruptSpell(CORPSE_SUMMON_TAR, CC_User_SpellFailure, SPELL_UNKNOWN);
-				return;
-			}
-		}
-		else 
-		{
-			Raid *r = entity_list.GetRaidByClient(this->CastToClient());
-			if(r)
-			{
-				uint32 gid = r->GetGroup(GetName());
-				if(gid < 11)
-				{
-					if(r->GetGroup(clienttarget->GetName()) != gid) 
-					{
-						InterruptSpell(CORPSE_SUMMON_TAR, CC_User_SpellFailure, SPELL_UNKNOWN);
-						return;
-					}
-				}
-			} 
-			else 
-			{
-				if(clienttarget != this->CastToClient()) 
-				{
-					InterruptSpell(CORPSE_SUMMON_TAR, CC_User_SpellFailure, SPELL_UNKNOWN);
-					return;
-				}
-			}
+			InterruptSpell(CORPSE_SUMMON_TAR, CC_User_SpellFailure, spell_id);
+			return;
 		}
 	}
 
@@ -1477,6 +1446,7 @@ bool Mob::HasSongInstrument(uint16 spell_id){
 	return true;
 }
 
+// this actually consumes the reagents, it doesn't just check for them
 bool Mob::HasSpellReagent(uint16 spell_id)
 {
 	static const int16 petfocusItems[] = { 20508, 28144, 11571, 11569, 11567, 11566, 11568, 6360, 6361, 6362, 6363 };
@@ -1540,32 +1510,43 @@ bool Mob::HasSpellReagent(uint16 spell_id)
 	}
 	else
 	{
+		// mage AA still requires reagents but does not consume them
+		if (GetClass() == MAGICIAN && GetAA(aaElementalPact) > 0 && GetSpellEffectIndex(spell_id, SE_SummonPet) != -1)
+			return true;
+
 		std::string item_name;
 		int reg_focus = CastToClient()->GetFocusEffect(focusReagentCost, spell_id, item_name);
-		if (zone->random.Roll(reg_focus))
-		{
-			if (item_name.length() > 0)
-			{
-				Message_StringID(MT_Spells, BEGINS_TO_SHINE, item_name.c_str());
-			}
-			Log(Logs::General, Logs::Focus, "focusReagentCost prevented reagent consumption (%d chance)", reg_focus);
-		}
-		else
-		{
-			if(reg_focus > 0)
-				Log(Logs::General, Logs::Focus, "focusReagentCost failed to prevent reagent consumption (%d chance)", reg_focus);
 
-			for (int t_count = 0; t_count < 4; t_count++) 
+		for (int t_count = 0; t_count < 4; t_count++) // loop through each of the 4 possible component slots
+		{
+			int32 component = spells[spell_id].components[t_count];
+			if (component == -1)
+				continue;
+			int component_count = spells[spell_id].component_counts[t_count];
+
+			for (int t_component_count = 0; t_component_count < component_count; t_component_count++) // loop for each quantity of each reagent, it's not all or nothing, each one rolls
 			{
-				int32 component = spells[spell_id].components[t_count];
-				if (component == -1)
-					continue;
-				int component_count = spells[spell_id].component_counts[t_count];
-				Log(Logs::Detail, Logs::Spells, "Spell %d: Consuming %d of spell component item id %d", spell_id, component, component_count);
-				// Components found, Deleting
-				// now we go looking for and deleting the items one by one
-				for (int s = 0; s < component_count; s++)
+				// these items can't benefit from reagent conservation even if the focus filters would apply (from client decompile)
+				bool exempt_reagent = component == 9963 /* Essence Emerald */ || component == 10092 /* Fuligan Soulstone of Innoruuk */ || component == 10094 /* Cloudy Stone of Veeshan */;
+
+				// roll for reagent conservation
+				if (!exempt_reagent && zone->random.Roll(reg_focus))
 				{
+					// roll success, conserve reagent
+					if (item_name.length() > 0)
+					{
+						Message_StringID(MT_Spells, BEGINS_TO_SHINE, item_name.c_str());
+					}
+					Log(Logs::General, Logs::Focus, "focusReagentCost prevented reagent consumption (%d chance) spell_id %d item_id %d", reg_focus, spell_id, component);
+				}
+				else
+				{
+					// roll failed or not a conservable reagent
+					if (reg_focus > 0)
+						Log(Logs::General, Logs::Focus, "focusReagentCost failed to prevent reagent consumption (%d chance, exempt_reagent = %d) spell_id %d item_id %d", reg_focus, exempt_reagent, spell_id, component);
+					Log(Logs::Detail, Logs::Spells, "Spell %d: Consuming 1 of spell component item id %d", spell_id, component);
+					// Components found, Deleting
+					// now we go looking for and deleting the items one by one
 					int16 inv_slot_id = c->GetInv().HasItem(component, 1, invWhereWorn | invWherePersonal);
 					if (inv_slot_id != -1)
 					{

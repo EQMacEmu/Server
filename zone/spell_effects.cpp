@@ -1184,7 +1184,8 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				break;
 			}
 
-			case SE_DeathSave: {
+			case SE_DeathSave: 
+			{
 
 				if (buffslot < 0)
 					break;;
@@ -1245,6 +1246,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						for(int x = EQ::textures::textureBegin; x <= EQ::textures::LastTintableTexture; x++)
 							caster->SendWearChange(x, nullptr, false, false, true);
 				}
+				break;
 			}
 
 			case SE_WipeHateList:
@@ -2795,6 +2797,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 					effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
 					CastToClient()->SetFatigue(CastToClient()->GetFatigue() + effect_value);
 				}
+				break;
 			}
 
 			case SE_WipeHateList:
@@ -4190,7 +4193,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 	return(value*lvlModifier/100);
 }
 
-int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_name, bool dot_tick, int spell_level) {
+int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_name, bool dot_tick, int spell_level, bool include_items, bool include_spells, bool include_aa) {
 
 	if (IsBardSong(spell_id))
 		return 0;
@@ -4213,7 +4216,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 	}
 
 	//Check if item focus effect exists for the client.
-	if (itembonuses.FocusEffects[type]){
+	if (include_items && itembonuses.FocusEffects[type]){
 
 		const EQ::ItemData* TempItem = nullptr;
 		const EQ::ItemData* UsedItem = nullptr;
@@ -4302,7 +4305,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 	}
 
 	//Check if spell focus effect exists for the client.
-	if (spellbonuses.FocusEffects[type]){
+	if (include_spells && spellbonuses.FocusEffects[type]){
 
 		//Spell Focus
 		int16 Total2 = 0;
@@ -4351,7 +4354,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 
 
 	// AA Focus
-	if (type != focusSpellHaste) { // AA Spell Haste has special handling, not just scanning for the highest effect
+	if (include_aa && type != focusSpellHaste) { // AA Spell Haste has special handling, not just scanning for the highest effect
 		if (aabonuses.FocusEffects[type]) {
 
 			int16 Total3 = 0;
@@ -4376,14 +4379,6 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 		}
 	}
 
-	if(type == focusReagentCost && IsSummonPetSpell(spell_id) && GetAA(aaElementalPact))
-		return 100;
-
-	if(type == focusReagentCost && (IsEffectInSpell(spell_id, SE_SummonItem) || IsSacrificeSpell(spell_id)))
-		return 0;
-	//Summon Spells that require reagents are typically imbue type spells, enchant metal, sacrifice and shouldn't be affected
-	//by reagent conservation for obvious reasons.
-
 	return realTotal + realTotal2 + realTotal3;
 }
 
@@ -4399,11 +4394,19 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 		{
 			casting_spell_focus_duration = GetFocusEffect(focusSpellDuration, spell_id, item_name, false, spell_level) + 100;
 		}
-		if (casting_spell_focus_duration > 100)
+		if (casting_spell_focus_duration > 100 || (spell_id == SPELL_PACIFY && RuleB(Spells, ReducePacifyDuration)))
 		{
 			Buffs_Struct *buffs = spelltar->GetBuffs();
 			if (buffs)
 			{
+				// this is for custom behavior and is not AKurate
+				if (spell_id == SPELL_PACIFY && RuleB(Spells, ReducePacifyDuration))
+				{
+					int32 pacify_original_duration = buffs[buffslot].ticsremaining;
+					int32 pacify_modified_duration = 8; // 7 plus extra tick
+					Log(Logs::General, Logs::Focus, "Pacify spell TAKP special - reducing duration from %d to %d before focus", pacify_original_duration, pacify_modified_duration);
+					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false);
+				}
 				int32 tics = buffs[buffslot].ticsremaining;
 				int32 newduration = (tics * casting_spell_focus_duration) / 100;
 

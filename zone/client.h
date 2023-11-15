@@ -730,7 +730,7 @@ public:
 	void SetConsumption(int16 in_hunger, int16 in_thirst);
 	void ProcessHungerThirst();
 	void ProcessFatigue();
-	void AddWeaponAttackFatigue(EQ::ItemInstance *weapon);
+	void AddWeaponAttackFatigue(const EQ::ItemInstance *weapon);
 
 	bool	CheckTradeLoreConflict(Client* other);
 	void	LinkDead();
@@ -1022,7 +1022,7 @@ protected:
 	void MakeBuffFadePacket(uint16 spell_id, int slot_id, bool send_message = true);
 	bool client_data_loaded;
 
-	int16 GetFocusEffect(focusType type, uint16 spell_id, std::string& item_name, bool dot_tick = false, int spell_level = -1);
+	int16 GetFocusEffect(focusType type, uint16 spell_id, std::string& item_name, bool dot_tick = false, int spell_level = -1, bool include_items = true, bool include_spells = true, bool include_aa = true);
 
 	Mob* bind_sight_target;
 

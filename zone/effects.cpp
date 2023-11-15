@@ -338,15 +338,27 @@ int32 Client::GetActSpellCasttime(uint16 spell_id, int32 casttime)
 	std::string item_name; // not used
 
 	int32 aa_casting_time_mod = GetAACastingTimeModifier(spell_id, casttime);
-	// intentional sign bug reproduced here, the commented out line below would be the correct way but it's not how the client does it
-	//int32 focus_casting_time_mod = casttime * (100 - GetFocusEffect(focusSpellHaste, spell_id, item_name)) / 100 - casttime;
-	int32 focus_casting_time_mod = -(casttime * GetFocusEffect(focusSpellHaste, spell_id, item_name) / 100u); // this overflows if the haste focus is negative, matching the client calc
+	int32 item_casting_time_mod = 0;
+	int32 buff_casting_time_mod = 0;
 
-	int32 modified_cast_time = casttime + aa_casting_time_mod + focus_casting_time_mod;
+	if (FindBuff(SPELL_EPOCH_CONVICTION))
+	{
+		// custom behavior for TAKP Quarm.  this desyncs the client and is incorrect but it was broken for a long time on TAKP
+		item_casting_time_mod = casttime * (100 - GetFocusEffect(focusSpellHaste, spell_id, item_name, false, -1, true, false, false)) / 100 - casttime;
+		buff_casting_time_mod = casttime * (100 - GetFocusEffect(focusSpellHaste, spell_id, item_name, false, -1, false, true, false)) / 100 - casttime;
+	}
+	else
+	{
+		// intentional sign bug reproduced here, this is how sony did it on AK
+		item_casting_time_mod = -(casttime * GetFocusEffect(focusSpellHaste, spell_id, item_name, false, -1, true, false, false) / 100u);
+		buff_casting_time_mod = -(casttime * GetFocusEffect(focusSpellHaste, spell_id, item_name, false, -1, false, true, false) / 100u);
+	}
+
+	int32 modified_cast_time = casttime + aa_casting_time_mod + item_casting_time_mod + buff_casting_time_mod;
 	modified_cast_time = modified_cast_time < casttime / 2 ? casttime / 2 : modified_cast_time;
 
 	if(modified_cast_time != casttime)
-		Log(Logs::General, Logs::Focus, "Spell %d casttime %d modified %d aa_mod %d focus_mod %d", spell_id, casttime, modified_cast_time, aa_casting_time_mod, focus_casting_time_mod);
+		Log(Logs::General, Logs::Focus, "Spell %d casttime %d modified %d aa_mod %d item_mod %d buff_mod %d", spell_id, casttime, modified_cast_time, aa_casting_time_mod, item_casting_time_mod, buff_casting_time_mod);
 
 	return modified_cast_time;
 }

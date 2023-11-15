@@ -1260,7 +1260,7 @@ uint32 NPC::GetMaxDamage(uint8 tlevel)
 
 void NPC::PickPocket(Client* thief) 
 {
-	if(bodytype != BT_Humanoid || IsPet() || thief->IsInvisible(this))
+	if(bodytype != BT_Humanoid || IsPet() || (thief->hidden || thief->invisible))
 	{
 		thief->SendPickPocketResponse(this, 0, PickPocketFailed, 0, nullptr, true);
 		return;
