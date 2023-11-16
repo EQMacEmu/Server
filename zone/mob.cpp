@@ -5295,3 +5295,45 @@ void Mob::SetHP(int32 hp)
 	else 
 		cur_hp = hp;
 }
+
+const std::unordered_set<uint16> FlyingCreatureRaces = {
+	117, // ghost
+	118, // ghost
+	29, // gargoyle
+	85, // spectre
+	174, // cold spectre
+	46, // imp
+	111, // harpy
+	125, // pegasus
+	126, // djinn
+	47, // griffin
+	56, // pixie
+	25, // fairy
+	69, // will-o-wisps
+	210, // air elemental
+	109, // wasp
+	79, // bixie
+	89, // drake
+	154, // fay drake
+	80, // reanimated hand
+	49, // lava dragon
+	165, // water dragon
+	122, // dragon skeleton
+	184, // velious dragon
+	192, // clockwork dragon
+	195, // black and white dragons
+	196, // ghost dragon
+	198, // prismatic dragon
+	304, // pop dragons
+	21, // evil eye
+	24, // fish
+	105, // swordfish
+	148, // kunark fish
+	61, // shark
+	103, // kedge
+	100, // dervish / whirling blades
+	170, // snow dervish / whirling blades
+	34, // giant bat
+	260, // pop bat
+	13 // aviak
+}

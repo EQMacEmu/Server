@@ -55,6 +55,9 @@ float Mob::GetBaseEXP()
 	// AK had a permanent 20% XP increase.
 	if (RuleB(AlKabor, ServerExpBonus))
 		server_bonus += 0.20f;
+	if (RuleB(Quarm, ThanksgivingExpBonus)) {
+		server_bonus += GetRaceExpModifier(&Mob::FlyingCreatureRaces, RuleR(Quarm, FlyingRaceExpBonus));
+	}
 	float npc_pct = 1.0f;
 	if (IsNPC())
 		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
@@ -1289,4 +1292,13 @@ float NPC::GetPBAoEReduction(uint8 killer_level)
 		new_pct = 1.0; // sanity
 
 	return new_pct;
+}
+
+float Mob::GetRaceExpModifier(const std::unordered_set<uint16>* raceSet, const float modifier) {
+	if (raceSet->find(GetRace()) != raceSet->end()) {
+		return modifier;
+	}
+	else {
+		return 0.0f;
+	}
 }

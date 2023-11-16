@@ -30,6 +30,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 #define INVIS_OFF 0
 #define INVIS_NORMAL 1
@@ -968,6 +969,9 @@ public:
 	bool PermaRooted() { return permarooted; }
 	bool PacifyImmune;
 	int GetFlyMode() { return flymode; }
+
+	static const std::unordered_set<uint16> FlyingCreatureRaces;
+	float GetRaceExpModifier(const std::unordered_set<uint16>* raceSet, const float modifier);
 
 
 protected:
