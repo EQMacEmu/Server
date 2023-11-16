@@ -918,7 +918,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					Message(CC_Default, "You do not have permission to talk in Auction at this time.");
 					return;
@@ -965,7 +965,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					Message(CC_Default, "You do not have permission to talk in OOC at this time.");
 					return;

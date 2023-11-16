@@ -1011,7 +1011,7 @@ void Client::SendChannelMessage(std::string Message)
 			}
 			if(char_ent)
 			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				if(char_ent->Level < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;
@@ -1124,7 +1124,7 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 			}
 			if(char_ent)
 			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				if(char_ent->Level < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;
