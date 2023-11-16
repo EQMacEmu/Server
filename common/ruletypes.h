@@ -244,6 +244,7 @@ RULE_BOOL(Quarm, CorpseUnlockIsHalvedDecayTime, true)
 RULE_INT(Quarm, AccidentalFallTimerMS, 15000) // Length of initial zonein fall protection, in MS.
 RULE_REAL(Quarm, AccidentalFallUnitDist, 50.0) // Length of initial zonein fall protection, in MS.
 RULE_BOOL(Quarm, ThanksgivingExpBonus, false)
+RULE_REAL(Quarm, ThanksgivingExpBonusOutdoorAmt, 0.20)
 RULE_REAL(Quarm, FlyingRaceExpBonus, 0.50)
 RULE_CATEGORY_END()
 

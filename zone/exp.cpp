@@ -20,6 +20,7 @@
 #include "../common/features.h"
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/races.h"
 
 #include "client.h"
 #include "groups.h"
@@ -55,8 +56,14 @@ float Mob::GetBaseEXP()
 	// AK had a permanent 20% XP increase.
 	if (RuleB(AlKabor, ServerExpBonus))
 		server_bonus += 0.20f;
+	// Thanksgiving xp bonus
 	if (RuleB(Quarm, ThanksgivingExpBonus)) {
-		server_bonus += GetRaceExpModifier(&Mob::FlyingCreatureRaces, RuleR(Quarm, FlyingRaceExpBonus));
+		if (IsFlyingCreatureRace(GetRace())) {
+			server_bonus += RuleR(Quarm, FlyingRaceExpBonus);
+		}
+		if (zone->CanCastOutdoor() && !zone->CanCastDungeon()) {
+			server_bonus += RuleR(Quarm, ThanksgivingExpBonusOutdoorAmt);
+		}
 	}
 	float npc_pct = 1.0f;
 	if (IsNPC())
@@ -1292,13 +1299,4 @@ float NPC::GetPBAoEReduction(uint8 killer_level)
 		new_pct = 1.0; // sanity
 
 	return new_pct;
-}
-
-float Mob::GetRaceExpModifier(const std::unordered_set<uint16>* raceSet, const float modifier) {
-	if (raceSet->find(GetRace()) != raceSet->end()) {
-		return modifier;
-	}
-	else {
-		return 0.0f;
-	}
 }

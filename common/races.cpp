@@ -1322,3 +1322,50 @@ const char* GetGenderName(uint32 gender_id) {
 	}
 	return gender_name;
 }
+
+const bool IsFlyingCreatureRace(const uint16 race_id) {
+	switch (race_id) {
+		case RT_GHOST:
+		case RT_GHOST_2:
+		case RT_GHOST_3:
+		case RT_GARGOYLE:
+		case RT_SPECTRE:
+		case RT_ICE_SPECTRE:
+		case RT_IMP:
+		case RT_HARPY:
+		case RT_PEGASUS:
+		case RT_DJINN:
+		case RT_GRIFFIN:
+		case RT_PIXIE:
+		case RT_FAIRY:
+		case RT_WILL_O_WISP:
+		case RT_AIR_ELEMENTAL:
+		case RT_WASP:
+		case RT_BIXIE:
+		case RT_DRAKE:
+		case RT_FAY_DRAKE:
+		case RT_REANIMATED_HAND:
+		case RT_DRAGON:
+		case RT_DRAGON_2:
+		case RT_DRAGON_3:
+		case RT_DRAGON_4:
+		case RT_DRAGON_5:
+		case RT_DRAGON_6:
+		case RT_DRAGON_7:
+		case RT_DRAGON_8:
+		case RT_DRAGON_9:
+		case RT_EVIL_EYE:
+		case RT_FISH:
+		case RT_FISH_2:
+		case RT_SHARK:
+		case RT_SWORDFISH:
+		case RT_DERVISH:
+		case RT_SNOW_DERVISH:
+		case RT_BAT:
+		case RT_BAT_2:
+		case RT_AVIAK:
+			return true;
+		default:
+			return false;
+	}
+}

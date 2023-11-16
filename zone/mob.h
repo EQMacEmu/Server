@@ -970,10 +970,6 @@ public:
 	bool PacifyImmune;
 	int GetFlyMode() { return flymode; }
 
-	static const std::unordered_set<uint16> FlyingCreatureRaces;
-	float GetRaceExpModifier(const std::unordered_set<uint16>* raceSet, const float modifier);
-
-
 protected:
 	void CommonDamage(Mob* other, int32 &damage, const uint16 spell_id, const  EQ::skills::SkillType  attack_skill, bool &avoidable, const int8 buffslot, const bool iBuffTic);
 	void AggroPet(Mob* attacker);
