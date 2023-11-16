@@ -30,7 +30,6 @@
 #include <set>
 #include <vector>
 #include <memory>
-#include <unordered_set>
 
 #define INVIS_OFF 0
 #define INVIS_NORMAL 1
