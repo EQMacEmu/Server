@@ -998,11 +998,17 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Tell: { /* Tell */
 
+			if (GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+			{
+				Message(CC_Default, "You do not have permission to send tells until level %i.", RuleI(Chat, GlobalChatLevelLimit));
+				return;
+			}
+
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
-					Message(CC_Default, "You do not have permission to send tells at this time.");
+					Message(CC_Default, "You do not have permission to send tells.");
 					return;
 				}
 			}
