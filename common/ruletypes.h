@@ -385,6 +385,7 @@ RULE_INT ( Chat, MaxMessagesBeforeKick, 60)
 RULE_INT ( Chat, IntervalDurationMS, 60000)
 RULE_INT ( Chat, KarmaUpdateIntervalMS, 120000)
 RULE_INT ( Chat, KarmaGlobalChatLimit, 12) //amount of karma you need to be able to talk in ooc/auction/chat below the level limit
+RULE_INT ( Chat, KarmaGlobalChatLevelLimit, 8) //level limit you need to of reached to talk in ooc/auction/chat if your karma is too low.
 RULE_INT ( Chat, GlobalChatLevelLimit, 8) //level limit you need to of reached to talk in ooc/auction/chat if your karma is too low.
 RULE_CATEGORY_END()
 
