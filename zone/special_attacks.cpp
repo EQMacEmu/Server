@@ -679,6 +679,8 @@ void Client::RangedAttack(Mob* other) {
 		return;
 	}
 
+	AddWeaponAttackFatigue(RangeWeapon);
+
 	const EQ::ItemData* RangeItem = RangeWeapon->GetItem();
 	const EQ::ItemData* AmmoItem = Ammo->GetItem();
 
@@ -1104,6 +1106,8 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 		//Message(CC_Default, "Error: Rangeweapon: GetItem(%i)==0, you have nothing to throw!", GetItemIDAt(SlotRange));
 		return;
 	}
+
+	AddWeaponAttackFatigue(RangeWeapon);
 
 	const EQ::ItemData* item = RangeWeapon->GetItem();
 	if(item->ItemType != EQ::item::ItemTypeLargeThrowing && item->ItemType != EQ::item::ItemTypeSmallThrowing) {

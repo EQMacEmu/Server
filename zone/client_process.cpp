@@ -82,7 +82,7 @@ bool Client::Process() {
 		return false; //delete client
 	}
 
-	if (ClientDataLoaded() && (Connected() || IsLD()))
+	if(ClientDataLoaded() && (Connected() || IsLD()))
 	{
 		// try to send all packets that weren't sent before
 		if(!IsLD() && zoneinpacket_timer.Check())
@@ -610,7 +610,7 @@ bool Client::Process() {
 	//At this point, we are still connected, everything important has taken
 	//place, now check to see if anybody wants to aggro us.
 	// only if client is not feigned
-	if (ClientDataLoaded() && ret && scanarea_timer.Check()) {
+	if(ClientDataLoaded() && ret && scanarea_timer.Check()) {
 		entity_list.CheckClientAggro(this);
 	}
 
@@ -1768,7 +1768,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		}
 		int AdjustedSkillLevel = GetLanguageSkill(gmskill->skill_id) - 10;
 		if(AdjustedSkillLevel > 0)
-			Cost = AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel / 100;
+			Cost = (int)((double)(AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel) * CalcPriceMod(pTrainer) * 0.0099999998);
 
 		IncreaseLanguageSkill(gmskill->skill_id);
 	}
@@ -1865,8 +1865,8 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			//
 			int AdjustedSkillLevel = skilllevel - 10;
 
-			if(AdjustedSkillLevel > 0)
-				Cost = AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel / 100;
+			if (AdjustedSkillLevel > 0)
+				Cost = (int)((double)(AdjustedSkillLevel * AdjustedSkillLevel * AdjustedSkillLevel) * CalcPriceMod(pTrainer) * 0.0099999998);
 
 			SetSkill(skill, skilllevel + 1, true);
 
@@ -2054,7 +2054,7 @@ void Client::ProcessFatigue()
 	SendStaminaUpdate();
 }
 
-void Client::AddWeaponAttackFatigue(EQ::ItemInstance *weapon)
+void Client::AddWeaponAttackFatigue(const EQ::ItemInstance *weapon)
 {
 	/*
 	Attacking with a weapon increases fatigue:

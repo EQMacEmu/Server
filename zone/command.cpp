@@ -200,7 +200,7 @@ int command_init(void)
 		command_add("emoteview", "Lists all NPC Emotes.", AccountStatus::GMStaff, command_emoteview) ||
 		command_add("enablerecipe", "[recipe_id] - Enables a recipe using the recipe id.", AccountStatus::GMImpossible, command_enablerecipe) ||
 		command_add("equipitem", "[slotid(0-21)] - Equip the item on your cursor into the specified slot.", AccountStatus::GMLeadAdmin, command_equipitem) ||
-		command_add("expansion", "[accountname][expansion] - Sets the expansion value for the specified account.", AccountStatus::GMLeadAdmin, command_expansion) ||
+		command_add("expansion", "[accountname][expansion] - Sets the expansion value for the specified accounnt.", AccountStatus::GMLeadAdmin, command_expansion) ||
 
 		command_add("face", "- Change the face of your target.", AccountStatus::GMLeadAdmin, command_face) || 
 		command_add("falltest", "[+Z] sends you to your current loc plus the Z specified.", AccountStatus::GMImpossible, command_falltest) ||
@@ -1356,7 +1356,7 @@ void command_zone(Client *c, const Seperator *sep)
 
 	const char* zone_identifier = sep->arg[1];
 
-	if (Strings::IsNumber(zone_identifier) && zone_identifier == "0") {
+	if (Strings::IsNumber(zone_identifier) && !strcmp(zone_identifier, "0")) {
 		c->Message(CC_Default, "Sending you to the safe coordinates of this zone.");
 
 		c->MovePC(

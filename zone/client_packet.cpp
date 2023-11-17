@@ -3222,9 +3222,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		entity_list.OpenFloorTeleportNear(this);
 	}
 
-	float water_x = m_Position.x;
-	float water_y = m_Position.y;
-
 	//last_update = Timer::GetCurrentTime();
 	m_Position.x = ppu->x_pos;
 	m_Position.y = ppu->y_pos;
@@ -7950,12 +7947,12 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 
 	int SinglePrice = 0;
 	float price_mod = CalcPriceMod(tmp);
-	SinglePrice = item->Price * item->SellRate * price_mod + 0.5f;
+	SinglePrice = item->Price * item->SellRate * price_mod;
 
 	if (item->MaxCharges > 1)
 		mpo->price = SinglePrice;
 	else
-		mpo->price = SinglePrice * mp->quantity;
+		mpo->price = SinglePrice * mp->quantity + 0.5f;
 	if (mpo->price < 0)
 	{
 		Message_StringID(CC_Default, ALREADY_SOLD);

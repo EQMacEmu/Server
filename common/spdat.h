@@ -52,6 +52,7 @@
 #define SPELL_HARM_TOUCH2 2821			// unholy aura HT (disease resist)
 #define SPELL_BALANCE_OF_THE_NAMELESS 3230
 #define SPELL_AA_BOASTFUL_BELLOW 3282
+#define SPELL_EPOCH_CONVICTION 3767
 
 #define EFFECT_COUNT 12
 #define MAX_SPELL_TRIGGER 12	// One for each slot(only 6 for AA since AA use 2)
