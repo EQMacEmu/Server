@@ -1015,6 +1015,7 @@ public:
 	bool SpillBeer();
 	void AddLootedLegacyItem(uint16 item_id);
 	bool RemoveLootedLegacyItem(uint16 item_id);
+	void RevokeSelf();
 	void ShowLegacyItemsLooted(Client* to);
 	bool CheckLegacyItemLooted(uint16 item_id);
 	void LoadLootedLegacyItems();

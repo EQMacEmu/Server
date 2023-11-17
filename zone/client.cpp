@@ -776,7 +776,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 				{
 					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
 					{
-						Kick();
+						RevokeSelf();
 						return;
 					}
 					if(GlobalChatLimiterTimer)
@@ -6374,6 +6374,16 @@ bool Client::RemoveLootedLegacyItem(uint16 item_id)
 		looted_legacy_items.erase(it);
 	}
 	return true;
+}
+
+void Client::RevokeSelf()
+{
+	if (GetRevoked())
+		return;
+
+	std::string query = StringFormat("UPDATE account SET revoked = 1 WHERE id = %i", AccountID());
+	SetRevoked(1);
+	database.QueryDatabase(query);
 }
 
 
