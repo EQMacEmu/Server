@@ -104,7 +104,7 @@ Database::~Database()
 void Database::GetAccountStatus(Client *client) {
 
 	std::string query = StringFormat("SELECT `status`, `hideme`, `karma`, `revoked` "
-                                    "FROM `account` WHERE `id` = '%i' LIMIT 1",
+                                    "FROM `account` WHERE `id` = %i LIMIT 1",
                                     client->GetAccountID());
     auto results = QueryDatabase(query);
     if (!results.Success()) {
