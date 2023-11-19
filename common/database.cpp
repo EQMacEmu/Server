@@ -224,6 +224,38 @@ int16 Database::CheckStatus(uint32 account_id) {
 	return status;
 }
 
+uint8 Database::CheckRevoked(uint32 account_id) {
+	auto query = fmt::format(
+		"SELECT `revoked`, UNIX_TIMESTAMP(`revokeduntil`) as `revokeduntil`, UNIX_TIMESTAMP() as `current` FROM `account` WHERE `id` = {} ",
+		account_id
+	);
+
+	auto results = QueryDatabase(query);
+	if (!results.Success() || results.RowCount() != 1) {
+		return 0;
+	}
+
+
+	auto row = results.begin();
+	uint8 status = std::stoi(row[0]);
+	int32 suspendeduntil = 0;
+
+	// MariaDB initalizes with NULL if unix_timestamp() is out of range
+	if (row[1] != nullptr) {
+		suspendeduntil = std::stoi(row[1]);
+	}
+
+	if (suspendeduntil == 0) // legacy behavior. Don't use timestamp in this case
+		return status;
+
+	int32 current = atoi(row[2]);
+
+	if (suspendeduntil > current)
+		return status;
+
+	return 0;
+}
+
 int16 Database::CheckExemption(uint32 account_id)
 {
 	std::string query = StringFormat("SELECT `ip_exemption_multiplier` FROM `account` WHERE `id` = %i", account_id);

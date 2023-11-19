@@ -6381,9 +6381,17 @@ void Client::RevokeSelf()
 	if (GetRevoked())
 		return;
 
+	Message(CC_Red, "You have been server muted for %i seconds for violating the anti-spam filter.", RuleI(Quarm, AntiSpamMuteInSeconds));
+
+	std::string warped = "GM Alert: [" + std::string(GetCleanName()) + "] has violated the anti-spam filter.";
+	worldserver.SendEmoteMessage(0, 0, 100, CC_Default, "%s", warped.c_str());
+
 	std::string query = StringFormat("UPDATE account SET revoked = 1 WHERE id = %i", AccountID());
 	SetRevoked(1);
 	database.QueryDatabase(query);
+
+	std::string query2 = StringFormat("UPDATE `account` SET `revokeduntil` = DATE_ADD(NOW(), INTERVAL %i SECOND) WHERE `id` = %i", RuleI(Quarm, AntiSpamMuteInSeconds), AccountID());
+	auto results2 = database.QueryDatabase(query2);
 }
 
 

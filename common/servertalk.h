@@ -690,7 +690,7 @@ struct ServerLockZone_Struct {
 struct RevokeStruct {
 	char adminname[64];
 	char name[64];
-	int8 toggle; //0 off 1 on
+	int8 toggle; //0 off, 1 on except guild/group/raid, 2 also revoke guild/group/raid
 };
 
 struct ServerGroupIDReply_Struct {

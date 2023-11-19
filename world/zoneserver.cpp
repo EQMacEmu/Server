@@ -1216,6 +1216,7 @@ bool ZoneServer::Process() {
 				if (cle != 0 && cle->Server() != 0)
 				{
 					cle->Server()->SendPacket(pack);
+					cle->SetRevoked(rev->toggle);
 				}
 				break;
 			}

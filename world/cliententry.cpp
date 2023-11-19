@@ -378,6 +378,7 @@ bool ClientListEntry::CheckAuth(uint32 id, const char* iKey, uint32 ip) {
 	if (pIP==ip && strncmp(plskey, iKey,10) == 0){
 		paccountid = id;
 		database.GetAccountFromID(id,paccountname,&padmin,&pRevoked);
+		pRevoked = database.CheckRevoked(id);
 		return true;
 	}
 	return false;

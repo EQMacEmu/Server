@@ -246,6 +246,7 @@ RULE_REAL(Quarm, AccidentalFallUnitDist, 50.0) // Length of initial zonein fall 
 RULE_BOOL(Quarm, ThanksgivingExpBonus, false)
 RULE_REAL(Quarm, ThanksgivingExpBonusOutdoorAmt, 0.20)
 RULE_REAL(Quarm, FlyingRaceExpBonus, 0.50)
+RULE_INT(Quarm, AntiSpamMuteInSeconds, 900) // Defaults to 15 minutes. Live will likely adjust this
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

@@ -152,6 +152,7 @@ public:
 	void	GetAccountFromID(uint32 id, char* oAccountName, int16* oStatus, int8* oRevoked = 0);
 	uint32	CheckLogin(const char* name, const char* password, int16* oStatus = 0, int8* oRevoked = 0);
 	int16	CheckStatus(uint32 account_id);
+	uint8	CheckRevoked(uint32 account_id);
 	int16	CheckExemption(uint32 account_id);
 	uint32	CreateAccount(const char* name, const char* password, int16 status, uint32 lsaccount_id = 0);
 	bool	DeleteAccount(const char* name);

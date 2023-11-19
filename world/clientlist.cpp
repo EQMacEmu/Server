@@ -596,6 +596,7 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 
 	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin, &tmprevoked);
 	if (accid) {
+		tmprevoked = database.CheckRevoked(accid);
 		uint32 lsid = 0;
 		database.GetAccountIDByName(iName, &tmpadmin, &lsid);
 		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2, tmprevoked);

@@ -69,6 +69,7 @@ public:
 	inline uint8			level() const		{ return plevel; }
 	inline uint8			class_() const		{ return pclass_; }
 	inline uint16		race() const		{ return prace; }
+	inline void			SetRevoked(uint8 in_revoked) { pRevoked = in_revoked; }
 	inline uint16		baserace()	const		{ return pbaserace; }
 	inline uint8			Anon()				{ return panon; }
 	inline uint8			TellsOff() const	{ return ptellsoff; }
