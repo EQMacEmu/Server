@@ -23,6 +23,7 @@
 #include "../common/platform.h"
 #include "../common/crash.h"
 #include "../common/eqemu_logsys.h"
+#include "../common/event/timer.h"
 #include "eq_crypto.h"
 #include "login_server.h"
 #include <time.h>
@@ -180,13 +181,23 @@ int main()
 #endif
 
 	LogInfo("Server Started.");
-	while (run_server) {
+	auto loop_fun = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
+
+		if (!run_server) {
+			EQ::EventLoop::Get().Shutdown();
+			return;
+		}
+
 		server.client_manager->Process();
 		server.server_manager->Process();
 		timeout_manager.CheckTimeouts();
-		Sleep(100);
-	}
+	};
+
+	EQ::Timer proccess_timer(loop_fun);
+	proccess_timer.Start(32, true);
+
+	EQ::EventLoop::Get().Run();
 
 	LogInfo("Server Shutdown.");
 
