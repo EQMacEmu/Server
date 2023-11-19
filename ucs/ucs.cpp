@@ -27,6 +27,7 @@
 #include "../common/platform.h"
 #include "../common/crash.h"
 #include "../common/strings.h"
+#include "../common/event/timer.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
@@ -65,6 +66,7 @@ int main() {
 	// Check every minute for unused channels we can delete
 	//
 	Timer ChannelListProcessTimer(60000);
+	Timer ClientConnectionPruneTimer(60000);
 
 	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
 
@@ -129,14 +131,24 @@ int main() {
 
 	worldserver->Connect();
 
-	while(RunLoops) {
+	auto loop_fn = [&](EQ::Timer* t) {
 
 		Timer::SetCurrentTime();
 
+		if (!RunLoops) {
+			EQ::EventLoop::Get().Shutdown();
+			return;
+		}
+
 		g_Clientlist->Process();
 
-		if(ChannelListProcessTimer.Check())
+		if (ChannelListProcessTimer.Check()) {
 			ChannelList->Process();
+		}
+
+		if (ClientConnectionPruneTimer.Check()) {
+			g_Clientlist->CheckForStaleConnectionsAll();
+		}
 
 		if (InterserverTimer.Check()) {
 			if (worldserver->TryReconnect() && (!worldserver->Connected()))
@@ -145,9 +157,12 @@ int main() {
 		worldserver->Process();
 
 		timeout_manager.CheckTimeouts();
+	};
 
-		Sleep(50);
-	}
+	EQ::Timer process_timer(loop_fn);
+	process_timer.Start(32, true);
+
+	EQ::EventLoop::Get().Run();
 
 	ChannelList->RemoveAllChannels();
 

@@ -43,6 +43,7 @@
 #include "../common/rulesys.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
+#include "../common/event/timer.h"
 #include "client.h"
 #include "worlddb.h"
 #ifdef _WINDOWS
@@ -433,8 +434,16 @@ int main(int argc, char** argv) {
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
 
-	while(RunLoops) {
+	auto loop_fn = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
+
+		if (!RunLoops) {
+			EQ::EventLoop::Get().Shutdown();
+			return;
+		}
+
+		//give the stream identifier a chance to do its work....
+		stream_identifier.Process();
 
 		int i = 5;
 		//check the factory for any new incoming streams.
@@ -450,6 +459,7 @@ int main(int argc, char** argv) {
 			if (i == 5)
 				break;
 		}
+
 		i = 0;
 		//check the factory for any new incoming streams.
 		while ((eqos = eqsf.PopOld())) {
@@ -465,8 +475,6 @@ int main(int argc, char** argv) {
 				break;
 		}
 
-		//give the stream identifier a chance to do its work....
-		stream_identifier.Process();
 		i = 0;
 		//check the stream identifier for any now-identified streams
 		while((eqsi = stream_identifier.PopIdentified())) {
@@ -617,12 +625,13 @@ int main(int argc, char** argv) {
 				}
 			}
 		}
-		if (numclients == 0) {
-			Sleep(50);
-			continue;
-		}
-		Sleep(20);
-	}
+	};
+
+	EQ::Timer process_timer(loop_fn);
+	process_timer.Start(32, true);
+
+	EQ::EventLoop::Get().Run();
+
 	LogInfo("World main loop completed.");
 	LogInfo("Shutting down console connections (if any).");
 	console_list.KillAll();
