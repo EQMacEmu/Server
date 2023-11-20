@@ -149,6 +149,7 @@ public:
 	void SendFriends();
 	int GetCharID();
 	void SendUptime();
+	void SendKeepAlive();
 
 private:
 	std::vector<CharacterEntry> Characters;
@@ -178,6 +179,7 @@ public:
 	void	Process();
 	void	CloseAllConnections();
 	Client *FindCharacter(std::string CharacterName);
+	void	CheckForStaleConnectionsAll();
 	void	CheckForStaleConnections(Client *c);
 	void	CLClearStaleConnections();
 	Client *IsCharacterOnline(std::string CharacterName);
