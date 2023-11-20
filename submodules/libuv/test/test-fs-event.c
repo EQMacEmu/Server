@@ -25,6 +25,10 @@
 #include <string.h>
 #include <fcntl.h>
 
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
+# include <AvailabilityMacros.h>
+#endif
+
 #ifndef HAVE_KQUEUE
 # if defined(__APPLE__) ||                                                    \
      defined(__DragonFly__) ||                                                \
@@ -47,6 +51,7 @@ static const char file_prefix[] = "fsevent-";
 static const int fs_event_file_count = 16;
 #if defined(__APPLE__) || defined(_WIN32)
 static const char file_prefix_in_subdir[] = "subdir";
+static int fs_multievent_cb_called;
 #endif
 static uv_timer_t timer;
 static int timer_cb_called;
@@ -113,7 +118,7 @@ static void touch_file(const char* name) {
 }
 
 static void close_cb(uv_handle_t* handle) {
-  ASSERT(handle != NULL);
+  ASSERT_NOT_NULL(handle);
   close_cb_called++;
 }
 
@@ -280,7 +285,13 @@ static void fs_event_cb_dir_multi_file_in_subdir(uv_fs_event_t* handle,
   if (filename && strcmp(filename, file_prefix_in_subdir) == 0)
     return;
 #endif
-  fs_event_cb_called++;
+  /* It may happen that the "subdir" creation event is captured even though
+   * we started watching after its actual creation.
+   */
+  if (strcmp(filename, "subdir") == 0)
+    return;
+
+  fs_multievent_cb_called++;
   ASSERT(handle == &fs_event);
   ASSERT(status == 0);
   ASSERT(events == UV_CHANGE || events == UV_RENAME);
@@ -295,11 +306,13 @@ static void fs_event_cb_dir_multi_file_in_subdir(uv_fs_event_t* handle,
                  sizeof(file_prefix_in_subdir) - 1) == 0);
   #endif
 
-  if (fs_event_created + fs_event_removed == fs_event_file_count) {
+  if (fs_event_created == fs_event_file_count &&
+      fs_multievent_cb_called == fs_event_created) {
     /* Once we've processed all create events, delete all files */
     ASSERT(0 == uv_timer_start(&timer, fs_event_unlink_files_in_subdir, 1, 0));
-  } else if (fs_event_cb_called == 2 * fs_event_file_count) {
+  } else if (fs_multievent_cb_called == 2 * fs_event_file_count) {
     /* Once we've processed all create and delete events, stop watching */
+    ASSERT(fs_event_removed == fs_event_file_count);
     uv_close((uv_handle_t*) &timer, close_cb);
     uv_close((uv_handle_t*) handle, close_cb);
   }
@@ -321,19 +334,8 @@ static void fs_event_cb_file(uv_fs_event_t* handle, const char* filename,
   uv_close((uv_handle_t*)handle, close_cb);
 }
 
-static void timer_cb_close_handle(uv_timer_t* timer) {
-  uv_handle_t* handle;
-
-  ASSERT(timer != NULL);
-  handle = timer->data;
-
-  uv_close((uv_handle_t*)timer, NULL);
-  uv_close((uv_handle_t*)handle, close_cb);
-}
-
 static void fs_event_cb_file_current_dir(uv_fs_event_t* handle,
   const char* filename, int events, int status) {
-  ASSERT(fs_event_cb_called == 0);
   ++fs_event_cb_called;
 
   ASSERT(handle == &fs_event);
@@ -345,13 +347,7 @@ static void fs_event_cb_file_current_dir(uv_fs_event_t* handle,
   ASSERT(filename == NULL || strcmp(filename, "watch_file") == 0);
   #endif
 
-  /* Regression test for SunOS: touch should generate just one event. */
-  {
-    static uv_timer_t timer;
-    uv_timer_init(handle->loop, &timer);
-    timer.data = handle;
-    uv_timer_start(&timer, timer_cb_close_handle, 250, 0);
-  }
+  uv_close((uv_handle_t*)handle, close_cb);
 }
 
 static void timer_cb_file(uv_timer_t* handle) {
@@ -367,7 +363,7 @@ static void timer_cb_file(uv_timer_t* handle) {
 
 static void timer_cb_touch(uv_timer_t* timer) {
   uv_close((uv_handle_t*)timer, NULL);
-  touch_file("watch_file");
+  touch_file((char*) timer->data);
   timer_cb_touch_called++;
 }
 
@@ -392,6 +388,21 @@ static void timer_cb_watch_twice(uv_timer_t* handle) {
   uv_close((uv_handle_t*) (handles + 1), NULL);
   uv_close((uv_handle_t*) handle, NULL);
 }
+
+static void fs_event_cb_close(uv_fs_event_t* handle,
+                              const char* filename,
+                              int events,
+                              int status) {
+  ASSERT(status == 0);
+
+  ASSERT(fs_event_cb_called < 3);
+  ++fs_event_cb_called;
+
+  if (fs_event_cb_called == 3) {
+    uv_close((uv_handle_t*) handle, close_cb);
+  }
+}
+
 
 TEST_IMPL(fs_event_watch_dir) {
 #if defined(NO_FS_EVENTS)
@@ -434,10 +445,12 @@ TEST_IMPL(fs_event_watch_dir) {
   return 0;
 }
 
+
 TEST_IMPL(fs_event_watch_dir_recursive) {
 #if defined(__APPLE__) || defined(_WIN32)
   uv_loop_t* loop;
   int r;
+  uv_fs_event_t fs_event_root;
 
   /* Setup */
   loop = uv_default_loop();
@@ -451,17 +464,37 @@ TEST_IMPL(fs_event_watch_dir_recursive) {
 
   r = uv_fs_event_init(loop, &fs_event);
   ASSERT(r == 0);
-  r = uv_fs_event_start(&fs_event, fs_event_cb_dir_multi_file_in_subdir, "watch_dir", UV_FS_EVENT_RECURSIVE);
+  r = uv_fs_event_start(&fs_event,
+                        fs_event_cb_dir_multi_file_in_subdir,
+                        "watch_dir",
+                        UV_FS_EVENT_RECURSIVE);
   ASSERT(r == 0);
   r = uv_timer_init(loop, &timer);
   ASSERT(r == 0);
   r = uv_timer_start(&timer, fs_event_create_files_in_subdir, 100, 0);
   ASSERT(r == 0);
 
+#ifndef _WIN32
+  /* Also try to watch the root directory.
+   * This will be noisier, so we're just checking for any couple events to happen. */
+  r = uv_fs_event_init(loop, &fs_event_root);
+  ASSERT(r == 0);
+  r = uv_fs_event_start(&fs_event_root,
+                        fs_event_cb_close,
+                        "/",
+                        UV_FS_EVENT_RECURSIVE);
+  ASSERT(r == 0);
+#else
+  fs_event_cb_called += 3;
+  close_cb_called += 1;
+  (void)fs_event_root;
+#endif
+
   uv_run(loop, UV_RUN_DEFAULT);
 
-  ASSERT(fs_event_cb_called == fs_event_created + fs_event_removed);
-  ASSERT(close_cb_called == 2);
+  ASSERT(fs_multievent_cb_called == fs_event_created + fs_event_removed);
+  ASSERT(fs_event_cb_called == 3);
+  ASSERT(close_cb_called == 3);
 
   /* Cleanup */
   fs_event_unlink_files_in_subdir(NULL);
@@ -596,6 +629,7 @@ TEST_IMPL(fs_event_watch_file_exact_path) {
    * versions. Give a long delay here to let the system settle before running
    * the test. */
   uv_sleep(1100);
+  uv_update_time(loop);
 #endif
 
   r = uv_fs_event_init(loop, &fs_event);
@@ -656,6 +690,13 @@ TEST_IMPL(fs_event_watch_file_current_dir) {
   /* Setup */
   remove("watch_file");
   create_file("watch_file");
+#if defined(__APPLE__) && !defined(MAC_OS_X_VERSION_10_12)
+  /* Empirically, kevent seems to (sometimes) report the preceeding
+   * create_file events prior to macOS 10.11.6 in the subsequent fs_event_start
+   * So let the system settle before running the test. */
+  uv_sleep(1100);
+  uv_update_time(loop);
+#endif
 
   r = uv_fs_event_init(loop, &fs_event);
   ASSERT(r == 0);
@@ -669,6 +710,7 @@ TEST_IMPL(fs_event_watch_file_current_dir) {
   r = uv_timer_init(loop, &timer);
   ASSERT(r == 0);
 
+  timer.data = "watch_file";
   r = uv_timer_start(&timer, timer_cb_touch, 1100, 0);
   ASSERT(r == 0);
 
@@ -679,7 +721,8 @@ TEST_IMPL(fs_event_watch_file_current_dir) {
   uv_run(loop, UV_RUN_DEFAULT);
 
   ASSERT(timer_cb_touch_called == 1);
-  ASSERT(fs_event_cb_called == 1);
+  /* FSEvents on macOS sometimes sends one change event, sometimes two. */
+  ASSERT_NE(0, fs_event_cb_called);
   ASSERT(close_cb_called == 1);
 
   /* Cleanup */
@@ -697,7 +740,7 @@ TEST_IMPL(fs_event_watch_file_root_dir) {
   const char* sys_drive = getenv("SystemDrive");
   char path[] = "\\\\?\\X:\\bootsect.bak";
 
-  ASSERT(sys_drive != NULL);
+  ASSERT_NOT_NULL(sys_drive);
   strncpy(path + sizeof("\\\\?\\") - 1, sys_drive, 1);
 
   loop = uv_default_loop();
@@ -864,16 +907,42 @@ TEST_IMPL(fs_event_close_with_pending_event) {
   return 0;
 }
 
-static void fs_event_cb_close(uv_fs_event_t* handle, const char* filename,
-    int events, int status) {
-  ASSERT(status == 0);
+TEST_IMPL(fs_event_close_with_pending_delete_event) {
+#if defined(NO_FS_EVENTS)
+  RETURN_SKIP(NO_FS_EVENTS);
+#endif
+  uv_loop_t* loop;
+  int r;
 
-  ASSERT(fs_event_cb_called < 3);
-  ++fs_event_cb_called;
+  loop = uv_default_loop();
 
-  if (fs_event_cb_called == 3) {
-    uv_close((uv_handle_t*) handle, close_cb);
-  }
+  create_dir("watch_dir");
+  create_file("watch_dir/file");
+
+  r = uv_fs_event_init(loop, &fs_event);
+  ASSERT(r == 0);
+  r = uv_fs_event_start(&fs_event, fs_event_fail, "watch_dir/file", 0);
+  ASSERT(r == 0);
+
+  /* Generate an fs event. */
+  remove("watch_dir/file");
+
+  /* Allow time for the remove event to propagate to the pending list. */
+  /* XXX - perhaps just for __sun? */
+  uv_sleep(1100);
+  uv_update_time(loop);
+
+  uv_close((uv_handle_t*)&fs_event, close_cb);
+
+  uv_run(loop, UV_RUN_DEFAULT);
+
+  ASSERT(close_cb_called == 1);
+
+  /* Clean up */
+  remove("watch_dir/");
+
+  MAKE_VALGRIND_HAPPY();
+  return 0;
 }
 
 TEST_IMPL(fs_event_close_in_callback) {
@@ -1023,7 +1092,7 @@ static void timer_cb_nop(uv_timer_t* handle) {
 }
 
 static void fs_event_error_report_close_cb(uv_handle_t* handle) {
-  ASSERT(handle != NULL);
+  ASSERT_NOT_NULL(handle);
   close_cb_called++;
 
   /* handle is allocated on-stack, no need to free it */
@@ -1122,6 +1191,52 @@ TEST_IMPL(fs_event_watch_invalid_path) {
   r = uv_fs_event_start(&fs_event, fs_event_cb_file, "", 0);
   ASSERT(r != 0);
   ASSERT(uv_is_active((uv_handle_t*) &fs_event) == 0);
+  MAKE_VALGRIND_HAPPY();
+  return 0;
+}
+
+static int fs_event_cb_stop_calls;
+
+static void fs_event_cb_stop(uv_fs_event_t* handle, const char* path,
+                             int events, int status) {
+  uv_fs_event_stop(handle);
+  fs_event_cb_stop_calls++;
+}
+
+TEST_IMPL(fs_event_stop_in_cb) {
+  uv_fs_event_t fs;
+  uv_timer_t timer;
+  char path[] = "fs_event_stop_in_cb.txt";
+
+#if defined(NO_FS_EVENTS)
+  RETURN_SKIP(NO_FS_EVENTS);
+#endif
+
+  remove(path);
+  create_file(path);
+
+  ASSERT_EQ(0, uv_fs_event_init(uv_default_loop(), &fs));
+  ASSERT_EQ(0, uv_fs_event_start(&fs, fs_event_cb_stop, path, 0));
+
+  /* Note: timer_cb_touch() closes the handle. */
+  timer.data = path;
+  ASSERT_EQ(0, uv_timer_init(uv_default_loop(), &timer));
+  ASSERT_EQ(0, uv_timer_start(&timer, timer_cb_touch, 100, 0));
+
+  ASSERT_EQ(0, fs_event_cb_stop_calls);
+  ASSERT_EQ(0, timer_cb_touch_called);
+
+  ASSERT_EQ(0, uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+
+  ASSERT_EQ(1, fs_event_cb_stop_calls);
+  ASSERT_EQ(1, timer_cb_touch_called);
+
+  uv_close((uv_handle_t*) &fs, NULL);
+  ASSERT_EQ(0, uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+  ASSERT_EQ(1, fs_event_cb_stop_calls);
+
+  remove(path);
+
   MAKE_VALGRIND_HAPPY();
   return 0;
 }
