@@ -474,6 +474,9 @@ bool EntityList::AICheckClientAggro(NPC* aggressor)
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
+	if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && !aggressor->HasEngageNotice() && proxAggro)
+		proxAggro = false;
+
 	if (aggressor->GetTarget() && engaged && !proxAggro)		// also check for a target as NPC may be ignoring all haters due to distance
 		return false;
 
@@ -508,6 +511,8 @@ bool EntityList::AICheckNPCAggro(NPC* aggressor)
 		return false;
 
 	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && !aggressor->HasEngageNotice() && proxAggro)
+		proxAggro = false;
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 

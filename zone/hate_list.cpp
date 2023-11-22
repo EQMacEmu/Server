@@ -1157,7 +1157,7 @@ Mob *HateList::GetTop()
 			firstInRangeBonusApplied = true;
 		}
 
-		if (ownerHasProxAggro)		// prox aggro mobs give this small bonus to nearst target.  non-prox aggro give it to first on hate list in melee range
+		if (RuleB(Quarm, EnableNPCProximityAggroSystem) && ownerHasProxAggro || owner && owner->IsNPC() && owner->CastToNPC()->HasEngageNotice() && ownerHasProxAggro)		// prox aggro mobs give this small bonus to nearst target.  non-prox aggro give it to first on hate list in melee range
 		{
 			if (closestMob == cur->ent)
 				firstInRangeBonusApplied = false;
@@ -1695,8 +1695,10 @@ Mob* HateList::GetFirstMobInRange()
 
 	if (!closestMob || !closestMob->CombatRange(owner))
 		return nullptr;
-
-	if (owner->GetSpecialAbility(PROX_AGGRO))
+	bool proxAggro = owner->GetSpecialAbility(PROX_AGGRO);
+		if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && owner->IsNPC() && !owner->CastToNPC()->HasEngageNotice() && proxAggro)
+			proxAggro = false;
+	if (proxAggro)
 		return closestMob;
 
 	while (iterator != list.end())

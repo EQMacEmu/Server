@@ -247,6 +247,7 @@ RULE_BOOL(Quarm, ThanksgivingExpBonus, false)
 RULE_REAL(Quarm, ThanksgivingExpBonusOutdoorAmt, 0.20)
 RULE_REAL(Quarm, FlyingRaceExpBonus, 0.50)
 RULE_INT(Quarm, AntiSpamMuteInSeconds, 900) // Defaults to 15 minutes. Live will likely adjust this
+RULE_BOOL(Quarm, EnableNPCProximityAggroSystem, false) // Classic behavior is true. Live Quarm has this false by default. CSR complaints about training warranted this behavior.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
