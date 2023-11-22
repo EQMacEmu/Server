@@ -1,0 +1,1 @@
+ALTER TABLE `qs_player_speech` CHANGE COLUMN `to` `to` VARCHAR(325) NOT NULL COLLATE 'utf8_general_ci' AFTER `from`, ADD COLUMN `characterid` INT(11) NOT NULL AFTER `type`, ADD COLUMN `groupid` INT(11) NOT NULL AFTER `characterid`;

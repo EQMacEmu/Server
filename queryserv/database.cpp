@@ -93,7 +93,9 @@ void Database::LogPlayerSpeech(
 	const char *message,
 	uint16 minstatus,
 	uint32 guilddbid,
-	uint8 type
+	uint8 type,
+	uint32 characterid,
+	uint32 groupid
 )
 {
 
@@ -107,8 +109,9 @@ void Database::LogPlayerSpeech(
 	std::string query = StringFormat(
 		"INSERT INTO `qs_player_speech` "
 		"SET `from` = '%s', `to` = '%s', `message`='%s', "
-		"`minstatus`='%i', `guilddbid`='%i', `type`='%i'",
-		escapedFrom, escapedTo, escapedMessage, minstatus, guilddbid, type
+		"`minstatus`='%i', `guilddbid`='%i', `type`='%i', "
+		"`characterid`='%i', `groupid`='%i'",
+		escapedFrom, escapedTo, escapedMessage, minstatus, guilddbid, type, characterid, groupid
 	);
 	safe_delete_array(escapedFrom);
 	safe_delete_array(escapedTo);

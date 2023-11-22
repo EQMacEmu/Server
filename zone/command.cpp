@@ -9740,8 +9740,10 @@ void command_qtest(Client *c, const Seperator *sep){
 			sem->minstatus = c->Admin();
 			sem->type = 1;
 			strncpy(sem->to, c->GetTarget()->GetCleanName(), 64);
-			strncpy(sem->to, c->GetCleanName(), 64);
+			strncpy(sem->from, c->GetCleanName(), 64);
 			sem->guilddbid = c->GuildID();
+			sem->characterid = c->CharacterID();
+			sem->groupid = 0;
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
 		}

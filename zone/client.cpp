@@ -746,7 +746,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 	Log(Logs::Detail, Logs::ZoneServer, "Client::ChannelMessageReceived() Channel:%i message:'%s'", chan_num, message);
 
-	if (targetname == nullptr) {
+	if (targetname == nullptr || strlen(targetname) == 0) {
 		targetname = (!GetTarget()) ? "" : GetTarget()->GetName();
 	}
 
@@ -805,10 +805,24 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		else
 			sem->guilddbid = 0;
 
+		auto group = GetGroup();
+		if (group && chan_num == ChatChannel_Group) {
+			sem->groupid = group->GetID();
+			std::string groupMembers = group->GetMemberNamesAsCsv({ GetName() });
+			strncpy(sem->to, groupMembers.c_str(), 325);
+			sem->to[324] = 0;
+		}
+		else {
+			sem->groupid = 0;
+		}
+
+		sem->characterid = CharacterID();
+
 		strcpy(sem->message, message);
 		sem->minstatus = this->Admin();
 		sem->type = chan_num;
-		if (targetname != 0)
+
+		if (sem->groupid == 0 && targetname != 0)
 		{
 			strncpy(sem->to, targetname, 64);
 			sem->to[63] = 0;

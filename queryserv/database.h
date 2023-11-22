@@ -51,7 +51,7 @@ public:
 
 	void LogMerchantTransaction(QSMerchantLogTransaction_Struct* QS, uint32 Items);
 
-	void LogPlayerSpeech(const char* from, const char* to, const char* message, uint16 minstatus, uint32 guilddbid, uint8 type);
+	void LogPlayerSpeech(const char* from, const char* to, const char* message, uint16 minstatus, uint32 guilddbid, uint8 type, uint32 charcterid, uint32 groupid);
 	void LogPlayerItemDelete(QSPlayerLogItemDelete_Struct* QS, uint32 Items);
 	void LogPlayerItemMove(QSPlayerLogItemMove_Struct* QS, uint32 Items);
 	void LogPlayerLootRecords(QSPlayerLootRecords_struct* QS, uint32 Items);
