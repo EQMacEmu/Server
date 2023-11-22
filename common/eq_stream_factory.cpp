@@ -38,11 +38,58 @@ void EQStreamFactory::Close()
 #endif
 	sock = -1;
 
-	ReaderThread.join();
-	ProcessNewThread.join();
-	ProcessOldThread.join();
-	WriterNewThread.join();
-	WriterOldThread.join();
+	if (ReaderThread.joinable()) {
+		ReaderThread.join();
+	}
+
+	if (ProcessNewThread.joinable()) {
+		ProcessNewThread.join();
+	}
+
+	if (ProcessOldThread.joinable()) {
+		ProcessOldThread.join();
+	}
+
+	if (WriterNewThread.joinable()) {
+		WriterNewThread.join();
+	}
+
+	if (WriterOldThread.joinable()) {
+		WriterOldThread.join();
+	}
+}
+
+void EQStreamFactory::Stop() {
+	StopReader();
+	StopWriterNew();
+	StopWriterOld();
+}
+
+void EQStreamFactory::StopReader() {
+	std::lock_guard<std::mutex> lock(MReaderRunning);
+	ReaderRunning = false;
+}
+
+void EQStreamFactory::StopWriterNew() {
+	std::unique_lock<std::mutex> lock(MWriterRunningNew);
+	WriterRunningNew = false;
+	lock.unlock();
+	WriterWorkNew.notify_one();
+}
+
+void EQStreamFactory::StopWriterOld() {
+	std::unique_lock<std::mutex> lock(MWriterRunningOld);
+	WriterRunningOld = false;
+	lock.unlock();
+	WriterWorkOld.notify_one();
+}
+
+void EQStreamFactory::SignalWriterNew() {
+	WriterWorkNew.notify_one();
+}
+
+void EQStreamFactory::SignalWriterOld() {
+	WriterWorkOld.notify_one();
 }
 
 bool EQStreamFactory::Open()
