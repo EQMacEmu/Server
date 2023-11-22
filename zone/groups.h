@@ -95,6 +95,7 @@ public:
 	const char *GetClientNameByIndex(uint8 index);
 	void	SetLevels();
 	bool	HasOOZMember(std::string& member);
+	std::string GetMemberNamesAsCsv(const std::vector<std::string>& excludes = {});
 
 	Mob* members[MAX_GROUP_MEMBERS];
 	char	membername[MAX_GROUP_MEMBERS][64];

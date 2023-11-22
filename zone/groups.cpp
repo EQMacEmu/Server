@@ -1268,3 +1268,21 @@ bool Group::HasOOZMember(std::string& member)
 
 	return false;
 }
+
+std::string Group::GetMemberNamesAsCsv(const std::vector<std::string>& excludes)
+{
+	std::string names;
+	for (uint8 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if (membername[i][0] == '\0')
+			continue;
+
+		if (std::find(excludes.begin(), excludes.end(), membername[i]) != excludes.end())
+			continue;
+
+		if (!names.empty())
+			names += ",";
+
+		names += membername[i];
+	}
+	return names;
+}
