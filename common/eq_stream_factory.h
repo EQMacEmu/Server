@@ -101,12 +101,12 @@ class EQStreamFactory : private Timeoutable {
 		void ProcessLoopOld();
 		void WriterLoopNew();
 		void WriterLoopOld();
-		void Stop() { StopReader(); StopWriterNew(); StopWriterOld(); }
-		void StopReader() { std::lock_guard<std::mutex> lock(MReaderRunning); ReaderRunning = false; }
-		void StopWriterNew() { std::unique_lock<std::mutex>(MWriterRunningNew); WriterRunningNew=false; MWriterRunningNew.unlock(); WriterWorkNew.notify_one(); }
-		void StopWriterOld() { std::unique_lock<std::mutex>(MWriterRunningOld); WriterRunningOld=false; MWriterRunningOld.unlock(); WriterWorkOld.notify_one(); }
-		void SignalWriterNew() { WriterWorkNew.notify_one(); }
-		void SignalWriterOld() { WriterWorkOld.notify_one(); }
+		void Stop();
+		void StopReader();
+		void StopWriterNew();
+		void StopWriterOld();
+		void SignalWriterNew();
+		void SignalWriterOld();
 };
 
 #endif
