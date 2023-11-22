@@ -7279,7 +7279,7 @@ void command_ipban(Client *c, const Seperator *sep){
 void command_revoke(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0] == 0 || sep->arg[2][0] == 0 || sep->arg[3][0] == 0) {
-		c->Message(CC_Default, "Usage: #revoke [charname] [0(unrevoke) / 1(all but guild/group/raid) / 2(guild/group/raid mute)] [duration in seconds (0 seconds is perma)]");
+		c->Message(CC_Default, "Usage: #revoke [charname] [0(unrevoke) / 1(all but guild/group/raid) / 2(guild/group/raid mute)] [duration in days (0 days is perma)]");
 		return;
 	}
 
@@ -7293,10 +7293,10 @@ void command_revoke(Client *c, const Seperator *sep)
 	std::string query = StringFormat("UPDATE account SET revoked = %d WHERE id = %i", flag, characterID);
 	auto results = database.QueryDatabase(query);
 
-	int duration_in_seconds = atoi(sep->arg[3]);
-	if (duration_in_seconds != 0 && flag != 0)
+	int duration_in_days = atoi(sep->arg[3]);
+	if (duration_in_days != 0 && flag != 0)
 	{
-		std::string query2 = StringFormat("UPDATE `account` SET `revokeduntil` = DATE_ADD(NOW(), INTERVAL %i SECOND) WHERE `id` = %i", duration_in_seconds, characterID);
+		std::string query2 = StringFormat("UPDATE `account` SET `revokeduntil` = DATE_ADD(NOW(), INTERVAL %i DAY) WHERE `id` = %i", duration_in_days, characterID);
 		auto results2 = database.QueryDatabase(query2);
 	}
 	else
