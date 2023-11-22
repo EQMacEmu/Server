@@ -23,7 +23,6 @@
 #include "../common/servertalk.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
-#include "../common/event/timer.h"
 #include "worldserver.h"
 #include "zone_launch.h"
 #include <vector>
@@ -105,14 +104,9 @@ int main(int argc, char *argv[]) {
 
 	ProcLauncher *launch = ProcLauncher::get();
 	RunLoops = true;
-	auto loop_fn = [&](EQ::Timer* t) {
+	while(RunLoops) {
 		//Advance the timer to our current point in time
 		Timer::SetCurrentTime();
-
-		if (!RunLoops) {
-			EQ::EventLoop::Get().Shutdown();
-			return;
-		}
 
 		/*
 		* Process the world connection
@@ -129,19 +123,19 @@ int main(int argc, char *argv[]) {
 		*/
 		zone = zones.begin();
 		zend = zones.end();
-		for (; zone != zend; ++zone) {
-			if (!zone->second->Process())
+		for(; zone != zend; ++zone) {
+			if(!zone->second->Process())
 				to_remove.insert(zone->first);
 		}
 
 		/*
 		* Kill off any zones which have stopped
 		*/
-		while (!to_remove.empty()) {
+		while(!to_remove.empty()) {
 			std::string rem = *to_remove.begin();
 			to_remove.erase(rem);
 			zone = zones.find(rem);
-			if (zone == zones.end()) {
+			if(zone == zones.end()) {
 				//wtf...
 				continue;
 			}
@@ -154,12 +148,15 @@ int main(int argc, char *argv[]) {
 			if (world.TryReconnect() && (!world.Connected()))
 				world.AsyncConnect();
 		}
-	};
 
-	EQ::Timer process_timer(loop_fn);
-	process_timer.Start(32, true);
-
-	EQ::EventLoop::Get().Run();
+		/*
+		* Take a nice nap until next cycle
+		*/
+		if(zones.empty())
+			Sleep(5000);
+		else
+			Sleep(2000);
+	}
 
 	//try to be semi-nice about this... without waiting too long
 	zone = zones.begin();

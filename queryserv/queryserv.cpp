@@ -26,7 +26,6 @@
 #include "../common/platform.h"
 #include "../common/crash.h"
 #include "../common/strings.h"
-#include "../common/event/timer.h"
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
@@ -101,14 +100,8 @@ int main() {
 
 	bool worldwasconnected = worldserver->Connected();
 	/* Load Looking For Guild Manager */
-	auto loop_fn = [&](EQ::Timer* t) {
+	while(RunLoops) { 
 		Timer::SetCurrentTime();
-
-		if (!RunLoops) {
-			EQ::EventLoop::Get().Shutdown();
-			return;
-		}
-
 		if (worldserver->Connected()) {
 			worldwasconnected = true;
 		}
@@ -119,15 +112,10 @@ int main() {
 			if (worldserver->TryReconnect() && (!worldserver->Connected()))
 				worldserver->AsyncConnect();
 		}
-		worldserver->Process();
-		timeout_manager.CheckTimeouts();
-	};
-
-	EQ::Timer process_timer(loop_fn);
-	process_timer.Start(32, true);
-
-	EQ::EventLoop::Get().Run();
-
+		worldserver->Process(); 
+		timeout_manager.CheckTimeouts(); 
+		Sleep(100);
+	}
 	LogSys.CloseFileLogs();
 }
 

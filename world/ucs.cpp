@@ -27,7 +27,6 @@ void UCSConnection::SetConnection(EmuTCPConnection *inStream)
 
 	Stream = inStream;
 
-	m_keepalive.reset(new EQ::Timer(5000, true, std::bind(&UCSConnection::OnKeepAlive, this, std::placeholders::_1)));
 	authenticated = false;
 }
 
@@ -133,12 +132,3 @@ void UCSConnection::SendMessage(const char *From, const char *Message)
 	safe_delete(pack);
 }
 
-void UCSConnection::OnKeepAlive(EQ::Timer* t)
-{
-	if (!Stream) {
-		return;
-	}
-
-	ServerPacket pack(ServerOP_KeepAlive, 0);
-	Stream->SendPacket(&pack);
-}
