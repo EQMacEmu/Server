@@ -823,8 +823,10 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		sem->type = chan_num;
 
 		// => to: preserve the targetname if it's not empty
+		//     => tells for example will have a targetname already
 		// => to: use the guild name if the channel is guild
-		// => to: use the target name if the channel is not guild
+		// => to: use the zone short name if the channel is auction, ooc, or shout
+		// => to: use the target name if the channel is not guild, auction, ooc, shout, broadcast, raid, or petition
 		bool targetNameIsEmpty = targetname == nullptr || strlen(targetname) == 0;
 		char logTargetName[64] = { 0 };
 		if (targetNameIsEmpty) {
