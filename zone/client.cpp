@@ -746,7 +746,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 	Log(Logs::Detail, Logs::ZoneServer, "Client::ChannelMessageReceived() Channel:%i message:'%s'", chan_num, message);
 
-	if (targetname == nullptr || strlen(targetname) == 0) {
+	if (targetname == nullptr) {
 		targetname = (!GetTarget()) ? "" : GetTarget()->GetName();
 	}
 
@@ -822,11 +822,59 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		sem->minstatus = this->Admin();
 		sem->type = chan_num;
 
-		if (sem->groupid == 0 && targetname != 0)
+		// => to: preserve the targetname if it's not empty
+		//     => tells for example will have a targetname already
+		// => to: use the guild name if the channel is guild
+		// => to: use the zone short name if the channel is auction, ooc, or shout
+		// => to: use the target name if the channel is not guild, auction, ooc, shout, broadcast, raid, or petition
+		bool targetNameIsEmpty = targetname == nullptr || strlen(targetname) == 0;
+		char logTargetName[64] = { 0 };
+		if (targetNameIsEmpty) {
+			switch (chan_num) {
+				case ChatChannel_Guild: {
+					std::string guildName = GetGuildName();
+					const char* temp = guildName.c_str();
+					strncpy(logTargetName, temp, 64);
+					logTargetName[63] = 0;
+				}
+				break;
+
+				case ChatChannel_Auction:
+				case ChatChannel_OOC:
+				case ChatChannel_Shout: {
+					if (zone) {
+						const char* temp = zone->GetShortName();
+						strncpy(logTargetName, temp, 64);
+						logTargetName[63] = 0;
+					}
+				}
+				break;
+
+				case ChatChannel_Broadcast:
+				case ChatChannel_Raid:
+				case ChatChannel_Petition:
+					break;
+
+				default: {
+					const char* temp = (!GetTarget()) ? "" : GetTarget()->GetName();
+					strncpy(logTargetName, temp, 64);
+					logTargetName[63] = 0;
+				}
+				break;
+			}
+		}
+		else {
+			strncpy(logTargetName, targetname, 64);
+			logTargetName[63] = 0;
+		}
+
+		// => if groupid is not 0, sem->to has already been filled with the group members
+		if (sem->groupid == 0 && strlen(logTargetName) != 0)
 		{
-			strncpy(sem->to, targetname, 64);
+			strncpy(sem->to, logTargetName, 64);
 			sem->to[63] = 0;
 		}
+		// ----------------------------------------------
 
 		if (GetName() != 0)
 		{
