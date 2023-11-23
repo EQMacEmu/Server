@@ -842,9 +842,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 				case ChatChannel_Auction:
 				case ChatChannel_OOC:
 				case ChatChannel_Shout: {
-					const char* temp = zone->GetShortName();
-					strncpy(logTargetName, temp, 64);
-					logTargetName[63] = 0;
+					if (zone) {
+						const char* temp = zone->GetShortName();
+						strncpy(logTargetName, temp, 64);
+						logTargetName[63] = 0;
+					}
 				}
 				break;
 
