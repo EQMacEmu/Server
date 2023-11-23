@@ -828,16 +828,35 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		bool targetNameIsEmpty = targetname == nullptr || strlen(targetname) == 0;
 		char logTargetName[64] = { 0 };
 		if (targetNameIsEmpty) {
-			if (chan_num != ChatChannel_Guild) {
-				const char* temp = (!GetTarget()) ? "" : GetTarget()->GetName();
-				strncpy(logTargetName, temp, 64);
-				logTargetName[63] = 0;
-			}
-			else {
-				std::string guildName = GetGuildName();
-				const char* temp = guildName.c_str();
-				strncpy(logTargetName, temp, 64);
-				logTargetName[63] = 0;
+			switch (chan_num) {
+				case ChatChannel_Guild: {
+					std::string guildName = GetGuildName();
+					const char* temp = guildName.c_str();
+					strncpy(logTargetName, temp, 64);
+					logTargetName[63] = 0;
+				}
+				break;
+
+				case ChatChannel_Auction:
+				case ChatChannel_OOC:
+				case ChatChannel_Shout: {
+					const char* temp = zone->GetShortName();
+					strncpy(logTargetName, temp, 64);
+					logTargetName[63] = 0;
+				}
+				break;
+
+				case ChatChannel_Broadcast:
+				case ChatChannel_Raid:
+				case ChatChannel_Petition:
+					break;
+
+				default: {
+					const char* temp = (!GetTarget()) ? "" : GetTarget()->GetName();
+					strncpy(logTargetName, temp, 64);
+					logTargetName[63] = 0;
+				}
+				break;
 			}
 		}
 		else {
