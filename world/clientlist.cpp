@@ -1624,6 +1624,9 @@ bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int
 		((tmpZone != 0 && strncasecmp(tmpZone, whom->whom, whomlen) == 0 && not_anon) || //zone (GM only)
 		strncasecmp(client->name(),whom->whom, whomlen) == 0 || // name
 		(strncasecmp(guild_mgr.GetGuildName(client->GuildID()), whom->whom, whomlen) == 0 && guild_not_anon)|| // This is used by who all guild
+		(strstr(whom->whom, "solo") != NULL && client->IsSolo()) || // This is used to search for any players with the solo flag
+		(strstr(whom->whom, "selffound") != NULL && client->IsSelfFound() && !client->IsSolo()) || // This is used to search for any players with the self found flag
+		(strstr(whom->whom, "hardcore") != NULL && client->IsHardcore()) || // This is used to search for any players with the hardcore flag
 		(admin >= gmwholist && strncasecmp(client->AccountName(), whom->whom, whomlen) == 0)))) // account (GM only)
 	{
 		return true;
