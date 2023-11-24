@@ -2095,6 +2095,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 	
 	hate_list.ReportDmgTotals(this, corpse, xp, faction, dmg_amt);
+
 	BuffFadeAll();
 
 	WipeHateList();
@@ -2393,6 +2394,11 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 
 void NPC::GiveExp(Client* give_exp_client, bool &xp)
 {
+	bool needsLogging = false;
+	if (hate_list.EvaluateKillerIsInitialEngager(give_exp_client, needsLogging) == false && needsLogging) {
+		hate_list.LogInitialEngageIdResult(give_exp_client);
+	}
+
 	Group *kg = entity_list.GetGroupByClient(give_exp_client);
 	Raid *kr = entity_list.GetRaidByClient(give_exp_client);
 

@@ -435,3 +435,38 @@ void QueryServ::QSDeleteItems() {}
 
 //TODO: Need to figure out how to convert the move reporting to this function.
 void QueryServ::QSMoveItems() {}
+
+void QueryServ::QSLogKillSteal(NPC* const npc, uint32 zoneid, Client* const client, const SInitialEngageEntry& engageEntry) {
+	const auto& items = npc->GetItemList();
+	Json::Value loot;
+	loot["items"] = Json::Value(Json::arrayValue);
+	for (const auto& item : items) {
+		loot["items"].append(item->item_id);
+	}
+	loot["platinum"] = npc->GetPlatinum();
+	loot["gold"] = npc->GetGold();
+	loot["silver"] = npc->GetSilver();
+	loot["copper"] = npc->GetCopper();
+
+  uint32 groupid = client->GetGroup() ? client->GetGroup()->GetID() : 0;
+  uint32 raidid = client->GetRaid() ? client->GetRaid()->GetID() : 0;
+
+	std::string query = StringFormat(
+		"INSERT INTO `qs_player_ks_log` SET "
+		"`npc_type_id` = %i, "
+		"`zone_id` = %i, "
+		"`killed_by_id` = %i, "
+		"`killed_by_group_id` = %i, "
+		"`killed_by_raid_id` = %i, "
+		"`initial_engage_ids` = '%s', "
+		"`npc_lootables` = '%s'; ",
+		npc->GetNPCTypeID(),
+		zoneid,
+		client->CharacterID(),
+		groupid,
+		raidid,
+		engageEntry.ToJson().c_str(),
+		loot.toStyledString().c_str()
+	);
+	SendQuery(query);
+}
