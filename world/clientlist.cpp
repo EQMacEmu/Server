@@ -32,6 +32,7 @@
 #include "../zone/string_ids.h"
 
 #include <set>
+#include <cstring>  // For strlen and strncat
 
 extern ConsoleList		console_list;
 extern ZSList			zoneserver_list;
@@ -876,6 +877,40 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 
 				char plname[64] = { 0 };
 				strcpy(plname, cle->name());
+
+				// Append the SSFHC flags after the name if there's room
+				if(cle->IsSelfFound() || cle->IsHardcore() || cle->IsSolo())
+				{
+					// Start with the base append string
+					std::string appendStr = " -";
+
+					if(cle->IsSolo())
+						appendStr += "s";
+					if (cle->IsSelfFound())
+						appendStr += "sf";
+					if (cle->IsHardcore())
+						appendStr += "hc";
+
+					appendStr += "-";
+
+					// Calculate the remaining space in the buffer
+					size_t remainingSpace = 63 - strlen(plname); // 63 because we need one char for null-terminator
+					// Append appendStr to plname if there's enough space
+					if (remainingSpace >= appendStr.length()) {
+						// Append should look like this:
+						strncat(plname, appendStr.c_str(), remainingSpace);
+
+						// To prepend:
+						// char tempBuffer[64];
+						// // First, copy appendStr to tempBuffer
+						// strcpy(tempBuffer, appendStr.c_str());
+						// // Then concatenate plname to tempBuffer
+						// strncat(tempBuffer, plname, remainingSpace);
+						// // Copy back the combined string to plname
+						// strncpy(plname, tempBuffer, 64);
+						// plname[63] = '\0'; // Ensure null-termination
+					}
+				}
 
 				char placcount[30] = { 0 };
 				if (admin >= cle->Admin() && admin >= AccountStatus::QuestTroupe)
