@@ -53,6 +53,7 @@ class QueryServ {
 		void QSBazaarAudit(const char *seller, const char *buyer, const char *itemName, int itemid, int quantity, int totalCost);
 		void QSCoinMove(uint32 from_id, uint32 to_id, uint32 npcid, int32 to_slot, uint32 amount, uint32 cointype = 0);
 		void QSGroundSpawn(uint32 characterid, int16 itemid, uint8 quantity, int16 in_bag, uint16 zoneid, bool dropped, bool forced = false);
+		void QSLogKillSteal(NPC* const npc, uint32 zoneid, Client* const client, const SInitialEngageEntry& engageids);
 };
 
 #endif /* QUERYSERV_ZONE_H */

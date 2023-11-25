@@ -34,6 +34,19 @@ struct tHateEntry
 	uint32 last_hate;
 };
 
+struct SInitialEngageEntry {
+	uint32 m_raidId;
+	uint32 m_groupId;
+	std::vector<uint32> m_ids;
+	std::vector<uint32> m_disbanded;
+
+	SInitialEngageEntry() : m_raidId(0), m_groupId(0) {}
+	void Reset();
+	std::string ToJson() const;
+	void AddEngagerIds(const std::vector<uint32>& ids);
+	void EngagerIdsAreHistory(const std::vector<uint32>& ids);
+};
+
 class HateList
 {
 public:
@@ -123,10 +136,16 @@ public:
 	void HandleFTEEngage(Client* client);
 	void HandleFTEDisengage();
 
+	bool KillerIsNotInitialEngager(Mob* const ent);
+	void LogInitialEngageIdResult(Client* const killedBy = nullptr);
+
 protected:
 	tHateEntry* Find(Mob *ent);
 	int32 GetHateBonus(tHateEntry *entry, bool combatRange, bool firstInRange = false, float distSquared = -1.0f);
 	int32 GetEntPetDamage(Mob* ent);
+	void RecordInitialClientHateIds(Mob* const ent);
+	void UpdateInitialClientHateIds(Mob* const ent);
+
 private:
 	std::list<tHateEntry*> list;
 	Mob *owner;
@@ -141,6 +160,8 @@ private:
 	bool hasFeignedHaters;
 	bool hasLandHaters;
 	uint32 ignoreStuckCount;
+	bool m_hasInitialEngageIds;
+	SInitialEngageEntry m_initialEngageEntry;
 };
 
 #endif

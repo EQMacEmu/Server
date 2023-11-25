@@ -37,6 +37,61 @@
 extern QueryServ* QServ;
 extern Zone *zone;
 
+void SInitialEngageEntry::Reset() {
+	m_raidId = 0;
+	m_groupId = 0;
+	m_ids.clear();
+	m_disbanded.clear();
+}
+
+std::string SInitialEngageEntry::ToJson() const {
+	Json::Value json;
+	json["raidId"] = m_raidId;
+	json["groupId"] = m_groupId;
+	json["ids"] = Json::Value(Json::arrayValue);
+	for (auto it = m_ids.begin(); it != m_ids.end(); ++it) {
+		json["ids"].append(*it);
+	}
+	json["disbanded"] = Json::Value(Json::arrayValue);
+	for (auto it = m_disbanded.begin(); it != m_disbanded.end(); ++it) {
+		json["disbanded"].append(*it);
+	}
+	return json.toOptimizedString();
+}
+
+void SInitialEngageEntry::AddEngagerIds(const std::vector<uint32>& ids) {
+	if (ids.empty()) {
+		return;
+	}
+
+	// remove ids from m_history that are in ids
+	m_disbanded.erase(
+		std::remove_if(m_disbanded.begin(), m_disbanded.end(), [&ids](uint32 id) {
+			return std::find(ids.begin(), ids.end(), id) != ids.end();
+		}),
+		m_disbanded.end()
+	);
+	// add ids to m_ids
+	m_ids.insert(m_ids.end(), ids.begin(), ids.end());
+}
+
+void SInitialEngageEntry::EngagerIdsAreHistory(const std::vector<uint32>& ids) {
+	if (ids.empty()) {
+		return;
+	}
+
+	// remove initial engager ids from m_ids that are in ids
+	m_ids.erase(
+		std::remove_if(m_ids.begin(), m_ids.end(), [&ids](uint32 id) {
+			return std::find(ids.begin(), ids.end(), id) != ids.end();
+		}),
+		m_ids.end()
+	);
+	// add ids to m_history
+	// => keep track of the history of the initial engagers, for those who have left & are still engaged
+	m_disbanded.insert(m_disbanded.end(), ids.begin(), ids.end());
+}
+
 HateList::HateList()
 {
 	owner = nullptr;
@@ -49,6 +104,8 @@ HateList::HateList()
 	aggroTime = 0xFFFFFFFF;
 	aggroDeaggroTime = 0xFFFFFFFF;
 	ignoreStuckCount = 0;
+	m_hasInitialEngageIds = false;
+	m_initialEngageEntry = {};
 }
 
 HateList::~HateList()
@@ -162,6 +219,8 @@ void HateList::Wipe(bool from_memblur)
 	}
 
 	ignoreStuckCount = 0;
+	m_initialEngageEntry.Reset();
+	m_hasInitialEngageIds = false;
 }
 
 void HateList::HandleFTEEngage(Client* client) {
@@ -678,6 +737,188 @@ Mob* HateList::GetClosestNPC(Mob *hater)
 	return close_entity;
 }
 
+// record the initial client ids for the hate list
+void HateList::RecordInitialClientHateIds(Mob* const ent) {
+	if (m_hasInitialEngageIds) {
+		return;
+	}
+
+	auto clientExistsIter = std::find_if(
+		list.begin(),
+		list.end(),
+		[](const tHateEntry* e) {
+			return e->ent != nullptr && (e->ent->IsClient() || e->ent->IsPlayerOwned());
+		}
+	);
+	if (clientExistsIter != std::end(list)) {
+		return;
+	}
+
+	if (ent->IsClient() || ent->IsPlayerOwned()) {
+		Client* const client = ent->IsClient() ? ent->CastToClient() : ent->GetOwner()->CastToClient();
+		std::vector<uint32> engagerIds = { client->CharacterID() };
+		if (client->HasPet()) {
+			engagerIds.push_back(client->GetPetID());
+		}
+
+		auto raid = client->GetRaid();
+		auto group = client->GetGroup();
+		if (raid) {
+			m_initialEngageEntry.m_raidId = raid->GetID();
+			for (const auto& raidMember : raid->members) {
+				if (raidMember.member == nullptr) {
+					continue;
+				}
+
+				const auto& memberId = raidMember.member->CharacterID();
+				if (memberId == client->CharacterID()) {
+					continue;
+				}
+
+				std::vector<uint32> engagerIds = { memberId };
+				if (raidMember.member->HasPet()) {
+					engagerIds.push_back(raidMember.member->GetPetID());
+				}
+			}
+		}
+		else if (group) {
+			m_initialEngageEntry.m_groupId = group->GetID();
+			for (const auto groupMember : group->members) {
+				if (groupMember == nullptr) {
+					continue;
+				}
+
+				auto memberClient = groupMember->CastToClient();
+				if (memberClient == nullptr) {
+					continue;
+				}
+
+				const auto& memberId = memberClient->CharacterID();
+				if (memberId == client->CharacterID()) {
+					continue;
+				}
+
+				std::vector<uint32> engagerIds = { memberId };
+				if (memberClient->HasPet()) {
+					engagerIds.push_back(memberClient->GetPetID());
+				}
+			}
+		}
+
+		m_initialEngageEntry.AddEngagerIds(engagerIds);
+		m_hasInitialEngageIds = true;
+	}
+}
+
+// update the initial engage ids for the hatelist if any new clients are in the same raid or group as the initial engagers
+void HateList::UpdateInitialClientHateIds(Mob* const ent) {
+	if (m_hasInitialEngageIds == false) {
+		return;
+	}
+
+	if (ent->IsClient() == false && ent->IsPlayerOwned() == false) {
+		return;
+	}
+
+	Client* const client = ent->IsClient() ? ent->CastToClient() : ent->GetOwner()->CastToClient();
+	auto raid = client->GetRaid();
+	auto group = client->GetGroup();
+
+	bool clientExistsInInitialEngage = std::find(m_initialEngageEntry.m_ids.begin(), m_initialEngageEntry.m_ids.end(), client->CharacterID()) != std::end(m_initialEngageEntry.m_ids);
+	if (clientExistsInInitialEngage) {
+		std::vector<uint32> disbandedIds = {};
+		if (raid) {
+			// joined a raid after the initial engage
+			// => this will allow other raid members to be valid initial engagers
+			if (m_initialEngageEntry.m_raidId == 0) {
+				m_initialEngageEntry.m_raidId = raid->GetID();
+			}
+		}
+		else if (raid == nullptr && m_initialEngageEntry.m_raidId != 0) {
+			// left the raid during the encounter, while still being engaged
+			disbandedIds.push_back(client->CharacterID());
+			if (client->HasPet()) {
+				disbandedIds.push_back(client->GetPetID());
+			}
+		}
+		else if (group) {
+			// joined a group after the initial engage
+			// => this will allow other group members to be valid initial engagers
+			if (m_initialEngageEntry.m_groupId == 0) {
+				m_initialEngageEntry.m_groupId = group->GetID();
+			}
+		}
+		else if (group == nullptr && m_initialEngageEntry.m_groupId != 0) {
+			// left the group during the encounter, while still being engaged
+			disbandedIds.push_back(client->CharacterID());
+			if (client->HasPet()) {
+				disbandedIds.push_back(client->GetPetID());
+			}
+		}
+
+		m_initialEngageEntry.EngagerIdsAreHistory(disbandedIds);
+		return;
+	}
+
+	bool isValidRaidOrGroup = (raid && raid->GetID() == m_initialEngageEntry.m_raidId) || (group && group->GetID() == m_initialEngageEntry.m_groupId);
+	if (isValidRaidOrGroup == false) {
+		return;
+	}
+
+	std::vector<uint32> engagerIds = {};
+	if (client->HasPet() &&
+			std::find(m_initialEngageEntry.m_ids.begin(), m_initialEngageEntry.m_ids.end(), client->GetPetID()) == std::end(m_initialEngageEntry.m_ids)
+	) {
+		engagerIds.push_back(client->GetPetID());
+	}
+
+	if (clientExistsInInitialEngage == false) {
+		engagerIds.push_back(client->CharacterID());
+	}
+
+	m_initialEngageEntry.AddEngagerIds(engagerIds);
+}
+
+bool HateList::KillerIsNotInitialEngager(Mob* const ent) {
+	if (m_hasInitialEngageIds == false) {
+		return false;
+	}
+
+	if (ent->IsClient() == false && ent->IsPlayerOwned() == false) {
+		return false;
+	}
+
+	Client* const client = ent->IsClient() ? ent->CastToClient() : ent->GetOwner()->CastToClient();
+	if (std::find(m_initialEngageEntry.m_ids.begin(), m_initialEngageEntry.m_ids.end(), client->CharacterID()) != std::end(m_initialEngageEntry.m_ids)) {
+		return false;
+	}
+
+	if (client->HasPet() &&
+			std::find(m_initialEngageEntry.m_ids.begin(), m_initialEngageEntry.m_ids.end(), client->GetPetID()) != std::end(m_initialEngageEntry.m_ids)
+	) {
+		return false;
+	}
+
+	return true;
+}
+
+void HateList::LogInitialEngageIdResult(Client* const killedBy) {
+	if (m_hasInitialEngageIds == false) {
+		return;
+	}
+
+	if (owner == nullptr || owner->IsNPC() == false) {
+		return;
+	}
+
+	std::stringstream ss;
+	ss << "KillSteal Detected => Killed By: " << killedBy->GetName();
+	Log(Logs::General, Logs::Aggro, "%s", ss.str().c_str());
+
+	auto npc = owner->CastToNPC();
+	QServ->QSLogKillSteal(npc, zone->GetZoneID(), killedBy, m_initialEngageEntry);
+}
+
 // this will process negative hate values fine (e.g. jolt)
 void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAddIfNotExist)
 {
@@ -689,6 +930,8 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 
 	if(ent->IsClient() && ent->CastToClient()->IsDead())
 		return;
+
+	UpdateInitialClientHateIds(ent);
 
 	tHateEntry *p = Find(ent);
 	if (p)
@@ -716,6 +959,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 			if (owner->CastToNPC()->IsAnimal())
 				in_hate = 1;
 
+			RecordInitialClientHateIds(ent);
 		}
 
 		p = new tHateEntry;
@@ -877,6 +1121,9 @@ bool HateList::RemoveEnt(Mob *ent)
 		}
 		aggroDeaggroTime = Timer::GetCurrentTime();
 		aggroTime = 0xFFFFFFFF;
+
+		m_initialEngageEntry.Reset();
+		m_hasInitialEngageIds = false;
 	}
 	else
 	{
