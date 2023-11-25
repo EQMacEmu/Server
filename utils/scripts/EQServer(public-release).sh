@@ -70,7 +70,7 @@ if  [ $dynamic2 = "TRUE" ]; then
 	let zonecount_temp=$((zonecount_temp+dynamiccount2))
 fi
 
-if [ $zonecount_temp > 0 ]; then
+if [ $zonecount_temp -gt 0 ]; then
 	zonecount=$zonecount_temp
 fi
 
