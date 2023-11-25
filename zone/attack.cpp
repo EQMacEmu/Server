@@ -2394,8 +2394,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 
 void NPC::GiveExp(Client* give_exp_client, bool &xp)
 {
-	bool needsLogging = false;
-	if (hate_list.EvaluateKillerIsInitialEngager(give_exp_client, needsLogging) == false && needsLogging) {
+	if (hate_list.KillerIsNotInitialEngager(give_exp_client)) {
 		hate_list.LogInitialEngageIdResult(give_exp_client);
 	}
 

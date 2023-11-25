@@ -35,13 +35,16 @@ struct tHateEntry
 };
 
 struct SInitialEngageEntry {
-	std::vector<uint32> m_ids;
 	uint32 m_raidId;
 	uint32 m_groupId;
+	std::vector<uint32> m_ids;
+	std::vector<uint32> m_disbanded;
 
 	SInitialEngageEntry() : m_raidId(0), m_groupId(0) {}
 	void Reset();
 	std::string ToJson() const;
+	void AddEngagerIds(const std::vector<uint32>& ids);
+	void EngagerIdsAreHistory(const std::vector<uint32>& ids);
 };
 
 class HateList
@@ -133,7 +136,7 @@ public:
 	void HandleFTEEngage(Client* client);
 	void HandleFTEDisengage();
 
-	bool EvaluateKillerIsInitialEngager(Mob* const ent, bool& needsLogging);
+	bool KillerIsNotInitialEngager(Mob* const ent);
 	void LogInitialEngageIdResult(Client* const killedBy = nullptr);
 
 protected:

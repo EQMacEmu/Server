@@ -466,7 +466,7 @@ void QueryServ::QSLogKillSteal(NPC* const npc, uint32 zoneid, Client* const clie
 		groupid,
 		raidid,
 		engageEntry.ToJson().c_str(),
-		loot.toStyledString().c_str()
+		loot.toOptimizedString().c_str()
 	);
 	SendQuery(query);
 }
