@@ -67,14 +67,8 @@ class EQStreamFactory : private Timeoutable {
 		std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>> OldStreams;
 
 		std::thread ReaderThread;
-		std::thread ProcessNewThread;
 		std::thread WriterNewThread;
-		std::thread ProcessOldThread;
 		std::thread WriterOldThread;
-		std::mutex MNewRecvBuffers;
-		std::mutex MOldRecvBuffers;
-		std::queue<std::unique_ptr<RecvBuffer>> NewRecvBuffers;
-		std::queue<std::unique_ptr<RecvBuffer>> OldRecvBuffers;
 
 		virtual void CheckTimeout();
 
@@ -97,8 +91,8 @@ class EQStreamFactory : private Timeoutable {
 		bool IsOpen() { return sock!=-1; }
 		void Close();
 		void ReaderLoop();
-		void ProcessLoopNew();
-		void ProcessLoopOld();
+		void ProcessLoopNew(const RecvBuffer& recvBuffer);
+		void ProcessLoopOld(const RecvBuffer& recvBuffer);
 		void WriterLoopNew();
 		void WriterLoopOld();
 		void Stop();

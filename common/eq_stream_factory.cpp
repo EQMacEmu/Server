@@ -42,14 +42,6 @@ void EQStreamFactory::Close()
 		ReaderThread.join();
 	}
 
-	if (ProcessNewThread.joinable()) {
-		ProcessNewThread.join();
-	}
-
-	if (ProcessOldThread.joinable()) {
-		ProcessOldThread.join();
-	}
-
 	if (WriterNewThread.joinable()) {
 		WriterNewThread.join();
 	}
@@ -124,9 +116,7 @@ bool EQStreamFactory::Open()
 #endif
 
 	ReaderThread = std::thread(&EQStreamFactory::ReaderLoop, this);
-	ProcessNewThread = std::thread(&EQStreamFactory::ProcessLoopNew, this);
 	WriterNewThread = std::thread(&EQStreamFactory::WriterLoopNew, this);
-	ProcessOldThread = std::thread(&EQStreamFactory::ProcessLoopOld, this);
 	WriterOldThread = std::thread(&EQStreamFactory::WriterLoopOld, this);
 	return true;
 }
@@ -221,33 +211,31 @@ void EQStreamFactory::ReaderLoop()
 				auto streamKey = std::make_pair(from.sin_addr.s_addr, from.sin_port);
 
 				{
-					std::lock_guard<std::mutex> lock(MStreams), lock2(MOldStreams);
+					std::lock(MStreams, MOldStreams);
+					std::lock_guard<std::mutex> lock(MStreams, std::adopt_lock);
+					std::lock_guard<std::mutex> lock2(MOldStreams, std::adopt_lock);
 					hasNewStream = Streams.find(streamKey) != Streams.end();
 					hasOldStream = OldStreams.find(streamKey) != OldStreams.end();
 				}
 
 				if (hasNewStream == false && hasOldStream == false) {
 					if (buffer[1] == OP_SessionRequest) {
-						auto data = std::make_unique<RecvBuffer>(true, length, buffer, streamKey, from);
-						std::lock_guard<std::mutex> lock(MNewRecvBuffers);
-						NewRecvBuffers.push(std::move(data));
+						RecvBuffer data = RecvBuffer(true, length, buffer, streamKey, from);
+						ProcessLoopNew(data);
 					}
 					else {
-						auto data = std::make_unique<RecvBuffer>(true, length, buffer, streamKey, from);
-						std::lock_guard<std::mutex> lock(MOldRecvBuffers);
-						OldRecvBuffers.push(std::move(data));
+						RecvBuffer data = RecvBuffer(true, length, buffer, streamKey, from);
+						ProcessLoopOld(data);
 					}
 				}
 				else {
 					if (hasNewStream) {
-						auto data = std::make_unique<RecvBuffer>(false, length, buffer, streamKey, from);
-						std::lock_guard<std::mutex> lock(MNewRecvBuffers);
-						NewRecvBuffers.push(std::move(data));
+						RecvBuffer data = RecvBuffer(false, length, buffer, streamKey, from);
+						ProcessLoopNew(data);
 					}
 					else if (hasOldStream) {
-						auto data = std::make_unique<RecvBuffer>(false, length, buffer, streamKey, from);
-						std::lock_guard<std::mutex> lock(MOldRecvBuffers);
-						OldRecvBuffers.push(std::move(data));
+						RecvBuffer data = RecvBuffer(false, length, buffer, streamKey, from);
+						ProcessLoopOld(data);
 					}
 				}
 			}
@@ -257,115 +245,79 @@ void EQStreamFactory::ReaderLoop()
 	}
 }
 
-void EQStreamFactory::ProcessLoopNew()
+void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer)
 {
-	std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>>::iterator stream_itr;
+	const auto& from = recvBuffer.From();
+	const auto& length = recvBuffer.Length();
+	const auto buffer = recvBuffer.Buffer();
+	std::lock_guard<std::mutex> lock(MStreams);
 
-	while (sock != -1) {
-		std::unique_lock<std::mutex> new_recv_buffers_lock(MNewRecvBuffers);
-		if (NewRecvBuffers.empty()) {
-			new_recv_buffers_lock.unlock();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			continue;
+	if (recvBuffer.IsNew()) {
+		std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
+		s->SetStreamType(StreamType);
+		Streams[recvBuffer.StreamKey()] = s;
+		WriterWorkNew.notify_one();
+		Push(s);
+		s->AddBytesRecv(length);
+		s->Process(buffer, length);
+		s->SetLastPacketTime(Timer::GetCurrentTime());
+	}
+	else {
+		auto stream_itr = Streams.find(recvBuffer.StreamKey());
+		std::shared_ptr<EQStream> curstream = stream_itr->second;
+
+		//dont bother processing incoming packets for closed connections
+		if (curstream != nullptr) {
+			if (curstream->CheckClosed())
+				curstream = nullptr;
+			else
+				curstream->PutInUse();
 		}
 
-		auto recvBuffer = std::move(NewRecvBuffers.front());
-		NewRecvBuffers.pop();
-		new_recv_buffers_lock.unlock();
-
-		const auto& from = recvBuffer->From();
-		const auto& length = recvBuffer->Length();
-		const auto buffer = recvBuffer->Buffer();
-		std::lock_guard<std::mutex> lock(MStreams);
-
-		if (recvBuffer->IsNew()) {
-			std::shared_ptr<EQStream> s = std::make_shared<EQStream>(from);
-			s->SetStreamType(StreamType);
-			Streams[recvBuffer->StreamKey()] = s;
-			WriterWorkNew.notify_one();
-			Push(s);
-			s->AddBytesRecv(length);
-			s->Process(buffer, length);
-			s->SetLastPacketTime(Timer::GetCurrentTime());
+		if (curstream) {
+			curstream->AddBytesRecv(length);
+			curstream->Process(buffer, length);
+			curstream->SetLastPacketTime(Timer::GetCurrentTime());
+			curstream->ReleaseFromUse();
 		}
-		else {
-			stream_itr = Streams.find(recvBuffer->StreamKey());
-			std::shared_ptr<EQStream> curstream = stream_itr->second;
-
-			//dont bother processing incoming packets for closed connections
-			if (curstream != nullptr) {
-				if (curstream->CheckClosed())
-					curstream = nullptr;
-				else
-					curstream->PutInUse();
-			}
-
-			if (curstream) {
-				curstream->AddBytesRecv(length);
-				curstream->Process(buffer, length);
-				curstream->SetLastPacketTime(Timer::GetCurrentTime());
-				curstream->ReleaseFromUse();
-			}
-		}
-
-		recvBuffer.reset(nullptr);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 
-void EQStreamFactory::ProcessLoopOld()
+void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
 {
-	std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>>::iterator oldstream_itr;
+	const auto& from = recvBuffer.From();
+	const auto& length = recvBuffer.Length();
+	auto buffer = recvBuffer.Buffer();
+	std::lock_guard<std::mutex> lock(MOldStreams);
 
-	while (sock != -1) {
-		std::unique_lock<std::mutex> old_recv_buffers_lock(MOldRecvBuffers);
-		if (OldRecvBuffers.empty()) {
-			old_recv_buffers_lock.unlock();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			continue;
+	if (recvBuffer.IsNew()) {
+		std::shared_ptr<EQOldStream> s = std::make_shared<EQOldStream>(from, sock);
+		s->SetStreamType(StreamType);
+		OldStreams[recvBuffer.StreamKey()] = s;
+		WriterWorkOld.notify_one();
+		PushOld(s);
+		//s->AddBytesRecv(length);
+		s->ParceEQPacket(length, buffer);
+		s->SetLastPacketTime(Timer::GetCurrentTime());
+	}
+	else {
+		auto oldstream_itr = OldStreams.find(recvBuffer.StreamKey());
+		std::shared_ptr<EQOldStream> curstream = oldstream_itr->second;
+
+		//dont bother processing incoming packets for closed connections
+		if (curstream != nullptr) {
+			if (curstream->CheckClosed())
+				curstream = nullptr;
+			else
+				curstream->PutInUse();
 		}
 
-		auto recvBuffer = std::move(OldRecvBuffers.front());
-		OldRecvBuffers.pop();
-		old_recv_buffers_lock.unlock();
-
-		const auto& from = recvBuffer->From();
-		const auto& length = recvBuffer->Length();
-		auto buffer = recvBuffer->Buffer();
-		std::lock_guard<std::mutex> lock(MOldStreams);
-
-		if (recvBuffer->IsNew()) {
-			std::shared_ptr<EQOldStream> s = std::make_shared<EQOldStream>(from, sock);
-			s->SetStreamType(StreamType);
-			OldStreams[recvBuffer->StreamKey()] = s;
-			WriterWorkOld.notify_one();
-			PushOld(s);
-			//s->AddBytesRecv(length);
-			s->ParceEQPacket(length, buffer);
-			s->SetLastPacketTime(Timer::GetCurrentTime());
+		if (curstream) {
+			//curstream->AddBytesRecv(length);
+			curstream->ParceEQPacket(length, buffer);
+			curstream->SetLastPacketTime(Timer::GetCurrentTime());
+			curstream->ReleaseFromUse();
 		}
-		else {
-			oldstream_itr = OldStreams.find(recvBuffer->StreamKey());
-			std::shared_ptr<EQOldStream> curstream = oldstream_itr->second;
-
-			//dont bother processing incoming packets for closed connections
-			if (curstream != nullptr) {
-				if (curstream->CheckClosed())
-					curstream = nullptr;
-				else
-					curstream->PutInUse();
-			}
-
-			if (curstream) {
-				//curstream->AddBytesRecv(length);
-				curstream->ParceEQPacket(length, buffer);
-				curstream->SetLastPacketTime(Timer::GetCurrentTime());
-				curstream->ReleaseFromUse();
-			}
-		}
-
-		recvBuffer.reset(nullptr);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 
