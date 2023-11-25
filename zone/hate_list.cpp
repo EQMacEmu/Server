@@ -912,16 +912,7 @@ void HateList::LogInitialEngageIdResult(Client* const killedBy) {
 	}
 
 	std::stringstream ss;
-	ss << "Initial Engage Ids: ";
-	for (const auto& id : m_initialEngageEntry.m_ids) {
-		ss << id << " ";
-	}
-
-	ss << "Raid Id: " << m_initialEngageEntry.m_raidId << " Group Id: " << m_initialEngageEntry.m_groupId;
-
-	if (killedBy->IsClient()) {
-		ss << " Killed By: " << killedBy->CastToClient()->GetName();
-	}
+	ss << "KillSteal Detected => Killed By: " << killedBy->GetName();
 	Log(Logs::General, Logs::Aggro, "%s", ss.str().c_str());
 
 	auto npc = owner->CastToNPC();
