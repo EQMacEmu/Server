@@ -90,6 +90,15 @@ int32 Client::LevelRegen(int level, bool is_sitting, bool is_resting, bool is_fe
 	if (is_sitting)
 	{
 		hp_regen_amount += 1;
+
+		if (level >= 20)
+		{
+			hp_regen_amount += 1;
+		}
+		if (level >= 50)
+		{
+			hp_regen_amount += 1;
+		}
 	}
 
 	// feigning at 51+ adds 1 as if sitting
@@ -128,20 +137,6 @@ int32 Client::LevelRegen(int level, bool is_sitting, bool is_resting, bool is_fe
 	if (level >= 65)
 	{
 		hp_regen_amount += 1;
-	}
-
-	// resting begins after sitting for 1 minute.
-	// 1 additional point of regen is gained at levels 20 and 50
-	if (is_sitting && is_resting)
-	{
-		if (level >= 20)
-		{
-			hp_regen_amount += 1;
-		}
-		if (level >= 50)
-		{
-			hp_regen_amount += 1;
-		}
 	}
 
 	// racial trait adds to then doubles regen bonuses
