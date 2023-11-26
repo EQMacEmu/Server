@@ -1027,6 +1027,7 @@ bool ZoneServer::Process() {
 				ClientListEntry* cle = client_list.FindCLEByAccountID(skp->AccountID);
 				if (cle) {
 					cle->SetOnline(CLE_Status_Offline);
+					client_list.RemoveCLEByAccountID(cle->AccountID());
 				}
 
 				zoneserver_list.SendPacket(pack);

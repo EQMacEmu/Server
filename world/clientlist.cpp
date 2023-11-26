@@ -487,6 +487,21 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
 }
 
+ClientListEntry* ClientList::RemoveCLEByAccountID(uint32 accountID) {
+	LinkedListIterator<ClientListEntry*> iterator(clientlist);
+
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		if (iterator.GetData()->AccountID() == accountID) {
+			iterator.RemoveCurrent();
+			continue;
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 
 void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
 	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version, 0);
