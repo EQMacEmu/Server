@@ -1481,7 +1481,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 				delete inst;
 				return;
 			}
-			client->Message(15, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged, even if you destroy or trade it.");
+			client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged, even if you destroy or trade it.");
 			client->AddLootedLegacyItem(item_data->item_id);
 		}
 
