@@ -891,7 +891,7 @@ void HateList::UpdateInitialClientHateIds(Mob* const ent) {
 	m_initialEngageEntry.AddEngagerIds(engagerIds);
 }
 
-// remove when the client or client's pet is removed from the hatelist
+// remove when the client is removed from the hatelist
 void HateList::RemoveInitialClientHateIds(Mob* const ent) {
 	if (m_initialEngageEntry.HasInitialEngageIds() == false) {
 		return;
