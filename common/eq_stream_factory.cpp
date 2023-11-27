@@ -166,6 +166,8 @@ void EQStreamFactory::PushOld(std::shared_ptr<EQOldStream> s)
 void EQStreamFactory::ReaderLoop()
 {
 	fd_set readset;
+	EQStreamIterator stream_iter;
+	EQOldStreamIterator oldstream_iter;
 	int num;
 	int length;
 	unsigned char buffer[2048];
@@ -214,35 +216,35 @@ void EQStreamFactory::ReaderLoop()
 				// What do we wanna do?
 			}
 			else {
-				bool hasNewStream = false;
-				bool hasOldStream = false;
 				auto streamKey = std::make_pair(from.sin_addr.s_addr, from.sin_port);
 
 				std::unique_lock<std::mutex> streams_lock(MStreams, std::defer_lock);
 				std::unique_lock<std::mutex> old_streams_lock(MOldStreams, std::defer_lock);
 				std::lock(streams_lock, old_streams_lock); //lock both mutexes (in order to avoid deadlock)
 
-				hasNewStream = Streams.find(streamKey) != Streams.end();
-				hasOldStream = OldStreams.find(streamKey) != OldStreams.end();
+				stream_iter = Streams.find(streamKey);
+				oldstream_iter = OldStreams.find(streamKey);
+				bool hasNewStream = stream_iter != Streams.end();
+				bool hasOldStream = oldstream_iter != OldStreams.end();
 
 				if (hasNewStream == false && hasOldStream == false) {
 					if (buffer[1] == OP_SessionRequest) {
 						RecvBuffer data = RecvBuffer(true, length, buffer, streamKey, from);
-						ProcessLoopNew(data);
+						ProcessLoopNew(data, stream_iter);
 					}
 					else {
 						RecvBuffer data = RecvBuffer(true, length, buffer, streamKey, from);
-						ProcessLoopOld(data);
+						ProcessLoopOld(data, oldstream_iter);
 					}
 				}
 				else {
 					if (hasNewStream) {
 						RecvBuffer data = RecvBuffer(false, length, buffer, streamKey, from);
-						ProcessLoopNew(data);
+						ProcessLoopNew(data, stream_iter);
 					}
 					else if (hasOldStream) {
 						RecvBuffer data = RecvBuffer(false, length, buffer, streamKey, from);
-						ProcessLoopOld(data);
+						ProcessLoopOld(data, oldstream_iter);
 					}
 				}
 			}
@@ -252,7 +254,7 @@ void EQStreamFactory::ReaderLoop()
 	}
 }
 
-void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer)
+void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer, EQStreamIterator iterator)
 {
 	const auto& from = recvBuffer.From();
 	const auto& length = recvBuffer.Length();
@@ -269,8 +271,7 @@ void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer)
 		s->SetLastPacketTime(Timer::GetCurrentTime());
 	}
 	else {
-		auto stream_itr = Streams.find(recvBuffer.StreamKey());
-		std::shared_ptr<EQStream> curstream = stream_itr->second;
+		std::shared_ptr<EQStream> curstream = iterator->second;
 
 		//dont bother processing incoming packets for closed connections
 		if (curstream != nullptr) {
@@ -289,7 +290,7 @@ void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer)
 	}
 }
 
-void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
+void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer, EQOldStreamIterator iterator)
 {
 	const auto& from = recvBuffer.From();
 	const auto& length = recvBuffer.Length();
@@ -306,8 +307,7 @@ void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
 		s->SetLastPacketTime(Timer::GetCurrentTime());
 	}
 	else {
-		auto oldstream_itr = OldStreams.find(recvBuffer.StreamKey());
-		std::shared_ptr<EQOldStream> curstream = oldstream_itr->second;
+		std::shared_ptr<EQOldStream> curstream = iterator->second;
 
 		//dont bother processing incoming packets for closed connections
 		if (curstream != nullptr) {

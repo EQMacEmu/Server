@@ -16,6 +16,9 @@
 class EQStream;
 class Timer;
 
+using EQStreamIterator = std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>>::iterator;
+using EQOldStreamIterator = std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>>::iterator;
+
 class RecvBuffer {
 	private:
 		bool isnew;
@@ -91,8 +94,8 @@ class EQStreamFactory : private Timeoutable {
 		bool IsOpen() { return sock!=-1; }
 		void Close();
 		void ReaderLoop();
-		void ProcessLoopNew(const RecvBuffer& recvBuffer);
-		void ProcessLoopOld(const RecvBuffer& recvBuffer);
+		void ProcessLoopNew(const RecvBuffer& recvBuffer, EQStreamIterator iterator);
+		void ProcessLoopOld(const RecvBuffer& recvBuffer, EQOldStreamIterator iterator);
 		void WriterLoopNew();
 		void WriterLoopOld();
 		void Stop();
