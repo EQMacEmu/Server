@@ -235,16 +235,16 @@ bool Spawn2::Process() {
 
 		// ignoring spawnpoint loc and using random loc for large outdoor zones; roambox NPCs are not supposed to be campable
 		// a bit hackish but works
-		bool open_outdoor_zone = (!zone->CanCastDungeon() && !zone->IsCity()) || qeynos2 || freporte || freportw || gfaydark;
-		if (open_outdoor_zone == kael || open_outdoor_zone == mischiefplane)
-			open_outdoor_zone = false;
+		bool open_outdoor_zone = (!zone->CanCastDungeon() && !zone->IsCity()) || zone->GetZoneID() == qeynos2 || zone->GetZoneID() == freporte || zone->GetZoneID() == freportw || zone->GetZoneID() == gfaydark;
 
-		if (rand_spawn || (spawn_group->roamdist && open_outdoor_zone))
-		{
+		if (open_outdoor_zone == zone->GetZoneID() == kael || open_outdoor_zone == zone->GetZoneID() == mischiefplane) {
+			open_outdoor_zone = false;
+		}
+
+		if (rand_spawn || (spawn_group->roamdist && open_outdoor_zone))	{
 			uint8 count = 0;
 			z = BEST_Z_INVALID;
-			while (z == BEST_Z_INVALID && count < 3)
-			{
+			while (z == BEST_Z_INVALID && count < 3) {
 				x = zone->random.Real(spawn_group->roambox[1], spawn_group->roambox[0]);
 				y = zone->random.Real(spawn_group->roambox[3], spawn_group->roambox[2]);
 				glm::vec3 loc(x, y, 0);
@@ -252,8 +252,7 @@ bool Spawn2::Process() {
 				++count;
 			}
 
-			if (z == BEST_Z_INVALID)
-			{
+			if (z == BEST_Z_INVALID) {
 				Log(Logs::General, Logs::Error, "Invalid BestZ for random spawn %d", spawn2_id);
 				timer.Start(60000);	// try again later
 				return false;

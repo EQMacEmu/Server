@@ -1030,7 +1030,7 @@ struct Consider_Struct
 		  // X and Y are reversed in this function to match the above
 		  uint32 SetValue(float vx, float vy, float vz)
 		  {
-			  value = ((int)(float)(vx * 16.0f) << 22) | (((int)(float)(vz * 16.0f) & 0x7FF) << 11) | (int)(float)(vy * 16.0f) & 0x7FF;
+			  value = ((int)(float)(vx * 16.0f) << 22) | (((int)(float)(vz * 16.0f) & 0x7FF) << 11) | ((int)(float)(vy * 16.0f) & 0x7FF);
 
 			  return value;
 		  }

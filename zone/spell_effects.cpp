@@ -65,7 +65,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 	if(IsNPC())
 	{
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&buffslot);
 		int i = parse->EventSpell(EVENT_SPELL_EFFECT_NPC, CastToNPC(), nullptr, spell_id, caster ? caster->GetID() : 0, &args);
 		if(i != 0){
@@ -75,7 +75,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 	}
 	else if(IsClient())
 	{
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&buffslot);
 		int i = parse->EventSpell(EVENT_SPELL_EFFECT_CLIENT, nullptr, CastToClient(), spell_id, caster ? caster->GetID() : 0, &args);
 		if(i != 0){
@@ -1668,23 +1668,23 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if (effect_value < 0)
 				{
-					effect_value = 0 - effect_value;
 					int buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (!IsValidSpell(buffs[j].spellid))
 							continue;
 						if (CalculatePoisonCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= static_cast<int>(buffs[j].counters)) {
-							if (caster)
-								caster->Message_StringID(MT_Spells, TARGET_CURED);
-							effect_value -= buffs[j].counters;
-							buffs[j].counters = 0;
-							BuffFadeBySlot(j);
-						} else {
-							buffs[j].counters -= effect_value;
-							effect_value = 0;
-							break;
+						// solar: there is an intentional weirdness here - the variable 'i' here is the slot number of the counter effect in the cure spell, but it's also used to index the buff spell.
+						// it should probably use the index of the counter effect in the buff spell but this is how sony did it.
+						if (effect_value + CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel, 0, buffs[j].instrumentmod) <= 6)
+						{
+							buffs[j].counters += effect_value;
+							if (buffs[j].counters <= 0)
+							{
+								if (caster)
+									caster->Message_StringID(MT_Spells, TARGET_CURED);
+								BuffFadeBySlot(j);
+							}
 						}
 					}
 				}
@@ -1698,26 +1698,23 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if (effect_value < 0)
 				{
-					effect_value = 0 - effect_value;
 					int buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (!IsValidSpell(buffs[j].spellid))
 							continue;
 						if (CalculateDiseaseCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= static_cast<int>(buffs[j].counters))
+						// solar: there is an intentional weirdness here - the variable 'i' here is the slot number of the counter effect in the cure spell, but it's also used to index the buff spell.
+						// it should probably use the index of the counter effect in the buff spell but this is how sony did it.
+						if (effect_value + CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel, 0, buffs[j].instrumentmod) <= 6)
 						{
-							if (caster)
-								caster->Message_StringID(MT_Spells, TARGET_CURED);
-							effect_value -= buffs[j].counters;
-							buffs[j].counters = 0;
-							BuffFadeBySlot(j);
-						}
-						else
-						{
-							buffs[j].counters -= effect_value;
-							effect_value = 0;
-							break;
+							buffs[j].counters += effect_value;
+							if (buffs[j].counters <= 0)
+							{
+								if (caster)
+									caster->Message_StringID(MT_Spells, TARGET_CURED);
+								BuffFadeBySlot(j);
+							}
 						}
 					}
 				}
@@ -1731,26 +1728,24 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if (effect_value < 0)
 				{
-					effect_value = 0 - effect_value;
 					int buff_count = GetMaxTotalSlots();
 					for (int j=0; j < buff_count; j++) {
 						if (!IsValidSpell(buffs[j].spellid))
 							continue;
 						if (CalculateCurseCounters(buffs[j].spellid) == 0)
 							continue;
-						if (effect_value >= static_cast<int>(buffs[j].counters))
+						// solar: there is an intentional weirdness here - the variable 'i' here is the slot number of the counter effect in the cure spell, but it's also used to index the buff spell.
+						// it should probably use the index of the counter effect in the buff spell but this is how sony did it.
+						if (effect_value + CalcSpellEffectValue(buffs[j].spellid, i, buffs[j].casterlevel, 0, buffs[j].instrumentmod) <= 6 
+							|| (buffs[j].spellid == SPELL_EPOCH_CONVICTION && spell_id == SPELL_REMOVE_GREATER_CURSE)) // TAKP customization for Quarm spell Epoch Conviction
 						{
-							if (caster)
-								caster->Message_StringID(MT_Spells, TARGET_CURED);
-							effect_value -= buffs[j].counters;
-							buffs[j].counters = 0;
-							BuffFadeBySlot(j);
-						}
-						else
-						{
-							buffs[j].counters -= effect_value;
-							effect_value = 0;
-							break;
+							buffs[j].counters += effect_value;
+							if (buffs[j].counters <= 0)
+							{
+								if (caster)
+									caster->Message_StringID(MT_Spells, TARGET_CURED);
+								BuffFadeBySlot(j);
+							}
 						}
 					}
 				}
@@ -2697,7 +2692,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 
 	if(IsNPC())
 	{
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&ticsremaining);
 		args.push_back(&caster_level);
 		args.push_back(&slot);
@@ -2708,7 +2703,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 	}
 	else
 	{
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&ticsremaining);
 		args.push_back(&caster_level);
 		args.push_back(&slot);
@@ -2959,12 +2954,12 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 
 						if(zone->random.Real(0.0, 100.0) < break_chance)
 						{
-							BuffModifyDurationBySpellID(spell_id, 10, false);
+							BuffModifyDurationBySpellID(spell_id, 10, true);
 							Log(Logs::General, Logs::Spells, "Invis spell %d fading early. 10 tics remain.", spell_id);
 						}
 					}
 				}
-				else if (ticsremaining <= 2 && ticsremaining > 1)
+				else if (ticsremaining == 2)
 				{
 					Message_StringID(CC_User_SpellFailure, INVIS_BEGIN_BREAK);
 				}
@@ -3026,12 +3021,12 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 	}
 
 	if(IsClient()) {
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&buffs[slot].casterid);
 
 		parse->EventSpell(EVENT_SPELL_FADE, nullptr, CastToClient(), buffs[slot].spellid, slot, &args);
 	} else if(IsNPC()) {
-		std::vector<EQ::Any> args;
+		std::vector<std::any> args;
 		args.push_back(&buffs[slot].casterid);
 
 		parse->EventSpell(EVENT_SPELL_FADE, CastToNPC(), nullptr, buffs[slot].spellid, slot, &args);

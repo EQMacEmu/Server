@@ -3036,6 +3036,13 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 
 	std::string corpse_items_query;
 	/* Dump Items from Inventory */
+	if (dbpc->itemcount == 0)
+	{
+		// clear out any stale items that might be left in the database for this corpse if we're saving it with 0 items
+		corpse_items_query = StringFormat("DELETE FROM `character_corpse_items` WHERE `corpse_id` = %d", last_insert_id);
+	}
+	else
+	{
 	uint8 first_entry = 0;
 	for (unsigned int i = 0; i < dbpc->itemcount; i++) {
 		if (first_entry != 1){
@@ -3057,6 +3064,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 				dbpc->items[i].charges
 			);
 		}
+	}
 	}
 	auto sc_results = QueryDatabase(corpse_items_query);
 	return last_insert_id;

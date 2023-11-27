@@ -317,6 +317,11 @@ public:
 	bool IsTargetable() const { return m_targetable; }
 	inline void ShieldEquiped(bool val) { has_shieldequiped = val; }
 	bool HasShieldEquiped() const { return has_shieldequiped; }
+	bool HasBowEquipped() const { return has_bowequipped; }
+	void SetBowEquipped(bool val) { has_bowequipped = val; }
+	bool HasArrowEquipped() const { return has_arrowequipped; }
+	void SetArrowEquipped(bool val) { has_arrowequipped = val; }
+	bool HasBowAndArrowEquipped() const { return HasBowEquipped() && HasArrowEquipped(); }
 	inline void SetBashEnablingWeapon(bool val) { has_bashEnablingWeapon = val; } //Used for SK/Pal epics
 	bool HasBashEnablingWeapon() const { return has_bashEnablingWeapon; }
 	virtual uint16 GetSkill(EQ::skills::SkillType skill_num) const { return 0; }
@@ -1177,6 +1182,8 @@ protected:
 	bool inWater; // Set to true or false by Water Detection code if enabled by rules
 	bool offhand;
 	bool has_shieldequiped;
+	bool has_bowequipped = false;
+	bool has_arrowequipped = false;
 	bool has_bashEnablingWeapon; //Used for Pal/SK epic
 	bool has_MGB;
 	bool has_ProjectIllusion;

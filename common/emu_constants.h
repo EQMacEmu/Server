@@ -188,7 +188,8 @@ namespace EQ
 
 
 	namespace spells {
-		enum class CastingSlot : uint32 {
+		enum class CastingSlot : int32 {
+			Invalid = -1,
 			Gem1 = 0,
 			Gem2 = 1,
 			Gem3 = 2,
