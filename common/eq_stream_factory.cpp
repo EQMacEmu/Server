@@ -325,8 +325,8 @@ void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
 
 void EQStreamFactory::CheckTimeout()
 {
+	// give priority for CheckTimeout to do work
 	CheckTimeoutRunning = true;
-	Log(Logs::General, Logs::Netcode, "[EQStreamFactory] CheckTimeout() started.");
 
 	//lock streams the entire time were checking timeouts, it should be fast.
 	std::unique_lock<std::mutex> streams_lock(MStreams, std::defer_lock);
@@ -388,7 +388,6 @@ void EQStreamFactory::CheckTimeout()
 		++oldstream_itr;
 	}
 
-	Log(Logs::General, Logs::Netcode, "[EQStreamFactory] CheckTimeout() finished");
 	CheckTimeoutRunning = false;
 }
 
