@@ -149,6 +149,7 @@ void command_keyring(Client *c, const Seperator *sep);
 void command_kick(Client *c, const Seperator *sep);
 void command_kill(Client *c, const Seperator *sep);
 void command_lastname(Client *c, const Seperator *sep);
+void command_leaderboard(Client *c, const Seperator *sep);
 void command_level(Client *c, const Seperator *sep);
 void command_listnpcs(Client *c, const Seperator *sep);
 void command_load_shared_memory(Client *c, const Seperator *sep);
