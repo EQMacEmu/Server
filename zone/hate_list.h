@@ -35,15 +35,19 @@ struct tHateEntry
 };
 
 struct SInitialEngageEntry {
+	bool m_hasInitialEngageIds;
 	uint32 m_raidId;
 	uint32 m_groupId;
 	std::vector<uint32> m_ids;
 	std::vector<uint32> m_disbanded;
 
-	SInitialEngageEntry() : m_raidId(0), m_groupId(0) {}
+	SInitialEngageEntry() : m_hasInitialEngageIds(false), m_raidId(0), m_groupId(0) {}
 	void Reset();
 	std::string ToJson() const;
+	void SetHasInitialEngageIds(bool hasInitialEngageIds);
+	bool HasInitialEngageIds() const;
 	void AddEngagerIds(const std::vector<uint32>& ids);
+	void RemoveEngagerIds(const std::vector<uint32>& ids);
 	void EngagerIdsAreHistory(const std::vector<uint32>& ids);
 };
 
@@ -145,6 +149,7 @@ protected:
 	int32 GetEntPetDamage(Mob* ent);
 	void RecordInitialClientHateIds(Mob* const ent);
 	void UpdateInitialClientHateIds(Mob* const ent);
+	void RemoveInitialClientHateIds(Mob* const ent);
 
 private:
 	std::list<tHateEntry*> list;
@@ -160,7 +165,6 @@ private:
 	bool hasFeignedHaters;
 	bool hasLandHaters;
 	uint32 ignoreStuckCount;
-	bool m_hasInitialEngageIds;
 	SInitialEngageEntry m_initialEngageEntry;
 };
 
