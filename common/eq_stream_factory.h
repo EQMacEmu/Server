@@ -51,7 +51,6 @@ class EQStreamFactory : private Timeoutable {
 
 		std::condition_variable WriterWorkNew;
 		std::condition_variable WriterWorkOld;
-		std::atomic_bool CheckTimeoutRunning;
 
 		EQStreamType StreamType;
 

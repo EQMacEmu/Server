@@ -16,8 +16,11 @@
 
 #include <iostream>
 #include <fcntl.h>
+#include <atomic>
 
 #include "op_codes.h"
+
+static std::atomic_bool s_checkTimeoutRunning;
 
 EQStreamFactory::EQStreamFactory(EQStreamType type, int port, uint32 timeout)
 	: Timeoutable(5000), stream_timeout(timeout)
@@ -178,7 +181,7 @@ void EQStreamFactory::ReaderLoop()
 		}
 		reader_lock.unlock();
 
-		if (CheckTimeoutRunning) {
+		if (s_checkTimeoutRunning) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			continue;
 		}
@@ -326,7 +329,7 @@ void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
 void EQStreamFactory::CheckTimeout()
 {
 	// give priority for CheckTimeout to do work
-	CheckTimeoutRunning = true;
+	s_checkTimeoutRunning = true;
 
 	//lock streams the entire time were checking timeouts, it should be fast.
 	std::unique_lock<std::mutex> streams_lock(MStreams, std::defer_lock);
@@ -388,7 +391,7 @@ void EQStreamFactory::CheckTimeout()
 		++oldstream_itr;
 	}
 
-	CheckTimeoutRunning = false;
+	s_checkTimeoutRunning = false;
 }
 
 void EQStreamFactory::WriterLoopNew() {
@@ -408,7 +411,7 @@ void EQStreamFactory::WriterLoopNew() {
 		}
 		writer_lock.unlock();
 
-		if (CheckTimeoutRunning) {
+		if (s_checkTimeoutRunning) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			continue;
 		}
@@ -474,7 +477,7 @@ void EQStreamFactory::WriterLoopOld() {
 		}
 		writer_lock.unlock();
 
-		if (CheckTimeoutRunning) {
+		if (s_checkTimeoutRunning) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			continue;
 		}
