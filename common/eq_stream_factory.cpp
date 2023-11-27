@@ -178,6 +178,11 @@ void EQStreamFactory::ReaderLoop()
 		}
 		reader_lock.unlock();
 
+		if (CheckTimeoutRunning) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue;
+		}
+
 		FD_ZERO(&readset);
 		FD_SET(sock, &readset);
 
@@ -320,6 +325,9 @@ void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer)
 
 void EQStreamFactory::CheckTimeout()
 {
+	CheckTimeoutRunning = true;
+	Log(Logs::General, Logs::Netcode, "[EQStreamFactory] CheckTimeout() started.");
+
 	//lock streams the entire time were checking timeouts, it should be fast.
 	std::unique_lock<std::mutex> streams_lock(MStreams, std::defer_lock);
 	std::unique_lock<std::mutex> oldstreams_lock(MOldStreams, std::defer_lock);
@@ -379,6 +387,9 @@ void EQStreamFactory::CheckTimeout()
 
 		++oldstream_itr;
 	}
+
+	Log(Logs::General, Logs::Netcode, "[EQStreamFactory] CheckTimeout() finished");
+	CheckTimeoutRunning = false;
 }
 
 void EQStreamFactory::WriterLoopNew() {
@@ -397,6 +408,11 @@ void EQStreamFactory::WriterLoopNew() {
 			break;
 		}
 		writer_lock.unlock();
+
+		if (CheckTimeoutRunning) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue;
+		}
 
 		wants_write.clear();
 		decay = DecayTimer.Check();
@@ -458,6 +474,11 @@ void EQStreamFactory::WriterLoopOld() {
 			break;
 		}
 		writer_lock.unlock();
+
+		if (CheckTimeoutRunning) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue;
+		}
 
 		old_wants_write.clear();
 
