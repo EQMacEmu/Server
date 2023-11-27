@@ -337,7 +337,7 @@ void EQStreamFactory::CheckTimeout()
 	std::lock(streams_lock, oldstreams_lock); //lock both mutexes (in order to avoid deadlock)
 
 	unsigned long now = Timer::GetCurrentTime();
-	std::map<std::pair<uint32, uint16>, std::shared_ptr<EQStream>>::iterator stream_itr;
+	EQStreamIterator stream_itr;
 
 	for (stream_itr = Streams.begin(); stream_itr != Streams.end();) {
 		std::shared_ptr<EQStream> s = stream_itr->second;
@@ -364,7 +364,7 @@ void EQStreamFactory::CheckTimeout()
 		++stream_itr;
 	}
 
-	std::map<std::pair<uint32, uint16>, std::shared_ptr<EQOldStream>>::iterator oldstream_itr;
+	EQOldStreamIterator oldstream_itr;
 
 	for (oldstream_itr = OldStreams.begin(); oldstream_itr != OldStreams.end();) {
 		std::shared_ptr<EQOldStream> s = oldstream_itr->second;
