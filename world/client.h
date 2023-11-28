@@ -68,6 +68,7 @@ public:
 	inline uint32		GetClientVersionBit() { return m_ClientVersionBit; }
 	inline bool			GetSessionLimit();
 
+
 private:
 
 	uint32	ip;
@@ -103,6 +104,7 @@ private:
 	bool HandleEnterWorldPacket(const EQApplicationPacket *app);
 	bool HandleDeleteCharacterPacket(const EQApplicationPacket *app);
 	bool HandleChecksumPacket(const EQApplicationPacket *app);
+	bool CheckCharCreateInfo(CharCreate_Struct *cc);
 
 	EQStreamInterface* const eqs;
 
@@ -110,7 +112,5 @@ private:
 	uint8	charcount;
 	bool	mule;
 };
-
-bool CheckCharCreateInfo(CharCreate_Struct *cc);
 
 #endif
