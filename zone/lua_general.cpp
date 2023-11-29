@@ -1075,6 +1075,10 @@ std::string lua_get_encounter() {
 	return quest_manager.GetEncounter();
 }
 
+float lua_get_current_expansion() {
+	return quest_manager.GetCurrentExpansion();
+}
+
 void lua_debug(std::string message) {
 	Log(Logs::General, Logs::QuestDebug, message.c_str());
 }
@@ -1270,7 +1274,7 @@ void lua_create_npc(luabind::adl::object table, float x, float y, float z, float
 	LuaCreateNPCParse(healscale, float, 0);
 	LuaCreateNPCParse(raid_target, bool, false);
 	LuaCreateNPCParse(probability, uint8, 0);
-
+	LuaCreateNPCParse(engage_notice, bool, false);
 	NPC* npc = new NPC(npc_type, nullptr, glm::vec4(x, y, z, heading), EQ::constants::GravityBehavior::Water);
 	entity_list.AddNPC(npc);
 }
@@ -1458,7 +1462,8 @@ luabind::scope lua_register_general() {
 		luabind::def("commify", &lua_commify),
 		luabind::def("get_language_name", &lua_get_language_name),
 		luabind::def("get_body_type_name", &lua_get_body_type_name),
-		luabind::def("get_consider_level_name", &lua_get_consider_level_name)
+		luabind::def("get_consider_level_name", &lua_get_consider_level_name),
+		luabind::def("get_current_expansion", &lua_get_current_expansion)
 	];
 }
 

@@ -20,6 +20,7 @@
 #include "../common/features.h"
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/races.h"
 
 #include "client.h"
 #include "groups.h"
@@ -55,6 +56,15 @@ float Mob::GetBaseEXP()
 	// AK had a permanent 20% XP increase.
 	if (RuleB(AlKabor, ServerExpBonus))
 		server_bonus += 0.20f;
+	// Thanksgiving xp bonus
+	if (RuleB(Quarm, ThanksgivingExpBonus)) {
+		if (IsFlyingCreatureRace(GetRace())) {
+			server_bonus += RuleR(Quarm, FlyingRaceExpBonus);
+		}
+		if (zone->CanCastOutdoor() && !zone->CanCastDungeon()) {
+			server_bonus += RuleR(Quarm, ThanksgivingExpBonusOutdoorAmt);
+		}
+	}
 	float npc_pct = 1.0f;
 	if (IsNPC())
 		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
@@ -70,12 +80,12 @@ float Mob::GetBaseEXP()
 		basexp = 0;
 		Log(Logs::General, Logs::EQMac, "%s was completely damaged by a damage shield/NPC. No XP for you one year.", GetName());
 	}
-	else if(player_damage == 0)
+	else if (player_damage == 0 && RuleB(Quarm, NoPlayerDamagePetPenalty))
 	{
 		basexp *= 0.25f;
 		Log(Logs::General, Logs::EQMac, "%s was not damaged by a player. Exp reduced to 25 percent of normal", GetName());
 	}
-	else if(dire_pet_damage > 0)
+	else if (dire_pet_damage > 0)
 	{
 		float pet_dmg_pct = static_cast<float>(dire_pet_damage) / total_damage;
 		float reduced_pct = 1.0f;
@@ -100,7 +110,7 @@ float Mob::GetBaseEXP()
 // this is an intermediate step to adding exp from a NPC kill and will multiply it based on levels involved and client race.  this is called AFTER group/raid splits.
 // quest rewards do not use this
 // is_split is so we can send the correct exp gain message later on.  it's true when the kill's exp is shared.  group members sometimes get solo exp
-void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 avg_level, bool is_split) {
+void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 avg_level, bool is_split, int16 highest_level) {
 
 	if(IsMule() || !killed_mob)
 		return;
@@ -124,7 +134,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (GetClass() == WARRIOR) class_mult = 10.0f / 9.0f;
 	if (GetClass() == ROGUE) class_mult = 10.0f / 9.05f;
 
-	// This logic replicates the Spetember 4 & 6 2002 patch exp modifications that granted a large
+	// This logic replicates the September 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
 	uint8 moblevel = killed_mob->GetLevel();
 	int lvl_diff = moblevel - GetLevel();
@@ -152,18 +162,36 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	}
 	else if (conlevel == CON_LIGHTBLUE)
 	{
-		lb_mult = 0.2f;
+		// ShowEQ data from late 2002 showed high light blues granting 80% and 60% then dropping off to 20%
+		// Older comments said that high light blues were 50% and low dark light blues were 25%, so this is contradictory
+		// Sony may have changed light blue exp mid-Luclin
 
-		if (GetLevel() > 40)
+		lb_mult = 0.2f;
+		if (!is_split)
+			highest_level = GetLevel();
+
+		if (highest_level)
 		{
-			// when light blue range increases to 4 and 5 levels, then highest light blues start returning 60% and 80% exp instead of 20% (data suggests this anyway)
-			// not the most elagant way to do this but it works and doesn't require new methods
-			if (GetLevelCon(GetLevel(), moblevel - 4) == CON_LIGHTBLUE)
-				lb_mult = 0.8f;
-			else if (GetLevelCon(GetLevel(), moblevel - 3) == CON_LIGHTBLUE)
-				lb_mult = 0.6f;
+			if (highest_level > 40)
+			{
+				// not the most elegant way to do this but it works and doesn't require new methods
+				if (GetLevelCon(highest_level, moblevel + 1) == CON_BLUE)
+					lb_mult = 0.8f;
+				else if (GetLevelCon(highest_level, moblevel + 2) == CON_BLUE)
+					lb_mult = 0.6f;
+			}
+			else if (highest_level > 30)
+			{
+				// how it should scale at lower levels is unknown
+				if (GetLevelCon(highest_level, moblevel + 1) == CON_BLUE)
+					lb_mult = 0.6f;
+			}
 		}
 	}
+
+	//Disables the September 4 & 6 2002 patch exp modifications that granted a large experience bonus to kills within +/-5 levels of the player for level 51+ players
+	if (!RuleB(AlKabor, EnableMobLevelModifier))
+		mlm = 1.0f;
 
 	// These rules are no longer used, but keeping them in for custom control.  They should all be 100.0 for non-custom
 	con_mult = 100.0f;
@@ -207,6 +235,27 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		{
 			Log(Logs::Moderate, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
 			add_exp *= reduction_mult;
+		}
+	}
+	if (RuleB(Quarm, EnablePetExperienceSplit))
+	{
+		if (killed_mob && !HasGroup() && !is_split)
+		{
+			int32 damage_amount = 0;
+			Mob* top_damager = killed_mob->GetDamageTop(damage_amount, false, false);
+			if (top_damager)
+			{
+				if (top_damager->IsPet())
+				{
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f)
+					{
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet takes 50 percent of experience value.", killed_mob->GetCleanName());
+
+						add_exp = (float)add_exp * 0.5f;
+					}
+				}
+			}
 		}
 	}
 
@@ -784,9 +833,34 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 	if (RuleB(AlKabor, OutOfRangeGroupXPBonus))
 		members = gs.membercount;
 
-	if (RuleB(AlKabor, VeliousGroupEXPBonuses))
+	if (RuleB(AlKabor, ClassicGroupEXPBonuses))
 	{
-		// group bonus from Jan 2001 until June 2003.
+		// group bonus from Launch (Classic) until Jan 2001 (Velious, 1 Month In).
+		switch (members)
+		{
+		case 2:
+			groupmod = 1.02f;
+			break;
+		case 3:
+			groupmod = 1.04f;
+			break;
+		case 4:
+			groupmod = 1.06f;
+			break;
+		case 5:
+			groupmod = 1.08f;
+			break;
+		case 6:
+			groupmod = 1.1f;
+			break;
+		case 7:
+			groupmod = 1.12f;
+			break;
+		}
+	}
+    else if (RuleB(AlKabor, VeliousGroupEXPBonuses))
+	{
+		// group bonus from Jan 2001 until June 2003. Technically, this is enabled the first month of Velious.
 		switch (members)
 		{
 		case 2:
@@ -803,6 +877,9 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 			break;
 		case 6:
 			groupmod = 1.2f;
+			break;
+		case 7:
+			groupmod = 1.24f;
 			break;
 		}
 	}
@@ -836,7 +913,7 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 	Log(Logs::Detail, Logs::Group, "Group Base XP: %d GroupMod: %0.2f Final XP: %0.2f", exp, groupmod, groupexp);
 
 	// 6th member is free in the split under mid-Ykesha+ era rules, but not on AK or under classic rules
-	if (!RuleB(AlKabor, Count6thGroupMember) && gs.close_membercount == 6)
+	if (!RuleB(AlKabor, Count6thGroupMember) && gs.close_membercount >= 6)
 	{
 		gs.weighted_levels -= minlevel;
 	}
@@ -907,6 +984,29 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 		}
 	}
 
+	if (RuleB(Quarm, EnablePetExperienceSplit))
+	{
+		if (killed_mob)
+		{
+			int32 damage_amount = 0;
+			Mob* top_damager = killed_mob->GetDamageTopSingleMob(damage_amount);
+			if (top_damager)
+			{
+				if (top_damager->IsPet())
+				{
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f)
+					{
+						++gs.membercount;
+						++gs.close_membercount;
+						gs.weighted_levels += top_damager->GetLevel();
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
+					}
+				}
+			}
+		}
+	}
+
 	if (gs.close_membercount == 0)
 		return false;
 
@@ -942,7 +1042,7 @@ void Group::GiveGroupSplitExp(Mob* killed_mob, uint8 maxlevel, int16 weighted_le
 								local_conlevel = Mob::GetLevelCon(cmember->GetLevel(), killed_mob->GetLevel());
 
 							Log(Logs::Detail, Logs::Group, "%s splits %0.2f with the rest of the group. Their share: %0.2f (%0.2f PERCENT)  weighted_levels: %i;  close_count: %i", cmember->GetName(), groupexp, splitgroupxp, split_percent * 100, weighted_levels, close_count);
-							cmember->AddEXP(static_cast<uint32>(splitgroupxp), local_conlevel, killed_mob, weighted_levels/close_count, close_count == 1 ? false : true);
+							cmember->AddEXP(static_cast<uint32>(splitgroupxp), local_conlevel, killed_mob, weighted_levels/close_count, close_count == 1 ? false : true, maxlevel);
 						}
 						else
 						{
@@ -1028,6 +1128,7 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 		return;
 
 	float groupexp = static_cast<float>(exp) * RuleR(Character, RaidExpMultiplier);
+	int conlevel = Mob::GetLevelCon(maxlevel, killed_mob->GetLevel());
 	Log(Logs::Detail, Logs::Group, "Raid XP: %d Final XP: %0.2f", exp, groupexp);
 
 	//Assigns XP if the qualifications are met.
@@ -1042,13 +1143,12 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 			{
 				if (cmember->IsInLevelRange(maxlevel))
 				{
-					int conlevel = Mob::GetLevelCon(cmember->GetLevel(), killed_mob->GetLevel());
 					float split_percent = static_cast<float>(cmember->GetLevel()) / weighted_levels;
 					float splitgroupxp = groupexp * split_percent;
 					if (splitgroupxp < 1)
 						splitgroupxp = 1;
 
-					cmember->AddEXP(static_cast<uint32>(splitgroupxp), conlevel, killed_mob, 0, true);
+					cmember->AddEXP(static_cast<uint32>(splitgroupxp), conlevel, killed_mob, 0, true, maxlevel);
 					Log(Logs::Detail, Logs::Group, "%s splits %0.2f with %d players in the raid. Their share is %0.2f", cmember->GetName(), groupexp, membercount, splitgroupxp);
 				}
 				else
@@ -1149,8 +1249,9 @@ void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killed
 	{
 		exploss = 0;
 	}
-	else if( killerMob )
+	else if( killerMob && spell != 940 ) //ManaConvert
 	{
+
 		if( killerMob->IsClient() )
 		{
 			exploss = 0;
@@ -1160,6 +1261,9 @@ void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killed
 			exploss = 0;
 		}
 	}
+
+	if (spell == 940) // ManaConvert causes EXP loss. Sorry.
+		return;
 
 	if (killedby == Killed_DUEL || killedby == Killed_PVP || killedby == Killed_Self)
 	{

@@ -19,6 +19,7 @@
 #ifndef CORPSE_H
 #define CORPSE_H
 
+#include <unordered_set>
 #include "mob.h"
 
 class Client;
@@ -117,12 +118,21 @@ class Corpse : public Mob {
 	void	AddLooter(Mob *who);
 	uint32	CountItems();
 	bool	CanPlayerLoot(int charid);
+	bool    ContainsLegacyItem();
+
 
 	inline void	Lock()				{ is_locked = true; }
 	inline void	UnLock()			{ is_locked = false; }
 	inline bool	IsLocked()			{ return is_locked; }
 	inline void	ResetLooter()		{ being_looted_by = 0xFFFFFFFF; }
 	inline bool	IsBeingLooted()		{ return (being_looted_by != 0xFFFFFFFF); }
+
+	/* Legacy item looting methods */
+	std::unordered_set<uint16> GetLegacyItemLooters() { return legacy_item_looter_client_id_set; }
+	inline bool IsLegacyItemLooter(uint16 client_id) { return legacy_item_looter_client_id_set.count(client_id); }
+	inline void ResetLegacyItemLooterSet() { legacy_item_looter_client_id_set.clear(); }
+	void AddLegacyItemLooter(uint16 client_id);
+	void RemoveLegacyItemLooter(uint16 client_id);
 
 	/* Mob */
 	void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
@@ -162,11 +172,13 @@ private:
 	uint32		platinum;
 	bool		player_corpse_depop; /* Sets up Corpse::Process to depop the player corpse */
 	uint32		being_looted_by; /* Determines what the corpse is being looted by internally for logic */
+	std::unordered_set<uint16> legacy_item_looter_client_id_set; /* Determines what the corpse is being looted by internally for logic */
 	uint32		rez_experience; /* Amount of experience that the corpse would rez for */
 	uint32		gm_rez_experience; /* Amount of experience that the corpse would rez for from a GM*/
 	bool		rez; /*Sets if a corpse has been rezzed or not to determine if XP should be given*/
 	bool		become_npc;
 	int			allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
+	int			initial_allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
 	Timer		corpse_decay_timer; /* The amount of time in millseconds in which a corpse will take to decay (Depop/Poof) */
 	Timer		corpse_rez_timer; /* The amount of time in millseconds in which a corpse can be rezzed */
 	Timer		corpse_delay_timer;

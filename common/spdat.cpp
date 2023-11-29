@@ -78,6 +78,8 @@
 #include "classes.h"
 #include "races.h"
 #include "spdat.h"
+#include "rulesys.h"
+#include "eq_constants.h"
 
 #ifndef WIN32
 #include <stdlib.h>
@@ -272,6 +274,15 @@ bool IsLullSpell(uint16 spell_id)
 bool IsMemBlurSpell(uint16 spell_id)
 {
 	return IsEffectInSpell(spell_id, SE_WipeHateList);
+}
+
+bool IsBardAOEDamageSpell(uint16 spell_id)
+{
+	if (IsValidSpell(spell_id) && GetSpellLevel(spell_id, BARD) < 100 && IsDamageSpell(spell_id) && spells[spell_id].aoerange > 0)
+	{
+		return true;
+	}
+	return false;
 }
 
 bool IsAEMemBlurSpell(uint16 spell_id)
@@ -1173,6 +1184,13 @@ int32 GetFuriousBash(uint16 spell_id)
 {
 	if (!IsValidSpell(spell_id))
 		return 0;
+
+	if (RuleB(AlKabor, EnableEraItemRules))
+	{
+		//Disable Focus Effects before we enter Luclin.
+		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)
+			return 0;
+	}
 
 	for (int i = 0; i < EFFECT_COUNT; ++i)
 		if (spells[spell_id].effectid[i] == SE_SpellHateMod)

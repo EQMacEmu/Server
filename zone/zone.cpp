@@ -161,8 +161,8 @@ bool Zone::LoadZoneObjects() {
 	std::string query = StringFormat("SELECT id, zoneid, xpos, ypos, zpos, heading, "
                                     "itemid, charges, objectname, type, icon, size, "
                                     "solid, incline FROM object "
-                                    "WHERE zoneid = %i",
-                                    zoneid);
+                                    "WHERE zoneid = %i AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0))",
+                                    zoneid, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
     auto results = database.QueryDatabase(query);
     if (!results.Success()) {
 		LogError("Error Loading Objects from DB: {} ", results.ErrorMessage().c_str());
@@ -561,7 +561,9 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 				faction_required, 
 				level_required,
 				classes_required, 
-				quantity 
+				quantity,
+				min_expansion,
+				max_expansion
 			FROM 
 				merchantlist 
 			WHERE 
@@ -585,6 +587,8 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 		ml.level_required = static_cast<int8>(std::stoul(row[3]));
         ml.classes_required = std::stoul(row[4]);
 		ml.quantity = static_cast<int8>(std::stoul(row[5]));
+		ml.min_expansion = atof(row[6]);
+		ml.max_expansion = atof(row[7]);
 
 		if(ml.quantity > 0)
 			ml.qty_left = ml.quantity;
@@ -609,7 +613,9 @@ void Zone::GetMerchantDataForZoneLoad() {
 				faction_required,
 				level_required,
 				classes_required,
-				quantity
+				quantity,
+				min_expansion,
+				max_expansion
 			FROM 
 				merchantlist 
 			WHERE 
@@ -689,6 +695,8 @@ void Zone::GetMerchantDataForZoneLoad() {
 			mle.qty_left = mle.quantity;
 		else
 			mle.qty_left = 0;
+		mle.min_expansion = atof(row[7]);
+		mle.max_expansion = atof(row[8]);
 		merchant_list->second.push_back(mle);
 	}
 }
@@ -702,7 +710,7 @@ void Zone::ClearMerchantLists()
 									" spawn2 AS s2 "
 									" WHERE nt.merchant_id = ml.merchantid "
 									" AND nt.id = se.npcid AND se.spawngroupid = s2.spawngroupid "
-									" AND s2.zone = '%s' "
+									" AND s2.zone = '%s' AND ((%.2f >= ml.min_expansion AND %.2f < ml.max_expansion) OR (ml.min_expansion = 0 AND ml.max_expansion = 0)) "
 									" GROUP by nt.id", GetShortName());
 
 	auto results = database.QueryDatabase(query);
@@ -824,6 +832,8 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	tradevar = 0;
 	lootvar = 0;
 
+	memset(&last_quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+
 	short_name = strcpy(new char[strlen(in_short_name)+1], in_short_name);
 	std::string tmp = short_name;
 	for (auto & c : tmp) c = tolower(c);
@@ -860,11 +870,15 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	autoshutdown_timer.Start(AUTHENTICATION_TIMEOUT * 1000, false);
 	Weather_Timer = new Timer(60000);
 	Weather_Timer->Start();
+	EndQuake_Timer = new Timer(60000);
+	EndQuake_Timer->Disable();
 	LogInfo("The next weather check for zone: {} will be in {} seconds.", short_name, Weather_Timer->GetRemainingTime() / 1000);
 	zone_weather = 0;
 	weather_intensity = 0;
 	blocked_spells = nullptr;
 	totalBS = 0;
+	reducedspawntimers = false;
+	trivial_loot_code = false;
 	aas = nullptr;
 	totalAAs = 0;
 	gottime = false;
@@ -921,6 +935,7 @@ Zone::~Zone() {
 	safe_delete_array(short_name);
 	safe_delete_array(long_name);
 	safe_delete(Weather_Timer);
+	safe_delete(EndQuake_Timer);
 	ClearNPCEmotes(&NPCEmoteList);
 	zone_point_list.Clear();
 	entity_list.Clear();
@@ -1124,7 +1139,7 @@ bool Zone::LoadZoneCFG(const char* filename, bool DontLoadDefault)
 	safe_delete_array(map_name);
 
 	if (!database.GetZoneCFG(database.GetZoneID(filename), &newzone_data, can_bind,
-		can_combat, can_levitate, can_castoutdoor, is_city, zone_type, default_ruleset, &map_name, can_bind_others, skip_los, drag_aggro, can_castdungeon, pull_limit))
+		can_combat, can_levitate, can_castoutdoor, is_city, zone_type, default_ruleset, &map_name, can_bind_others, skip_los, drag_aggro, can_castdungeon, pull_limit,reducedspawntimers, trivial_loot_code))
 	{
 		LogError("Error loading the Zone Config.");
 		return false;
@@ -1270,6 +1285,17 @@ bool Zone::Process() {
 	{
 		Weather_Timer->Disable();
 		this->ChangeWeather();
+	}
+
+	if (EndQuake_Timer->Check())
+	{
+		uint32 cur_time = Timer::GetTimeSeconds();
+		bool should_broadcast_notif = zone->ResetEngageNotificationTargets(RuleI(Quarm, QuakeRepopDelay) * 1000); // if we reset at least one, this is true
+		if (should_broadcast_notif)
+		{
+			entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the standard (GM-Enforced Rotations) ruleset, also in the /motd", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+		}
+		EndQuake_Timer->Disable();
 	}
 
 	if(qGlobals)
@@ -1454,6 +1480,34 @@ void Zone::StartShutdownTimer(uint32 set_time) {
 		autoshutdown_timer.Start(set_time, false);
 	}
 }
+bool Zone::IsReducedSpawnTimersEnabled() 
+{
+	if (!RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		return false;
+	}
+	return reducedspawntimers;
+}
+
+uint16 Zone::GetPullLimit()
+{
+	if (!RuleB(Quarm, EnableRespawnReductionSystem))
+	{
+		return pull_limit;
+	}
+
+	if (IsReducedSpawnTimersEnabled())
+	{
+		if (CanCastDungeon())
+		{
+			return RuleI(Quarm, RespawnReductionDungeonPullLimit);
+		}
+		return RuleI(Quarm, RespawnReductionNewbiePullLimit);
+	}
+
+
+	return RuleI(Quarm, RespawnReductionStandardPullLimit);
+}
 
 bool Zone::Depop(bool StartSpawnTimer) {
 	std::map<uint32,NPCType *>::iterator itr;
@@ -1514,6 +1568,24 @@ void Zone::RepopClose(const glm::vec4& client_position, uint32 repop_distance)
 		Log(Logs::General, Logs::None, "Error in Zone::Repop: database.PopulateZoneSpawnList failed");
 
 	entity_list.UpdateAllTraps(true, true);
+}
+
+bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
+{
+	bool reset_at_least_one_spawn2 = false;
+	LinkedListIterator<Spawn2*> iterator(spawn2_list);
+
+	iterator.Reset();
+	while (iterator.MoreElements()) {
+		Spawn2* pSpawn2 = iterator.GetData();
+		if (pSpawn2->IsRaidTargetSpawnpoint())
+		{
+			reset_at_least_one_spawn2 = true;
+			pSpawn2->Repop(in_respawn_timer); // milliseconds
+		}
+		iterator.Advance();
+	}
+	return true;
 }
 
 void Zone::Repop() {
@@ -1652,6 +1724,99 @@ ZonePoint* Zone::GetClosestZonePoint(const glm::vec3& location, const char* to_n
 	if(to_name == nullptr)
 		return GetClosestZonePointWithoutZone(location.x, location.y, location.z, client, max_distance);
 	return GetClosestZonePoint(location, database.GetZoneID(to_name), client, max_distance);
+}
+
+ZonePoint* Zone::GetClosestTargetZonePointSameZone(float x, float y, float z, Client* client, float max_distance) {
+	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
+	ZonePoint* closest_zp = nullptr;
+	float closest_dist = FLT_MAX;
+	float max_distance2 = max_distance * max_distance;
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		ZonePoint* zp = iterator.GetData();
+		uint32 mask_test = client->ClientVersionBit();
+
+		if (!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_zone_id != GetZoneID())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_x == -BEST_Z_INVALID || zp->target_x == BEST_Z_INVALID || zp->target_y == -BEST_Z_INVALID || zp->target_y == BEST_Z_INVALID)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float delta_x = zp->target_x - x;
+		float delta_y = zp->target_y - y;
+
+		float dist = delta_x * delta_x + delta_y * delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+		if (dist < closest_dist)
+		{
+			closest_zp = zp;
+			closest_dist = dist;
+		}
+		iterator.Advance();
+	}
+	if (closest_dist > max_distance2)
+		closest_zp = nullptr;
+
+	return closest_zp;
+}
+
+
+ZonePoint* Zone::GetClosestZonePointSameZone(float x, float y, float z, Client* client, float max_distance) {
+	LinkedListIterator<ZonePoint*> iterator(zone_point_list);
+	ZonePoint* closest_zp = nullptr;
+	float closest_dist = FLT_MAX;
+	float max_distance2 = max_distance * max_distance;
+	iterator.Reset();
+	while (iterator.MoreElements())
+	{
+		ZonePoint* zp = iterator.GetData();
+		uint32 mask_test = client->ClientVersionBit();
+
+		if (!(zp->client_version_mask & mask_test))
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->target_zone_id != GetZoneID())
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		if (zp->x == -BEST_Z_INVALID || zp->x == BEST_Z_INVALID || zp->y == -BEST_Z_INVALID || zp->y == BEST_Z_INVALID)
+		{
+			iterator.Advance();
+			continue;
+		}
+
+		float delta_x = zp->x - x;
+		float delta_y = zp->y - y;
+
+		float dist = delta_x * delta_x + delta_y * delta_y;///*+(zp->z-z)*(zp->z-z)*/;
+		if (dist < closest_dist)
+		{
+			closest_zp = zp;
+			closest_dist = dist;
+		}
+		iterator.Advance();
+	}
+	if (closest_dist > max_distance2)
+		closest_zp = nullptr;
+
+	return closest_zp;
 }
 
 ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Client* client, float max_distance) {

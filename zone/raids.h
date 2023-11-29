@@ -52,8 +52,8 @@ enum {
 	RaidCommandRemoveLooter = 24, //in use
 };
 
-#define MAX_RAID_GROUPS 10
-#define MAX_RAID_MEMBERS 60
+#define MAX_RAID_GROUPS 12
+#define MAX_RAID_MEMBERS 72
 
 struct RaidMember{
 	char membername[64];
@@ -98,6 +98,7 @@ public:
 	uint8	GroupCount(uint32 gid);
 	uint8	RaidCount();
 	uint32	GetHighestLevel();
+	uint32	GetHighestLevel2();
 	uint32	GetLowestLevel();
 	uint32	GetGroup(const char *name);
 	uint32	GetGroup(Client *c);

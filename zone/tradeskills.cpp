@@ -140,6 +140,17 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 			return;
 		}
 	}
+	auto itr = spec.onsuccess.begin();
+	while (itr != spec.onsuccess.end())
+	{
+		auto tsitem = database.GetItem(itr->first);
+		if (!tsitem)
+		{
+			user->Message(CC_Red, "This combine would result in an item that is out of era or unavailable.");
+			return;
+		}
+		itr++;
+	}
 
 	//now clean out the containers.
 	if(worldcontainer) {
@@ -735,6 +746,8 @@ bool Client::CanIncreaseTradeskill(EQ::skills::SkillType tradeskill) {
 	uint16 maxskill = MaxSkill(tradeskill);
 
 	if (rawskill >= maxskill) //Max skill sanity check
+		return false;
+	if (rawskill >= RuleI(Quarm, MaxTradeskillCap)) //Max skill sanity check
 		return false;
 
 	uint8 Baking	= (GetRawSkill(EQ::skills::SkillBaking) > 200) ? 1 : 0;

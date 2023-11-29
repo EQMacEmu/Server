@@ -101,6 +101,11 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 		return;
 	}
 
+	if (share && splitter && splitter->IsSelfFound()) {
+		splitter->Message(CC_Red, "The /split function is not allowed in a self found group.");
+		return;
+	}
+
 	uint8 member_count = 0;
 
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
@@ -786,18 +791,34 @@ uint8 Group::GroupCount() {
 
 uint32 Group::GetHighestLevel()
 {
-uint32 level = 1;
-uint32 i;
+	uint32 level = 1;
+	uint32 i;
 	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
 	{
 		if (members[i])
 		{
-			if(members[i]->GetLevel() > level)
+			if (members[i]->GetLevel() > level)
 				level = members[i]->GetLevel();
 		}
 	}
 	return level;
 }
+
+uint32 Group::GetHighestLevel2()
+{
+	uint32 level = 1;
+	uint32 i;
+	for (i = 0; i < MAX_GROUP_MEMBERS; i++)
+	{
+		if (members[i] && members[i]->IsClient())
+		{
+			if (members[i]->CastToClient()->GetLevel2() > level)
+				level = members[i]->CastToClient()->GetLevel2();
+		}
+	}
+	return level;
+}
+
 uint32 Group::GetLowestLevel()
 {
 uint32 level = 255;
@@ -1246,4 +1267,22 @@ bool Group::HasOOZMember(std::string& member)
 	}
 
 	return false;
+}
+
+std::string Group::GetMemberNamesAsCsv(const std::vector<std::string>& excludes)
+{
+	std::string names;
+	for (uint8 i = 0; i < MAX_GROUP_MEMBERS; ++i) {
+		if (membername[i][0] == '\0')
+			continue;
+
+		if (std::find(excludes.begin(), excludes.end(), membername[i]) != excludes.end())
+			continue;
+
+		if (!names.empty())
+			names += ",";
+
+		names += membername[i];
+	}
+	return names;
 }

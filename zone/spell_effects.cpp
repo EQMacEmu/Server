@@ -583,10 +583,21 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				if (buffslot < 0)
 					break;
 
+				if (IsNPC())
+				{
+					if (CastToNPC()->HasEngageNotice())
+					{
+						if (caster)
+							caster->Message(CC_Red, "That creature is too powerful for your charm.");
+						break;
+					}
+				}
+
 				if(IsDireCharmSpell(spell_id))
 				{
 					dire_charmed = true;
 				}
+
 
 				Mob *my_pet = GetPet();
 				if(IsNPC())
@@ -609,7 +620,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				entity_list.RemoveFromNPCTargets(this);
 				// charmed players can have hate lists.  So remove them also from their hatelist.
 				entity_list.RemoveFromClientHateLists(this);
-				WipeHateList();
+				WipeHateList(true);
 
 				EndShield();
 
@@ -980,6 +991,15 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Mesmerize");
 #endif
+				if (IsNPC())
+				{
+					if (CastToNPC()->HasEngageNotice())
+					{
+						if (caster)
+							caster->Message(CC_Red, "That creature is too powerful for your magic.");
+						break;
+					}
+				}
 				Mesmerize();
 				break;
 			}
@@ -1083,6 +1103,14 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 			case SE_SummonPet:
 			case SE_Familiar:
 			{
+				if (!caster)
+					break;
+
+				if (caster->GetHP() < 0)
+				{
+					break;
+				}
+
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Summon %s: %s", (effect==SE_Familiar)?"Familiar":"Pet", spell.teleport_zone);
 #endif
@@ -1125,6 +1153,15 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if(IsNPC() && (!IsPet() || (IsCharmedPet() && GetPetOrder() != SPO_Guard)))	// see Song of Highsun - sends mob home
 				{
+					if (IsNPC())
+					{
+						if (CastToNPC()->HasEngageNotice())
+						{
+							if (caster)
+								caster->Message(CC_Red, "You can't seem to send this target home... they're already there.");
+							break;
+						}
+					}
 					Gate();
 				}
 				// shadow step is handled by client already, nothing required
@@ -1254,11 +1291,22 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Memory Blur: %d", effect_value);
 #endif
+
 				if (IsMezSpell(spell_id))
 				{
 					if (current_buff_refresh)
 					{
 						Log(Logs::General, Logs::Spells, "Spell %d cast on %s is a mez the entity is already debuffed with. Skipping Mem Blur component.", spell_id, GetName());
+						break;
+					}
+				}
+
+				if (IsNPC())
+				{
+					if (CastToNPC()->HasEngageNotice())
+					{
+						if(caster)
+						caster->Message(CC_Red, "You can't seem to wipe the mind of this target...");
 						break;
 					}
 				}
@@ -1303,7 +1351,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				{
 					if(IsAIControlled())
 					{
-						WipeHateList();
+						WipeHateList(true);
 					}
 					Message(CC_Red, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
 				}
@@ -2815,7 +2863,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 				{
 					if(IsAIControlled())
 					{
-						WipeHateList();
+						WipeHateList(true);
 					}
 					Message(CC_Red, "Your mind fogs. Who are my friends? Who are my enemies?... it was all so clear a moment ago...");
 				}
@@ -2867,6 +2915,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			}
 
 			case SE_Lull: {
+
 				/* Lulls have a chance to end early.  Chance is not affected by MR or charisma.
 				   On Live, fade chance per tick was about 2% per tick on white cons, 7% on a +5
 				  a red con, 0% on a -5 blue, and 1% on a -1 blue.
@@ -3252,7 +3301,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 					entity_list.RemoveDotsFromNPCs(this);
 					//entity_list.RemoveDebuffsFromNPCs(this);
 					entity_list.RemoveFromNPCTargets(this);
-					WipeHateList();
+					WipeHateList(true);
 					if (owner && owner->IsClient() && !GetSummonerID() && (!owner->GetOwnerID() || !owner->IsCharmed() || (owner->GetOwner() && owner->GetOwner()->IsClient())))
 					{
 						// PoP ench charms had a rare chance to attack non-enchanter targets on break (might be just CoD?)
@@ -4197,6 +4246,12 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 		(casting_spell_slot == EQ::spells::CastingSlot::Item || casting_aa > 0))
 		return 0;
 
+	if (RuleB(AlKabor, EnableEraItemRules))
+	{
+		//Disable Focus Effects before we enter Luclin.
+		if (RuleR(World, CurrentExpansion) < (float)ExpansionEras::LuclinEQEra)
+			return 0;
+	}
 	int16 realTotal = 0;
 	int16 realTotal2 = 0;
 	int16 realTotal3 = 0;

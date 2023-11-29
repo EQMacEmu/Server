@@ -79,6 +79,13 @@ void handle_npc_event_trade(QuestInterface *parse, lua_State* L, NPC* npc, Mob *
 
 	lua_pushinteger(L, std::stoul(parse->GetVar("copper." + ident.str())));
 	lua_setfield(L, -2, "copper");
+
+	if (init && init->IsClient())
+	{
+		lua_pushinteger(L, init->CastToClient()->IsSelfFound() != 1 && init->CastToClient()->IsSoloOnly() != 1 ? 1 : 0);
+		lua_setfield(L, -2, "enable_multiquest");
+	}
+
 	lua_setfield(L, -2, "trade");
 }
 

@@ -1,9 +1,6 @@
 -- Spell 36 'Gate'
 UPDATE spells_new SET effect_base_value1 = 1 WHERE id = 36;
 
--- Spell 45 'Pacify'
-UPDATE spells_new SET buffduration = 60 WHERE id = 45;
-
 -- Spell 55 'Cornucopia'
 -- Spell 56 'Everfount'
 UPDATE spells_new SET formula1 = 110 WHERE id IN (55, 56);

@@ -31,6 +31,8 @@ class QueryServ {
 		void SendQuery(std::string Query);
 		void PlayerLogEvent(int Event_Type, int Character_ID, std::string Event_Desc);
 
+		void QSFirstToEngageEvent(uint32 char_id, std::string guild_name, std::string mob_name, bool engaged);
+
 		void QSQGlobalUpdate(uint32 char_id, uint32 zone_id, const char* varname, const char* newvalue);
 		void QSAAPurchases(uint32 char_id, uint32 zone_id, char aa_type[8], char aa_name[128], uint32 aa_id, uint32 cost);
 		void QSAARate(uint32 char_id, uint32 aapoints, uint32 last_unspentAA);
@@ -51,6 +53,7 @@ class QueryServ {
 		void QSBazaarAudit(const char *seller, const char *buyer, const char *itemName, int itemid, int quantity, int totalCost);
 		void QSCoinMove(uint32 from_id, uint32 to_id, uint32 npcid, int32 to_slot, uint32 amount, uint32 cointype = 0);
 		void QSGroundSpawn(uint32 characterid, int16 itemid, uint8 quantity, int16 in_bag, uint16 zoneid, bool dropped, bool forced = false);
+		void QSLogKillSteal(NPC* const npc, uint32 zoneid, Client* const client, const SInitialEngageEntry& engageids);
 };
 
 #endif /* QUERYSERV_ZONE_H */

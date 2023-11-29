@@ -990,6 +990,20 @@ uint32 Raid::GetHighestLevel()
 	return highlvl;
 }
 
+uint32 Raid::GetHighestLevel2()
+{
+	uint32 highlvl = 0;
+	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if (members[x].member != nullptr && members[x].member->IsClient())
+		{
+			if (members[x].member->CastToClient()->GetLevel2() > highlvl)
+				highlvl = members[x].member->CastToClient()->GetLevel2();
+		}
+	}
+	return highlvl;
+}
+
 uint32 Raid::GetLowestLevel()
 {
 	uint32 lowlvl = 1000;

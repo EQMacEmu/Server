@@ -1,0 +1,1 @@
+ALTER TABLE `items` ADD COLUMN `legacy_item` tinyint(4) NOT NULL DEFAULT 0 AFTER `max_expansion`

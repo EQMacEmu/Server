@@ -442,7 +442,7 @@ Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 po
 	SetPetSpellID(spell_id);
 	summonerid = owner->GetID();
 	taunting = true;
-	if (owner->IsClient())
+	if (owner && owner->IsClient())
 		summonedClientPet = true;
 
 	// melee routines use these; modifying will affect NPC performance significantly.  See http://www.eqemulator.org/forums/showthread.php?t=38708
@@ -531,10 +531,10 @@ Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 po
 	}
 
 	// temporary pets, Unswervering Hammer of Faith and Flaming Sword of Xuzl
-	if (typeofpet == petHatelist)
+	if (typeofpet == petHatelist && owner)
 	{
 		taunting = false;
-		Mob *tar = owner->GetTarget();
+		Mob *tar = owner ? owner->GetTarget() : nullptr;
 		if (tar && DistanceSquaredNoZ(owner->GetPosition(), tar->GetPosition()) < (200 * 200) && IsAttackAllowed(tar)
 			&& (tar->GetZ() - owner->GetZ() < 75) && (tar->GetZ() - owner->GetZ() > -75)
 		)

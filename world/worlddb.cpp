@@ -83,7 +83,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 		cs->race[char_num] = atoi(row[3]);
 		cs->gender[char_num] = atoi(row[2]);
 		cs->deity[char_num] = atoi(row[6]);
-		cs->zone[char_num] = atoi(row[16]);
+		cs->zone[char_num] = database.GetClientZoneID((uint16)atoi(row[16]));
 		cs->face[char_num] = atoi(row[15]);
 		cs->haircolor[char_num] = atoi(row[9]);
 		cs->beardcolor[char_num] = atoi(row[10]);
@@ -231,6 +231,21 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 	}
 
 	return;
+}
+
+void WorldDatabase::ClearHardcoreCharacters(int AccID) {
+	/* Get Character Info */
+	std::string cquery = StringFormat(
+		"SELECT                     "
+		"`id`,                      "  // 0
+		"name                      "  // 1
+		"FROM                       "
+		"character_data             "
+		"WHERE `account_id` = %i AND e_hardcore_death_time != 0 ORDER BY `name`", AccID);
+	auto results = database.QueryDatabase(cquery); int char_num = 0;
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		database.DeleteCharacter(row[1]);
+	}
 }
 
 int WorldDatabase::MoveCharacterToBind(int CharID, uint8 bindnum) {

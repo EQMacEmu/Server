@@ -386,6 +386,7 @@ void WorldServer::Process() {
 		}
 		case ServerOP_Motd: {
 			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
+
 			auto outapp = new EQApplicationPacket(OP_MOTD);
 			char tmp[500] = {0};
 			sprintf(tmp, "%s", smotd->motd);
@@ -742,11 +743,16 @@ void WorldServer::Process() {
 		}
 		case ServerOP_GroupInvite: {
 			// A player in another zone invited a player in this zone to join their group.
-			GroupInvite_Struct* gis = (GroupInvite_Struct*)pack->pBuffer;
+			ServerGroupInvite_Struct* gis = (ServerGroupInvite_Struct*)pack->pBuffer;
 
 			Mob *Invitee = entity_list.GetMob(gis->invitee_name);
 
-			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped())
+			uint8 is_null_flag = 0;
+
+			if (Invitee && Invitee->IsClient() && Invitee->CastToClient()->GetBaseClass() == 0)
+				is_null_flag = 1;
+
+			if(Invitee && Invitee->IsClient()  && !Invitee->IsRaidGrouped() && gis->is_null == is_null_flag && Invitee->CastToClient()->IsSelfFound() == gis->self_found && !Invitee->CastToClient()->IsSoloOnly())
 			{
 				auto outapp = new EQApplicationPacket(OP_GroupInvite, sizeof(GroupInvite_Struct));
 				memcpy(outapp->pBuffer, gis, sizeof(GroupInvite_Struct));
@@ -1841,6 +1847,31 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_QuakeImminent:
+		{
+			if (zone)
+			{
+				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
+				memcpy(&zone->last_quake_struct, seis, sizeof(ServerEarthquakeImminent_Struct));
+
+				uint32 cur_time = Timer::GetTimeSeconds();
+				if (zone->last_quake_struct.start_timestamp >= cur_time)
+				{
+					bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeRepopDelay)) * 1000); // if we reset at least one, this is true
+					if (should_broadcast_notif)
+					{
+						entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the [%s] ruleset, also listed in the /motd.", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+					}
+				}
+				if (zone->EndQuake_Timer)
+				{
+					zone->EndQuake_Timer->Enable();
+					zone->EndQuake_Timer->Start((RuleI(Quarm, QuakeRepopDelay) + RuleI(Quarm, QuakeEndTimeDuration)) * 1000);
+				}
+			}
+			break;
+		}
+
 		default: {
 			std::cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			std::cout << " size:" << pack->size << std::endl;
@@ -1889,6 +1920,39 @@ bool WorldServer::SendChannelMessage(Client* from, const char* to, uint8 chan_nu
 	safe_delete(pack);
 	return ret;
 }
+
+bool WorldServer::SendChannelMessage(const char* from, uint8 chan_num, uint32 guilddbid, uint8 language, uint8 lang_skill, const char* message, ...) {
+	if (!worldserver.Connected())
+		return false;
+	char buffer[512];
+
+	memcpy(buffer, message, 512);
+	buffer[511] = '\0';
+
+	auto pack = new ServerPacket(ServerOP_ChannelMessage, sizeof(ServerChannelMessage_Struct) + strlen(buffer) + 1);
+	ServerChannelMessage_Struct* scm = (ServerChannelMessage_Struct*)pack->pBuffer;
+
+	if (from == 0) {
+		strcpy(scm->from, "ZServer");
+		scm->fromadmin = 0;
+	}
+	else {
+		strn0cpy(scm->from, from, sizeof(scm->from));
+	}
+	scm->to[0] = 0;
+	scm->deliverto[0] = '\0';
+	scm->chan_num = chan_num;
+	scm->guilddbid = guilddbid;
+	scm->language = language;
+	scm->lang_skill = lang_skill;
+	strcpy(scm->message, buffer);
+
+	pack->Deflate();
+	bool ret = SendPacket(pack);
+	safe_delete(pack);
+	return ret;
+}
+
 
 bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, uint32 type, const char* message, ...) {
 	va_list argptr;

@@ -46,7 +46,9 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 
 	user = 0;
 	last_user = 0;
-
+	m_character_id = 0;
+	m_ssf_ruleset = false;
+   
 	// Initialize members
 	m_id = id;
 	m_type = type;
@@ -54,6 +56,7 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 	m_inuse = false;
 	m_inst = nullptr;
 	m_ground_spawn=false;
+	m_is_player_drop = false;
 	// Copy object data
 	memcpy(&m_data, &object, sizeof(Object_Struct));
 	if (inst) {
@@ -73,9 +76,12 @@ Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object,
 Object::Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,float max_y,float min_y,float z,float heading,uint32 respawntimer)
  : respawn_timer(respawntimer), decay_timer(RuleI(Groundspawns, DecayTime)), random_timer(respawntimer)
 {
+	m_is_player_drop = false;
 
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 	m_max_x=max_x;
 	m_max_y=max_y;
 	m_min_x=min_x;
@@ -111,6 +117,8 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 {
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+	m_ssf_ruleset = false;
 
 	// Initialize members
 	m_id	= 0;
@@ -119,6 +127,7 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 	m_icon	= 0;
 	m_inuse	= false;
 	m_ground_spawn = false;
+	m_is_player_drop = true;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
 	m_data.heading = client->GetHeading();
@@ -160,9 +169,16 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 	}
 }
 
-Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time)
+Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float heading, uint32 decay_time, bool is_player_drop, Client* client)
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
 {
+	if (is_player_drop && client) {
+		m_character_id = client->CharacterID();
+		m_ssf_ruleset = client->IsSoloOnly() || client->IsSelfFound();
+	} else {
+		m_character_id = 0;
+		m_ssf_ruleset = false;
+	}
 	user = 0;
 	last_user = 0;
 
@@ -172,6 +188,7 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 	m_type	= OT_DROPPEDITEM;
 	m_icon	= 0;
 	m_inuse	= false;
+	m_is_player_drop = is_player_drop;
 	m_ground_spawn = false;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
@@ -222,11 +239,16 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 	}
 }
 
+
+
 Object::Object(const char *model, float x, float y, float z, float heading, uint8 type, uint32 decay_time)
  : respawn_timer(0), decay_timer(decay_time), random_timer(0)
 {
 	user = 0;
 	last_user = 0;
+	m_character_id = 0;
+   
+	m_ssf_ruleset = false;
 	EQ::ItemInstance* inst = new EQ::ItemInstance(ItemInstWorldContainer);
 
 	// Initialize members
@@ -236,6 +258,7 @@ Object::Object(const char *model, float x, float y, float z, float heading, uint
 	m_icon	= 0;
 	m_inuse	= false;
 	m_ground_spawn = false;
+	m_is_player_drop = false;
 	// Set as much struct data as we can
 	memset(&m_data, 0, sizeof(Object_Struct));
 	m_data.heading = heading;
@@ -405,7 +428,9 @@ void Object::CreateSpawnPacket(EQApplicationPacket* app)
 	safe_delete_array(app->pBuffer);
 	app->pBuffer = new uchar[sizeof(Object_Struct)];
 	app->size = sizeof(Object_Struct);
+	Object_Struct* objData = (Object_Struct*)app->pBuffer;
 	memcpy(app->pBuffer, &m_data, app->size);
+	objData->zone_id = database.GetClientZoneID(objData->zone_id);
 }
 
 void Object::CreateDeSpawnPacket(EQApplicationPacket* app)
@@ -494,6 +519,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 	{
 		if (m_inst && sender) 
 		{
+
 			// if there is a lore conflict - don't allow the item to be picked up
 			if(sender->CheckLoreConflict(m_inst->GetItem())) 
 			{
@@ -606,6 +632,13 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 		sender->QueuePacket(outapp);
 		safe_delete(outapp);
 
+		if (sender->Admin() > 0)
+		{
+			std::string msg = "You can't interact with a tradeskill container as a GM. Yes. We thought of this one, too.";
+			sender->Message(CC_Red, msg.c_str());
+			return false;
+		}
+
 		//if the object already had a user, we are done
 		if (user != 0)
 		{
@@ -622,6 +655,14 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 
 		if (m_inst && m_inst->IsType(EQ::item::ItemClassBag))
 		{
+			if (sender->IsSoloOnly())
+			{
+				m_inst->Clear();
+			}
+			else if (sender->IsSelfFound())
+			{
+				m_inst->Clear();
+			}
 			if (RuleB(AlKabor, NoDropRemoveTradeskill))
 			{
 				//Clear out no-drop and no-rent items first
@@ -747,8 +788,8 @@ Ground_Spawns* ZoneDatabase::LoadGroundSpawns(uint32 zone_id, Ground_Spawns* gs)
                                     "min_x, min_y, heading, name, "
                                     "item, max_allowed, respawn_timer "
                                     "FROM ground_spawns "
-                                    "WHERE zoneid = %i "
-                                    "LIMIT 50", zone_id);
+                                    "WHERE zoneid = %i AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
+                                    "LIMIT 50", zone_id, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		return gs;

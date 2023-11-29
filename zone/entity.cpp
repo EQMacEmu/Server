@@ -1327,7 +1327,7 @@ uint16 EntityList::GetFreeID()
 	if (free_ids.empty()) { // hopefully this will never be true
 		// The client has a hard cap on entity count some where
 		// Neither the client or server performs well with a lot entities either
-		uint16 newid = 1500;
+		uint16 newid = 4997; // Client's g_pEQP_IDArray is memset by 20000. However, there are many cases where IDs checked to be <= 4998u. We adhere to this value minus 1, just to be sure.
 		while (true) {
 			newid++;
 			if (GetID(newid) == nullptr)

@@ -878,10 +878,17 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 		// process effect 149.  this is what overwrites symbol when aego lands but it happens after the buff lands
 		ProcessBuffOverwriteEffects(spell_id);
 
+		int i = 0;
+
 		// buff can stack but FindAffectSlot only overwrote the first slot and we may need to remove more buffs in higher slot numbers
 		do
 		{
 			FindAffectSlot(caster, spell_id, &slot, 2); // remove_replaced = 2 sends buff fade packet to remove buff on client too
+
+			if (i > 100)
+				break;
+			i++;
+
 		} while (slot > emptyslot);
 	}
 

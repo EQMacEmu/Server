@@ -208,7 +208,7 @@ Clientlist::Clientlist(int ChatPort) {
 	}
 }
 
-Client::Client(EQStream *eqs) {
+Client::Client(std::shared_ptr<EQStream> eqs) {
 
 	ClientStream = eqs;
 
@@ -326,7 +326,7 @@ void Clientlist::CheckForStaleConnections(Client *c) {
 
 void Clientlist::Process()
 {
-	EQStream *eqs;
+	std::shared_ptr<EQStream> eqs;
 
 	// Pop sets PutInUse() for the stream.
 	while ((eqs = chatsf->Pop())) {
@@ -1025,7 +1025,7 @@ void Client::SendChannelMessage(std::string Message)
 			}
 			if(char_ent)
 			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				if(char_ent->Level < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;
@@ -1138,7 +1138,7 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 			}
 			if(char_ent)
 			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
+				if(char_ent->Level < RuleI(Chat, KarmaGlobalChatLevelLimit))
 				{
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;

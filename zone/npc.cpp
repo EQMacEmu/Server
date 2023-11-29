@@ -35,6 +35,7 @@
 #include "aa.h"
 #include "client.h"
 #include "entity.h"
+#include "guild_mgr.h"
 #include "npc.h"
 #include "string_ids.h"
 #include "spawn2.h"
@@ -154,6 +155,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	swarmInfoPtr = nullptr;
 	spellscale = d->spellscale;
 	healscale = d->healscale;
+	guild_fte = GUILD_NONE;
 
 	pAggroRange = d->aggroradius;
 	pAssistRange = d->assistradius;
@@ -247,8 +249,6 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	entity_list.MakeNameUnique(name);
 
 	npc_aggro = d->npc_aggro;
-
-	AI_Start();
 
 	d_melee_texture1 = d->d_melee_texture1;
 	d_melee_texture2 = d->d_melee_texture2;
@@ -392,6 +392,10 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	raid_fte = 0;
 	group_fte = 0;
 	fte_charid = 0;
+
+	solo_raid_fte = 0;
+	solo_group_fte = 0;
+	solo_fte_charid = 0;
 	bonusAvoidance = d->avoidance;
 	exp_pct = d->exp_pct;
 	push_vector = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -403,6 +407,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	noQuestPause = false;
 	assisting = false;
 	pbaoe_damage = 0;
+	AI_Start();
 }
 
 NPC::~NPC()
@@ -511,6 +516,8 @@ bool NPC::Process()
 	}
 
 	SpellProcess();
+
+	ProcessFTE();
 
 	if(tic_timer.Check())
 	{
@@ -1325,7 +1332,7 @@ void NPC::PickPocket(Client* thief)
 			if (item)
 			{
 				inst = database.CreateItem(item, citem->charges);
-				if (citem->equip_slot == EQ::invslot::slotGeneral1 && !item->Magic && item->NoDrop != 0 && !inst->IsType(EQ::item::ItemClassBag) && !thief->CheckLoreConflict(item))
+				if (citem->equip_slot == EQ::invslot::slotGeneral1 && !item->Magic && item->NoDrop != 0 && !inst->IsType(EQ::item::ItemClassBag) && !thief->CheckLoreConflict(item) && citem->min_looter_level == 0)
 				{
 					steal_items[x] = item->ID;
 					if (inst->IsStackable())
@@ -2692,4 +2699,112 @@ void NPC::SetSkill(EQ::skills::SkillType skill_num, uint16 value)
 		return;
 	
 	skills[skill_num] = value;
+}
+
+bool NPC::IsGuildInFTELockout(uint32 guild_id)
+{
+	if (guild_id == GUILD_NONE || guild_id == 0)
+		return true;
+
+	auto itr = guild_fte_lockouts.find(guild_id);
+
+	if (itr != guild_fte_lockouts.end())
+		return true;
+
+	return false;
+}
+
+void NPC::InsertGuildFTELockout(uint32 guild_id)
+{
+
+	if (guild_id == GUILD_NONE || guild_id == 0)
+		return;
+
+	auto itr = guild_fte_lockouts.find(guild_id);
+
+	if (itr != guild_fte_lockouts.end())
+		return;
+
+	guild_fte_lockouts[guild_id] = Timer::GetCurrentTime();
+
+}
+
+void NPC::ProcessFTE()
+{
+	//engage notice lockout processing
+	if (HasEngageNotice())
+	{
+		for (std::map<uint32, uint32>::iterator it = guild_fte_lockouts.begin(); it != guild_fte_lockouts.end();)
+		{
+			if (Timer::GetCurrentTime() >= it->second + RuleI(Quarm, GuildFTELockoutTimeMS))
+			{
+				std::string guild_string = "";
+				if (it->first != GUILD_NONE) {
+					guild_mgr.GetGuildNameByID(it->first, guild_string);
+				}
+				if (!guild_string.empty())
+				{
+					entity_list.Message(0, 15, "Guild %s is no longer FTE locked out of %s!", guild_string.c_str(), GetCleanName());
+				}
+				it = guild_fte_lockouts.erase(it);
+				continue;
+			}
+			it++;
+		}
+	}
+
+	//ssf damage tracking
+	if ((float)cur_hp >= ((float)max_hp * (level <= 5 ? 0.995f : 0.997f))) // reset FTE
+	{
+		solo_group_fte = 0;
+		solo_raid_fte = 0;
+		solo_fte_charid = 0;
+		ssf_player_damage = 0;
+		ssf_ds_damage = 0;
+	}
+
+	//guild fte
+	bool send_engage_notice = HasEngageNotice();
+	if (send_engage_notice)
+	{
+		bool no_guild_fte = guild_fte == GUILD_NONE;
+		if (!no_guild_fte)
+		{
+			uint32 curtime = (Timer::GetCurrentTime());
+			uint32 lastAggroTime = GetAggroTime();
+			bool is_engaged = lastAggroTime != 0xFFFFFFFF;
+			bool engaged_too_long = false;
+			if (is_engaged)
+				engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+			bool no_haters = hate_list.GetNumHaters() == 0;
+			bool valid_guild_on_hatelist = guild_fte != GUILD_NONE;
+			bool is_guild_on_hate_list = hate_list.IsGuildOnHateList(guild_fte);
+			//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
+			if (engaged_too_long || no_haters || valid_guild_on_hatelist && !is_guild_on_hate_list)
+			{
+				HandleFTEDisengage();
+				SetAggroTime(0xFFFFFFFF);
+			}
+		}
+	}
+
+	bool no_fte = fte_charid == 0 && raid_fte == 0 && group_fte == 0;
+	if (!no_fte)
+	{
+		uint32 curtime = (Timer::GetCurrentTime());
+		uint32 lastAggroTime = GetAggroTime();
+		bool is_engaged = lastAggroTime != 0xFFFFFFFF;
+		bool engaged_too_long = false;
+		if (is_engaged)
+			engaged_too_long = curtime >= lastAggroTime + RuleI(Quarm, GuildFTEDisengageTimeMS) && hate_list.GetNumHaters() > 0 && (float)cur_hp >= ((float)max_hp * (0.97f));
+		bool no_haters = hate_list.GetNumHaters() == 0;
+
+		//If we're engaged for 60 seconds and still have the same fte at 97% or above HP, clear fte, and memwipe if engage notice target.
+		if (engaged_too_long || no_haters)
+		{
+			fte_charid = 0;
+			group_fte = 0;
+			raid_fte = 0;
+		}
+	}
 }

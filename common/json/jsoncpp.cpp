@@ -3865,6 +3865,11 @@ JSONCPP_STRING Value::toStyledString() const {
   return writer.write(*this);
 }
 
+JSONCPP_STRING Value::toOptimizedString() const {
+  FastWriter writer;
+  return writer.write(*this);
+}
+
 Value::const_iterator Value::begin() const {
   switch (type_) {
   case arrayValue:

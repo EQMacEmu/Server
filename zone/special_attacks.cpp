@@ -374,6 +374,8 @@ void Client::DoBackstab(Mob* defender)
 			minHit = level * 2;
 		else if (level > 50)
 			minHit = level * 3 / 2;
+		else
+			minHit = level;
 	}
 
 	int assassinateDmg = TryAssassinate(defender, EQ::skills::SkillBackstab);
