@@ -329,7 +329,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 				if (IsInvisSpell(buffs[i].spellid))
 				{
 					// bard song invis can overwrite each other
-					if (spells[spell_id].classes[BARD - 1] != 255 && spells[buffs[i].spellid].classes[BARD - 1] != 255 || spell_id == buffs[i].spellid)
+					if ((spells[spell_id].classes[BARD - 1] != 255 && spells[buffs[i].spellid].classes[BARD - 1] != 255) || spell_id == buffs[i].spellid)
 					{
 						continue;
 					}
@@ -910,6 +910,11 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	buffs[emptyslot].isdisc = isdisc;
 	buffs[emptyslot].remove_me = false;
 	buffs[emptyslot].first_tic = true;
+
+	// we don't tell the client the bufftype except when loading buffs from the database - we have to stay in sync by computing the same bufftype here
+	buffs[emptyslot].bufftype = 2;
+	if ((spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && caster == this)
+		buffs[emptyslot].bufftype = 4; // reversed tap effect
 
 	if (item_level > 0)
 	{

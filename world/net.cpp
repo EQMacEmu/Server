@@ -351,8 +351,8 @@ int main(int argc, char** argv) {
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
 	uint8 ReconnectCounter = 100;
-	EQStream* eqs;
-	EQOldStream* eqos;
+	std::shared_ptr<EQStream> eqs;
+	std::shared_ptr<EQOldStream> eqos;
 	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
 

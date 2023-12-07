@@ -182,6 +182,7 @@ RULE_BOOL (AlKabor, NoDropRemoveTradeskill, true) // AK behavior is true.  If tr
 RULE_BOOL (AlKabor, ReducedMonkAC, true) // AK behavior is true.  Monks had a low AC softcap from October 16 2002 to April 8 2003 which made them squishy.  Sony partially unnerfed them in April 03.
 RULE_BOOL (AlKabor, BlockProjectileCorners, true) // AK behavior is true.  If an NPC was in a corner, arrows and bolts would not hit them.
 RULE_BOOL (AlKabor, BlockProjectileWalls, true) // AK behavior is true.  If an NPC was walled, then arrows and bolts had to be fired from an angle parallel to the wall in order to hit them. (if this is true, corners will also block)
+RULE_BOOL (AlKabor, GreenmistHack, true) // Greenmist recourse didn't work on AK.  The spell data is messed up so it's not properly fixable without modifying the client.  This enables a partial workaround that is not AKurate but provides some benefit to players using this weapon.
 RULE_CATEGORY_END()
 
 

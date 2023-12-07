@@ -1784,7 +1784,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			// of sync with the real value.
 			{
 				// TODO: this check for level 1 is a workaround for not being able to differentiate between a value 0 skill and an untrained (254) skill
-			t_level = t_level == 1 ? 1 : std::min((uint16)GetLevel(), MaxSkill(skill));
+				t_level = t_level == 1 ? 1 : std::min((uint16)GetLevel(), MaxSkill(skill));
 			}
 			SetSkill(skill, t_level, true);
 		} else {

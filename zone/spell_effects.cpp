@@ -92,6 +92,9 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 		caster->CastToClient()->EnableAAEffect(aaEffectFrenziedBurnout, caa->duration);
 	}
 
+	// reversed tap spell
+	bool is_tap_recourse = (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && caster == this;
+
 	// iterate through the effects in the spell
 	for (i = 0; i < EFFECT_COUNT; i++)
 	{
@@ -2724,6 +2727,9 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 		}
 	}
 
+	// reversed tap spell
+	bool is_tap_recourse = (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && caster == this;
+
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(IsBlankSpellEffect(spell_id, i))
@@ -2738,6 +2744,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			case SE_CurrentHP:
 			{
 				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
+				if (is_tap_recourse) effect_value = -effect_value;
 				int hate_amount = effect_value;
 				//Handle client cast DOTs here.
 				if (caster && caster->IsClient() && IsDetrimentalSpell(spell_id) && effect_value < 0) {
@@ -2776,7 +2783,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			}
 			case SE_HealOverTime:
 			{
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, 0, instrumentmod);
+				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
 				if(caster)
 					effect_value = caster->GetActSpellHealing(spell_id, effect_value, nullptr, true);
 
@@ -4400,7 +4407,7 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 					int32 pacify_original_duration = buffs[buffslot].ticsremaining;
 					int32 pacify_modified_duration = 8; // 7 plus extra tick
 					Log(Logs::General, Logs::Focus, "Pacify spell TAKP special - reducing duration from %d to %d before focus", pacify_original_duration, pacify_modified_duration);
-					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false);
+					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false); // update false because we call the function again below to really update
 				}
 				int32 tics = buffs[buffslot].ticsremaining;
 				int32 newduration = (tics * casting_spell_focus_duration) / 100;

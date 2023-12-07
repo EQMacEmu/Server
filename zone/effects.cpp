@@ -1097,7 +1097,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		}
 		if (detrimental) {
 			// aoe spells do hit other players except if in same raid or group.  their pets get hit even when grouped.  SpellOnTarget checks pvp protection
-			if (caster->InSameGroup(curmob) || caster->InSameRaid(curmob))
+			if (caster != curmob && (caster->InSameGroup(curmob) || caster->InSameRaid(curmob)))
 				continue;
 
 			if (!zone->SkipLoS() && !spells[spell_id].npc_no_los && curmob != caster && !center->CheckLosFN(curmob, true))

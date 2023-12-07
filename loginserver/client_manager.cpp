@@ -62,8 +62,8 @@ ClientManager::~ClientManager()
 void ClientManager::Process()
 {
 	ProcessDisconnect();
-	EQOldStream* oldcur = old_stream->PopOld();
 	if (old_stream) {
+		std::shared_ptr<EQOldStream> oldcur = old_stream->PopOld();
 		while (oldcur)
 		{
 			struct in_addr in;
@@ -78,9 +78,9 @@ void ClientManager::Process()
 	}
 
 	list<Client*>::iterator iter = clients.begin();
-	while(iter != clients.end())
+	while (iter != clients.end())
 	{
-		if((*iter)->Process() == false)
+		if ((*iter)->Process() == false)
 		{
 			Log(Logs::General, Logs::LoginServer, "Client had a fatal error and had to be removed from the login.");
 			delete (*iter);
@@ -98,7 +98,7 @@ void ClientManager::ProcessDisconnect()
 	list<Client*>::iterator iter = clients.begin();
 	while(iter != clients.end())
 	{
-		EQStreamInterface *c = (*iter)->GetConnection();
+		std::shared_ptr<EQStreamInterface> c = (*iter)->GetConnection();
 		if (c->CheckState(CLOSED))
 		{
 			c->ReleaseFromUse();

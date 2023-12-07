@@ -177,3 +177,4 @@
 	void Handle_OP_MBRetrievalEraseRequest(const EQApplicationPacket *app);
 	void Handle_OP_Key(const EQApplicationPacket *app);
 	void Handle_OP_TradeRefused(const EQApplicationPacket *app);
+	void Handle_OP_SpellTextMessage(const EQApplicationPacket *app);

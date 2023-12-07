@@ -2035,6 +2035,7 @@ void ZoneDatabase::SaveBuffs(Client *client) {
 		b.persistent		= buffs[index].persistant_buff;
 		b.ExtraDIChance		= buffs[index].ExtraDIChance;
 		b.bard_modifier		= buffs[index].instrumentmod;
+		b.bufftype			= buffs[index].bufftype;
 
 		// add the buff to the vector
 
@@ -2057,7 +2058,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
 
 	std::string query = StringFormat("SELECT spell_id, slot_id, caster_level, caster_name, ticsremaining, "
                                     "counters, melee_rune, magic_rune, persistent, "
-                                    "ExtraDIChance, bard_modifier "
+                                    "ExtraDIChance, bard_modifier, bufftype "
                                     "FROM `character_buffs` WHERE `id` = '%u'", client->CharacterID());
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -2082,6 +2083,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
 		uint8 persistent = atoul(row[8]);
 		int32 ExtraDIChance = atoul(row[9]);
 		uint8 instmod = atoul(row[10]);
+		int32 bufftype = atoul(row[11]);
 
 		buffs[slot_id].spellid = spell_id;
         buffs[slot_id].casterlevel = caster_level;
@@ -2114,6 +2116,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
         buffs[slot_id].UpdateClient = false;
 		buffs[slot_id].isdisc = IsDisc(spell_id);
 		buffs[slot_id].instrumentmod = instmod;
+		buffs[slot_id].bufftype = bufftype;
 
     }
 
@@ -3043,28 +3046,28 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 	}
 	else
 	{
-	uint8 first_entry = 0;
-	for (unsigned int i = 0; i < dbpc->itemcount; i++) {
-		if (first_entry != 1){
-			corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
-				" (corpse_id, equip_slot, item_id, charges) \n"
-				" VALUES (%u, %u, %u, %u) \n",
-				last_insert_id,
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,
-				dbpc->items[i].charges
-			);
-			first_entry = 1;
+		uint8 first_entry = 0;
+		for (unsigned int i = 0; i < dbpc->itemcount; i++) {
+			if (first_entry != 1) {
+				corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
+					" (corpse_id, equip_slot, item_id, charges) \n"
+					" VALUES (%u, %u, %u, %u) \n",
+					last_insert_id,
+					dbpc->items[i].equip_slot,
+					dbpc->items[i].item_id,
+					dbpc->items[i].charges
+				);
+				first_entry = 1;
+			}
+			else {
+				corpse_items_query = corpse_items_query + StringFormat(", (%u, %u, %u, %u) \n",
+					last_insert_id,
+					dbpc->items[i].equip_slot,
+					dbpc->items[i].item_id,
+					dbpc->items[i].charges
+				);
+			}
 		}
-		else{
-			corpse_items_query = corpse_items_query + StringFormat(", (%u, %u, %u, %u) \n",
-				last_insert_id,
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,
-				dbpc->items[i].charges
-			);
-		}
-	}
 	}
 	auto sc_results = QueryDatabase(corpse_items_query);
 	return last_insert_id;

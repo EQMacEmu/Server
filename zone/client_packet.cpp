@@ -270,6 +270,7 @@ void MapOpcodes()
 	ConnectedOpcodes[OP_MBRetrievalEraseRequest] = &Client::Handle_OP_MBRetrievalEraseRequest;
 	ConnectedOpcodes[OP_Key] = &Client::Handle_OP_Key;
 	ConnectedOpcodes[OP_TradeRefused] = &Client::Handle_OP_TradeRefused;
+	ConnectedOpcodes[OP_SpellTextMessage] = &Client::Handle_OP_SpellTextMessage;
 }
 
 void ClearMappedOpcode(EmuOpcode op)
@@ -1484,7 +1485,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		{
 			m_pp.buffs[i].spellid = buffs[i].spellid;
 			m_pp.buffs[i].bard_modifier = buffs[i].instrumentmod;
-			m_pp.buffs[i].bufftype = 2; // TODO - don't hardcode this, it can be 4 for reversed effects
+			m_pp.buffs[i].bufftype = buffs[i].bufftype ? buffs[i].bufftype : 2;
 			m_pp.buffs[i].player_id = buffs[i].casterid;
 			m_pp.buffs[i].level = buffs[i].casterlevel;
 			m_pp.buffs[i].activated = spells[buffs[i].spellid].Activated;
@@ -9246,4 +9247,17 @@ void Client::Handle_OP_TradeRefused(const EQApplicationPacket *app)
 	}
 
 	return;
+}
+
+void Client::Handle_OP_SpellTextMessage(const EQApplicationPacket *app)
+{
+	// this message is sent in two places in the client
+	// 1. lifetap spells 'groaning'
+	// 2. spell cast interrupt from stunning warrior kick
+
+	// this is the layout but no need to do any processing on this, we just forward it on
+	//int16 entity_id = *(int16 *)app->pBuffer;
+	//char *spell_emote_msg = (char *)(app->pBuffer + 2);
+
+	entity_list.QueueCloseClients(this, app, true, 200.0);
 }

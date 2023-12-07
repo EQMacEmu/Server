@@ -470,6 +470,7 @@ struct SpellBuffFade_Struct {
 	/*006*/	uint16  spellid;
 	/*008*/ uint16	duration;        // Duration in ticks
 	/*010*/ uint16	counters;        // rune amount, poison/disease/curse counters
+	
 	/*012*/ uint16	slot_number;
 	/*014*/ uint16	unk14;
 

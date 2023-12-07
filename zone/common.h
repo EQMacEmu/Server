@@ -152,6 +152,7 @@ struct Buffs_Struct {
 	bool	isdisc;
 	bool	remove_me;
 	bool	first_tic;
+	int32	bufftype;
 };
 
 struct StatBonuses {

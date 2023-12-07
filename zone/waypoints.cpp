@@ -1379,49 +1379,6 @@ int ZoneDatabase::GetRandomWaypointLocFromGrid(glm::vec4 &loc, uint16 zoneid, in
 {
 	loc.x = loc.y = loc.z = loc.w = 0.0f;
 
-	// check grid cache before hitting DB
-	auto grid_entry = GridRepository::GetGrid(zone->grids, grid);
-	if (grid_entry.id != 0)
-	{
-		int count = -1, max_wp = 0, first = 0, last = 0;
-
-		for (auto& entry : zone->grid_entries)
-		{
-			count++;
-			if (entry.gridid == grid)
-			{
-				max_wp++;
-				last = count;
-				if (!first)
-					first = count;
-			}
-		}
-
-		int roll = zone->random.Int(1, max_wp);
-		count = 0;
-
-		auto it = zone->grid_entries.begin() + first;
-		auto end = zone->grid_entries.end() - (zone->grid_entries.size() - last - 1);
-		for (; it < end; it++)
-		{
-			if ((*it).gridid == grid)
-			{
-				count++;
-				if (count == roll)
-				{
-					loc.x = (*it).x;
-					loc.y = (*it).y;
-					loc.z = (*it).z;
-					loc.w = (*it).heading;
-					break;
-				}
-			}
-		}
-
-		if (loc.x || loc.y || loc.z || loc.w)
-			return roll;
-	}
-
 	std::string query = StringFormat("SELECT `x`,`y`,`z`,`heading` "
 		"FROM grid_entries WHERE `gridid` = %i AND `zoneid` = %u ORDER BY `number`", grid, zone->GetZoneID());
 	auto results = database.QueryDatabase(query);
