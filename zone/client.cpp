@@ -225,6 +225,8 @@ Client::Client(EQStreamInterface* ieqs)
 	// initialise haste variable
 	m_tradeskill_object = nullptr;
 	PendingRezzXP = -1;
+	PendingRezzZoneID = 0;
+	PendingRezzZoneGuildID = 0;
 	PendingRezzDBID = 0;
 	PendingRezzSpellID = 0;
 	numclients++;
@@ -3423,6 +3425,8 @@ int Client::GetAggroCount() {
 void Client::SummonAndRezzAllCorpses()
 {
 	PendingRezzXP = -1;
+	PendingRezzZoneID = 0;
+	PendingRezzZoneGuildID = 0;
 
 	auto Pack = new ServerPacket(ServerOP_DepopAllPlayersCorpses, sizeof(ServerDepopAllPlayersCorpses_Struct));
 
@@ -5066,7 +5070,7 @@ void Client::RewindCommand()
 		Message(CC_Default, "You must wait before using #rewind again.");
 	}
 	else {
-		MovePC(zone->GetZoneID(), m_RewindLocation.x, m_RewindLocation.y, m_RewindLocation.z, 0, 2, Rewind);
+		MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), m_RewindLocation.x, m_RewindLocation.y, m_RewindLocation.z, 0, 2, Rewind);
 		rewind_timer.Start(30000, true);
 	}
 }

@@ -279,6 +279,7 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 		if(s->rank_change) {
 			//we need to send spawn appearance packets for all members of this guild in the zone, to everybody.
 			entity_list.SendGuildSpawnAppearance(s->guild_id);
+
 		}
 
 		if(s->relation_change) {

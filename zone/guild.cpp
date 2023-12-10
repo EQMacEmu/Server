@@ -22,6 +22,7 @@
 
 #include "guild_mgr.h"
 #include "worldserver.h"
+#include "raids.h"
 
 extern WorldServer worldserver;
 
@@ -64,6 +65,12 @@ void Client::SendGuildSpawnAppearance() {
 		Log(Logs::Detail, Logs::Guilds, "Sending spawn appearance for guild %d at rank %d", GuildID(), rank);
 		SendAppearancePacket(AT_GuildID, GuildID());
 		SendAppearancePacket(AT_GuildRank, rank);
+	}
+
+	Raid* pRaid = GetRaid();
+	if (pRaid)
+	{
+		pRaid->UpdateGuildRank(this);
 	}
 	UpdateWho();
 }
@@ -162,6 +169,11 @@ void EntityList::SendGuildSpawnAppearance(uint32 guild_id) {
 		Client *client = it->second;
 		if (client->GuildID() == guild_id) {
 			client->SendGuildSpawnAppearance();
+			Raid* pRaid = client->GetRaid();
+			if (pRaid)
+			{
+				pRaid->UpdateGuildRank(client);
+			}
 		}
 		++it;
 	}

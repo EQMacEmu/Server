@@ -628,7 +628,7 @@ void WorldServer::Process() {
 					}
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
-					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
+					client->SetPendingRezzData(srs->corpse_zone_id, srs->corpse_zone_guild_id, srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
 							Log(Logs::Detail, Logs::Spells, "OP_RezzRequest in zone %s for %s, spellid:%i",
 							zone->GetShortName(), client->GetName(), srs->rez.spellid);
 							auto outapp = new EQApplicationPacket(OP_RezzRequest,
@@ -2011,6 +2011,8 @@ bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 
 	sem->rez = *(Resurrect_Struct*) rpack->pBuffer;
 	sem->exp = rezzexp;
 	sem->dbid = dbid;
+	sem->corpse_zone_id = zone->GetZoneID();
+	sem->corpse_zone_guild_id = zone->GetGuildID();
 	bool ret = SendPacket(pack);
 	if (ret) {
 		Log(Logs::Detail, Logs::Spells, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);

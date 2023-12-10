@@ -3046,7 +3046,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_EQPosition = glm::vec4(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos/10.0f, ppu->heading);
 
 	if (GetZoneID() == airplane && m_EQPosition.z < -1200.0f) {
-		MovePC(freporte, -1570.0f, -25.0f, 20.0f, 231.0f);
+		MovePCGuildID(freporte, GUILD_NONE, -1570.0f, -25.0f, 20.0f, 231.0f);
 		return;
 	}
 
@@ -4458,7 +4458,7 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 
 	Mob* gt = entity_list.GetMob(gmg->charname);
 	if (gt != nullptr) {
-		this->MovePC(zone->GetZoneID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
+		this->MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), gt->GetX(), gt->GetY(), gt->GetZ(), gt->GetHeading());
 	}
 	else if (!worldserver.Connected())
 		Message(CC_Default, "Error: World server disconnected.");
@@ -7444,7 +7444,7 @@ void Client::Handle_OP_RezzAnswer(const EQApplicationPacket *app)
 		PendingRezzXP, ra->action ? "ACCEPT" : "DECLINE");
 
 
-	OPRezzAnswer(ra->action, ra->spellid, ra->zone_id, ra->x, ra->y, ra->z);
+	OPRezzAnswer(ra->action, ra->spellid, ra->zone_id, 0, ra->x, ra->y, ra->z);
 
 	if (ra->action == 1)
 	{
@@ -7579,7 +7579,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 				angle = (256 + angle);
 
 			angle *= 2;
-			MovePC(zone->GetZoneID(), GetX(), GetY(), GetZ(), angle);
+			MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), GetX(), GetY(), GetZ(), angle);
 			success = SKILLUP_SUCCESS;
 		}
 	}
@@ -9493,7 +9493,7 @@ void Client::Handle_OP_Translocate(const EQApplicationPacket *app)
 
 			////Was sending the packet back to initiate client zone...
 			////but that could be abusable, so lets go through proper channels
-			MovePC(PendingTranslocateData.zone_id,
+			MovePCGuildID(PendingTranslocateData.zone_id, GUILD_NONE,
 				PendingTranslocateData.x, PendingTranslocateData.y,
 				PendingTranslocateData.z, PendingTranslocateData.heading, 0, ZoneSolicited);
 		}

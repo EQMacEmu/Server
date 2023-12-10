@@ -1373,6 +1373,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 		SendEndLootErrorPacket(client);
 		return;
 	}
+
 	if (IsPlayerCorpse() && !CanPlayerLoot(client->CharacterID()) && !become_npc && (char_id != client->CharacterID() && client->Admin() < AccountStatus::GMLeadAdmin)) {
 		client->Message(CC_Red, "Error: This is a player corpse and you don't own it.");
 		SendEndLootErrorPacket(client);

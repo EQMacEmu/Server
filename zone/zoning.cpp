@@ -82,6 +82,10 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 					//assume that is the one were going with.
 					target_zone_id = zone_point->target_zone_id;
 					zonesummon_id = zone_point->target_zone_id;
+					if (zone_point->target_zone_id != zone->GetZoneID())
+						zonesummon_guildid = GUILD_NONE;
+					else
+						zonesummon_guildid = zone->GetGuildID();
 				} 
 				else {
 					//unable to find a zone point... is there anything else
@@ -108,8 +112,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		}
 		else {
 			target_zone_id = zc->zoneID;
-			if(zonesummon_id > 0)
-				target_zone_guild_id = zonesummon_guildid;
 		}
 
 		//if we are zoning to a specific zone unsolicied,
@@ -229,6 +231,10 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			//they are zoning using a valid zone point, figure out coords
 
 			zonesummon_id = zone_point->target_zone_id;
+			if (zone_point->target_zone_id != zone->GetZoneID())
+				zonesummon_guildid = GUILD_NONE;
+			else
+				zonesummon_guildid = zone->GetGuildID();
 			//999999 is a placeholder for 'same as where they were from'
 			//The client compile shows 1044 difference when zoning freport <-> nro.  this fixes server side when using 999999.
 			if (zone_point->target_x == 999999) {  
@@ -566,6 +572,7 @@ void Client::ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z
 			x = safePoint.x;
 			y = safePoint.y;
 			z = safePoint.z;
+
 			heading = safePoint.w;
 			break;
 		case ForceZoneToBindPoint:
@@ -822,7 +829,7 @@ void Client::ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z
 			FastQueuePacket(&outapp);
 		}
 		else {
-			if(zoneID == GetZoneID() && zoneGuildID == zonesummon_guildid) {
+			if(zoneID == GetZoneID() && zoneGuildID == zone->GetGuildID()) {
 				Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (GOTO). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
 				//properly handle proximities
 				entity_list.ProcessMove(this, glm::vec3(m_Position));
@@ -949,16 +956,16 @@ void Client::GoToBind(uint8 bindnum) {
 	// move the client, which will zone them if needed.
 	// ignore restrictions on the zone request..?
 	if(bindnum == 0)
-		MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, GateToBindPoint);
+		MovePCGuildID(m_pp.binds[0].zoneId, GUILD_NONE, 0.0f, 0.0f, 0.0f, 0.0f, 1, GateToBindPoint);
 	else
-		MovePC(m_pp.binds[bindnum].zoneId, m_pp.binds[bindnum].x, m_pp.binds[bindnum].y, m_pp.binds[bindnum].z, m_pp.binds[bindnum].heading, 1);
+		MovePCGuildID(m_pp.binds[bindnum].zoneId, GUILD_NONE, m_pp.binds[bindnum].x, m_pp.binds[bindnum].y, m_pp.binds[bindnum].z, m_pp.binds[bindnum].heading, 1);
 }
 
 void Client::GoToDeath() {
 	//Client will request a zone in EQMac era clients, but let's make sure they get there:
 	zone_mode = ZoneToBindPoint;
 
-	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ZoneToBindPoint);
+	MovePCGuildID(m_pp.binds[0].zoneId, GUILD_NONE, 0.0f, 0.0f, 0.0f, 0.0f, 1, ZoneToBindPoint);
 
 }
 
@@ -966,7 +973,7 @@ void Client::ForceGoToDeath() {
 	//Client will request a zone in EQMac era clients, but let's make sure they get there:
 	zone_mode = ForceZoneToBindPoint;
 
-	MovePC(m_pp.binds[0].zoneId, 0.0f, 0.0f, 0.0f, 0.0f, 1, ForceZoneToBindPoint);
+	MovePCGuildID(m_pp.binds[0].zoneId, GUILD_NONE, 0.0f, 0.0f, 0.0f, 0.0f, 1, ForceZoneToBindPoint);
 
 }
 

@@ -87,10 +87,10 @@ void Raid::AddMember(Client *c, uint32 group, bool rleader, bool groupleader, bo
 
 	std::string query = StringFormat("INSERT INTO raid_members SET raidid = %lu, charid = %lu, "
                                     "groupid = %lu, _class = %d, level = %d, name = '%s', "
-                                    "isgroupleader = %d, israidleader = %d, islooter = %d, guild_id=%d, isofficer=%d ",
+                                    "isgroupleader = %d, israidleader = %d, islooter = %d, guild_id=%lu, is_officer=%d ",
                                     (unsigned long)GetID(), (unsigned long)c->CharacterID(),
                                     (unsigned long)group, c->GetClass(), c->GetLevel(),
-                                    c->GetName(), groupleader, rleader, looter, c->GuildID(), c->GuildRank());
+                                    c->GetName(), groupleader, rleader, looter, (unsigned long)c->GuildID(), c->GuildRank());
     auto results = database.QueryDatabase(query);
 
 	if(!results.Success()) {
@@ -239,8 +239,8 @@ void Raid::DisbandRaid()
 	rga->rid = GetID();
 	strn0cpy(rga->playername, " ", 64);
 	rga->zoneid = zone->GetZoneID();
-	worldserver.SendPacket(pack);
 	rga->zoneguildid = zone->GetGuildID();
+	worldserver.SendPacket(pack);
 	safe_delete(pack);
 
 	forceDisband = true;
@@ -998,6 +998,7 @@ void Raid::ChangeLootType(uint32 type)
 	ServerRaidGeneralAction_Struct *rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 	rga->rid = GetID();
 	rga->zoneid = zone->GetZoneID();
+	rga->zoneguildid = zone->GetGuildID();
 	rga->looter = type;
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -1539,8 +1540,30 @@ void Raid::SendGroupJoin(Client* client, const char *who)
 	safe_delete(outapp);
 }
 
+void Raid::UpdateGuildRank(Client* update)
+{
+	if (!update)
+		return;
+
+
+	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if (strcmp(update->GetCleanName(), members[x].membername) == 0)
+		{
+			if (update->GuildID() != GUILD_NONE)
+				members[x].IsGuildOfficer = update->GuildRank() >= 1;
+			else
+				members[x].IsGuildOfficer = 0;
+		}
+	}
+}
+
 void Raid::UpdatePlayer(Client* update) 
 {
+
+	if (!update)
+		return;
+
 	uint32 grp = GetGroup(update->GetName());
 	//update their player profile
 	PlayerProfile_Struct &pp = update->GetPP();
@@ -1552,6 +1575,7 @@ void Raid::UpdatePlayer(Client* update)
 			if (strlen(members[x].membername) > 0)
 			{
 				strn0cpy(pp.groupMembers[index], members[x].membername, 64);
+				members[x].IsGuildOfficer = update->GuildRank() >= 1;
 				++index;
 			}
 			else
@@ -1678,7 +1702,7 @@ bool Raid::LearnMembers()
 	memset(members, 0, (sizeof(RaidMember)*MAX_RAID_MEMBERS));
 
 	std::string query = StringFormat("SELECT name, groupid, _class, level, "
-                                    "isgroupleader, israidleader, islooter, guild_id, isofficer "
+                                    "isgroupleader, israidleader, islooter, guild_id, is_officer "
                                     "FROM raid_members WHERE raidid = %lu",
                                     (unsigned long)GetID());
     auto results = database.QueryDatabase(query);

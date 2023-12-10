@@ -3038,8 +3038,8 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 		"`wc_9`	=               %u,\n"
 		"`killedby` =			%u,\n"
 		"`rezzable` =			%d,\n"
-		"`rez_time` =			%u, \n",
-		"`zone_guild_id` =			%lu \n",
+		"`rez_time` =			%u,\n"
+		"`zone_guild_id` =		%lu \n",
 		Strings::Escape(charname).c_str(),
 		zoneid,
 		charid,
@@ -3160,8 +3160,8 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		"`wc_9`	=               %u,\n"
 		"`killedby` =			%u,\n"
 		"`rezzable` =			%d,\n"
-		"`rez_time` =			%u \n"
-		"`zone_guild_id` =		%lu,\n",
+		"`rez_time` =			%u,\n"
+		"`zone_guild_id` =		%lu \n",
 		corpse_id,
 		Strings::Escape(charname).c_str(),
 		zoneid,

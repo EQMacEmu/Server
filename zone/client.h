@@ -889,7 +889,7 @@ public:
 	void SendTargetCommand(uint32 EntityID);
 	bool MoveItemToInventory(EQ::ItemInstance *BInst, bool UpdateClient = false);
 	std::list<RespawnOption> respawn_options;
-	void SetPendingRezzData(int XP, uint32 DBID, uint16 SpellID, const char *CorpseName) { PendingRezzXP = XP; PendingRezzDBID = DBID; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
+	void SetPendingRezzData(uint32 zoneID, uint32 zoneGuildID, int XP, uint32 DBID, uint16 SpellID, const char *CorpseName) { PendingRezzZoneID = zoneID, PendingRezzZoneGuildID = zoneGuildID, PendingRezzXP = XP; PendingRezzDBID = DBID; PendingRezzSpellID = SpellID; PendingRezzCorpseName = CorpseName; }
 	bool IsRezzPending() { return PendingRezzSpellID > 0; }
 	bool IsDraggingCorpse(uint16 CorpseID);
 	inline bool IsDraggingCorpse() { return (DraggedCorpses.size() > 0); }
@@ -1083,7 +1083,7 @@ private:
 	eqFilterMode ClientFilters[_FilterCount];
 	int32 HandlePacket(const EQApplicationPacket *app);
 	void OPTGB(const EQApplicationPacket *app);
-	void OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, float x, float y, float z);
+	void OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, uint32 GuildZoneID, float x, float y, float z);
 	void OPMemorizeSpell(const EQApplicationPacket *app);
 	void OPMoveCoin(const EQApplicationPacket* app);
 	void MoveItemCharges(EQ::ItemInstance &from, int16 to_slot, uint8 type);
@@ -1314,6 +1314,8 @@ private:
 	bool PendingGuildInvitation;
 	int PendingRezzXP;
 	uint32 PendingRezzDBID;
+	uint32 PendingRezzZoneID;
+	uint32 PendingRezzZoneGuildID;
 	uint16 PendingRezzSpellID; // Only used for resurrect while hovering.
 	std::string PendingRezzCorpseName; // Only used for resurrect while hovering.
 

@@ -1468,6 +1468,9 @@ void command_zoneguild(Client *c, const Seperator *sep)
 		GUILD_NONE
 		);
 
+	if (guild_id == 0)
+		guild_id = GUILD_NONE;
+
 	auto x = sep->IsNumber(3) ? std::stof(sep->arg[3]) : 0.0f;
 	auto y = sep->IsNumber(4) ? std::stof(sep->arg[4]) : 0.0f;
 	auto z = sep->IsNumber(5) ? std::stof(sep->arg[5]) : 0.0f;

@@ -163,6 +163,7 @@ public:
 	void	GroupUpdate(uint32 gid, bool initial = true);
 	void	GroupJoin(const char *who, uint32 gid, Client* exclude = nullptr, bool initial = false);
 	void	SendGroupJoin(Client* to, const char *who);
+	void	UpdateGuildRank(Client * update);
 	void	SendGroupUpdate(Client *to);
 	void	SendGroupLeader(uint32 gid, Client *to);
 	void	SendGroupDisband(Client *to);
