@@ -1246,7 +1246,7 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // e_hardcore
 		"%lld," // e_hardcore_death_time
 		"%u,"   // e_betabuff_gear_flag
-		"%u"   // e_zone_guild_id
+		"%lu "   // e_zone_guild_id
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1310,7 +1310,7 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		m_epp->hardcore,
 		m_epp->hardcore_death_time,
 		m_epp->betabuff_gear_flag,
-		m_epp->zone_guild_id
+		(unsigned long)m_epp->zone_guild_id
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);
@@ -2836,11 +2836,11 @@ uint32 ZoneDatabase::SendCharacterCorpseToGraveyard(uint32 dbid, uint32 zone_id,
 	double ycorpse = (position.y + zone->random.Real(-20, 20));
 
 	std::string query = StringFormat("UPDATE `character_corpses` "
-                                    "SET `zone_id` = %u, `zone_guild_id` = %u,"
+                                    "SET `zone_id` = %u, `zone_guild_id` = %lu,"
                                     "`x` = %1.1f, `y` = %1.1f, `z` = %1.1f, `heading` = %1.1f, "
                                     "`was_at_graveyard` = 1 "
                                     "WHERE `id` = %d",
-                                    zone_id, xcorpse, ycorpse, position.z, position.w, dbid);
+                                    zone_id, (unsigned long)zone_guild_id, xcorpse, ycorpse, position.z, position.w, dbid);
 	QueryDatabase(query);
 	return dbid;
 }
@@ -2898,7 +2898,7 @@ uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const c
 		"`killedby` =			%u,\n"
 		"`rezzable` =			%d,\n"
 		"`rez_time` =			%u,\n"
-		"`zone_guild_id` =		%d,\n"
+		"`zone_guild_id` =		%lu,\n"
 		"`is_rezzed` =			%u \n"
 		"WHERE `id` = %u",
 		Strings::Escape(char_name).c_str(),
@@ -2942,7 +2942,7 @@ uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const c
 		dbpc->killedby,
 		dbpc->rezzable,
 		dbpc->rez_time,
-		zone_guild_id,
+		(unsigned long)zone_guild_id,
 		is_rezzed,
 		db_id
 	);
@@ -3038,8 +3038,8 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 		"`wc_9`	=               %u,\n"
 		"`killedby` =			%u,\n"
 		"`rezzable` =			%d,\n"
-		"`rez_time` =			%u \n",
-		"`zone_guild_id` =			%u \n",
+		"`rez_time` =			%u, \n",
+		"`zone_guild_id` =			%lu \n",
 		Strings::Escape(charname).c_str(),
 		zoneid,
 		charid,
@@ -3081,7 +3081,7 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 		dbpc->killedby,
 		dbpc->rezzable,
 		dbpc->rez_time,
-		zoneguildid
+		(unsigned long)zoneguildid
 	);
 	auto results = QueryDatabase(query);
 	uint32 last_insert_id = results.LastInsertedID();
@@ -3161,7 +3161,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		"`killedby` =			%u,\n"
 		"`rezzable` =			%d,\n"
 		"`rez_time` =			%u \n"
-		"`zone_guild_id` =		%u,\n",
+		"`zone_guild_id` =		%lu,\n",
 		corpse_id,
 		Strings::Escape(charname).c_str(),
 		zoneid,
@@ -3203,7 +3203,8 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		dbpc->item_tint.Secondary.Color,
 		dbpc->killedby,
 		dbpc->rezzable,
-		dbpc->rez_time
+		dbpc->rez_time, 
+		(unsigned long)zoneguildid
 	);
 	auto results = QueryDatabase(query); 
 	if (!results.Success()){
@@ -3515,8 +3516,8 @@ bool ZoneDatabase::SummonAllCharacterCorpses(uint32 char_id, uint32 dest_zone_id
 	int CorpseCount = 0;
 
 	std::string update_query = StringFormat(
-		"UPDATE character_corpses SET zone_id = %i, zone_guild_id= %i, x = %f, y = %f, z = %f, heading = %f, is_buried = 0, was_at_graveyard = 0 WHERE charid = %i",
-		dest_zone_id, dest_zone_guild_id, position.x, position.y, position.z, position.w, char_id
+		"UPDATE character_corpses SET zone_id = %i, zone_guild_id=%lu, x = %f, y = %f, z = %f, heading = %f, is_buried = 0, was_at_graveyard = 0 WHERE charid = %i",
+		dest_zone_id, (unsigned long)dest_zone_guild_id, position.x, position.y, position.z, position.w, char_id
 	);
 	auto results = QueryDatabase(update_query);
 
@@ -3560,11 +3561,11 @@ bool ZoneDatabase::SummonAllCharacterCorpses(uint32 char_id, uint32 dest_zone_id
 
 bool ZoneDatabase::UnburyCharacterCorpse(uint32 db_id, uint32 new_zone_id, uint32 new_zone_guild_id, const glm::vec4& position) {
 	std::string query = StringFormat("UPDATE `character_corpses` "
-                                    "SET `is_buried` = 0, `zone_id` = %u, zone_guild_id = %u, "
+                                    "SET `is_buried` = 0, `zone_id` = %u, zone_guild_id = %lu, "
                                     "`x` = %f, `y` = %f, `z` = %f, `heading` = %f, "
                                     "`time_of_death` = Now(), `was_at_graveyard` = 0 "
                                     "WHERE `id` = %u",
-                                    new_zone_id, new_zone_guild_id,
+                                    new_zone_id, (unsigned long)new_zone_guild_id,
                                     position.x, position.y, position.z, position.w, db_id);
 	auto results = QueryDatabase(query);
 	if (results.Success() && results.RowsAffected() != 0)
@@ -3598,7 +3599,7 @@ Corpse* ZoneDatabase::LoadCharacterCorpse(uint32 player_corpse_id) {
 
 bool ZoneDatabase::LoadCharacterCorpses(uint32 zone_id, uint32 zone_guild_id) {
 	std::string query;
-	query = StringFormat("SELECT id, charid, charname, x, y, z, heading, UNIX_TIMESTAMP(time_of_death), is_rezzed, was_at_graveyard FROM character_corpses WHERE zone_id='%u' and zone_guild_id = '%u'", zone_id, zone_guild_id);
+	query = StringFormat("SELECT id, charid, charname, x, y, z, heading, UNIX_TIMESTAMP(time_of_death), is_rezzed, was_at_graveyard FROM character_corpses WHERE zone_id='%u' and zone_guild_id = '%lu'", zone_id, (unsigned long)zone_guild_id);
 
 	auto results = QueryDatabase(query);
 	for (auto& row = results.begin(); row != results.end(); ++row) {
