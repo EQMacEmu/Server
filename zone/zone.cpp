@@ -94,7 +94,7 @@ bool Zone::Bootup(uint32 iZoneID, bool iStaticZone, uint32 iGuildID) {
 	LogInfo("Booting {} ({})", zonename, iZoneID);
 
 	numclients = 0;
-	zone = new Zone(iZoneID, zonename);
+	zone = new Zone(iZoneID, zonename, iGuildID);
 
 	//init the zone, loads all the data, etc
 	if (!zone->Init(iStaticZone)) {
