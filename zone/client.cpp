@@ -202,6 +202,7 @@ Client::Client(EQStreamInterface* ieqs)
 	runmode = true;
 	linkdead_timer.Disable();
 	zonesummon_id = 0;
+	zonesummon_guildid = GUILD_NONE;
 	zonesummon_ignorerestrictions = 0;
 	zoning = false;
 	m_lock_save_position = false;
@@ -1380,6 +1381,7 @@ void Client::UpdateWho(uint8 remove) {
 	scl->LSAccountID = this->LSAccountID();
 	strn0cpy(scl->lskey, lskey, sizeof(scl->lskey));
 	scl->zone = zone->GetZoneID();
+	scl->zoneguildid = zone->GetGuildID();
 	scl->race = this->GetRace();
 	scl->class_ = GetClass();
 	scl->level = GetLevel();
@@ -3428,6 +3430,7 @@ void Client::SummonAndRezzAllCorpses()
 
 	sdapcs->CharacterID = CharacterID();
 	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->GuildID = zone->GetGuildID();
 
 	worldserver.SendPacket(Pack);
 
@@ -3435,7 +3438,7 @@ void Client::SummonAndRezzAllCorpses()
 
 	entity_list.RemoveAllCorpsesByCharID(CharacterID());
 
-	int CorpseCount = database.SummonAllCharacterCorpses(CharacterID(), zone->GetZoneID(), GetPosition());
+	int CorpseCount = database.SummonAllCharacterCorpses(CharacterID(), zone->GetZoneID(), zone->GetGuildID(), GetPosition());
 	if(CorpseCount <= 0)
 	{
 		Message(clientMessageYellow, "You have no corpses to summnon.");
@@ -3462,6 +3465,7 @@ void Client::SummonAllCorpses(const glm::vec4& position)
 
 	sdapcs->CharacterID = CharacterID();
 	sdapcs->ZoneID = zone->GetZoneID();
+	sdapcs->GuildID = zone->GetGuildID();
 
 	worldserver.SendPacket(Pack);
 
@@ -3469,7 +3473,7 @@ void Client::SummonAllCorpses(const glm::vec4& position)
 
 	entity_list.RemoveAllCorpsesByCharID(CharacterID());
 
-	database.SummonAllCharacterCorpses(CharacterID(), zone->GetZoneID(), summonLocation);
+	database.SummonAllCharacterCorpses(CharacterID(), zone->GetZoneID(), zone->GetGuildID(), summonLocation);
 }
 
 void Client::DepopAllCorpses()
@@ -3480,7 +3484,7 @@ void Client::DepopAllCorpses()
 
 	sdapcs->CharacterID = CharacterID();
 	sdapcs->ZoneID = zone->GetZoneID();
-
+	sdapcs->GuildID = zone->GetGuildID();
 	worldserver.SendPacket(Pack);
 
 	safe_delete(Pack);
@@ -3496,7 +3500,7 @@ void Client::DepopPlayerCorpse(uint32 dbid)
 
 	sdpcs->DBID = dbid;
 	sdpcs->ZoneID = zone->GetZoneID();
-
+	sdpcs->GuildID = zone->GetGuildID();
 	worldserver.SendPacket(Pack);
 
 	safe_delete(Pack);

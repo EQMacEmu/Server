@@ -130,12 +130,13 @@ bool ZSList::SendPacket(ServerPacket* pack) {
 	return true;
 }
 
-bool ZSList::SendPacket(uint32 ZoneID, ServerPacket* pack) {
+bool ZSList::SendPacket(uint32 ZoneID, uint32 GuildID, ServerPacket* pack) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-		if (iterator.GetData()->GetZoneID() == ZoneID) {
+		//Secrets note: 0 is 'magic number' for all zones. For a specific, non-guild zone, use 0xFFFFFFFF
+		if (iterator.GetData()->GetZoneID() == ZoneID && (iterator.GetData()->GetZoneGuildID() == GuildID || GuildID == 0)) {
 			ZoneServer* tmp = iterator.GetData();
 			return(tmp->SendPacket(pack));
 		}
@@ -150,7 +151,9 @@ ZoneServer* ZSList::FindByName(const char* zonename) {
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
-		if (strcasecmp(iterator.GetData()->GetZoneName(), zonename) == 0) {
+		//Secrets note: 0 is 'magic number' for all zones. For a specific, non-guild zone, use 0xFFFFFFFF
+		//Unbooted zones can still end up with 0. So keep that in mind. Though, in this context they shouldn't have a zonename either.
+		if (strcasecmp(iterator.GetData()->GetZoneName(), zonename) == 0 && (iterator.GetData()->GetZoneGuildID() == 0 || iterator.GetData()->GetZoneGuildID() == 0xFFFFFFFF)) {
 			ZoneServer* tmp = iterator.GetData();
 			return tmp;
 		}
@@ -173,13 +176,13 @@ ZoneServer* ZSList::FindByID(uint32 ZoneID) {
 	return 0;
 }
 
-ZoneServer* ZSList::FindByZoneID(uint32 ZoneID) {
+ZoneServer* ZSList::FindByZoneID(uint32 ZoneID, uint32 GuildID) {
 	LinkedListIterator<ZoneServer*> iterator(list);
 	iterator.Reset();
 	while(iterator.MoreElements())
 	{
 		ZoneServer* tmp = iterator.GetData();
-		if (tmp->GetZoneID() == ZoneID) {
+		if (tmp->GetZoneID() == ZoneID && tmp->GetZoneGuildID() == GuildID ) {
 			return tmp;
 		}
 		iterator.Advance();
@@ -563,7 +566,7 @@ void ZSList::NextGroupIDs(uint32 &start, uint32 &end) {
 	end = CurGroupID - 1;
 }
 
-void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const char* zonename, bool iMakeStatic) {
+void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, uint32 ZoneServerGuildID, const char* zonename, bool iMakeStatic) {
 	ZoneServer* zs = 0;
 	ZoneServer* zs2 = 0;
 	uint32 zoneid;
@@ -578,11 +581,11 @@ void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const cha
 		if (!zs)
 			SendEmoteMessage(adminname, 0, AccountStatus::Player, CC_Default, "Error: SOP_ZoneBootup: zoneserver not found");
 		else {
-			zs2 = FindByName(zonename);
+			zs2 = FindByZoneID(zoneid, ZoneServerGuildID);
 			if (zs2 != 0)
 				SendEmoteMessage(adminname, 0, AccountStatus::Player, CC_Default, fmt::format("Error: SOP_ZoneBootup: zone '{}' already being hosted by ZoneServer ID {} ", zonename, zs2->GetID()).c_str());
 			else {
-				zs->TriggerBootup(zoneid, adminname, iMakeStatic);
+				zs->TriggerBootup(zoneid, adminname, iMakeStatic, ZoneServerGuildID);
 				SendEmoteMessage(adminname, 0, AccountStatus::Player, CC_Default, fmt::format("Booting {} on zoneserverid {} ", zonename, ZoneServerID).c_str());
 			}
 		}
@@ -678,12 +681,12 @@ uint32 ZSList::GetAvailableZoneID()
 	return 0;
 }
 
-uint32 ZSList::TriggerBootup(uint32 iZoneID) {
+uint32 ZSList::TriggerBootup(uint32 iZoneID, uint32 iGuildID) {
 
 		LinkedListIterator<ZoneServer*> iterator(list);
 		iterator.Reset();
 		while(iterator.MoreElements()) {
-			if(iterator.GetData()->GetZoneID() == iZoneID)
+			if(iterator.GetData()->GetZoneID() == iZoneID && iterator.GetData()->GetZoneGuildID() == iGuildID)
 			{
 				return iterator.GetData()->GetID();
 			}
@@ -694,7 +697,7 @@ uint32 ZSList::TriggerBootup(uint32 iZoneID) {
 		while(iterator.MoreElements()) {
 			if (iterator.GetData()->GetZoneID() == 0 && !iterator.GetData()->IsBootingUp()) {
 				ZoneServer* zone=iterator.GetData();
-				zone->TriggerBootup(iZoneID);
+				zone->TriggerBootup(iZoneID, 0, false, iGuildID);
 				return zone->GetID();
 			}
 			iterator.Advance();

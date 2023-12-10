@@ -763,7 +763,7 @@ void Console::ProcessCommand(const char* command) {
 					strcpy(&tmpname[1], paccountname);
 
 					Log(Logs::Detail, Logs::WorldServer,"Console ZoneBootup: %s, %s, %s",tmpname,sep.arg[2],sep.arg[1]);
-					zoneserver_list.SOPZoneBootup(tmpname, atoi(sep.arg[1]), sep.arg[2], (bool) (strcasecmp(sep.arg[3], "static") == 0));
+					zoneserver_list.SOPZoneBootup(tmpname, atoi(sep.arg[1]), 0xFFFFFFFF, sep.arg[2], (bool) (strcasecmp(sep.arg[3], "static") == 0));
 				}
 			}
 			else if (strcasecmp(sep.arg[0], "worldshutdown") == 0 && admin >= consoleWorldStatus) {

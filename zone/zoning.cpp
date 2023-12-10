@@ -46,6 +46,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	ZoneChange_Struct* zc=(ZoneChange_Struct*)app->pBuffer;
 
 	uint16 target_zone_id = 0;
+	uint32 target_zone_guild_id = GUILD_NONE;
 	ZonePoint* zone_point = nullptr;
 	//figure out where they are going.
 	//we should never trust the client's logic, however, the client's information coupled with the server's information can help us determine locations they should be going to.
@@ -61,10 +62,12 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 				//going to safe coords, but client dosent know where?
 				//assume it is this zone for now.
 				target_zone_id = zone->GetZoneID();
+				target_zone_guild_id = zone->GetGuildID();
 				break;
 			case GMSummon:
 			case ZoneSolicited: //we told the client to zone somewhere, so we know where they are going.
 				target_zone_id = zonesummon_id;
+				target_zone_guild_id = zonesummon_guildid;
 				break;
 			case GateToBindPoint:
 			case ZoneToBindPoint:
@@ -101,9 +104,12 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	else {
 		if ((zone_mode == EvacToSafeCoords || zone_mode == ForceZoneToBindPoint) && zonesummon_id > 0) {
 			target_zone_id = zonesummon_id;
+			target_zone_guild_id = zonesummon_guildid;
 		}
 		else {
 			target_zone_id = zc->zoneID;
+			if(zonesummon_id > 0)
+				target_zone_guild_id = zonesummon_guildid;
 		}
 
 		//if we are zoning to a specific zone unsolicied,
@@ -111,7 +117,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		//on a zone line.
 		if(zone_mode == ZoneUnsolicited)
 		{
-			if (target_zone_id == zone->GetZoneID())
+			if (target_zone_id == zone->GetZoneID() && target_zone_guild_id == zone->GetGuildID())
 			{
 				SendZoneCancel(zc);
 				return;
@@ -308,7 +314,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	if(myerror == 1) 
 	{
 		//we have successfully zoned
-		DoZoneSuccess(zc, target_zone_id, dest_x, dest_y, dest_z, dest_h, ignorerestrictions);
+		DoZoneSuccess(zc, target_zone_id, target_zone_guild_id, dest_x, dest_y, dest_z, dest_h, ignorerestrictions);
 		UpdateZoneChangeCount(target_zone_id);
 	} 
 	else 
@@ -361,7 +367,7 @@ void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
 	m_lock_save_position = false;
 }
 
-void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r) {
+void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 zone_guild_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r) {
 	//this is called once the client is fully allowed to zone here
 	//it takes care of all the activities which occur when a client zones out
 
@@ -369,6 +375,9 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 
 	if (zonesummon_id != zone_id && zonesummon_id != 0)
 		zone_id = zonesummon_id;
+
+	if (zonesummon_guildid != zone_guild_id && zonesummon_id != 0)
+		zone_guild_id = zonesummon_guildid;
 
 	/* QS: PlayerLogZone */
 	if (RuleB(QueryServ, PlayerLogZone)){
@@ -400,6 +409,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 	m_Position.w = dest_h / 2.0f; // fix for zone heading
 	m_pp.heading = dest_h;
 	m_pp.zone_id = zone_id;
+	m_epp.zone_guild_id = zone_guild_id;
 
 	//Force a save so its waiting for them when they zone
 	Save(2);
@@ -418,6 +428,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 	ztz->ignorerestrictions = ignore_r;
 	strcpy(ztz->name, GetName());
 	ztz->guild_id = GuildID();
+	ztz->requested_zone_guild_id = zone_guild_id;
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
 
@@ -425,16 +436,17 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 	zone_mode = ZoneUnsolicited;
 	m_ZoneSummonLocation = glm::vec4();
 	zonesummon_id = 0;
+	zonesummon_guildid = 0;
 	zonesummon_ignorerestrictions = 0;
 }
 
 void Client::MovePC(const char* zonename, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
-	ProcessMovePC(database.GetZoneID(zonename), x, y, z, heading, ignorerestrictions, zm);
+	ProcessMovePC(database.GetZoneID(zonename), database.GetZoneID(zonename) == zone->GetZoneID() ? zone->GetGuildID() : GUILD_NONE, x, y, z, heading, ignorerestrictions, zm);
 }
 
 //designed for in zone moving
 void Client::MovePC(float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
-	ProcessMovePC(zone->GetZoneID(), x, y, z, heading, ignorerestrictions, zm);
+	ProcessMovePC(zone->GetZoneID(), zone->GetGuildID(), x, y, z, heading, ignorerestrictions, zm);
 }
 
 void Client::MovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
@@ -442,10 +454,34 @@ void Client::MovePC(uint32 zoneID, float x, float y, float z, float heading, uin
 		StopNavigation();
 	if (curfp)
 		curfp = false;
-	ProcessMovePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+
+	ProcessMovePC(zoneID, zoneID == zone->GetZoneID() ? zone->GetGuildID() : GUILD_NONE, x, y, z, heading, ignorerestrictions, zm);
 }
 
-void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm)
+void Client::MovePCQuest(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
+	if (IsAIControlled())
+		StopNavigation();
+	if (curfp)
+		curfp = false;
+
+	uint32 target_guild_zone = GUILD_NONE;
+
+	if (zoneID == zone->GetZoneID())
+		target_guild_zone = zone->GetGuildID();
+
+	ProcessMovePC(zoneID, target_guild_zone, x, y, z, heading, ignorerestrictions, zm);
+}
+
+void Client::MovePCGuildID(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
+	if (IsAIControlled())
+		StopNavigation();
+	if (curfp)
+		curfp = false;
+	ProcessMovePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
+}
+
+
+void Client::ProcessMovePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm)
 {
 	// From what I have read, dragged corpses should stay with the player for Intra-zone summons etc, but we can implement that later.
 	ClearDraggedCorpses();
@@ -453,7 +489,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 	if(zoneID == 0)
 		zoneID = zone->GetZoneID();
 
-	if(zoneID == zone->GetZoneID())
+	if(zoneID == zone->GetZoneID() && zoneGuildID == zone->GetGuildID())
 	{
 		if(GetPetID() != 0 && GetGM()) 
 		{
@@ -468,30 +504,30 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 
 	switch(zm) {
 		case GateToBindPoint:
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case ForceZoneToBindPoint:
 		case EvacToSafeCoords:
 		case ZoneToSafeCoords:
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case GMSummon:
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case ZoneToBindPoint:
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case ZoneSolicited:
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case SummonPC:
 			if(!GetGM())
 				Message_StringID(CC_Yellow, BEEN_SUMMONED);
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case Rewind:
 			Message(CC_Yellow, "Rewinding to previous location.");
-			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
+			ZonePC(zoneID, zoneGuildID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		default:
 			Log(Logs::General, Logs::Error, "Client::ProcessMovePC received a reguest to perform an unsupported client zone operation.");
@@ -502,7 +538,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 	ExpectedRewindPos = glm::vec3(x, y, z);
 }
 
-void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
+void Client::ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm) {
 
 	bool ReadyToZone = true;
 	int iZoneNameLength = 0;
@@ -544,11 +580,13 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			m_Position = glm::vec4(x, y, z, heading);
 			m_ZoneSummonLocation = m_Position;
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneID;
 			zonesummon_ignorerestrictions = 1;
 			break;
 		case ZoneSolicited:
 			m_ZoneSummonLocation = glm::vec4(x,y,z,heading);
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneID;
 			zonesummon_ignorerestrictions = ignorerestrictions;
 			break;
 		case GateToBindPoint:
@@ -617,12 +655,19 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneGuildID;
 
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
 			if (zone->GetZoneID() != zoneID && clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
 			{
 				clientpresumedzoneid = 184;
 			}
+			//Second hack: guild level instances
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			if (clientpresumedzoneid == 184)
 				clientpresumedzoneid = 185;
 			gmg->zone_id = clientpresumedzoneid;
@@ -644,10 +689,18 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			GMGoto_Struct* gmg = (GMGoto_Struct*) outapp->pBuffer;
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneGuildID;
 			if (zone->GetZoneID() != zoneID && clientpresumedzoneid == database.GetClientZoneID(zone->GetZoneID()))
 			{
 				clientpresumedzoneid = 184;
 			}
+
+			//Second hack: guild level instances
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			if (clientpresumedzoneid == 184)
 				clientpresumedzoneid = 185;
 			gmg->zoneID = clientpresumedzoneid;
@@ -663,9 +716,10 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			// we hide the real zoneid we want to evac/succor to here
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneGuildID;
 
 			Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (GTB). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
-			if(zoneID == GetZoneID()) {
+			if(zoneID == GetZoneID() && zoneGuildID == zone->GetGuildID()) {
 				//Not doing inter-zone for same zone gates. Client is supposed to handle these, based on PP info it is fed.
 				//properly handle proximities
 				entity_list.ProcessMove(this, glm::vec3(m_Position));
@@ -677,6 +731,14 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*)outapp->pBuffer;
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+
+
+			//Second hack: guild level instances
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			gmg->zone_id = clientpresumedzoneid;
 			gmg->x = x;
 			gmg->y = y;
@@ -694,6 +756,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			// we hide the real zoneid we want to evac/succor to here
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneGuildID;
 
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
 			gmg->zone_id = database.GetClientZoneID(zoneID);
@@ -701,6 +764,13 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			{
 				clientpresumedzoneid = 184;
 			}
+
+			//Second hack: guild level instances
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			if (clientpresumedzoneid == 184)
 				clientpresumedzoneid = 185;
 
@@ -723,6 +793,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 
 			// we hide the real zoneid we want to evac/succor to here
 			zonesummon_id = zoneID;
+			zonesummon_guildid = zoneGuildID;
 
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
 			gmg->zone_id = database.GetClientZoneID(zoneID);
@@ -730,6 +801,12 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			{
 				clientpresumedzoneid = 184;
 			}
+
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			if (clientpresumedzoneid == 184)
 				clientpresumedzoneid = 185;
 
@@ -745,7 +822,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			FastQueuePacket(&outapp);
 		}
 		else {
-			if(zoneID == GetZoneID()) {
+			if(zoneID == GetZoneID() && zoneGuildID == zonesummon_guildid) {
 				Log(Logs::Detail, Logs::EQMac, "Zoning packet about to be sent (GOTO). We are headed to zone: %i, at %f, %f, %f", zoneID, x, y, z);
 				//properly handle proximities
 				entity_list.ProcessMove(this, glm::vec3(m_Position));
@@ -758,8 +835,14 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 			zonesummon_id = zoneID;
-
+			zonesummon_guildid = zoneGuildID;
 			uint32 clientpresumedzoneid = database.GetClientZoneID(zoneID);
+
+			if (zone->GetZoneID() == zoneID && zone->GetGuildID() != zoneGuildID)
+			{
+				clientpresumedzoneid = 184;
+			}
+
 			gmg->zone_id = clientpresumedzoneid;
 			gmg->x = x;
 			gmg->y = y;
@@ -770,16 +853,17 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			FastQueuePacket(&outapp);
 		}
 
-		Log(Logs::Detail, Logs::EQMac, "Player %s has requested a zoning to LOC x=%f, y=%f, z=%f, heading=%f in zoneid=%i and type=%i", GetName(), x, y, z, heading, zoneID, zm);
+		Log(Logs::Detail, Logs::EQMac, "Player %s has requested a zoning to LOC x=%f, y=%f, z=%f, heading=%f in zoneid=%i zoneguildid=%i and type=%i", GetName(), x, y, z, heading, zoneID, zoneGuildID, zm);
 		//Clear zonesummon variables if we're zoning to our own zone
 		//Client wont generate a zone change packet to the server in this case so
 		//They aren't needed and it keeps behavior on next zone attempt from being undefined.
-		if(zoneID == zone->GetZoneID())
+		if(zoneID == zone->GetZoneID() && zoneGuildID == zone->GetGuildID())
 		{
 			if(zm != EvacToSafeCoords && zm != ZoneToSafeCoords && zm != ZoneToBindPoint && zm != ForceZoneToBindPoint)
 			{
 				m_ZoneSummonLocation = glm::vec4();
 				zonesummon_id = 0;
+				zonesummon_guildid = GUILD_NONE;
 				zonesummon_ignorerestrictions = 0;
 				zone_mode = ZoneUnsolicited;
 			}
@@ -790,11 +874,14 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 }
 
 
-void Client::GoToSafeCoords(uint16 zone_id) {
+void Client::GoToSafeCoords(uint16 zone_id, uint32 zone_guild_id) {
 	if(zone_id == 0)
 		zone_id = zone->GetZoneID();
 
-	MovePC(zone_id, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
+	if (zone_guild_id == 0)
+		zone_guild_id = zone->GetGuildID();
+
+	MovePCGuildID(zone_id, zone_guild_id, 0.0f, 0.0f, 0.0f, 0.0f, 0, ZoneToSafeCoords);
 }
 
 
@@ -997,7 +1084,7 @@ void Client::SendZoneFlagInfo(Client *to) {
 	}
 }
 
-bool Client::CanBeInZone(uint32 zoneid)
+bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 {
 	//check some critial rules to see if this char needs to be booted from the zone
 	//only enforce rules here which are serious enough to warrant being kicked from
@@ -1006,10 +1093,17 @@ bool Client::CanBeInZone(uint32 zoneid)
 	if(Admin() >= RuleI(GM, MinStatusToZoneAnywhere))
 		return(true);
 
+	if (guild_id != GUILD_NONE)
+	{
+		if (Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
+			return(true);
+	}
 	// If zoneid is 0, then we are just checking the current zone. In that case the player has already been allowed 
 	// to zone, and we're checking if we should boot them to bazaar.
 	const char *target_zone_name = zoneid > 0 ? database.GetZoneName(zoneid) : zone->GetShortName();
 	uint32 target_zone_id = zoneid > 0 ? zoneid : zone->GetZoneID();
+
+	uint32 target_zone_guild_id = zoneid > 0 ? zoneid : zone->GetGuildID();
 
 	float safe_x, safe_y, safe_z, safe_heading;
 	int16 minstatus = 0;
@@ -1019,6 +1113,25 @@ bool Client::CanBeInZone(uint32 zoneid)
 		//this should not happen...
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Unable to query zone info for ourself '%s'", target_zone_name);
 		return(false);
+	}
+
+	if (target_zone_guild_id != GUILD_NONE)
+	{
+		if (GuildID() != target_zone_guild_id)
+		{
+			Raid* raid = GetRaid();
+			if (!raid)
+			{
+				Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is not in a raid (%d / %d) ", GuildID(), target_zone_guild_id);
+				return false;
+			}
+
+			if (!raid->CanRaidEngageRaidTarget(target_zone_guild_id))
+			{
+				Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is in an ineligible raid force (%d / %d) ", GuildID(), target_zone_guild_id);
+				return false;
+			}
+		}
 	}
 
 	if(GetLevel() < minlevel) {

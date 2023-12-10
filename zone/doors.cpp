@@ -22,6 +22,7 @@
 
 #include "client.h"
 #include "doors.h"
+#include "raids.h"
 #include "entity.h"
 #include "guild_mgr.h"
 #include "mob.h"
@@ -68,6 +69,7 @@ Doors::Doors(const Door* door) :
 	this->islift		= door->islift;
 	this->close_time	= door->close_time;
 	this->can_open		= door->can_open;
+	this->guildzonedoor = door->guildzonedoor;
 
 	SetOpenState(false);
 
@@ -116,6 +118,7 @@ Doors::Doors(const char *dmodel, const glm::vec4& position, uint8 dopentype, uin
 	this->islift		= 0;
 	this->close_time	= 0;
 	this->can_open		= 0;
+	this->guildzonedoor = 0;
 	this->client_version_mask = 4294967295u;
 
 	SetOpenState(false);
@@ -334,10 +337,39 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 		uint32 zoneid = database.GetZoneID(dest_zone);
 		float temp_x = m_Destination.x;
 		float temp_y = m_Destination.y;
+		uint32 zoneguildid = GUILD_NONE;
 
 		if (zoneid != zone->GetZoneID() && !sender->CanBeInZone(zoneid))
 		{
 			return;
+		}
+
+		if (guildzonedoor)
+		{
+
+			if (!sender)
+				return;
+
+			Raid* player_raid = sender->GetRaid();
+
+			if (!player_raid)
+			{
+				sender->Message(CC_Red, "You are unable to enter a guild instance because you are not a part of a raid containing at least a guild officer as its leader with %i guild members present, and %i players at or above level %i present total.",
+					RuleI(Quarm, AutomatedRaidRotationRaidGuildMemberCountRequirement),
+					RuleI(Quarm, AutomatedRaidRotationRaidNonMemberCountRequirement),
+					RuleI(Quarm, AutomatedRaidRotationRaidGuildLevelRequirement));
+				return;
+			}
+
+			if (player_raid->CanRaidEngageRaidTarget(player_raid->GetLeaderGuildID()))
+			{
+				sender->Message(CC_Red, "You are unable to enter a guild instance because you are not a part of a raid containing at least a guild officer as its leader with %i guild members present, and %i players at or above level %i present total.", 
+					RuleI(Quarm, AutomatedRaidRotationRaidGuildMemberCountRequirement),
+					RuleI(Quarm, AutomatedRaidRotationRaidNonMemberCountRequirement),
+					RuleI(Quarm, AutomatedRaidRotationRaidGuildLevelRequirement));
+				return;
+			}
+			zoneguildid = player_raid->GetLeaderGuildID();
 		}
 
 		if ((floor_port || strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && !keyneeded)
@@ -346,7 +378,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 			{
 				sender->KeyRingAdd(playerkey);
 			}
-			sender->MovePC(zone->GetZoneID(), m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
+			sender->MovePCGuildID(zone->GetZoneID(), zoneguildid, m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
 		}
 		else if ((!IsDoorOpen() || opentype == 58 || floor_port) && (keyneeded && ((keyneeded == playerkey) || sender->GetGM())))
 		{
@@ -356,12 +388,12 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 			}
 			if(zoneid == zone->GetZoneID())
 			{
-				sender->MovePC(zone->GetZoneID(), m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
+				sender->MovePCGuildID(zone->GetZoneID(), zoneguildid, m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
 			}
 			else
 			{
 				zone->ApplyRandomLoc(zoneid, temp_x, temp_y);
-				sender->MovePC(zoneid, temp_x, temp_y, m_Destination.z, m_Destination.w);
+				sender->MovePCGuildID(zoneid, zoneguildid, temp_x, temp_y, m_Destination.z, m_Destination.w);
 			}
 		}
 
@@ -369,12 +401,12 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 		{
 			if(zoneid == zone->GetZoneID())
 			{
-				sender->MovePC(zone->GetZoneID(), m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
+				sender->MovePCGuildID(zone->GetZoneID(), zoneguildid, m_Destination.x, m_Destination.y, m_Destination.z, m_Destination.w);
 			}
 			else
 			{
 				zone->ApplyRandomLoc(zoneid, temp_x, temp_y);
-				sender->MovePC(zoneid, temp_x, temp_y, m_Destination.z, m_Destination.w);
+				sender->MovePCGuildID(zoneid, zoneguildid, temp_x, temp_y, m_Destination.z, m_Destination.w);
 			}
 		}
 	}
@@ -775,7 +807,7 @@ bool ZoneDatabase::LoadDoors(int32 iDoorCount, Door *into, const char *zone_name
                                     "opentype, lockpick, keyitem, nokeyring, triggerdoor, triggertype, "
                                     "dest_zone, dest_x, dest_y, dest_z, dest_heading, "
                                     "door_param, invert_state, incline, size, client_version_mask, altkeyitem, islift, "
-									"close_time, can_open "
+									"close_time, can_open, guildzonedoor "
                                     "FROM doors WHERE zone = '%s' AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
                                     "ORDER BY doorid asc", zone_name, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
 	auto results = QueryDatabase(query);
@@ -824,6 +856,7 @@ bool ZoneDatabase::LoadDoors(int32 iDoorCount, Door *into, const char *zone_name
 		into[rowIndex].islift = atobool(row[25]);
 		into[rowIndex].close_time = atoi(row[26]);
 		into[rowIndex].can_open = atobool(row[27]);
+		into[rowIndex].guildzonedoor = atobool(row[28]);
     }
 
 	return true;

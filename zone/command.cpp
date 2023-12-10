@@ -446,6 +446,7 @@ int command_init(void)
 		command_add("zheader", "[zonename] - Load zheader for zonename from the database.", AccountStatus::GMImpossible, command_zheader) ||
 		command_add("zone", "[Zone ID|Zone Short Name] [X] [Y] [Z] - Teleport to specified Zone by ID or Short Name (coordinates are optional).", AccountStatus::QuestTroupe, command_zone) ||
 		command_add("zonebootup", "(shortname) (ZoneServerID) - Make a zone server boot a specific zone. If no arguments are given, it will find and boot any crashed zones.", AccountStatus::GMImpossible, command_zonebootup) ||
+			command_add("zoneguild", "[Zone ID|Zone Short Name] [Guild ID] [X] [Y] [Z] - Teleport to specified Zone by ID or Short Name (coordinates are optional).", AccountStatus::QuestTroupe, command_zoneguild) ||
 		command_add("zonelock", "[list/lock/unlock] - Set/query lock flag for zoneservers.", AccountStatus::GMAreas, command_zonelock) ||
 		command_add("zoneshutdown", "[shortname] - Shut down a zone server.", AccountStatus::GMImpossible, command_zoneshutdown) ||
 		command_add("zonespawn", "- Not implemented.", AccountStatus::Max, command_zonespawn) ||
@@ -1302,6 +1303,7 @@ void command_summon(Client *c, const Seperator *sep){
 				szp->x_pos = c->GetX(); // May need to add a factor of 8 in here..
 				szp->y_pos = c->GetY();
 				szp->z_pos = c->GetZ();
+				szp->zoneguildid = zone->GetGuildID();
 				worldserver.SendPacket(pack);
 				safe_delete(pack);
 			}
@@ -1343,7 +1345,7 @@ void command_summon(Client *c, const Seperator *sep){
 		}
 
 		c->Message(CC_Default, "Summoning player %s to %1.1f, %1.1f, %1.1f", t->GetName(), c->GetX(), c->GetY(), c->GetZ());
-		t->CastToClient()->MovePC(zone->GetZoneID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
+		t->CastToClient()->MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), c->GetX(), c->GetY(), c->GetZ(), c->GetHeading(), 2, GMSummon);
 	}
 }
 
@@ -1351,7 +1353,7 @@ void command_zone(Client *c, const Seperator *sep)
 {
 	int arguments = sep->argnum;
 	if (!arguments) {
-		c->Message(CC_Default, "Usage: #zone [Zone ID|Zone Short Name] [X] [Y] [Z]");
+		c->Message(CC_Default, "Usage: #zone [Zone ID|Zone Short Name] [guild_id] [X] [Y] [Z]");
 		return;
 	}
 
@@ -1394,6 +1396,12 @@ void command_zone(Client *c, const Seperator *sep)
 		return;
 	}
 
+	auto guild_id = (
+		sep->IsNumber(2) ?
+		std::stoul(zone_identifier) :
+		database.GetZoneID(zone_identifier)
+		);
+
 	auto x = sep->IsNumber(2) ? std::stof(sep->arg[2]) : 0.0f;
 	auto y = sep->IsNumber(3) ? std::stof(sep->arg[3]) : 0.0f;
 	auto z = sep->IsNumber(4) ? std::stof(sep->arg[4]) : 0.0f;
@@ -1401,6 +1409,79 @@ void command_zone(Client *c, const Seperator *sep)
 
 	c->MovePC(
 		zone_id,
+		x,
+		y,
+		z,
+		0.0f,
+		0,
+		zone_mode
+	);
+}
+
+void command_zoneguild(Client *c, const Seperator *sep)
+{
+	int arguments = sep->argnum;
+	if (!arguments) {
+		c->Message(CC_Default, "Usage: #zoneguild [Zone ID|Zone Short Name] [Guild Id] [X] [Y] [Z]");
+		return;
+	}
+
+	const char* zone_identifier = sep->arg[1];
+
+	if (Strings::IsNumber(zone_identifier) && !strcmp(zone_identifier, "0")) {
+		c->Message(CC_Default, "Sending you to the safe coordinates of this zone.");
+
+		c->MovePC(
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f,
+			0,
+			ZoneToSafeCoords
+		);
+		return;
+	}
+
+	auto zone_id = (
+		sep->IsNumber(1) ?
+		std::stoul(zone_identifier) :
+		database.GetZoneID(zone_identifier)
+		);
+	auto zone_short_name = database.GetZoneName(zone_id);
+	if (!zone_id || !zone_short_name) {
+		c->Message(
+			CC_Default,
+			fmt::format(
+				"No zones were found matching '{}'.",
+				zone_identifier
+			).c_str()
+		);
+		return;
+	}
+
+	auto min_status = database.GetMinStatus(zone_id);
+	if (c->Admin() < min_status) {
+		c->Message(CC_Default, "Your status is not high enough to go to this zone.");
+		return;
+	}
+
+
+	const char* guild_identifier = sep->arg[2];
+
+	auto guild_id = (
+		sep->IsNumber(2) ?
+		std::stoul(guild_identifier) :
+		GUILD_NONE
+		);
+
+	auto x = sep->IsNumber(3) ? std::stof(sep->arg[3]) : 0.0f;
+	auto y = sep->IsNumber(4) ? std::stof(sep->arg[4]) : 0.0f;
+	auto z = sep->IsNumber(5) ? std::stof(sep->arg[5]) : 0.0f;
+	auto zone_mode = sep->IsNumber(3) ? ZoneSolicited : ZoneToSafeCoords;
+
+	c->MovePCGuildID(
+		zone_id,
+		guild_id,
 		x,
 		y,
 		z,
@@ -4152,7 +4233,7 @@ void command_corpse(Client *c, const Seperator *sep)
 				return;
 			}
 
-			Corpse* PlayerCorpse = database.SummonBuriedCharacterCorpses(t->CharacterID(), t->GetZoneID(), t->GetPosition());
+			Corpse* PlayerCorpse = database.SummonBuriedCharacterCorpses(t->CharacterID(), t->GetZoneID(), zone->GetGuildID(), t->GetPosition());
 
 			if (!PlayerCorpse)
 				c->Message(CC_Default, "Your target doesn't have any buried corpses.");
@@ -4270,7 +4351,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			c->Message(CC_Red, "CorpseID : Zone , x , y , z , Buried");
-			std::string query = StringFormat("SELECT id, zone_id, x, y, z, is_buried FROM character_corpses WHERE charid = %d", target->CastToClient()->CharacterID());
+			std::string query = StringFormat("SELECT id, zone_id, x, y, z, is_buried, guild_id FROM character_corpses WHERE charid = %d", target->CastToClient()->CharacterID());
 			auto results = database.QueryDatabase(query);
 
 			if (!results.Success() || results.RowCount() == 0)
@@ -4282,7 +4363,7 @@ void command_corpse(Client *c, const Seperator *sep)
 			for (auto row = results.begin(); row != results.end(); ++row)
 			{
 
-				c->Message(CC_Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[2], row[3], row[4], row[5]);
+				c->Message(CC_Yellow, " %s:	%s (%s), %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[6], row[2], row[3], row[4], row[5]);
 			}
 		}
 	}
@@ -4329,8 +4410,8 @@ void command_corpse(Client *c, const Seperator *sep)
 			c->Message(CC_Default, "Error: Target must be a player to list their backups.");
 		else
 		{
-			c->Message(CC_Red, "CorpseID : Zone , x , y , z , Items");
-			std::string query = StringFormat("SELECT id, zone_id, x, y, z FROM character_corpses_backup WHERE charid = %d", target->CastToClient()->CharacterID());
+			c->Message(CC_Red, "CorpseID : Zone , Guild, x , y , z , Items");
+			std::string query = StringFormat("SELECT id, zone_id, x, y, z, guild_id FROM character_corpses_backup WHERE charid = %d", target->CastToClient()->CharacterID());
 			auto results = database.QueryDatabase(query);
 
 			if (!results.Success() || results.RowCount() == 0)
@@ -4345,7 +4426,7 @@ void command_corpse(Client *c, const Seperator *sep)
 				auto ic_results = database.QueryDatabase(ic_query);
 				auto ic_row = ic_results.begin();
 
-				c->Message(CC_Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[2], row[3], row[4], ic_row[0]);
+				c->Message(CC_Yellow, " %s:	%s (%s), %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[5], row[2], row[3], row[4], ic_row[0]);
 			}
 		}
 	}
@@ -4391,7 +4472,7 @@ void command_corpse(Client *c, const Seperator *sep)
 			{
 				if(database.CopyBackupCorpse(corpseid))
 				{
-					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, t->CharacterID(), t->GetZoneID(), t->GetPosition());
+					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, t->CharacterID(), t->GetZoneID(), zone->GetGuildID(), t->GetPosition());
 
 					if (!PlayerCorpse)
 						c->Message(CC_Default, "Summoning of backup corpse failed. Please escalate this issue.");

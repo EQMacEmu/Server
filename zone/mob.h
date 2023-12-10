@@ -558,7 +558,7 @@ public:
 	bool IsWarriorClass() const;
 	char GetCasterClass() const;
 	uint8 GetArchetype() const;
-	void SetZone(uint32 zone_id);
+	void SetZone(uint32 zone_id, uint32 zone_guild_id = 0xFFFFFFFF);
 	void ShowStats(Client* client);
 	void ShowBuffs(Client* client);
 	void ShowBuffList(Client* client);

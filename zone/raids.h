@@ -79,6 +79,9 @@ public:
 	bool IsLeader(Client *c) { return leader==c; }
 	bool IsLeader(const char* name) { return (strcmp(leadername, name)==0); }
 	void SetRaidLeader(const char *wasLead, const char *name);
+	uint32 GetLeaderGuildID();
+
+	inline bool GetEngageCachedResult() { return raid_engage_check_result;	}
 
 	bool	Process();
 	bool	IsRaid() { return true; }
@@ -175,11 +178,14 @@ public:
 
 	RaidMember members[MAX_RAID_MEMBERS];
 	char leadername[64];
+	uint32 currentleaderguildid;
+
 protected:
 	Client *leader;
 	uint32 LootType;
 	bool disbandCheck;
 	bool forceDisband;
+	bool raid_engage_check_result;
 };
 
 

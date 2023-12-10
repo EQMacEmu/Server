@@ -1658,8 +1658,8 @@ uint8 Database::GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16
 	return base_cap;
 }
 
-uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZoneID, float* oX, float* oY, float* oZ, uint64* oDeathTime) { 
-	std::string query = StringFormat("SELECT `id`, `account_id`, `zone_id`, `x`, `y`, `z`, `e_hardcore_death_time` FROM `character_data` WHERE `name` = '%s'", iName);
+uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZoneID, uint32* oZoneGuildID, float* oX, float* oY, float* oZ, uint64* oDeathTime) {
+	std::string query = StringFormat("SELECT `id`, `account_id`, `zone_id`, `x`, `y`, `z`, `e_hardcore_death_time`, `e_zone_guild_id` FROM `character_data` WHERE `name` = '%s'", iName);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {
@@ -1677,6 +1677,7 @@ uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZo
 	if (oY){ *oY = atof(row[4]); }
 	if (oZ){ *oZ = atof(row[5]); }
 	if (oDeathTime) { *oDeathTime = atoll(row[6]); }
+	if (oZoneGuildID) { *oZoneGuildID = atoi(row[7]); }
 	return charid;
 }
 

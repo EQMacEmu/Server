@@ -313,6 +313,7 @@ void command_zcolor(Client *c, const Seperator *sep);
 void command_zheader(Client *c, const Seperator *sep);
 void command_zone(Client *c, const Seperator *sep);
 void command_zonebootup(Client *c, const Seperator *sep);
+void command_zoneguild(Client *c, const Seperator *sep);
 void command_zonelock(Client *c, const Seperator *sep);
 void command_zoneshutdown(Client *c, const Seperator *sep);
 void command_zonespawn(Client *c, const Seperator *sep);

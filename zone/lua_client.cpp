@@ -280,9 +280,9 @@ uint32 Lua_Client::GetBindZoneID(int index) {
 	return self->GetBindZoneID(index);
 }
 
-void Lua_Client::MovePC(int zone, float x, float y, float z, float heading) {
+void Lua_Client::MovePC(int zone_id, float x, float y, float z, float heading) {
 	Lua_Safe_Call_Void();
-	self->MovePC(zone, x, y, z, heading);
+	self->MovePCQuest(zone_id, x, y, z, heading);
 }
 
 void Lua_Client::ChangeLastName(const char *in) {

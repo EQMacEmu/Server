@@ -37,8 +37,8 @@ public:
 	bool		SendPacket(ServerPacket* pack) { return tcpc->SendPacket(pack); }
 	void		SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...);
 	void		SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message);
-	bool		SetZone(uint32 iZoneID, bool iStaticZone = false);
-	void		TriggerBootup(uint32 iZoneID = 0, const char* iAdminName = 0, bool iMakeStatic = false);
+	bool		SetZone(uint32 iZoneID, bool iStaticZone = false, uint32 iGuildID = 0xFFFFFFFF /*GUILD_NONE*/);
+	void		TriggerBootup(uint32 iZoneID = 0, const char* iAdminName = 0, bool iMakeStatic = false, uint32 iGuildID = 0xFFFFFFFF /*GUILD_NONE*/);
 	void		Disconnect() { tcpc->Disconnect(); }
 	void		IncomingClient(Client* client);
 	void		LSBootUpdate(uint32 zoneid, bool startup = false);
@@ -53,6 +53,7 @@ public:
 	const char*			GetCompileTime() const{ return compiled; }
 	void				SetCompile(char* in_compile){ strcpy(compiled,in_compile); }
 	inline uint32		GetZoneID() const	{ return zone_server_zone_id; }
+	inline uint32		GetZoneGuildID() const { return zone_server_guild_id; }
 	inline uint32		GetIP() const		{ return tcpc->GetrIP(); }
 	inline uint16		GetPort() const		{ return tcpc->GetrPort(); }
 	inline const char*	GetCAddress() const	{ return client_address; }
@@ -85,7 +86,9 @@ private:
 	char	zone_name[32];
 	char	long_name[256];
 	uint32	zone_server_zone_id;
+	uint32  zone_server_guild_id;
 	uint32	zone_server_previous_zone_id;
+	uint32	zone_server_previous_guild_id;
 	Timer	zone_boot_timer;
 	uint32  zone_os_process_id;
 	std::string launcher_name;	//the launcher which started us

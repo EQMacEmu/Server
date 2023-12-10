@@ -53,6 +53,7 @@ public:
 	inline uint32		GetIP()				{ return ip; }
 	inline uint16		GetPort()			{ return port; }
 	inline uint32		GetZoneID()			{ return zoneID; }
+	inline uint32		GetZoneGuildID() { return zoneGuildID; }
 	inline uint32		WaitingForBootup()	{ return pwaitingforbootup; }
 	inline const char *	GetAccountName()	{ if (cle) { return cle->AccountName(); } return "NOCLE"; }
 	inline int16		GetAdmin()			{ if (cle) { return cle->Admin(); } return 0; }
@@ -76,6 +77,7 @@ private:
 	uint32	charid;
 	char	char_name[64];
 	uint32	zoneID;
+	uint32	zoneGuildID;
 	bool	pZoning;
 	Timer	autobootup_timeout;
 	uint32	pwaitingforbootup;

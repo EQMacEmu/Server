@@ -94,10 +94,10 @@ class MobMovementManager;
 class Zone
 {
 public:
-	static bool Bootup(uint32 iZoneID, bool iStaticZone = false);
+	static bool Bootup(uint32 iZoneID, bool iStaticZone = false, uint32 iGuildID = 0xFFFFFFFF);
 	static void Shutdown(bool quite = false);
 
-	Zone(uint32 in_zoneid, const char* in_short_name);
+	Zone(uint32 in_zoneid, const char* in_short_name, uint32 guild_id = 0xFFFFFFFF);
 	~Zone();
 	bool	Init(bool iStaticZone);
 	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
@@ -108,6 +108,7 @@ public:
 	inline const char*	GetFileName()	{ return file_name; }
 	inline const char*	GetShortName()	{ return short_name; }
 	inline const uint32	GetZoneID() const { return zoneid; }
+	inline const uint32	GetGuildID() const { return guildid; }
 	inline const uint8	GetZoneType() const { return zone_type; }
 
     inline glm::vec4 GetSafePoint() { return m_SafePoint; }
@@ -279,6 +280,8 @@ public:
 
 	void ApplyRandomLoc(uint32 zoneid, float& x, float& y);
 
+	bool CanClientEngage(Client * initiator, Mob * target);
+
 	// random object that provides random values for the zone
 	EQ::Random random;
 
@@ -314,6 +317,7 @@ public:
 
 private:
 	uint32	zoneid;
+	uint32	guildid;
 	char*	short_name;
 	char	file_name[16];
 	char*	long_name;

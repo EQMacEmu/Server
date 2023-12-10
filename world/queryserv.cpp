@@ -102,8 +102,10 @@ bool QueryServConnection::Process()
 			}
 			case ServerOP_QueryServGeneric:
 			{
+				// Secrets note: If this is ever merged in from EQEmulator, keep in mind we don't use instanceID, we use GuildID!!
 				uint32 ZoneID = pack->ReadUInt32();
-				zoneserver_list.SendPacket(ZoneID, pack);
+				uint32 GuildID = pack->ReadUInt32();
+				zoneserver_list.SendPacket(ZoneID, GuildID, pack);
 				break;
 			}
 			default:

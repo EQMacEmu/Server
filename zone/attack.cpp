@@ -1566,11 +1566,13 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	if (!IsLD())
 	{
 		m_pp.zone_id = m_pp.binds[0].zoneId;
+		m_epp.zone_guild_id = GUILD_NONE;
 		database.MoveCharacterToZone(this->CharacterID(), database.GetZoneName(m_pp.zone_id));
 	}
 	else
 	{
 		m_pp.zone_id = database.MoveCharacterToBind(CharacterID());
+		m_epp.zone_guild_id = GUILD_NONE;
 		glm::vec4 bindpts (m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
 		m_Position = bindpts;
 	}

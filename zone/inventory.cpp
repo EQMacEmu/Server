@@ -275,7 +275,7 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 			//make sure we are not completely full...
 			if(to_slot == EQ::invslot::slotCursor || to_slot == INVALID_INDEX)
 			{
-				if (inst->GetItem()->NoDrop == 0)
+				if (inst->GetItem()->NoDrop == 0 || zone && zone->GetGuildID() != GUILD_NONE)
 				{
 					//If it's no drop, force it to the cursor. This carries the risk of deletion if the player already has this item on their cursor
 					// or if the cursor queue is full. But in this situation, we have little other recourse.
@@ -355,6 +355,13 @@ void Client::DropItem(int16 slot_id)
 //EntityList can be used by NPCs for things like disarm.
 void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, uint32 decay_time, bool message)
 {
+
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		Message(CC_Red, "You cannot drop items in this zone. Deleting.");
+		return;
+	}
+
 	if (!inst) {
 		// Item doesn't exist in inventory!
 		Message(CC_Red, "Error: Item not found");
@@ -709,6 +716,9 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 		Message_StringID(CC_Default, DUP_LORE);
 		return false;
 	}
+
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+		drop = false;
 
 	EQ::ItemInstance* cursoritem = m_inv.GetItem(EQ::invslot::slotCursor);
 	if (cursoritem == nullptr)

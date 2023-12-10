@@ -730,18 +730,18 @@ bool Corpse::Save() {
 
 	/* Create New Corpse*/
 	if (corpse_db_id == 0) {
-		corpse_db_id = database.SaveCharacterCorpse(char_id, corpse_name, zone->GetZoneID(), dbpc, m_Position);
+		corpse_db_id = database.SaveCharacterCorpse(char_id, corpse_name, zone->GetZoneID(), zone->GetGuildID(), dbpc, m_Position);
 		if(!IsEmpty() && RuleB(Character, UsePlayerCorpseBackups))
 		{
-			database.SaveCharacterCorpseBackup(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), dbpc, m_Position);
+			database.SaveCharacterCorpseBackup(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), zone->GetGuildID(), dbpc, m_Position);
 		}
 	}
 	/* Update Corpse Data */
 	else{
-		corpse_db_id = database.UpdateCharacterCorpse(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), dbpc, m_Position, IsRezzed());
+		corpse_db_id = database.UpdateCharacterCorpse(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), zone->GetGuildID(), dbpc, m_Position, IsRezzed());
 		if(!IsEmpty() && RuleB(Character, UsePlayerCorpseBackups))
 		{
-			database.UpdateCharacterCorpseBackup(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), dbpc, m_Position, IsRezzed());
+			database.UpdateCharacterCorpseBackup(corpse_db_id, char_id, corpse_name, zone->GetZoneID(), zone->GetGuildID(), dbpc, m_Position, IsRezzed());
 		}
 	}
 
@@ -957,12 +957,13 @@ bool Corpse::Process() {
 			}
 
 			player_corpse_depop = true;
-			database.SendCharacterCorpseToGraveyard(corpse_db_id, zone->graveyard_zoneid(), zone->GetGraveyardPoint());
+			database.SendCharacterCorpseToGraveyard(corpse_db_id, zone->graveyard_zoneid(), GUILD_NONE, zone->GetGraveyardPoint());
 			corpse_graveyard_timer.Disable();
 			auto pack = new ServerPacket(ServerOP_SpawnPlayerCorpse, sizeof(SpawnPlayerCorpse_Struct));
 			SpawnPlayerCorpse_Struct* spc = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
 			spc->player_corpse_id = corpse_db_id;
 			spc->zone_id = zone->graveyard_zoneid();
+			spc->GuildID = GUILD_NONE;
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
 			Log(Logs::General, Logs::Corpse, "Moved %s player corpse to the designated graveyard in zone %s.", this->GetName(), database.GetZoneName(zone->graveyard_zoneid()));
@@ -1970,6 +1971,7 @@ void Corpse::IsOwnerOnline()
 			strncpy(online->name, GetOwnerName(), 64);
 			online->corpseid = this->GetID();
 			online->zoneid = zone->GetZoneID();
+			online->zoneguildid = zone->GetGuildID();
 			online->online = 0;
 			online->accountid = accountid;
 			worldserver.SendPacket(pack);

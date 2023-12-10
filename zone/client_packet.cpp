@@ -691,7 +691,7 @@ void Client::CompleteConnect()
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
 		if (m_pp.expansions & LuclinEQ)
 		{
-			GoToSafeCoords(database.GetZoneID("arena"));
+			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
 		}
 		else
 		{
@@ -700,10 +700,10 @@ void Client::CompleteConnect()
 			{
 				m_pp.expansions = m_pp.expansions + LuclinEQ;
 				database.SetExpansion(AccountName(), m_pp.expansions);
-				GoToSafeCoords(database.GetZoneID("bazaar"));
+				GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
 			}
 
-			GoToSafeCoords(database.GetZoneID("arena"));
+			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
 		}
 		return;
 	}
@@ -790,7 +790,7 @@ void Client::CheatDetected(CheatTypes CheatType, float x, float y, float z)
 			char hString[250];
 			sprintf(hString, "/MQGate style hack, zone: %s:%d, loc: %.2f, %.2f, %.2f", database.GetZoneName(GetZoneID()), GetZoneID(), GetX(), GetY(), GetZ());
 			database.SetMQDetectionFlag(this->account_name, this->name, hString, zone->GetShortName());
-			this->SetZone(this->GetZoneID()); //Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
+			this->SetZone(this->GetZoneID(), zone ? zone->GetGuildID() : GUILD_NONE); //Prevent the player from zoning, place him back in the zone where he tried to originally /gate.
 		}
 		break;
 	case MQGhost: //Not currently implemented, but the framework is in place - just needs detection scenarios identified
@@ -1244,6 +1244,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	conn_state = PlayerProfileLoaded;
 
 	m_pp.zone_id = zone->GetZoneID();
+	m_epp.zone_guild_id = zone->GetGuildID();
 	ignore_zone_count = false;
 	
 	
@@ -3688,11 +3689,18 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 	Message_StringID(MT_DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
 }
 
-void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
+void Client::Handle_OP_CreateObject(const EQApplicationPacket *app)
 {
 	if (Admin() > 0)
 	{
 		std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
+		Message(CC_Red, msg.c_str());
+		return;
+	}
+
+	if (zone && zone->GetGuildID())
+	{
+		std::string msg = "You cannot drop items on the ground in guild instances.";
 		Message(CC_Red, msg.c_str());
 		return;
 	}
@@ -4864,7 +4872,7 @@ void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 	}
 
 	uint32 zonereq = *((uint32 *)app->pBuffer);
-	GoToSafeCoords(zonereq);
+	GoToSafeCoords(zonereq, GUILD_NONE);
 
 	char szArg[5];
 	sprintf(szArg, "%i", zonereq);
@@ -5218,6 +5226,7 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 		gj->gid = group->GetID();
 		gj->zoneid = zone->GetZoneID();
+		gj->zoneguildid = zone->GetGuildID();
 		strcpy(gj->member_name, GetName());
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -7890,6 +7899,14 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		Message(CC_Red, "You cannot use merchants in guild instances.");
+		QueuePacket(returnapp);
+		safe_delete(returnapp);
+		return;
+	}
+
 	if (Admin() > 0 && tmpmer_used)
 	{
 		Message(CC_Red, "That item isn't normally sold here. You are a GM. You'd be griefing players. The gods weep today.");
@@ -8117,6 +8134,22 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 	if (Admin() > 0)
 	{
 		Message(CC_Red, "Just use commands. You're literally a GM, silly goose.");
+		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
+		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
+
+		mco->itemslot = 0;
+		mco->npcid = vendor->GetID();
+		mco->quantity = 0;
+		mco->price = 0;
+		mco->playerid = this->GetID();
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		Message(CC_Red, "You cannot use merchants within guild instances.");
 		auto outapp = new EQApplicationPacket(OP_ShopPlayerSell, sizeof(OldMerchant_Purchase_Struct));
 		OldMerchant_Purchase_Struct* mco = (OldMerchant_Purchase_Struct*)outapp->pBuffer;
 

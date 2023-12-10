@@ -59,6 +59,7 @@ struct ExtendedProfile_Struct {
 	uint8				hardcore;
 	uint64				hardcore_death_time;
 	uint8				betabuff_gear_flag;
+	uint32				zone_guild_id;
 };
 
 #pragma pack()

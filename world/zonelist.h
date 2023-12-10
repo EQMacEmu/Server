@@ -22,7 +22,7 @@ public:
 	~ZSList();
 	ZoneServer* FindByName(const char* zonename);
 	ZoneServer* FindByID(uint32 ZoneID);
-	ZoneServer* FindByZoneID(uint32 ZoneID);
+	ZoneServer* FindByZoneID(uint32 ZoneID, uint32 GuildID);
 	ZoneServer*	FindByPort(uint16 port);
 
 	void	SendChannelMessage(const char* from, const char* to, uint8 chan_num, uint8 language, uint8 lang_skill, const char* message, ...);
@@ -38,11 +38,11 @@ public:
 	void	Process();
 	void	KillAll();
 	bool	SendPacket(ServerPacket* pack);
-	bool	SendPacket(uint32 zoneid, ServerPacket* pack);
+	bool	SendPacket(uint32 zoneid, uint32 GuildID, ServerPacket* pack); // 0 guildid = wildcard.
 	inline uint32	GetNextID()		{ return NextID++; }
 	void	RebootZone(const char* ip1,uint16 port, const char* ip2, uint32 skipid, uint32 zoneid = 0);
-	uint32	TriggerBootup(uint32 iZoneID);
-	void	SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const char* zonename, bool iMakeStatic = false);
+	uint32	TriggerBootup(uint32 iZoneID, uint32 iGuildID);
+	void	SOPZoneBootup(const char* adminname, uint32 ZoneServerID, uint32 iGuildID, const char* zonename, bool iMakeStatic = false);
 	EQTime	worldclock;
 	bool	SetLockedZone(uint16 iZoneID, bool iLock);
 	bool	IsZoneLocked(uint16 iZoneID);

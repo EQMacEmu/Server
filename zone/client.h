@@ -119,7 +119,8 @@ typedef enum {
 	SummonPC, // In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
 	Rewind, // Summon to /rewind location.
 	EvacToSafeCoords,
-	ForceZoneToBindPoint
+	ForceZoneToBindPoint,
+	ZoneToGuildZone
 } ZoneMode;
 
 typedef enum {
@@ -519,13 +520,15 @@ public:
 	bool	IsInLevelRange(uint8 maxlevel);
 
 	void GoToBind(uint8 bindnum = 0);
-	void GoToSafeCoords(uint16 zone_id);
+	void GoToSafeCoords(uint16 zone_id, uint32 zone_guild_id);
 	void Gate();
 	void SetBindPoint(int to_zone = -1, const glm::vec3& location = glm::vec3());
 	void SetBindPoint2(int to_zone = -1, const glm::vec4& location = glm::vec4());
 	uint32 GetStartZone(void);
 	void MovePC(const char* zonename, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void MovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void MovePCGuildID(uint32 zoneID, uint32 zone_guild_id, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void MovePCQuest(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	void MovePC(float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	bool CheckLoreConflict(const EQ::ItemData* item);
 	void ChangeLastName(const char* in_lastname);
@@ -1042,7 +1045,7 @@ public:
 
 	bool IsUnderWater();
 	bool IsInWater();
-	bool CanBeInZone(uint32 zoneid = 0);
+	bool CanBeInZone(uint32 zoneid = 0, uint32 guild_id = 0);
 
 	// this is a TAKP enhancement that tries to give some leeway for /corpse drag range when the player is moving while dragging
 	// https://www.takproject.net/forums/index.php?threads/11-9-2022.23725/
@@ -1195,12 +1198,13 @@ private:
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);
 	void SendZoneError(ZoneChange_Struct *zc, int8 err);
-	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r);
-	void ZonePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm);
-	void ProcessMovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
+	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 zone_guild_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r);
+	void ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm);
+	void ProcessMovePC(uint32 zoneID, uint32 zoneguildid, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 
 	glm::vec4 m_ZoneSummonLocation;
 	uint16 zonesummon_id;
+	uint32 zonesummon_guildid;
 	uint8 zonesummon_ignorerestrictions;
 	ZoneMode zone_mode;
 

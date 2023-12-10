@@ -4085,6 +4085,11 @@ void EntityList::GroupMessage(uint32 gid, const char *from, const char *message,
 
 uint16 EntityList::CreateGroundObject(uint32 itemid, const glm::vec4& position, uint32 decay_time)
 {
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		return 0;
+	}
+
 	const EQ::ItemData *is = database.GetItem(itemid);
 	if (!is)
 		return 0;

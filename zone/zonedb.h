@@ -260,25 +260,25 @@ public:
 	bool		LoadCharacterCorpseRezData(uint32 corpse_id, uint32 *exp, uint32 *gmexp, bool *rezzable, bool *is_rezzed);
 	bool		LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct* pcs);
 	Corpse*		LoadCharacterCorpse(uint32 player_corpse_id);
-	Corpse*		SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
-	Corpse*		SummonCharacterCorpse(uint32 corpse_id, uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
+	Corpse*		SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_zoneid, uint32 dest_zoneguildid, const glm::vec4& position);
+	Corpse*		SummonCharacterCorpse(uint32 corpse_id, uint32 char_id, uint32 dest_zoneid, uint32 dest_zoneguildid, const glm::vec4& position);
 	void		MarkCorpseAsRezzed(uint32 dbid);
 	bool		BuryCharacterCorpse(uint32 dbid);
 	bool		BuryAllCharacterCorpses(uint32 charid);
 	bool		DeleteCharacterCorpse(uint32 dbid);
-	bool		SummonAllCharacterCorpses(uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
-	bool		UnburyCharacterCorpse(uint32 dbid, uint32 new_zoneid, const glm::vec4& position);
-	bool		LoadCharacterCorpses(uint32 iZoneID);
+	bool		SummonAllCharacterCorpses(uint32 char_id, uint32 dest_zoneid, uint32 dest_zone_guild_id, const glm::vec4& position);
+	bool		UnburyCharacterCorpse(uint32 dbid, uint32 new_zoneid, uint32 new_zoneguildid, const glm::vec4& position);
+	bool		LoadCharacterCorpses(uint32 iZoneID, uint32 iGuildID);
 	bool		DeleteGraveyard(uint32 zone_id, uint32 graveyard_id);
 	uint32		GetCharacterCorpseDecayTimer(uint32 corpse_db_id);
 	uint32		GetCharacterBuriedCorpseCount(uint32 char_id);
-	uint32		SendCharacterCorpseToGraveyard(uint32 dbid, uint32 zoneid, const glm::vec4& position);
+	uint32		SendCharacterCorpseToGraveyard(uint32 dbid, uint32 zoneid, uint32 zone_guild_id, const glm::vec4& position);
 	uint32		CreateGraveyardRecord(uint32 graveyard_zoneid, const glm::vec4& position);
 	uint32		AddGraveyardIDToZone(uint32 zone_id, uint32 graveyard_id);
-	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
-	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
-	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
-	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
+	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, uint32 zoneguildid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
+	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, uint32 zoneguildid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
+	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, uint32 zoneguildid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
+	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, uint32 zoneguildid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
 	uint32		GetFirstCorpseID(uint32 char_id);
 	uint32		GetCharacterCorpseCount(uint32 char_id);
 	uint32		GetCharacterCorpseID(uint32 char_id, uint8 corpse);
@@ -322,12 +322,12 @@ public:
 	/* Spawns and Spawn Points  */
 	bool		LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list);
 	bool		LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list);
-	bool		PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list);
-	bool		PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, const glm::vec4& client_position, uint32 repop_distance);
-	bool		PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list);
+	bool		PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, uint32 guildid = 0xFFFFFFFF);
+	bool		PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, const glm::vec4& client_position, uint32 repop_distance, uint32 guildid = 0xFFFFFFFF);
+	bool		PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, uint32 guildid = 0xFFFFFFFF);
 	bool		CreateSpawn2(Client *c, uint32 spawngroup, const char* zone, const glm::vec4& position, uint32 respawn, uint32 variance, uint16 condition, int16 cond_value);
-	void		UpdateRespawnTime(uint32 id, uint32 timeleft);
-	uint32		GetSpawnTimeLeft(uint32 id);
+	void		UpdateRespawnTime(uint32 id, uint32 timeleft, uint32 guild_id = 0xFFFFFFFF);
+	uint32		GetSpawnTimeLeft(uint32 id, uint32 guild_id = 0xFFFFFFFF);
 	void		UpdateSpawn2Status(uint32 id, uint8 new_status);
 
 	/* Grids/Paths  */

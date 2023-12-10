@@ -673,7 +673,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 
 		Iterator.Advance();
 	}
-	zoneserver_list.SendPacket(from->zone(), pack);
+	zoneserver_list.SendPacket(from->zone(), from->GuildID(), pack);
 	safe_delete(pack);
 }
 
@@ -1331,7 +1331,7 @@ void ClientList::ZoneBootup(ZoneServer* zs) {
 	while(iterator.MoreElements())
 	{
 		if (iterator.GetData()->WaitingForBootup()) {
-			if (iterator.GetData()->GetZoneID() == zs->GetZoneID()) {
+			if (iterator.GetData()->GetZoneID() == zs->GetZoneID() && iterator.GetData()->GetZoneGuildID()) {
 				iterator.GetData()->EnterWorld(false);
 			}
 			else if (iterator.GetData()->WaitingForBootup() == zs->GetID()) {
@@ -1385,25 +1385,25 @@ bool ClientList::SendPacket(const char* to, ServerPacket* pack) {
 }
 
 void ClientList::SendGuildPacket(uint32 guild_id, ServerPacket* pack) {
-	std::set<uint32> zone_ids;
+	std::set<std::pair<uint32, uint32>> zone_ids;
 
 	LinkedListIterator<ClientListEntry*> iterator(clientlist);
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		if (iterator.GetData()->GuildID() == guild_id) {
-			zone_ids.insert(iterator.GetData()->zone());
+			zone_ids.emplace(iterator.GetData()->zone(), iterator.GetData()->GetZoneGuildID());
 		}
 		iterator.Advance();
 	}
 
 	//now we know all the zones, send it to each one... this is kinda a shitty way to do this
 	//since its basically O(n^2)
-	std::set<uint32>::iterator cur, end;
+	std::set<std::pair<uint32, uint32>>::iterator cur, end;
 	cur = zone_ids.begin();
 	end = zone_ids.end();
 	for(; cur != end; cur++) {
-		zoneserver_list.SendPacket(*cur, pack);
+		zoneserver_list.SendPacket(cur->first, cur->second, pack);
 	}
 }
 

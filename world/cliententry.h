@@ -66,6 +66,7 @@ public:
 	inline uint32		GroupID() const		{ return pgroupid; }
 	inline const char*	name() const		{ return pname; }
 	inline uint32		zone() const		{ return pzone; }
+	inline uint32		zoneguildid() const { return pzoneguildid; }
 	inline uint8			level() const		{ return plevel; }
 	inline uint8			class_() const		{ return pclass_; }
 	inline uint16		race() const		{ return prace; }
@@ -81,6 +82,8 @@ public:
 	inline uint8			GetGM() const		{ return gm; }
 	inline void			SetGM(uint8 igm)	{ gm = igm; }
 	inline void			SetZone(uint32 zone) { pzone = zone; }
+	inline void			SetZoneGuildID(uint32 zoneguildid) { pzoneguildid = zoneguildid; }
+	inline uint32			GetZoneGuildID() { return pzoneguildid; }
 	inline bool	IsLocalClient() const { return plocal; }
 	inline uint8			GetLFGFromLevel() const { return pLFGFromLevel; }
 	inline uint8			GetLFGToLevel() const { return pLFGToLevel; }
@@ -126,6 +129,7 @@ private:
 	// Character info
 	ZoneServer* pzoneserver;
 	uint32	pzone;
+	uint32	pzoneguildid;
 	uint32	pcharid;
 	char	pname[64];
 	uint32  pgroupid;

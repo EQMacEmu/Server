@@ -68,10 +68,16 @@ WorldServer::WorldServer()
 WorldServer::~WorldServer() {
 }
 
-void WorldServer::SetZoneData(uint32 iZoneID) {
+void WorldServer::SetZoneData(uint32 iZoneID, uint32 iZoneGuildID) {
 	auto pack = new ServerPacket(ServerOP_SetZone, sizeof(SetZone_Struct));
 	SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
+
+	if (iZoneGuildID == 0)
+	{
+		iZoneGuildID = 0xFFFFFFFF;
+	}
 	szs->zoneid = iZoneID;
+	szs->zoneguildid = iZoneGuildID;
 	if (zone) {
 		szs->staticzone = zone->IsStaticZone();
 	}
@@ -125,13 +131,13 @@ void WorldServer::OnConnected() {
 	safe_delete(pack);
 
 	if (is_zone_loaded) {
-		this->SetZoneData(zone->GetZoneID());
+		this->SetZoneData(zone->GetZoneID(), zone->GetGuildID());
 		entity_list.UpdateWho(true);
 		this->SendEmoteMessage(0, 0, 15, "Zone connect: %s", zone->GetLongName());
 		zone->GetTimeSync();
 	}
 	else {
-		this->SetZoneData(0);
+		this->SetZoneData(0, GUILD_NONE);
 	}
 
 	pack = new ServerPacket(ServerOP_LSZoneBoot,sizeof(ZoneBoot_Struct));
@@ -261,7 +267,7 @@ void WorldServer::Process() {
 				break;
 			ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 
-			if(ztz->current_zone_id == zone->GetZoneID()) {
+			if(ztz->current_zone_id == zone->GetZoneID() && ztz->current_zone_guild_id == zone->GetGuildID()) {
 				// it's a response
 				Entity* entity = entity_list.GetClientByName(ztz->name);
 				if(entity == 0)
@@ -271,7 +277,7 @@ void WorldServer::Process() {
 				ZoneChange_Struct* zc2=(ZoneChange_Struct*)outapp->pBuffer;
 				if(ztz->response <= 0) {
 					zc2->success = ZONE_ERROR_NOTREADY;
-					entity->CastToMob()->SetZone(ztz->current_zone_id);
+					entity->CastToMob()->SetZone(ztz->current_zone_id, ztz->current_zone_guild_id);
 					entity->CastToClient()->SetZoning(false);
 					entity->CastToClient()->SetLockSavePosition(false);
 				}
@@ -281,10 +287,10 @@ void WorldServer::Process() {
 					zc2->zoneID=ztz->requested_zone_id;
 					zc2->success = 1;
 
-					entity->CastToMob()->SetZone(ztz->requested_zone_id);
+					entity->CastToMob()->SetZone(ztz->requested_zone_id, ztz->requested_zone_guild_id);
 
 					if(ztz->ignorerestrictions == 3) 
-						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id);
+						entity->CastToClient()->GoToSafeCoords(ztz->requested_zone_id, ztz->requested_zone_guild_id);
 				}
 				outapp->priority = 6;
 				entity->CastToClient()->QueuePacket(outapp, true, Mob::ZONING);
@@ -413,7 +419,7 @@ void WorldServer::Process() {
 			}
 			// Annouce the change to the world
 			if (!is_zone_loaded) {
-				SetZoneData(0);
+				SetZoneData(0, GUILD_NONE);
 			}
 			else {
 				SendEmoteMessage(0, 0, 15, "Zone shutdown: %s", zone->GetLongName());
@@ -431,8 +437,8 @@ void WorldServer::Process() {
 			}
 			ServerZoneStateChange_struct* zst = (ServerZoneStateChange_struct *) pack->pBuffer;
 			if (is_zone_loaded) {
-				SetZoneData(zone->GetZoneID());
-				if (zst->zoneid == zone->GetZoneID()) {
+				SetZoneData(zone->GetZoneID(), zone->GetGuildID());
+				if (zst->zoneid == zone->GetZoneID() && zst->ZoneServerGuildID == zone->GetGuildID()) {
 					// This packet also doubles as "incoming client" notification, lets not shut down before they get here
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
 				}
@@ -455,15 +461,15 @@ void WorldServer::Process() {
 			}
 			ServerZoneIncomingClient_Struct* szic = (ServerZoneIncomingClient_Struct*) pack->pBuffer;
 			if (is_zone_loaded) {
-				SetZoneData(zone->GetZoneID());
-				if (szic->zoneid == zone->GetZoneID()) {
+					SetZoneData(zone->GetZoneID(), zone->GetGuildID());
+				if (szic->zoneid == zone->GetZoneID() && szic->zoneguildid == zone->GetGuildID()) {
 					zone->AddAuth(szic);
 					// This packet also doubles as "incoming client" notification, lets not shut down before they get here
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
 				}
 			}
 			else {
-				if ((Zone::Bootup(szic->zoneid, 0))) {
+				if ((Zone::Bootup(szic->zoneid, 0, szic->zoneguildid))) {
 					zone->AddAuth(szic);
 				}
 			}
@@ -486,7 +492,7 @@ void WorldServer::Process() {
 				else {
 					SendEmoteMessage(szp->adminname, 0, 0, "Summoning %s to %s %1.1f, %1.1f, %1.1f", szp->name, szp->zone, szp->x_pos, szp->y_pos, szp->z_pos);
 				}
-				client->MovePC(database.GetZoneID(szp->zone), szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
+				client->MovePCGuildID(database.GetZoneID(szp->zone), szp->zoneguildid, szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
 			}
 			break;
 		}
@@ -562,6 +568,7 @@ void WorldServer::Process() {
 				szp->x_pos = client->GetX();
 				szp->y_pos = client->GetY();
 				szp->z_pos = client->GetZ();
+				szp->zoneguildid = zone->GetGuildID();
 				SendPacket(outpack);
 				safe_delete(outpack);
 			}
@@ -734,7 +741,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupLeave: {
 			ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 			if(zone){
-				if(gl->zoneid == zone->GetZoneID())
+				if(gl->zoneid == zone->GetZoneID() && gl->zoneguildid == zone->GetGuildID())
 					break;
 
 				entity_list.SendGroupLeave(gl->gid, gl->member_name, gl->checkleader);
@@ -820,6 +827,7 @@ void WorldServer::Process() {
 				auto pack2 = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));
 				ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack2->pBuffer;
 				gj->gid = group->GetID();
+				gj->zoneguildid = zone->GetGuildID();
 				gj->zoneid = zone->GetZoneID();
 				strn0cpy(gj->member_name, sgfs->gf.name2, sizeof(gj->member_name));
 				worldserver.SendPacket(pack2);
@@ -911,7 +919,7 @@ void WorldServer::Process() {
 		case ServerOP_GroupJoin: {
 			ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 			if(zone){
-				if(gj->zoneid == zone->GetZoneID())
+				if(gj->zoneid == zone->GetZoneID() && gj->zoneguildid == zone->GetGuildID())
 					break;
 
 				Group* g = entity_list.GetGroupByID(gj->gid);
@@ -926,7 +934,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupJoin: {
 			ServerRaidGroupJoin_Struct* gj = (ServerRaidGroupJoin_Struct*)pack->pBuffer;
 			if (zone) {
-				if (gj->zoneid == zone->GetZoneID())
+				if (gj->zoneid == zone->GetZoneID() && gj->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid* r = entity_list.GetRaidByID(gj->rid);
@@ -941,7 +949,7 @@ void WorldServer::Process() {
 		case ServerOP_ForceGroupUpdate: {
 			ServerForceGroupUpdate_Struct* fgu = (ServerForceGroupUpdate_Struct*)pack->pBuffer;
 			if(zone){
-				if(fgu->origZoneID == zone->GetZoneID())
+				if(fgu->origZoneID == zone->GetZoneID() && fgu->origZoneGuildID == zone->GetGuildID())
 					break;
 
 				entity_list.ForceGroupUpdate(fgu->gid);
@@ -952,7 +960,7 @@ void WorldServer::Process() {
 		case ServerOP_ChangeGroupLeader: {
 			ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
 			if(zone){
-				if(fgu->zoneid == zone->GetZoneID())
+				if(fgu->zoneid == zone->GetZoneID() && fgu->zoneguildid == zone->GetGuildID())
 					break;
 
 				entity_list.SendGroupLeader(fgu->gid, fgu->leader_name, fgu->oldleader_name);
@@ -970,7 +978,7 @@ void WorldServer::Process() {
 			ServerIsOwnerOnline_Struct* online = (ServerIsOwnerOnline_Struct*) pack->pBuffer;
 			if(zone)
 			{
-				if(online->zoneid != zone->GetZoneID())
+				if(online->zoneid != zone->GetZoneID() && online->zoneguildid != zone->GetGuildID())
 					break;
 
 				Corpse* corpse = entity_list.GetCorpseByID(online->corpseid);
@@ -985,7 +993,7 @@ void WorldServer::Process() {
 		case ServerOP_OOZGroupMessage: {
 			ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 			if(zone){
-				if(gcm->zoneid == zone->GetZoneID())
+				if(gcm->zoneid == zone->GetZoneID() && gcm->zoneguildid == zone->GetGuildID())
 					break;
 
 				entity_list.GroupMessage(gcm->groupid, gcm->from, gcm->message, gcm->language, gcm->lang_skill);
@@ -995,7 +1003,7 @@ void WorldServer::Process() {
 		case ServerOP_DisbandGroup: {
 			ServerDisbandGroup_Struct* sd = (ServerDisbandGroup_Struct*)pack->pBuffer;
 			if(zone){
-				if(sd->zoneid == zone->GetZoneID())
+				if(sd->zoneid == zone->GetZoneID() && sd->zoneguildid == zone->GetGuildID())
 					break;
 
 				Group *g = entity_list.GetGroupByID(sd->groupid);
@@ -1009,7 +1017,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidAdd:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1026,7 +1034,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if(rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1160,7 +1168,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1184,7 +1192,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidChangeGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1200,7 +1208,7 @@ void WorldServer::Process() {
 		case ServerOP_UpdateGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1216,7 +1224,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 				Raid *r = entity_list.GetRaidByID(rga->rid);
 				if (r) {
@@ -1231,7 +1239,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1252,7 +1260,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidAddLooter: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
-				if (rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1288,7 +1296,7 @@ void WorldServer::Process() {
 		case ServerOP_RemoveRaidLooter: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
-				if (rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1324,7 +1332,7 @@ void WorldServer::Process() {
 		case ServerOP_DetailsChange:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1340,7 +1348,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidTypeChange: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
-				if (rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1369,7 +1377,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Client *c = entity_list.GetClientByName(rga->playername);
@@ -1421,7 +1429,7 @@ void WorldServer::Process() {
 		case ServerOP_RaidGroupRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
-				if(rga->zoneid == zone->GetZoneID())
+				if (rga->zoneid == zone->GetZoneID() && rga->zoneguildid == zone->GetGuildID())
 					break;
 
 				Raid *r = entity_list.GetRaidByID(rga->rid);
@@ -1521,6 +1529,7 @@ void WorldServer::Process() {
 				strcpy(scs->ownername, s->ownername);
 				scs->permission = s->permission;
 				scs->zone_id = s->zone_id;
+				scs->GuildID = s->GuildID;
 				scs->message_string_id = TARGET_NOT_FOUND;
 				scs->corpse_id = 0;
 				worldserver.SendPacket(scs_pack);
@@ -1590,7 +1599,7 @@ void WorldServer::Process() {
 		{
 			ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct *)pack->pBuffer;
 
-			if(zone && !((zone->GetZoneID() == sdapcs->ZoneID)))
+			if(zone && !((zone->GetZoneID() == sdapcs->ZoneID && zone->GetGuildID() == sdapcs->GuildID)))
 				entity_list.RemoveAllCorpsesByCharID(sdapcs->CharacterID);
 
 			break;
@@ -1601,7 +1610,7 @@ void WorldServer::Process() {
 		{
 			ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct *)pack->pBuffer;
 
-			if(zone && !((zone->GetZoneID() == sdpcs->ZoneID)))
+			if(zone && !((zone->GetZoneID() == sdpcs->ZoneID && zone->GetGuildID() == sdpcs->GuildID)))
 				entity_list.RemoveCorpseByDBID(sdpcs->DBID);
 
 			break;

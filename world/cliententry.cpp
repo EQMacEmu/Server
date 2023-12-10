@@ -183,6 +183,7 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, int8
 	panon = scl->anon;
 	ptellsoff = scl->tellsoff;
 	pguild_id = scl->guild_id;
+	pzoneguildid = scl->zoneguildid;
 	pLFG = scl->LFG;
 	gm = scl->gm;
 	pClientVersion = scl->ClientVersion;
@@ -279,6 +280,7 @@ void ClientListEntry::Camp(ZoneServer* iZS) {
 			ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 			gl->gid = groupid;
 			gl->zoneid = 0;
+			gl->zoneguildid = 0;
 			strcpy(gl->member_name, this->pname);
 			gl->checkleader = true;
 			zoneserver_list.SendPacket(pack);
@@ -310,6 +312,7 @@ void ClientListEntry::Camp(ZoneServer* iZS) {
 					rga->rid = raidid;
 					rga->gid = groupNum;
 					rga->zoneid = RaidLeader;
+					rga->zoneguildid = 0;
 					rga->gleader = GroupLeader;
 					rga->looter = RaidLooter;
 					strn0cpy(rga->playername, this->pname, 64);

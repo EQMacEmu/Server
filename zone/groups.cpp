@@ -423,6 +423,7 @@ void Group::SendGroupJoinOOZ(Mob* NewMember) {
 	auto pack = new ServerPacket(ServerOP_GroupJoin, sizeof(ServerGroupJoin_Struct));
 	ServerGroupJoin_Struct* gj = (ServerGroupJoin_Struct*)pack->pBuffer;
 	gj->gid = GetID();
+	gj->zoneguildid = zone->GetGuildID();
 	gj->zoneid = zone->GetZoneID();
 	strcpy(gj->member_name, NewMember->GetName());
 	worldserver.SendPacket(pack);
@@ -527,6 +528,7 @@ bool Group::DelMember(Mob* oldmember)
 	ServerGroupLeave_Struct* gl = (ServerGroupLeave_Struct*)pack->pBuffer;
 	gl->gid = GetID();
 	gl->zoneid = zone->GetZoneID();
+	gl->zoneguildid = zone->GetGuildID();
 	strcpy(gl->member_name, oldmember->GetName());
 	gl->checkleader = checkleader;
 	worldserver.SendPacket(pack);
@@ -665,6 +667,7 @@ void Group::GroupMessage(Mob* sender, uint8 language, uint8 lang_skill, const ch
 	    new ServerPacket(ServerOP_OOZGroupMessage, sizeof(ServerGroupChannelMessage_Struct) + strlen(message) + 1);
 	ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 	gcm->zoneid = zone->GetZoneID();
+	gcm->zoneguildid = zone->GetGuildID();
 	gcm->groupid = GetID();
 	gcm->language = language;
 	gcm->lang_skill = lang_skill;
@@ -725,6 +728,7 @@ void Group::DisbandGroup(bool alt_msg, uint32 msg) {
 	auto pack = new ServerPacket(ServerOP_DisbandGroup, sizeof(ServerDisbandGroup_Struct));
 	ServerDisbandGroup_Struct* dg = (ServerDisbandGroup_Struct*)pack->pBuffer;
 	dg->zoneid = zone->GetZoneID();
+	dg->zoneguildid = zone->GetGuildID();
 	dg->groupid = group_id;
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
@@ -1201,6 +1205,7 @@ void Group::ChangeLeader(Mob* newleader)
 	auto pack = new ServerPacket(ServerOP_ChangeGroupLeader, sizeof(ServerGroupLeader_Struct));
 	ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
 	fgu->zoneid = zone->GetZoneID();
+	fgu->zoneguildid = zone->GetGuildID();
 	fgu->gid = GetID();
 	strcpy(fgu->leader_name, newleader->GetName());
 	strcpy(fgu->oldleader_name, GetOldLeaderName());
@@ -1219,6 +1224,7 @@ void Group::ChangeLeaderByName(std::string newleader)
 	auto pack = new ServerPacket(ServerOP_CheckGroupLeader, sizeof(ServerGroupLeader_Struct));
 	ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
 	fgu->zoneid = 0;
+	fgu->zoneguildid = 0;
 	fgu->gid = GetID();
 	strcpy(fgu->leader_name, newleader.c_str());
 	strcpy(fgu->oldleader_name, GetOldLeaderName());

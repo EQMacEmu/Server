@@ -97,6 +97,7 @@ private:
 	Timer	lift_timer;
 	uint8	close_time;
 	bool	can_open;
+	bool	guildzonedoor;
 	//Timer	trigger_timer;
 
 	char	dest_zone[16];

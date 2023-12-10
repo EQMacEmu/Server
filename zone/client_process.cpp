@@ -145,6 +145,7 @@ bool Client::Process() {
 		if(dead && dead_timer.Check()) 
 		{
 			m_pp.zone_id = m_pp.binds[0].zoneId;
+			m_epp.zone_guild_id = GUILD_NONE;
 			database.MoveCharacterToZone(GetName(), database.GetZoneName(m_pp.zone_id));
 
 			glm::vec4 bindpts(m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
