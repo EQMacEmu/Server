@@ -1245,7 +1245,7 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // e_solo_only
 		"%u,"  // e_hardcore
 		"%lld," // e_hardcore_death_time
-		"%u"   // e_betabuff_gear_flag
+		"%u,"   // e_betabuff_gear_flag
 		"%u"   // e_zone_guild_id
 		")",
 		character_id,					  // " id,                        "
