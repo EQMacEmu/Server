@@ -1528,7 +1528,7 @@ void ZoneDatabase::UpdateRespawnTime(uint32 spawn2_id, uint32 time_left, uint32 
 	*/
 
 	if (time_left == 0) {
-		std::string query = StringFormat("DELETE FROM `respawn_times` WHERE `id` = %u", spawn2_id);
+		std::string query = StringFormat("DELETE FROM `respawn_times` WHERE `id` = %u and guild_id = %lu", spawn2_id, guild_id);
 		QueryDatabase(query);
 
 		return;
@@ -1537,13 +1537,16 @@ void ZoneDatabase::UpdateRespawnTime(uint32 spawn2_id, uint32 time_left, uint32 
 	std::string query = StringFormat(
 		"REPLACE INTO `respawn_times` "
 		"(id, "
+		"guild_id, "
 		"start, "
 		"duration) "
 		"VALUES "
 		"(%u, "
 		"%u, "
+		"%u, "
 		"%u)",
 		spawn2_id,
+		guild_id,
 		current_time,
 		time_left
 	);
