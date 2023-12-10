@@ -512,7 +512,7 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"respawn_times.`start`, "
 		"respawn_times.duration "
 		"FROM "
-		"respawn_times WHERE respawn_times.guild_id = %i", guildid
+		"respawn_times WHERE respawn_times.guild_id = %u", (unsigned long)guildid
 		);
 	auto results = QueryDatabase(spawn_query);
 	for (auto row = results.begin(); row != results.end(); ++row) {
@@ -620,7 +620,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 		"respawn_times.`start`, "
 		"respawn_times.duration "
 		"FROM "
-		"respawn_times WHERE respawn_times.guild_id = %i", guildid
+		"respawn_times WHERE respawn_times.guild_id = %lu", (unsigned long)guildid
 	);
 	auto results = QueryDatabase(spawn_query);
 	for (auto row = results.begin(); row != results.end(); ++row) {
@@ -767,7 +767,7 @@ bool ZoneDatabase::PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*
 		// Since we have no way of knowing what the spawn2 id is at this point, we need to
 		// clear any respawn timers whenever this method is called (zone bootup, #repop, #reloadworld)
 		std::string query = StringFormat(
-			"DELETE FROM respawn_times WHERE id >= %d && id <= %d and guild_id = %i", next_id, next_id + 999, guild_id);
+			"DELETE FROM respawn_times WHERE id >= %d && id <= %d and guild_id = %u", next_id, next_id + 999, guild_id);
 		auto results1 = database.QueryDatabase(query);
 
 		Log(Logs::General, Logs::Status, "%d random box spawns found and loaded!", count);
@@ -1556,8 +1556,8 @@ void ZoneDatabase::UpdateRespawnTime(uint32 spawn2_id, uint32 time_left, uint32 
 uint32 ZoneDatabase::GetSpawnTimeLeft(uint32 id, uint32 guild_id)
 {
 	std::string query = StringFormat("SELECT start, duration FROM respawn_times "
-		"WHERE id = %lu",
-		(unsigned long)id);
+		"WHERE id = %lu AND guild_id = %lu",
+		(unsigned long)id, (unsigned long)guild_id);
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
 		return 0;

@@ -1677,7 +1677,7 @@ uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZo
 	if (oY){ *oY = atof(row[4]); }
 	if (oZ){ *oZ = atof(row[5]); }
 	if (oDeathTime) { *oDeathTime = atoll(row[6]); }
-	if (oZoneGuildID) { *oZoneGuildID = atoi(row[7]); }
+	if (oZoneGuildID) { *oZoneGuildID = (unsigned long)atoll(row[7]); }
 	return charid;
 }
 

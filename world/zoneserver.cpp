@@ -58,7 +58,7 @@ ZoneServer::ZoneServer(EmuTCPConnection* itcpc)
 	zone_server_previous_zone_id = 0;
 	zone_server_previous_guild_id = 0xFFFFFFFF;
 	zone_server_zone_id = 0;
-	zone_server_guild_id = 0;
+	zone_server_guild_id = 0xFFFFFFFF;
 	zone_os_process_id = 0;
 	client_port = 0;
 	is_booting_up = false;
@@ -82,7 +82,7 @@ bool ZoneServer::SetZone(uint32 iZoneID, bool iStaticZone, uint32 iGuildID) {
 	char*	longname;
 
 	if (iZoneID)
-		Log(Logs::Detail, Logs::WorldServer,"Setting to '%s' (%d)%s",(zn) ? zn : "",iZoneID,
+		Log(Logs::Detail, Logs::WorldServer,"Setting to '%s' (%d:%d)%s",(zn) ? zn : "",iZoneID,iGuildID,
 			iStaticZone ? " (Static)" : "");
 
 	zone_server_zone_id = iZoneID;

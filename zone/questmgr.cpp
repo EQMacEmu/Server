@@ -394,7 +394,7 @@ void QuestManager::Zone(const char *zone_name) {
 		ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 		ztz->response = 0;
 		ztz->current_zone_id = zone->GetZoneID();
-		ztz->current_zone_id = zone->GetGuildID();
+		ztz->current_zone_guild_id = zone->GetGuildID();
 		ztz->requested_zone_id = database.GetZoneID(zone_name);
 		ztz->requested_zone_guild_id = GUILD_NONE;
 		ztz->admin = initiator->Admin();

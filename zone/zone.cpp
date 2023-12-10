@@ -91,7 +91,7 @@ bool Zone::Bootup(uint32 iZoneID, bool iStaticZone, uint32 iGuildID) {
 		return false;
 	}
 
-	LogInfo("Booting {} ({})", zonename, iZoneID);
+	LogInfo("Booting {} ({}) ({})", zonename, iZoneID, iGuildID);
 
 	numclients = 0;
 	zone = new Zone(iZoneID, zonename, iGuildID);
@@ -142,8 +142,8 @@ bool Zone::Bootup(uint32 iZoneID, bool iStaticZone, uint32 iGuildID) {
 	worldserver.SetZoneData(iZoneID, iGuildID);
 
 	LogInfo("---- Zone server [{}], listening on port:[{}] ----", zonename, ZoneConfig::get()->ZonePort);
-	LogInfo("Zone Bootup: [{}] [{}] ([{}])",
-		(iStaticZone) ? "Static" : "Dynamic", zonename, iZoneID, 0);
+	LogInfo("Zone Bootup: [{}] [{}] ([{}]) ([{}])",
+		(iStaticZone) ? "Static" : "Dynamic", zonename, iZoneID, iGuildID, 0);
  	parse->Init();
 	UpdateWindowTitle(nullptr);
 	zone->GetTimeSync();
