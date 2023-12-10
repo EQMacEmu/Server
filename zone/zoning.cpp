@@ -423,6 +423,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 zone_gu
 	ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 	ztz->response = 0;
 	ztz->current_zone_id = zone->GetZoneID();
+	ztz->current_zone_guild_id = zone->GetGuildID();
 	ztz->requested_zone_id = zone_id;
 	ztz->admin = admin;
 	ztz->ignorerestrictions = ignore_r;
