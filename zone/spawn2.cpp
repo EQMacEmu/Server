@@ -512,7 +512,7 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		"respawn_times.`start`, "
 		"respawn_times.duration "
 		"FROM "
-		"respawn_times WHERE respawn_times.guild_id = %u", (unsigned long)guildid
+		"respawn_times WHERE respawn_times.guild_id = %lu", (unsigned long)guildid
 		);
 	auto results = QueryDatabase(spawn_query);
 	for (auto row = results.begin(); row != results.end(); ++row) {

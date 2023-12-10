@@ -1971,8 +1971,8 @@ void QuestManager::clearspawntimers() {
 	iterator.Reset();
 	while (iterator.MoreElements()) {
 		std::string query = StringFormat("DELETE FROM respawn_times "
-                                        "WHERE id = %lu",
-                                        (unsigned long)iterator.GetData()->GetID());
+                                        "WHERE id = %lu and guild_id = %lu",
+                                        (unsigned long)iterator.GetData()->GetID(), (unsigned long)zone->GetGuildID());
         auto results = database.QueryDatabase(query);
 		iterator.Advance();
 	}

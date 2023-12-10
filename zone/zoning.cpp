@@ -62,7 +62,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 				//going to safe coords, but client dosent know where?
 				//assume it is this zone for now.
 				target_zone_id = zone->GetZoneID();
-				target_zone_guild_id = zone->GetGuildID();
+				target_zone_guild_id = zonesummon_guildid;
 				break;
 			case GMSummon:
 			case ZoneSolicited: //we told the client to zone somewhere, so we know where they are going.
@@ -437,7 +437,7 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, uint32 zone_gu
 	zone_mode = ZoneUnsolicited;
 	m_ZoneSummonLocation = glm::vec4();
 	zonesummon_id = 0;
-	zonesummon_guildid = 0;
+	zonesummon_guildid = 0xFFFFFFFF;
 	zonesummon_ignorerestrictions = 0;
 }
 
@@ -574,20 +574,19 @@ void Client::ZonePC(uint32 zoneID, uint32 zoneGuildID, float x, float y, float z
 			z = m_Position.z = m_pp.binds[0].z;
 			heading = m_pp.binds[0].heading;
 			m_Position.w = heading * 0.5f;
-
 			zonesummon_ignorerestrictions = 1;
 			break;
 		case GMSummon:
 			m_Position = glm::vec4(x, y, z, heading);
 			m_ZoneSummonLocation = m_Position;
 			zonesummon_id = zoneID;
-			zonesummon_guildid = zoneID;
+			zonesummon_guildid = zoneGuildID;
 			zonesummon_ignorerestrictions = 1;
 			break;
 		case ZoneSolicited:
 			m_ZoneSummonLocation = glm::vec4(x,y,z,heading);
 			zonesummon_id = zoneID;
-			zonesummon_guildid = zoneID;
+			zonesummon_guildid = zoneGuildID;
 			zonesummon_ignorerestrictions = ignorerestrictions;
 			break;
 		case GateToBindPoint:
@@ -1104,7 +1103,7 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 	const char *target_zone_name = zoneid > 0 ? database.GetZoneName(zoneid) : zone->GetShortName();
 	uint32 target_zone_id = zoneid > 0 ? zoneid : zone->GetZoneID();
 
-	uint32 target_zone_guild_id = zoneid > 0 ? zoneid : zone->GetGuildID();
+	uint32 target_zone_guild_id = zone->GetGuildID();
 
 	float safe_x, safe_y, safe_z, safe_heading;
 	int16 minstatus = 0;

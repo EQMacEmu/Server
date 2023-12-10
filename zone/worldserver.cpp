@@ -284,7 +284,7 @@ void WorldServer::Process() {
 				else {
 					entity->CastToClient()->UpdateWho(1);
 					strn0cpy(zc2->char_name,entity->CastToMob()->GetName(),64);
-					zc2->zoneID=ztz->requested_zone_id;
+					zc2->zoneID=ztz->requested_zone_id == zone->GetZoneID() ? 185 : ztz->requested_zone_id;
 					zc2->success = 1;
 
 					entity->CastToMob()->SetZone(ztz->requested_zone_id, ztz->requested_zone_guild_id);
@@ -451,7 +451,7 @@ void WorldServer::Process() {
 			if (zst->adminname[0] != 0)
 				std::cout << "Zone bootup by " << zst->adminname << std::endl;
 
-			Zone::Bootup(zst->zoneid, zst->makestatic);
+			Zone::Bootup(zst->zoneid, zst->makestatic, zst->ZoneServerGuildID);
 			break;
 		}
 		case ServerOP_ZoneIncClient: {

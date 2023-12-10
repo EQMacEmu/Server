@@ -1353,7 +1353,7 @@ void command_zone(Client *c, const Seperator *sep)
 {
 	int arguments = sep->argnum;
 	if (!arguments) {
-		c->Message(CC_Default, "Usage: #zone [Zone ID|Zone Short Name] [guild_id] [X] [Y] [Z]");
+		c->Message(CC_Default, "Usage: #zone [Zone ID|Zone Short Name] [X] [Y] [Z]");
 		return;
 	}
 
@@ -1395,12 +1395,6 @@ void command_zone(Client *c, const Seperator *sep)
 		c->Message(CC_Default, "Your status is not high enough to go to this zone.");
 		return;
 	}
-
-	auto guild_id = (
-		sep->IsNumber(2) ?
-		std::stoul(zone_identifier) :
-		database.GetZoneID(zone_identifier)
-		);
 
 	auto x = sep->IsNumber(2) ? std::stof(sep->arg[2]) : 0.0f;
 	auto y = sep->IsNumber(3) ? std::stof(sep->arg[3]) : 0.0f;
@@ -1468,9 +1462,9 @@ void command_zoneguild(Client *c, const Seperator *sep)
 
 	const char* guild_identifier = sep->arg[2];
 
-	auto guild_id = (
+	uint32 guild_id = (uint32)(
 		sep->IsNumber(2) ?
-		std::stoul(guild_identifier) :
+		atol(guild_identifier) :
 		GUILD_NONE
 		);
 
@@ -5043,8 +5037,9 @@ void command_repop(Client *c, const Seperator *sep)
 			iterator.Reset();
 			while (iterator.MoreElements()) {
 				std::string query = StringFormat(
-					"DELETE FROM respawn_times WHERE id = %lu",
-					(unsigned long)iterator.GetData()->GetID()
+					"DELETE FROM respawn_times WHERE id = %lu and guild_id = %lu",
+					(unsigned long)iterator.GetData()->GetID(),
+					(unsigned long)zone->GetGuildID()
 				);
 				auto results = database.QueryDatabase(query);
 				iterator.Advance();
@@ -5068,8 +5063,8 @@ void command_repopclose(Client *c, const Seperator *sep)
 		iterator.Reset();
 		while (iterator.MoreElements()) {
 			std::string query = StringFormat(
-				"DELETE FROM respawn_times WHERE id = %lu",
-				(unsigned long)iterator.GetData()->GetID()
+				"DELETE FROM respawn_times WHERE id = %lu and guild_id = %lu",
+				(unsigned long)iterator.GetData()->GetID(), zone->GetGuildID()
 			);
 			auto results = database.QueryDatabase(query);
 			iterator.Advance();

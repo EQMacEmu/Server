@@ -925,7 +925,7 @@ void Client::EnterWorld(bool TryBootup) {
 	}
 	else
 	{
-		if (TryBootup && !RuleB(World, DontBootDynamics)) {
+		if (TryBootup && !RuleB(World, DontBootDynamics) && zoneGuildID != 0xFFFFFFFF) {
 			Log(Logs::Detail, Logs::WorldServer, "Attempting autobootup of (%d) (%d)", zoneID, zoneGuildID);
 			autobootup_timeout.Start();
 			pwaitingforbootup = zoneserver_list.TriggerBootup(zoneID, zoneGuildID);
@@ -936,7 +936,7 @@ void Client::EnterWorld(bool TryBootup) {
 			return;
 		}
 		else {
-			Log(Logs::Detail, Logs::WorldServer, "Requested zone %d is not running.", zoneID);
+			Log(Logs::Detail, Logs::WorldServer, "Requested zone %d (%d) is not running.", zoneID, zoneGuildID);
 			ZoneUnavail();
 			return;
 		}
@@ -952,7 +952,7 @@ void Client::EnterWorld(bool TryBootup) {
 	database.CharacterJoin(charid, char_name);
 	database.UpdateLiveChar(char_name, GetAccountID());
 
-	Log(Logs::Detail, Logs::WorldServer, "%s (%d)", seencharsel ? "Entering zone" : "Zoning to", zoneID);
+	Log(Logs::Detail, Logs::WorldServer, "%s (%d : %d)", seencharsel ? "Entering zone" : "Zoning to", zoneID, zoneGuildID);
 //	database.SetAuthentication(account_id, char_name, zone_name, ip);
 
 	if (seencharsel) {

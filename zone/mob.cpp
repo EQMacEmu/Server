@@ -1847,7 +1847,7 @@ void Mob::SetZone(uint32 zone_id, uint32 zone_guild_id)
 	if(IsClient())
 	{
 		CastToClient()->GetPP().zone_id = zone_id;
-		CastToClient()->GetEPP().zone_guild_id = zone_id;
+		CastToClient()->GetEPP().zone_guild_id = zone_guild_id;
 		CastToClient()->Save();
 	}
 	Save();
