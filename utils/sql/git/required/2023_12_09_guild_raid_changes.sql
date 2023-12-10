@@ -11,3 +11,6 @@ ADD COLUMN `e_zone_guild_id` int(11) UNSIGNED NOT NULL DEFAULT 4294967295 AFTER 
 
 ALTER TABLE `character_corpses` 
 ADD COLUMN `zone_guild_id` int(11) UNSIGNED NOT NULL DEFAULT 4294967295 AFTER `rezzable`;
+
+ALTER TABLE `character_corpses_backup` 
+ADD COLUMN `zone_guild_id` int(11) UNSIGNED NOT NULL DEFAULT 4294967295 AFTER `rezzable`;
