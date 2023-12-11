@@ -1419,7 +1419,7 @@ int ZoneDatabase::GetRandomWaypointLocFromGrid(glm::vec4 &loc, uint16 zoneid, in
 		}
 
 		if (loc.x || loc.y || loc.z || loc.w)
-			return roll;
+			return roll - 1;
 	}
 
 	std::string query = StringFormat("SELECT `x`,`y`,`z`,`heading` "
