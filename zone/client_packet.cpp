@@ -3693,15 +3693,25 @@ void Client::Handle_OP_CreateObject(const EQApplicationPacket *app)
 {
 	if (Admin() > 0)
 	{
-		std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
-		Message(CC_Red, msg.c_str());
+		EQ::ItemInstance *inst = m_inv.GetItem(EQ::invslot::slotCursor);
+		if (inst)
+		{
+			std::string msg = "You cannot drop items as a GM. The emulator has had enough issues with that.";
+			Message(CC_Red, msg.c_str());
+			SendItemPacket(EQ::invslot::slotCursor, inst, ItemPacketSummonItem);
+		}
 		return;
 	}
 
-	if (zone && zone->GetGuildID())
+	if (zone && zone->GetGuildID() != GUILD_NONE)
 	{
-		std::string msg = "You cannot drop items on the ground in guild instances.";
-		Message(CC_Red, msg.c_str());
+		EQ::ItemInstance *inst = m_inv.GetItem(EQ::invslot::slotCursor);
+		if (inst)
+		{
+			std::string msg = "You cannot drop items on the ground in guild instances.";
+			Message(CC_Red, msg.c_str());
+			SendItemPacket(EQ::invslot::slotCursor, inst, ItemPacketSummonItem);
+		}
 		return;
 	}
 
@@ -4469,6 +4479,7 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 		strcpy(wsgmg->myname, this->GetName());
 		strcpy(wsgmg->gotoname, gmg->charname);
 		wsgmg->admin = admin;
+		wsgmg->guildinstanceid = zone->GetGuildID();
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}

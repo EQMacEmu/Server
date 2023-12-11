@@ -568,7 +568,7 @@ void WorldServer::Process() {
 				szp->x_pos = client->GetX();
 				szp->y_pos = client->GetY();
 				szp->z_pos = client->GetZ();
-				szp->zoneguildid = zone->GetGuildID();
+				szp->zoneguildid = gmg->guildinstanceid;
 				SendPacket(outpack);
 				safe_delete(outpack);
 			}

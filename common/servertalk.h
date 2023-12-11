@@ -555,6 +555,7 @@ struct ServerGMGoto_Struct {
 	char	myname[64];
 	char	gotoname[64];
 	int16	admin;
+	uint32	guildinstanceid;
 };
 
 struct ServerMultiLineMsg_Struct {

@@ -365,6 +365,7 @@ int main(int argc, char** argv) {
 		if (bQuakeReset)
 		{
 			//We're outside of the 24 hour window. Players will wait normal "next_start_timestamp" amount.
+			next_quake.quake_type = QuakeType::QuakeDisabled;
 			NextQuakeTimer.Enable();
 			NextQuakeTimer.Start((next_quake.next_start_timestamp - Timer::GetTimeSeconds()) * 1000);
 			Log(Logs::Detail, Logs::WorldServer, "Using next_start_timestamp to calculate next trigger time.. %i", (next_quake.next_start_timestamp - Timer::GetTimeSeconds()));
@@ -374,6 +375,7 @@ int main(int argc, char** argv) {
 			//Start the timer in 15 minutes. (magic value is set in fail condition)
 			//Process normal quake logic after.
 			Log(Logs::Detail, Logs::WorldServer, "Using start_timestamp to calculate next trigger time.. %i", (next_quake.start_timestamp - Timer::GetTimeSeconds()));
+			next_quake.quake_type = QuakeType::QuakeDisabled;
 			NextQuakeTimer.Enable();
 			NextQuakeTimer.Start((next_quake.start_timestamp - Timer::GetTimeSeconds()) * 1000);
 		}
@@ -588,6 +590,7 @@ int main(int argc, char** argv) {
 				//Inform of imminent quake. This happens after the MOTD so zone denizens are informed again with relevant information.
 				auto pack4 = new ServerPacket(ServerOP_QuakeEnded, sizeof(ServerEarthquakeImminent_Struct));
 				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack4->pBuffer;
+				next_quake.quake_type == QuakeType::QuakeDisabled;
 				seis->quake_type = next_quake.quake_type;
 				seis->next_start_timestamp = next_quake.next_start_timestamp;
 				seis->start_timestamp = next_quake.start_timestamp;

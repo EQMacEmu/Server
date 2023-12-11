@@ -1093,7 +1093,10 @@ bool ZoneServer::Process() {
 					else if (cle->Anon() == 1 && cle->Admin() > gmg->admin) // no snooping for anon GMs
 						this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, CC_Red, fmt::format("Error: {} not found", gmg->gotoname).c_str());
 					else
+					{
+						gmg->guildinstanceid = cle->GetZoneGuildID();
 						cle->Server()->SendPacket(pack);
+					}
 				}
 				else {
 					this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, CC_Red, fmt::format("Error: {} not found", gmg->gotoname).c_str());
