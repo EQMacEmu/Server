@@ -2041,7 +2041,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		Log(Logs::Moderate, Logs::Death, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
 	}
 
-	if (IsNPC() && HasEngageNotice() && killer && killer->IsClient() && zone)
+	/*if (IsNPC() && HasEngageNotice() && killer && killer->IsClient() && zone)
 	{
 		Client* killerClient = killer->CastToClient();
 		std::string guild_string = killerClient->GetGuildName();
@@ -2057,7 +2057,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 			kill_message += "!";
 			worldserver.SendChannelMessage("Druzzil", ChatChannel_Broadcast, 0, 0, 100, kill_message.c_str());
 		}
-	}
+	}*/
 
 	if (skip_corpse_checks || GetSummonerID() || (killer && (killer->IsClient() || killer->IsPlayerOwned())))
 	{

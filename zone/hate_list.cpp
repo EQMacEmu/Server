@@ -277,7 +277,7 @@ void HateList::HandleFTEEngage(Client* client) {
 			if (!guild_string.empty())
 			{
 				aggroTime = Timer::GetCurrentTime();
-				entity_list.Message(CC_Default, 15, "%s of <%s> engages %s!", client->GetCleanName(), guild_string.c_str(), owner->GetCleanName());
+				//entity_list.Message(CC_Default, 15, "%s of <%s> engages %s!", client->GetCleanName(), guild_string.c_str(), owner->GetCleanName());
 				owner->CastToNPC()->guild_fte = client->GuildID();
 				QServ->QSFirstToEngageEvent(client->CharacterID(), guild_string, owner->GetCleanName(), true);
 			}
@@ -298,7 +298,7 @@ void HateList::HandleFTEDisengage()
 				if (!owner->CastToNPC()->IsGuildInFTELockout(owner->CastToNPC()->guild_fte))
 				{
 					owner->CastToNPC()->InsertGuildFTELockout(owner->CastToNPC()->guild_fte);
-					entity_list.Message(CC_Default, 15, "%s is no longer engaged with %s!", owner->GetCleanName(), guild_string.c_str());
+					//entity_list.Message(CC_Default, 15, "%s is no longer engaged with %s!", owner->GetCleanName(), guild_string.c_str());
 					QServ->QSFirstToEngageEvent(0, "", owner->GetCleanName(), false);
 				}
 			}
