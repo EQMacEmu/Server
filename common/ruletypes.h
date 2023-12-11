@@ -252,6 +252,7 @@ RULE_INT(Quarm, AutomatedRaidRotationRaidGuildLevelRequirement, 30) // Required 
 RULE_INT(Quarm, AutomatedRaidRotationRaidGuildMemberCountRequirement, 12) // Required amount of members to participate in a raid encounter. Not all of these must be in the same guild (see below rule.)
 RULE_INT(Quarm, AutomatedRaidRotationRaidNonMemberCountRequirement, 18) // Required amount of same-guild members to participate in a raid encounter. These must be in the same guild, and one officer from the current guild must be in the raid.
 RULE_INT(Quarm, MinStatusToZoneIntoAnyGuildZone, 100) // Required amount of same-guild members to participate in a raid encounter. These must be in the same guild, and one officer from the current guild must be in the raid.
+RULE_BOOL(Quarm, EnableGuildZoneRequirementOnEntry, false) // Classic behavior is true. Live Quarm has this false by default. CSR complaints about training warranted this behavior.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

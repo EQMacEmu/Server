@@ -1100,8 +1100,11 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 	if(Admin() >= RuleI(GM, MinStatusToZoneAnywhere))
 		return(true);
 
-	if (Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
-		return(true);
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		if (Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
+			return(true);
+	}
 	// If zoneid is 0, then we are just checking the current zone. In that case the player has already been allowed 
 	// to zone, and we're checking if we should boot them to bazaar.
 	const char *target_zone_name = zoneid > 0 ? database.GetZoneName(zoneid) : zone->GetShortName();
@@ -1119,21 +1122,24 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 		return(false);
 	}
 
-	if (target_zone_guild_id != GUILD_NONE)
+	if (RuleB(Quarm, EnableGuildZoneRequirementOnEntry))
 	{
-		if (GuildID() != target_zone_guild_id)
+		if (target_zone_guild_id != GUILD_NONE)
 		{
-			Raid* raid = GetRaid();
-			if (!raid)
+			if (GuildID() != target_zone_guild_id)
 			{
-				Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is not in a raid (%d / %d) ", GuildID(), target_zone_guild_id);
-				return false;
-			}
+				Raid* raid = GetRaid();
+				if (!raid)
+				{
+					Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is not in a raid (%d / %d) ", GuildID(), target_zone_guild_id);
+					return false;
+				}
 
-			if (!raid->CanRaidEngageRaidTarget(target_zone_guild_id))
-			{
-				Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is in an ineligible raid force (%d / %d) ", GuildID(), target_zone_guild_id);
-				return false;
+				if (!raid->CanRaidEngageRaidTarget(target_zone_guild_id))
+				{
+					Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet guild id requirement and is in an ineligible raid force (%d / %d) ", GuildID(), target_zone_guild_id);
+					return false;
+				}
 			}
 		}
 	}
