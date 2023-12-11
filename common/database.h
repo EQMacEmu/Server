@@ -227,6 +227,7 @@ public:
 	void	SetFirstLogon(uint32 CharID, uint8 firstlogon);
 	void	AddReport(std::string who, std::string against, std::string lines);
 	struct TimeOfDay_Struct		LoadTime(time_t &realtime);
+	void LoadQuakeData(ServerEarthquakeImminent_Struct & earthquake_struct);
 	bool LoadNextQuakeTime(ServerEarthquakeImminent_Struct &realtime);
 	bool SaveNextQuakeTime(ServerEarthquakeImminent_Struct & earthquake_struct);
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);

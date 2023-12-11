@@ -171,6 +171,7 @@
 #define ServerOP_ReloadLogs 0x4010
 #define ServerOP_QuakeImminent 0x4011
 #define ServerOP_QuakeRequest 0x4012
+#define ServerOP_QuakeEnded 0x4013
 
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013

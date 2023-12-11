@@ -5207,6 +5207,22 @@ bool EntityList::HasCharmedNPC()
 	return false;
 }
 
+
+void EntityList::EvacAllPlayers()
+{
+
+	// update distances to us for clients.
+	auto it = client_list.begin();
+	// go through the list and update distances
+	while (it != client_list.end()) {
+		if (it->second && it->second->GetID() > 0) {
+
+			it->second->MovePCGuildID(zone->GetZoneID(), GUILD_NONE, 0, 0, 0, 0, 0, EvacToSafeCoords);
+		}
+		++it;
+	}
+}
+
 void EntityList::ReportUnderworldNPCs(Client* sendto, float min_z)
 {
 	float underworld_z = zone->newzone_data.underworld;

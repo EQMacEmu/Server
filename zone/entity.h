@@ -461,6 +461,7 @@ public:
 	void AreaCastSpell(float minx, float miny, float maxx,float maxy, uint16 spellid, uint16 regeant_itemid = 0);
 	void RepopNPCsByNPCID(uint32 npcid);
 	bool HasCharmedNPC();
+	void EvacAllPlayers();
 	void ReportUnderworldNPCs(Client* sendto, float min_z);
 
 protected:

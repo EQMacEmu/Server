@@ -1077,6 +1077,8 @@ bool Zone::Init(bool iStaticZone) {
 	LoadGrids();
 	LoadTickItems();
 
+	database.LoadQuakeData(zone->last_quake_struct);
+
 	if (zone->newzone_data.maxclip > 0.0f)
 		zone->update_range = std::max(250.0f, zone->newzone_data.maxclip + 50.0f);
 
@@ -1291,10 +1293,10 @@ bool Zone::Process() {
 	if (EndQuake_Timer->Check())
 	{
 		uint32 cur_time = Timer::GetTimeSeconds();
-		bool should_broadcast_notif = zone->ResetEngageNotificationTargets(RuleI(Quarm, QuakeRepopDelay) * 1000); // if we reset at least one, this is true
+		bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeMaxVariance) * 2) * 1000); // if we reset at least one, this is true
 		if (should_broadcast_notif)
 		{
-			entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the standard (GM-Enforced Rotations) ruleset, also in the /motd", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+			entity_list.Message(CC_Default, CC_Yellow, "The quake has concluded. Rules 9.x and 10.x will once again apply where relevant.");
 		}
 		EndQuake_Timer->Disable();
 	}
@@ -1586,7 +1588,7 @@ bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
 		}
 		iterator.Advance();
 	}
-	return true;
+	return reset_at_least_one_spawn2;
 }
 
 void Zone::Repop() {
@@ -2704,6 +2706,9 @@ bool Zone::CanClientEngage(Client* initiator, Mob* target)
 		return false;
 	}
 
+	if (initiator->Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
+		return(true);
+
 	if (GetGuildID() == GUILD_NONE)
 		return true;
 
@@ -2716,10 +2721,26 @@ bool Zone::CanClientEngage(Client* initiator, Mob* target)
 
 bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 {
-	if (current && other)
+	if (current && other && zone->GetGuildID() != GUILD_NONE)
 	{
 		if (current->IsClient())
-			CanClientEngage(current->CastToClient(), other);
+		{
+			bool bCanEngage = CanClientEngage(current->CastToClient(), other);
+			if (!bCanEngage)
+			{
+				current->CastToClient()->GoToBind();
+				return false;
+			}
+		}
+		if (other->IsClient())
+		{
+			bool bCanEngage = CanClientEngage(other->CastToClient(), current);
+			if (!bCanEngage)
+			{
+				other->CastToClient()->GoToBind();
+				return false;
+			}
+		}
 	}
 
 	if (CanDoCombat())

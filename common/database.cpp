@@ -389,7 +389,14 @@ bool Database::ReserveName(uint32 account_id, char* name) {
 }
 
 bool Database::MarkCharacterDeleted(char *name) {
-	std::string query = StringFormat("UPDATE character_data SET is_deleted = 1 where name='%s'", Strings::Escape(name).c_str());
+
+	std::string unix_timestamp_name = Strings::Escape(name);
+
+	uint64 current_time = Timer::GetTimeSeconds();
+
+	unix_timestamp_name += std::to_string(current_time);
+
+	std::string query = StringFormat("UPDATE character_data SET is_deleted = 1, name='%s' where name='%s'", unix_timestamp_name.c_str(), Strings::Escape(name).c_str());
 
 	auto results = QueryDatabase(query);
 
@@ -2273,6 +2280,26 @@ struct TimeOfDay_Struct Database::LoadTime(time_t &realtime)
 }
 
 
+void Database::LoadQuakeData(ServerEarthquakeImminent_Struct& earthquake_struct)
+{
+
+	memset(&earthquake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+
+	std::string query = StringFormat("SELECT start_timestamp, next_timestamp, ruleset FROM quake_data");
+	auto results = QueryDatabase(query);
+
+	if (!results.Success() || results.RowCount() == 0)
+	{
+		return;
+	}
+
+	auto row = results.begin();
+	uint32 realtime_ = atoi(row[0]);
+	uint32 next_realtime_ = atoi(row[1]);
+	earthquake_struct.start_timestamp = realtime_;
+	earthquake_struct.next_start_timestamp = next_realtime_;
+	earthquake_struct.quake_type = (QuakeType)atoi(row[2]);
+}
 
 bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct)
 {

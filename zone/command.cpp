@@ -386,6 +386,7 @@ int command_init(void)
 		command_add("showfilters", "- list client serverfilter settings.", AccountStatus::GMCoder, command_showfilters) ||
 		command_add("showhelm", "on/off [all] Toggles displaying of player helms (including your own.) Specifying 'all' toggles every character currently on your account", AccountStatus::Player, command_showhelm) ||
 		command_add("showpetspell", "[spellid/searchstring] - search pet summoning spells.", AccountStatus::Guide, command_showpetspell) ||
+		command_add("showquake", "- Shows current earthquake timer. Requires you to be a guild officer or leader.", AccountStatus::Player, command_showquake) ||
 		command_add("showregen", "- Shows information about your target's regen.", AccountStatus::GMAdmin, command_showregen) ||
 		command_add("showskills", "- Show the values of your skills if no target, or your target's skills.", AccountStatus::Guide, command_showskills) ||
 		command_add("showspellslist", "Shows spell list of targeted NPC.", AccountStatus::GMStaff, command_showspellslist) ||
@@ -4160,6 +4161,39 @@ void command_zonelock(Client *c, const Seperator *sep){
 	safe_delete(pack);
 }
 
+void command_showquake(Client *c, const Seperator *sep)
+{
+	if (!c)
+		return;
+	
+	if (c->GuildID() == GUILD_NONE)
+	{
+		c->Message(CC_Default, "You must be part of a guild and be an officer rank or higher to use this command.");
+		return;
+	}
+
+	if (c->GuildRank() == 0)
+	{
+		c->Message(CC_Default, "You must be an officer rank or higher to use this command.");
+		return;
+	}
+
+	if (zone)
+	{
+		int64 nextQuakeTime = zone->last_quake_struct.next_start_timestamp;
+		int64 curTime = Timer::GetTimeSeconds();
+
+		if (nextQuakeTime - curTime > 0)
+		{
+			std::string time_str = "The next earthquake will begin in ";
+			time_str += Strings::SecondsToTime(nextQuakeTime - curTime);
+			time_str += "";
+			c->Message(15, time_str.c_str());
+		}
+	}
+
+}
+
 void command_corpse(Client *c, const Seperator *sep)
 {
 	std::string help0 = "#Corpse commands usage:";
@@ -4348,7 +4382,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			c->Message(CC_Red, "CorpseID : Zone , x , y , z , Buried");
-			std::string query = StringFormat("SELECT id, zone_id, x, y, z, is_buried, guild_id FROM character_corpses WHERE charid = %d", target->CastToClient()->CharacterID());
+			std::string query = StringFormat("SELECT id, zone_id, x, y, z, is_buried, zone_guild_id FROM character_corpses WHERE charid = %d", target->CastToClient()->CharacterID());
 			auto results = database.QueryDatabase(query);
 
 			if (!results.Success() || results.RowCount() == 0)
@@ -4408,7 +4442,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			c->Message(CC_Red, "CorpseID : Zone , Guild, x , y , z , Items");
-			std::string query = StringFormat("SELECT id, zone_id, x, y, z, guild_id FROM character_corpses_backup WHERE charid = %d", target->CastToClient()->CharacterID());
+			std::string query = StringFormat("SELECT id, zone_id, x, y, z, zone_guild_id FROM character_corpses_backup WHERE charid = %d", target->CastToClient()->CharacterID());
 			auto results = database.QueryDatabase(query);
 
 			if (!results.Success() || results.RowCount() == 0)

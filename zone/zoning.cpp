@@ -1100,11 +1100,8 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 	if(Admin() >= RuleI(GM, MinStatusToZoneAnywhere))
 		return(true);
 
-	if (guild_id != GUILD_NONE)
-	{
-		if (Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
-			return(true);
-	}
+	if (Admin() >= RuleI(Quarm, MinStatusToZoneIntoAnyGuildZone))
+		return(true);
 	// If zoneid is 0, then we are just checking the current zone. In that case the player has already been allowed 
 	// to zone, and we're checking if we should boot them to bazaar.
 	const char *target_zone_name = zoneid > 0 ? database.GetZoneName(zoneid) : zone->GetShortName();

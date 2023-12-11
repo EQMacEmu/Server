@@ -378,7 +378,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						Log(Logs::General, Logs::Spells, "Succor/Evacuation Spell In Same Zone.");
 #endif
 						if (IsClient())
-							CastToClient()->MovePC(zone->GetZoneID(), x, y, z, heading, 0, EvacToSafeCoords);
+							CastToClient()->MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), x, y, z, heading, 0, EvacToSafeCoords);
 						else
 							GMMove(x, y, z, heading);
 					}
@@ -391,12 +391,13 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							uint32 zoneid = database.GetZoneID(target_zone);
 							zone->ApplyRandomLoc(zoneid, x, y);
 							if (zoneid == zone->GetZoneID()) {
-								CastToClient()->MovePC(zoneid, x, y, z, heading);
+								CastToClient()->MovePCGuildID(zoneid, zone->GetGuildID(), x, y, z, heading);
 							}
 							else {
 								CastToClient()->zone_mode = ZoneSolicited;
 								CastToClient()->m_ZoneSummonLocation = glm::vec4(x, y, z, heading);
 								CastToClient()->zonesummon_id = zoneid;
+								CastToClient()->zonesummon_guildid = GUILD_NONE;
 								CastToClient()->zonesummon_ignorerestrictions = 0;
 								SetHeading(heading);
 								CastToClient()->zoning_timer.Start();
@@ -454,7 +455,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				if(IsClient())
 				{
 					if(!target_zone)
-						CastToClient()->MovePC(zone->GetZoneID(), x, y, z, heading);
+						CastToClient()->MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), x, y, z, heading);
 					else
 					{
 						uint32 zoneid = database.GetZoneID(target_zone);
@@ -467,12 +468,13 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						}
 						zone->ApplyRandomLoc(zoneid, x, y);
 						if (zoneid == zone->GetZoneID()) {
-							CastToClient()->MovePC(zoneid, x, y, z, heading);
+							CastToClient()->MovePCGuildID(zoneid, zone->GetGuildID(), x, y, z, heading);
 						}
 						else {
 							CastToClient()->zone_mode = ZoneSolicited;
 							CastToClient()->m_ZoneSummonLocation = glm::vec4(x, y, z, heading);
 							CastToClient()->zonesummon_id = zoneid;
+							CastToClient()->zonesummon_guildid = GUILD_NONE;
 							CastToClient()->zonesummon_ignorerestrictions = 0;
 							SetHeading(heading);
 							CastToClient()->zoning_timer.Start();
@@ -1892,7 +1894,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						entity_list.AddHealAggro(this, caster, CheckHealAggroAmount(spell_id, this, (GetMaxHP() - GetHP())));
 					}
 
-					CastToClient()->MovePC(zone->GetZoneID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
+					CastToClient()->MovePCGuildID(zone->GetZoneID(), zone->GetGuildID(), caster->GetX(), caster->GetY(), caster->GetZ(), caster->GetHeading(), 2, SummonPC);
 				}
 				else
 					caster->Message(CC_Red, "This spell can only be cast on players.");

@@ -1856,10 +1856,22 @@ void WorldServer::Process() {
 			break;
 		}
 
+		case ServerOP_QuakeEnded:
+		{
+			if (zone && zone->GetGuildID() == GUILD_NONE)
+			{
+
+				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
+				memcpy(&zone->last_quake_struct, seis, sizeof(ServerEarthquakeImminent_Struct));
+			}
+			break;
+		}
+
 		case ServerOP_QuakeImminent:
 		{
-			if (zone)
+			if (zone && zone->GetGuildID() == GUILD_NONE)
 			{
+
 				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
 				memcpy(&zone->last_quake_struct, seis, sizeof(ServerEarthquakeImminent_Struct));
 
@@ -1869,7 +1881,8 @@ void WorldServer::Process() {
 					bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeRepopDelay)) * 1000); // if we reset at least one, this is true
 					if (should_broadcast_notif)
 					{
-						entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop in %i minutes! Please adhere to the [%s] ruleset, also listed in the /motd.", (RuleI(Quarm, QuakeRepopDelay) / 60), QuakeTypeToString(zone->last_quake_struct.quake_type).c_str());
+						entity_list.Message(CC_Default, CC_Yellow, "Raid targets in this zone will repop! Rule 9.x and Rule 10.x have been suspended temporarily in this zone because of its ruleset, also listed in the /motd.");
+						entity_list.EvacAllPlayers();
 					}
 				}
 				if (zone->EndQuake_Timer)
