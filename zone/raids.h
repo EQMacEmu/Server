@@ -116,6 +116,7 @@ public:
 	void	ChangeLootType(uint32 type);
 	void	AddRaidLooter(const char* looter);
 	void	RemoveRaidLooter(const char* looter);
+	bool	IsRaidLooter(const Client* c);
 
 	//util func
 	//keeps me from having to keep iterating through the list

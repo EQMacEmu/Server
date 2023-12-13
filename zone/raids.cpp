@@ -1048,6 +1048,17 @@ void Raid::RemoveRaidLooter(const char* looter)
 	safe_delete(pack);
 }
 
+bool Raid::IsRaidLooter(const Client* c) {
+	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+	{
+		if (members[x].member == c && members[x].IsLooter)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Raid::IsRaidMember(const char *name){
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
