@@ -2553,12 +2553,13 @@ void Mob::AI_Event_NoLongerEngaged() {
 
 		else if (GetSpecialAbility(LEASH)) {
 			auto npcSpawnPoint = CastToNPC()->GetSpawnPoint();
-				GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
-				SetHP(GetMaxHP());
-				BuffFadeAll();
-				WipeHateList(true);
-				AIloiter_timer->Trigger();
-				return;
+			GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
+			SetHP(GetMaxHP());
+			BuffFadeAll();
+			WipeHateList(true);
+			AIloiter_timer->Trigger();
+			return;
+		}
 	}
 }
 
