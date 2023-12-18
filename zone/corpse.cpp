@@ -1118,8 +1118,17 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 			Raid* raid = c->GetRaid();
 			if (raid->GetLootType() == 3) // Looter / Raid Leader loot
 			{
-				if (raid->IsRaidLeaderOrLooter(c)) {
-					AddLooter(c);
+				if (raid->IsRaidLooter(c)) {
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++) {
+						if (raid->members[x].membername[0] && (raid->members[x].IsLooter || raid->members[x].IsRaidLeader)) {
+							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end()) {
+								{
+									AddLooter(c);
+									break;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
