@@ -85,6 +85,8 @@ public:
 		bool LoadItems(const std::string &prefix);
 		const EQ::ItemData* IterateItems(uint32* id);
 		const EQ::ItemData* GetItem(uint32 id);
+		uint32 GetSharedItemsCount() { return m_shared_items_count; }
+		uint32 GetItemsCount();
 
 		//faction lists
 		void GetFactionListInfo(uint32 &list_count, uint32 &max_lists);
@@ -110,6 +112,8 @@ public:
 		bool LoadSpells(const std::string &prefix, int32 *records, const SPDat_Spell_Struct **sp);
 		void LoadSpells(void *data, int max_spells);
 		void LoadDamageShieldTypes(SPDat_Spell_Struct* sp, int32 iMaxSpellID);
+		uint32 GetSharedSpellsCount() { return m_shared_spells_count; }
+		uint32 GetSpellsCount();
 
 		int GetMaxBaseDataLevel();
 		bool LoadBaseData(const std::string &prefix);
@@ -137,6 +141,13 @@ protected:
 		std::unique_ptr<EQ::FixedMemoryVariableHashSet<LootDrop_Struct>> loot_drop_hash;
 		std::unique_ptr<EQ::MemoryMappedFile> base_data_mmf;
 		std::unique_ptr<EQ::MemoryMappedFile> spells_mmf;
+
+public:
+		void SetSharedItemsCount(uint32 shared_items_count);
+		void SetSharedSpellsCount(uint32 shared_spells_count);
+protected:
+		uint32 m_shared_items_count = 0;
+		uint32 m_shared_spells_count = 0;
 };
 
 #endif /*SHAREDDB_H_*/

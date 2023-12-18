@@ -420,7 +420,7 @@ public:
 	inline virtual int32 GetPR() const { return PR; }
 	inline virtual int32 GetCR() const { return CR; }
 
-	int32 GetMaxStat() const;
+	int32 GetMaxStat(int32 aabonusAmount) const;
 	int32 GetMaxResist() const;
 	int32 GetMaxSTR() const;
 	int32 GetMaxSTA() const;
@@ -962,7 +962,6 @@ public:
 	void SendMerchantEnd();
 	float GetPortHeading(uint16 newx, uint16 newy);
 	bool IsMule() { return (Admin() < 80 && m_pp.mule); }
-	void RefreshSpellIcon();
 	void SendCancelTrade(Mob* with);
 	void ClearPTimers(uint16 type);
 	void UpdateItemHP(EQ::ItemInstance* item, bool equip = true);

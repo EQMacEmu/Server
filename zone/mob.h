@@ -218,7 +218,8 @@ public:
 	virtual int GetCasterLevel(uint16 spell_id);
 	void ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* newbon, uint16 casterID = 0,
 		bool item_bonus = false, int16 instrumentmod = 10, uint32 ticsremaining = 0, int buffslot = -1,
-		bool IsAISpellEffect = false, uint16 effect_id = 0, int32 se_base = 0, int32 se_limit = 0, int32 se_max = 0);
+		bool IsAISpellEffect = false, uint16 effect_id = 0, int32 se_base = 0, int32 se_limit = 0, int32 se_max = 0,
+		bool is_tap_recourse = false);
 	virtual float GetActSpellRange(uint16 spell_id, float range, std::string& item_name) { return range;}
 	virtual float GetSpellRange(uint16 spell_id, float range) { return range; }
 	virtual int32 GetActSpellDamage(uint16 spell_id, int32 value, Mob* target = nullptr) { return value; }
@@ -317,6 +318,11 @@ public:
 	bool IsTargetable() const { return m_targetable; }
 	inline void ShieldEquiped(bool val) { has_shieldequiped = val; }
 	bool HasShieldEquiped() const { return has_shieldequiped; }
+	bool HasBowEquipped() const { return has_bowequipped; }
+	void SetBowEquipped(bool val) { has_bowequipped = val; }
+	bool HasArrowEquipped() const { return has_arrowequipped; }
+	void SetArrowEquipped(bool val) { has_arrowequipped = val; }
+	bool HasBowAndArrowEquipped() const { return HasBowEquipped() && HasArrowEquipped(); }
 	inline void SetBashEnablingWeapon(bool val) { has_bashEnablingWeapon = val; } //Used for SK/Pal epics
 	bool HasBashEnablingWeapon() const { return has_bashEnablingWeapon; }
 	virtual uint16 GetSkill(EQ::skills::SkillType skill_num) const { return 0; }
@@ -1192,6 +1198,8 @@ protected:
 	bool inWater; // Set to true or false by Water Detection code if enabled by rules
 	bool offhand;
 	bool has_shieldequiped;
+	bool has_bowequipped = false;
+	bool has_arrowequipped = false;
 	bool has_bashEnablingWeapon; //Used for Pal/SK epic
 	bool has_MGB;
 	bool has_ProjectIllusion;

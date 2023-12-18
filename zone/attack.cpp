@@ -3032,9 +3032,6 @@ int32 Mob::AffectMagicalDamage(int32 damage, uint16 spell_id, const bool iBuffTi
 
 		if (spellbonuses.AbsorbMagicAtt[0] && spellbonuses.AbsorbMagicAtt[1] >= 0)
 			damage = RuneAbsorb(damage, SE_AbsorbMagicAtt);
-
-		if(damage < 1)
-			return 0;
 	}
 	return damage;
 }
@@ -3170,13 +3167,12 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 			}
 
 			// if spell is lifetap add hp to the caster
-			if (spell_id != SPELL_UNKNOWN && IsLifetapSpell( spell_id )) 
+			// TODO - investigate casting the reversed tap spell on the caster instead of doing this, so we can send proper tap_amount in action packet.  instant spells too not just buffs maybe.
+			if (spell_id != SPELL_UNKNOWN && IsLifetapSpell(spell_id) && !IsBuffSpell(spell_id))
 			{
 				int healed = attacker->GetActSpellHealing(spell_id, damage, this);
 				Log(Logs::General, Logs::Spells, "Applying lifetap heal of %d to %s", healed, attacker->GetName());
 				attacker->HealDamage(healed);
-				if (CanClassCastSpell(spell_id))		// don't want procs doing this
-					entity_list.MessageClose_StringID(this, true, 300, MT_Spells, BEAM_SMILE, attacker->GetCleanName(), this->GetCleanName() );
 			}
 
 			if(IsNPC() && !zone->IsIdling())
@@ -3255,10 +3251,7 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 				damage = AffectMagicalDamage(damage, spell_id, iBuffTic, attacker);
 				if (origdmg != damage && attacker && attacker->IsClient()) {
 					if (attacker->CastToClient()->GetFilter(FilterDamageShields) != FilterHide)
-						attacker->Message(CC_Yellow, "The Spellshield absorbed %d of %d points of damage", origdmg - damage, origdmg);
-				}
-				if (damage == 0 && attacker && origdmg != damage && IsClient()) {
-					damage = DMG_RUNE;
+						attacker->Message(CC_Yellow, "The Spellshield absorbed %d of %d points of damage", origdmg - std::max(damage, 0), origdmg);
 				}
 			}
 		}
@@ -3592,6 +3585,33 @@ void Mob::GenerateDamagePackets(Mob* attacker, bool FromDamageShield, int32 dama
 	}
 
 	safe_delete(outapp);
+
+	// TODO - this really isn't the right place to do this; investigate casting the lifetap spell on the caster like a recourse
+	if (spell_id != SPELL_UNKNOWN && IsLifetapSpell(spell_id) && !IsBuffSpell(spell_id))
+	{
+		// this causes the caster's client to emote things
+		// %1 beams a smile at %2
+		// Ahhh, I feel much better now...
+		// %1 groans and looks a little weaker.
+		// You groan and feel a bit weaker.
+		//
+		// NOTE: when tapping an dealing 0 damage to a rune, the client doing the tapping will send an emote chat message (OP_SpellTextMessage)
+		// The message is routed to other clients and instead of the character's name, it has the word 'You' formatted into it, causing the following:
+		// You groans and looks a little weaker.
+		// This is a client behavior and looks weird but it's correct.
+		if (attacker->IsClient())
+		{
+			auto message_packet = new EQApplicationPacket(OP_Damage, sizeof(Damage_Struct));
+			Damage_Struct *cd = (Damage_Struct *)message_packet->pBuffer;
+			cd->target = attacker->GetID();
+			cd->source = attacker->GetID();
+			cd->type = 231;
+			cd->spellid = spell_id;
+			cd->sequence = attacker->GetHeading() * 2.0f;
+			cd->damage = -damage;
+			attacker->CastToClient()->QueuePacket(message_packet);
+		}
+	}
 }
 
 void Mob::GenerateDeathPackets(Mob* killerMob, int32 damage, uint16 spell, uint8 attack_skill, bool bufftic, uint8 killedby)

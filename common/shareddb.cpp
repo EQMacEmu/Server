@@ -1291,6 +1291,7 @@ bool SharedDatabase::LoadSpells(const std::string &prefix, int32 *records, const
 		LogError("Error Loading Spells: {0}", ex.what());
 		return false;
 	}
+
 	return true;
 }
 
@@ -1852,4 +1853,46 @@ bool SharedDatabase::VerifyToken(std::string token, int& status)
 	status = atoi(row[0]);
 
 	return results.Success();
+}
+
+uint32 SharedDatabase::GetSpellsCount()
+{
+	auto results = QueryDatabase("SELECT count(*) FROM spells_new");
+	if (!results.Success() || !results.RowCount()) {
+		return 0;
+	}
+
+	auto& row = results.begin();
+
+	if (row[0]) {
+		return atoul(row[0]);
+	}
+
+	return 0;
+}
+
+uint32 SharedDatabase::GetItemsCount()
+{
+	auto results = QueryDatabase("SELECT count(*) FROM items");
+	if (!results.Success() || !results.RowCount()) {
+		return 0;
+	}
+
+	auto& row = results.begin();
+
+	if (row[0]) {
+		return atoul(row[0]);
+	}
+
+	return 0;
+}
+
+void SharedDatabase::SetSharedItemsCount(uint32 shared_items_count)
+{
+	SharedDatabase::m_shared_items_count = shared_items_count;
+}
+
+void SharedDatabase::SetSharedSpellsCount(uint32 shared_spells_count)
+{
+	SharedDatabase::m_shared_spells_count = shared_spells_count;
 }

@@ -662,7 +662,7 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 			Log(Logs::General, Logs::Trading, "NPC %s has a scripted EVENT_TRADE, internal checks will be skipped if they pass the faction check.", npc->GetName());
 		}
 
-		std::vector<EQ::Any> item_list;
+		std::vector<std::any> item_list;
 		uint32 items[4] = { 0 };
 		for(int i = EQ::invslot::TRADE_BEGIN; i <= EQ::invslot::TRADE_NPC_END; ++i) {
 			EQ::ItemInstance *inst = m_inv.GetItem(i);

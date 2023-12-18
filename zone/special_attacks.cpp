@@ -355,7 +355,7 @@ void Client::DoBackstab(Mob* defender)
 
 	CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBackstab, defender, zone->skill_difficulty[EQ::skills::SkillBackstab].difficulty);
 
-	int minHit = 1;
+	int minHit = GetLevel();
 	int baseDamage = GetBaseDamage(defender, EQ::invslot::slotPrimary);
 	// this formula was verified in the client code
 	baseDamage = ((GetSkill(EQ::skills::SkillBackstab) * 0.02f) + 2.0f) * (float)baseDamage;
@@ -945,81 +945,92 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 
 void NPC::RangedAttack(Mob* other)
 {
-
-	if (!other)
+	if (!other) {
 		return;
+	}
+
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
-	if((attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check())){
+	if((attack_timer.Enabled() && !attack_timer.Check(false)) || 
+		(ranged_timer.Enabled() && !ranged_timer.Check())){
 		Log(Logs::Detail, Logs::Combat, "Archery canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
 
-	if(!CheckLosFN(other))
+	if (!HasBowAndArrowEquipped() && !GetSpecialAbility(SPECATK_RANGED_ATK)) {
 		return;
+	}
 
-	if (!GetSpecialAbility(SPECATK_RANGED_ATK))
-	{
-		//find our bow and ammo return if we can't find them...
+	if (!CheckLosFN(other)) {
 		return;
 	}
 
 	bool require_ammo = GetSpecialAbility(SPECATK_RANGED_ATK) >= 2;
 	const EQ::ItemData* weapon = nullptr;
 	const EQ::ItemData* ammo = nullptr;
-	EQ::skills::SkillType skillinuse = EQ::skills::SkillArchery;
+	EQ::skills::SkillType skillInUse = EQ::skills::SkillArchery;
 
-	if (equipment[EQ::invslot::slotPrimary] > 0) // check primary slot for bow
+	if (equipment[EQ::invslot::slotPrimary] > 0) { // check primary slot for bow
 		weapon = database.GetItem(equipment[EQ::invslot::slotPrimary]);
+	}
 
-	if (weapon && weapon->ItemType != EQ::item::ItemTypeBow)
+	if (weapon && weapon->ItemType != EQ::item::ItemTypeBow) {
 		weapon = nullptr;
+	}
 
-	if (!weapon && equipment[EQ::invslot::slotRange] > 0) // check range slot for bow
-	{
+	if (!weapon && equipment[EQ::invslot::slotRange] > 0) { // check range slot for bow
 		weapon = database.GetItem(equipment[EQ::invslot::slotRange]);
 	}
-	if (weapon && weapon->ItemType != EQ::item::ItemTypeBow && weapon->ItemType != EQ::item::ItemTypeSmallThrowing && weapon->ItemType != EQ::item::ItemTypeLargeThrowing)
+
+	if (weapon && weapon->ItemType != EQ::item::ItemTypeBow && weapon->ItemType != EQ::item::ItemTypeSmallThrowing && weapon->ItemType != EQ::item::ItemTypeLargeThrowing) {
 		weapon = NULL;
+	}
 
 	if (weapon && (weapon->ItemType == EQ::item::ItemTypeSmallThrowing || weapon->ItemType == EQ::item::ItemTypeLargeThrowing)) {
 		ammo = weapon;
-		skillinuse = EQ::skills::SkillThrowing;
+		skillInUse = EQ::skills::SkillThrowing;
 	}
+
 	if (!weapon || weapon && weapon->ItemType == EQ::item::ItemTypeBow)
 	{
 		ammo = database.GetItem(equipment[EQ::invslot::slotAmmo]);
 		if (require_ammo &&
-			(!ammo || (ammo && ammo->ItemType != EQ::item::ItemTypeArrow && ammo->ItemType != EQ::item::ItemTypeSmallThrowing)))
-		{
+			(!ammo || (ammo && ammo->ItemType != EQ::item::ItemTypeArrow && ammo->ItemType != EQ::item::ItemTypeSmallThrowing))) {
 			return;
 		}
 
-		if (!ammo || (ammo && ammo->ItemType != EQ::item::ItemTypeArrow))
-		{ 
+		if (!ammo || (ammo && ammo->ItemType != EQ::item::ItemTypeArrow)) { 
 			ammo = database.GetItem(8005);
 		}
 	}
 
-	//if we have SPECATK_RANGED_ATK set then we range attack without weapon or ammo
-	int sa_min_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 2); //Min Range of NPC attack
-	int sa_max_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 1); //Max Range of NPC attack
-
 	float min_range = static_cast<float>(RuleI(Combat, MinRangedAttackDist));
-	float max_range = 250; // needs to be longer than 200(most spells)
-	
-	if (sa_max_range)
-		max_range = static_cast<float>(sa_max_range);
+	float max_range = 250.0f; // needs to be longer than 200(most spells)
+	int16 damage_mod = 0;
 
-	if (sa_min_range)
-		min_range = static_cast<float>(sa_min_range);
+	if (GetSpecialAbility(SPECATK_RANGED_ATK)) {
+		//if we have SPECATK_RANGED_ATK set then we range attack without weapon or ammo
+		int sa_min_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 2); //Min Range of NPC attack
+		int sa_max_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 1); //Max Range of NPC attack
+		damage_mod = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 3);
+
+		if (sa_max_range) {
+			max_range = static_cast<float>(sa_max_range);
+		}
+
+		if (sa_min_range) {
+			min_range = static_cast<float>(sa_min_range);
+		}
+	}
 
 	Log(Logs::Detail, Logs::Combat, "Calculated bow range to be %.1f", max_range);
 	max_range *= max_range;
-	if (DistanceSquaredNoZ(m_Position, other->GetPosition()) > max_range)
+	if (DistanceSquaredNoZ(m_Position, other->GetPosition()) > max_range) {
 		return;
-	else if(DistanceSquaredNoZ(m_Position, other->GetPosition()) < (min_range * min_range))
+	}
+	else if (DistanceSquaredNoZ(m_Position, other->GetPosition()) < (min_range * min_range)) {
 		return;
+	}
 	
 
 	if (!other || !IsAttackAllowed(other) ||
@@ -1032,14 +1043,16 @@ void NPC::RangedAttack(Mob* other)
 		return;
 	}
 
-		
-	skillinuse = static_cast<EQ::skills::SkillType>(GetRangedSkill());
-	if (!ammo)
-		ammo = database.GetItem(8005);
+	skillInUse = static_cast<EQ::skills::SkillType>(GetRangedSkill());
 
-	if (ammo)
+	if (!ammo) {
+		ammo = database.GetItem(8005);
+	}
+
+	if (ammo) {
 		//SendItemAnimation(GetTarget(), ammo, SkillArchery);
-		ProjectileAnimation(GetTarget(), ammo->ID, true, -1, -1, -1, -1, skillinuse);
+		ProjectileAnimation(GetTarget(), ammo->ID, true, -1, -1, -1, -1, skillInUse);
+	}
 
 	FaceTarget(other);
 
@@ -1050,7 +1063,7 @@ void NPC::RangedAttack(Mob* other)
 
 	other->AvoidDamage(this, damage, true);
 
-	if (damage > 0 && !other->AvoidanceCheck(this, skillinuse))
+	if (damage > 0 && !other->AvoidanceCheck(this, skillInUse))
 	{
 		damage = DMG_MISS;
 		Log(Logs::Detail, Logs::Combat, "Ranged attack missed %s.", other->GetName());
@@ -1058,31 +1071,29 @@ void NPC::RangedAttack(Mob* other)
 
 	if (damage > 0)
 	{
-		if (other->IsImmuneToMelee(this))
-		{
+		if (other->IsImmuneToMelee(this)) {
 			damage = DMG_INVUL;		// immune
 		}
-		else
-		{
+		else {
 			Log(Logs::Detail, Logs::Combat, "Ranged attack hit %s.", other->GetName());
 
 
-			damage = damageBonus + CalcMeleeDamage(other, baseDamage, skillinuse);
+			damage = damageBonus + CalcMeleeDamage(other, baseDamage, skillInUse);
 			damage = static_cast<int>(static_cast<double>(damage) * RuleR(Combat, ArcheryNPCMultiplier));
-			damage += damage * GetSpecialAbilityParam(SPECATK_RANGED_ATK, 3) / 100; //Damage modifier
+			damage += damage * damage_mod / 100; //Damage modifier
 		}
 	}
 
 	Beacon *beacon = new Beacon(this, 3000);
 
 	entity_list.AddBeacon(beacon);
-	if (beacon)
-		beacon->Projectile(this, other, skillinuse, damage, hate);
+	if (beacon) {
+		beacon->Projectile(this, other, skillInUse, damage, hate);
+	}
 
 	CommonBreakInvisible();
 
-	if (ammo && GetSpecialAbility(SPECATK_RANGED_ATK) == 3)
-	{
+	if (ammo && GetSpecialAbility(SPECATK_RANGED_ATK) == 3)	{
 		ServerLootItem_Struct* sitem = GetItem(EQ::invslot::slotAmmo);
 		RemoveItem(sitem, 1);
 	}
@@ -1683,11 +1694,8 @@ void Mob::InstillDoubt(Mob *who, int stage)
 		if (DivineAura())
 			return;
 
-		// this part is totally made up, the real formula is unknown
 		uint16 skillValue = GetSkill(EQ::skills::SkillIntimidation);
-		if (skillValue < 25)
-			skillValue = 0;
-		int random = zone->random.Int(0, 250);
+		int random = zone->random.Int(1, 350); // found in decompile credit to kicnlag
 		if (random < skillValue)
 		{
 			// skill check success, now kick the target and fear it if the kick lands

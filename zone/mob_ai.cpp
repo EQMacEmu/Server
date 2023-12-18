@@ -1668,8 +1668,9 @@ void Mob::AI_Process() {
 				else if (!IsBlind())
 				{
 					//could not summon them, check ranged...
-					if(GetSpecialAbility(SPECATK_RANGED_ATK))
+					if (GetSpecialAbility(SPECATK_RANGED_ATK) || HasBowAndArrowEquipped()) {
 						doranged = true;
+					}
 
 					// Now pursue
 					if (AI_EngagedCastCheck()) {
@@ -3113,7 +3114,7 @@ void NPC::CheckSignal()
 		buf[31] = '\0';
 		if (!signal_data.empty())
 		{
-			std::vector<EQ::Any> info_ptrs;
+			std::vector<std::any> info_ptrs;
 			info_ptrs.push_back(&signal_data);
 			parse->EventNPC(EVENT_SIGNAL, this, nullptr, buf, 0, &info_ptrs);
 		}

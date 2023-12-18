@@ -28,7 +28,7 @@
 #include <algorithm>
 
 
-int32 Client::GetMaxStat() const {
+int32 Client::GetMaxStat(int32 aabonusAmount) const {
 
 	if((RuleI(Character, StatCap)) > 0)
 		return (RuleI(Character, StatCap));
@@ -36,7 +36,7 @@ int32 Client::GetMaxStat() const {
 	if (GetLevel() <= 60)
 		return 255;
 	else
-		return 255 + (GetLevel() - 60) * 5;
+		return 255 + (GetLevel() - 60) * 5 + aabonusAmount;
 }
 
 int32 Client::GetMaxResist() const
@@ -45,25 +45,25 @@ int32 Client::GetMaxResist() const
 }
 
 int32 Client::GetMaxSTR() const {
-	return GetMaxStat() + aabonuses.STRCapMod;
+	return GetMaxStat(aabonuses.STRCapMod);
 }
 int32 Client::GetMaxSTA() const {
-	return GetMaxStat() + aabonuses.STACapMod;
+	return GetMaxStat(aabonuses.STACapMod);
 }
 int32 Client::GetMaxDEX() const {
-	return GetMaxStat() + aabonuses.DEXCapMod;
+	return GetMaxStat(aabonuses.DEXCapMod);
 }
 int32 Client::GetMaxAGI() const {
-	return GetMaxStat() + aabonuses.AGICapMod;
+	return GetMaxStat(aabonuses.AGICapMod);
 }
 int32 Client::GetMaxINT() const {
-	return GetMaxStat() + aabonuses.INTCapMod;
+	return GetMaxStat(aabonuses.INTCapMod);
 }
 int32 Client::GetMaxWIS() const {
-	return GetMaxStat() + aabonuses.WISCapMod;
+	return GetMaxStat(aabonuses.WISCapMod);
 }
 int32 Client::GetMaxCHA() const {
-	return GetMaxStat() + aabonuses.CHACapMod;
+	return GetMaxStat(aabonuses.CHACapMod);
 }
 int32 Client::GetMaxMR() const {
 	return GetMaxResist() + aabonuses.MRCapMod;

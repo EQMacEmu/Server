@@ -192,7 +192,7 @@ namespace Mac {
 
 		for(r = 0; r < 15; r++)
 		{
-			eq->buffs[r].bufftype = (emu->buffs[r].spellid == 0xFFFF || emu->buffs[r].spellid == 0) ? 0 : 2; // TODO - don't hardcode this, it can be 4 for reversed effects
+			eq->buffs[r].bufftype = (emu->buffs[r].spellid == 0xFFFF || emu->buffs[r].spellid == 0) ? 0 : emu->buffs[r].bufftype;
 			OUT(buffs[r].level);
 			OUT(buffs[r].bard_modifier);
 			OUT(buffs[r].activated);

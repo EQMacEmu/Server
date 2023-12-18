@@ -222,20 +222,6 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		newbon->CR += (item->CR);
 		newbon->PR += (item->PR);
 		newbon->DR += (item->DR);
-
-		newbon->STRCapMod += item->AStr;
-		newbon->STACapMod += item->ASta;
-		newbon->DEXCapMod += item->ADex;
-		newbon->AGICapMod += item->AAgi;
-		newbon->INTCapMod += item->AInt;
-		newbon->WISCapMod += item->AWis;
-		newbon->CHACapMod += item->ACha;
-		newbon->MRCapMod += item->MR;
-		newbon->CRCapMod += item->FR;
-		newbon->FRCapMod += item->CR;
-		newbon->PRCapMod += item->PR;
-		newbon->DRCapMod += item->DR;
-
 	}
 	else
 	{
@@ -258,20 +244,6 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		newbon->CR += CalcRecommendedLevelBonus( lvl, reclvl, (item->CR) );
 		newbon->PR += CalcRecommendedLevelBonus( lvl, reclvl, (item->PR) );
 		newbon->DR += CalcRecommendedLevelBonus( lvl, reclvl, (item->DR) );
-
-		newbon->STRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->AStr );
-		newbon->STACapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->ASta );
-		newbon->DEXCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->ADex );
-		newbon->AGICapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->AAgi );
-		newbon->INTCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->AInt );
-		newbon->WISCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->AWis );
-		newbon->CHACapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->ACha );
-		newbon->MRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->MR );
-		newbon->CRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->FR );
-		newbon->FRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->CR );
-		newbon->PRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->PR );
-		newbon->DRCapMod += CalcRecommendedLevelBonus( lvl, reclvl, item->DR );
-
 	}
 
 	//FatherNitwit: New style haste, shields, and regens
@@ -1052,7 +1024,9 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	for(i = 0; i < buff_count; i++) {
 		if(buffs[i].spellid != SPELL_UNKNOWN){
 			uint8 caster_level = i == 15 ? GetLevel() : buffs[i].casterlevel; // disciplines are in a fake buff slot at index 15 and these need the current level
-			ApplySpellsBonuses(buffs[i].spellid, caster_level, newbon, buffs[i].casterid, false, buffs[i].instrumentmod, buffs[i].ticsremaining, i);
+			ApplySpellsBonuses(buffs[i].spellid, caster_level, newbon, buffs[i].casterid, false, buffs[i].instrumentmod, buffs[i].ticsremaining, i,
+				false, 0, 0, 0, 0,
+				buffs[i].bufftype == 4);
 		}
 	}
 
@@ -1067,7 +1041,7 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 }
 
 void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* new_bonus, uint16 casterId, bool item_bonus, int16 instrumentmod, uint32 ticsremaining, int buffslot,
-							 bool IsAISpellEffect, uint16 effect_id, int32 se_base, int32 se_limit, int32 se_max)
+							 bool IsAISpellEffect, uint16 effect_id, int32 se_base, int32 se_limit, int32 se_max, bool is_tap_recourse)
 {
 	int i, effect_value, base2, max, effectid;
 	Mob *caster = nullptr;
@@ -1100,6 +1074,10 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 			effect_value = CalcSpellEffectValue(spell_id, i, casterlevel, ticsremaining, instrumentmod);
 			base2 = spells[spell_id].base2[i];		// limit value
 			max = spells[spell_id].max[i];
+
+			// reversed tap spell
+			if (is_tap_recourse && effect_id != SE_AttackSpeed)
+				effect_value = -effect_value;
 		}
 		//Use AISpellEffects
 		else {

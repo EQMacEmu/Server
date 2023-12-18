@@ -157,6 +157,7 @@ int main() {
 		worldserver->Process();
 
 		timeout_manager.CheckTimeouts();
+
 	};
 
 	EQ::Timer process_timer(loop_fn);
