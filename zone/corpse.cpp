@@ -1117,6 +1117,24 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		if (allowed_looters.size() == 0) {
 				return true;
 		}
+
+		/*
+		Check if client is in a raid + is a looter and retroactively
+		allow looting of the corpse if the raid looters can loot the corpse
+		*/
+		if (c->HasRaid()) {
+			Raid* raid = c->GetRaid();
+			if (raid->IsRaidLooter(c)) {
+				for (int x = 0; x < MAX_RAID_MEMBERS; x++) {
+					if (raid->members[x].member && (raid->members[x].IsLooter || raid->members[x].IsRaidLeader)) {
+						if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end()) {
+							AddLooter(c);
+							return true;
+						}
+					}
+				}
+			}
+		}
 	}
 	return false;
 }
