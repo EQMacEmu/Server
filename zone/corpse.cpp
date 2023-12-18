@@ -1094,7 +1094,8 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		}
 	}
 	else if(c)
-	{	
+	{
+
 		if (npctype_id != 0 && loot_lockout_timer > 0)
 		{
 			auto temporarily_allowed_itr = temporarily_allowed_looters.find(playername);
@@ -1109,6 +1110,20 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 			return false;
 		}
 
+		/*
+		Check if client is in a raid + is a looter and retroactively
+		allow looting of the corpse if the raid looters can loot the corpse
+		*/
+		if (c->HasRaid()) {
+			Raid* raid = c->GetRaid();
+			if (raid->GetLootType() == 3) // Looter / Raid Leader loot
+			{
+				if (raid->IsRaidLeaderOrLooter(c)) {
+					AddLooter(c);
+				}
+			}
+		}
+
 		if (allowed_looters.find(playername) != allowed_looters.end()) {
 				return true;
 		}
@@ -1116,24 +1131,6 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		/* If we have no looters, obviously client can loot */
 		if (allowed_looters.size() == 0) {
 				return true;
-		}
-
-		/*
-		Check if client is in a raid + is a looter and retroactively
-		allow looting of the corpse if the raid looters can loot the corpse
-		*/
-		if (c->HasRaid()) {
-			Raid* raid = c->GetRaid();
-			if (raid->IsRaidLooter(c)) {
-				for (int x = 0; x < MAX_RAID_MEMBERS; x++) {
-					if (raid->members[x].member && (raid->members[x].IsLooter || raid->members[x].IsRaidLeader)) {
-						if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end()) {
-							AddLooter(c);
-							return true;
-						}
-					}
-				}
-			}
 		}
 	}
 	return false;
@@ -2021,6 +2018,9 @@ void Corpse::UpdateEquipmentLight()
 }
 
 void Corpse::AddLooter(Mob* who) {
+	if (!who)
+		return;
+
 	if (allowed_looters.find(who->CastToClient()->GetCleanName()) == allowed_looters.end())
 		allowed_looters.emplace(who->CastToClient()->GetCleanName());
 }
