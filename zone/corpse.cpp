@@ -2162,6 +2162,9 @@ void Corpse::RemoveLegacyItemLooter(std::string client_name)
 
 void Corpse::ProcessLootLockouts(Client* give_exp_client, NPC* in_npc)
 {
+	if (loot_lockout_timer == 0)
+		return;
+
 	auto cur_time = time(nullptr);
 	auto records = in_npc->GetEngagementRecords();
 	if (give_exp_client)
