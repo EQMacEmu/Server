@@ -2770,6 +2770,55 @@ struct CorpsePosition_Struct
 	float z;
 };
 
+
+//Quarm Custom:
+
+struct LootLockout
+{
+	uint32 character_id;
+	uint32 npctype_id;
+	int64 expirydate;
+	char npc_name[64];
+
+	LootLockout()
+	{
+		character_id = 0;
+		npctype_id = 0;
+		expirydate = 0;
+		memset(npc_name, 0, 64);
+	}
+
+	bool HasLockout(time_t curTime)
+	{
+		if (character_id == 0)
+			return false;
+
+		if (curTime >= expirydate || expirydate == 0)
+			return false;
+		return true;
+	}
+};
+
+struct PlayerEngagementRecord
+{
+	bool isFlagged = false;
+	uint32 character_id = 0;
+	bool isSelfFound = false;
+	bool isSoloOnly = false;
+	LootLockout lockout = LootLockout();
+
+	bool HasLockout(time_t curTime)
+	{
+		if (lockout.character_id == 0)
+			return false;
+
+		if (curTime >= lockout.expirydate || lockout.expirydate == 0)
+			return false;
+
+		return true;
+	}
+};
+
 // Restore structure packing to default
 #pragma pack()
 

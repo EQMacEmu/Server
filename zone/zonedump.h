@@ -130,6 +130,7 @@ struct NPCType
 	bool	engage_notice;
 	int8	stuck_behavior;
 	int8	flymode;
+	uint32	loot_lockout;
 };
 
 struct PlayerCorpse_Struct {

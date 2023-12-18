@@ -1514,7 +1514,12 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 						{
 							if(group->members[i] != nullptr)
 							{
-								new_corpse->AllowPlayerLoot(group->members[i],i);
+									new_corpse->AllowPlayerLoot(group->members[i]);
+							}
+							else if (group->membername[i][0])
+							{
+									if (m_EngagedClientNames.find(group->membername[i]) != m_EngagedClientNames.end())
+										new_corpse->AllowPlayerLoot(group->members[i]);
 							}
 						}
 					}
@@ -2041,7 +2046,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		Log(Logs::Moderate, Logs::Death, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
 	}
 
-	/*if (IsNPC() && HasEngageNotice() && killer && killer->IsClient() && zone)
+	if (IsNPC() && HasEngageNotice() && killer && killer->IsClient() && zone && zone->GetGuildID() != GUILD_NONE)
 	{
 		Client* killerClient = killer->CastToClient();
 		std::string guild_string = killerClient->GetGuildName();
@@ -2055,9 +2060,9 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 			kill_message += " in ";
 			kill_message += zone->GetLongName();
 			kill_message += "!";
-			worldserver.SendChannelMessage("Druzzil", ChatChannel_Broadcast, 0, 0, 100, kill_message.c_str());
+			worldserver.SendChannelMessage("Druzzil", ChatChannel_Broadcast, zone->GetGuildID(), 0, 100, kill_message.c_str());
 		}
-	}*/
+	}
 
 	if (skip_corpse_checks || GetSummonerID() || (killer && (killer->IsClient() || killer->IsPlayerOwned())))
 	{
@@ -2177,7 +2182,12 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 	if (GetOwner() && GetOwner()->IsClient())
 		is_client_pet = true;
 
-	auto corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata, 
+	Client* clientKiller = nullptr;
+
+	if (killer && killer->IsClient())
+		clientKiller = killer->CastToClient();
+
+	auto corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,
 		level > 54 ? RuleI(NPC, MajorNPCCorpseDecayTimeMS) : RuleI(NPC, MinorNPCCorpseDecayTimeMS),
 		is_client_pet);
 	corpse_bool = true;
@@ -2207,7 +2217,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 
 			if (is_solo_fte_charid)
 			{
-				corpse->AllowPlayerLoot(killer, 0);
+				corpse->AllowPlayerLoot(killer);
 			}
 			if (killer->IsGrouped())
 			{
@@ -2220,7 +2230,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 							bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
 							bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
 							if (!is_self_found || is_self_found && can_get_experience && is_group_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-								corpse->AllowPlayerLoot(group->members[i], i);
+								corpse->AllowPlayerLoot(group->members[i]);
 						}
 					}
 				}
@@ -2243,7 +2253,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							break;
@@ -2253,7 +2263,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							else if (r->members[x].member && r->members[x].IsGroupLeader)
@@ -2261,7 +2271,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							break;
@@ -2271,7 +2281,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							else if (r->members[x].member && r->members[x].IsLooter)
@@ -2279,7 +2289,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							break;
@@ -2289,7 +2299,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience && is_raid_solo_fte_credit && !is_majority_ds_damage && is_majority_killer_dmg)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							break;
@@ -2300,7 +2310,8 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 		}
 		else
 		{
-			corpse->AllowPlayerLoot(killer, 0);
+			if(!killer->IsRaidGrouped())
+				corpse->AllowPlayerLoot(killer);
 			if (killer->IsGrouped())
 			{
 				Group* group = entity_list.GetGroupByClient(killer->CastToClient());
@@ -2312,8 +2323,17 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 						{
 							bool can_get_experience = group->members[i]->CastToClient()->IsInLevelRange(groupHighestLevel);
 							bool is_self_found = group->members[i]->CastToClient()->IsSelfFound();
-							if(!is_self_found || is_self_found && can_get_experience)
-								corpse->AllowPlayerLoot(group->members[i], i);
+							if (!is_self_found || is_self_found && can_get_experience)
+								corpse->AllowPlayerLoot(group->members[i]);
+						}
+						else
+						{
+							if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
+							{
+								if (m_EngagedClientNames.find(group->membername[i]) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(group->membername[i]);
+								i++;
+							}
 						}
 					}
 				}
@@ -2336,7 +2356,13 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
+								i++;
+							}
+							else if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
+							{
+								if (r->members[x].IsRaidLeader && m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
 								i++;
 							}
 							break;
@@ -2346,7 +2372,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							else if (r->members[x].member && r->members[x].IsGroupLeader)
@@ -2354,7 +2380,15 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
+								i++;
+							}
+							else if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
+							{
+								if (r->members[x].IsGroupLeader && m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
+								else if (r->members[x].IsRaidLeader && m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
 								i++;
 							}
 							break;
@@ -2364,7 +2398,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
 								i++;
 							}
 							else if (r->members[x].member && r->members[x].IsLooter)
@@ -2372,7 +2406,15 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
+								i++;
+							}
+							else if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
+							{
+								if (r->members[x].IsLooter && m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
+								else if (r->members[x].IsRaidLeader && m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
 								i++;
 							}
 							break;
@@ -2382,7 +2424,13 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 								bool can_get_experience = r->members[x].member->IsInLevelRange(r->GetHighestLevel2());
 								bool is_self_found = r->members[x].member->IsClient() && r->members[x].member->CastToClient()->IsSelfFound();
 								if (!is_self_found || is_self_found && can_get_experience)
-									corpse->AllowPlayerLoot(r->members[x].member, i);
+									corpse->AllowPlayerLoot(r->members[x].member);
+								i++;
+							}
+							else if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
+							{
+								if (m_EngagedClientNames.find(r->members[x].membername) != m_EngagedClientNames.end())
+									corpse->AllowPlayerLoot(r->members[x].membername);
 								i++;
 							}
 							break;
@@ -2391,6 +2439,11 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 				}
 			}
 		}
+	}
+
+	if (corpse && clientKiller)
+	{
+		corpse->ProcessLootLockouts(clientKiller, this);
 	}
 }
 
@@ -2576,6 +2629,23 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 	if(other->GetSpecialAbility(IMMUNE_AGGRO_ON))
 		return;
 
+	if (IsNPC() && other->IsClient() && zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		if (CastToNPC()->loot_lockout_timer > 0)
+		{
+
+			auto lootLockoutItr = other->CastToClient()->loot_lockouts.find(npctype_id);
+			if (lootLockoutItr != other->CastToClient()->loot_lockouts.end())
+			{
+				if (lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
+				{
+					other->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you to your bind.", GetCleanName() );
+					other->CastToClient()->GoToBind();
+				}
+			}
+		}
+	}
+
 	if(GetSpecialAbility(NPC_TUNNELVISION)) {
 		int tv_mod = GetSpecialAbilityParam(NPC_TUNNELVISION, 0);
 
@@ -2605,6 +2675,26 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 	//
 	if(damage > GetHP())
 		damage = GetHP();
+
+	if (IsNPC() && other->IsClient())
+	{
+		if (m_EngagedClientNames.find(other->GetCleanName()) == m_EngagedClientNames.end())
+		{
+			PlayerEngagementRecord record = PlayerEngagementRecord();
+			record.isFlagged = false;
+			record.lockout = LootLockout();
+			record.character_id = other->CastToClient()->CharacterID();
+			record.isSelfFound = other->CastToClient()->IsSelfFound();
+			record.isSoloOnly = other->CastToClient()->IsSoloOnly();
+
+			auto lootLockoutItr = other->CastToClient()->loot_lockouts.find(npctype_id);
+			if (lootLockoutItr != other->CastToClient()->loot_lockouts.end())
+			{
+				memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
+			}
+			m_EngagedClientNames.emplace(other->GetCleanName(), record);
+		}
+	}
 
 	hate_list.Add(other, hate, damage, bFrenzy, !iBuffTic);
 	if (IsNPC())

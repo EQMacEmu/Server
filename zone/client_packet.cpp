@@ -1157,7 +1157,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	database.LoadCharacterSpellBook(cid, &m_pp); /* Load Character Spell Book */
 	database.LoadCharacterMemmedSpells(cid, &m_pp);  /* Load Character Memorized Spells */
 	database.LoadCharacterLanguages(cid, &m_pp); /* Load Character Languages */
-
+	database.LoadCharacterLootLockouts(loot_lockouts, cid); /* Load CharacterTribute */
 	bool deletenorent = database.NoRentExpired(GetName());
 	if (loaditems && deletenorent) {
 		// client was offline for more than 30 minutes, delete no rent items

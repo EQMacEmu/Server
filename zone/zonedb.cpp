@@ -985,6 +985,40 @@ bool ZoneDatabase::LoadCharacterSkills(uint32 character_id, PlayerProfile_Struct
 	return true;
 }
 
+bool ZoneDatabase::LoadCharacterLootLockouts(std::map<uint32, LootLockout>& loot_lockout_list, uint32 character_id)
+{
+	std::string query = StringFormat(
+		"SELECT                  "
+		"character_id,                   "
+		"expiry,                  "
+		"npctype_id,                  "
+		"npc_name                  "
+		"FROM `character_loot_lockouts` WHERE (character_id = %u)", character_id);
+	auto results = database.QueryDatabase(query);
+	for (auto row = results.begin(); row != results.end(); ++row) {
+
+		LootLockout lootLockout;
+		memset(&lootLockout, 0, sizeof(LootLockout));
+		uint32 npctype_id = atoi(row[2]);
+		lootLockout.character_id = atoi(row[0]);
+		lootLockout.expirydate = atoll(row[1]);
+		lootLockout.npctype_id = npctype_id;
+		strncpy(lootLockout.npc_name, row[3], 64);
+		loot_lockout_list[npctype_id] = lootLockout;
+	}
+
+	return true;
+}
+
+bool ZoneDatabase::SaveCharacterLootLockout(uint32 character_id, uint32 expiry, uint32 npctype_id, const char* npc_name)
+{
+	auto zone_id_number = zone ? zone->GetZoneID() : 0;
+
+	std::string query = StringFormat("REPLACE INTO `character_loot_lockouts` (character_id, expiry, npctype_id, npc_name) VALUES (%u, %u, %u, '%s')", character_id, expiry, npctype_id, Strings::Escape(npc_name).c_str());
+	auto results = QueryDatabase(query);
+	return true;
+}
+
 bool ZoneDatabase::DeleteCharacterSkills(uint32 character_id, PlayerProfile_Struct* pp) {
 	std::string query = StringFormat(
 		"DELETE FROM "
@@ -1698,6 +1732,8 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 		tmp_npctype->engage_notice			= n.engage_notice == 1 ? true : false;
 		tmp_npctype->stuck_behavior			= n.stuck_behavior;
 		tmp_npctype->flymode				= n.flymode;
+		tmp_npctype->loot_lockout			= n.loot_lockout;
+
 		if (tmp_npctype->flymode < 0 || tmp_npctype->flymode > 3)
 			tmp_npctype->flymode = EQ::constants::GravityBehavior::Water;
 

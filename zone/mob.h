@@ -771,6 +771,8 @@ public:
 	void AI_TriggerHailTimer() { AIhail_timer->Trigger(); }
 	void AI_Event_NoLongerEngaged();
 
+	std::map<std::string, PlayerEngagementRecord>& GetEngagementRecords() { return m_EngagedClientNames; };
+
 	FACTION_VALUE GetSpecialFactionCon(Mob* iOther);
 	inline const bool IsAIControlled() const { return pAIControlled; }
 	inline const float GetAggroRange() const { return (spellbonuses.AggroRange == -1) ? pAggroRange : spellbonuses.AggroRange; }
@@ -992,6 +994,8 @@ protected:
 
 	std::vector<uint16> RampageArray;
 	std::map<std::string, std::string> m_EntityVariables;
+
+	std::map<std::string, PlayerEngagementRecord> m_EngagedClientNames;
 	
 	bool m_AllowBeneficial;
 	bool m_DisableMelee;

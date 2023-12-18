@@ -385,6 +385,7 @@ int command_init(void)
 		command_add("showbuffs", "- List buffs active on your target or you if no target.", AccountStatus::Guide, command_showbuffs) ||
 		command_add("showfilters", "- list client serverfilter settings.", AccountStatus::GMCoder, command_showfilters) ||
 		command_add("showhelm", "on/off [all] Toggles displaying of player helms (including your own.) Specifying 'all' toggles every character currently on your account", AccountStatus::Player, command_showhelm) ||
+		command_add("showlootlockouts", "- Shows your currently active loot lockouts. These do not apply to earthquake creatures.", AccountStatus::Player, command_showlootlockouts) ||
 		command_add("showpetspell", "[spellid/searchstring] - search pet summoning spells.", AccountStatus::Guide, command_showpetspell) ||
 		command_add("showquake", "- Shows current earthquake timer. Requires you to be a guild officer or leader.", AccountStatus::Player, command_showquake) ||
 		command_add("showregen", "- Shows information about your target's regen.", AccountStatus::GMAdmin, command_showregen) ||
@@ -4191,7 +4192,33 @@ void command_showquake(Client *c, const Seperator *sep)
 			c->Message(15, time_str.c_str());
 		}
 	}
+}
 
+void command_showlootlockouts(Client *c, const Seperator *sep)
+{
+	if (!c)
+		return;
+
+	int64_t curTime = Timer::GetTimeSeconds();
+
+
+	c->Message(CC_LightGreen, "=== Current Loot Lockouts ===");
+
+	for (auto lockout : c->loot_lockouts)
+	{
+		int64_t time_remaining = lockout.second.expirydate - curTime;
+		if (time_remaining >= 1)
+		{
+			c->Message(CC_Red, "== %s: Expires in %s", lockout.second.npc_name, Strings::SecondsToTime((int)time_remaining).c_str());
+		}
+		else
+		{
+			if (lockout.second.expirydate <= 1)
+			{
+				c->Message(CC_LightGreen, "== %s: Available", lockout.second.npc_name);
+			}
+		}
+	}
 }
 
 void command_corpse(Client *c, const Seperator *sep)

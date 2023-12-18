@@ -135,6 +135,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	if (mob != 0)
 		entity_list.RemoveEntity(mob->GetID());
 
+	loot_lockout_timer = 0;
+
 	NPCTypedata = d;
 	respawn2 = in_respawn;
 	swarm_timer.Disable();
@@ -201,6 +203,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 
 	accuracy_rating = d->accuracy_rating;
 	ATK = d->ATK;
+
+	loot_lockout_timer = d->loot_lockout;
 
 	CalcMaxMana();
 	SetMana(GetMaxMana());

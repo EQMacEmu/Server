@@ -751,6 +751,12 @@ public:
 	bool	IsValidSlot(uint32 slot);
 	bool	IsBankSlot(uint32 slot);
 
+
+	std::map<uint32, LootLockout> loot_lockouts;
+
+	bool IsLootLockedOutOfNPC(uint32 npctype_id);
+
+
 	inline bool IsTrader() const { return(Trader); }
 	eqFilterMode GetFilter(eqFilterType filter_id) const { return ClientFilters[filter_id]; }
 	void SetFilter(eqFilterType filter_id, eqFilterMode value) { ClientFilters[filter_id]=value; }

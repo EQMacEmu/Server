@@ -6559,3 +6559,16 @@ void Client::ShowLegacyItemsLooted(Client* to)
 	to->Message(CC_Yellow, "======");
 
 }
+
+bool Client::IsLootLockedOutOfNPC(uint32 npctype_id)
+{
+	if (npctype_id == 0)
+		return false;
+
+	auto lootItr = loot_lockouts.find(npctype_id);
+
+	if (lootItr != loot_lockouts.end())
+		return lootItr->second.HasLockout(Timer::GetTimeSeconds());
+
+	return false;
+};

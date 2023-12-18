@@ -117,6 +117,7 @@ public:
 		int8_t      engage_notice;
 		int8_t      stuck_behavior;
 		int8_t      flymode;
+		uint32_t	loot_lockout;
 	};
 
 	static std::string PrimaryKey()
@@ -224,6 +225,7 @@ public:
 			"engage_notice",
 			"stuck_behavior",
 			"flymode",
+			"loot_lockout",
 		};
 	}
 
@@ -327,6 +329,7 @@ public:
 			"engage_notice",
 			"stuck_behavior",
 			"flymode",
+			"loot_lockout",
 		};
 	}
 
@@ -464,6 +467,7 @@ public:
 		e.engage_notice         = 0;
 		e.stuck_behavior        = 0;
 		e.flymode               = -1;
+		e.loot_lockout			= 0;
 
 		return e;
 	}
@@ -597,6 +601,7 @@ public:
 			e.engage_notice         = static_cast<int8_t>(atoi(row[94]));
 			e.stuck_behavior        = static_cast<int8_t>(atoi(row[95]));
 			e.flymode               = static_cast<int8_t>(atoi(row[96]));
+			e.flymode				= static_cast<uint32_t>(atoi(row[97]));
 
 			return e;
 		}
@@ -726,6 +731,7 @@ public:
 		v.push_back(columns[94] + " = " + std::to_string(e.engage_notice));
 		v.push_back(columns[95] + " = " + std::to_string(e.stuck_behavior));
 		v.push_back(columns[96] + " = " + std::to_string(e.flymode));
+		v.push_back(columns[97] + " = " + std::to_string(e.loot_lockout));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -844,6 +850,7 @@ public:
 		v.push_back(std::to_string(e.engage_notice));
 		v.push_back(std::to_string(e.stuck_behavior));
 		v.push_back(std::to_string(e.flymode));
+		v.push_back(std::to_string(e.loot_lockout));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -970,6 +977,7 @@ public:
 			v.push_back(std::to_string(e.engage_notice));
 			v.push_back(std::to_string(e.stuck_behavior));
 			v.push_back(std::to_string(e.flymode));
+			v.push_back(std::to_string(e.loot_lockout));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -1100,6 +1108,7 @@ public:
 			e.engage_notice         = static_cast<int8_t>(atoi(row[94]));
 			e.stuck_behavior        = static_cast<int8_t>(atoi(row[95]));
 			e.flymode               = static_cast<int8_t>(atoi(row[96]));
+			e.loot_lockout			= static_cast<uint32_t>(atoi(row[97]));
 
 			all_entries.push_back(e);
 		}
@@ -1221,6 +1230,7 @@ public:
 			e.engage_notice         = static_cast<int8_t>(atoi(row[94]));
 			e.stuck_behavior        = static_cast<int8_t>(atoi(row[95]));
 			e.flymode               = static_cast<int8_t>(atoi(row[96]));
+			e.loot_lockout = static_cast<uint32_t>(atoi(row[97]));
 
 			all_entries.push_back(e);
 		}

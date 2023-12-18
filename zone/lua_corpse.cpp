@@ -117,14 +117,14 @@ void Lua_Corpse::SetDecayTimer(uint32 decaytime) {
 	self->SetDecayTimer(decaytime);
 }
 
-bool Lua_Corpse::CanMobLoot(int charid) {
+bool Lua_Corpse::CanMobLoot(const char* mobName) {
 	Lua_Safe_Call_Bool();
-	return self->CanPlayerLoot(charid);
+	return self->CanPlayerLoot(mobName);
 }
 
 void Lua_Corpse::AllowMobLoot(Lua_Mob them, uint8 slot) {
 	Lua_Safe_Call_Void();
-	self->AllowPlayerLoot(them, slot);
+	self->AllowPlayerLoot(them);
 }
 
 bool Lua_Corpse::Summon(Lua_Client client, bool spell, bool checkdistance) {
@@ -184,7 +184,7 @@ luabind::scope lua_register_corpse() {
 		.def("RemoveCash", (void(Lua_Corpse::*)(void))&Lua_Corpse::RemoveCash)
 		.def("IsEmpty", (bool(Lua_Corpse::*)(void))&Lua_Corpse::IsEmpty)
 		.def("SetDecayTimer", (void(Lua_Corpse::*)(uint32))&Lua_Corpse::SetDecayTimer)
-		.def("CanMobLoot", (bool(Lua_Corpse::*)(int))&Lua_Corpse::CanMobLoot)
+		.def("CanMobLoot", (bool(Lua_Corpse::*)(const char*))&Lua_Corpse::CanMobLoot)
 		.def("AllowMobLoot", (void(Lua_Corpse::*)(Lua_Mob, uint8))&Lua_Corpse::AllowMobLoot)
 		.def("Summon", (bool(Lua_Corpse::*)(Lua_Client, bool, bool))&Lua_Corpse::Summon)
 		.def("GetCopper", (uint32(Lua_Corpse::*)(void))&Lua_Corpse::GetCopper)
