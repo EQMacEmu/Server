@@ -420,7 +420,7 @@ public:
 	inline virtual int32 GetPR() const { return PR; }
 	inline virtual int32 GetCR() const { return CR; }
 
-	int32 GetMaxStat() const;
+	int32 GetMaxStat(int32 aabonusAmount) const;
 	int32 GetMaxResist() const;
 	int32 GetMaxSTR() const;
 	int32 GetMaxSTA() const;
@@ -751,6 +751,12 @@ public:
 	bool	IsValidSlot(uint32 slot);
 	bool	IsBankSlot(uint32 slot);
 
+
+	std::map<uint32, LootLockout> loot_lockouts;
+
+	bool IsLootLockedOutOfNPC(uint32 npctype_id);
+
+
 	inline bool IsTrader() const { return(Trader); }
 	eqFilterMode GetFilter(eqFilterType filter_id) const { return ClientFilters[filter_id]; }
 	void SetFilter(eqFilterType filter_id, eqFilterMode value) { ClientFilters[filter_id]=value; }
@@ -956,7 +962,6 @@ public:
 	void SendMerchantEnd();
 	float GetPortHeading(uint16 newx, uint16 newy);
 	bool IsMule() { return (Admin() < 80 && m_pp.mule); }
-	void RefreshSpellIcon();
 	void SendCancelTrade(Mob* with);
 	void ClearPTimers(uint16 type);
 	void UpdateItemHP(EQ::ItemInstance* item, bool equip = true);

@@ -246,8 +246,8 @@ bool Mob::CastSpell(uint16 spell_id, uint16 target_id, CastingSlot slot,
 
 	// check to see if target is a caster mob before performing a mana tap or one of the recourse based mana-tap-over-time spells
 	if (IsClient() && spell_target &&
-		spells[spell_id].manatapspell || /* Theft of Thought (player castable), Mind Tap, Essence Drain, Black Claw */
-		(spells[spell_id].contains_se_currentmana && spells[spell_id].hasrecourse) /* Wandering Mind, Mind Wrack, Scryer's Trespass */)
+		(spells[spell_id].manatapspell || /* Theft of Thought (player castable), Mind Tap, Essence Drain, Black Claw */
+		(spells[spell_id].contains_se_currentmana && spells[spell_id].hasrecourse)) /* Wandering Mind, Mind Wrack, Scryer's Trespass */)
 	{
 		if (spell_target->GetCasterClass() == 'N') {
 			InterruptSpell(TARGET_NO_MANA, CC_User_SpellFailure, spell_id, true, false);
@@ -976,7 +976,7 @@ void Mob::ZeroCastingVars()
 	spellend_timer.Disable();
 	casting_spell_id = 0;
 	casting_spell_targetid = 0;
-	casting_spell_slot = CastingSlot::Gem1;
+	casting_spell_slot = CastingSlot::Invalid;
 	casting_spell_mana = 0;
 	casting_spell_inventory_slot = 0;
 	casting_spell_timer = 0;
@@ -998,7 +998,7 @@ void Mob::InterruptSpell(uint16 spellid, bool fizzle)
 		spellid = bardsong;
 
 	int16 message = IsBardSong(spellid) ? SONG_ENDS_ABRUPTLY : INTERRUPT_SPELL;
-	InterruptSpell(message, CC_User_Spells, spellid, fizzle);
+	InterruptSpell(message, CC_User_SpellFailure, spellid, fizzle);
 }
 
 void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizzle, bool message_others)
@@ -1053,11 +1053,6 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 			if (message != SONG_ENDS)
 			{
 				SendSpellBarEnable(spellid);
-
-				if (!fizzle)
-				{
-					CastToClient()->RefreshSpellIcon();
-				}
 			}
 		}
 
@@ -1114,28 +1109,26 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slot,
 							uint16 mana_used, uint32 inventory_slot, int16 resist_adjust)
 {
-	bool IsFromItem = false;
-
-	if(IsClient() && slot != CastingSlot::Item) { // 10 is item
-		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
-			//should we issue a message or send them a spell gem packet?
-			Message_StringID(CC_User_Spells, SPELL_NOT_RECOVERED);
-			Log(Logs::Detail, Logs::Spells, "Casting of %d canceled: spell reuse timer not expired", spell_id);
-			InterruptSpell();
-			return;
-		}
-	}
-
-	if(IsClient() && ((slot == CastingSlot::Item)))
-	{
-		IsFromItem = true;
-	}
-
-	if(!IsValidSpell(spell_id))
+	if (!IsValidSpell(spell_id))
 	{
 		Log(Logs::Detail, Logs::Spells, "Casting of %d canceled: invalid spell id", spell_id);
 		InterruptSpell();
 		return;
+	}
+
+	bool IsFromItem = false;
+	if (IsClient() && ((slot == CastingSlot::Item)))
+	{
+		IsFromItem = true;
+	}
+
+	if(IsClient() && slot != CastingSlot::Item) { // 10 is item
+		if(!CastToClient()->GetPTimers().Expired(&database, pTimerSpellStart + spell_id, false)) {
+			//should we issue a message or send them a spell gem packet?
+			Log(Logs::Detail, Logs::Spells, "Casting of %d canceled: spell reuse timer not expired", spell_id);
+			InterruptSpell(SPELL_NOT_RECOVERED, CC_User_SpellFailure, spell_id);
+			return;
+		}
 	}
 
 	// Prevent rapid recast of normal spells. Clickies are exempt. 
@@ -1153,8 +1146,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 	if (casting_spell_id != spell_id)
 	{
 		Log(Logs::Detail, Logs::Spells, "Casting of %d canceled: already casting", spell_id);
-		Message_StringID(CC_Red,ALREADY_CASTING);
-		InterruptSpell();
+		InterruptSpell(ALREADY_CASTING, CC_User_SpellFailure, spell_id);
 		return;
 	}
 
@@ -1338,8 +1330,6 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 		&& inventory_slot != 0xFFFFFFFF)	// 10 is an item
 	{
 		const EQ::ItemInstance* inst = CastToClient()->GetInv()[inventory_slot];
-		uint32 recastdelay = 0;
-		uint32 recasttype = 0;
 
 		if (inst && inst->IsType(EQ::item::ItemClassCommon) && (inst->GetItem()->Click.Effect == spell_id) && inst->GetCharges())
 		{
@@ -1398,19 +1388,17 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 		if (GetClass() == BARD && (IsBardSong(spell_id) || HasActiveSong()))
 			skipSpellRefresh = true;
 
-		if (!skipSpellRefresh)
-		{
-			SendSpellBarEnable(spell_id);
-		}
-
 		if (slot < CastingSlot::MaxGems || slot == CastingSlot::Ability)
 		{
-			// this causes the delayed refresh of the spell bar gems
+			// this causes the delayed refresh of the spell bar gems and sets the recast delay timer for this slot on the client for non bards
 			c->MemorizeSpell(static_cast<uint32>(slot), spell_id, memSpellSpellbar);
 		}
 
 		// this tells the client that casting may happen again
-		SetMana(GetMana());
+		if (!skipSpellRefresh)
+		{
+			SendSpellBarEnable(spell_id);
+		}
 
 		// skills
 		if(slot < CastingSlot::MaxGems)
@@ -2496,7 +2484,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 			return duration ? i < duration ? i : duration : i;
 
 		case 50:	// permanent buff
-			return 0xFFFE; // TODO - the better way might be to set the bufftype to 1 instead of 2 for these, then the client won't tick down the timer
+			return 0xFFFE;
 
 		default:
 			Log(Logs::General, Logs::Spells, "CalcBuffDuration_formula: unknown formula %d", formula);
@@ -2668,6 +2656,9 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 
 	if(!IsValidSpell(spell_id))
 		return false;
+
+	// reversed tap spell
+	bool is_tap_recourse = (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && spelltar == this;
 
 	uint16 caster_level = GetCasterLevel(spell_id);
 	uint8 item_level = GetClickLevel(this, spell_id);
@@ -3060,7 +3051,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	}
 
 	Log(Logs::Moderate, Logs::Spells, "Checking Resists for spell %d", spell_id);
-	if(IsResistableSpell(spell_id))
+	if(!is_tap_recourse && IsResistableSpell(spell_id))
 	{
 		spell_effectiveness = spelltar->CheckResistSpell(spells[spell_id].resisttype, spell_id, this, spelltar, use_resist_adjust, resist_adjust);
 
@@ -3081,11 +3072,11 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		spell_effectiveness = 100;
 	}
 
-	if (spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id))
+	if (spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id) && !is_tap_recourse)
 	{
 		spelltar->DamageShield(this, true);
 	}
-	else if (IsDetrimentalSpell(spell_id) && !IsHarmonySpell(spell_id) && !IsAllianceSpellLine(spell_id) &&
+	else if (IsDetrimentalSpell(spell_id) && !is_tap_recourse && !IsHarmonySpell(spell_id) && !IsAllianceSpellLine(spell_id) &&
 		     CancelMagicShouldAggro(spell_id, spelltar))
 	{
 		Log(Logs::Moderate, Logs::Spells, "Applying aggro for spell %d", spell_id);
@@ -3119,7 +3110,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 				spelltar->CastToNPC()->CallForHelp(this);	// this will fail if timer is ticking down, so won't spam
 		}
 	}
-	else if (IsBeneficialSpell(spell_id) && !IsSummonPCSpell(spell_id) && !IsAEMemBlurSpell(spell_id) && !IsBindSightSpell(spell_id)
+	else if ((IsBeneficialSpell(spell_id) || is_tap_recourse) && !IsSummonPCSpell(spell_id) && !IsAEMemBlurSpell(spell_id) && !IsBindSightSpell(spell_id)
 		&& (!spelltar->IsPet() || spelltar->IsCharmedPet())											// no beneficial aggro for summoned pets
 		&& (!IsNPC() || !isproc || CastToNPC()->GetInnateProcSpellId() != spell_id)					// NPC innate procs always hit the target, even if beneficial. we don't want beneficial procs aggroing nearby NPCs
 		&& (!spelltar->IsCharmedPet() || (spelltar->IsCharmedPet() && !IsHealingSpell(spell_id)))	// Healing spells on charmed pets don't cause aggro.
@@ -3233,7 +3224,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	if (IsClient())
 	{
 		// Flesh To Bone
-		if (spell_id == 2772)
+		if (spell_id == SPELL_TRANSMUTE_FLESH_TO_BONE)
 		{
 			if (!CastToClient()->FleshToBone())
 			{
@@ -3257,32 +3248,54 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 
 	Log(Logs::Detail, Logs::Spells, "Cast of %d by %s on %s complete successfully.", spell_id, GetName(), spelltar->GetName());
 
-	if (IsDetrimentalSpell(spell_id))
+	if (IsDetrimentalSpell(spell_id) && !is_tap_recourse)
 		spelltar->CommonBreakSneakHide();
 
-	if (IsValidSpell(spells[spell_id].RecourseLink)) 
+	// autocast recourse spells
+	if (!isrecourse)
 	{
-		int recourse_spell_id = spells[spell_id].RecourseLink;
-		if (spells[recourse_spell_id].targettype == ST_Tap) // Soul Well Recourse, Greenmist Recourse
+		// normal recourse spell
+		if (IsValidSpell(spells[spell_id].RecourseLink))
 		{
-			// this is a hack to make these spells show correctly and overwrite themselves on the client
-			// TODO: investigate using type 4 buffs which negates the spell values on the client
-			if (IsClient())
+			int recourse_spell_id = spells[spell_id].RecourseLink;
+			if (spell_id == SPELL_GREENMIST)
 			{
-				int buff_count = GetMaxBuffSlots();
-				for (int i = 0; i < buff_count; i++)
+				// It seems that the recourse simply didn't work on AK.  The reason is unknown (to me).
+
+				if (RuleB(AlKabor, GreenmistHack))
 				{
-					if (buffs[i].spellid == spell_id)
+					// 
+					// We have the target cast the recourse so Greenmist Recourse doesn't become a reversed tap from being self cast. 
+					// This is a TAKP hack for Greenmist specifically.  The recourse spell data seems to have a messed up target type, it should be regular single target.
+					// If we cast this like a normal recourse, it will become reversed because of the target type and the caster being our self.
+					// The workaround is to have the target cast it on us, which mostly works, but the spell is cast at the level of the target and
+					// can't be overwritten to be refreshed by procing on a lower level target after.  Doing this also makes the target do the casting
+					// animation of the recourse instead of the player procing it.
+					//
+
+					for (int i = 0; i < GetMaxBuffSlots(); i++)
 					{
-						CastToClient()->BuffModifyDurationBySpellID(spell_id, 0, true);
+						// the spell won't overwrite to refresh duration when it procs on a lower level target since we're faking it out as the target casting it instead of the player.
+						// here we fade the existing recourse buff so we can stick a new full duration one on from the lower level target.
+						if (buffs[i].spellid == recourse_spell_id && buffs[i].casterlevel > spelltar->GetLevel())
+						{
+							BuffFadeBySlot(i, true, true, true); // generates worn off message "The green mist disperses." when the Greenmist Recourse is refreshed this way.
+							break;
+						}
 					}
+					spelltar->SpellFinished(recourse_spell_id, this, CastingSlot::Item, 0, -1, spells[recourse_spell_id].ResistDiff, false, true, GetLevel());
 				}
 			}
-			spelltar->SpellFinished(recourse_spell_id, this, CastingSlot::Item, 0, -1, spells[recourse_spell_id].ResistDiff, false, true, GetLevel());
+			else
+			{
+				SpellFinished(recourse_spell_id, this, CastingSlot::Item, 0, -1, spells[recourse_spell_id].ResistDiff, false, true, GetLevel());
+			}
 		}
-		else
+		// tap buff spells use themselves as the recourse, but with the effects reversed
+		// TODO: investigate doing this for all ST_Tap spells not just buffs - cast the spell on the original caster for each affected target with the effects reversed
+		else if (buffslot != -1 && spelltar != this && (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap))
 		{
-			SpellFinished(recourse_spell_id, this, CastingSlot::Item, 0, -1, spells[recourse_spell_id].ResistDiff, false, true, GetLevel());
+			SpellFinished(spell_id, this, CastingSlot::Item, 0, -1, spells[spell_id].ResistDiff, false, true, GetLevel());
 		}
 	}
 
@@ -3653,17 +3666,6 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 			Log(Logs::Detail, Logs::Spells, "We are immune to Snare spells.");
 			caster->Message_StringID(CC_User_SpellFailure, IMMUNE_MOVEMENT);
 			ResistSpell(caster, spell_id, isProc);
-			return true;
-		}
-	}
-
-	// Exclude Greenmist and Soul Well Recourses
-	if(IsLifetapSpell(spell_id) && spell_id != 3978 && spell_id != 3980)
-	{
-		if(this == caster)
-		{
-			Log(Logs::Detail, Logs::Spells, "You cannot lifetap yourself.");
-			caster->Message_StringID(CC_User_SpellFailure, CANT_DRAIN_SELF);
 			return true;
 		}
 	}
@@ -4300,21 +4302,17 @@ void Client::MakeBuffFadePacket(uint16 spell_id, int slot_id, bool send_message)
 	auto outapp = new EQApplicationPacket(OP_Buff, sizeof(SpellBuffFade_Struct));
 	SpellBuffFade_Struct* sbf = (SpellBuffFade_Struct*) outapp->pBuffer;
 
-	sbf->entityid=GetID();
-	sbf->bufftype=2; // TODO - don't hardcode this, it can be 4 for reversed effects
-	sbf->level=buffs[slot_id].casterlevel;
-	sbf->bard_modifier=buffs[slot_id].instrumentmod;
-	sbf->activated=spells[spell_id].Activated;
+	// when using buffade = 1 only bufftype, spellid and bufffade need to be set in this packet
+	//sbf->entityid=GetID();
+	sbf->bufftype=buffs[slot_id].bufftype;
+	//sbf->level=buffs[slot_id].casterlevel;
+	//sbf->bard_modifier=buffs[slot_id].instrumentmod;
+	//sbf->activated=spells[spell_id].Activated;
 	sbf->spellid=spell_id;
-	sbf->slot_number=slot_id;
-	sbf->bufffade = 1;
-
-	QueuePacket(outapp);
-
-	sbf->activated=0;
-	sbf->level=0;
-	sbf->bufftype=0;
-	sbf->spellid=SPELL_UNKNOWN;
+	//sbf->duration = buffs[slot_id].ticsremaining;
+	//sbf->counters = buffs[slot_id].counters;
+	//sbf->slot_number=slot_id;
+	sbf->bufffade = 1; // client matches by spell_id and bufftype to find the target buff and fades it as if clicked off.
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -4639,9 +4637,9 @@ bool Mob::UseBardSpellLogic(uint16 spell_id, int slot)
 	if (spell_id == SPELL_UNKNOWN && bardsong)
 		spell_id = bardsong;
 
-	if (slot == -1 && static_cast<int>(casting_spell_slot) != -1)
+	if (slot == -1 && casting_spell_slot != CastingSlot::Invalid)
 		slot = static_cast<int>(casting_spell_slot);
-	if (slot == -1 && static_cast<int>(bardsong_slot) != -1)
+	if (slot == -1 && bardsong_slot != CastingSlot::Invalid)
 		slot = static_cast<int>(bardsong_slot);
 
 	// should we treat this as a bard singing?
@@ -4674,7 +4672,7 @@ void Mob::_StopSong()
 {
 	bardsong = 0;
 	bardsong_target_id = 0;
-	bardsong_slot = CastingSlot::Gem1;
+	bardsong_slot = CastingSlot::Invalid;
 	bardsong_timer.Disable();
 }
 
@@ -4691,7 +4689,7 @@ void Client::SendBuffDurationPacket(uint16 spell_id, int duration, int inlevel, 
 	sbf->entityid = GetID();
 	
 	// this is SpellBuff_Struct - client replaces the existing buff fully with the data sent here
-	sbf->bufftype = 2; // TODO - don't hardcode this, it can be 4 for reversed effects
+	sbf->bufftype = buffs[slot_id].bufftype;
 	sbf->level = inlevel > 0 ? inlevel : GetLevel();
 	sbf->bard_modifier = bardmodifier;
 	sbf->activated = spells[spell_id].Activated;
@@ -4835,22 +4833,6 @@ bool Mob::IsPacified()
 	}
 	
 	return false;
-}
-
-void Client::RefreshSpellIcon()
-{
-	for (unsigned int i = 0; i < MAX_PP_MEMSPELL; ++i)
-	{
-		if (IsValidSpell(m_pp.mem_spells[i]) && p_timers.Enabled(pTimerSpellStart + m_pp.mem_spells[i]))
-		{
-			m_pp.spellSlotRefresh[i] = p_timers.GetRemainingTime(pTimerSpellStart + m_pp.mem_spells[i]);
-			if(m_pp.spellSlotRefresh[i] > 0)
-			{
-				MemorizeSpell(i, m_pp.mem_spells[i], memSpellSpellbar);
-				Log(Logs::General, Logs::Spells, "Sending slot disable for spell %d in slot %d which has %d seconds left", m_pp.mem_spells[i], i, m_pp.spellSlotRefresh[i]);
-			}
-		}
-	}
 }
 
 void Mob::ResistSpell(Mob* caster, uint16 spell_id, bool isProc)

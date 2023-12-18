@@ -382,6 +382,15 @@ void NPC::AddLootDrop(const EQ::ItemData *item2, ItemList* itemlist, int8 charge
 	item->forced = false;
 	item->min_looter_level = min_looter_level;
 
+	// unsure if required to equip, YOLO for now
+	if (item2->ItemType == EQ::item::ItemTypeBow) {
+		SetBowEquipped(true);
+	}
+
+	if (item2->ItemType == EQ::item::ItemTypeArrow) {
+		SetArrowEquipped(true);
+	}
+
 	if(pet && quest)
 	{
 		Log(Logs::Detail, Logs::Trading, "Error: Item %s is being added to %s as both a pet and a quest.", item2->Name, GetName());

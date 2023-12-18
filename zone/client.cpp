@@ -1092,7 +1092,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 				}
 			}
 
-			char target_name[64];
+			char target_name[64] = {};
 
 			if(targetname)
 			{
@@ -2236,6 +2236,8 @@ uint16 Client::GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType skillid
 			}
 			else
 			{
+				Result = m_pp.skills[skillid]; // don't allow further increase, this is believed to be AKurate behavior https://www.takproject.net/forums/index.php?threads/10-11-2023.26773/#post-123497
+				/*
 				Message(CC_Red, "Your spell casting specializations skills have been reset. "
 						"Only %i primary specialization skill is allowed.", MaxSpecializations);
 
@@ -2246,6 +2248,7 @@ uint16 Client::GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType skillid
 
 				Log(Logs::General, Logs::Normal, "Reset %s's caster specialization skills to 1. "
 								"Too many specializations skills were above 50.", GetCleanName());
+				*/
 			}
 
 		}
@@ -4249,7 +4252,7 @@ void Client::Doppelganger(uint16 spell_id, Mob *target, const char *name_overrid
 		return;
 	}
 
-	SwarmPet_Struct pet;
+	SwarmPet_Struct pet = {};
 	pet.count = pet_count;
 	pet.duration = pet_duration;
 	pet.npc_id = record.npc_type;
@@ -6559,3 +6562,16 @@ void Client::ShowLegacyItemsLooted(Client* to)
 	to->Message(CC_Yellow, "======");
 
 }
+
+bool Client::IsLootLockedOutOfNPC(uint32 npctype_id)
+{
+	if (npctype_id == 0)
+		return false;
+
+	auto lootItr = loot_lockouts.find(npctype_id);
+
+	if (lootItr != loot_lockouts.end())
+		return lootItr->second.HasLockout(Timer::GetTimeSeconds());
+
+	return false;
+};

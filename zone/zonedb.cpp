@@ -985,6 +985,40 @@ bool ZoneDatabase::LoadCharacterSkills(uint32 character_id, PlayerProfile_Struct
 	return true;
 }
 
+bool ZoneDatabase::LoadCharacterLootLockouts(std::map<uint32, LootLockout>& loot_lockout_list, uint32 character_id)
+{
+	std::string query = StringFormat(
+		"SELECT                  "
+		"character_id,                   "
+		"expiry,                  "
+		"npctype_id,                  "
+		"npc_name                  "
+		"FROM `character_loot_lockouts` WHERE (character_id = %u)", character_id);
+	auto results = database.QueryDatabase(query);
+	for (auto row = results.begin(); row != results.end(); ++row) {
+
+		LootLockout lootLockout;
+		memset(&lootLockout, 0, sizeof(LootLockout));
+		uint32 npctype_id = atoi(row[2]);
+		lootLockout.character_id = atoi(row[0]);
+		lootLockout.expirydate = atoll(row[1]);
+		lootLockout.npctype_id = npctype_id;
+		strncpy(lootLockout.npc_name, row[3], 64);
+		loot_lockout_list[npctype_id] = lootLockout;
+	}
+
+	return true;
+}
+
+bool ZoneDatabase::SaveCharacterLootLockout(uint32 character_id, uint32 expiry, uint32 npctype_id, const char* npc_name)
+{
+	auto zone_id_number = zone ? zone->GetZoneID() : 0;
+
+	std::string query = StringFormat("REPLACE INTO `character_loot_lockouts` (character_id, expiry, npctype_id, npc_name) VALUES (%u, %u, %u, '%s')", character_id, expiry, npctype_id, Strings::Escape(npc_name).c_str());
+	auto results = QueryDatabase(query);
+	return true;
+}
+
 bool ZoneDatabase::DeleteCharacterSkills(uint32 character_id, PlayerProfile_Struct* pp) {
 	std::string query = StringFormat(
 		"DELETE FROM "
@@ -1698,6 +1732,8 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 		tmp_npctype->engage_notice			= n.engage_notice == 1 ? true : false;
 		tmp_npctype->stuck_behavior			= n.stuck_behavior;
 		tmp_npctype->flymode				= n.flymode;
+		tmp_npctype->loot_lockout			= n.loot_lockout;
+
 		if (tmp_npctype->flymode < 0 || tmp_npctype->flymode > 3)
 			tmp_npctype->flymode = EQ::constants::GravityBehavior::Water;
 
@@ -2075,6 +2111,7 @@ void ZoneDatabase::SaveBuffs(Client *client) {
 		b.persistent		= buffs[index].persistant_buff;
 		b.ExtraDIChance		= buffs[index].ExtraDIChance;
 		b.bard_modifier		= buffs[index].instrumentmod;
+		b.bufftype			= buffs[index].bufftype;
 
 		// add the buff to the vector
 
@@ -2097,7 +2134,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
 
 	std::string query = StringFormat("SELECT spell_id, slot_id, caster_level, caster_name, ticsremaining, "
                                     "counters, melee_rune, magic_rune, persistent, "
-                                    "ExtraDIChance, bard_modifier "
+                                    "ExtraDIChance, bard_modifier, bufftype "
                                     "FROM `character_buffs` WHERE `id` = '%u'", client->CharacterID());
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -2122,6 +2159,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
 		uint8 persistent = atoul(row[8]);
 		int32 ExtraDIChance = atoul(row[9]);
 		uint8 instmod = atoul(row[10]);
+		int32 bufftype = atoul(row[11]);
 
 		buffs[slot_id].spellid = spell_id;
         buffs[slot_id].casterlevel = caster_level;
@@ -2154,6 +2192,7 @@ void ZoneDatabase::LoadBuffs(Client *client) {
         buffs[slot_id].UpdateClient = false;
 		buffs[slot_id].isdisc = IsDisc(spell_id);
 		buffs[slot_id].instrumentmod = instmod;
+		buffs[slot_id].bufftype = bufftype;
 
     }
 
@@ -3088,26 +3127,34 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 
 	std::string corpse_items_query;
 	/* Dump Items from Inventory */
-	uint8 first_entry = 0;
-	for (unsigned int i = 0; i < dbpc->itemcount; i++) {
-		if (first_entry != 1){
-			corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
-				" (corpse_id, equip_slot, item_id, charges) \n"
-				" VALUES (%u, %u, %u, %u) \n",
-				last_insert_id,
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,
-				dbpc->items[i].charges
-			);
-			first_entry = 1;
-		}
-		else{
-			corpse_items_query = corpse_items_query + StringFormat(", (%u, %u, %u, %u) \n",
-				last_insert_id,
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,
-				dbpc->items[i].charges
-			);
+	if (dbpc->itemcount == 0)
+	{
+		// clear out any stale items that might be left in the database for this corpse if we're saving it with 0 items
+		corpse_items_query = StringFormat("DELETE FROM `character_corpse_items` WHERE `corpse_id` = %d", last_insert_id);
+	}
+	else
+	{
+		uint8 first_entry = 0;
+		for (unsigned int i = 0; i < dbpc->itemcount; i++) {
+			if (first_entry != 1) {
+				corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
+					" (corpse_id, equip_slot, item_id, charges) \n"
+					" VALUES (%u, %u, %u, %u) \n",
+					last_insert_id,
+					dbpc->items[i].equip_slot,
+					dbpc->items[i].item_id,
+					dbpc->items[i].charges
+				);
+				first_entry = 1;
+			}
+			else {
+				corpse_items_query = corpse_items_query + StringFormat(", (%u, %u, %u, %u) \n",
+					last_insert_id,
+					dbpc->items[i].equip_slot,
+					dbpc->items[i].item_id,
+					dbpc->items[i].charges
+				);
+			}
 		}
 	}
 	auto sc_results = QueryDatabase(corpse_items_query);

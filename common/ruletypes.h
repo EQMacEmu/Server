@@ -189,6 +189,7 @@ RULE_BOOL(AlKabor, EnableMobLevelModifier, true) // AK behavior is true.  If tru
 RULE_BOOL(AlKabor, EnableEraItemRules, false) // AK behavior is false. If true, disable item data in the era they did not exist in.
 RULE_BOOL(AlKabor, EnableLuclinHarmonyResistOverride, true) // AK behavior is true. If true, enable the late Luclin Harmony resist override.
 RULE_BOOL(AlKabor, EnableLatePlanesHarmonyNerf, true) // AK behavior is true. If true, enable the late Planes of Power Harmony nerf
+RULE_BOOL (AlKabor, GreenmistHack, true) // Greenmist recourse didn't work on AK.  The spell data is messed up so it's not properly fixable without modifying the client.  This enables a partial workaround that is not AKurate but provides some benefit to players using this weapon.
 RULE_CATEGORY_END()
 
 

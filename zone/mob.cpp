@@ -2217,6 +2217,11 @@ void Mob::WipeHateList(bool from_memblur)
 		hate_list.Wipe(from_memblur);
 		DamageTotalsWipe();
 	}
+
+	if (!from_memblur)
+	{
+		m_EngagedClientNames.clear();
+	}
 }
 
 uint32 Mob::RandomTimer(int min,int max) {

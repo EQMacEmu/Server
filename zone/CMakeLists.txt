@@ -157,7 +157,6 @@ SET(zone_headers
 	pets.h
 	position.h
 	qglobals.h
-	quest_interface.h
 	queryserv.h
 	quest_interface.h
 	questmgr.h

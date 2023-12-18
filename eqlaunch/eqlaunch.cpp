@@ -130,8 +130,9 @@ int main(int argc, char *argv[]) {
 		zone = zones.begin();
 		zend = zones.end();
 		for (; zone != zend; ++zone) {
-			if (!zone->second->Process())
+			if (!zone->second->Process()) {
 				to_remove.insert(zone->first);
+			}
 		}
 
 		/*

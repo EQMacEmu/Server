@@ -47,7 +47,7 @@ public:
 	void RemoveCash();
 	bool IsEmpty();
 	void SetDecayTimer(uint32 decaytime);
-	bool CanMobLoot(int charid);
+	bool CanMobLoot(const char* mobName);
 	void AllowMobLoot(Lua_Mob them, uint8 slot);
 	bool Summon(Lua_Client client, bool spell, bool checkdistance);
 	uint32 GetCopper();

@@ -200,7 +200,7 @@ int command_init(void)
 		command_add("emoteview", "Lists all NPC Emotes.", AccountStatus::GMStaff, command_emoteview) ||
 		command_add("enablerecipe", "[recipe_id] - Enables a recipe using the recipe id.", AccountStatus::GMImpossible, command_enablerecipe) ||
 		command_add("equipitem", "[slotid(0-21)] - Equip the item on your cursor into the specified slot.", AccountStatus::GMLeadAdmin, command_equipitem) ||
-		command_add("expansion", "[accountname][expansion] - Sets the expansion value for the specified accounnt.", AccountStatus::GMLeadAdmin, command_expansion) ||
+		command_add("expansion", "[accountname][expansion] - Sets the expansion value for the specified account.", AccountStatus::GMLeadAdmin, command_expansion) ||
 
 		command_add("face", "- Change the face of your target.", AccountStatus::GMLeadAdmin, command_face) || 
 		command_add("falltest", "[+Z] sends you to your current loc plus the Z specified.", AccountStatus::GMImpossible, command_falltest) ||
@@ -385,6 +385,7 @@ int command_init(void)
 		command_add("showbuffs", "- List buffs active on your target or you if no target.", AccountStatus::Guide, command_showbuffs) ||
 		command_add("showfilters", "- list client serverfilter settings.", AccountStatus::GMCoder, command_showfilters) ||
 		command_add("showhelm", "on/off [all] Toggles displaying of player helms (including your own.) Specifying 'all' toggles every character currently on your account", AccountStatus::Player, command_showhelm) ||
+		command_add("showlootlockouts", "- Shows your currently active loot lockouts. These do not apply to earthquake creatures.", AccountStatus::Player, command_showlootlockouts) ||
 		command_add("showpetspell", "[spellid/searchstring] - search pet summoning spells.", AccountStatus::Guide, command_showpetspell) ||
 		command_add("showquake", "- Shows current earthquake timer. Requires you to be a guild officer or leader.", AccountStatus::Player, command_showquake) ||
 		command_add("showregen", "- Shows information about your target's regen.", AccountStatus::GMAdmin, command_showregen) ||
@@ -4191,7 +4192,33 @@ void command_showquake(Client *c, const Seperator *sep)
 			c->Message(15, time_str.c_str());
 		}
 	}
+}
 
+void command_showlootlockouts(Client *c, const Seperator *sep)
+{
+	if (!c)
+		return;
+
+	int64_t curTime = Timer::GetTimeSeconds();
+
+
+	c->Message(CC_LightGreen, "=== Current Loot Lockouts ===");
+
+	for (auto lockout : c->loot_lockouts)
+	{
+		int64_t time_remaining = lockout.second.expirydate - curTime;
+		if (time_remaining >= 1)
+		{
+			c->Message(CC_Red, "== %s: Expires in %s", lockout.second.npc_name, Strings::SecondsToTime((int)time_remaining).c_str());
+		}
+		else
+		{
+			if (lockout.second.expirydate <= 1)
+			{
+				c->Message(CC_LightGreen, "== %s: Available", lockout.second.npc_name);
+			}
+		}
+	}
 }
 
 void command_corpse(Client *c, const Seperator *sep)
@@ -10019,7 +10046,7 @@ void command_zopp(Client *c, const Seperator *sep){
 		return;
 	else if (sep->argnum < 3 || sep->argnum > 4)
 		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
-	else if (!strcasecmp(sep->arg[1], "trade") == 0 && !strcasecmp(sep->arg[1], "t") == 0 && !strcasecmp(sep->arg[1], "summon") == 0 && !strcasecmp(sep->arg[1], "s") == 0)
+	else if (strcasecmp(sep->arg[1], "trade") && strcasecmp(sep->arg[1], "t") && strcasecmp(sep->arg[1], "summon") && strcasecmp(sep->arg[1], "s"))
 		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
 	else if (!sep->IsNumber(2) || !sep->IsNumber(3) || (sep->argnum == 4 && !sep->IsNumber(4)))
 		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
@@ -10587,6 +10614,46 @@ void command_undeletechar(Client *c, const Seperator *sep)
 
 void command_hotfix(Client *c, const Seperator *sep)
 {
+	auto items_count = database.GetItemsCount();
+	auto shared_items_count = database.GetSharedItemsCount();
+	if (items_count != shared_items_count) {
+		c->Message(CC_Yellow, "Your database does not have the same item count as your shared memory.");
+
+		c->Message(
+			CC_Yellow,
+			fmt::format(
+				"Database Count: {} Shared Memory Count: {}",
+				items_count,
+				shared_items_count
+			).c_str()
+		);
+
+		c->Message(CC_Yellow, "If you want to be able to add new items to your server while it is online, you need to create placeholder entries in the database ahead of time and do not add or remove rows/entries. Only modify the existing placeholder rows/entries to safely use #hotfix.");
+
+		return;
+	}
+
+	auto spells_count = database.GetSpellsCount();
+	auto shared_spells_count = database.GetSharedSpellsCount();
+	if (spells_count != shared_spells_count) {
+		c->Message(CC_Yellow, "Your database does not have the same spell count as your shared memory.");
+
+		c->Message(
+			CC_Yellow,
+			fmt::format(
+				"Database Count: {} Shared Memory Count: {}",
+				spells_count,
+				shared_spells_count
+			).c_str()
+		);
+
+		c->Message(CC_Yellow, "If you want to be able to add new spells to your server while it is online, you need to create placeholder entries in the database ahead of time and do not add or remove rows/entries. Only modify the existing placeholder rows/entries to safely use #hotfix.");
+
+		c->Message(CC_Yellow, "Note: You may still have to distribute a spell file, even with dynamic changes.");
+
+		return;
+	}
+
 	std::string hotfix;
 	database.GetVariable("hotfix_name", hotfix);
 

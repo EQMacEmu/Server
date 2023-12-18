@@ -32,6 +32,7 @@ public:
 		uint8_t     persistent;
 		int32_t     ExtraDIChance;
 		uint8_t     bard_modifier;
+		int32_t     bufftype;
 	};
 
 	static std::string PrimaryKey()
@@ -54,6 +55,7 @@ public:
 			"persistent",
 			"ExtraDIChance",
 			"bard_modifier",
+			"bufftype",
 		};
 	}
 
@@ -72,6 +74,7 @@ public:
 			"persistent",
 			"ExtraDIChance",
 			"bard_modifier",
+			"bufftype",
 		};
 	}
 
@@ -124,6 +127,7 @@ public:
 		e.persistent    = 0;
 		e.ExtraDIChance = 0;
 		e.bard_modifier = 10;
+		e.bufftype      = 0;
 
 		return e;
 	}
@@ -172,6 +176,7 @@ public:
 			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
 			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
 			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
+			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
 
 			return e;
 		}
@@ -217,6 +222,7 @@ public:
 		v.push_back(columns[9] + " = " + std::to_string(e.persistent));
 		v.push_back(columns[10] + " = " + std::to_string(e.ExtraDIChance));
 		v.push_back(columns[11] + " = " + std::to_string(e.bard_modifier));
+		v.push_back(columns[12] + " = " + std::to_string(e.bufftype));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -250,6 +256,7 @@ public:
 		v.push_back(std::to_string(e.persistent));
 		v.push_back(std::to_string(e.ExtraDIChance));
 		v.push_back(std::to_string(e.bard_modifier));
+		v.push_back(std::to_string(e.bufftype));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -291,6 +298,7 @@ public:
 			v.push_back(std::to_string(e.persistent));
 			v.push_back(std::to_string(e.ExtraDIChance));
 			v.push_back(std::to_string(e.bard_modifier));
+			v.push_back(std::to_string(e.bufftype));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -336,6 +344,7 @@ public:
 			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
 			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
 			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
+			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
 
 			all_entries.push_back(e);
 		}
@@ -372,6 +381,7 @@ public:
 			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
 			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
 			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
+			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
 
 			all_entries.push_back(e);
 		}

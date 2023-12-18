@@ -78,6 +78,10 @@ class Corpse : public Mob {
 	uint32			GetRezTime()				{ if (!corpse_rez_timer.Enabled()) return 0; else return corpse_rez_timer.GetRemainingTime(); }
 	void			SetDecayTimer(uint32 decay_time);
 	
+	std::string GetCleanNPCName() {
+		return npc_clean_name;
+	}
+
 	void			Delete();
 	void			Bury();
 	void			MoveToGraveyard() { if (IsPlayerCorpse()) corpse_graveyard_timer.Trigger(); }
@@ -114,11 +118,15 @@ class Corpse : public Mob {
 	void	LootItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
 	void	MakeLootRequestPackets(Client* client, const EQApplicationPacket* app);
-	void	AllowPlayerLoot(Mob *them, uint8 slot);
+	void	AllowPlayerLoot(Mob *them);
+	void	DenyPlayerLoot(std::string character_name);
+	void	AllowPlayerLoot(std::string character_name);
 	void	AddLooter(Mob *who);
 	uint32	CountItems();
-	bool	CanPlayerLoot(int charid);
+	bool	CanPlayerLoot(std::string playername);
 	bool    ContainsLegacyItem();
+	void	ProcessLootLockouts(Client* give_exp_client, NPC* in_npc);
+	void	AddPlayerLockout(Client* c);
 
 
 	inline void	Lock()				{ is_locked = true; }
@@ -128,11 +136,11 @@ class Corpse : public Mob {
 	inline bool	IsBeingLooted()		{ return (being_looted_by != 0xFFFFFFFF); }
 
 	/* Legacy item looting methods */
-	std::unordered_set<uint16> GetLegacyItemLooters() { return legacy_item_looter_client_id_set; }
-	inline bool IsLegacyItemLooter(uint16 client_id) { return legacy_item_looter_client_id_set.count(client_id); }
-	inline void ResetLegacyItemLooterSet() { legacy_item_looter_client_id_set.clear(); }
-	void AddLegacyItemLooter(uint16 client_id);
-	void RemoveLegacyItemLooter(uint16 client_id);
+	std::unordered_set<std::string> GetLegacyItemLooters() { return legacy_item_looter_client_name_set; }
+	inline bool IsLegacyItemLooter(std::string client_name) { return legacy_item_looter_client_name_set.count(client_name); }
+	inline void ResetLegacyItemLooterSet() { legacy_item_looter_client_name_set.clear(); }
+	void AddLegacyItemLooter(std::string client_name);
+	void RemoveLegacyItemLooter(std::string client_name);
 
 	/* Mob */
 	void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
@@ -172,13 +180,16 @@ private:
 	uint32		platinum;
 	bool		player_corpse_depop; /* Sets up Corpse::Process to depop the player corpse */
 	uint32		being_looted_by; /* Determines what the corpse is being looted by internally for logic */
-	std::unordered_set<uint16> legacy_item_looter_client_id_set; /* Determines what the corpse is being looted by internally for logic */
+	uint32		loot_lockout_timer; /* Length of loot lockout timer, if specified. */
+	std::unordered_set<std::string> legacy_item_looter_client_name_set; /* Determines what the corpse is being looted by internally for logic */
 	uint32		rez_experience; /* Amount of experience that the corpse would rez for */
 	uint32		gm_rez_experience; /* Amount of experience that the corpse would rez for from a GM*/
 	bool		rez; /*Sets if a corpse has been rezzed or not to determine if XP should be given*/
 	bool		become_npc;
-	int			allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
-	int			initial_allowed_looters[MAX_LOOTERS]; // People allowed to loot the corpse, character id
+	std::unordered_set<std::string>	allowed_looters; // People allowed to loot the corpse, character name
+	std::unordered_set<std::string>	initial_allowed_looters; // People initially allowed to loot the corpse, character name
+	std::unordered_set<std::string>	denied_looters; // People not allowed to loot the corpse, character name
+	std::unordered_set<std::string>	temporarily_allowed_looters; // People allowed to loot the corpse, character name
 	Timer		corpse_decay_timer; /* The amount of time in millseconds in which a corpse will take to decay (Depop/Poof) */
 	Timer		corpse_rez_timer; /* The amount of time in millseconds in which a corpse can be rezzed */
 	Timer		corpse_delay_timer;
@@ -193,6 +204,7 @@ private:
 	uint32		rez_time; /* How much of the rez timer remains */
 	bool		is_owner_online;
 	uint32		time_of_death;
+	std::string npc_clean_name;
 };
 
 #endif
