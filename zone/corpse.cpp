@@ -217,8 +217,8 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NP
 	flymode = 0;
 	being_looted_by = 0xFFFFFFFF;
 
-	if (in_npc && in_npctypedata && (*in_npctypedata))
-		loot_lockout_timer = (*in_npctypedata)->loot_lockout;
+	if (in_npc && in_npc->loot_lockout_timer != 0)
+		loot_lockout_timer = in_npc->loot_lockout_timer;
 	else
 		loot_lockout_timer = 0;
 
