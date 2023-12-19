@@ -1078,18 +1078,18 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		if (c->IsSoloOnly())
 			appendedCharName += "-Solo";
 
-		auto temporarily_allowed_itr = temporarily_allowed_looters.find(playername);
+		auto temporarily_allowed_itr = temporarily_allowed_looters.find(appendedCharName);
 
 		if (temporarily_allowed_itr == temporarily_allowed_looters.end() && c->IsLootLockedOutOfNPC(npctype_id) && npctype_id != 0)
 		{
 			return false;
 		}
 
-		if (denied_looters.find(playername) != denied_looters.end()) {
+		if (denied_looters.find(appendedCharName) != denied_looters.end()) {
 			return false;
 		}
 
-		if (initial_allowed_looters.find(playername) != initial_allowed_looters.end()) {
+		if (initial_allowed_looters.find(appendedCharName) != initial_allowed_looters.end()) {
 				return true;
 		}
 	}
@@ -1228,7 +1228,7 @@ void Corpse::DenyPlayerLoot(std::string character_name)
 	initialNameItr = initial_allowed_looters.find(playernameSoloSelfFound);
 	if (initialNameItr != initial_allowed_looters.end())
 	{
-		allowed_looters.erase(initialNameItr);
+		initial_allowed_looters.erase(initialNameItr);
 	}
 
 	std::unordered_set<std::string>::iterator deniedNameItr = denied_looters.find(playername);
