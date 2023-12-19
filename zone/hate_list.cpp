@@ -977,30 +977,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 		{
 			if (zone && zone->GetGuildID() != GUILD_NONE)
 			{
-				auto clientList = entity_list.GetClientList();
-				std::map<std::string, PlayerEngagementRecord>& engagementRecords = owner->GetEngagementRecords();
-				for (auto client : clientList)
-				{
-					if (client.second)
-					{
-						if (engagementRecords.find(client.second->GetCleanName()) == engagementRecords.end())
-						{
-							PlayerEngagementRecord record = PlayerEngagementRecord();
-							record.isFlagged = false;
-							record.lockout = LootLockout();
-							record.character_id = client.second->CharacterID();
-							record.isSelfFound = client.second->IsSelfFound();
-							record.isSoloOnly = client.second->IsSoloOnly();
-
-							auto lootLockoutItr = client.second->loot_lockouts.find(owner->GetNPCTypeID());
-							if (lootLockoutItr != client.second->loot_lockouts.end())
-							{
-								memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
-							}
-							engagementRecords.emplace(client.second->GetCleanName(), record);
-						}
-					}
-				}
+				owner->AddAllClientsToEngagementRecords();
 			}
 
 			// first to aggro this?

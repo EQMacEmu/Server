@@ -335,6 +335,7 @@ public:
 	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill,
 		bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false) = 0;
 	virtual void SetHP(int32 hp);
+	void AddAllClientsToEngagementRecords();
 	inline void SetOOCRegen(int32 newoocregen) {oocregen = newoocregen;}
 	virtual void Heal();
 	virtual void HealDamage(uint32 amount, Mob* caster = nullptr, uint16 spell_id = SPELL_UNKNOWN, bool hot = false);

@@ -5301,3 +5301,40 @@ void Mob::SetHP(int32 hp)
 	else 
 		cur_hp = hp;
 }
+
+void Mob::AddAllClientsToEngagementRecords()
+{
+	if (!IsNPC())
+		return;
+
+	if (IsPet())
+		return;
+
+	if (npctype_id == 0)
+		return;
+
+	auto clientList = entity_list.GetClientList();
+
+	for (auto client : clientList)
+	{
+		if (client.second)
+		{
+			if (m_EngagedClientNames.find(client.second->GetCleanName()) == m_EngagedClientNames.end())
+			{
+				PlayerEngagementRecord record = PlayerEngagementRecord();
+				record.isFlagged = false;
+				record.lockout = LootLockout();
+				record.character_id = client.second->CharacterID();
+				record.isSelfFound = client.second->IsSelfFound();
+				record.isSoloOnly = client.second->IsSoloOnly();
+
+				auto lootLockoutItr = client.second->loot_lockouts.find(GetNPCTypeID());
+				if (lootLockoutItr != client.second->loot_lockouts.end())
+				{
+					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
+				}
+				m_EngagedClientNames.emplace(client.second->GetCleanName(), record);
+			}
+		}
+	}
+}

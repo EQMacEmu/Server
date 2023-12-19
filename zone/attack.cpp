@@ -2046,6 +2046,11 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		Log(Logs::Moderate, Logs::Death, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
 	}
 
+	if (IsNPC() && zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		AddAllClientsToEngagementRecords();
+	}
+
 	if (IsNPC() && HasEngageNotice() && killer && killer->IsClient() && zone && zone->GetGuildID() != GUILD_NONE)
 	{
 		Client* killerClient = killer->CastToClient();
