@@ -2060,7 +2060,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 			kill_message += " in ";
 			kill_message += zone->GetLongName();
 			kill_message += "!";
-			worldserver.SendChannelMessage("Druzzil", ChatChannel_Broadcast, zone->GetGuildID(), 0, 100, kill_message.c_str());
+			worldserver.SendChannelMessage("Druzzil_Ro", ChatChannel_Guild, zone->GetGuildID(), 0, 100, kill_message.c_str());
 		}
 	}
 
