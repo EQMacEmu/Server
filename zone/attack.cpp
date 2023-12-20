@@ -2192,7 +2192,7 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 	if (killer && killer->IsClient())
 		clientKiller = killer->CastToClient();
 
-	auto corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata,
+	auto corpse = new Corpse(this, &itemlist, GetNPCTypeID(),
 		level > 54 ? RuleI(NPC, MajorNPCCorpseDecayTimeMS) : RuleI(NPC, MinorNPCCorpseDecayTimeMS),
 		is_client_pet);
 	corpse_bool = true;

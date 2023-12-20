@@ -136,8 +136,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 		entity_list.RemoveEntity(mob->GetID());
 
 	loot_lockout_timer = 0;
-
-	NPCTypedata = d;
+	memset(&NPCTypedata, 0, sizeof(NPCTypedata));
+	memcpy(&NPCTypedata, d, sizeof(NPCTypedata));
 	respawn2 = in_respawn;
 	swarm_timer.Disable();
 
@@ -447,8 +447,6 @@ NPC::~NPC()
 	}
 
 	safe_delete(reface_timer);
-	if (GetSwarmInfo())
-		safe_delete(NPCTypedata);	// created in Mob::CreateTemporaryPet
 	safe_delete(swarmInfoPtr);
 	safe_delete(qGlobals);
 	UninitializeBuffSlots();

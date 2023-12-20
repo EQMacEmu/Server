@@ -43,7 +43,7 @@ class Corpse : public Mob {
 	static void SendEndLootErrorPacket(Client* client);
 	static void SendLootReqErrorPacket(Client* client, uint8 response = 2);
 
-	Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime = 600000, bool is_client_pet = false);
+	Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, uint32 in_decaytime = 600000, bool is_client_pet = false);
 	Corpse(Client* client, int32 in_rezexp, uint8 killedby = 0);
 	Corpse(uint32 in_corpseid, uint32 in_charid, const char* in_charname, ItemList* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, const glm::vec4& position, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture, uint32 in_rezexp, uint32 in_gmrezexp, uint8 in_killedby, bool in_rezzable, uint32 in_rez_time, bool wasAtGraveyard = false);
 	~Corpse();

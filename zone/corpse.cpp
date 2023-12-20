@@ -148,7 +148,7 @@ Corpse* Corpse::LoadCharacterCorpseEntity(uint32 in_dbid, uint32 in_charid, std:
 	return pc;
 }
 
-Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime, bool is_client_pet)
+Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, uint32 in_decaytime, bool is_client_pet)
 	: Mob("Unnamed_Corpse",		// const char* in_name,
 	"",							// const char* in_lastname,
 	0,							// int32		in_cur_hp,

@@ -46,7 +46,7 @@ void Horse::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho) {
 	ns->spawn.petOwnerId = 0;
 
 	//dunno why we do these, they should allready be set right.
-	ns->spawn.runspeed = NPCTypedata->runspeed;
+	ns->spawn.runspeed = NPCTypedata.runspeed;
 }
 
 bool Horse::IsHorseSpell(uint16 spell_id) {
