@@ -835,9 +835,9 @@ luabind::adl::object lua_get_zone_time(lua_State *L) {
 	zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
 
 	luabind::adl::object ret = luabind::newtable(L);
-	ret["zone_hour"] = eqTime.hour - 1;
+	ret["zone_hour"] = eqTime.hour;
 	ret["zone_minute"] = eqTime.minute;
-	ret["zone_time"] = (eqTime.hour - 1) * 100 + eqTime.minute;
+	ret["zone_time"] = (eqTime.hour) * 100 + eqTime.minute;
 	return ret;
 }
 

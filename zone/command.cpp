@@ -5353,23 +5353,21 @@ void command_time(Client *c, const Seperator *sep){
 		if (sep->IsNumber(2)) {
 			minutes = atoi(sep->arg[2]);
 		}
-		c->Message(CC_Red, "Setting world time to %s:%i (Timezone: 0)...", sep->arg[1], minutes);
-		zone->SetTime(atoi(sep->arg[1]) + 1, minutes);
-		LogInfo("{} :: Setting world time to {}:{} (Timezone: 0)...", c->GetCleanName(), sep->arg[1], minutes);
+		c->Message(CC_Default, "Setting world time to %s:%i ...", sep->arg[1], minutes);
+		zone->SetTime(atoi(sep->arg[1]), minutes);
+		LogInfo("{} :: Setting world time to {}:{} ...", c->GetCleanName(), sep->arg[1], minutes);
 	}
 	else {
-		c->Message(CC_Red, "To set the Time: #time HH [MM]");
+		c->Message(CC_Default, "To set the Time: #time HH [MM]");
 		TimeOfDay_Struct eqTime;
 		zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
-		sprintf(timeMessage, "%02d:%s%d %s (Timezone: %ih %im)",
-			((eqTime.hour - 1) % 12) == 0 ? 12 : ((eqTime.hour - 1) % 12),
+		sprintf(timeMessage, "%02d:%s%d %s",
+			((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
 			(eqTime.minute < 10) ? "0" : "",
 			eqTime.minute,
-			(eqTime.hour >= 13) ? "pm" : "am",
-			zone->zone_time.getEQTimeZoneHr(),
-			zone->zone_time.getEQTimeZoneMin()
+			(eqTime.hour >= 13) ? "pm" : "am"
 			);
-		c->Message(CC_Red, "It is now %s.", timeMessage);
+		c->Message(CC_Default, "It is now %s.", timeMessage);
 		LogInfo("Current Time is: {} ", timeMessage);
 	}
 }
@@ -6275,99 +6273,65 @@ void command_beardcolor(Client *c, const Seperator *sep){
 	}
 }
 
-void command_scribespells(Client *c, const Seperator *sep){
-	uint8 max_level, min_level;
-	uint16 book_slot, curspell, count;
-	Client *t = c;
+void command_scribespells(Client *c, const Seperator *sep) {
+	Client *target = c;
+	if (c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM()) {
+		target = c->GetTarget()->CastToClient();
+	}
 
-	if (c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
-		t = c->GetTarget()->CastToClient();
-
-	if (!sep->arg[1][0])
-	{
+	if (sep->argnum < 1 || !sep->IsNumber(1)) {
 		c->Message(CC_Default, "FORMAT: #scribespells <max level> <min level>");
 		return;
 	}
 
-	max_level = (uint8)atoi(sep->arg[1]);
-	if (!c->GetGM() && max_level > RuleI(Character, MaxLevel))
-		max_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
-	min_level = sep->arg[2][0] ? (uint8)atoi(sep->arg[2]) : 1;	//default to 1 if there isn't a 2nd argument
-	if (!c->GetGM() && min_level > RuleI(Character, MaxLevel))
-		min_level = RuleI(Character, MaxLevel);	//default to Character:MaxLevel if we're not a GM & it's higher than the max level
+	uint8 rule_max_level = (uint8)RuleI(Character, MaxLevel);
+	uint8 max_level = (uint8)std::stoi(sep->arg[1]);
+	uint8 min_level = (
+		sep->IsNumber(2) ?
+		(uint8)
+		std::stoi(sep->arg[2]) :
+		1
+		); // Default to Level 1 if there isn't a 2nd argument
+	
+	if (!c->GetGM()) { // Default to Character:MaxLevel if we're not a GM and Level is higher than the max level
+		if (max_level > rule_max_level) {
+			max_level = rule_max_level;
+		}
 
+		if (min_level > rule_max_level) {
+			min_level = rule_max_level;
+		}
+	}
 
-	if (max_level < 1 || min_level < 1)
-	{
-		c->Message(CC_Default, "ERROR: Level must be greater than 1.");
+	if (max_level < 1 || min_level < 1) {
+		c->Message(CC_Default, "ERROR: Level must be greater than or equal to 1.");
 		return;
 	}
+
 	if (min_level > max_level) {
-		c->Message(CC_Default, "Error: Min Level must be less than or equal to Max Level.");
+		c->Message(CC_Default, "ERROR: Minimum Level must be less than or equal to Maximum Level.");
 		return;
 	}
 
-	t->Message(CC_Default, "Scribing spells to spellbook.");
-	if (t != c)
-		c->Message(CC_Default, "Scribing spells for %s.", t->GetName());
-	Log(Logs::General, Logs::Normal, "Scribe spells request for %s from %s, levels: %u -> %u", t->GetName(), c->GetName(), min_level, max_level);
-
-	for (curspell = 0, book_slot = t->GetNextAvailableSpellBookSlot(), count = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = t->GetNextAvailableSpellBookSlot(book_slot))
-	{
-		if
+	uint16 scribed_spells = target->ScribeSpells(min_level, max_level);
+	if (target != c) {
+		std::string spell_message = (
+			scribed_spells > 0 ?
 			(
-			spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
-			spells[curspell].classes[t->GetPP().class_ - 1] <= max_level &&	//maximum level
-			spells[curspell].classes[t->GetPP().class_ - 1] >= min_level &&	//minimum level
-			spells[curspell].skill != 52 &&
-			!spells[curspell].not_player_spell
-			)
-		{
-			if (book_slot == -1) {	//no more book slots
-				t->Message(CC_Red, "Unable to scribe spell %s (%u) to spellbook: no more spell book slots available.", spells[curspell].name, curspell);
-				if (t != c)
-					c->Message(CC_Red, "Error scribing spells: %s ran out of spell book slots on spell %s (%u)", t->GetName(), spells[curspell].name, curspell);
-				break;
-			}
-			if (!t->HasSpellScribed(curspell)) {	//we don't already have it scribed
-				t->ScribeSpell(curspell, book_slot);
-				++count;
-			}
-		}
-	}
-
-	uint16 totalcount = 0;
-	for (curspell = 0; curspell < SPDAT_RECORDS; ++curspell)
-	{
-		if
-			(
-				spells[curspell].classes[WARRIOR] != 0 && // check if spell exists
-				spells[curspell].classes[t->GetPP().class_ - 1] <= max_level &&	//maximum level
-				spells[curspell].classes[t->GetPP().class_ - 1] >= min_level &&	//minimum level
-				spells[curspell].skill != 52 &&
-				!spells[curspell].not_player_spell
-			)
-		{
-			++totalcount;
-		}
-	}
-
-	if (count > 0) {
-		t->Message(CC_Default, "Successfully scribed %u spells.", count);
-		if (totalcount > MAX_PP_SPELLBOOK)
-		{
-			uint16 new_count = totalcount - MAX_PP_SPELLBOOK;
-			t->Message(CC_Red, "The last %d spells will not be displayed due to spellbook limit!", new_count);
-		}
-		if (t != c)
-		{
-			c->Message(CC_Default, "Successfully scribed %u spells for %s.", count, t->GetName());
-		}
-	}
-	else {
-		t->Message(CC_Default, "No spells scribed.");
-		if (t != c)
-			c->Message(CC_Default, "No spells scribed for %s.", t->GetName());
+				scribed_spells == 1 ?
+				"A new spell" :
+				fmt::format("{} New spells", scribed_spells)
+				) :
+			"No new spells"
+			);
+		c->Message(
+			CC_Default,
+			fmt::format(
+				"{} scribed for {}.",
+				spell_message,
+				target->GetCleanName()
+			).c_str()
+		);
 	}
 }
 

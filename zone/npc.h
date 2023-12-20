@@ -28,11 +28,6 @@
 #include <deque>
 #include <list>
 
-
-#ifdef _WINDOWS
-	#define M_PI	3.141592654
-#endif
-
 #define LEAVECOMBAT 0
 #define ENTERCOMBAT 1
 #define	ONDEATH		2
