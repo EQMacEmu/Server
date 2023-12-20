@@ -2543,20 +2543,23 @@ void Mob::AI_Event_NoLongerEngaged() {
 			}
 		}
 
-		if (GetSpecialAbility(TETHER)) {
+		if (zone && zone->GetGuildID() != GUILD_NONE)
+		{
+			if (GetSpecialAbility(TETHER)) {
 
-			auto npcSpawnPoint = CastToNPC()->GetSpawnPoint();
-			GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
-		}
+				auto npcSpawnPoint = CastToNPC()->GetSpawnPoint();
+				GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
+			}
 
-		else if (GetSpecialAbility(LEASH)) {
-			auto npcSpawnPoint = CastToNPC()->GetSpawnPoint();
-			GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
-			SetHP(GetMaxHP());
-			BuffFadeAll();
-			WipeHateList(true);
-			AIloiter_timer->Trigger();
-			return;
+			else if (GetSpecialAbility(LEASH)) {
+				auto npcSpawnPoint = CastToNPC()->GetSpawnPoint();
+				GMMove(npcSpawnPoint.x, npcSpawnPoint.y, npcSpawnPoint.z, npcSpawnPoint.w);
+				SetHP(GetMaxHP());
+				BuffFadeAll();
+				WipeHateList(true);
+				AIloiter_timer->Trigger();
+				return;
+			}
 		}
 	}
 }
