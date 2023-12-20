@@ -1133,6 +1133,19 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 			}
 		}
 
+		if (c->HasGroup()) {
+			for (int x = 0; x < MAX_GROUP_MEMBERS; x++) {
+				if (c->GetGroup()->membername[0]) {
+					if (allowed_looters.find(c->GetGroup()->membername[0]) != allowed_looters.end()) {
+						{
+							AddLooter(c);
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		if (allowed_looters.find(playername) != allowed_looters.end()) {
 				return true;
 		}
