@@ -2333,12 +2333,8 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 						}
 						else
 						{
-							if (killer && killer->IsClient() && !killer->CastToClient()->IsSelfFound())
-							{
-								if (m_EngagedClientNames.find(group->membername[i]) != m_EngagedClientNames.end())
-									corpse->AllowPlayerLoot(group->membername[i]);
-								i++;
-							}
+							if (m_EngagedClientNames.find(group->membername[i]) != m_EngagedClientNames.end())
+								corpse->AllowPlayerLoot(group->membername[i]);
 						}
 					}
 				}
