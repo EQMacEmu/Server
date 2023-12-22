@@ -54,11 +54,6 @@ ADD_DEFINITIONS(-DGLM_ENABLE_EXPERIMENTAL)
 #MSVC can fetch dependencies automatically.
 IF(MSVC)
 	INCLUDE("${CMAKE_SOURCE_DIR}/cmake/DependencyHelperMSVC.cmake")
-	IF(CMAKE_CL_64)
-		SET(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/curl_x64")
-	ELSE(CMAKE_CL_64)
-		SET(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/curl_x86")
-	ENDIF(CMAKE_CL_64)
 ENDIF()
 
 #Find everything we need
@@ -70,7 +65,6 @@ FIND_PACKAGE(OpenSSL)
 FIND_PACKAGE(Lua51)
 FIND_PACKAGE(LuaJit)
 FIND_PACKAGE(mbedTLS)
-FIND_PACKAGE(CURL REQUIRED)
 
 MESSAGE(STATUS "**************************************************")
 MESSAGE(STATUS "* Library Detection                              *")
@@ -289,7 +283,7 @@ MESSAGE(STATUS "* zlib:                                  ${ZLIB_LIBRARY_TYPE} *"
 MESSAGE(STATUS "**************************************************")
 
 #setup server libs and headers
-SET(SERVER_LIBS common ${DATABASE_LIBRARY_LIBS} ${ZLIB_LIBRARY_LIBS} ${Boost_LIBRARIES} uv_a fmt RecastNavigation::Detour ${CURL_LIBRARY})
+SET(SERVER_LIBS common ${DATABASE_LIBRARY_LIBS} ${ZLIB_LIBRARY_LIBS} ${Boost_LIBRARIES} uv_a fmt RecastNavigation::Detour)
 
 INCLUDE_DIRECTORIES(SYSTEM "${DATABASE_LIBRARY_INCLUDE}")
 INCLUDE_DIRECTORIES(SYSTEM "${ZLIB_LIBRARY_INCLUDE}")
@@ -328,10 +322,6 @@ IF(LUA_LIBRARY_ENABLED)
 			ADD_DEFINITIONS(-DSANITIZE_LUA_LIBS)
 		ENDIF()
 	ENDIF()
-ENDIF()
-
-IF(CURL_FOUND)
-	INCLUDE_DIRECTORIES(SYSTEM "${CURL_INCLUDE_DIR}")
 ENDIF()
 
 IF(WIN32)
