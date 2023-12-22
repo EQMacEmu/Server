@@ -329,13 +329,6 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	PlayerProfile_Struct *pp = &client->GetPP();
 	EQ::ItemInstance *item = nullptr;
 
-	//Quarm: Disable minor illusion/tree corpses. Use player's base race instead.
-	if (race == 142 || race == 143)
-	{
-		base_race = client->GetBaseRace();
-		race = client->GetBaseRace();
-	}
-
 	/* Check if Zone has Graveyard First */
 	if(!zone->HasGraveyard()) {
 		corpse_graveyard_timer.Disable();
