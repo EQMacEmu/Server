@@ -3140,10 +3140,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		Mob* boat = entity_list.GetMob(BoatID);	// find the mob corresponding to the boat id
 		if (boat) //These lil boats run fast!!
 		{
-			if (DistanceNoZ(boat->GetPosition(), newPosition) < distFromBoatThreshold)
-			{
-				has_boat = true;
-			}
+			has_boat = true;
 		}
 
 		if (distDivTime >= distDivTimeThreshold && !is_exempt_correct && !GetGM() && !dead && client_state == CLIENT_CONNECTED && !has_boat)
