@@ -1718,8 +1718,8 @@ void Mob::ChangeSize(float in_size = 0, bool bNoRestriction) {
 	{
 		if (this->IsClient() || this->petid != 0)
 		{
-			if (in_size < 3.0)
-				in_size = 3.0;
+			if (in_size < 1.0)
+				in_size = 1.0;
 
 			if (in_size > 15.0)
 				in_size = 15.0;

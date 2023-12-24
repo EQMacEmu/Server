@@ -2968,7 +2968,7 @@ void command_size(Client *c, const Seperator *sep){
 		}
 		else 
 		{
-			target->ChangeSize(newsize);
+			target->ChangeSize(newsize, true);
 			c->Message(CC_Default, "%s is now size %0.1f", target->GetName(), atof(sep->arg[1]));
 		}
 	}
