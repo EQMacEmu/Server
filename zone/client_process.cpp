@@ -624,6 +624,12 @@ bool Client::Process() {
 		}
 
 		client_state = CLIENT_LINKDEAD;
+
+		if (IsSitting())
+		{
+			Stand();
+		}
+
 		if (zoning || instalog || GetGM())
 		{
 			Group *mygroup = GetGroup();

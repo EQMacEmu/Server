@@ -2996,6 +2996,10 @@ void Client::LinkDead()
 	SendAppearancePacket(AT_Linkdead, 1);
 	client_distance_timer.Disable();
 	client_state = CLIENT_LINKDEAD;
+	if (IsSitting())
+	{
+		Stand();
+	}
 	AI_Start();
 	UpdateWho();
 	if(Trader)
