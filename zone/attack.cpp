@@ -4678,12 +4678,14 @@ int Mob::GetOffense(EQ::skills::SkillType skill)
 	{
 		offense = GetSkill(skill);
 
-		if (GetOwner()->GetClass() == MAGICIAN)
-			offense = offense * 125 / 100;
-		else if (GetOwner()->GetClass() == NECROMANCER)
-			offense = offense * 115 / 100;
-		else if (GetOwner()->GetClass() == BEASTLORD)
-			offense = offense * 110 / 100;
+		//The following lines belong to a 2014-2016 era pet change. Pets were granted a sizeable ATK bonus sometime around this period.
+
+		//if (GetOwner()->GetClass() == MAGICIAN)
+		//	offense = offense * 125 / 100;
+		//else if (GetOwner()->GetClass() == NECROMANCER)
+		//	offense = offense * 115 / 100;
+		//else if (GetOwner()->GetClass() == BEASTLORD)
+		//	offense = offense * 110 / 100;
 	}
 
 	offense += (itembonuses.STR + spellbonuses.STR) * 2 / 3;
