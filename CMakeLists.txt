@@ -16,28 +16,20 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+OPTION(EQEMU_BUILD_PCH "Build with precompiled headers (Windows)" ON)
+
 IF(MSVC)
-	IF(CMAKE_CL_64)
-		SET(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/boost")
-		SET(ZLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib_x64")
-		SET(MYSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/mysql_x64")
-		SET(LUA_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/luaj_x64")
-		SET(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/curl_x64")
-	ELSE(CMAKE_CL_64)
-		SET(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/boost")
-		SET(ZLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib_x86")
-		SET(MYSQL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/mysql_x86")
-		SET(LUA_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/luaj_x86")
-		SET(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/curl_x86")
-	ENDIF(CMAKE_CL_64)
-	
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 	ADD_DEFINITIONS(-DNOMINMAX)
 	ADD_DEFINITIONS(-DCRASH_LOGGING)
-	
 	ADD_DEFINITIONS(-D_HAS_AUTO_PTR_ETC) # for Luabind on C++17
 	
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+	
+	OPTION(EQEMU_DISABLE_MSVC_WARNINGS "Disable MSVC compile warnings." ON)
+	IF(EQEMU_DISABLE_MSVC_WARNINGS)
+		ADD_DEFINITIONS( "/W0 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo /Os")
+	ENDIF(EQEMU_DISABLE_MSVC_WARNINGS)
 ELSE(MSVC)
 	ADD_DEFINITIONS(-DHAS_UNION_SEMUN)
 ENDIF(MSVC)
@@ -60,9 +52,9 @@ ADD_DEFINITIONS(-DGLM_FORCE_CTOR_INIT)
 ADD_DEFINITIONS(-DGLM_ENABLE_EXPERIMENTAL)
 
 #MSVC can fetch dependencies automatically.
-#IF(MSVC)
-#	INCLUDE("${CMAKE_SOURCE_DIR}/cmake/DependencyHelperMSVC.cmake")
-#ENDIF()
+IF(MSVC)
+	INCLUDE("${CMAKE_SOURCE_DIR}/cmake/DependencyHelperMSVC.cmake")
+ENDIF()
 
 #Find everything we need
 FIND_PACKAGE(Boost REQUIRED)
@@ -71,8 +63,8 @@ FIND_PACKAGE(MariaDB)
 FIND_PACKAGE(ZLIB)
 FIND_PACKAGE(OpenSSL)
 FIND_PACKAGE(Lua51)
+FIND_PACKAGE(LuaJit)
 FIND_PACKAGE(mbedTLS)
-FIND_PACKAGE(CURL REQUIRED)
 
 MESSAGE(STATUS "**************************************************")
 MESSAGE(STATUS "* Library Detection                              *")
@@ -102,6 +94,12 @@ ELSE()
 	MESSAGE(STATUS "* Lua:                                   MISSING *")
 ENDIF()
 
+IF(LuaJit_FOUND)
+	MESSAGE(STATUS "* LuaJIT:                                  FOUND *")
+ELSE()
+	MESSAGE(STATUS "* LuaJIT:                                MISSING *")
+ENDIF()
+
 IF(OpenSSL_FOUND)
 	MESSAGE(STATUS "* OpenSSL:                                 FOUND *")
 ELSE()
@@ -117,7 +115,6 @@ ENDIF()
 MESSAGE(STATUS "**************************************************")
 
 #options
-OPTION(EQEMU_DEPOP_INVALIDATES_CACHE "#repop invalidates the npc_types cache (will cause a larger database hit on #repop but is more convienent)." ON)
 OPTION(EQEMU_COMMANDS_LOGGING "Enable GM Command logs" ON)
 OPTION(EQEMU_BUILD_SERVER "Build the game server." ON)
 OPTION(EQEMU_BUILD_LOGIN "Build the login server." ON)
@@ -241,7 +238,12 @@ ELSE()
 	SET(TLS_LIBRARY_ENABLED OFF)
 ENDIF()
 
-IF(Lua51_FOUND)
+IF(LUAJIT_FOUND AND NOT (EQEMU_PREFER_LUA AND Lua51_FOUND))
+	SET(LUA_LIBRARY_TYPE "  LuaJIT")
+	SET(LUA_LIBRARY_ENABLED ON)
+	SET(LUA_LIBRARY_LIBS ${LUAJIT_LIBRARY} luabind)
+	SET(LUA_LIBRARY_INCLUDE ${LUAJIT_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/libs/luabind")
+ELSEIF(Lua51_FOUND )
 	SET(LUA_LIBRARY_TYPE " Lua 5.1")
 	SET(LUA_LIBRARY_ENABLED ON)
 	SET(LUA_LIBRARY_LIBS ${LUA_LIBRARY} luabind)
@@ -281,7 +283,7 @@ MESSAGE(STATUS "* zlib:                                  ${ZLIB_LIBRARY_TYPE} *"
 MESSAGE(STATUS "**************************************************")
 
 #setup server libs and headers
-SET(SERVER_LIBS common ${DATABASE_LIBRARY_LIBS} ${ZLIB_LIBRARY_LIBS} ${Boost_LIBRARIES} uv_a fmt RecastNavigation::Detour ${CURL_LIBRARY})
+SET(SERVER_LIBS common ${DATABASE_LIBRARY_LIBS} ${ZLIB_LIBRARY_LIBS} ${Boost_LIBRARIES} uv_a fmt RecastNavigation::Detour)
 
 INCLUDE_DIRECTORIES(SYSTEM "${DATABASE_LIBRARY_INCLUDE}")
 INCLUDE_DIRECTORIES(SYSTEM "${ZLIB_LIBRARY_INCLUDE}")
@@ -320,10 +322,6 @@ IF(LUA_LIBRARY_ENABLED)
 			ADD_DEFINITIONS(-DSANITIZE_LUA_LIBS)
 		ENDIF()
 	ENDIF()
-ENDIF()
-
-IF(CURL_FOUND)
-	INCLUDE_DIRECTORIES(SYSTEM "${CURL_INCLUDE_DIR}")
 ENDIF()
 
 IF(WIN32)

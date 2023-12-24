@@ -1,6 +1,10 @@
 #ifndef FASTMATH_H
 #define FASTMATH_H
 
+#ifdef _WINDOWS
+#define M_PI	3.141592654
+#endif
+
 class FastMath
 {
 private:

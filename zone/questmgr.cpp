@@ -997,45 +997,7 @@ void QuestManager::permagender(int gender_id) {
 
 uint16 QuestManager::scribespells(uint8 max_level, uint8 min_level) {
 	QuestManagerCurrentQuestVars();
-	uint16 book_slot, count;
-	uint16 curspell;
-
-	uint32 Char_ID = initiator->CharacterID();
-	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
-	bool SpellGlobalCheckResult = 0;
-
-
-	for(curspell = 0, book_slot = initiator->GetNextAvailableSpellBookSlot(), count = 0; curspell < SPDAT_RECORDS && book_slot < MAX_PP_SPELLBOOK; curspell++, book_slot = initiator->GetNextAvailableSpellBookSlot(book_slot))
-	{
-		if
-		(
-			spells[curspell].classes[WARRIOR] != 0 &&       //check if spell exists
-			spells[curspell].classes[initiator->GetPP().class_-1] <= max_level &&   //maximum level
-			spells[curspell].classes[initiator->GetPP().class_-1] >= min_level &&   //minimum level
-			spells[curspell].skill != 52 &&
-			spells[curspell].effectid[EFFECT_COUNT - 1] != 10 &&
-			!spells[curspell].not_player_spell
-		)
-		{
-			if (book_slot == -1) //no more book slots
-				break;
-			if(!initiator->HasSpellScribed(curspell)) { //we don't already have it scribed
-				if (SpellGlobalRule) {
-					// Bool to see if the character has the required QGlobal to scribe it if one exists in the Spell_Globals table
-					SpellGlobalCheckResult = initiator->SpellGlobalCheck(curspell, Char_ID);
-					if (SpellGlobalCheckResult) {
-						initiator->ScribeSpell(curspell, book_slot);
-						count++;
-					}
-				}
-				else {
-					initiator->ScribeSpell(curspell, book_slot);
-					count++;
-				}
-			}
-		}
-	}
-	return count; //how many spells were scribed successfully
+	return initiator->ScribeSpells(min_level, max_level);
 }
 
 void QuestManager::unscribespells() {
@@ -1260,7 +1222,7 @@ void QuestManager::CreateGuild(const char *guild_name, const char *leader) {
 
 void QuestManager::settime(uint8 new_hour, uint8 new_min) {
 	if (zone)
-		zone->SetTime(new_hour + 1, new_min);
+		zone->SetTime(new_hour, new_min);
 }
 
 void QuestManager::itemlink(int item_id) {

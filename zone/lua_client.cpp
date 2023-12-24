@@ -515,6 +515,76 @@ void Lua_Client::UnmemSpellAll(bool update_client) {
 	self->UnmemSpellAll(update_client);
 }
 
+luabind::object Lua_Client::GetMemmedSpells(lua_State* L) {
+	auto lua_table = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto memmed_spells = self->GetMemmedSpells();
+		int index = 0;
+		for (auto spell_id : memmed_spells) {
+			lua_table[index] = spell_id;
+			index++;
+		}
+	}
+	return lua_table;
+}
+
+luabind::object Lua_Client::GetScribeableSpells(lua_State* L) {
+	auto lua_table = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto scribeable_spells = self->GetScribeableSpells();
+		int index = 0;
+		for (auto spell_id : scribeable_spells) {
+			lua_table[index] = spell_id;
+			index++;
+		}
+	}
+	return lua_table;
+}
+
+luabind::object Lua_Client::GetScribeableSpells(lua_State* L, uint8 min_level) {
+	auto lua_table = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto scribeable_spells = self->GetScribeableSpells(min_level);
+		int index = 0;
+		for (auto spell_id : scribeable_spells) {
+			lua_table[index] = spell_id;
+			index++;
+		}
+	}
+	return lua_table;
+}
+
+luabind::object Lua_Client::GetScribeableSpells(lua_State* L, uint8 min_level, uint8 max_level) {
+	auto lua_table = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto scribeable_spells = self->GetScribeableSpells(min_level, max_level);
+		int index = 0;
+		for (auto spell_id : scribeable_spells) {
+			lua_table[index] = spell_id;
+			index++;
+		}
+	}
+	return lua_table;
+}
+
+luabind::object Lua_Client::GetScribedSpells(lua_State* L) {
+	auto lua_table = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto scribed_spells = self->GetScribedSpells();
+		int index = 0;
+		for (auto spell_id : scribed_spells) {
+			lua_table[index] = spell_id;
+			index++;
+		}
+	}
+	return lua_table;
+}
+
 void Lua_Client::ScribeSpell(int spell_id, int slot) {
 	Lua_Safe_Call_Void();
 	self->ScribeSpell(spell_id, slot);
@@ -523,6 +593,11 @@ void Lua_Client::ScribeSpell(int spell_id, int slot) {
 void Lua_Client::ScribeSpell(int spell_id, int slot, bool update_client) {
 	Lua_Safe_Call_Void();
 	self->ScribeSpell(spell_id, slot, update_client);
+}
+
+uint16 Lua_Client::ScribeSpells(uint8 min_level, uint8 max_level) {
+	Lua_Safe_Call_Int();
+	return self->ScribeSpells(min_level, max_level);
 }
 
 void Lua_Client::UnscribeSpell(int slot) {
@@ -1262,6 +1337,11 @@ luabind::scope lua_register_client() {
 		.def("UnmemSpell", (void(Lua_Client::*)(int,bool))&Lua_Client::UnmemSpell)
 		.def("UnmemSpellAll", (void(Lua_Client::*)(void))&Lua_Client::UnmemSpellAll)
 		.def("UnmemSpellAll", (void(Lua_Client::*)(bool))&Lua_Client::UnmemSpellAll)
+		.def("GetMemmedSpells", (luabind::object(Lua_Client::*)(lua_State* L))& Lua_Client::GetMemmedSpells)
+		.def("GetScribedSpells", (luabind::object(Lua_Client::*)(lua_State* L))& Lua_Client::GetScribedSpells)
+		.def("GetScribeableSpells", (luabind::object(Lua_Client::*)(lua_State* L))& Lua_Client::GetScribeableSpells)
+		.def("GetScribeableSpells", (luabind::object(Lua_Client::*)(lua_State* L, uint8))& Lua_Client::GetScribeableSpells)
+		.def("GetScribeableSpells", (luabind::object(Lua_Client::*)(lua_State* L, uint8, uint8))& Lua_Client::GetScribeableSpells)
 		.def("ScribeSpell", (void(Lua_Client::*)(int,int))&Lua_Client::ScribeSpell)
 		.def("ScribeSpell", (void(Lua_Client::*)(int,int,bool))&Lua_Client::ScribeSpell)
 		.def("UnscribeSpell", (void(Lua_Client::*)(int))&Lua_Client::UnscribeSpell)
@@ -1284,104 +1364,105 @@ luabind::scope lua_register_client() {
 		.def("DeleteItemInInventory", (void(Lua_Client::*)(int,int,bool))&Lua_Client::DeleteItemInInventory)
 		.def("SummonItem", (void(Lua_Client::*)(uint32))&Lua_Client::SummonItem)
 		.def("SummonItem", (void(Lua_Client::*)(uint32,int))&Lua_Client::SummonItem)
-.def("SummonItem", (void(Lua_Client::*)(uint32, int, int))&Lua_Client::SummonItem)
-.def("SummonItem", (void(Lua_Client::*)(uint32, int, int, bool))&Lua_Client::SummonItem)
-.def("SummonCursorItem", (void(Lua_Client::*)(uint32))& Lua_Client::SummonCursorItem)
-.def("SummonCursorItem", (void(Lua_Client::*)(uint32, int))& Lua_Client::SummonCursorItem)
-.def("DropItem", (void(Lua_Client::*)(int))&Lua_Client::DropItem)
-.def("BreakInvis", (void(Lua_Client::*)(void))&Lua_Client::BreakInvis)
-.def("LeaveGroup", (void(Lua_Client::*)(void))&Lua_Client::LeaveGroup)
-.def("IsGrouped", (bool(Lua_Client::*)(void))&Lua_Client::IsGrouped)
-.def("IsRaidGrouped", (bool(Lua_Client::*)(void))&Lua_Client::IsRaidGrouped)
-.def("Hungry", (bool(Lua_Client::*)(void))&Lua_Client::Hungry)
-.def("Thirsty", (bool(Lua_Client::*)(void))&Lua_Client::Thirsty)
-.def("GetInstrumentMod", (int(Lua_Client::*)(int))&Lua_Client::GetInstrumentMod)
-.def("DecreaseByID", (bool(Lua_Client::*)(uint32, int))&Lua_Client::DecreaseByID)
-.def("Escape", (void(Lua_Client::*)(void))&Lua_Client::Escape)
-.def("GoFish", (void(Lua_Client::*)(void))&Lua_Client::GoFish)
-.def("ForageItem", (void(Lua_Client::*)(void))&Lua_Client::ForageItem)
-.def("ForageItem", (void(Lua_Client::*)(bool))&Lua_Client::ForageItem)
-.def("CalcPriceMod", (float(Lua_Client::*)(Lua_Mob, bool))&Lua_Client::CalcPriceMod)
-.def("ResetTrade", (void(Lua_Client::*)(void))&Lua_Client::ResetTrade)
-.def("UseDiscipline", (bool(Lua_Client::*)(int))&Lua_Client::UseDiscipline)
-.def("GetCharacterFactionLevel", (int(Lua_Client::*)(int))&Lua_Client::GetCharacterFactionLevel)
-.def("SetZoneFlag", (void(Lua_Client::*)(int))&Lua_Client::SetZoneFlag)
-.def("ClearZoneFlag", (void(Lua_Client::*)(int))&Lua_Client::ClearZoneFlag)
-.def("HasZoneFlag", (bool(Lua_Client::*)(int))&Lua_Client::HasZoneFlag)
-.def("SendZoneFlagInfo", (void(Lua_Client::*)(Lua_Client))&Lua_Client::SendZoneFlagInfo)
-.def("SetAATitle", (void(Lua_Client::*)(const char *))&Lua_Client::SetAATitle)
-.def("GetClientVersion", (int(Lua_Client::*)(void))&Lua_Client::GetClientVersion)
-.def("GetClientVersionBit", (uint32(Lua_Client::*)(void))&Lua_Client::GetClientVersionBit)
-.def("SetTitleSuffix", (void(Lua_Client::*)(const char *))&Lua_Client::SetTitleSuffix)
-.def("SetAAPoints", (void(Lua_Client::*)(int))&Lua_Client::SetAAPoints)
-.def("GetAAPoints", (int(Lua_Client::*)(void))&Lua_Client::GetAAPoints)
-.def("GetSpentAA", (int(Lua_Client::*)(void))&Lua_Client::GetSpentAA)
-.def("AddAAPoints", (void(Lua_Client::*)(int))&Lua_Client::AddAAPoints)
-.def("RefundAA", (void(Lua_Client::*)(void))&Lua_Client::RefundAA)
-.def("GetModCharacterFactionLevel", (int(Lua_Client::*)(int))&Lua_Client::GetModCharacterFactionLevel)
-.def("GetStartZone", (int(Lua_Client::*)(void))&Lua_Client::GetStartZone)
-.def("KeyRingAdd", (void(Lua_Client::*)(uint32))&Lua_Client::KeyRingAdd)
-.def("KeyRingCheck", (bool(Lua_Client::*)(uint32))&Lua_Client::KeyRingCheck)
-.def("QuestReadBook", (void(Lua_Client::*)(const char *, int))&Lua_Client::QuestReadBook)
-.def("SendOPTranslocateConfirm", (void(Lua_Client::*)(Lua_Mob, int))&Lua_Client::SendOPTranslocateConfirm)
-.def("GetIP", (uint32(Lua_Client::*)(void))&Lua_Client::GetIP)
-.def("AddLevelBasedExp", (void(Lua_Client::*)(int))&Lua_Client::AddLevelBasedExp)
-.def("AddLevelBasedExp", (void(Lua_Client::*)(int, int))&Lua_Client::AddLevelBasedExp)
-.def("IncrementAA", (void(Lua_Client::*)(int))&Lua_Client::IncrementAA)
-.def("GetNextAvailableSpellBookSlot", (int(Lua_Client::*)(void))&Lua_Client::GetNextAvailableSpellBookSlot)
-.def("GetNextAvailableSpellBookSlot", (int(Lua_Client::*)(int))&Lua_Client::GetNextAvailableSpellBookSlot)
-.def("FindSpellBookSlotBySpellID", (int(Lua_Client::*)(int))&Lua_Client::FindSpellBookSlotBySpellID)
-.def("GetCorpseCount", (int(Lua_Client::*)(void))&Lua_Client::GetCorpseCount)
-.def("GetCorpseID", (int(Lua_Client::*)(int))&Lua_Client::GetCorpseID)
-.def("GetCorpseItemAt", (int(Lua_Client::*)(int, int))&Lua_Client::GetCorpseItemAt)
-.def("Freeze", (void(Lua_Client::*)(void))&Lua_Client::Freeze)
-.def("UnFreeze", (void(Lua_Client::*)(void))&Lua_Client::UnFreeze)
-.def("GetAggroCount", (int(Lua_Client::*)(void))&Lua_Client::GetAggroCount)
-.def("GetCarriedMoney", (uint64(Lua_Client::*)(void))&Lua_Client::GetCarriedMoney)
-.def("GetAllMoney", (uint64(Lua_Client::*)(void))&Lua_Client::GetAllMoney)
-.def("Signal", (void(Lua_Client::*)(uint32))&Lua_Client::Signal)
-.def("HasSpellScribed", (bool(Lua_Client::*)(int))&Lua_Client::HasSpellScribed)
-.def("SetAccountFlag", (void(Lua_Client::*)(std::string, std::string))&Lua_Client::SetAccountFlag)
-.def("GetAccountFlag", (std::string(Lua_Client::*)(std::string))&Lua_Client::GetAccountFlag)
-.def("GetGroup", (Lua_Group(Lua_Client::*)(void))&Lua_Client::GetGroup)
-.def("GetRaid", (Lua_Raid(Lua_Client::*)(void))&Lua_Client::GetRaid)
-.def("PutItemInInventory", (bool(Lua_Client::*)(int, Lua_ItemInst))&Lua_Client::PutItemInInventory)
-.def("PushItemOnCursor", (bool(Lua_Client::*)(Lua_ItemInst))&Lua_Client::PushItemOnCursor)
-.def("PushItemOnCursorWithoutQueue", (bool(Lua_Client::*)(Lua_ItemInst))&Lua_Client::PushItemOnCursorWithoutQueue)
-.def("GetInventory", (Lua_Inventory(Lua_Client::*)(void))&Lua_Client::GetInventory)
-.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet))&Lua_Client::QueuePacket)
-.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool))&Lua_Client::QueuePacket)
-.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool, int))&Lua_Client::QueuePacket)
-.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool, int, int))&Lua_Client::QueuePacket)
-.def("GetHunger", (int(Lua_Client::*)(void))&Lua_Client::GetHunger)
-.def("GetThirst", (int(Lua_Client::*)(void))&Lua_Client::GetThirst)
-.def("SetHunger", (void(Lua_Client::*)(int))&Lua_Client::SetHunger)
-.def("SetThirst", (void(Lua_Client::*)(int))&Lua_Client::SetThirst)
-.def("SetConsumption", (void(Lua_Client::*)(int, int))&Lua_Client::SetConsumption)
-.def("GetBoatID", (int(Lua_Client::*)(void))&Lua_Client::GetBoatID)
-.def("SetBoatID", (void(Lua_Client::*)(uint32))&Lua_Client::SetBoatID)
-.def("GetBoatName", (char *(Lua_Client::*)(void))&Lua_Client::GetBoatName)
-.def("SetBoatName", (void(Lua_Client::*)(const char *))&Lua_Client::SetBoatName)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16, int32))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16, int32, bool))&Lua_Client::QuestReward)
-.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, luabind::adl::object))& Lua_Client::QuestReward)
-.def("GetMonkHandToHandDamage", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDamage)
-.def("GetMonkHandToHandDelay", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDelay)
-.def("SendSound", (void(Lua_Client::*)(uint16))&Lua_Client::SendSound)
-.def("ExpendAATimer", (void(Lua_Client::*)(int))& Lua_Client::ExpendAATimer)
-.def("SetHardcore", (void(Lua_Client::*)(int))&Lua_Client::SetHardcore)
-.def("IsHardcore", (int(Lua_Client::*)(void))&Lua_Client::IsHardcore)
-.def("SetSelfFound", (void(Lua_Client::*)(int))&Lua_Client::SetSelfFound)
-.def("IsSelfFound", (int(Lua_Client::*)(void))&Lua_Client::IsSelfFound)
-.def("SetSoloOnly", (void(Lua_Client::*)(int))&Lua_Client::SetSoloOnly)
-.def("IsSoloOnly", (int(Lua_Client::*)(void))&Lua_Client::IsSoloOnly)
-.def("ClearPlayerInfoAndGrantStartingItems", (void(Lua_Client::*)(void))&Lua_Client::ClearPlayerInfoAndGrantStartingItems);
+		.def("SummonItem", (void(Lua_Client::*)(uint32, int, int))&Lua_Client::SummonItem)
+		.def("SummonItem", (void(Lua_Client::*)(uint32, int, int, bool))&Lua_Client::SummonItem)
+		.def("SummonCursorItem", (void(Lua_Client::*)(uint32))& Lua_Client::SummonCursorItem)
+		.def("SummonCursorItem", (void(Lua_Client::*)(uint32, int))& Lua_Client::SummonCursorItem)
+		.def("DropItem", (void(Lua_Client::*)(int))&Lua_Client::DropItem)
+		.def("BreakInvis", (void(Lua_Client::*)(void))&Lua_Client::BreakInvis)
+		.def("LeaveGroup", (void(Lua_Client::*)(void))&Lua_Client::LeaveGroup)
+		.def("IsGrouped", (bool(Lua_Client::*)(void))&Lua_Client::IsGrouped)
+		.def("IsRaidGrouped", (bool(Lua_Client::*)(void))&Lua_Client::IsRaidGrouped)
+		.def("Hungry", (bool(Lua_Client::*)(void))&Lua_Client::Hungry)
+		.def("Thirsty", (bool(Lua_Client::*)(void))&Lua_Client::Thirsty)
+		.def("GetInstrumentMod", (int(Lua_Client::*)(int))&Lua_Client::GetInstrumentMod)
+		.def("DecreaseByID", (bool(Lua_Client::*)(uint32, int))&Lua_Client::DecreaseByID)
+		.def("Escape", (void(Lua_Client::*)(void))&Lua_Client::Escape)
+		.def("GoFish", (void(Lua_Client::*)(void))&Lua_Client::GoFish)
+		.def("ForageItem", (void(Lua_Client::*)(void))&Lua_Client::ForageItem)
+		.def("ForageItem", (void(Lua_Client::*)(bool))&Lua_Client::ForageItem)
+		.def("CalcPriceMod", (float(Lua_Client::*)(Lua_Mob, bool))&Lua_Client::CalcPriceMod)
+		.def("ResetTrade", (void(Lua_Client::*)(void))&Lua_Client::ResetTrade)
+		.def("UseDiscipline", (bool(Lua_Client::*)(int))&Lua_Client::UseDiscipline)
+		.def("GetCharacterFactionLevel", (int(Lua_Client::*)(int))&Lua_Client::GetCharacterFactionLevel)
+		.def("SetZoneFlag", (void(Lua_Client::*)(int))&Lua_Client::SetZoneFlag)
+		.def("ClearZoneFlag", (void(Lua_Client::*)(int))&Lua_Client::ClearZoneFlag)
+		.def("HasZoneFlag", (bool(Lua_Client::*)(int))&Lua_Client::HasZoneFlag)
+		.def("SendZoneFlagInfo", (void(Lua_Client::*)(Lua_Client))&Lua_Client::SendZoneFlagInfo)
+		.def("SetAATitle", (void(Lua_Client::*)(const char *))&Lua_Client::SetAATitle)
+		.def("GetClientVersion", (int(Lua_Client::*)(void))&Lua_Client::GetClientVersion)
+		.def("GetClientVersionBit", (uint32(Lua_Client::*)(void))&Lua_Client::GetClientVersionBit)
+		.def("SetTitleSuffix", (void(Lua_Client::*)(const char *))&Lua_Client::SetTitleSuffix)
+		.def("SetAAPoints", (void(Lua_Client::*)(int))&Lua_Client::SetAAPoints)
+		.def("GetAAPoints", (int(Lua_Client::*)(void))&Lua_Client::GetAAPoints)
+		.def("GetSpentAA", (int(Lua_Client::*)(void))&Lua_Client::GetSpentAA)
+		.def("AddAAPoints", (void(Lua_Client::*)(int))&Lua_Client::AddAAPoints)
+		.def("RefundAA", (void(Lua_Client::*)(void))&Lua_Client::RefundAA)
+		.def("GetModCharacterFactionLevel", (int(Lua_Client::*)(int))&Lua_Client::GetModCharacterFactionLevel)
+		.def("GetStartZone", (int(Lua_Client::*)(void))&Lua_Client::GetStartZone)
+		.def("KeyRingAdd", (void(Lua_Client::*)(uint32))&Lua_Client::KeyRingAdd)
+		.def("KeyRingCheck", (bool(Lua_Client::*)(uint32))&Lua_Client::KeyRingCheck)
+		.def("QuestReadBook", (void(Lua_Client::*)(const char *, int))&Lua_Client::QuestReadBook)
+		.def("SendOPTranslocateConfirm", (void(Lua_Client::*)(Lua_Mob, int))&Lua_Client::SendOPTranslocateConfirm)
+		.def("GetIP", (uint32(Lua_Client::*)(void))&Lua_Client::GetIP)
+		.def("AddLevelBasedExp", (void(Lua_Client::*)(int))&Lua_Client::AddLevelBasedExp)
+		.def("AddLevelBasedExp", (void(Lua_Client::*)(int, int))&Lua_Client::AddLevelBasedExp)
+		.def("IncrementAA", (void(Lua_Client::*)(int))&Lua_Client::IncrementAA)
+		.def("GetNextAvailableSpellBookSlot", (int(Lua_Client::*)(void))&Lua_Client::GetNextAvailableSpellBookSlot)
+		.def("GetNextAvailableSpellBookSlot", (int(Lua_Client::*)(int))&Lua_Client::GetNextAvailableSpellBookSlot)
+		.def("FindSpellBookSlotBySpellID", (int(Lua_Client::*)(int))&Lua_Client::FindSpellBookSlotBySpellID)
+		.def("GetCorpseCount", (int(Lua_Client::*)(void))&Lua_Client::GetCorpseCount)
+		.def("GetCorpseID", (int(Lua_Client::*)(int))&Lua_Client::GetCorpseID)
+		.def("GetCorpseItemAt", (int(Lua_Client::*)(int, int))&Lua_Client::GetCorpseItemAt)
+		.def("Freeze", (void(Lua_Client::*)(void))&Lua_Client::Freeze)
+		.def("UnFreeze", (void(Lua_Client::*)(void))&Lua_Client::UnFreeze)
+		.def("GetAggroCount", (int(Lua_Client::*)(void))&Lua_Client::GetAggroCount)
+		.def("GetCarriedMoney", (uint64(Lua_Client::*)(void))&Lua_Client::GetCarriedMoney)
+		.def("GetAllMoney", (uint64(Lua_Client::*)(void))&Lua_Client::GetAllMoney)
+		.def("Signal", (void(Lua_Client::*)(uint32))&Lua_Client::Signal)
+		.def("HasSpellScribed", (bool(Lua_Client::*)(int))&Lua_Client::HasSpellScribed)
+		.def("SetAccountFlag", (void(Lua_Client::*)(std::string, std::string))&Lua_Client::SetAccountFlag)
+		.def("GetAccountFlag", (std::string(Lua_Client::*)(std::string))&Lua_Client::GetAccountFlag)
+		.def("GetGroup", (Lua_Group(Lua_Client::*)(void))&Lua_Client::GetGroup)
+		.def("GetRaid", (Lua_Raid(Lua_Client::*)(void))&Lua_Client::GetRaid)
+		.def("PutItemInInventory", (bool(Lua_Client::*)(int, Lua_ItemInst))&Lua_Client::PutItemInInventory)
+		.def("PushItemOnCursor", (bool(Lua_Client::*)(Lua_ItemInst))&Lua_Client::PushItemOnCursor)
+		.def("PushItemOnCursorWithoutQueue", (bool(Lua_Client::*)(Lua_ItemInst))&Lua_Client::PushItemOnCursorWithoutQueue)
+		.def("GetInventory", (Lua_Inventory(Lua_Client::*)(void))&Lua_Client::GetInventory)
+		.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet))&Lua_Client::QueuePacket)
+		.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool))&Lua_Client::QueuePacket)
+		.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool, int))&Lua_Client::QueuePacket)
+		.def("QueuePacket", (void(Lua_Client::*)(Lua_Packet, bool, int, int))&Lua_Client::QueuePacket)
+		.def("GetHunger", (int(Lua_Client::*)(void))&Lua_Client::GetHunger)
+		.def("GetThirst", (int(Lua_Client::*)(void))&Lua_Client::GetThirst)
+		.def("SetHunger", (void(Lua_Client::*)(int))&Lua_Client::SetHunger)
+		.def("SetThirst", (void(Lua_Client::*)(int))&Lua_Client::SetThirst)
+		.def("SetConsumption", (void(Lua_Client::*)(int, int))&Lua_Client::SetConsumption)
+		.def("GetBoatID", (int(Lua_Client::*)(void))&Lua_Client::GetBoatID)
+		.def("SetBoatID", (void(Lua_Client::*)(uint32))&Lua_Client::SetBoatID)
+		.def("GetBoatName", (char *(Lua_Client::*)(void))&Lua_Client::GetBoatName)
+		.def("SetBoatName", (void(Lua_Client::*)(const char *))&Lua_Client::SetBoatName)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16, int32))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, int32, int32, int32, int32, int16, int32, bool))&Lua_Client::QuestReward)
+		.def("QuestReward", (void(Lua_Client::*)(Lua_Mob, luabind::adl::object))& Lua_Client::QuestReward)
+		.def("GetMonkHandToHandDamage", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDamage)
+		.def("GetMonkHandToHandDelay", (int(Lua_Client::*)(void))&Lua_Client::GetHandToHandDelay)
+		.def("SendSound", (void(Lua_Client::*)(uint16))&Lua_Client::SendSound)
+		.def("ExpendAATimer", (void(Lua_Client::*)(int))& Lua_Client::ExpendAATimer)
+		.def("SetHardcore", (void(Lua_Client::*)(int))&Lua_Client::SetHardcore)
+		.def("IsHardcore", (int(Lua_Client::*)(void))&Lua_Client::IsHardcore)
+		.def("SetSelfFound", (void(Lua_Client::*)(int))&Lua_Client::SetSelfFound)
+		.def("IsSelfFound", (int(Lua_Client::*)(void))&Lua_Client::IsSelfFound)
+		.def("SetSoloOnly", (void(Lua_Client::*)(int))&Lua_Client::SetSoloOnly)
+		.def("IsSoloOnly", (int(Lua_Client::*)(void))&Lua_Client::IsSoloOnly)
+		.def("ClearPlayerInfoAndGrantStartingItems", (void(Lua_Client::*)(void))&Lua_Client::ClearPlayerInfoAndGrantStartingItems)
+		.def("ScribeSpells", (uint16(Lua_Client::*)(uint8, uint8))& Lua_Client::ScribeSpells);
 }
 
 luabind::scope lua_register_inventory_where() {

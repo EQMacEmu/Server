@@ -4376,40 +4376,47 @@ void Client::UnmemSpellAll(bool update_client)
 			UnmemSpell(i, update_client);
 }
 
-void Client::ScribeSpell(uint16 spell_id, int slot, bool update_client)
+void Client::ScribeSpell(uint16 spell_id, int slot, bool update_client, bool defer_save)
 {
-	if(slot >= MAX_PP_SPELLBOOK || slot < 0)
+	if (slot >= MAX_PP_SPELLBOOK || slot < 0) {
 		return;
+	}
 
-	if(update_client)
-	{
-		if(m_pp.spell_book[slot] != 0xFFFFFFFF)
-			UnscribeSpell(slot, update_client);
+	if(update_client) {
+		if (m_pp.spell_book[slot] != 0xFFFFFFFF) {
+			UnscribeSpell(slot, update_client, defer_save);
+		}
 	}
 
 	m_pp.spell_book[slot] = spell_id;
-	database.SaveCharacterSpell(this->CharacterID(), spell_id, slot);
+
+	// defer save if we're bulk saving elsewhere
+	if (!defer_save) {
+		database.SaveCharacterSpell(this->CharacterID(), spell_id, slot);
+	}
 	Log(Logs::Detail, Logs::Spells, "Spell %d scribed into spell book slot %d", spell_id, slot);
 
-	if(update_client)
-	{
+	if(update_client) {
 		MemorizeSpell(slot, spell_id, memSpellScribing);
 	}
 }
 
-void Client::UnscribeSpell(int slot, bool update_client)
+void Client::UnscribeSpell(int slot, bool update_client, bool defer_save)
 {
-	if(slot >= MAX_PP_SPELLBOOK || slot < 0)
+	if (slot >= MAX_PP_SPELLBOOK || slot < 0) {
 		return;
+	}
 
 	Log(Logs::Detail, Logs::Spells, "Spell %d erased from spell book slot %d", m_pp.spell_book[slot], slot);
 	m_pp.spell_book[slot] = 0xFFFF;
 
-	database.DeleteCharacterSpell(this->CharacterID(), m_pp.spell_book[slot], slot);
-	if(update_client)
-	{
+	if (!defer_save) {
+		database.DeleteCharacterSpell(this->CharacterID(), m_pp.spell_book[slot], slot);
+	}
+
+	if (update_client) {
 		auto outapp = new EQApplicationPacket(OP_DeleteSpell, sizeof(DeleteSpell_Struct));
-		DeleteSpell_Struct* del = (DeleteSpell_Struct*)outapp->pBuffer;
+		DeleteSpell_Struct *del = (DeleteSpell_Struct*)outapp->pBuffer;
 		del->spell_slot = slot;
 		del->success = 1;
 		QueuePacket(outapp);
@@ -4419,13 +4426,14 @@ void Client::UnscribeSpell(int slot, bool update_client)
 
 void Client::UnscribeSpellAll(bool update_client)
 {
-	int i;
-
-	for(i = 0; i < MAX_PP_SPELLBOOK; i++)
-	{
-		if(m_pp.spell_book[i] != 0xFFFFFFFF)
-			UnscribeSpell(i, update_client);
+	for(int i = 0; i < MAX_PP_SPELLBOOK; i++) {
+		if (m_pp.spell_book[i] != 0xFFFFFFFF) {
+			UnscribeSpell(i, update_client, true);
+		}
 	}
+
+	// bulk save at end (this will only delete)
+	SaveSpells();
 }
 
 int Client::GetNextAvailableSpellBookSlot(int starting_slot) {

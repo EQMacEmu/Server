@@ -688,7 +688,7 @@ void WorldServer::Process() {
 				//if ( eqTime.hour >= 0 && eqTime.minute >= 0 )
 				//{
 					sprintf(timeMessage,"EQTime [%02d:%s%d %s]",
-						((eqTime.hour - 1) % 12) == 0 ? 12 : ((eqTime.hour - 1) % 12),
+						((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
 						(eqTime.minute < 10) ? "0" : "",
 						eqTime.minute,
 						(eqTime.hour >= 13) ? "pm" : "am"

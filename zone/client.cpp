@@ -53,6 +53,8 @@
 #include "../common/packet_dump_file.h"
 #include "queryserv.h"
 
+#include "../common/repositories/character_spells_repository.h"
+
 extern QueryServ* QServ;
 extern EntityList entity_list;
 extern Zone* zone;
@@ -6575,3 +6577,127 @@ bool Client::IsLootLockedOutOfNPC(uint32 npctype_id)
 
 	return false;
 };
+
+std::vector<int> Client::GetMemmedSpells() {
+	std::vector<int> memmed_spells;
+	for (int index = 0; index < EQ::spells::SPELL_GEM_COUNT; index++) {
+		if (IsValidSpell(m_pp.mem_spells[index])) {
+			memmed_spells.push_back(m_pp.mem_spells[index]);
+		}
+	}
+	return memmed_spells;
+}
+
+std::vector<int> Client::GetScribeableSpells(uint8 min_level, uint8 max_level) {
+	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
+	bool SpellGlobalCheckResult = false;
+	std::vector<int> scribeable_spells;
+	for (int spell_id = 0; spell_id < SPDAT_RECORDS; ++spell_id) {
+		bool scribeable = false;
+		if (!IsValidSpell(spell_id))
+			continue;
+		if (spells[spell_id].classes[WARRIOR] == 0)
+			continue;
+		if (max_level > 0 && spells[spell_id].classes[m_pp.class_ - 1] > max_level)
+			continue;
+		if (min_level > 1 && spells[spell_id].classes[m_pp.class_ - 1] < min_level)
+			continue;
+		if (spells[spell_id].skill == 52)
+			continue;
+		if (spells[spell_id].not_player_spell)
+			continue;
+		if (HasSpellScribed(spell_id))
+			continue;
+
+		if (SpellGlobalRule) {
+			SpellGlobalCheckResult = SpellGlobalCheck(spell_id, CharacterID());
+			if (SpellGlobalCheckResult) {
+				scribeable = true;
+			}
+		}
+		else {
+			scribeable = true;
+		}
+
+		if (scribeable) {
+			scribeable_spells.push_back(spell_id);
+		}
+	}
+	return scribeable_spells;
+}
+
+std::vector<int> Client::GetScribedSpells() {
+	std::vector<int> scribed_spells;
+	for (int index = 0; index < EQ::spells::SPELLBOOK_SIZE; index++) {
+		if (IsValidSpell(m_pp.spell_book[index])) {
+			scribed_spells.push_back(m_pp.spell_book[index]);
+		}
+	}
+	return scribed_spells;
+}
+
+void Client::SaveSpells()
+{
+	std::vector<CharacterSpellsRepository::CharacterSpells> character_spells = {};
+
+	for (int index = 0; index < EQ::spells::SPELLBOOK_SIZE; index++) {
+		if (IsValidSpell(m_pp.spell_book[index])) {
+			auto spell = CharacterSpellsRepository::NewEntity();
+			spell.id = CharacterID();
+			spell.slot_id = index;
+			spell.spell_id = m_pp.spell_book[index];
+			character_spells.emplace_back(spell);
+		}
+	}
+
+	CharacterSpellsRepository::DeleteWhere(database, fmt::format("id = {}", CharacterID()));
+
+	if (!character_spells.empty()) {
+		CharacterSpellsRepository::InsertMany(database, character_spells);
+	}
+}
+
+uint16 Client::ScribeSpells(uint8 min_level, uint8 max_level)
+{
+	int available_book_slot = GetNextAvailableSpellBookSlot();
+	std::vector<int> spell_ids = GetScribeableSpells(min_level, max_level);
+	uint16 spell_count = spell_ids.size();
+	uint16 scribed_spells = 0;
+	if (spell_count > 0) {
+		for (auto spell_id : spell_ids) {
+			if (available_book_slot == -1) {
+				Message(
+					CC_Red,
+					fmt::format(
+						"Unable to scribe {} ({}) to Spell Book because your Spell Book is full.",
+						spells[spell_id].name,
+						spell_id
+					).c_str()
+				);
+				break;
+			}
+
+			if (HasSpellScribed(spell_id)) {
+				continue;
+			}
+
+			// defer saving per spell and bulk save at the end
+			ScribeSpell(spell_id, available_book_slot, true, true);
+			available_book_slot = GetNextAvailableSpellBookSlot(available_book_slot);
+			scribed_spells++;
+		}
+	}
+
+	if (scribed_spells > 0) {
+		std::string spell_message = (
+			scribed_spells == 1 ?
+			"a new spell" :
+			fmt::format("{} new spells", scribed_spells)
+			);
+		Message(CC_Default, fmt::format("You have learned {}!", spell_message).c_str());
+
+		// bulk insert spells
+		SaveSpells();
+	}
+	return scribed_spells;
+}
