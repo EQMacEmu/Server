@@ -1729,8 +1729,8 @@ void Mob::ChangeSize(float in_size = 0, bool bNoRestriction) {
 	if (in_size < 1.0)
 		in_size = 1.0;
 
-	if (in_size > 255.0)
-		in_size = 255.0;
+	/*if (in_size > 255.0)
+		in_size = 255.0;*/
 	//End of Size Code
 	float newsize = floorf(in_size + 0.5);
 	this->size = newsize;
