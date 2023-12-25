@@ -298,8 +298,8 @@ enum ConsiderLevel : uint8 {
 enum QuakeType : uint8_t
 {
 	QuakeDisabled = 0,
-	QuakeFTE = 1,
-	QuakeDPSRace = 2,
+	QuakeNormal = 1,
+	QuakePVP = 2,
 	QuakeMax
 };
 

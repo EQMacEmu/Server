@@ -5210,16 +5210,47 @@ bool EntityList::HasCharmedNPC()
 
 void EntityList::EvacAllPlayers()
 {
-
-	// update distances to us for clients.
 	auto it = client_list.begin();
-	// go through the list and update distances
 	while (it != client_list.end()) {
 		if (it->second && it->second->GetID() > 0) {
 
 			it->second->MovePCGuildID(zone->GetZoneID(), GUILD_NONE, 0, 0, 0, 0, 0, EvacToSafeCoords);
 		}
 		++it;
+	}
+}
+
+void EntityList::TogglePVPForQuake()
+{
+	if (!zone)
+		return;
+
+	if (zone && zone->last_quake_struct.quake_type == QuakeType::QuakePVP)
+	{
+		// update distances to us for clients.
+		auto it = client_list.begin();
+		// go through the list and update distances
+		while (it != client_list.end()) {
+			if (it->second && it->second->GetPVP() == 0) {
+
+				it->second->SetPVP(2);
+			}
+			++it;
+		}
+		return;
+	}
+	else if (zone)
+	{
+		// update distances to us for clients.
+		auto it = client_list.begin();
+		// go through the list and update distances
+		while (it != client_list.end()) {
+			if (it->second && it->second->GetPVP() == 2) {
+
+				it->second->SetPVP(0);
+			}
+			++it;
+		}
 	}
 }
 

@@ -1547,7 +1547,19 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				snprintf(effect_desc, _EDLEN, "Model Size: %d%%", effect_value);
 #endif
 
+
 				float modifyAmount = (static_cast<float>(effect_value) / 100.0f);
+				if (zone && zone->GetGuildID() == GUILD_NONE)
+				{
+					if (zone->last_quake_struct.quake_type != QuakeType::QuakeDisabled)
+					{
+						if (modifyAmount > 1.0f)
+						{
+							break;
+						}
+					}
+				}
+
 				float gnome_height = GetPlayerHeight(GNOME);
 				float ogre_height = GetPlayerHeight(OGRE);
 				float size = GetSize();

@@ -311,10 +311,10 @@ public:
 	virtual void SetMaxHP();
 	static int32 LevelRegen(int level, bool is_sitting, bool is_resting, bool is_feigned, bool is_famished, bool has_racial_regen_bonus);
 	void SetGM(bool toggle);
-	void SetPVP(bool toggle);
+	void SetPVP(uint8 toggle);
 	void	SetAnon(bool toogle);
 
-	inline bool GetPVP() const { return m_pp.pvp != 0; }
+	inline uint8 GetPVP() const { return m_pp.pvp; }
 	inline bool GetGM() const { return m_pp.gm != 0; }
 
 	inline void SetBaseClass(uint32 i) { m_pp.class_=i; }

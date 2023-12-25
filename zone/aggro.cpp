@@ -874,8 +874,8 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack, int16 spellid)
 
 				if	// if both are pvp they can fight
 				(
-					c1->GetPVP() &&
-					c2->GetPVP()
+					(bool)c1->GetPVP() &&
+					(bool)c2->GetPVP()
 				)
 					return true;
 				else if	// if they're dueling they can go at it
@@ -1075,7 +1075,7 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 						return false;
 				}
 
-				if (c1->GetPVP() == c2->GetPVP())
+				if ((bool)c1->GetPVP() == (bool)c2->GetPVP())
 					return true;
 
 			}

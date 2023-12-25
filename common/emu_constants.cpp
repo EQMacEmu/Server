@@ -303,11 +303,11 @@ std::string QuakeTypeToString(QuakeType in_type)
 
 	switch (in_type)
 	{
-	case QuakeType::QuakeFTE:
-		out_stringtype = "First to Engage";
+	case QuakeType::QuakeNormal:
+		out_stringtype = "Quake";
 		break;
-	case QuakeType::QuakeDPSRace:
-		out_stringtype = "DPS Race";
+	case QuakeType::QuakePVP:
+		out_stringtype = "PVP Quake";
 		break;
 	//case QuakeType::QuakeExtraMob:
 	//	out_stringtype = "Extra Target for Server Rotation";

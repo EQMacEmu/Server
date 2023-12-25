@@ -229,7 +229,7 @@ public:
 	struct TimeOfDay_Struct		LoadTime(time_t &realtime);
 	void LoadQuakeData(ServerEarthquakeImminent_Struct & earthquake_struct);
 	bool LoadNextQuakeTime(ServerEarthquakeImminent_Struct &realtime);
-	bool SaveNextQuakeTime(ServerEarthquakeImminent_Struct & earthquake_struct);
+	bool SaveNextQuakeTime(ServerEarthquakeImminent_Struct & earthquake_struct, QuakeType in_quake_type = QuakeType::QuakeNormal);
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);
 	bool	AdjustSpawnTimes();
 	uint8   GetZoneRandomLoc(uint32 zoneid);

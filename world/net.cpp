@@ -134,10 +134,10 @@ void LoadDatabaseConnections()
 Timer NextQuakeTimer(900000);
 Timer DisableQuakeTimer(900000);
 
-void TriggerManualQuake()
+void TriggerManualQuake(QuakeType in_quake_type)
 {
 	uint32 cur_time = Timer::GetTimeSeconds();
-	database.SaveNextQuakeTime(next_quake);
+	database.SaveNextQuakeTime(next_quake, in_quake_type);
 
 	NextQuakeTimer.Enable();
 	NextQuakeTimer.Start((next_quake.next_start_timestamp - cur_time) * 1000);
@@ -161,7 +161,7 @@ void TriggerManualQuake()
 	//Inform of imminent quake. This happens after the MOTD so zone denizens are informed again with relevant information.
 	auto pack = new ServerPacket(ServerOP_QuakeImminent, sizeof(ServerEarthquakeImminent_Struct));
 	ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack->pBuffer;
-	seis->quake_type = next_quake.quake_type;
+	seis->quake_type = in_quake_type;
 	seis->next_start_timestamp = next_quake.next_start_timestamp;
 	seis->start_timestamp = next_quake.start_timestamp;
 	zoneserver_list.SendPacket(pack);
@@ -542,7 +542,9 @@ int main(int argc, char** argv) {
 				NextQuakeTimer.Start((next_quake.next_start_timestamp - cur_time) * 1000);
 
 				std::string motd_str = "Welcome to Project Quarm! ";
-				motd_str += "An earthquake ruleset is currently in effect in raid zones.";
+				motd_str += "The '";
+				motd_str += QuakeTypeToString(next_quake.quake_type);
+				motd_str += "' earthquake ruleset is currently in effect in raid zones.";
 
 				database.SetVariable("MOTD", motd_str.c_str());
 
@@ -590,7 +592,7 @@ int main(int argc, char** argv) {
 				//Inform of imminent quake. This happens after the MOTD so zone denizens are informed again with relevant information.
 				auto pack4 = new ServerPacket(ServerOP_QuakeEnded, sizeof(ServerEarthquakeImminent_Struct));
 				ServerEarthquakeImminent_Struct* seis = (ServerEarthquakeImminent_Struct*)pack4->pBuffer;
-				next_quake.quake_type == QuakeType::QuakeDisabled;
+				next_quake.quake_type = QuakeType::QuakeDisabled;
 				seis->quake_type = next_quake.quake_type;
 				seis->next_start_timestamp = next_quake.next_start_timestamp;
 				seis->start_timestamp = next_quake.start_timestamp;

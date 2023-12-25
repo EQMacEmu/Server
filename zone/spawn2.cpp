@@ -482,7 +482,6 @@ void Spawn2::DeathReset(bool realdeath)
 	//set our timer to our reset local
 	timer.Start(cur);
 
-	//zero out our NPC since he is now gone
 	npcthis = nullptr;
 
 	if(realdeath) { killcount++; }
@@ -495,6 +494,30 @@ void Spawn2::DeathReset(bool realdeath)
 		//store it to database too
 	}
 }
+
+
+//resets our spawn as if we just died
+void Spawn2::QuakeReset()
+{
+	//get our reset based on variance etc and store it locally
+	uint32 cur = resetTimer();
+	//set our timer to our reset local
+	timer.Start(cur);
+
+	if (npcthis)
+	{
+		npcthis->Depop();
+	}
+	npcthis = nullptr;
+	//if we have a valid spawn id
+	if (spawn2_id)
+	{
+		database.UpdateRespawnTime(spawn2_id, (cur / 1000), zone ? zone->GetGuildID() : GUILD_NONE);
+		Log(Logs::General, Logs::Spawns, "Spawn2 %d: Spawn reset by death, repop in %d ms", spawn2_id, timer.GetRemainingTime());
+		//store it to database too
+	}
+}
+
 
 bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list, const glm::vec4& client_position, uint32 repop_distance, uint32 guildid)
 {

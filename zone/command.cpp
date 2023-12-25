@@ -333,7 +333,7 @@ int command_init(void)
 
 		command_add("qglobal", "[on/off/view] - Toggles qglobal functionality on an NPC.", AccountStatus::GMImpossible, command_qglobal) ||
 		command_add("qtest", "- QueryServ testing command.", AccountStatus::GMTester, command_qtest) ||
-		command_add("quaketrigger", "- Triggers an earthquake manually", AccountStatus::GMImpossible, command_quaketrigger) ||
+		command_add("quaketrigger", "- [type_num (1 = Normal, 2 = PVP)] Triggers an earthquake manually", AccountStatus::GMImpossible, command_quaketrigger) ||
 		command_add("questerrors", "Shows quest errors.",AccountStatus::Player, command_questerrors) ||
 
 		command_add("race", "[racenum] - Change your or your target's race. Use racenum 0 to return to normal.", AccountStatus::QuestMaster, command_race) ||
@@ -11330,8 +11330,21 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 
 void command_quaketrigger(Client* c, const Seperator* sep)
 {
-	ServerPacket pack(ServerOP_QuakeRequest, 0);
-	worldserver.SendPacket(&pack);
+	//Arguments?
+	if (sep->IsNumber(1))
+	{
+		uint8_t quaketype = atoi(sep->arg[1]);
+		auto pack = new ServerPacket(ServerOP_QuakeRequest, sizeof(ServerEarthquakeRequest_Struct));
+		ServerEarthquakeRequest_Struct* sqr = (ServerEarthquakeRequest_Struct*)pack->pBuffer;
+		sqr->type = (QuakeType)quaketype;
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+		c->Message(15, "Triggered an earthquake!");
+	}
+	else
+	{
+		c->Message(15, "Invalid parameters. Usage: #quaketrigger [type_num]");
+	}
 }
 
 void command_betabuff(Client* c, const Seperator* sep)

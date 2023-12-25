@@ -1077,7 +1077,7 @@ bool Zone::Init(bool iStaticZone) {
 	LoadGrids();
 	LoadTickItems();
 
-	database.LoadQuakeData(zone->last_quake_struct);
+	//database.LoadQuakeData(zone->last_quake_struct);
 
 	if (zone->newzone_data.maxclip > 0.0f)
 		zone->update_range = std::max(250.0f, zone->newzone_data.maxclip + 50.0f);
@@ -1293,12 +1293,15 @@ bool Zone::Process() {
 	if (EndQuake_Timer->Check())
 	{
 		uint32 cur_time = Timer::GetTimeSeconds();
-		bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeMaxVariance) * 2) * 1000); // if we reset at least one, this is true
+		bool should_broadcast_notif = zone->ResetEngageNotificationTargets((RuleI(Quarm, QuakeMaxVariance) * 2) * 1000, true); // if we reset at least one, this is true
 		if (should_broadcast_notif)
 		{
 			entity_list.Message(CC_Default, CC_Yellow, "The quake has concluded. Rules 9.x and 10.x will once again apply where relevant.");
 		}
+		entity_list.TogglePVPForQuake();
 		EndQuake_Timer->Disable();
+		memset(&last_quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+
 	}
 
 	if(qGlobals)
@@ -1573,7 +1576,7 @@ void Zone::RepopClose(const glm::vec4& client_position, uint32 repop_distance)
 	entity_list.UpdateAllTraps(true, true);
 }
 
-bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
+bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer, bool update_respawn_in_db)
 {
 	bool reset_at_least_one_spawn2 = false;
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
@@ -1581,10 +1584,17 @@ bool Zone::ResetEngageNotificationTargets(uint32 in_respawn_timer)
 	iterator.Reset();
 	while (iterator.MoreElements()) {
 		Spawn2* pSpawn2 = iterator.GetData();
-		if (pSpawn2->IsRaidTargetSpawnpoint())
+		if (pSpawn2 && pSpawn2->IsRaidTargetSpawnpoint())
 		{
 			reset_at_least_one_spawn2 = true;
-			pSpawn2->Repop(in_respawn_timer); // milliseconds
+			if (update_respawn_in_db)
+			{
+				pSpawn2->QuakeReset();
+			}
+			else
+			{
+				pSpawn2->Repop(in_respawn_timer); // milliseconds
+			}
 		}
 		iterator.Advance();
 	}

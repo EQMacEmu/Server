@@ -462,6 +462,7 @@ public:
 	void RepopNPCsByNPCID(uint32 npcid);
 	bool HasCharmedNPC();
 	void EvacAllPlayers();
+	void TogglePVPForQuake();
 	void ReportUnderworldNPCs(Client* sendto, float min_z);
 
 protected:

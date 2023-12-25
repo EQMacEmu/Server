@@ -147,7 +147,7 @@ public:
 
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
-	bool	ResetEngageNotificationTargets(uint32 in_respawn_timer);
+	bool	ResetEngageNotificationTargets(uint32 in_respawn_timer, bool update_respawn_in_db = false);
 	bool	Depop(bool StartSpawnTimer = false);
 	void	Repop();
 	void	RepopClose(const glm::vec4& client_position, uint32 repop_distance);

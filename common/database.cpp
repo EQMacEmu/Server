@@ -2312,12 +2312,11 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 	if (!results.Success() || results.RowCount() == 0)
 	{
 		random.Reseed();
-		QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled + 1, QuakeType::QuakeMax - 1));
 		uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
 		Log(Logs::Detail, Logs::WorldServer, "Loading quake time failed.  Using default rules values and a random ruleset...");
 		earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
 		earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
-		earthquake_struct.quake_type = ruleset;
+		earthquake_struct.quake_type = QuakeNormal;
 
 		std::string query1 = StringFormat("DELETE FROM quake_data");
 		auto results1 = QueryDatabase(query1);
@@ -2340,7 +2339,7 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 		if (Timer::GetTimeSeconds() < earthquake_struct.start_timestamp + RuleI(Quarm, QuakeEndTimeDuration))
 		{
 			Log(Logs::Detail, Logs::WorldServer, "Recovering-from-downtime within 24 hour window. Using default rules values and a random ruleset...");
-			QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled + 1, QuakeType::QuakeMax - 1));
+			QuakeType ruleset = QuakeNormal;
 			uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
 			earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
 			earthquake_struct.quake_type = ruleset;
@@ -2361,15 +2360,14 @@ bool Database::LoadNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_str
 }
 
 //For usage on quake trigger. Does the 'fail logic' from above in the load process to set the next timer and current timer.
-bool Database::SaveNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct)
+bool Database::SaveNextQuakeTime(ServerEarthquakeImminent_Struct& earthquake_struct, QuakeType in_quake_type)
 {
 	EQ::Random random;
 	random.Reseed();
-	QuakeType ruleset = (QuakeType)(random.Int(QuakeType::QuakeDisabled + 1, QuakeType::QuakeMax - 1));
 	uint32 random_timestamp = random.Int(RuleI(Quarm, QuakeMinVariance), RuleI(Quarm, QuakeMaxVariance));
 	earthquake_struct.start_timestamp = Timer::GetTimeSeconds() + RuleI(Quarm, QuakeRepopDelay);
 	earthquake_struct.next_start_timestamp = earthquake_struct.start_timestamp + random_timestamp;
-	earthquake_struct.quake_type = ruleset;
+	earthquake_struct.quake_type = in_quake_type;
 
 
 	std::string query1 = StringFormat("DELETE FROM quake_data");

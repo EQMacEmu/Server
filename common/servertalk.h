@@ -1202,6 +1202,10 @@ struct ServerEarthquakeImminent_Struct {
 	QuakeType quake_type; // Player-imposed ruleset with quake. uint8_t enum
 };
 
+struct ServerEarthquakeRequest_Struct {
+	QuakeType	type; // Time the last quake began, in seconds. UNIX Timestamp. QuakeType enforcement is supposed to cease 84600 seconds following this time. Raid mobs are supposed to respawn 86400 seconds after this time. Actual type will be unknown and stored in memory.
+};
+
 #pragma pack()
 
 #endif

@@ -177,7 +177,7 @@ void ZoneServer::LSSleepUpdate(uint32 zoneid){
 	}
 }
 
-extern void TriggerManualQuake();
+extern void TriggerManualQuake(QuakeType in_quake_type);
 
 bool ZoneServer::Process() {
 	if (!tcpc->Connected())
@@ -918,7 +918,7 @@ bool ZoneServer::Process() {
 					/* Boot the Zone*/
 					else {
 						int server_id;
-						if (!RuleB(World, DontBootDynamics))
+						if (!RuleB(World, DontBootDynamics) || ztz->requested_zone_guild_id != 0xFFFFFFFF)
 						{
 							if ((server_id = zoneserver_list.TriggerBootup(ztz->requested_zone_id, ztz->requested_zone_guild_id))) {
 								Log(Logs::Detail, Logs::WorldServer, "Successfully booted a zone for %s", ztz->name);
@@ -1418,8 +1418,12 @@ bool ZoneServer::Process() {
 
 			case ServerOP_QuakeRequest:
 			{
-
-				TriggerManualQuake();
+				if (pack->size != sizeof(ServerEarthquakeRequest_Struct))
+				{
+					break;
+				}
+				ServerEarthquakeRequest_Struct* s = (ServerEarthquakeRequest_Struct*)pack->pBuffer;
+				TriggerManualQuake(s->type);
 				break;
 			}
 

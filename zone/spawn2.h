@@ -50,6 +50,7 @@ public:
 	void	ChangeDespawn(uint8 newval, uint32 despawn_timer = 0);
 
 	void	DeathReset(bool realdeath = 0); //resets the spawn in the case the npc dies, also updates db if needed
+	void	QuakeReset(); // despawns & resets an npc after a quake ends
 
 	void	SpawnConditionChanged(const SpawnCondition &c, int16 old_value);
 	uint32	GetID()		{ return spawn2_id; }

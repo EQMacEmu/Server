@@ -2296,15 +2296,15 @@ uint16 Client::GetSkill(EQ::skills::SkillType skill_id) const
 	return tmp_skill;
 }
 
-void Client::SetPVP(bool toggle) {
-	m_pp.pvp = toggle ? 1 : 0;
+void Client::SetPVP(uint8 toggle) {
+	m_pp.pvp = toggle;
 
 	if(GetPVP())
 		this->Message_StringID(CC_Red,PVP_ON);
 	else
 		Message(CC_Red, "You no longer follow the ways of discord.");
 
-	SendAppearancePacket(AT_PVP, GetPVP());
+	SendAppearancePacket(AT_PVP, (bool)GetPVP());
 	Save();
 }
 

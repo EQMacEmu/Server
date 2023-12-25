@@ -925,7 +925,7 @@ void Client::EnterWorld(bool TryBootup) {
 	}
 	else
 	{
-		if (TryBootup && !RuleB(World, DontBootDynamics) && zoneGuildID != 0xFFFFFFFF) {
+		if (TryBootup && !RuleB(World, DontBootDynamics) || TryBootup && zoneGuildID != 0xFFFFFFFF) {
 			Log(Logs::Detail, Logs::WorldServer, "Attempting autobootup of (%d) (%d)", zoneID, zoneGuildID);
 			autobootup_timeout.Start();
 			pwaitingforbootup = zoneserver_list.TriggerBootup(zoneID, zoneGuildID);
