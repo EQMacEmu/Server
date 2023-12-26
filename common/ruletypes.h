@@ -254,6 +254,7 @@ RULE_INT(Quarm, AutomatedRaidRotationRaidGuildMemberCountRequirement, 12) // Req
 RULE_INT(Quarm, AutomatedRaidRotationRaidNonMemberCountRequirement, 18) // Required amount of same-guild members to participate in a raid encounter. These must be in the same guild, and one officer from the current guild must be in the raid.
 RULE_INT(Quarm, MinStatusToZoneIntoAnyGuildZone, 100) // Required amount of same-guild members to participate in a raid encounter. These must be in the same guild, and one officer from the current guild must be in the raid.
 RULE_BOOL(Quarm, EnableGuildZoneRequirementOnEntry, false) // Classic behavior is true. Live Quarm has this false by default. CSR complaints about training warranted this behavior.
+RULE_BOOL(Quarm, EnforceClassicEraHardCaps, true) // Classic behavior is true, Late velious and later is false. Master switch for AC softcaps.
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

@@ -5140,7 +5140,12 @@ int Client::GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int sp
 
 	if (!ignoreCap && acSum > softcap)
 	{
-		if (level < 50)
+		if (RuleB(Quarm, EnforceClassicEraHardCaps))
+		{
+				return softcap;
+		}
+
+		if (level <= 50)
 		{
 			return softcap;		// it's hard < level 50
 		}
