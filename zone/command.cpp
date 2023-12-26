@@ -4184,7 +4184,7 @@ void command_showquake(Client *c, const Seperator *sep)
 		ServerEarthquakeImminent_Struct quake_struct;
 		memset(&quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
 		database.LoadQuakeData(quake_struct);
-		int64 nextQuakeTime = zone->last_quake_struct.next_start_timestamp;
+		int64 nextQuakeTime = quake_struct.next_start_timestamp;
 		int64 curTime = Timer::GetTimeSeconds();
 
 		if (nextQuakeTime - curTime > 0)
