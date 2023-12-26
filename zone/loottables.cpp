@@ -128,10 +128,10 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 	if (droplimit == 0 && mindrop == 0) {
 		for (uint32 i = 0; i < lds->NumEntries; ++i) {
 
-			bool min_expansion_enabled = lds->Entries[i].min_expansion >= RuleR(World, CurrentExpansion);
-			bool max_expansion_enabled = lds->Entries[i].max_expansion < RuleR(World, CurrentExpansion);
+			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= lds->Entries[i].min_expansion;
+			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < lds->Entries[i].max_expansion;
 			bool expansion_all = lds->Entries[i].min_expansion == 0.0f;
-			if (!min_expansion_enabled && !max_expansion_enabled && !expansion_all)
+			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
 
 			int multiplier = lds->Entries[i].multiplier;
@@ -166,10 +166,10 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 	float roll_t_min = 0.0f;
 	bool active_item_list = false;
 	for (uint32 i = 0; i < lds->NumEntries; ++i) {
-		bool min_expansion_enabled = lds->Entries[i].min_expansion >= RuleR(World, CurrentExpansion);
-		bool max_expansion_enabled = lds->Entries[i].max_expansion < RuleR(World, CurrentExpansion);
+		bool min_expansion_enabled =  RuleR(World, CurrentExpansion) >= lds->Entries[i].min_expansion;
+		bool max_expansion_enabled = RuleR(World, CurrentExpansion) < lds->Entries[i].max_expansion;
 		bool expansion_all = lds->Entries[i].min_expansion == 0.0f;
-		if (!min_expansion_enabled && !max_expansion_enabled && !expansion_all)
+		if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 			continue;
 
 		uint32 itemid = lds->Entries[i].item_id;
@@ -196,10 +196,10 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 	for(int i = 0; i < mindrop; ++i) {
 		float roll = (float)zone->random.Real(0.0, roll_t_min);
 		for(uint32 j = 0; j < lds->NumEntries; ++j) {
-			bool min_expansion_enabled = lds->Entries[j].min_expansion >= RuleR(World, CurrentExpansion);
-			bool max_expansion_enabled = lds->Entries[j].max_expansion < RuleR(World, CurrentExpansion);
+			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= lds->Entries[j].min_expansion;
+			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < lds->Entries[j].max_expansion;
 			bool expansion_all = lds->Entries[j].min_expansion == 0.0f;
-			if (!min_expansion_enabled && !max_expansion_enabled && !expansion_all)
+			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
 
 			uint32 itemid = lds->Entries[j].item_id;
@@ -244,11 +244,11 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 		float roll = (float)zone->random.Real(0.0, roll_t);
 		for (uint32 j = 0; j < lds->NumEntries; ++j)
 		{
-			bool min_expansion_enabled = lds->Entries[j].min_expansion >= RuleR(World, CurrentExpansion);
-			bool max_expansion_enabled = lds->Entries[j].max_expansion < RuleR(World, CurrentExpansion);
+			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= lds->Entries[j].min_expansion;
+			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < lds->Entries[j].max_expansion;
 			bool expansion_all = lds->Entries[j].min_expansion == 0.0f;
 			
-			if (!min_expansion_enabled && !max_expansion_enabled && !expansion_all)
+			if (!expansion_all && (!min_expansion_enabled || !max_expansion_enabled))
 				continue;
 
 			uint32 itemid = lds->Entries[j].item_id;
@@ -298,8 +298,8 @@ void ZoneDatabase::AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* item
 		{
 			if (dropCount >= droplimit)
 				break;
-			bool min_expansion_enabled = lds->Entries[i].min_expansion >= RuleR(World, CurrentExpansion);
-			bool max_expansion_enabled = lds->Entries[i].max_expansion < RuleR(World, CurrentExpansion);
+			bool min_expansion_enabled = RuleR(World, CurrentExpansion) >= lds->Entries[i].min_expansion;
+			bool max_expansion_enabled = RuleR(World, CurrentExpansion) < lds->Entries[i].max_expansion;
 			bool expansion_all = lds->Entries[i].min_expansion == 0.0f;
 
 			uint32 itemid = lds->Entries[i].item_id;
