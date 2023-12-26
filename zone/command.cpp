@@ -4181,6 +4181,9 @@ void command_showquake(Client *c, const Seperator *sep)
 
 	if (zone)
 	{
+		ServerEarthquakeImminent_Struct quake_struct;
+		memset(&quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+		database.LoadQuakeData(quake_struct);
 		int64 nextQuakeTime = zone->last_quake_struct.next_start_timestamp;
 		int64 curTime = Timer::GetTimeSeconds();
 
@@ -4189,7 +4192,7 @@ void command_showquake(Client *c, const Seperator *sep)
 			std::string time_str = "The next earthquake will begin in ";
 			time_str += Strings::SecondsToTime(nextQuakeTime - curTime);
 			time_str += "";
-			c->Message(15, time_str.c_str());
+			c->Message(CC_Yellow, time_str.c_str());
 		}
 	}
 }
