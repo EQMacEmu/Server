@@ -6437,10 +6437,10 @@ std::string Client::GetLegacyItemLockoutFailureMessage(uint16 item_id)
 		const EQ::ItemData* item = database.GetItem(it->first);
 
 		if (!item)
-			return;
+			return return_string;
 
 		if (!item->Name[0])
-			return;
+			return return_string;
 
 		int64_t time_remaining = 0xFFFFFFFFFFFFFFFF;
 		if (it->second.expirydate != 0)
@@ -6457,8 +6457,8 @@ std::string Client::GetLegacyItemLockoutFailureMessage(uint16 item_id)
 		{
 			return_string = "This is a legacy item, and this legacy item has a personal loot lockout that expires in: ";
 		}
-		return return_string;
 	}
+	return return_string;
 }
 
 void Client::AddLootedLegacyItem(uint16 item_id, uint32 expiry_end_timestamp)
@@ -6534,10 +6534,10 @@ void Client::ShowLegacyItemsLooted(Client* to)
 	to->Message(CC_Yellow, "Legacy Item Flags On Character:");
 	for(auto looted_legacy_item : looted_legacy_items)
 	{
-		const EQ::ItemData* itemdata = database.GetItem(looted_legacy_item);
+		const EQ::ItemData* itemdata = database.GetItem(looted_legacy_item.first);
 		if (itemdata)
 		{
-			to->Message(CC_Yellow, "ID %d : Name %s", itemdata->ID, itemdata->Name);
+			to->Message(CC_Yellow, "ID %d : Name %s, Expiry: %s", itemdata->ID, itemdata->Name, Strings::SecondsToTime(looted_legacy_item.second.expirydate).c_str());
 		}
 	}
 	to->Message(CC_Yellow, "======");
