@@ -3474,6 +3474,7 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct
 		pcs->items[i].item_id = atoul(row[r++]); 		// item_id,
 		pcs->items[i].charges = atoi(row[r++]); 		// charges,
 		pcs->items[i].min_looter_level = 0;
+		pcs->items[1].item_loot_lockout_timer = 0;
 		r = 0;
 		i++;
 	}

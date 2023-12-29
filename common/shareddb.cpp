@@ -1728,7 +1728,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 
 	const std::string query = "SELECT lootdrop.id, lootdrop_entries.item_id, lootdrop_entries.item_charges, "
                             "lootdrop_entries.equip_item, lootdrop_entries.chance, lootdrop_entries.minlevel, "
-                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.min_expansion, lootdrop_entries.max_expansion, lootdrop_entries.min_looter_level FROM lootdrop JOIN lootdrop_entries "
+                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier, lootdrop_entries.min_expansion, lootdrop_entries.max_expansion, lootdrop_entries.min_looter_level, lootdrop_entries.item_loot_lockout_timer FROM lootdrop JOIN lootdrop_entries "
                             "ON lootdrop.id = lootdrop_entries.lootdrop_id ORDER BY lootdrop_id";
     auto results = QueryDatabase(query);
     if (!results.Success()) {
@@ -1762,6 +1762,7 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 		ld->Entries[current_entry].min_expansion = (std::stof(row[8]));
 		ld->Entries[current_entry].max_expansion = (std::stof(row[9]));
 		ld->Entries[current_entry].min_looter_level = (atoi(row[10]));
+		ld->Entries[current_entry].item_loot_lockout_timer = static_cast<uint32>(atoul(row[11]));
 		
         ++(ld->NumEntries);
         ++current_entry;

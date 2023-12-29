@@ -50,6 +50,7 @@ struct LootDropEntries_Struct {
 	uint8	min_looter_level;
 	float	min_expansion;
 	float	max_expansion;
+	uint32	item_loot_lockout_timer;
 };
 
 struct LootDrop_Struct {

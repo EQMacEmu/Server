@@ -809,6 +809,7 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot) {
 	item->charges = charges;
 	item->equip_slot = slot;
 	item->min_looter_level = 0;
+	item->item_loot_lockout_timer = 0;
 	itemlist.push_back(item);
 
 	UpdateEquipmentLight();
@@ -1651,15 +1652,24 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 
 			if (client->CheckLegacyItemLooted(item_data->item_id))
 			{
-				client->Message(CC_Red, "This is a legacy item. You've already looted a legacy item of this type already on this character.");
+				std::string time_message = client->GetLegacyItemLockoutFailureMessage(item_data->item_id);
+
+				client->Message(CC_Red, time_message.c_str());
 				SendEndLootErrorPacket(client);
 				ResetLooter();
 				if (contains_legacy_item) { RemoveLegacyItemLooter(client->GetCleanName()); }
 				delete inst;
 				return;
 			}
-			client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged, even if you destroy or trade it.");
-			client->AddLootedLegacyItem(item_data->item_id);
+
+			int64_t expiration_timestamp = (int64_t)((int64_t)(Timer::GetTimeSeconds()) + (int64_t)item_data->item_loot_lockout_timer);
+
+			if(item_data->item_loot_lockout_timer == 0)
+				client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged, even if you destroy or trade it.");
+			else
+				client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged until its timer expires in %s ", Strings::SecondsToTime(expiration_timestamp).c_str());
+			
+			client->AddLootedLegacyItem(item_data->item_id, expiration_timestamp);
 		}
 
 		char buf[88];

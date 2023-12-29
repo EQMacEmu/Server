@@ -2594,6 +2594,7 @@ struct ServerLootItem_Struct {
 	uint8	pet;
 	bool	forced;
 	uint8	min_looter_level;
+	uint32	item_loot_lockout_timer;
 };
 
 struct Checksum_Struct {
@@ -2795,6 +2796,28 @@ struct LootLockout
 			return false;
 
 		if (curTime >= expirydate || expirydate == 0)
+			return false;
+		return true;
+	}
+};
+
+struct LootItemLockout
+{
+	uint32 item_id;
+	int64 expirydate;
+
+	LootItemLockout()
+	{
+		item_id = 0;
+		expirydate = 0;
+	}
+
+	bool HasLockout(time_t curTime)
+	{
+		if (expirydate == 0)
+			return true;
+
+		if (curTime >= expirydate)
 			return false;
 		return true;
 	}

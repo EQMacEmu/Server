@@ -765,7 +765,7 @@ public:
 
 
 	std::map<uint32, LootLockout> loot_lockouts;
-
+	std::map<uint16, LootItemLockout>	looted_legacy_items;
 	bool IsLootLockedOutOfNPC(uint32 npctype_id);
 
 
@@ -1033,11 +1033,12 @@ public:
 	bool ShowHelm() { return m_pp.showhelm; }
 	void SetShowHelm(bool value) { m_pp.showhelm = value; }
 	bool SpillBeer();
-	void AddLootedLegacyItem(uint16 item_id);
+	void AddLootedLegacyItem(uint16 item_id, uint32 legacy_item_expiry);
 	bool RemoveLootedLegacyItem(uint16 item_id);
 	void RevokeSelf();
 	void ShowLegacyItemsLooted(Client* to);
 	bool CheckLegacyItemLooted(uint16 item_id);
+	std::string GetLegacyItemLockoutFailureMessage(uint16 item_id);
 	void LoadLootedLegacyItems();
 	void ResetSkill(EQ::skills::SkillType skillid, bool reset_timer = false);
 	void ResetAllSkills();
@@ -1161,7 +1162,6 @@ private:
 	uint16				duel_target;
 	bool				duelaccepted;
 	std::list<uint32>	keyring;
-	std::set<uint16>	looted_legacy_items;
 
 	bool				tellsoff;	// GM /toggle
 	bool				gmhideme;

@@ -4216,10 +4216,44 @@ void command_showlootlockouts(Client *c, const Seperator *sep)
 		}
 		else
 		{
-			if (lockout.second.expirydate <= 1)
+			if (time_remaining <= 1)
 			{
 				c->Message(CC_LightGreen, "== %s: Available", lockout.second.npc_name);
 			}
+		}
+	}
+
+
+	c->Message(CC_LightGreen, "=== Current Legacy Item Lockouts ===");
+
+	for (auto legacyitem : c->looted_legacy_items)
+	{
+		const EQ::ItemData* item = database.GetItem(legacyitem.first);
+
+		if (!item)
+			continue;
+
+		if (!item->Name[0])
+			continue;
+
+		int64_t time_remaining = 0xFFFFFFFFFFFFFFFF;
+		if (legacyitem.second.expirydate != 0)
+		{
+			time_remaining = legacyitem.second.expirydate - curTime;
+		}
+
+		//Magic number
+		if (time_remaining == 0xFFFFFFFFFFFFFFFF) // Never unlocks
+		{
+			c->Message(CC_Red, "== %s: Never Expires", item->Name);
+		}
+		else if (time_remaining >= 1) // Lockout present
+		{
+			c->Message(CC_Red, "== %s: Expires in %s", item->Name, Strings::SecondsToTime((int)time_remaining).c_str());
+		}
+		else //Available
+		{
+			c->Message(CC_LightGreen, "== %s: Available", item->Name);
 		}
 	}
 }

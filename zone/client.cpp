@@ -6398,7 +6398,7 @@ uint8 Client::GetRaceArmorSize()
 
 void Client::LoadLootedLegacyItems()
 {
-	std::string query = StringFormat("SELECT item_id FROM character_legacy_items "
+	std::string query = StringFormat("SELECT item_id, expire_time FROM character_legacy_items "
 		"WHERE character_id = '%i' ORDER BY item_id", character_id);
 	auto results = database.QueryDatabase(query);
 	if (!results.Success()) {
@@ -6406,7 +6406,12 @@ void Client::LoadLootedLegacyItems()
 	}
 
 	for (auto row = results.begin(); row != results.end(); ++row)
-		looted_legacy_items.insert(atoi(row[0]));
+	{
+		LootItemLockout lockout = LootItemLockout();
+		lockout.item_id = atoi(row[0]);
+		lockout.expirydate = atoll(row[1]);
+		looted_legacy_items.emplace(atoi(row[0]), lockout);
+	}
 
 }
 
@@ -6415,23 +6420,68 @@ bool Client::CheckLegacyItemLooted(uint16 item_id)
 	auto it = looted_legacy_items.find(item_id);
 	if (it != looted_legacy_items.end())
 	{
-		return true;
+		if(it->second.HasLockout(Timer::GetTimeSeconds()))
+			return true;
 	}
 	return false;
 }
 
-void Client::AddLootedLegacyItem(uint16 item_id)
+std::string Client::GetLegacyItemLockoutFailureMessage(uint16 item_id)
+{
+	std::string return_string = "Invalid loot lockout timer. Contact a GM.";
+
+
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+	{
+		const EQ::ItemData* item = database.GetItem(it->first);
+
+		if (!item)
+			return;
+
+		if (!item->Name[0])
+			return;
+
+		int64_t time_remaining = 0xFFFFFFFFFFFFFFFF;
+		if (it->second.expirydate != 0)
+		{
+			time_remaining = it->second.expirydate - Timer::GetTimeSeconds();
+		}
+
+		//Magic number
+		if (time_remaining == 0xFFFFFFFFFFFFFFFF) // Never unlocks
+		{
+			return_string = "This is a legacy item. You have already looted a legacy item of this type already on this character.";
+		}
+		else if (time_remaining >= 1) // Lockout present
+		{
+			return_string = "This is a legacy item, and this legacy item has a personal loot lockout that expires in: ";
+		}
+		return return_string;
+	}
+}
+
+void Client::AddLootedLegacyItem(uint16 item_id, uint32 expiry_end_timestamp)
 {
 	if (CheckLegacyItemLooted(item_id))
 		return;
 
-	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id) VALUES (%i, %i)", character_id, item_id);
+	auto it = looted_legacy_items.find(item_id);
+	if (it != looted_legacy_items.end())
+		looted_legacy_items.erase(it);
+
+	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id) VALUES (%i, %i, %u)", character_id, item_id, expiry_end_timestamp);
 
 	auto results = database.QueryDatabase(query);
 	if (!results.Success()) {
 		return;
 	}
-	looted_legacy_items.insert(item_id);
+
+	LootItemLockout lockout = LootItemLockout();
+	lockout.item_id = item_id;
+	lockout.expirydate = expiry_end_timestamp;
+
+	looted_legacy_items.emplace(item_id, lockout);
 	
 }
 
