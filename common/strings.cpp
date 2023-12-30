@@ -628,7 +628,6 @@ void replace_all(std::string& in, std::string old, std::string repl)
 		in.replace(pos, old.size(), repl);
 	}
 }
-
 std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 {
 	if (duration <= 0) {
@@ -637,7 +636,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 
 	if (is_milliseconds && duration < 1000) {
 		return fmt::format(
-			" {} Millisecond{} ",
+			"{} Millisecond{}",
 			duration,
 			duration != 1 ? "s" : ""
 		);
@@ -647,15 +646,15 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 		is_milliseconds ?
 		static_cast<int>(std::ceil(static_cast<float>(duration) / 1000.0f)) :
 		duration
-	);
+		);
 
-	int days = int(timer_length / 86400000);
-	timer_length %= 86400000;
+	int days = int(timer_length / 86400);
+	timer_length %= 86400;
 	int hours = int(timer_length / 3600);
 	timer_length %= 3600;
 	int minutes = int(timer_length / 60);
 	timer_length %= 60;
-	int seconds = timer_length;
+	int         seconds = timer_length;
 	std::string time_string = "Unknown";
 	std::string day_string = (days == 1 ? "Day" : "Days");
 	std::string hour_string = (hours == 1 ? "Hour" : "Hours");
@@ -663,7 +662,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	std::string second_string = (seconds == 1 ? "Second" : "Seconds");
 	if (days && hours && minutes && seconds) { // DHMS
 		time_string = fmt::format(
-			" {} {}, {} {}, {} {}, and {} {} ",
+			"{} {}, {} {}, {} {}, and {} {}",
 			days,
 			day_string,
 			hours,
@@ -676,7 +675,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && hours && minutes && !seconds) { // DHM
 		time_string = fmt::format(
-			" {} {}, {} {}, and {} {} ",
+			"{} {}, {} {}, and {} {}",
 			days,
 			day_string,
 			hours,
@@ -687,7 +686,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && hours && !minutes && seconds) { // DHS
 		time_string = fmt::format(
-			" {} {}, {} {}, and {} {} ",
+			"{} {}, {} {}, and {} {}",
 			days,
 			day_string,
 			hours,
@@ -698,7 +697,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && hours && !minutes && !seconds) { // DH
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			days,
 			day_string,
 			hours,
@@ -707,7 +706,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && !hours && minutes && seconds) { // DMS
 		time_string = fmt::format(
-			" {} {}, {} {}, and {} {} ",
+			"{} {}, {} {}, and {} {}",
 			days,
 			day_string,
 			minutes,
@@ -718,7 +717,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && !hours && minutes && !seconds) { // DM
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			days,
 			day_string,
 			minutes,
@@ -727,7 +726,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && !hours && !minutes && seconds) { // DS
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			days,
 			day_string,
 			seconds,
@@ -736,14 +735,14 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (days && !hours && !minutes && !seconds) { // D
 		time_string = fmt::format(
-			" {} {} ",
+			"{} {}",
 			days,
 			day_string
 		);
 	}
 	else if (!days && hours && minutes && seconds) { // HMS
 		time_string = fmt::format(
-			" {} {}, {} {}, and {} {} ",
+			"{} {}, {} {}, and {} {}",
 			hours,
 			hour_string,
 			minutes,
@@ -754,7 +753,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (!days && hours && minutes && !seconds) { // HM
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			hours,
 			hour_string,
 			minutes,
@@ -763,7 +762,7 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (!days && hours && !minutes && seconds) { // HS
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			hours,
 			hour_string,
 			seconds,
@@ -772,14 +771,14 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (!days && hours && !minutes && !seconds) { // H
 		time_string = fmt::format(
-			" {} {} ",
+			"{} {}",
 			hours,
 			hour_string
 		);
 	}
 	else if (!days && !hours && minutes && seconds) { // MS
 		time_string = fmt::format(
-			" {} {} and {} {} ",
+			"{} {} and {} {}",
 			minutes,
 			minute_string,
 			seconds,
@@ -788,20 +787,21 @@ std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
 	}
 	else if (!days && !hours && minutes && !seconds) { // M
 		time_string = fmt::format(
-			" {} {} ",
+			"{} {}",
 			minutes,
 			minute_string
 		);
 	}
 	else if (!days && !hours && !minutes && seconds) { // S
 		time_string = fmt::format(
-			" {} {} ",
+			"{} {}",
 			seconds,
 			second_string
 		);
 	}
 	return time_string;
 }
+
 
 std::string Strings::MillisecondsToTime(int duration)
 {

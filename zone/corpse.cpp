@@ -1664,11 +1664,16 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 
 			int64_t expiration_timestamp = (int64_t)((int64_t)(Timer::GetTimeSeconds()) + (int64_t)item_data->item_loot_lockout_timer);
 
-			if(item_data->item_loot_lockout_timer == 0)
+
+			if (item_data->item_loot_lockout_timer == 0)
+			{
+				expiration_timestamp = 0;
 				client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged, even if you destroy or trade it.");
+			}
 			else
-				client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged until its timer expires in %s ", Strings::SecondsToTime(expiration_timestamp).c_str());
-			
+			{
+				client->Message(ChatChannel_Group, "You have looted a legacy item. You can no longer loot this legacy item from any NPC that is legacy item flagged until its timer expires in %s ", Strings::SecondsToTime(item_data->item_loot_lockout_timer).c_str());
+			}
 			client->AddLootedLegacyItem(item_data->item_id, expiration_timestamp);
 		}
 

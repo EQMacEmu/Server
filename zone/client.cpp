@@ -6456,6 +6456,7 @@ std::string Client::GetLegacyItemLockoutFailureMessage(uint16 item_id)
 		else if (time_remaining >= 1) // Lockout present
 		{
 			return_string = "This is a legacy item, and this legacy item has a personal loot lockout that expires in: ";
+			return_string += Strings::SecondsToTime(time_remaining).c_str();
 		}
 	}
 	return return_string;
@@ -6470,7 +6471,7 @@ void Client::AddLootedLegacyItem(uint16 item_id, uint32 expiry_end_timestamp)
 	if (it != looted_legacy_items.end())
 		looted_legacy_items.erase(it);
 
-	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id) VALUES (%i, %i, %u)", character_id, item_id, expiry_end_timestamp);
+	std::string query = StringFormat("REPLACE INTO character_legacy_items (character_id, item_id, expire_time) VALUES (%i, %i, %u)", character_id, item_id, expiry_end_timestamp);
 
 	auto results = database.QueryDatabase(query);
 	if (!results.Success()) {
