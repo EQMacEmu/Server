@@ -4558,11 +4558,6 @@ void command_corpse(Client *c, const Seperator *sep)
 				c->Message(CC_Red, "Corpse %i has been found! Please summon or delete it before attempting to restore from a backup.", atoi(sep->arg[2]));
 				return;
 			}
-			else if(!database.IsCorpseBackupOwner(corpseid, t->CharacterID()))
-			{
-				c->Message(CC_Red, "Targetted player is not the owner of the specified corpse!");
-				return;
-			}
 			else
 			{
 				if(database.CopyBackupCorpse(corpseid))
