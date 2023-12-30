@@ -81,6 +81,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 9, 3270.83, 855.46, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 10, 3288.45, 837.78, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 11, 3595, 530, -11.9, 0, 0, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 12, 3610, 530, -11.9, 64, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 1, 3081.16, 830, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 2, 3107.83, 830, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 3, 3133.94, 830, -11.9, 0, 0, 0);
@@ -92,6 +93,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 9, 3275.41, 810.43, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 10, 3293.24, 792.59, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 11, 3595, 413, -11.9, 0, 0, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 68, 12, 3610, 413, -11.9, 64, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 1, 3160.89, 830, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 2, 3180.61, 830, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 3, 3208.48, 830, -11.9, 0, 0, 0);
@@ -103,6 +105,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 9, 3338.4, 749.67, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 10, 3357.93, 730.24, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 11, 3595, 452, -11.9, 0, 0, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 68, 12, 3610, 452, -11.9, 64, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 1, 3168.33, 880, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 2, 3197.77, 880, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 3, 3225.11, 880, -11.9, 0, 0, 0);
@@ -114,6 +117,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 9, 3345.42, 781.08, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 10, 3364.83, 761.65, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 11, 3595, 491, -11.9, 0, 0, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 68, 12, 3610, 491, -11.9, 64, 0, 0);
 
 -- butcher spawn2 Shuttle_I, Shuttle_II, Shuttle_III, Shuttle_IV
 REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`, `raid_target_spawnpoint`) VALUES (326532, 68244, 'butcher', 3595.000000, 491.000000, -12.000000, 224.000000, 570, 0, 0, 3, 1, 1, 0, 0, 0, 0, 0, 0);
@@ -145,14 +149,14 @@ INSERT INTO `grid` (`id`, `zoneid`, `type`, `type2`) VALUES (19, 96, 4, 1);
 -- timorous grid_entries
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 0, -6312, 3896, -4, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 1, -6312, 3896, -4, 0, 0, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 2, -6281, 3960, -4, 0, 30, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 3, -6277, 4044, -4, 0, 30, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 2, -6281, 3960, -4, 0, 25, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 3, -6277, 4044, -4, 0, 25, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 96, 5, -7665, 3620, -4, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 0, -6141, 3542, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 1, -6141, 3542, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 2, -5984, 3663, -4, -1, 0, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 3, -5959, 3964, -4, -1, 30, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 4, -5963, 4053, -4, -1, 30, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 3, -5959, 3964, -4, -1, 25, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 4, -5963, 4053, -4, -1, 25, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 5, -5929, 4099, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 6, -5838, 3918, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (18, 96, 7, -5984, 3663, -4, -1, 0, 0);
@@ -161,7 +165,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 0, -6141, 3542, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 1, -6141, 3542, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 2, -5984, 3663, -4, -1, 0, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 3, -5963, 4053, -4, -1, 30, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 3, -5963, 4053, -4, -1, 25, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 4, -5929, 4099, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 5, -5838, 3918, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 6, -5984, 3663, -4, -1, 0, 0);
@@ -169,7 +173,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (17, 96, 8, -7580, 3580, -4, -1, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 96, 0, -6295, 3957, -4, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 96, 1, -6295, 3957, -4, 0, 0, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 96, 2, -6277, 4044, -4, 0, 30, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 96, 2, -6277, 4044, -4, 0, 25, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (16, 96, 3, -7580, 3620, -4, 0, 0, 0);
 
 -- timorous spawn_conditions
@@ -192,6 +196,3 @@ INSERT INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `r
 INSERT INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`, `raid_target_spawnpoint`) VALUES (11448431, 448052, 'timorous', -7580.000000, 3580.000000, -3.900000, 71.000000, 570, 0, 0, 6, 1, 1, 0, 0, 0, 0, 0, 0);
 INSERT INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`, `raid_target_spawnpoint`) VALUES (11448432, 448053, 'timorous', -7665.000000, 3580.000000, -3.900000, 71.000000, 570, 0, 0, 7, 1, 1, 0, 0, 0, 0, 0, 0);
 INSERT INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`, `raid_target_spawnpoint`) VALUES (11448433, 448054, 'timorous', -7665.000000, 3620.000000, -3.900000, 71.000000, 570, 0, 0, 8, 1, 1, 0, 0, 0, 0, 0, 0);
-
--- timorous increase Maiden_Voyage wp 19 by 60s
-REPLACE INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (2, 96, 19, -6121, 4140, -21, 0, 190, 0);
