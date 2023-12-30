@@ -471,11 +471,15 @@ bool EntityList::AICheckClientAggro(NPC* aggressor)
 		return false;
 
 	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro2 = aggressor->GetSpecialAbility(PROX_AGGRO2);
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
 	if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && !aggressor->HasEngageNotice() && proxAggro)
 		proxAggro = false;
+
+	if (proxAggro2)
+		proxAggro = true;
 
 	if (aggressor->GetTarget() && engaged && !proxAggro)		// also check for a target as NPC may be ignoring all haters due to distance
 		return false;
@@ -511,8 +515,11 @@ bool EntityList::AICheckNPCAggro(NPC* aggressor)
 		return false;
 
 	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro2 = aggressor->GetSpecialAbility(PROX_AGGRO2);
 	if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && !aggressor->HasEngageNotice() && proxAggro)
 		proxAggro = false;
+	if(proxAggro2)
+		proxAggro = true;
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
@@ -553,6 +560,9 @@ bool EntityList::AICheckPetAggro(NPC* aggressor)
 		return false;
 
 	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro2 = aggressor->GetSpecialAbility(PROX_AGGRO2);
+	if (proxAggro2)
+		proxAggro = true;
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 

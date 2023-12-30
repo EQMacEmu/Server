@@ -1324,7 +1324,7 @@ Mob *HateList::GetTop()
 	bool firstInRangeBonusApplied = false;
 	uint32 current_time = Timer::GetCurrentTime();
 	bool ownerHasProxAggro = static_cast<bool>(owner->GetSpecialAbility(PROX_AGGRO));
-
+	bool ownerHasProxAggro2 = static_cast<bool>(owner->GetSpecialAbility(PROX_AGGRO2));
 	float ignoreDistance = 200.0f;
 	if (owner->IsNPC())
 		ignoreDistance = owner->CastToNPC()->GetIgnoreDistance();
@@ -1434,7 +1434,7 @@ Mob *HateList::GetTop()
 			firstInRangeBonusApplied = true;
 		}
 
-		if (RuleB(Quarm, EnableNPCProximityAggroSystem) && ownerHasProxAggro || owner && owner->IsNPC() && owner->CastToNPC()->HasEngageNotice() && ownerHasProxAggro)		// prox aggro mobs give this small bonus to nearst target.  non-prox aggro give it to first on hate list in melee range
+		if (RuleB(Quarm, EnableNPCProximityAggroSystem) && ownerHasProxAggro || owner && owner->IsNPC() && owner->CastToNPC()->HasEngageNotice() && ownerHasProxAggro || ownerHasProxAggro2)		// prox aggro mobs give this small bonus to nearst target.  non-prox aggro give it to first on hate list in melee range
 		{
 			if (closestMob == cur->ent)
 				firstInRangeBonusApplied = false;
@@ -1973,8 +1973,12 @@ Mob* HateList::GetFirstMobInRange()
 	if (!closestMob || !closestMob->CombatRange(owner))
 		return nullptr;
 	bool proxAggro = owner->GetSpecialAbility(PROX_AGGRO);
-		if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && owner->IsNPC() && !owner->CastToNPC()->HasEngageNotice() && proxAggro)
+	bool proxAggro2 = owner->GetSpecialAbility(PROX_AGGRO2);
+	if (!RuleB(Quarm, EnableNPCProximityAggroSystem) && owner->IsNPC() && !owner->CastToNPC()->HasEngageNotice() && proxAggro)
 			proxAggro = false;
+	if (proxAggro2)
+			proxAggro = true;
+
 	if (proxAggro)
 		return closestMob;
 
