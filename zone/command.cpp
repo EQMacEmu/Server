@@ -4501,17 +4501,27 @@ void command_corpse(Client *c, const Seperator *sep)
 	}
 	else if (strcasecmp(sep->arg[1], "backups") == 0)
 	{
+
 		if (target == 0 || !target->IsClient())
 			c->Message(CC_Default, "Error: Target must be a player to list their backups.");
 		else
 		{
+			uint32 charid = 0;
+			if (sep->arg[2][0])
+			{
+				charid = target->CastToClient()->CharacterID();
+			}
+			else
+				charid = database.GetCharacterID(sep->arg[2]);
+
+
 			c->Message(CC_Red, "CorpseID : Zone , Guild, x , y , z , Items");
-			std::string query = StringFormat("SELECT id, zone_id, x, y, z, zone_guild_id FROM character_corpses_backup WHERE charid = %d", target->CastToClient()->CharacterID());
+			std::string query = StringFormat("SELECT id, zone_id, x, y, z, zone_guild_id FROM character_corpses_backup WHERE charid = %d", charid);
 			auto results = database.QueryDatabase(query);
 
 			if (!results.Success() || results.RowCount() == 0)
 			{
-				c->Message(CC_Red, "No corpse backups exist for %s with ID: %i.", target->GetName(), target->CastToClient()->CharacterID());
+				c->Message(CC_Red, "No corpse backups exist for %s with ID: %i.", sep->arg[3], charid);
 				return;
 			}
 
@@ -4542,11 +4552,19 @@ void command_corpse(Client *c, const Seperator *sep)
 
 			if (!sep->IsNumber(2))
 			{
-				c->Message(CC_Default, "Usage: #corpse restore [corpse_id].");
+				c->Message(CC_Default, "Usage: #corpse restore [corpse_id] [charid].");
 				return;
 			}
 			else
 				corpseid = atoi(sep->arg[2]);
+
+			uint32 charid = 0;
+			if (sep->arg[3][0])
+			{
+				charid = t->CharacterID();
+			}
+			else
+				charid = database.GetCharacterID(sep->arg[3]);
 
 			if(!database.IsValidCorpseBackup(corpseid))
 			{
@@ -4562,7 +4580,7 @@ void command_corpse(Client *c, const Seperator *sep)
 			{
 				if(database.CopyBackupCorpse(corpseid))
 				{
-					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, t->CharacterID(), t->GetZoneID(), zone->GetGuildID(), t->GetPosition());
+					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, charid, t->GetZoneID(), zone->GetGuildID(), t->GetPosition());
 
 					if (!PlayerCorpse)
 						c->Message(CC_Default, "Summoning of backup corpse failed. Please escalate this issue.");
