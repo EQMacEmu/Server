@@ -1242,7 +1242,7 @@ void QuestManager::itemlink(int item_id) {
 
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms, const char* data)
 {
-	if (npc_id < 1000 || npc_id / 1000 == zone->GetZoneID())
+	if (npc_id < 1000 || npc_id / 1000 == zone->GetZoneID() || npc_id / 1000 == database.GetClientZoneID(zone->GetZoneID()))
 		STimerList.push_back(SignalTimer(wait_ms < 0 ? 0 : wait_ms, npc_id, signal_id, data));
 	else
 		CrossZoneSignalNPCByNPCTypeID(npc_id, signal_id, data);
@@ -1250,7 +1250,7 @@ void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms, const char
 
 void QuestManager::signal(int npc_id, int wait_ms)
 {
-	if (npc_id < 1000 || npc_id / 1000 == zone->GetZoneID())
+	if (npc_id < 1000 || npc_id / 1000 == zone->GetZoneID() || npc_id / 1000 == database.GetClientZoneID(zone->GetZoneID()))
 		signalwith(npc_id, 0, wait_ms);
 	else
 		CrossZoneSignalNPCByNPCTypeID(npc_id, 0);
