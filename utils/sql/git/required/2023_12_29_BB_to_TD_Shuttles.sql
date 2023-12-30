@@ -69,7 +69,7 @@ INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `headin
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (20, 68, 9, 3250.58, 876.08, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (20, 68, 10, 3225.11, 876.85, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (20, 68, 11, 3197.77, 876.85, -11.9, 0, 0, 0);
-INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (20, 68, 12, 3168.33, 876.85, -11.9, 0, 0, 0);
+INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (20, 68, 12, 3168.33, 875, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 1, 3082.21, 880, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 2, 3106.5, 880, -11.9, 0, 0, 0);
 INSERT INTO `grid_entries` (`gridid`, `zoneid`, `number`, `x`, `y`, `z`, `heading`, `pause`, `centerpoint`) VALUES (19, 68, 3, 3132.88, 880, -11.9, 0, 0, 0);
