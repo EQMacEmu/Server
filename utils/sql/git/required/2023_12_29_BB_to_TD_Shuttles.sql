@@ -126,7 +126,7 @@ REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `
 REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (326525, 448054, 'butcher', 3595.000000, 530.000000, -12.000000, 224.000000, 570, 0, 0, 6, 1, 1, 0, 0, 0, 0, 0);
 
 -- butcher spawn2 disable Captains_Skiff
-REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (367975, 222156, 'butcher', 3202.000000, 855.000000, -13.000000, 131.000000, 570, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (367975, 222156, 'butcher', 3202.000000, 855.000000, -13.000000, 131.000000, 570, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
 -- butcher spawn_conditions
 INSERT INTO `spawn_conditions` (`zone`, `id`, `value`, `onchange`, `name`) VALUES ('butcher', 3, 0, 2, 'Shuttle_I');
@@ -189,7 +189,7 @@ INSERT INTO `spawngroup` (`id`, `name`, `spawn_limit`, `max_x`, `min_x`, `max_y`
 INSERT INTO `spawngroup` (`id`, `name`, `spawn_limit`, `max_x`, `min_x`, `max_y`, `min_y`, `delay`, `mindelay`, `despawn`, `despawn_timer`, `rand_spawns`, `rand_respawntime`, `rand_variance`, `rand_condition_`, `wp_spawns`) VALUES (448058, 'timorous_Shuttle_IV_244', 0, 0, 0, 0, 0, 0, 15000, 0, 100, 0, 1200, 0, 0, 0);
 
 -- timorous spawn2 disable Captains_Skiff
-REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (356079, 96364, 'timorous', -7262.000000, 3545.000000, -4.000000, 198.866898, 1200, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0);
+REPLACE INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (356079, 96364, 'timorous', -7262.000000, 3545.000000, -4.000000, 198.866898, 1200, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 
 -- timorous spawn2 Shuttle_I, Shuttle_II, Shuttle_III, Shuttle_IV
 INSERT INTO `spawn2` (`id`, `spawngroupID`, `zone`, `x`, `y`, `z`, `heading`, `respawntime`, `variance`, `pathgrid`, `_condition`, `cond_value`, `enabled`, `animation`, `boot_respawntime`, `clear_timer_onboot`, `boot_variance`, `force_z`) VALUES (11448430, 68244, 'timorous', -7580.000000, 3620.000000, -3.900000, 71.000000, 570, 0, 0, 5, 1, 1, 0, 0, 0, 0, 0);
