@@ -7,9 +7,9 @@ DELETE FROM `npc_types` WHERE `id`=68244; -- delete old shuttle
 
 -- spawnentry: Shuttle_I, Shuttle_II, Shuttle_III, Shuttle_IV
 UPDATE `spawnentry` SET `npcID`='846' WHERE  `spawngroupID`=68244 AND `npcID`=68244;
-INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`, `expansion`, `min_expansion`, `max_expansion`) VALUES (448054, 849, 100, 0, 0, 0, 0, 0);
-INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`, `expansion`, `min_expansion`, `max_expansion`) VALUES (448053, 848, 100, 0, 0, 0, 0, 0);
-INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`, `expansion`, `min_expansion`, `max_expansion`) VALUES (448052, 847, 100, 0, 0, 0, 0, 0);
+INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`) VALUES (448054, 849, 100, 0, 0, 0, 0, 0);
+INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`) VALUES (448053, 848, 100, 0, 0, 0, 0, 0);
+INSERT INTO `spawnentry` (`spawngroupID`, `npcID`, `chance`, `mintime`, `maxtime`) VALUES (448052, 847, 100, 0, 0, 0, 0, 0);
 
 -- butcher grid
 INSERT INTO `grid` (`id`, `zoneid`, `type`, `type2`) VALUES (16, 68, 4, 1);
