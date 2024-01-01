@@ -4507,7 +4507,7 @@ void command_corpse(Client *c, const Seperator *sep)
 		else
 		{
 			uint32 charid = 0;
-			if (sep->arg[2][0])
+			if (!sep->arg[2][0])
 			{
 				charid = target->CastToClient()->CharacterID();
 			}
@@ -4559,7 +4559,7 @@ void command_corpse(Client *c, const Seperator *sep)
 				corpseid = atoi(sep->arg[2]);
 
 			uint32 charid = 0;
-			if (sep->arg[3][0])
+			if (!sep->arg[3][0])
 			{
 				charid = t->CharacterID();
 			}
