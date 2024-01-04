@@ -129,7 +129,6 @@ void handle_npc_waypoint(QuestInterface *parse, lua_State* L, NPC* npc, Mob *ini
 	luabind::adl::object l_mob_o = luabind::adl::object(L, l_mob);
 	l_mob_o.push(L);
 	lua_setfield(L, -2, "other");
-
 	Seperator sep(data.c_str());
 
 	lua_pushinteger(L, std::stoi(sep.arg[0]));

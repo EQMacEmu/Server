@@ -1846,23 +1846,23 @@ void NPC::DoNPCEmote(uint8 event_, uint16 emoteid, Mob* target)
 	}
 
 	std::string processed = nes->text;
-	replace_all(processed, "$mname", GetCleanName());
-	replace_all(processed, "$mracep", GetRaceIDNamePlural(GetRace()));
-	replace_all(processed, "$mrace", GetRaceIDName(GetRace()));
-	replace_all(processed, "$mclass", GetClassIDName(GetClass()));
+	Strings::FindReplace(processed, "$mname", GetCleanName());
+	Strings::FindReplace(processed, "$mracep", GetRaceIDNamePlural(GetRace()));
+	Strings::FindReplace(processed, "$mrace", GetRaceIDName(GetRace()));
+	Strings::FindReplace(processed, "$mclass", GetClassIDName(GetClass()));
 	if (target)
 	{
-		replace_all(processed, "$name", target->GetCleanName());
-		replace_all(processed, "$racep", GetRaceIDNamePlural(target->GetRace()));
-		replace_all(processed, "$race", GetRaceIDName(target->GetRace()));
-		replace_all(processed, "$class", GetClassIDName(target->GetClass()));
+		Strings::FindReplace(processed, "$name", target->GetCleanName());
+		Strings::FindReplace(processed, "$racep", GetRaceIDNamePlural(target->GetRace()));
+		Strings::FindReplace(processed, "$race", GetRaceIDName(target->GetRace()));
+		Strings::FindReplace(processed, "$class", GetClassIDName(target->GetClass()));
 	}
 	else
 	{
-		replace_all(processed, "$name", "foe");
-		replace_all(processed, "$racep", "races");
-		replace_all(processed, "$race", "race");
-		replace_all(processed, "$class", "class");
+		Strings::FindReplace(processed, "$name", "foe");
+		Strings::FindReplace(processed, "$racep", "races");
+		Strings::FindReplace(processed, "$race", "race");
+		Strings::FindReplace(processed, "$class", "class");
 	}
 
 	if(emoteid == nes->emoteid)

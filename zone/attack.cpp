@@ -4311,13 +4311,6 @@ int Mob::GetOffense(EQ::skills::SkillType skill)
 	if (IsSummonedClientPet() && GetOwner())
 	{
 		offense = GetSkill(skill);
-
-		if (GetOwner()->GetClass() == MAGICIAN)
-			offense = offense * 125 / 100;
-		else if (GetOwner()->GetClass() == NECROMANCER)
-			offense = offense * 115 / 100;
-		else if (GetOwner()->GetClass() == BEASTLORD)
-			offense = offense * 110 / 100;
 	}
 
 	offense += (itembonuses.STR + spellbonuses.STR) * 2 / 3;
@@ -4772,9 +4765,9 @@ int Client::GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int sp
 
 	if (!ignoreCap && acSum > softcap)
 	{
-		if (level < 50)
+		if (level <= 50)
 		{
-			return softcap;		// it's hard < level 50
+			return softcap;		// it's hard <= level 50
 		}
 
 		int32 overcap = acSum - softcap;

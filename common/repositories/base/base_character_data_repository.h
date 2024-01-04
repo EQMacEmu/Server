@@ -57,7 +57,6 @@ public:
 		uint32_t    points;
 		uint32_t    cur_hp;
 		uint32_t    mana;
-		uint32_t    endurance;
 		uint32_t    intoxication;
 		uint32_t    str;
 		uint32_t    sta;
@@ -79,9 +78,9 @@ public:
 		uint32_t    e_expended_aa_spent;
 		uint32_t    boatid;
 		std::string boatname;
-		int32_t     famished;
 		int8_t      is_deleted;
 		int8_t      showhelm;
+		int8_t      fatigue;
 		uint8_t     magelo_perms;
 		int32_t     zone_instance;
 	};
@@ -131,7 +130,6 @@ public:
 			"points",
 			"cur_hp",
 			"mana",
-			"endurance",
 			"intoxication",
 			"str",
 			"sta",
@@ -153,9 +151,9 @@ public:
 			"e_expended_aa_spent",
 			"boatid",
 			"boatname",
-			"famished",
 			"is_deleted",
 			"showhelm",
+			"fatigue",
 			"magelo_perms",
 			"zone_instance",
 		};
@@ -201,7 +199,6 @@ public:
 			"points",
 			"cur_hp",
 			"mana",
-			"endurance",
 			"intoxication",
 			"str",
 			"sta",
@@ -223,9 +220,9 @@ public:
 			"e_expended_aa_spent",
 			"boatid",
 			"boatname",
-			"famished",
 			"is_deleted",
 			"showhelm",
+			"fatigue",
 			"magelo_perms",
 			"zone_instance",
 		};
@@ -305,7 +302,6 @@ public:
 		e.points              = 0;
 		e.cur_hp              = 0;
 		e.mana                = 0;
-		e.endurance           = 0;
 		e.intoxication        = 0;
 		e.str                 = 0;
 		e.sta                 = 0;
@@ -327,9 +323,9 @@ public:
 		e.e_expended_aa_spent = 0;
 		e.boatid              = 0;
 		e.boatname            = "";
-		e.famished            = 0;
 		e.is_deleted          = 0;
 		e.showhelm            = 0;
+		e.fatigue             = 0;
 		e.magelo_perms        = 0;
 		e.zone_instance       = 0;
 
@@ -405,33 +401,32 @@ public:
 			e.points              = static_cast<uint32_t>(strtoul(row[34], nullptr, 10));
 			e.cur_hp              = static_cast<uint32_t>(strtoul(row[35], nullptr, 10));
 			e.mana                = static_cast<uint32_t>(strtoul(row[36], nullptr, 10));
-			e.endurance           = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
-			e.intoxication        = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
-			e.str                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
-			e.sta                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
-			e.cha                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
-			e.dex                 = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
-			e.int_                = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
-			e.agi                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
-			e.wis                 = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
-			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
-			e.hunger_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
-			e.thirst_level        = static_cast<uint32_t>(strtoul(row[48], nullptr, 10));
-			e.pvp_status          = static_cast<uint8_t>(strtoul(row[49], nullptr, 10));
-			e.air_remaining       = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
-			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[51], nullptr, 10));
-			e.mailkey             = row[52] ? row[52] : "";
-			e.firstlogon          = static_cast<int8_t>(atoi(row[53]));
-			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
-			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
-			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
-			e.boatid              = static_cast<uint32_t>(strtoul(row[57], nullptr, 10));
-			e.boatname            = row[58] ? row[58] : "";
-			e.famished            = static_cast<int32_t>(atoi(row[59]));
-			e.is_deleted          = static_cast<int8_t>(atoi(row[60]));
-			e.showhelm            = static_cast<int8_t>(atoi(row[61]));
-			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[62], nullptr, 10));
-			e.zone_instance       = static_cast<int32_t>(atoi(row[63]));
+			e.intoxication        = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
+			e.str                 = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
+			e.sta                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
+			e.cha                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
+			e.dex                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
+			e.int_                = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
+			e.agi                 = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
+			e.wis                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
+			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
+			e.hunger_level        = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
+			e.thirst_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
+			e.pvp_status          = static_cast<uint8_t>(strtoul(row[48], nullptr, 10));
+			e.air_remaining       = static_cast<uint32_t>(strtoul(row[49], nullptr, 10));
+			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
+			e.mailkey             = row[51] ? row[51] : "";
+			e.firstlogon          = static_cast<int8_t>(atoi(row[52]));
+			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[53], nullptr, 10));
+			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
+			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
+			e.boatid              = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
+			e.boatname            = row[57] ? row[57] : "";
+			e.is_deleted          = static_cast<int8_t>(atoi(row[58]));
+			e.showhelm            = static_cast<int8_t>(atoi(row[59]));
+			e.fatigue             = static_cast<int8_t>(atoi(row[60]));
+			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[61], nullptr, 10));
+			e.zone_instance       = static_cast<int32_t>(atoi(row[62]));
 
 			return e;
 		}
@@ -501,33 +496,32 @@ public:
 		v.push_back(columns[34] + " = " + std::to_string(e.points));
 		v.push_back(columns[35] + " = " + std::to_string(e.cur_hp));
 		v.push_back(columns[36] + " = " + std::to_string(e.mana));
-		v.push_back(columns[37] + " = " + std::to_string(e.endurance));
-		v.push_back(columns[38] + " = " + std::to_string(e.intoxication));
-		v.push_back(columns[39] + " = " + std::to_string(e.str));
-		v.push_back(columns[40] + " = " + std::to_string(e.sta));
-		v.push_back(columns[41] + " = " + std::to_string(e.cha));
-		v.push_back(columns[42] + " = " + std::to_string(e.dex));
-		v.push_back(columns[43] + " = " + std::to_string(e.int_));
-		v.push_back(columns[44] + " = " + std::to_string(e.agi));
-		v.push_back(columns[45] + " = " + std::to_string(e.wis));
-		v.push_back(columns[46] + " = " + std::to_string(e.zone_change_count));
-		v.push_back(columns[47] + " = " + std::to_string(e.hunger_level));
-		v.push_back(columns[48] + " = " + std::to_string(e.thirst_level));
-		v.push_back(columns[49] + " = " + std::to_string(e.pvp_status));
-		v.push_back(columns[50] + " = " + std::to_string(e.air_remaining));
-		v.push_back(columns[51] + " = " + std::to_string(e.autosplit_enabled));
-		v.push_back(columns[52] + " = '" + Strings::Escape(e.mailkey) + "'");
-		v.push_back(columns[53] + " = " + std::to_string(e.firstlogon));
-		v.push_back(columns[54] + " = " + std::to_string(e.e_aa_effects));
-		v.push_back(columns[55] + " = " + std::to_string(e.e_percent_to_aa));
-		v.push_back(columns[56] + " = " + std::to_string(e.e_expended_aa_spent));
-		v.push_back(columns[57] + " = " + std::to_string(e.boatid));
-		v.push_back(columns[58] + " = '" + Strings::Escape(e.boatname) + "'");
-		v.push_back(columns[59] + " = " + std::to_string(e.famished));
-		v.push_back(columns[60] + " = " + std::to_string(e.is_deleted));
-		v.push_back(columns[61] + " = " + std::to_string(e.showhelm));
-		v.push_back(columns[62] + " = " + std::to_string(e.magelo_perms));
-		v.push_back(columns[63] + " = " + std::to_string(e.zone_instance));
+		v.push_back(columns[37] + " = " + std::to_string(e.intoxication));
+		v.push_back(columns[38] + " = " + std::to_string(e.str));
+		v.push_back(columns[39] + " = " + std::to_string(e.sta));
+		v.push_back(columns[40] + " = " + std::to_string(e.cha));
+		v.push_back(columns[41] + " = " + std::to_string(e.dex));
+		v.push_back(columns[42] + " = " + std::to_string(e.int_));
+		v.push_back(columns[43] + " = " + std::to_string(e.agi));
+		v.push_back(columns[44] + " = " + std::to_string(e.wis));
+		v.push_back(columns[45] + " = " + std::to_string(e.zone_change_count));
+		v.push_back(columns[46] + " = " + std::to_string(e.hunger_level));
+		v.push_back(columns[47] + " = " + std::to_string(e.thirst_level));
+		v.push_back(columns[48] + " = " + std::to_string(e.pvp_status));
+		v.push_back(columns[49] + " = " + std::to_string(e.air_remaining));
+		v.push_back(columns[50] + " = " + std::to_string(e.autosplit_enabled));
+		v.push_back(columns[51] + " = '" + Strings::Escape(e.mailkey) + "'");
+		v.push_back(columns[52] + " = " + std::to_string(e.firstlogon));
+		v.push_back(columns[53] + " = " + std::to_string(e.e_aa_effects));
+		v.push_back(columns[54] + " = " + std::to_string(e.e_percent_to_aa));
+		v.push_back(columns[55] + " = " + std::to_string(e.e_expended_aa_spent));
+		v.push_back(columns[56] + " = " + std::to_string(e.boatid));
+		v.push_back(columns[57] + " = '" + Strings::Escape(e.boatname) + "'");
+		v.push_back(columns[58] + " = " + std::to_string(e.is_deleted));
+		v.push_back(columns[59] + " = " + std::to_string(e.showhelm));
+		v.push_back(columns[60] + " = " + std::to_string(e.fatigue));
+		v.push_back(columns[61] + " = " + std::to_string(e.magelo_perms));
+		v.push_back(columns[62] + " = " + std::to_string(e.zone_instance));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -586,7 +580,6 @@ public:
 		v.push_back(std::to_string(e.points));
 		v.push_back(std::to_string(e.cur_hp));
 		v.push_back(std::to_string(e.mana));
-		v.push_back(std::to_string(e.endurance));
 		v.push_back(std::to_string(e.intoxication));
 		v.push_back(std::to_string(e.str));
 		v.push_back(std::to_string(e.sta));
@@ -608,9 +601,9 @@ public:
 		v.push_back(std::to_string(e.e_expended_aa_spent));
 		v.push_back(std::to_string(e.boatid));
 		v.push_back("'" + Strings::Escape(e.boatname) + "'");
-		v.push_back(std::to_string(e.famished));
 		v.push_back(std::to_string(e.is_deleted));
 		v.push_back(std::to_string(e.showhelm));
+		v.push_back(std::to_string(e.fatigue));
 		v.push_back(std::to_string(e.magelo_perms));
 		v.push_back(std::to_string(e.zone_instance));
 
@@ -679,7 +672,6 @@ public:
 			v.push_back(std::to_string(e.points));
 			v.push_back(std::to_string(e.cur_hp));
 			v.push_back(std::to_string(e.mana));
-			v.push_back(std::to_string(e.endurance));
 			v.push_back(std::to_string(e.intoxication));
 			v.push_back(std::to_string(e.str));
 			v.push_back(std::to_string(e.sta));
@@ -701,9 +693,9 @@ public:
 			v.push_back(std::to_string(e.e_expended_aa_spent));
 			v.push_back(std::to_string(e.boatid));
 			v.push_back("'" + Strings::Escape(e.boatname) + "'");
-			v.push_back(std::to_string(e.famished));
 			v.push_back(std::to_string(e.is_deleted));
 			v.push_back(std::to_string(e.showhelm));
+			v.push_back(std::to_string(e.fatigue));
 			v.push_back(std::to_string(e.magelo_perms));
 			v.push_back(std::to_string(e.zone_instance));
 
@@ -776,33 +768,32 @@ public:
 			e.points              = static_cast<uint32_t>(strtoul(row[34], nullptr, 10));
 			e.cur_hp              = static_cast<uint32_t>(strtoul(row[35], nullptr, 10));
 			e.mana                = static_cast<uint32_t>(strtoul(row[36], nullptr, 10));
-			e.endurance           = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
-			e.intoxication        = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
-			e.str                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
-			e.sta                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
-			e.cha                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
-			e.dex                 = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
-			e.int_                = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
-			e.agi                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
-			e.wis                 = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
-			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
-			e.hunger_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
-			e.thirst_level        = static_cast<uint32_t>(strtoul(row[48], nullptr, 10));
-			e.pvp_status          = static_cast<uint8_t>(strtoul(row[49], nullptr, 10));
-			e.air_remaining       = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
-			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[51], nullptr, 10));
-			e.mailkey             = row[52] ? row[52] : "";
-			e.firstlogon          = static_cast<int8_t>(atoi(row[53]));
-			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
-			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
-			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
-			e.boatid              = static_cast<uint32_t>(strtoul(row[57], nullptr, 10));
-			e.boatname            = row[58] ? row[58] : "";
-			e.famished            = static_cast<int32_t>(atoi(row[59]));
-			e.is_deleted          = static_cast<int8_t>(atoi(row[60]));
-			e.showhelm            = static_cast<int8_t>(atoi(row[61]));
-			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[62], nullptr, 10));
-			e.zone_instance       = static_cast<int32_t>(atoi(row[63]));
+			e.intoxication        = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
+			e.str                 = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
+			e.sta                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
+			e.cha                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
+			e.dex                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
+			e.int_                = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
+			e.agi                 = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
+			e.wis                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
+			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
+			e.hunger_level        = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
+			e.thirst_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
+			e.pvp_status          = static_cast<uint8_t>(strtoul(row[48], nullptr, 10));
+			e.air_remaining       = static_cast<uint32_t>(strtoul(row[49], nullptr, 10));
+			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
+			e.mailkey             = row[51] ? row[51] : "";
+			e.firstlogon          = static_cast<int8_t>(atoi(row[52]));
+			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[53], nullptr, 10));
+			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
+			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
+			e.boatid              = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
+			e.boatname            = row[57] ? row[57] : "";
+			e.is_deleted          = static_cast<int8_t>(atoi(row[58]));
+			e.showhelm            = static_cast<int8_t>(atoi(row[59]));
+			e.fatigue             = static_cast<int8_t>(atoi(row[60]));
+			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[61], nullptr, 10));
+			e.zone_instance       = static_cast<int32_t>(atoi(row[62]));
 
 			all_entries.push_back(e);
 		}
@@ -864,33 +855,32 @@ public:
 			e.points              = static_cast<uint32_t>(strtoul(row[34], nullptr, 10));
 			e.cur_hp              = static_cast<uint32_t>(strtoul(row[35], nullptr, 10));
 			e.mana                = static_cast<uint32_t>(strtoul(row[36], nullptr, 10));
-			e.endurance           = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
-			e.intoxication        = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
-			e.str                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
-			e.sta                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
-			e.cha                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
-			e.dex                 = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
-			e.int_                = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
-			e.agi                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
-			e.wis                 = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
-			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
-			e.hunger_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
-			e.thirst_level        = static_cast<uint32_t>(strtoul(row[48], nullptr, 10));
-			e.pvp_status          = static_cast<uint8_t>(strtoul(row[49], nullptr, 10));
-			e.air_remaining       = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
-			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[51], nullptr, 10));
-			e.mailkey             = row[52] ? row[52] : "";
-			e.firstlogon          = static_cast<int8_t>(atoi(row[53]));
-			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
-			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
-			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
-			e.boatid              = static_cast<uint32_t>(strtoul(row[57], nullptr, 10));
-			e.boatname            = row[58] ? row[58] : "";
-			e.famished            = static_cast<int32_t>(atoi(row[59]));
-			e.is_deleted          = static_cast<int8_t>(atoi(row[60]));
-			e.showhelm            = static_cast<int8_t>(atoi(row[61]));
-			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[62], nullptr, 10));
-			e.zone_instance       = static_cast<int32_t>(atoi(row[63]));
+			e.intoxication        = static_cast<uint32_t>(strtoul(row[37], nullptr, 10));
+			e.str                 = static_cast<uint32_t>(strtoul(row[38], nullptr, 10));
+			e.sta                 = static_cast<uint32_t>(strtoul(row[39], nullptr, 10));
+			e.cha                 = static_cast<uint32_t>(strtoul(row[40], nullptr, 10));
+			e.dex                 = static_cast<uint32_t>(strtoul(row[41], nullptr, 10));
+			e.int_                = static_cast<uint32_t>(strtoul(row[42], nullptr, 10));
+			e.agi                 = static_cast<uint32_t>(strtoul(row[43], nullptr, 10));
+			e.wis                 = static_cast<uint32_t>(strtoul(row[44], nullptr, 10));
+			e.zone_change_count   = static_cast<uint32_t>(strtoul(row[45], nullptr, 10));
+			e.hunger_level        = static_cast<uint32_t>(strtoul(row[46], nullptr, 10));
+			e.thirst_level        = static_cast<uint32_t>(strtoul(row[47], nullptr, 10));
+			e.pvp_status          = static_cast<uint8_t>(strtoul(row[48], nullptr, 10));
+			e.air_remaining       = static_cast<uint32_t>(strtoul(row[49], nullptr, 10));
+			e.autosplit_enabled   = static_cast<uint32_t>(strtoul(row[50], nullptr, 10));
+			e.mailkey             = row[51] ? row[51] : "";
+			e.firstlogon          = static_cast<int8_t>(atoi(row[52]));
+			e.e_aa_effects        = static_cast<uint32_t>(strtoul(row[53], nullptr, 10));
+			e.e_percent_to_aa     = static_cast<uint32_t>(strtoul(row[54], nullptr, 10));
+			e.e_expended_aa_spent = static_cast<uint32_t>(strtoul(row[55], nullptr, 10));
+			e.boatid              = static_cast<uint32_t>(strtoul(row[56], nullptr, 10));
+			e.boatname            = row[57] ? row[57] : "";
+			e.is_deleted          = static_cast<int8_t>(atoi(row[58]));
+			e.showhelm            = static_cast<int8_t>(atoi(row[59]));
+			e.fatigue             = static_cast<int8_t>(atoi(row[60]));
+			e.magelo_perms        = static_cast<uint8_t>(strtoul(row[61], nullptr, 10));
+			e.zone_instance       = static_cast<int32_t>(atoi(row[62]));
 
 			all_entries.push_back(e);
 		}

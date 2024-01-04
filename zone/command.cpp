@@ -5111,7 +5111,8 @@ void command_loc(Client *c, const Seperator *sep)
 
 	auto target_position = target->GetPosition();
 
-	c->Message(CC_Default, fmt::format(" {} Location | XYZ: {:.2f}, {:.2f}, {:.2f} Heading: {:.2f} ", (c == target ? "Your" : fmt::format(" {} ({}) ", target->GetCleanName(), target->GetID())), target_position.x, target_position.y, target_position.z, target_position.w).c_str());
+	// client heading uses 0 - 511 if target is client.
+	c->Message(CC_Default, fmt::format(" {} Location | XYZ: {:.2f}, {:.2f}, {:.2f} Heading: {:.2f} ", (c == target ? "Your" : fmt::format(" {} ({}) ", target->GetCleanName(), target->GetID())), target_position.x, target_position.y, target_position.z, (c == target || target->IsClient()) ? target_position.w * 2 : target_position.w).c_str());
 		
 	float newz = 0;
 	if (!zone->zonemap)
@@ -5346,14 +5347,14 @@ void command_flag(Client *c, const Seperator *sep){
 	}
 }
 
-void command_time(Client *c, const Seperator *sep){
-	char timeMessage[255];
+void command_time(Client *c, const Seperator *sep)
+{
 	int minutes = 0;
 	if (sep->IsNumber(1)) {
 		if (sep->IsNumber(2)) {
 			minutes = atoi(sep->arg[2]);
 		}
-		c->Message(CC_Default, "Setting world time to %s:%i ...", sep->arg[1], minutes);
+		c->Message(CC_Default, fmt::format("Setting world time to {}:{} ...", sep->arg[1], minutes).c_str());
 		zone->SetTime(atoi(sep->arg[1]), minutes);
 		LogInfo("{} :: Setting world time to {}:{} ...", c->GetCleanName(), sep->arg[1], minutes);
 	}
@@ -5361,14 +5362,16 @@ void command_time(Client *c, const Seperator *sep){
 		c->Message(CC_Default, "To set the Time: #time HH [MM]");
 		TimeOfDay_Struct eqTime;
 		zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
-		sprintf(timeMessage, "%02d:%s%d %s",
+
+		auto time_string = fmt::format("{}:{}{} {}",
 			((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
 			(eqTime.minute < 10) ? "0" : "",
 			eqTime.minute,
-			(eqTime.hour >= 13) ? "pm" : "am"
+			(eqTime.hour >= 12 && eqTime.hour < 24) ? "PM" : "AM"
 			);
-		c->Message(CC_Default, "It is now %s.", timeMessage);
-		LogInfo("Current Time is: {} ", timeMessage);
+
+		c->Message(CC_Default, fmt::format("It is now {}.", time_string).c_str());
+		LogInfo("Current Time is: {} ", time_string);
 	}
 }
 

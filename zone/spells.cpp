@@ -3942,7 +3942,7 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 					partial_modifier += 5;
 				}
 
-				if(target_level >= 30 && caster_level < 50)
+				if(target_level >= 30 && caster_level <= 50)
 				{
 					partial_modifier += (caster_level - 25);
 				}
