@@ -1016,8 +1016,20 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 	// Wizard's Al'Kabor line of spells hits 5 targets.
 	static const int16 target_exemptions[] = { 382, 458, 459, 460, 731, 1650, 1651, 1652 };
 
+	bool limit_all_aoes = false;
+
 	if (caster->IsNPC())
 		MAX_TARGETS_ALLOWED = 999;
+
+	if (caster->IsClient())
+	{
+		if (caster->CastToClient()->Admin() == 0 && entity_list.GetClientCount() >= RuleI(Quarm, AOEThrottlingMaxClients))
+		{
+			MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEThrottlingMaxAOETargets);
+			limit_all_aoes = true;
+		}
+	}
+
 	else if (HasDirectDamageEffect(spell_id))
 	{
 		// Damage Spells were limited to 4 targets.
@@ -1166,6 +1178,10 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 					++targets_hit;
 				Log(Logs::Moderate, Logs::Spells, "Targeted AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
 			}
+			else if (targets_hit >= MAX_TARGETS_ALLOWED)
+			{
+				break;
+			}
 		}
 		else if (enable_bard_limit && IsBardAOEDamageSpell(spell_id))
 		{
@@ -1177,10 +1193,13 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 					++targets_hit;
 				Log(Logs::Moderate, Logs::Spells, "Bard Damaging AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, bard_aoe_cap, curmob->GetCleanName());
 			}
+			else if(targets_hit >= bard_aoe_cap)
+			{
+				break;
+			}
 		}
 		else 
 		{
-
 			if (curmob->IsClient() && curmob->CastToClient()->GetHideMe())
 			{
 				Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: Skipping GM %s with spell %i", curmob->GetCleanName(), spell_id);
@@ -1189,6 +1208,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			{
 				Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
+				if (limit_all_aoes)
+				{
+					++targets_hit;
+					if (targets_hit >= MAX_TARGETS_ALLOWED)
+						break;
+				}
 			}
 		}
 	}

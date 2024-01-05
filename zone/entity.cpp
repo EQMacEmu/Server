@@ -4402,18 +4402,9 @@ void EntityList::SignalAllClients(uint32 data)
 	}
 }
 
-uint16 EntityList::GetClientCount(){
-	uint16 ClientCount = 0;
-	std::list<Client*> client_list;
-	entity_list.GetClientList(client_list);
-	auto iter = client_list.begin();
-	while (iter != client_list.end()) {
-		Client *entry = (*iter);
-		entry->GetCleanName();
-		ClientCount++;
-		iter++;
-	}
-	return ClientCount;
+uint16 EntityList::GetClientCount()
+{
+	return client_list.size();
 }
 
 void EntityList::GetMobList(std::list<Mob *> &m_list)

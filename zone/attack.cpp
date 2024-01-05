@@ -5135,8 +5135,12 @@ int Client::GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int sp
 	// Combat Stability AA - this raises the softcap
 	softcap += combat_stability_percent * softcap / 100;
 
-	// shield AC is not capped
-	softcap += shield_ac;
+
+	if (RuleI(Quarm, EnableLuclinEraShieldACOvercap))
+	{
+		// shield AC is not capped
+		softcap += shield_ac;
+	}
 
 	if (!ignoreCap && acSum > softcap)
 	{
