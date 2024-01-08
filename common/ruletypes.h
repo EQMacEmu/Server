@@ -257,7 +257,7 @@ RULE_BOOL(Quarm, EnableGuildZoneRequirementOnEntry, false) // Classic behavior i
 RULE_BOOL(Quarm, EnforceClassicEraHardCaps, true) // Classic behavior is true, Late velious and later is false. Master switch for AC softcaps.
 RULE_INT(Quarm, AOEThrottlingMaxAOETargets, 50) // This will curb nonsense with performance issues relating to amount of targets if the amount of clients exceeds 300 in a single zone.
 RULE_INT(Quarm, AOEThrottlingMaxClients, 300) // This will curb nonsense with performance issues relating to amount of targets if the amount of clients exceeds 300 in a single zone.
-RULE_INT(QUarm, EnableLuclinEraShieldACOvercap, false)
+RULE_INT(Quarm, EnableLuclinEraShieldACOvercap, false)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
