@@ -942,6 +942,7 @@ Zone::~Zone() {
 	entity_list.Clear();
 	ClearBlockedSpells();
 
+	safe_delete(zone_banish_point);
 	safe_delete(qGlobals);
 	safe_delete_array(map_name);
 	safe_delete(Nexus_Scion_Timer);
@@ -1039,6 +1040,7 @@ bool Zone::Init(bool iStaticZone) {
 	//load up the zone's doors (prints inside)
 	zone->LoadZoneDoors(zone->GetShortName());
 	zone->LoadBlockedSpells(zone->GetZoneID());
+	zone->LoadZoneBanishPoint(zone->GetShortName());
 
 	//clear trader items if we are loading the bazaar
 	if(strncasecmp(short_name,"bazaar",6)==0) {
@@ -2037,6 +2039,11 @@ void Zone::SetGraveyard(uint32 zoneid, const glm::vec4& graveyardPosition) {
 	m_Graveyard = graveyardPosition;
 }
 
+void Zone::LoadZoneBanishPoint(const char* zone) {
+	zone_banish_point = new ZoneBanishPoint();
+	database.GetZoneBanishPoint(zone_banish_point, zone);
+}
+
 void Zone::LoadBlockedSpells(uint32 zoneid)
 {
 	if(!blocked_spells)
@@ -2738,7 +2745,7 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 			bool bCanEngage = CanClientEngage(current->CastToClient(), other);
 			if (!bCanEngage)
 			{
-				current->CastToClient()->GoToBind();
+				current->CastToClient()->BootFromGuildInstance();
 				return false;
 			}
 		}
@@ -2747,7 +2754,7 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 			bool bCanEngage = CanClientEngage(other->CastToClient(), current);
 			if (!bCanEngage)
 			{
-				other->CastToClient()->GoToBind();
+				other->CastToClient()->BootFromGuildInstance();
 				return false;
 			}
 		}

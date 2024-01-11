@@ -49,6 +49,16 @@ struct ZonePoint
 	uint16 target_zone_id;
 	uint32 client_version_mask;
 };
+
+struct ZoneBanishPoint
+{
+	float x;
+	float y;
+	float z;
+	float heading;
+	uint16 target_zone_id;
+};
+
 struct ZoneClientAuth_Struct {
 	uint32	ip;			// client's IP address
 	uint32	wid;		// client's WorldID#
@@ -144,6 +154,8 @@ public:
 
 	bool RemoveSpawnEntry(uint32 spawnid);
 	bool RemoveSpawnGroup(uint32 in_id);
+
+	ZoneBanishPoint* GetZoneBanishPoint() { return zone_banish_point; }
 
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
@@ -252,6 +264,7 @@ public:
 	bool	HasGraveyard();
 	void	SetGraveyard(uint32 zoneid, const glm::vec4& graveyardPosition);
 
+	void		LoadZoneBanishPoint(const char* zone);
 	void		LoadBlockedSpells(uint32 zoneid);
 	void		ClearBlockedSpells();
 	bool		IsSpellBlocked(uint32 spell_id, const glm::vec3& location);
@@ -342,6 +355,8 @@ private:
 
 	int	totalBS;
 	ZoneSpellsBlocked *blocked_spells;
+
+	ZoneBanishPoint* zone_banish_point;
 
 	int		totalAAs;
 	SendAA_Struct **aas;	//array of AA structs

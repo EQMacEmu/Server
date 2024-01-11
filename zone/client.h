@@ -520,6 +520,7 @@ public:
 	bool	IsInLevelRange(uint8 maxlevel);
 
 	void GoToBind(uint8 bindnum = 0);
+	void BootFromGuildInstance();
 	void GoToSafeCoords(uint16 zone_id, uint32 zone_guild_id);
 	void Gate();
 	void SetBindPoint(int to_zone = -1, const glm::vec3& location = glm::vec3());
