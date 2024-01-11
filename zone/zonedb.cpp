@@ -4094,7 +4094,7 @@ bool ZoneDatabase::GetZoneBanishPoint(ZoneBanishPoint* into_zbp, const char* des
 	into_zbp->target_zone_id = database.GetZoneID(row[0]);
 	into_zbp->x = atof(row[1]);
 	into_zbp->y = atof(row[2]);
-	into_zbp->z = atof(row[3]) + 10; // above book
+	into_zbp->z = atof(row[3]) - 10; // above book
 	into_zbp->heading = atof(row[4]);
 
 	return true;
