@@ -1916,6 +1916,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	QueuePacket(outapp);
 	safe_delete(outapp);
 
+	instance_boot_grace_timer.Start();
 	SetAttackTimer();
 	conn_state = ZoneInfoSent;
 	zoneinpacket_timer.Start();

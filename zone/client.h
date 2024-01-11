@@ -1076,6 +1076,8 @@ public:
 	void CorpseSummoned(Corpse *corpse);
 	void CorpseSummonOnPositionUpdate();
 
+	inline bool InstanceBootGraceTimerExpired() { return instance_boot_grace_timer.Check(); }
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);
@@ -1264,6 +1266,7 @@ private:
 	Timer underwater_timer;
 
 	Timer zoning_timer;
+	Timer instance_boot_grace_timer;
 
     glm::vec3 m_Proximity;
 

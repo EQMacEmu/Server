@@ -2740,7 +2740,7 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 {
 	if (current && other && zone->GetGuildID() != GUILD_NONE)
 	{
-		if (current->IsClient())
+		if (current->IsClient() && current->CastToClient()->InstanceBootGraceTimerExpired())
 		{
 			bool bCanEngage = CanClientEngage(current->CastToClient(), other);
 			if (!bCanEngage)
@@ -2749,7 +2749,7 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 				return false;
 			}
 		}
-		if (other->IsClient())
+		if (other->IsClient() && other->CastToClient()->InstanceBootGraceTimerExpired())
 		{
 			bool bCanEngage = CanClientEngage(other->CastToClient(), current);
 			if (!bCanEngage)

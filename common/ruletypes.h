@@ -258,6 +258,7 @@ RULE_BOOL(Quarm, EnforceClassicEraHardCaps, true) // Classic behavior is true, L
 RULE_INT(Quarm, AOEThrottlingMaxAOETargets, 50) // This will curb nonsense with performance issues relating to amount of targets if the amount of clients exceeds 300 in a single zone.
 RULE_INT(Quarm, AOEThrottlingMaxClients, 300) // This will curb nonsense with performance issues relating to amount of targets if the amount of clients exceeds 300 in a single zone.
 RULE_INT(Quarm, EnableLuclinEraShieldACOvercap, false)
+RULE_INT(Quarm, ClientInstanceBootGraceMS, 60000)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
