@@ -2827,6 +2827,7 @@ struct PlayerEngagementRecord
 {
 	bool isFlagged = false;
 	uint32 character_id = 0;
+	char character_name[64] = { 0 };
 	bool isSelfFound = false;
 	bool isSoloOnly = false;
 	LootLockout lockout = LootLockout();
