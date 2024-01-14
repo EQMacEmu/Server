@@ -2708,17 +2708,17 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 				PlayerEngagementRecord record = PlayerEngagementRecord();
 				record.isFlagged = false;
 				record.lockout = LootLockout();
-				strncpy(record.character_name, other->CastToClient()->GetCleanName(), 64);
-				record.character_id = other->CastToClient()->CharacterID();
-				record.isSelfFound = other->CastToClient()->IsSelfFound();
-				record.isSoloOnly = other->CastToClient()->IsSoloOnly();
+				strncpy(record.character_name, petowner->CastToClient()->GetCleanName(), 64);
+				record.character_id = petowner->CastToClient()->CharacterID();
+				record.isSelfFound = petowner->CastToClient()->IsSelfFound();
+				record.isSoloOnly = petowner->CastToClient()->IsSoloOnly();
 
-				auto lootLockoutItr = other->CastToClient()->loot_lockouts.find(npctype_id);
-				if (lootLockoutItr != other->CastToClient()->loot_lockouts.end())
+				auto lootLockoutItr = petowner->CastToClient()->loot_lockouts.find(npctype_id);
+				if (lootLockoutItr != petowner->CastToClient()->loot_lockouts.end())
 				{
 					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
 				}
-				m_EngagedClientNames.emplace(other->GetCleanName(), record);
+				m_EngagedClientNames.emplace(petowner->GetCleanName(), record);
 			}
 		}
 	}
