@@ -9627,6 +9627,12 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (zone && zone->GetGuildID() != GUILD_NONE)
+	{
+		Message(CC_Red, "You cannot disarm NPCs in this zone.");
+		return;
+	}
+
 	// this is completely made up and based on nothing other than disarm rates being seemingly around 20-25% in logs
 	float disarmchance = static_cast<float>(GetSkill(EQ::skills::SkillDisarm)) / static_cast<float>(std::max(static_cast<int>(target->GetSkill(EQ::skills::SkillOffense)), 5) * 3);
 	if (disarmchance > 0.95f)

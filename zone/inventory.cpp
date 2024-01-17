@@ -358,7 +358,12 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 
 	if (zone && zone->GetGuildID() != GUILD_NONE)
 	{
-		Message(CC_Red, "You cannot drop items in this zone. Deleting.");
+		auto broken_string = fmt::format("You cannot drop items in the ground. item {} (qty {} ).This item is eligible for reimbursement via petition at a cost of 100 platinum per item.", inst->GetID(), inst->GetCharges());
+		Message(CC_Red, broken_string.c_str());
+		if (RuleB(QueryServ, PlayerLogItemDesyncs))
+		{
+			QServ->QSItemDesyncs(CharacterID(), broken_string.c_str(), GetZoneID());
+		}
 		return;
 	}
 
@@ -370,7 +375,7 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 
 	if (inst->GetItem()->NoDrop == 0)
 	{
-		auto broken_string = fmt::format("Item almost fell to the ground with nodrop item {} (qty {} ).This item is eligible for reimbursement.", inst->GetID(), inst->GetCharges());
+		auto broken_string = fmt::format("Item almost fell to the ground with nodrop item {} (qty {} ). This item is eligible for reimbursement via petition at a cost of 100 platinum per item.", inst->GetID(), inst->GetCharges());
 		Message(CC_Red, broken_string.c_str());
 		if (RuleB(QueryServ, PlayerLogItemDesyncs))
 		{ 
@@ -388,7 +393,7 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst, glm::vec4 coords, 
 			{
 				if (bag_inst->GetItem()->NoDrop == 0)
 				{
-					auto broken_string = fmt::format("Bag almost fell to the ground with nodrop item {} (qty {} ). This item is eligible for reimbursement.", bag_inst->GetID(), bag_inst->GetCharges());
+					auto broken_string = fmt::format("Bag almost fell to the ground with nodrop item {} (qty {} ). This item is eligible for reimbursement via petition at a cost of 100 platinum per item.", bag_inst->GetID(), bag_inst->GetCharges());
 					Message(CC_Red, broken_string.c_str());
 					if (RuleB(QueryServ, PlayerLogItemDesyncs)) 
 					{
