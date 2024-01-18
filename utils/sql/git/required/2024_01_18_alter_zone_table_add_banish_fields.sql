@@ -1,0 +1,6 @@
+ALTER TABLE `zone`
+ADD `banish_zone_id` INT(4) DEFAULT 0 NOT NULL,
+ADD `banish_x` FLOAT DEFAULT 0.0 NOT NULL,
+ADD `banish_y` FLOAT DEFAULT 0.0 NOT NULL,
+ADD `banish_z` FLOAT DEFAULT 0.0 NOT NULL,
+ADD `banish_heading` FLOAT DEFAULT 0.0 NOT NULL;
