@@ -834,6 +834,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name, uint32 in_guildid)
 	lootvar = 0;
 
 	memset(&last_quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+	memset(&zone_banish_point, 0, sizeof(ZoneBanishPoint));
 
 	short_name = strcpy(new char[strlen(in_short_name)+1], in_short_name);
 	std::string tmp = short_name;
@@ -942,7 +943,6 @@ Zone::~Zone() {
 	entity_list.Clear();
 	ClearBlockedSpells();
 
-	safe_delete(zone_banish_point);
 	safe_delete(qGlobals);
 	safe_delete_array(map_name);
 	safe_delete(Nexus_Scion_Timer);
@@ -2040,7 +2040,6 @@ void Zone::SetGraveyard(uint32 zoneid, const glm::vec4& graveyardPosition) {
 }
 
 void Zone::LoadZoneBanishPoint(const char* zone) {
-	zone_banish_point = new ZoneBanishPoint();
 	database.GetZoneBanishPoint(zone_banish_point, zone);
 }
 

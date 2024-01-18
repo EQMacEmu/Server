@@ -4077,11 +4077,10 @@ int16 ZoneDatabase::GetTimerFromSkill(EQ::skills::SkillType skillid)
 	return timer;
 }
 
-bool ZoneDatabase::GetZoneBanishPoint(ZoneBanishPoint* into_zbp, const char* dest_zone) {
-	std::string query = StringFormat("SELECT zone, pos_x, pos_y, pos_z, heading, dest_zone "
-		"FROM doors WHERE dest_zone LIKE '%s%%' "
+bool ZoneDatabase::GetZoneBanishPoint(ZoneBanishPoint& into_zbp, const char* dest_zone) {
+	std::string query = StringFormat("SELECT banish_zone_id, banish_x, banish_y, banish_z, banish_heading "
+		"FROM zone WHERE short_name = '%s' "
 		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
-		"AND guildzonedoor = 1 "
 		"LIMIT 1",
 		dest_zone, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
 
@@ -4091,11 +4090,11 @@ bool ZoneDatabase::GetZoneBanishPoint(ZoneBanishPoint* into_zbp, const char* des
 	}
 
 	auto row = results.begin();
-	into_zbp->target_zone_id = database.GetZoneID(row[0]);
-	into_zbp->x = atof(row[1]);
-	into_zbp->y = atof(row[2]);
-	into_zbp->z = atof(row[3]) - 10; // above book
-	into_zbp->heading = atof(row[4]);
+	into_zbp.target_zone_id = atoi(row[0]);
+	into_zbp.x = atof(row[1]);
+	into_zbp.y = atof(row[2]);
+	into_zbp.z = atof(row[3]);
+	into_zbp.heading = atof(row[4]);
 
 	return true;
 }

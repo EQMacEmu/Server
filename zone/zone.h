@@ -155,7 +155,7 @@ public:
 	bool RemoveSpawnEntry(uint32 spawnid);
 	bool RemoveSpawnGroup(uint32 in_id);
 
-	ZoneBanishPoint* GetZoneBanishPoint() { return zone_banish_point; }
+	ZoneBanishPoint& GetZoneBanishPoint() { return zone_banish_point; }
 
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
@@ -356,7 +356,7 @@ private:
 	int	totalBS;
 	ZoneSpellsBlocked *blocked_spells;
 
-	ZoneBanishPoint* zone_banish_point;
+	ZoneBanishPoint zone_banish_point;
 
 	int		totalAAs;
 	SendAA_Struct **aas;	//array of AA structs

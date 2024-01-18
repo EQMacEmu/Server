@@ -962,12 +962,12 @@ void Client::GoToBind(uint8 bindnum) {
 }
 
 void Client::BootFromGuildInstance() {
-	ZoneBanishPoint* zbp = zone->GetZoneBanishPoint();
-	if (zbp == nullptr) {
+	ZoneBanishPoint zbp = zone->GetZoneBanishPoint();
+	if (zbp.target_zone_id == 0) {
 		this->GoToBind();
 	}
 	else {
-		MovePCGuildID(zbp->target_zone_id, GUILD_NONE, zbp->x, zbp->y, zbp->z, zbp->heading, 1, ZoneSolicited);
+		MovePCGuildID(zbp.target_zone_id, GUILD_NONE, zbp.x, zbp.y, zbp.z, zbp.heading, 1);
 	}
 }
 
