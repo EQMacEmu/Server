@@ -157,11 +157,8 @@ void WorldServer::Process() {
 	while((pack = tcpc.PopPacket())) {
 		Log(Logs::Detail, Logs::ZoneServer, "Got 0x%04x from world:", pack->opcode);
 		switch(pack->opcode) {
-		case 0: {
-			break;
-		}
+		case 0:
 		case ServerOP_KeepAlive: {
-			// ignore this
 			break;
 		}
 		// World is tellins us what port to use.
@@ -169,12 +166,13 @@ void WorldServer::Process() {
 			if (pack->size != sizeof(ServerConnectInfo))
 				break;
 			ServerConnectInfo* sci = (ServerConnectInfo*) pack->pBuffer;
-			Log(Logs::Detail, Logs::ZoneServer, "World assigned Port: %d for this zone.", sci->port);
+
+			LogInfo("World assigned Port [{}] for this zone", sci->port);
 			ZoneConfig::SetZonePort(sci->port);
 			break;
 		}
 		case ServerOP_ZAAuthFailed: {
-			Log(Logs::Detail, Logs::ZoneServer, "World server responded 'Not Authorized', disabling reconnect");
+			LogInfo("World server responded 'Not Authorized', disabling reconnect");
 			pTryReconnect = false;
 			Disconnect();
 			break;
@@ -351,12 +349,12 @@ void WorldServer::Process() {
 					}
 				}
 				else {
-					Log(Logs::Detail, Logs::None, "[CLIENT] id=%i, playerineqstring=%i, playersinzonestring=%i. Dumping WhoAllReturnStruct:",
+					LogDebug("[CLIENT] id=[{}], playerineqstring=[{}], playersinzonestring=[{}]. Dumping WhoAllReturnStruct:",
 						wars->id, wars->playerineqstring, wars->playersinzonestring);
 				}
 			}
 			else
-				Log(Logs::General, Logs::Error, "WhoAllReturnStruct: Could not get return struct!");
+				LogError("WhoAllReturnStruct: Could not get return struct!");
 			break;
 		}
 		case ServerOP_EmoteMessage: {
@@ -414,7 +412,7 @@ void WorldServer::Process() {
 		}
 		case ServerOP_ZoneShutdown: {
 			if (pack->size != sizeof(ServerZoneStateChange_struct)) {
-				std::cout << "Wrong size on ServerOP_ZoneShutdown. Got: " << pack->size << ", Expected: " << sizeof(ServerZoneStateChange_struct) << std::endl;
+				LogError("Wrong size on ServerOP_ZoneShutdown. Got: [{}] Expected: [{}]", pack->size, sizeof(ServerZoneStateChange_struct));
 				break;
 			}
 			// Annouce the change to the world
@@ -425,14 +423,14 @@ void WorldServer::Process() {
 				SendEmoteMessage(0, 0, 15, "Zone shutdown: %s", zone->GetLongName());
 
 				ServerZoneStateChange_struct* zst = (ServerZoneStateChange_struct *) pack->pBuffer;
-				std::cout << "Zone shutdown by " << zst->adminname << std::endl;
+				LogInfo("Zone shutdown by {}.", zst->adminname);
 				Zone::Shutdown();
 			}
 			break;
 		}
 		case ServerOP_ZoneBootup: {
 			if (pack->size != sizeof(ServerZoneStateChange_struct)) {
-				std::cout << "Wrong size on ServerOP_ZoneBootup. Got: " << pack->size << ", Expected: " << sizeof(ServerZoneStateChange_struct) << std::endl;
+				LogError("Wrong size on ServerOP_ZoneBootup. Got: [{}] Expected: [{}]", pack->size, sizeof(ServerZoneStateChange_struct));
 				break;
 			}
 			ServerZoneStateChange_struct* zst = (ServerZoneStateChange_struct *) pack->pBuffer;
@@ -443,13 +441,13 @@ void WorldServer::Process() {
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
 				}
 				else {
-					SendEmoteMessage(zst->adminname, 0, 0, "Zone bootup failed: Already running '%s'", zone->GetShortName());
+					SendEmoteMessage(zst->adminname, 0, CC_Default, "Zone bootup failed: Already running '%s'", zone->GetShortName());
 				}
 				break;
 			}
 
 			if (zst->adminname[0] != 0)
-				std::cout << "Zone bootup by " << zst->adminname << std::endl;
+				LogInfo("Zone bootup by {}.", zst->adminname);
 
 			Zone::Bootup(zst->zoneid, zst->makestatic, zst->ZoneServerGuildID);
 			break;
@@ -680,23 +678,20 @@ void WorldServer::Process() {
 				zone->zone_time.getEQTimeOfDay(time(0), tod);
 				entity_list.QueueClients(0, outapp, false);
 				safe_delete(outapp);
-				//TEST
-				char timeMessage[255];
+				
 				time_t timeCurrent = time(nullptr);
 				TimeOfDay_Struct eqTime;
 				zone->zone_time.getEQTimeOfDay( timeCurrent, &eqTime);
-				//if ( eqTime.hour >= 0 && eqTime.minute >= 0 )
-				//{
-					sprintf(timeMessage,"EQTime [%02d:%s%d %s]",
-						((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
-						(eqTime.minute < 10) ? "0" : "",
-						eqTime.minute,
-						(eqTime.hour >= 13) ? "pm" : "am"
-						);
-					Log(Logs::General, Logs::ZoneServer, "Time Broadcast Packet: %s", timeMessage);
-					zone->GotCurTime(true);
-				//}
-				//Test
+
+				auto time_string = fmt::format("EQTime {}:{}{} {}",
+					((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
+					(eqTime.minute < 10) ? "0" : "",
+					eqTime.minute,
+					(eqTime.hour >= 12 && eqTime.hour < 24) ? "PM" : "AM"
+				);
+
+				LogInfo("Time Broadcast Packet: {}", time_string);
+				zone->GotCurTime(true);
 			}
 			break;
 		}

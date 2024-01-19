@@ -252,8 +252,8 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		//Get rid of that 989 studios part of the string, plus remove null term zero.
 		string userpass = ourdata.substr(0, ourdata.find("eqworld-52.989studios.com") - 1);
 
-		string username = userpass.substr(0, userpass.find("/"));
-		string password = userpass.substr(userpass.find("/") + 1);
+		username = userpass.substr(0, userpass.find("/"));
+		password = userpass.substr(userpass.find("/") + 1);
 		platform = "OSX";
 		macversion = intel;
 	}

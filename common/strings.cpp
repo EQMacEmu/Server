@@ -995,3 +995,95 @@ std::string Strings::Random(size_t length)
 	std::generate_n(str.begin(), length, randchar);
 	return str;
 }
+
+// a wrapper for stoi which will return a fallback if the string
+// fails to cast to a number
+int Strings::ToInt(const std::string& s, int fallback)
+{
+	if (!Strings::IsNumber(s)) {
+		return fallback;
+	}
+
+	try {
+		return std::stoi(s);
+	}
+	catch (std::exception&) {
+		return fallback;
+	}
+}
+
+int64 Strings::ToBigInt(const std::string& s, int64 fallback)
+{
+	if (!Strings::IsNumber(s)) {
+		return fallback;
+	}
+
+	try {
+		return std::stoll(s);
+	}
+	catch (std::exception&) {
+		return fallback;
+	}
+}
+
+uint32 Strings::ToUnsignedInt(const std::string& s, uint32 fallback)
+{
+	if (!Strings::IsNumber(s)) {
+		return fallback;
+	}
+
+	try {
+		return std::stoul(s);
+	}
+	catch (std::exception&) {
+		return fallback;
+	}
+}
+
+uint64 Strings::ToUnsignedBigInt(const std::string& s, uint64 fallback)
+{
+	if (!Strings::IsNumber(s)) {
+		return fallback;
+	}
+
+	try {
+		return std::stoull(s);
+	}
+	catch (std::exception&) {
+		return fallback;
+	}
+}
+
+float Strings::ToFloat(const std::string& s, float fallback)
+{
+	if (!Strings::IsFloat(s)) {
+		return fallback;
+	}
+
+	try {
+		return std::stof(s);
+	}
+	catch (std::exception&) {
+		return fallback;
+	}
+}
+
+std::string Strings::RemoveNumbers(std::string s)
+{
+	int      current = 0;
+	for (int i = 0; i < s.length(); i++) {
+		if (!isdigit(s[i])) {
+			s[current] = s[i];
+			current++;
+		}
+	}
+
+	return s.substr(0, current);
+}
+
+bool Strings::IsFloat(const std::string& s)
+{
+	char* ptr;
+	strtof(s.c_str(), &ptr);
+	return (*ptr) == '\0';
+}

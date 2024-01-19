@@ -1559,7 +1559,7 @@ uint16 Database::MoveCharacterToBind(uint32 CharID)
 
 bool Database::SetHackerFlag(const char* accountname, const char* charactername, const char* hacked) { 
 	std::string new_hacked = std::string(hacked);
-	replace_all(new_hacked, "'", "_");
+	Strings::FindReplace(new_hacked, "'", "_");
 	std::string query = StringFormat("INSERT INTO `hackers` (account, name, hacked) values('%s','%s','%s')", accountname, charactername, new_hacked.c_str());
 	auto results = QueryDatabase(query);
 
@@ -1573,7 +1573,7 @@ bool Database::SetHackerFlag(const char* accountname, const char* charactername,
 bool Database::SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone) { 
 	//Utilize the "hacker" table, but also give zone information.
 	std::string new_hacked = std::string(hacked);
-	replace_all(new_hacked, "'", "_");
+	Strings::FindReplace(new_hacked, "'", "_");
 	std::string query = StringFormat("INSERT INTO hackers(account,name,hacked,zone) values('%s','%s','%s','%s')", accountname, charactername, new_hacked.c_str(), zone);
 	auto results = QueryDatabase(query);
 

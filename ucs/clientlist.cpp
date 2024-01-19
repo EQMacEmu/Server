@@ -211,6 +211,8 @@ Clientlist::Clientlist(int ChatPort) {
 Client::Client(std::shared_ptr<EQStream> eqs) {
 
 	ClientStream = eqs;
+	if(ClientStream != nullptr)
+		ClientStream->PutInUse();
 
 	Announce = false;
 

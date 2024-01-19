@@ -557,7 +557,9 @@ void ChatChannelList::Process() {
 			LogDebug("Empty temporary password protected channel [{0}] being destroyed",
 				CurrentChannel->GetName().c_str());
 
+			iterator.Advance();
 			RemoveChannel(CurrentChannel);
+			continue;
 		}
 
 		iterator.Advance();
