@@ -4080,9 +4080,8 @@ int16 ZoneDatabase::GetTimerFromSkill(EQ::skills::SkillType skillid)
 bool ZoneDatabase::GetZoneBanishPoint(ZoneBanishPoint& into_zbp, const char* dest_zone) {
 	std::string query = StringFormat("SELECT banish_zone_id, banish_x, banish_y, banish_z, banish_heading "
 		"FROM zone WHERE short_name = '%s' "
-		"AND ((%.2f >= min_expansion AND %.2f < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
 		"LIMIT 1",
-		dest_zone, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion));
+		dest_zone);
 
 	auto results = QueryDatabase(query);
 	if (!results.Success() || results.RowCount() != 1) {
