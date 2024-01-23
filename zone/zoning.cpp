@@ -961,6 +961,16 @@ void Client::GoToBind(uint8 bindnum) {
 		MovePCGuildID(m_pp.binds[bindnum].zoneId, GUILD_NONE, m_pp.binds[bindnum].x, m_pp.binds[bindnum].y, m_pp.binds[bindnum].z, m_pp.binds[bindnum].heading, 1);
 }
 
+void Client::BootFromGuildInstance() {
+	ZoneBanishPoint zbp = zone->GetZoneBanishPoint();
+	if (zbp.target_zone_id == 0) {
+		this->GoToBind();
+	}
+	else {
+		MovePCGuildID(zbp.target_zone_id, GUILD_NONE, zbp.x, zbp.y, zbp.z, zbp.heading, 1);
+	}
+}
+
 void Client::GoToDeath() {
 	//Client will request a zone in EQMac era clients, but let's make sure they get there:
 	zone_mode = ZoneToBindPoint;

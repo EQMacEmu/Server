@@ -834,6 +834,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name, uint32 in_guildid)
 	lootvar = 0;
 
 	memset(&last_quake_struct, 0, sizeof(ServerEarthquakeImminent_Struct));
+	memset(&zone_banish_point, 0, sizeof(ZoneBanishPoint));
 
 	short_name = strcpy(new char[strlen(in_short_name)+1], in_short_name);
 	std::string tmp = short_name;
@@ -1039,6 +1040,7 @@ bool Zone::Init(bool iStaticZone) {
 	//load up the zone's doors (prints inside)
 	zone->LoadZoneDoors(zone->GetShortName());
 	zone->LoadBlockedSpells(zone->GetZoneID());
+	zone->LoadZoneBanishPoint(zone->GetShortName());
 
 	//clear trader items if we are loading the bazaar
 	if(strncasecmp(short_name,"bazaar",6)==0) {
@@ -2037,6 +2039,10 @@ void Zone::SetGraveyard(uint32 zoneid, const glm::vec4& graveyardPosition) {
 	m_Graveyard = graveyardPosition;
 }
 
+void Zone::LoadZoneBanishPoint(const char* zone) {
+	database.GetZoneBanishPoint(zone_banish_point, zone);
+}
+
 void Zone::LoadBlockedSpells(uint32 zoneid)
 {
 	if(!blocked_spells)
@@ -2733,21 +2739,21 @@ bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 {
 	if (current && other && zone->GetGuildID() != GUILD_NONE)
 	{
-		if (current->IsClient())
+		if (current->IsClient() && current->CastToClient()->InstanceBootGraceTimerExpired())
 		{
 			bool bCanEngage = CanClientEngage(current->CastToClient(), other);
 			if (!bCanEngage)
 			{
-				current->CastToClient()->GoToBind();
+				current->CastToClient()->BootFromGuildInstance();
 				return false;
 			}
 		}
-		if (other->IsClient())
+		if (other->IsClient() && other->CastToClient()->InstanceBootGraceTimerExpired())
 		{
 			bool bCanEngage = CanClientEngage(other->CastToClient(), current);
 			if (!bCanEngage)
 			{
-				other->CastToClient()->GoToBind();
+				other->CastToClient()->BootFromGuildInstance();
 				return false;
 			}
 		}

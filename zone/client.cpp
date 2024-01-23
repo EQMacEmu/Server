@@ -150,6 +150,7 @@ Client::Client(EQStreamInterface* ieqs)
 	mend_reset_timer(60000),
 	underwater_timer(1000),
 	zoning_timer(5000),
+	instance_boot_grace_timer(RuleI(Quarm, ClientInstanceBootGraceMS)),
 	m_Proximity(FLT_MAX, FLT_MAX, FLT_MAX), //arbitrary large number
 	m_ZoneSummonLocation(-2.0f,-2.0f,-2.0f,-2.0f),
 	m_AutoAttackPosition(0.0f, 0.0f, 0.0f, 0.0f),
@@ -222,6 +223,7 @@ Client::Client(EQStreamInterface* ieqs)
 	door_check_timer.Disable();
 	mend_reset_timer.Disable();
 	zoning_timer.Disable();
+	instance_boot_grace_timer.Disable();
 	instalog = false;
 	m_pp.autosplit = false;
 	// initialise haste variable

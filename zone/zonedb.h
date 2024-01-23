@@ -322,6 +322,7 @@ public:
 	bool		UpdateZoneSafeCoords(const char* zonename, const glm::vec3& location);
 	uint8	GetUseCFGSafeCoords();
 	int		getZoneShutDownDelay(uint32 zoneID);
+	bool	GetZoneBanishPoint(ZoneBanishPoint& into_zbp, const char* dest_zone);
 
 	/* Spawns and Spawn Points  */
 	bool		LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list);
