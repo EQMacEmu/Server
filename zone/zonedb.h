@@ -20,6 +20,7 @@ struct ExtendedProfile_Struct;
 struct NPCType;
 struct PlayerCorpse_Struct;
 struct ZonePoint;
+struct ZoneBanishPoint;
 template <class TYPE> class LinkedList;
 
 namespace EQ
