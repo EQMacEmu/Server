@@ -1074,6 +1074,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			continue;
 		if (curmob->IsHorse())
 			continue;
+
 		// undead aoe
 		if (spells[spell_id].targettype == ST_UndeadAE)
 		{
@@ -1107,6 +1108,19 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 					continue;
 			}
 		}
+		// prevent immune from magic and aggro npcs from being affected by spells.
+		if (curmob->IsNPC())
+		{
+			NPC* spell_target_npc = curmob->CastToNPC();
+			if (spell_target_npc)
+			{
+				if (spell_target_npc->GetSpecialAbility(IMMUNE_MAGIC) && spell_target_npc->GetSpecialAbility(IMMUNE_AGGRO))
+				{
+					continue;
+				}
+			}
+		}
+
 		if (detrimental) {
 			// aoe spells do hit other players except if in same raid or group.  their pets get hit even when grouped.  SpellOnTarget checks pvp protection
 			if (caster != curmob && (caster->InSameGroup(curmob) || caster->InSameRaid(curmob)))
