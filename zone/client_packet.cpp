@@ -6384,7 +6384,11 @@ void Client::Handle_OP_MoveItem(const EQApplicationPacket *app)
 		}
 	}
 
-	if (mi_hack) { Message(CC_Yellow, "Caution: Illegal use of inaccessable bag slots!"); }
+	if (mi_hack) { 
+		Message(CC_Yellow, "Caution: Illegal use of inaccessable bag slots! Resyncing item.");
+		SwapItemResync(mi);
+		return;
+	}
 
 	if (IsValidSlot(mi->from_slot) && IsValidSlot(mi->to_slot)) {
 		bool si = SwapItem(mi);
