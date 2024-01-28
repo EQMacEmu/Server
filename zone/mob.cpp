@@ -2067,6 +2067,10 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 		return false;
 	}
 
+	// this is so we don't have to make duplicate types; some mob types are 48-52 and only the 51-52s should summon
+	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && zone->GetZoneExpansion() < LuclinEQ)
+		return false;
+
 	// now validate the timer
 	Timer *timer = GetSpecialAbilityTimer(SPECATK_SUMMON);
 	if (!timer)

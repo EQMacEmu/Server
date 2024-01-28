@@ -2665,6 +2665,10 @@ void Mob::CheckEnrage()
 {
 	if (!bEnraged && GetSpecialAbility(SPECATK_ENRAGE))
 	{
+		// this is so we don't have to make duplicate NPC types
+		if (IsNPC() && GetLevel() < 56 && GetLevel() > 52)
+			return;
+
 		int hp_ratio = GetSpecialAbilityParam(SPECATK_ENRAGE, 0);
 		hp_ratio = hp_ratio > 0 ? hp_ratio : RuleI(NPC, StartEnrageValue);
 		if (GetHPRatio() <= static_cast<float>(hp_ratio))
