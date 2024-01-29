@@ -134,6 +134,7 @@ public:
 
 	virtual bool	AI_IdleCastCheck();
 	virtual void	AI_Event_SpellCastFinished(bool iCastSucceeded, uint16 slot);
+	void			TriggerAutoCastTimer() { if (!IsCasting() && AIautocastspell_timer) AIautocastspell_timer->Trigger(); }
 
 	void LevelScale();
 	void CalcNPCResists();

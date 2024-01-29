@@ -2437,6 +2437,8 @@ void Mob::AI_Event_Engaged(Mob* attacker)
 			}
 		}
 
+		CastToNPC()->TriggerAutoCastTimer();
+
 		if(attacker && !attacker->IsCorpse())
 		{
 			//Because sometimes the AIYellForHelp triggers another engaged and then immediately a not engaged
@@ -2576,6 +2578,8 @@ void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, uint16 slot)
 			{
 				int32 recast_delay = AIspells[casting_spell_AIindex].recast_delay;
 				int32 cast_variance = zone->random.Int(0, 4) * 1000;
+				if (AIspells[casting_spell_AIindex].spellid == SPELL_CAZIC_TOUCH)
+					cast_variance = 0;
 
 				recovery_time += spells[AIspells[casting_spell_AIindex].spellid].recovery_time;
 
