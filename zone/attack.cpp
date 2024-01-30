@@ -3329,7 +3329,7 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 			Log(Logs::Detail, Logs::Combat, "Breaking mez due to attack.");
 			BuffFadeByEffect(SE_Mez);
 			if(IsNPC())
-				entity_list.MessageClose(this, true, 500, CC_User_SpellWornOff, "%s is no longer mezzed. (%s - %s)", GetCleanName(), attacker->GetCleanName(), spell_id != SPELL_UNKNOWN ? GetSpellName(spell_id) : "melee" );
+				entity_list.MessageClose(this, true, RuleI(Range, SpellMessages), CC_User_SpellWornOff, "%s is no longer mezzed. (%s - %s)", GetCleanName(), attacker->GetCleanName(), spell_id != SPELL_UNKNOWN ? GetSpellName(spell_id) : "melee" );
 		}
 
 		if(spell_id != SPELL_UNKNOWN && !iBuffTic) {
