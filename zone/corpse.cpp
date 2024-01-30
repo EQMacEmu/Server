@@ -1083,12 +1083,10 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 
 		if (temporarily_allowed_itr == temporarily_allowed_looters.end() && c->IsLootLockedOutOfNPC(npctype_id) && npctype_id != 0)
 		{
-			c->Message(CC_Red, "You are not allowed to loot this NPC as you are locked out of the creature in question.");
 			return false;
 		}
 
 		if (denied_looters.find(appendedCharName) != denied_looters.end()) {
-			c->Message(CC_Red, "You were locked out of this creature on its death, and are not eligible to loot.");
 			return false;
 		}
 
@@ -1105,13 +1103,11 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 
 			if (temporarily_allowed_itr == temporarily_allowed_looters.end() && c->IsLootLockedOutOfNPC(npctype_id))
 			{
-				c->Message(CC_Red, "You are not allowed to loot this NPC as you are locked out of the creature in question.");
 				return false;
 			}
 		}
 
 		if (denied_looters.find(playername) != denied_looters.end()) {
-			c->Message(CC_Red, "You were locked out of this creature on its death, and are not eligible to loot.");
 			return false;
 		}
 
@@ -1128,7 +1124,6 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 						if (raid->members[x].membername[0] && (raid->members[x].IsLooter || raid->members[x].IsRaidLeader)) {
 							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end()) {
 								{
-									c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid with another eligible member of the raid.");
 									AddLooter(c);
 									break;
 								}
@@ -1144,7 +1139,6 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 				if (c->GetGroup()->membername[0]) {
 					if (allowed_looters.find(c->GetGroup()->membername[0]) != allowed_looters.end()) {
 						{
-							c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a group with another eligible member of the group.");
 							AddLooter(c);
 							break;
 						}
@@ -2568,17 +2562,6 @@ void Corpse::ProcessLootLockouts(Client* give_exp_client, NPC* in_npc)
 					c->loot_lockouts.emplace(in_npc->GetNPCTypeID(), lootLockout);
 				}
 			}
-
-
-			std::string appendedCharName = record.second.character_name;
-
-			if (record.second.isSelfFound)
-				appendedCharName += "-SF";
-
-			if (record.second.isSoloOnly)
-				appendedCharName += "-Solo";
-
-			temporarily_allowed_looters.emplace(appendedCharName);
 		}
 		else
 		{
