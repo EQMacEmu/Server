@@ -1103,11 +1103,13 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 
 			if (temporarily_allowed_itr == temporarily_allowed_looters.end() && c->IsLootLockedOutOfNPC(npctype_id))
 			{
+				c->Message(CC_Red, "You were locked out of this creature on its death, and are not eligible to loot.");
 				return false;
 			}
 		}
 
 		if (denied_looters.find(playername) != denied_looters.end()) {
+			c->Message(CC_Red, "You are not allowed to loot this NPC as you are locked out of the creature in question.");
 			return false;
 		}
 
@@ -1121,7 +1123,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 				Raid* raid = c->GetRaid();
 				if (raid->GetLootType() == 3) // Looter / Raid Leader loot
 				{
-					if (raid->IsRaidLooter(c))
+					if (raid->IsRaidLooter(c->GetCleanName()))
 					{
 						for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 						{
@@ -1139,7 +1141,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 				}
 				else if (raid->GetLootType() == 2) // Group Leader / Raid Leader loot
 				{
-					if (raid->IsRaidLeader(c) || raid->IsGroupLeader(c->GetCleanName()))
+					if (raid->IsRaidLeader(c->GetCleanName()) || raid->IsGroupLeader(c->GetCleanName()))
 					{
 						for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 						{
@@ -1155,7 +1157,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 						}
 					}
 				}
-				else if (raid->GetLootType() == 1 && raid->IsRaidLeader(c)) // Raid Leader loot
+				else if (raid->GetLootType() == 1 && raid->IsRaidLeader(c->GetCleanName())) // Raid Leader loot
 				{
 					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 					{
@@ -1165,6 +1167,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 							{
 								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and you're the new raid leader.");
 								AddLooter(c);
+								break;
 							}
 						}
 					}
@@ -1193,6 +1196,9 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		if (allowed_looters.size() == 0) {
 				return true;
 		}
+	}
+	if (c->HasRaid()) {
+		c->Message(CC_Red, "[DEBUG] You are in a raid, but cannot loot this corpse.");
 	}
 	return false;
 }
@@ -2600,6 +2606,16 @@ void Corpse::ProcessLootLockouts(Client* give_exp_client, NPC* in_npc)
 					c->loot_lockouts.emplace(in_npc->GetNPCTypeID(), lootLockout);
 				}
 			}
+			
+			std::string appendedCharName = record.second.character_name;
+
+			if (record.second.isSelfFound)
+				appendedCharName += "-SF";
+
+			if (record.second.isSoloOnly)
+				appendedCharName += "-Solo";
+
+			temporarily_allowed_looters.emplace(appendedCharName);
 		}
 		else
 		{
