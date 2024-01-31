@@ -1051,7 +1051,7 @@ void Raid::RemoveRaidLooter(const char* looter)
 bool Raid::IsRaidLooter(const char* name) {
 	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if (members[x].IsLooter && members[x].membername[0] && stricmp(members[x].membername, name) == 0)
+		if (members[x].IsLooter && members[x].membername[0] && strcmp(members[x].membername, name) == 0)
 		{
 			return true;
 		}
@@ -1062,7 +1062,7 @@ bool Raid::IsRaidLooter(const char* name) {
 bool Raid::IsRaidLeader(const char* name) {
 	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if (members[x].IsRaidLeader && members[x].membername[0] && stricmp(members[x].membername, name) == 0)
+		if (members[x].IsRaidLeader && members[x].membername[0] && strcmp(members[x].membername, name) == 0)
 		{
 			return true;
 		}
@@ -1073,7 +1073,7 @@ bool Raid::IsRaidLeader(const char* name) {
 bool Raid::IsRaidLeaderOrLooter(const char* name) {
 	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if ((members[x].IsLooter || members[x].IsRaidLeader) && members[x].membername[0] && stricmp(members[x].membername, name) == 0)
+		if ((members[x].IsLooter || members[x].IsRaidLeader) && members[x].membername[0] && strcmp(members[x].membername, name) == 0)
 		{
 			return true;
 		}
@@ -1084,7 +1084,7 @@ bool Raid::IsRaidLeaderOrLooter(const char* name) {
 bool Raid::IsRaidLeaderOrGroupLeader(const char* name) {
 	for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 	{
-		if ((members[x].IsGroupLeader || members[x].IsRaidLeader) && members[x].membername[0] && stricmp(members[x].membername, name) == 0)
+		if ((members[x].IsGroupLeader || members[x].IsRaidLeader) && members[x].membername[0] && strcmp(members[x].membername, name) == 0)
 		{
 			return true;
 		}
