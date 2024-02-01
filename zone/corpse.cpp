@@ -1197,7 +1197,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 				return true;
 		}
 	}
-	if (c->HasRaid()) {
+	if (c && c->HasRaid()) {
 		c->Message(CC_Red, "[DEBUG] You are in a raid, but cannot loot this corpse.");
 	}
 	return false;
