@@ -1327,8 +1327,13 @@ void Corpse::AllowPlayerLoot(std::string character_name) {
 
 }
 void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* app) {
+
+	if (!client)
+		return;
+
 	// Added 12/08. Started compressing loot struct on live.
 	if(player_corpse_depop) {
+		client->Message(CC_Red, "[DEBUG] This corpse is being depooped!");
 		SendEndLootErrorPacket(client);
 		return;
 	}
@@ -1359,7 +1364,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 
 	if(this->being_looted_by != 0xFFFFFFFF) {
 		// lets double check....
-		Entity* looter = entity_list.GetID(this->being_looted_by);
+		Client* looter = entity_list.GetClientByID(this->being_looted_by);
 		if(looter == 0) { 
 			ResetLooter();
 		}
@@ -1375,6 +1380,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	if (this->being_looted_by != 0xFFFFFFFF && this->being_looted_by != client->GetID() && !contains_legacy_item) {
 		SendLootReqErrorPacket(client, 0);
 		Loot_Request_Type = 0;
+		client->Message(CC_Red, "[DEBUG] This corpse is being looted already by %i.", being_looted_by);
 	}
 	else if (IsPlayerCorpse() && char_id == client->CharacterID()) {
 		Loot_Request_Type = 2;
