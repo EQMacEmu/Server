@@ -1587,7 +1587,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	Save();
 
-	if (!IsLD() && zonesummon_id != 0)
+	if (!IsLD() && zonesummon_id == 0)
 	{
 		GoToDeath();
 	}
