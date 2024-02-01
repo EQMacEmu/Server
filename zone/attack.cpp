@@ -2717,6 +2717,11 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 				if (lootLockoutItr != petowner->CastToClient()->loot_lockouts.end())
 				{
 					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
+					if (lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
+					{
+						petowner->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you to your bind.", GetCleanName());
+						petowner->CastToClient()->GoToBind();
+					}
 				}
 				m_EngagedClientNames.emplace(petowner->GetCleanName(), record);
 			}
