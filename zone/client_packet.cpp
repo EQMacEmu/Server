@@ -699,11 +699,16 @@ void Client::CompleteConnect()
 			// Mules by their very nature require access to at least Luclin. Set that here.
 			if (IsMule())
 			{
-				m_pp.expansions = m_pp.expansions + LuclinEQ;
-				database.SetExpansion(AccountName(), m_pp.expansions);
-				GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+				if (RuleB(Quarm, EastCommonMules)) {
+					GoToSafeCoords(database.GetZoneID("ecommons"), GUILD_NONE);
+				}
+				else {
+					m_pp.expansions = m_pp.expansions + LuclinEQ;
+					database.SetExpansion(AccountName(), m_pp.expansions);
+					GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+				}
+			
 			}
-
 			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
 		}
 		return;
