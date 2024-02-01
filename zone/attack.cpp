@@ -1587,7 +1587,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	Save();
 
-	if (!IsLD())
+	if (!IsLD() && zonesummon_id != 0)
 	{
 		GoToDeath();
 	}
@@ -2640,8 +2640,8 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 			{
 				if (lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
 				{
-					other->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you to your bind.", GetCleanName() );
-					other->CastToClient()->GoToBind();
+					other->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you out.", GetCleanName() );
+					other->CastToClient()->BootFromGuildInstance();
 				}
 			}
 		}
@@ -2717,10 +2717,10 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 				if (lootLockoutItr != petowner->CastToClient()->loot_lockouts.end())
 				{
 					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
-					if (lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
+					if (zone && zone->GetGuildID() != GUILD_NONE && lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
 					{
-						petowner->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you to your bind.", GetCleanName());
-						petowner->CastToClient()->GoToBind();
+						petowner->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you out.", GetCleanName());
+						petowner->CastToClient()->BootFromGuildInstance();
 					}
 				}
 				m_EngagedClientNames.emplace(petowner->GetCleanName(), record);
