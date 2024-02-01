@@ -6204,7 +6204,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		Corpse *ent_corpse = ent->CastToCorpse();
 		if (DistanceSquaredNoZ(m_Position, ent_corpse->GetPosition()) > 1100) // About 33.2 coords away.
 		{
-			client->Message(CC_Red, "[DEBUG] This corpse is being looted already by %i.", being_looted_by);
+			Message(CC_Red, "[DEBUG] Too far away from corpse.");
 			Corpse::SendLootReqErrorPacket(this);
 			return;
 		}
