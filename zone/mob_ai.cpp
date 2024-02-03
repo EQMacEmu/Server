@@ -2438,6 +2438,8 @@ void Mob::AI_Event_Engaged(Mob* attacker)
 			}
 		}
 
+		CastToNPC()->TriggerAutoCastTimer();
+
 		if(attacker && !attacker->IsCorpse())
 		{
 			//Because sometimes the AIYellForHelp triggers another engaged and then immediately a not engaged
@@ -2549,40 +2551,40 @@ void Mob::AI_Event_NoLongerEngaged() {
 //this gets called from InterruptSpell() for failure or SpellFinished() for success
 void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, uint16 slot)
 {
-	if (slot == 1)
-	{
+	if (slot == 1) {
 		uint32 recovery_time = 0;
-		if (iCastSucceeded)
-		{
-			if (casting_spell_AIindex < AIspells.size())
-			{
+		if (iCastSucceeded) {
+			if (casting_spell_AIindex < AIspells.size()) {
 				int32 recast_delay = AIspells[casting_spell_AIindex].recast_delay;
 				int32 cast_variance = zone->random.Int(0, 4) * 1000;
+				if (AIspells[casting_spell_AIindex].spellid == SPELL_CAZIC_TOUCH) {
+					cast_variance = 0;
+				}
 
 				recovery_time += spells[AIspells[casting_spell_AIindex].spellid].recovery_time;
 
-				if (recast_delay > 0)
-				{
-					if (recast_delay < 10000)
+				if (recast_delay > 0) {
+					if (recast_delay < 10000) {
 						AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime() + (recast_delay * 1000) + cast_variance;
+					}
 				}
-				else if (recast_delay == -1)
+				else if (recast_delay == -1) {
 					// editor default; add variance
 					AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime() + spells[AIspells[casting_spell_AIindex].spellid].recast_time + cast_variance;
-
-				else if (recast_delay == -2)
+				}
+				else if (recast_delay == -2) {
 					AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime();
-
-				else
+				}
+				else {
 					// 0; no variance
 					AIspells[casting_spell_AIindex].time_cancast = Timer::GetCurrentTime() + spells[AIspells[casting_spell_AIindex].spellid].recast_time;
+				}
 			}
-			if (recovery_time < AIautocastspell_timer->GetDuration())
+			if (recovery_time < AIautocastspell_timer->GetDuration()) {
 				recovery_time = AIautocastspell_timer->GetDuration();
+			}
 			AIautocastspell_timer->Start(recovery_time, false);
-		}
-		else
-		{
+		} else {
 			AIautocastspell_timer->Start(AISpellVar.fail_recast, false);
 		}
 		casting_spell_AIindex = AIspells.size();
@@ -2645,12 +2647,15 @@ bool NPC::AI_IdleCastCheck() {
 
 void Mob::CheckEnrage()
 {
-	if (!bEnraged && GetSpecialAbility(SPECATK_ENRAGE))
-	{
+	if (!bEnraged && GetSpecialAbility(SPECATK_ENRAGE)) {
+		// this is so we don't have to make duplicate NPC types
+		if (IsNPC() && GetLevel() < 56 && GetLevel() > 52) {
+			return;
+		}
+
 		int hp_ratio = GetSpecialAbilityParam(SPECATK_ENRAGE, 0);
 		hp_ratio = hp_ratio > 0 ? hp_ratio : RuleI(NPC, StartEnrageValue);
-		if (GetHPRatio() <= static_cast<float>(hp_ratio))
-		{
+		if (GetHPRatio() <= static_cast<float>(hp_ratio)) {
 			StartEnrage();
 		}
 	}

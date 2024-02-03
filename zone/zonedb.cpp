@@ -1629,8 +1629,8 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 		tmp_npctype->AC						= n.AC;
 		tmp_npctype->npc_aggro				= n.npc_aggro == 0 ? false : true;
 		tmp_npctype->spawn_limit			= n.spawn_limit;
-		tmp_npctype->see_sneak				= n.see_sneak == 0 ? false : true;
-		tmp_npctype->see_improved_hide		= n.see_improved_hide == 0 ? false : true;
+		tmp_npctype->see_sneak				= (uint8)n.see_sneak;
+		tmp_npctype->see_improved_hide		= (uint8)n.see_improved_hide;
 		tmp_npctype->ATK					= n.ATK;
 		tmp_npctype->accuracy_rating		= n.Accuracy;
 		tmp_npctype->raid_target			= n.raid_target == 0 ? false : true;

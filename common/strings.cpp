@@ -257,17 +257,27 @@ std::string Strings::EscapePair(const char* src, size_t sz) {
 	return ret;
 }
 
-bool Strings::IsNumber(const std::string& s) {
-	try {
-		auto r = stod(s);
-		return true;
+bool Strings::IsNumber(const std::string &s) {
+	for (char const& c : s) {
+		if (c == s[0] && s[0] == '-') {
+			continue;
+		}
+		if (std::isdigit(c) == 0) {
+			return false;
+		}
 	}
-	catch (std::exception&) {
-		return false;
-	}
+
+	return true;
 }
 
-std::string Strings::Join(const std::vector<std::string>& ar, const std::string& delim) {
+bool Strings::IsFloat(const std::string &s)
+{
+	char* ptr;
+	strtof(s.c_str(), &ptr);
+	return (*ptr) == '\0';
+}
+
+std::string Strings::Join(const std::vector<std::string> &ar, const std::string &delim) {
 	std::string ret;
 	for (size_t i = 0; i < ar.size(); ++i) {
 		if (i != 0) {
@@ -280,7 +290,21 @@ std::string Strings::Join(const std::vector<std::string>& ar, const std::string&
 	return ret;
 }
 
-void Strings::FindReplace(std::string& string_subject, const std::string& search_string, const std::string& replace_string)
+std::string Strings::Join(const std::vector<uint32_t>& ar, const std::string& delim)
+{
+	std::string ret;
+	for (size_t i = 0; i < ar.size(); ++i) {
+		if (i != 0) {
+			ret += delim;
+		}
+
+		ret += std::to_string(ar[i]);
+	}
+
+	return ret;
+}
+
+void Strings::FindReplace(std::string &string_subject, const std::string &search_string, const std::string &replace_string)
 {
 	if (string_subject.find(search_string) == std::string::npos) {
 		return;
@@ -293,7 +317,7 @@ void Strings::FindReplace(std::string& string_subject, const std::string& search
 	}
 }
 
-std::string Strings::Replace(std::string subject, const std::string& search, const std::string& replace)
+std::string Strings::Replace(std::string subject, const std::string &search, const std::string &replace)
 {
 	size_t pos = 0;
 	while ((pos = subject.find(search, pos)) != std::string::npos) {
@@ -303,7 +327,7 @@ std::string Strings::Replace(std::string subject, const std::string& search, con
 	return subject;
 }
 
-void ParseAccountString(const std::string& s, std::string& account, std::string& loginserver)
+void ParseAccountString(const std::string& s, std::string &account, std::string &loginserver)
 {
 	auto split = Strings::Split(s, ':');
 	if (split.size() == 2) {
@@ -315,7 +339,7 @@ void ParseAccountString(const std::string& s, std::string& account, std::string&
 	}
 }
 
-std::string Strings::Commify(const std::string& number) {
+std::string Strings::Commify(const std::string &number) {
 	std::string temp_string;
 
 	auto string_length = static_cast<int>(number.length());
@@ -360,7 +384,7 @@ char* strn0cpy(char* dest, const char* source, uint32 size) {
 
 // String N w/null Copy Truncated?
 // return value =true if entire string(source) fit, false if it was truncated
-bool strn0cpyt(char* dest, const char* source, uint32 size) {
+bool strn0cpyt(char *dest, const char *source, uint32 size) {
 	if (!dest)
 		return 0;
 	if (size == 0 || source == 0) {
@@ -372,7 +396,7 @@ bool strn0cpyt(char* dest, const char* source, uint32 size) {
 	return (bool)(source[strlen(dest)] == 0);
 }
 
-const char* MakeLowerString(const char* source) {
+const char *MakeLowerString(const char *source) {
 	static char str[128];
 	if (!source)
 		return nullptr;
@@ -380,7 +404,7 @@ const char* MakeLowerString(const char* source) {
 	return str;
 }
 
-void MakeLowerString(const char* source, char* target) {
+void MakeLowerString(const char *source, char *target) {
 	if (!source || !target) {
 		*target = 0;
 		return;
@@ -393,7 +417,7 @@ void MakeLowerString(const char* source, char* target) {
 	*target = 0;
 }
 
-uint32 hextoi(const char* num) {
+uint32 hextoi(const char *num) {
 	if (num == nullptr)
 		return 0;
 
@@ -420,7 +444,7 @@ uint32 hextoi(const char* num) {
 	return ret;
 }
 
-uint64 hextoi64(const char* num) {
+uint64 hextoi64(const char *num) {
 	if (num == nullptr)
 		return 0;
 
@@ -447,7 +471,7 @@ uint64 hextoi64(const char* num) {
 	return ret;
 }
 
-bool atobool(const char* iBool) {
+bool atobool(const char *iBool) {
 
 	if (iBool == nullptr)
 		return false;
@@ -481,7 +505,7 @@ bool atobool(const char* iBool) {
 }
 
 // removes the crap and turns the underscores into spaces.
-char* CleanMobName(const char* in, char* out)
+char* CleanMobName(const char *in, char *out)
 {
 	unsigned i, j;
 
@@ -503,7 +527,7 @@ char* CleanMobName(const char* in, char* out)
 	return out;
 }
 
-char* CleanMobNameWithSpaces(const char* in, char* out)
+char* CleanMobNameWithSpaces(const char *in, char *out)
 {
 	unsigned i, j;
 
@@ -516,14 +540,14 @@ char* CleanMobNameWithSpaces(const char* in, char* out)
 	return out;
 }
 
-void RemoveApostrophes(std::string& s)
+void RemoveApostrophes(std::string &s)
 {
 	for (unsigned int i = 0; i < s.length(); ++i)
 		if (s[i] == '\'')
 			s[i] = '_';
 }
 
-char* RemoveApostrophes(const char* s)
+char* RemoveApostrophes(const char *s)
 {
 	auto NewString = new char[strlen(s) + 1];
 
@@ -536,13 +560,13 @@ char* RemoveApostrophes(const char* s)
 	return NewString;
 }
 
-const char* ConvertArray(int input, char* returnchar)
+const char* ConvertArray(int input, char *returnchar)
 {
 	sprintf(returnchar, "%i", input);
 	return returnchar;
 }
 
-const char* ConvertArrayF(float input, char* returnchar)
+const char* ConvertArrayF(float input, char *returnchar)
 {
 	sprintf(returnchar, "%0.2f", input);
 	return returnchar;
@@ -561,7 +585,7 @@ bool isAlphaNumeric(const char* text)
 }
 
 // first letter capitalized and rest made lower case
-std::string FormatName(const std::string& char_name)
+std::string FormatName(const std::string &char_name)
 {
 	std::string formatted(char_name);
 	if (!formatted.empty()) {
@@ -617,16 +641,6 @@ std::string Strings::NumberToWords(unsigned long long int n)
 	res = Strings::ConvertToDigit((n / 1000000000) % 100, "Billion, ") + res;
 
 	return res;
-}
-
-void replace_all(std::string& in, std::string old, std::string repl)
-{
-	for (std::string::size_type pos = 0;
-		(pos = in.find(old, pos)) != std::string::npos;
-		pos += repl.size())
-	{
-		in.replace(pos, old.size(), repl);
-	}
 }
 
 std::string Strings::SecondsToTime(int duration, bool is_milliseconds)
@@ -808,19 +822,19 @@ std::string Strings::MillisecondsToTime(int duration)
 	return SecondsToTime(duration, true);
 }
 
-std::string& Strings::LTrim(std::string& str, const std::string& chars)
+std::string& Strings::LTrim(std::string &str, const std::string &chars)
 {
 	str.erase(0, str.find_first_not_of(chars));
 	return str;
 }
 
-std::string& Strings::RTrim(std::string& str, const std::string& chars)
+std::string& Strings::RTrim(std::string &str, const std::string &chars)
 {
 	str.erase(str.find_last_not_of(chars) + 1);
 	return str;
 }
 
-std::string& Strings::Trim(std::string& str, const std::string& chars)
+std::string& Strings::Trim(std::string &str, const std::string &chars)
 {
 	return LTrim(RTrim(str, chars), chars);
 }
@@ -976,7 +990,24 @@ uint32 Strings::TimeToSeconds(std::string time_string)
 	return duration;
 }
 
-bool Strings::Contains(const std::string& subject, const std::string& search)
+bool Strings::ToBool(std::string bool_string)
+{
+	if (
+		Strings::Contains(bool_string, "true") ||
+		Strings::Contains(bool_string, "y") ||
+		Strings::Contains(bool_string, "yes") ||
+		Strings::Contains(bool_string, "on") ||
+		Strings::Contains(bool_string, "enable") ||
+		Strings::Contains(bool_string, "enabled") ||
+		(Strings::IsNumber(bool_string) && std::stoi(bool_string))
+		) {
+		return true;
+	}
+
+	return false;
+}
+
+bool Strings::Contains(const std::string &subject, const std::string &search)
 {
 	return subject.find(search) != std::string::npos;
 }
@@ -998,7 +1029,7 @@ std::string Strings::Random(size_t length)
 
 // a wrapper for stoi which will return a fallback if the string
 // fails to cast to a number
-int Strings::ToInt(const std::string& s, int fallback)
+int Strings::ToInt(const std::string &s, int fallback)
 {
 	if (!Strings::IsNumber(s)) {
 		return fallback;
@@ -1012,7 +1043,7 @@ int Strings::ToInt(const std::string& s, int fallback)
 	}
 }
 
-int64 Strings::ToBigInt(const std::string& s, int64 fallback)
+int64 Strings::ToBigInt(const std::string &s, int64 fallback)
 {
 	if (!Strings::IsNumber(s)) {
 		return fallback;
@@ -1026,7 +1057,7 @@ int64 Strings::ToBigInt(const std::string& s, int64 fallback)
 	}
 }
 
-uint32 Strings::ToUnsignedInt(const std::string& s, uint32 fallback)
+uint32 Strings::ToUnsignedInt(const std::string &s, uint32 fallback)
 {
 	if (!Strings::IsNumber(s)) {
 		return fallback;
@@ -1040,7 +1071,7 @@ uint32 Strings::ToUnsignedInt(const std::string& s, uint32 fallback)
 	}
 }
 
-uint64 Strings::ToUnsignedBigInt(const std::string& s, uint64 fallback)
+uint64 Strings::ToUnsignedBigInt(const std::string &s, uint64 fallback)
 {
 	if (!Strings::IsNumber(s)) {
 		return fallback;
@@ -1054,7 +1085,7 @@ uint64 Strings::ToUnsignedBigInt(const std::string& s, uint64 fallback)
 	}
 }
 
-float Strings::ToFloat(const std::string& s, float fallback)
+float Strings::ToFloat(const std::string &s, float fallback)
 {
 	if (!Strings::IsFloat(s)) {
 		return fallback;
@@ -1081,9 +1112,3 @@ std::string Strings::RemoveNumbers(std::string s)
 	return s.substr(0, current);
 }
 
-bool Strings::IsFloat(const std::string& s)
-{
-	char* ptr;
-	strtof(s.c_str(), &ptr);
-	return (*ptr) == '\0';
-}

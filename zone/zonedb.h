@@ -6,6 +6,7 @@
 #include "position.h"
 #include "../common/faction.h"
 #include "../common/eqemu_logsys.h"
+#include "../common/repositories/doors_repository.h"
 
 class Client;
 class Corpse;
@@ -365,7 +366,7 @@ public:
 	*/
 	bool	DoorIsOpen(uint8 door_id,const char* zone_name);
 	void	SetDoorPlace(uint8 value,uint8 door_id,const char* zone_name);
-	bool	LoadDoors(int32 iDoorCount, Door *into, const char *zone_name);
+	std::vector<DoorsRepository::Doors> LoadDoors(const std::string &zone_name);
 	int32	GetDoorsCount(uint32* oMaxID, const char *zone_name);
 	int32	GetDoorsCountPlusOne(const char *zone_name);
 	int32	GetDoorsDBCountPlusOne(const char *zone_name);

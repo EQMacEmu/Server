@@ -94,8 +94,8 @@ struct NPCType
 	int32	assistradius; // assist radius, defaults to aggroradis if not set
 	uint8	see_invis;			// See Invis flag added
 	bool	see_invis_undead;	// See Invis vs. Undead flag added
-	bool	see_sneak;
-	bool	see_improved_hide;
+	uint8	see_sneak;
+	uint8	see_improved_hide;
 	bool	qglobal;
 	bool	npc_aggro;
 	uint8	spawn_limit;	//only this many may be in zone at a time (0=no limit)
@@ -164,37 +164,6 @@ struct PlayerCorpse_Struct {
 	uint32 time_of_death;
 	ServerLootItem_Struct	items[0];
 	//std::list<player_lootitem::ServerLootItem_Struct*> items;
-};
-
-struct Door {
-	uint32	db_id;
-	uint8	door_id;
-	char	zone_name[16];
-	char	door_name[32];
-	float	pos_x;
-	float	pos_y;
-	float	pos_z;
-	float	heading;
-	int		incline;
-	uint8	opentype;
-	uint16	lock_pick;
-	uint32	keyitem;
-	uint8	nokeyring;
-	uint8	trigger_door;
-	uint8	trigger_type;
-	uint32	door_param;
-	int		invert_state;
-	uint16	size;
-	char	dest_zone[16];
-	float	dest_x;
-	float	dest_y;
-	float	dest_z;
-	float	dest_heading;
-	uint32	client_version_mask;
-	uint32	altkeyitem;
-	bool	islift;
-	uint8   close_time;
-	bool	can_open;
 };
 
 #pragma pack()

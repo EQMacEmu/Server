@@ -1768,54 +1768,75 @@ void command_listnpcs(Client *c, const Seperator *sep){
 	}
 }
 
-void command_date(Client *c, const Seperator *sep){
-	//yyyy mm dd hh mm local
-	if (sep->arg[3][0] == 0 || !sep->IsNumber(1) || !sep->IsNumber(2) || !sep->IsNumber(3)) {
-		c->Message(CC_Red, "Usage: #date yyyy mm dd [HH MM]");
+void command_date(Client *c, const Seperator *sep)
+{
+	const auto arguments = sep->argnum;
+	if (
+		arguments < 1 ||
+		!sep->IsNumber(1) ||
+		!sep->IsNumber(2) ||
+		!sep->IsNumber(3)
+		) {
+		c->Message(CC_Default, "Usage: #date [Year] [Month] [Day] [Hour] [Minute]");
+		c->Message(CC_Default, "Hour and Minute are optional");
+		return;
 	}
-	else {
-		int h = 0, m = 0;
-		TimeOfDay_Struct eqTime;
-		zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
-		if (!sep->IsNumber(4))
-			h = eqTime.hour;
-		else
-			h = atoi(sep->arg[4]);
-		if (!sep->IsNumber(5))
-			m = eqTime.minute;
-		else
-			m = atoi(sep->arg[5]);
-		c->Message(CC_Red, "Setting world time to %s-%s-%s %i:%i...", sep->arg[1], sep->arg[2], sep->arg[3], h, m);
-		zone->SetDate(atoi(sep->arg[1]), atoi(sep->arg[2]), atoi(sep->arg[3]), h, m);
-	}
+
+	TimeOfDay_Struct eqTime;
+	zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
+
+	const uint16 year = Strings::ToUnsignedInt(sep->arg[1]);
+	const uint8  month = Strings::ToUnsignedInt(sep->arg[2]);
+	const uint8  day = Strings::ToUnsignedInt(sep->arg[3]);
+	const uint8  hour = !sep->IsNumber(4) ? eqTime.hour : Strings::ToUnsignedInt(sep->arg[4]);
+	const uint8  minute = !sep->IsNumber(5) ? eqTime.minute : Strings::ToUnsignedInt(sep->arg[5]);
+	
+	c->Message(CC_Default, fmt::format("Setting world time to {}-{}-{} {}:{}...", year, month, day, hour, minute).c_str());
+	zone->SetDate(year, month, day, hour, minute);
 }
 
-void command_timezone(Client *c, const Seperator *sep){
-	if (sep->arg[1][0] == 0 && !sep->IsNumber(1)) {
-		c->Message(CC_Red, "Usage: #timezone HH [MM]");
-		c->Message(CC_Red, "Current timezone is: %ih %im", zone->zone_time.getEQTimeZoneHr(), zone->zone_time.getEQTimeZoneMin());
+void command_timezone(Client *c, const Seperator *sep)
+{
+	const auto arguments = sep->argnum;
+	if (arguments < 1 || sep->IsNumber(1)) {
+		c->Message(CC_Default, "Usage: #timezone HH [MM]");
+		c->Message(CC_Default, fmt::format("Current timezone is: {}h {}m", zone->zone_time.getEQTimeZoneHr(), zone->zone_time.getEQTimeZoneMin()).c_str());
+		return;
 	}
-	else {
-		uint8 hours = atoi(sep->arg[1]);
-		uint8 minutes = atoi(sep->arg[2]);
-		if (!sep->IsNumber(2))
-			minutes = 0;
-		c->Message(CC_Red, "Setting timezone to %i h %i m", hours, minutes);
-		uint32 ntz = (hours * 60) + minutes;
-		zone->zone_time.setEQTimeZone(ntz);
-		database.SetZoneTZ(zone->GetZoneID(), ntz);
 
-		// Update all clients with new TZ.
-		auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
-		TimeOfDay_Struct* tod = (TimeOfDay_Struct*)outapp->pBuffer;
-		zone->zone_time.getEQTimeOfDay(time(0), tod);
-		entity_list.QueueClients(c, outapp);
-		safe_delete(outapp);
+	uint8 minutes = 0;
+	uint8 hours = Strings::ToUnsignedInt(sep->arg[1]);
+
+	if (hours > 24) {
+		hours = 24;
 	}
+
+	if (!sep->IsNumber(2)) {
+		minutes = Strings::ToUnsignedInt(sep->arg[2]);
+
+		if (minutes > 59) {
+			minutes = 59;
+		}
+	}
+
+	c->Message(CC_Default, fmt::format("Setting timezone to {} h {} m", hours, minutes).c_str());
+	const int new_timezone = ((hours * 60) + minutes);
+	zone->zone_time.setEQTimeZone(new_timezone);
+	database.SetZoneTZ(zone->GetZoneID(), new_timezone);
+
+	// Update all clients with new TZ.
+	auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
+
+	auto tod = (TimeOfDay_Struct*)outapp->pBuffer;
+	zone->zone_time.getEQTimeOfDay(time(0), tod);
+
+	entity_list.QueueClients(c, outapp);
+	safe_delete(outapp);
 }
 
-void command_synctod(Client *c, const Seperator *sep){
-	c->Message(CC_Red, "Updating Time/Date for all clients in zone...");
+void command_synctod(Client *c, const Seperator *sep)
+{
+	c->Message(CC_Default, "Updating Time/Date for all clients in zone...");
 	auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
 	TimeOfDay_Struct* tod = (TimeOfDay_Struct*)outapp->pBuffer;
 	zone->zone_time.getEQTimeOfDay(time(0), tod);
@@ -5349,17 +5370,10 @@ void command_flag(Client *c, const Seperator *sep){
 
 void command_time(Client *c, const Seperator *sep)
 {
-	int minutes = 0;
-	if (sep->IsNumber(1)) {
-		if (sep->IsNumber(2)) {
-			minutes = atoi(sep->arg[2]);
-		}
-		c->Message(CC_Default, fmt::format("Setting world time to {}:{} ...", sep->arg[1], minutes).c_str());
-		zone->SetTime(atoi(sep->arg[1]), minutes);
-		LogInfo("{} :: Setting world time to {}:{} ...", c->GetCleanName(), sep->arg[1], minutes);
-	}
-	else {
+	const auto arguments = sep->argnum;
+	if (arguments < 1 || !sep->IsNumber(1)) {
 		c->Message(CC_Default, "To set the Time: #time HH [MM]");
+
 		TimeOfDay_Struct eqTime;
 		zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
 
@@ -5368,11 +5382,34 @@ void command_time(Client *c, const Seperator *sep)
 			(eqTime.minute < 10) ? "0" : "",
 			eqTime.minute,
 			(eqTime.hour >= 12 && eqTime.hour < 24) ? "PM" : "AM"
-			);
+		);
 
 		c->Message(CC_Default, fmt::format("It is now {}.", time_string).c_str());
-		LogInfo("Current Time is: {} ", time_string);
+
+		return;
 	}
+
+	uint8 minutes = 0;
+	uint8 hours = Strings::ToUnsignedInt(sep->arg[1]);
+
+	if (hours > 24) {
+		hours = 24;
+	}
+
+
+	if (sep->IsNumber(2)) {
+		minutes = Strings::ToUnsignedInt(sep->arg[2]);
+
+		if (minutes > 59) {
+			minutes = 59;
+		}
+	}
+		
+	c->Message(CC_Default, fmt::format("Setting world time to {}:{} ...", hours, minutes).c_str());
+		
+	zone->SetTime(hours, minutes);
+	
+	LogInfo("{} :: Setting world time to {}:{} ...", c->GetCleanName(), hours, minutes);
 }
 
 void command_guild(Client *c, const Seperator *sep){

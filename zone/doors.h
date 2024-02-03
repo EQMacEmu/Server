@@ -1,12 +1,8 @@
 #ifndef DOORS_H
 #define DOORS_H
 
-#include "../common/emu_opcodes.h"
-#include "../common/eq_packet_structs.h"
-#include "../common/linked_list.h"
-
 #include "mob.h"
-#include "zonedump.h"
+#include "../common/repositories/doors_repository.h"
 
 class Client;
 class Mob;
@@ -16,93 +12,91 @@ struct Door;
 class Doors : public Entity
 {
 public:
-	Doors(const Door* door);
-	Doors(const char *dmodel, const glm::vec4& position, uint8 dopentype = 58, uint16 dsize = 100);
 	~Doors();
-	bool	IsDoor() const { return true; }
-	void	HandleClick(Client* sender, uint8 trigger, bool floor_port = false);
-	void	HandleLift(Client* sender);
-	bool	Process();
-	uint8	GetDoorID() { return door_id; }
-	uint32	GetDoorDBID() { return db_id; }
-	uint8	GetOpenType() { return opentype; }
-	char*	GetDoorName() { return door_name; }
-	uint32	GetDoorParam() { return door_param; }
-	int		GetInvertState() { return invert_state; }
-	const glm::vec4& GetPosition() const{ return m_Position; }
-	int		GetIncline() { return incline; }
-	bool	triggered;
-	void	SetOpenState(bool st) { isopen = st; }
-	bool	IsDoorOpen() { return isopen; }
 
-	uint8	GetTriggerDoorID() { return trigger_door; }
-	uint8	GetTriggerType() { return trigger_type; }
+	Doors(const char *model, const glm::vec4& position, uint8 open_type = 58, uint16 size = 100);
+	Doors(const DoorsRepository::Doors &door);
 
-	uint32	GetKeyItem() { return keyitem; }
-	uint32	GetAltKeyItem() { return altkeyitem; }
-	void	SetKeyItem(uint32 in) { keyitem = in; }
-	uint8	GetNoKeyring() { return nokeyring; }
-	void	SetNoKeyring(uint8 in) { nokeyring = in; }
-	uint16	GetLockpick() { return lockpick; }
-	void	SetLockpick(uint16 in) { lockpick = in; }
-	uint16	GetSize() { return size; }
-	bool    DoorKeyCheck(Client* sender, uint32& playerkey);
+	bool DoorKeyCheck(Client *sender, uint32 &playerkey);
+	bool IsDoor() const { return true; }
+	bool IsDoorOpen() { return is_open; }
+	bool IsMoveable() { return can_open; }
+	bool IsTeleport() { return teleport; }
+	bool Process();
+	bool triggered;
+	char *GetDestinationZone() { return destination_zone_name; }
+	char *GetDoorName() { return door_name; }
+	const glm::vec4 GetDestination() const { return m_destination; }
+	const glm::vec4 &GetPosition() const { return m_position; }
+	int GetIncline() { return incline; }
+	int GetInvertState() { return invert_state; }
+	uint8 GetDoorID() { return door_id; }
+	uint8 GetNoKeyring() { return no_key_ring; }
+	uint8 GetOpenType() { return open_type; }
+	uint8 GetTriggerDoorID() { return trigger_door; }
+	uint8 GetTriggerType() { return trigger_type; }
+	uint16 GetLockpick() { return lockpick; }
+	uint16 GetSize() { return size; }
+	uint32 GetAltKeyItem() { return alt_key_item_id; }
+	uint32 GetClientVersionMask() { return client_version_mask; }
+	uint32 GetDoorDBID() { return database_id; }
+	uint32 GetDoorParam() { return door_param; }
+	uint32 GetEntityID() { return entity_id; }
+	uint32 GetKeyItem() { return key_item_id; }
+	void DumpDoor();
+	void ForceClose(Mob *sender, bool alt_mode = false);
+	void ForceOpen(Mob *sender, bool alt_mode = false);
+	void HandleClick(Client* sender, uint8 trigger, bool floor_port = false);
+	void HandleLift(Client* sender);
+	void NPCOpen(NPC* sender, bool alt_mode=false);
+	void OpenDoor(Mob *sender, bool force = false);
+	void ToggleState(Mob *sender);
+	void SetDoorName(const char *name);
+	void SetEntityID(uint32 entity) { entity_id = entity; }
+	void SetIncline(int in);
+	void SetKeyItem(uint32 in) { key_item_id = in; }
+	void SetInvertState(int in);
+	void SetLocation(float x, float y, float z);
+	void SetLockpick(uint16 in) { lockpick = in; }
+	void SetNoKeyring(uint8 in) { no_key_ring = in; }
+	void SetOpenState(bool st) { is_open = st; }
+	void SetOpenType(uint8 in);
+	void SetPosition(const glm::vec4& position);
+	void SetSize(uint16 size);
 
-	uint32	GetEntityID() { return entity_id; }
-	void	SetEntityID(uint32 entity) { entity_id = entity; }
-
-	void	DumpDoor();
-	const glm::vec4 GetDestination() const { return m_Destination; }
-	char*	GetDestinationZone() { return dest_zone; }
-
-	uint32	GetClientVersionMask() { return client_version_mask; }
-
-	void	NPCOpen(NPC* sender, bool alt_mode=false);
-	void	ForceOpen(Mob *sender, bool alt_mode=false);
-	void	ForceClose(Mob *sender, bool alt_mode=false);
-	void	ToggleState(Mob *sender);
-	void	OpenDoor(Mob *sender, bool force = false);
-
-	void	SetPosition(const glm::vec4& position);
-	void	SetLocation(float x, float y, float z);
-	void	SetIncline(int in);
-	void	SetDoorName(const char* name);
-	void	SetOpenType(uint8 in);
-	void	SetSize(uint16 size);
-	bool	IsMoveable() { return can_open; }
-	bool	IsTeleport() { return teleport; }
+	bool HasDestinationZone() const;
+	bool IsDestinationZoneSame() const;
 			
 private:
 
-	uint32	db_id;
-	uint8	door_id;
-	char	zone_name[32];
-	char	door_name[32];
-	glm::vec4 m_Position;
-	int		incline;
-	uint8	opentype;
-	uint16	lockpick;
-	uint32	keyitem;
-	uint8	nokeyring;
-	uint32	altkeyitem;
-	uint8	trigger_door;
-	uint8	trigger_type;
-	uint32	door_param;
-	uint16	size;
-	int		invert_state;
-	uint32	entity_id;
-	bool	isopen;
-	bool	islift;
-	Timer	close_timer;
-	Timer	lift_timer;
-	uint8	close_time;
-	bool	can_open;
-	//Timer	trigger_timer;
-
-	char	dest_zone[16];
-	glm::vec4 m_Destination;
-
-	uint32	client_version_mask;
-	bool	teleport;
+	bool      m_has_destination_zone = false;
+	bool      m_same_destination_zone = false;
+	uint32     database_id;
+	uint8      door_id;
+	char       zone_name[32];
+	char       door_name[32];
+	glm::vec4  m_position;
+	int	       incline;
+	uint8      open_type;
+	uint16     lockpick;
+	uint32     key_item_id;
+	uint8      no_key_ring;
+	uint32     alt_key_item_id;
+	uint8      trigger_door;
+	uint8      trigger_type;
+	uint32     door_param;
+	uint16     size;
+	int        invert_state;
+	uint32     entity_id;
+	bool       is_open;
+	bool       is_lift;
+	Timer      close_timer;
+	Timer      lift_timer;
+	uint8      close_time;
+	bool       can_open;
+	char       destination_zone_name[16];
+	glm::vec4  m_destination;
+	uint32	   client_version_mask;
+	bool	   teleport;
 };
 #endif
