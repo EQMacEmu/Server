@@ -167,6 +167,7 @@ public:
 	void	ClearAllConsented();
 	void	ClearAllConsented(char* oname, uint32 corpse_id, LinkedList<ConsentDenied_Struct*>* purged);
 	bool	SetIPExemption(const char* accountname, uint8 amount);
+	bool	SetMule(const char* charname);
 	bool	SetMule(const char* accountname, uint8 toggle);
 	bool	SetExpansion(const char* accountname, uint8 toggle);
 

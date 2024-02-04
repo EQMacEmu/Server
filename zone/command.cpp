@@ -10943,6 +10943,40 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 	}
 }
 
+void command_makemule(Client* c, const Seperator* sep)
+{
+	if (!c) {
+		return;
+	}
+	if (c->IsMule()) {
+		c->Message(CC_Red, "Account is already flagged as a mule.");
+		return;
+	}
+	if (c->GetLevel() != 1) {
+		c->Message(CC_Red, "Mule accounts and characters must be level 1.");
+		return;
+	}
+	if (!c->IsMuleInitiated()) {
+		c->SetMuleInitiated(true);
+		c->Message(CC_Default, "You have initiated the process to make this account a mule. Mules can not leave designated trader zones or level past 1. Once an account is made a mule it can not be undone. If you wish to proceed then type: #makemule confirm");
+		return;
+	}
+	if (c->IsMuleInitiated() && sep->arg[1][0] != 0 && strcasecmp(sep->arg[1], "confirm") == 0) {
+		if (!database.SetMule(c->GetName())) {
+			c->Message(CC_Red, "Could not set mule status for this account. It may already be a mule account or all characters are not level 1.");
+		}
+		else {
+			c->MovePC(ecommons, -164, -1651, 4, 0.0f, 0, SummonPC);
+			c->Message(CC_Green, "Successfully flagged your account as a mule.");
+		}
+		return;
+	}
+	if (sep->arg[1][0] != 0 && strcasecmp(sep->arg[1], "confirm") != 0) {
+		c->Message(CC_Red, "To confirm your mule account you must type: #makemule confirm");
+		return;
+	}
+}
+
 void command_mule(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0] != 0)

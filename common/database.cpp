@@ -443,6 +443,46 @@ bool Database::SetIPExemption(const char *name, uint8 amount) {
 	return true;
 }
 
+bool Database::SetMule(const char* charname) {
+	// get account for the character with charname
+	std::string query = StringFormat("SELECT `account_id`, `name` FROM `character_data` WHERE `name` = '%s'", charname);
+
+	auto results = QueryDatabase(query);
+	if (!results.Success() || results.RowCount() != 1) {
+		return false;
+	}
+	auto row = results.begin();
+	uint8 account_id = std::stoi(row[0]);
+	
+	// iterate over every character associated with account and verify they're all level 1
+	std::string query = StringFormat("SELECT `account_id`, `name`, `level` FROM `character_data` WHERE `account_id` = %d", account_id);
+	auto results = QueryDatabase(query);
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		if (std::stoi(row[0]))
+
+		if (row[0] && atoi(row[0]) > 0) {
+			Log(Logs::General, Logs::WorldServer, "Account: %i tried to request name: %s, but it is already taken...", account_id, name);
+			return false;
+		}
+	}
+
+
+	// finally set account to mule status
+	std::string query = StringFormat("UPDATE account SET mule = %d where name='%s' AND status < 80", toggle, Strings::Escape(name).c_str());
+
+	auto results = QueryDatabase(query);
+
+	if (!results.Success()) {
+		return false;
+	}
+
+	if (results.RowsAffected() == 0) {
+		return false;
+	}
+
+	return true;
+}
+
 bool Database::SetMule(const char *name, uint8 toggle) {
 	std::string query = StringFormat("UPDATE account SET mule = %d, expansion = 12 where name='%s' AND status < 80", toggle, Strings::Escape(name).c_str());
 
@@ -2079,7 +2119,6 @@ void Database::ClearGroupLeader(uint32 gid) {
 
 bool Database::GetAccountRestriction(uint32 acctid, uint16& expansion, bool& mule)
 {
-
 	std::string query = StringFormat("SELECT expansion, mule FROM account WHERE id=%i",acctid);
 	auto results = QueryDatabase(query);
 

@@ -314,7 +314,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
 		{
 			myerror = ZONE_ERROR_NOEXPERIENCE;
-			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before luclin!");
+			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before Luclin!");
 		}
 	}
 	else {
@@ -1191,8 +1191,8 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 	if (RuleB(Quarm, EastCommonMules)) {
 		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
 		{
-			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before luclin!");
-			Message(CC_Red, "Trader accounts may not leave EC before luclin!");
+			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before Luclin!");
+			Message(CC_Red, "Trader accounts may not leave EC before Luclin!");
 			return(false);
 		}
 	} 
