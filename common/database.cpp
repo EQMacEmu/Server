@@ -455,27 +455,21 @@ bool Database::SetMule(const char* charname) {
 	uint8 account_id = std::stoi(row[0]);
 	
 	// iterate over every character associated with account and verify they're all level 1
-	std::string query = StringFormat("SELECT `account_id`, `name`, `level` FROM `character_data` WHERE `account_id` = %d", account_id);
+	std::string query = StringFormat("SELECT `account_id`, `level` FROM `character_data` WHERE `account_id` = %d", account_id);
 	auto results = QueryDatabase(query);
 	for (auto row = results.begin(); row != results.end(); ++row) {
-		if (std::stoi(row[0]))
-
-		if (row[0] && atoi(row[0]) > 0) {
-			Log(Logs::General, Logs::WorldServer, "Account: %i tried to request name: %s, but it is already taken...", account_id, name);
+		if (std::stoi(row[1]) != 1) {
+			Log(Logs::General, Logs::WorldServer, "Can not set mule status on accountbecause character exists that is not level 1");
 			return false;
 		}
 	}
 
-
 	// finally set account to mule status
-	std::string query = StringFormat("UPDATE account SET mule = %d where name='%s' AND status < 80", toggle, Strings::Escape(name).c_str());
-
+	std::string query = StringFormat("UPDATE account SET mule = %d where id = %d AND status < 80", 1, account_id);
 	auto results = QueryDatabase(query);
-
 	if (!results.Success()) {
 		return false;
 	}
-
 	if (results.RowsAffected() == 0) {
 		return false;
 	}
