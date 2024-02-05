@@ -103,10 +103,16 @@ void ClientListEntry::SetOnline(int8 iOnline) {
 	Log(Logs::Detail, Logs::WorldServer,"SetOnline Account: %i %i -> %i",AccountID(), pOnline, iOnline);
 
 	// this counting method, counts players connected to world.
-	if (RuleB(Quarm, IncludeMulesInServerCount) && iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online)
-		numplayers++;
-	else if (RuleB(Quarm, IncludeMulesInServerCount) && iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online)
-		numplayers--;
+	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online) {
+		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+			numplayers++;
+		}
+	}
+	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online) {
+		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+			numplayers--;
+		}
+	}
 
 	// this counting method, counts players in zones.
 	//if (iOnline >= CLE_Status_Zoning && pOnline < CLE_Status_Zoning)
