@@ -459,7 +459,7 @@ bool Database::SetMule(const char* charname) {
 	auto results = QueryDatabase(query);
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		if (std::stoi(row[1]) != 1) {
-			Log(Logs::General, Logs::WorldServer, "Can not set mule status on accountbecause character exists that is not level 1");
+			Log(Logs::General, Logs::WorldServer, "Can not set mule status on account because character exists that is not level 1");
 			return false;
 		}
 	}

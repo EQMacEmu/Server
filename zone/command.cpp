@@ -276,6 +276,7 @@ int command_init(void)
 		command_add("logs", "Manage anything to do with logs.", AccountStatus::GMCoder, command_logs) ||
 		command_add("logtest", "Performs log performance testing.", AccountStatus::GMImpossible, command_logtest) ||
 
+		command_add("makemule", "Flags the account of the player who runs the command as a mule.", AccountStatus::Player, command_makemule) ||
 		command_add("makepet", "[level] [class] [race] [texture] - Make a pet.", AccountStatus::QuestMaster, command_makepet) ||
 		command_add("mana", "- Fill your or your target's mana.", AccountStatus::GMMgmt, command_mana) ||
 		command_add("manaburn", "- Use AA Wizard class skill manaburn on target.", AccountStatus::GMAreas, command_manaburn) ||
