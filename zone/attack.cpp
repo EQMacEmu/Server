@@ -4625,49 +4625,47 @@ int Mob::GetOffense(EQ::skills::SkillType skill)
 	int mobLevel = GetLevel();
 	int offense = 0;
 	bool isSummonedPet = IsSummonedClientPet() || (IsPet() && GetSummonerID());
-	if (!isSummonedPet && mobLevel > 45 && mobLevel < 51)		// NPCs around level 43-50 have a flatter offense value because
-		mobLevel = 45;											// NPC weapon skills cap at 210 then jump to 250 at level 51
+	if (!isSummonedPet && mobLevel > 45 && mobLevel < 51) {		// NPCs around level 43-50 have a flatter offense value because
+		mobLevel = 45;                                          // NPC weapon skills cap at 210 then jump to 250 at level 51
+	}
 
 	int baseOffense = mobLevel * 55 / 10 - 4;	// parses indicate that the floor/baseline offense isn't level * 5.  don't know why
-	if (baseOffense > 320)
+	if (baseOffense > 320) {
 		baseOffense = 320;
+	}
 
 	int strOffense = 0;
 
-	if (mobLevel < 6)
-	{
+	if (mobLevel < 6) {
 		baseOffense = mobLevel * 4;
 		strOffense = mobLevel;
 	}
-	else if (mobLevel < 30)
-	{
+	else if (mobLevel < 30) {
 		strOffense = mobLevel / 2 + 1;
-	}
-	else
-	{
+	} else {
 		strOffense = mobLevel * 2 - 40;
-
-		if (!isSummonedPet && zone->GetZoneExpansion() == PlanesEQ)
-		{
+		if (!isSummonedPet && zone->GetZoneExpansion() == PlanesEQ) {
 			strOffense += 20;
 		}
+
 	}
 
-	if (isSummonedPet)
-	{
+	if (isSummonedPet) {
 		baseOffense = GetSkill(skill);
 		strOffense = 0;
 	}
 
 	strOffense += (itembonuses.STR + spellbonuses.STR) * 2 / 3;
-	if (strOffense < 0)
+	if (strOffense < 0) {
 		strOffense = 0;
+	}
 
 	offense = baseOffense + strOffense;
 
 	offense += ATK + spellbonuses.ATK;
-	if (offense < 1)
+	if (offense < 1) {
 		offense = 1;
+	}
 
 	return offense;
 }

@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseDoorsRepository {
 public:
 	struct Doors {
@@ -228,35 +227,35 @@ public:
 		if (results.RowCount() == 1) {
 			Doors e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
-			e.doorid              = static_cast<int16_t>(atoi(row[1]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.doorid              = row[1] ? static_cast<int16_t>(atoi(row[1])) : 0;
 			e.zone                = row[2] ? row[2] : "";
 			e.name                = row[3] ? row[3] : "";
-			e.pos_y               = strtof(row[4], nullptr);
-			e.pos_x               = strtof(row[5], nullptr);
-			e.pos_z               = strtof(row[6], nullptr);
-			e.heading             = strtof(row[7], nullptr);
-			e.opentype            = static_cast<int16_t>(atoi(row[8]));
-			e.lockpick            = static_cast<int16_t>(atoi(row[9]));
-			e.keyitem             = static_cast<int32_t>(atoi(row[10]));
-			e.altkeyitem          = static_cast<int32_t>(atoi(row[11]));
-			e.nokeyring           = static_cast<int8_t>(atoi(row[12]));
-			e.triggerdoor         = static_cast<int16_t>(atoi(row[13]));
-			e.triggertype         = static_cast<int16_t>(atoi(row[14]));
-			e.doorisopen          = static_cast<int16_t>(atoi(row[15]));
-			e.door_param          = static_cast<int32_t>(atoi(row[16]));
-			e.dest_zone           = row[17] ? row[17] : "";
-			e.dest_x              = strtof(row[18], nullptr);
-			e.dest_y              = strtof(row[19], nullptr);
-			e.dest_z              = strtof(row[20], nullptr);
-			e.dest_heading        = strtof(row[21], nullptr);
-			e.invert_state        = static_cast<int32_t>(atoi(row[22]));
-			e.incline             = static_cast<int32_t>(atoi(row[23]));
-			e.size                = static_cast<uint16_t>(strtoul(row[24], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[25], nullptr, 10));
-			e.islift              = static_cast<int8_t>(atoi(row[26]));
-			e.close_time          = static_cast<int32_t>(atoi(row[27]));
-			e.can_open            = static_cast<int8_t>(atoi(row[28]));
+			e.pos_y               = row[4] ? strtof(row[4], nullptr) : 0;
+			e.pos_x               = row[5] ? strtof(row[5], nullptr) : 0;
+			e.pos_z               = row[6] ? strtof(row[6], nullptr) : 0;
+			e.heading             = row[7] ? strtof(row[7], nullptr) : 0;
+			e.opentype            = row[8] ? static_cast<int16_t>(atoi(row[8])) : 0;
+			e.lockpick            = row[9] ? static_cast<int16_t>(atoi(row[9])) : 0;
+			e.keyitem             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.altkeyitem          = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.nokeyring           = row[12] ? static_cast<int8_t>(atoi(row[12])) : 1;
+			e.triggerdoor         = row[13] ? static_cast<int16_t>(atoi(row[13])) : 0;
+			e.triggertype         = row[14] ? static_cast<int16_t>(atoi(row[14])) : 0;
+			e.doorisopen          = row[15] ? static_cast<int16_t>(atoi(row[15])) : 0;
+			e.door_param          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
+			e.dest_zone           = row[17] ? row[17] : "NONE";
+			e.dest_x              = row[18] ? strtof(row[18], nullptr) : 0;
+			e.dest_y              = row[19] ? strtof(row[19], nullptr) : 0;
+			e.dest_z              = row[20] ? strtof(row[20], nullptr) : 0;
+			e.dest_heading        = row[21] ? strtof(row[21], nullptr) : 0;
+			e.invert_state        = row[22] ? static_cast<int32_t>(atoi(row[22])) : 0;
+			e.incline             = row[23] ? static_cast<int32_t>(atoi(row[23])) : 0;
+			e.size                = row[24] ? static_cast<uint16_t>(strtoul(row[24], nullptr, 10)) : 100;
+			e.client_version_mask = row[25] ? static_cast<uint32_t>(strtoul(row[25], nullptr, 10)) : 4294967295;
+			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
+			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
+			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
 
 			return e;
 		}
@@ -459,35 +458,35 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Doors e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
-			e.doorid              = static_cast<int16_t>(atoi(row[1]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.doorid              = row[1] ? static_cast<int16_t>(atoi(row[1])) : 0;
 			e.zone                = row[2] ? row[2] : "";
 			e.name                = row[3] ? row[3] : "";
-			e.pos_y               = strtof(row[4], nullptr);
-			e.pos_x               = strtof(row[5], nullptr);
-			e.pos_z               = strtof(row[6], nullptr);
-			e.heading             = strtof(row[7], nullptr);
-			e.opentype            = static_cast<int16_t>(atoi(row[8]));
-			e.lockpick            = static_cast<int16_t>(atoi(row[9]));
-			e.keyitem             = static_cast<int32_t>(atoi(row[10]));
-			e.altkeyitem          = static_cast<int32_t>(atoi(row[11]));
-			e.nokeyring           = static_cast<int8_t>(atoi(row[12]));
-			e.triggerdoor         = static_cast<int16_t>(atoi(row[13]));
-			e.triggertype         = static_cast<int16_t>(atoi(row[14]));
-			e.doorisopen          = static_cast<int16_t>(atoi(row[15]));
-			e.door_param          = static_cast<int32_t>(atoi(row[16]));
-			e.dest_zone           = row[17] ? row[17] : "";
-			e.dest_x              = strtof(row[18], nullptr);
-			e.dest_y              = strtof(row[19], nullptr);
-			e.dest_z              = strtof(row[20], nullptr);
-			e.dest_heading        = strtof(row[21], nullptr);
-			e.invert_state        = static_cast<int32_t>(atoi(row[22]));
-			e.incline             = static_cast<int32_t>(atoi(row[23]));
-			e.size                = static_cast<uint16_t>(strtoul(row[24], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[25], nullptr, 10));
-			e.islift              = static_cast<int8_t>(atoi(row[26]));
-			e.close_time          = static_cast<int32_t>(atoi(row[27]));
-			e.can_open            = static_cast<int8_t>(atoi(row[28]));
+			e.pos_y               = row[4] ? strtof(row[4], nullptr) : 0;
+			e.pos_x               = row[5] ? strtof(row[5], nullptr) : 0;
+			e.pos_z               = row[6] ? strtof(row[6], nullptr) : 0;
+			e.heading             = row[7] ? strtof(row[7], nullptr) : 0;
+			e.opentype            = row[8] ? static_cast<int16_t>(atoi(row[8])) : 0;
+			e.lockpick            = row[9] ? static_cast<int16_t>(atoi(row[9])) : 0;
+			e.keyitem             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.altkeyitem          = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.nokeyring           = row[12] ? static_cast<int8_t>(atoi(row[12])) : 1;
+			e.triggerdoor         = row[13] ? static_cast<int16_t>(atoi(row[13])) : 0;
+			e.triggertype         = row[14] ? static_cast<int16_t>(atoi(row[14])) : 0;
+			e.doorisopen          = row[15] ? static_cast<int16_t>(atoi(row[15])) : 0;
+			e.door_param          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
+			e.dest_zone           = row[17] ? row[17] : "NONE";
+			e.dest_x              = row[18] ? strtof(row[18], nullptr) : 0;
+			e.dest_y              = row[19] ? strtof(row[19], nullptr) : 0;
+			e.dest_z              = row[20] ? strtof(row[20], nullptr) : 0;
+			e.dest_heading        = row[21] ? strtof(row[21], nullptr) : 0;
+			e.invert_state        = row[22] ? static_cast<int32_t>(atoi(row[22])) : 0;
+			e.incline             = row[23] ? static_cast<int32_t>(atoi(row[23])) : 0;
+			e.size                = row[24] ? static_cast<uint16_t>(strtoul(row[24], nullptr, 10)) : 100;
+			e.client_version_mask = row[25] ? static_cast<uint32_t>(strtoul(row[25], nullptr, 10)) : 4294967295;
+			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
+			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
+			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
 
 			all_entries.push_back(e);
 		}
@@ -512,35 +511,35 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Doors e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
-			e.doorid              = static_cast<int16_t>(atoi(row[1]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.doorid              = row[1] ? static_cast<int16_t>(atoi(row[1])) : 0;
 			e.zone                = row[2] ? row[2] : "";
 			e.name                = row[3] ? row[3] : "";
-			e.pos_y               = strtof(row[4], nullptr);
-			e.pos_x               = strtof(row[5], nullptr);
-			e.pos_z               = strtof(row[6], nullptr);
-			e.heading             = strtof(row[7], nullptr);
-			e.opentype            = static_cast<int16_t>(atoi(row[8]));
-			e.lockpick            = static_cast<int16_t>(atoi(row[9]));
-			e.keyitem             = static_cast<int32_t>(atoi(row[10]));
-			e.altkeyitem          = static_cast<int32_t>(atoi(row[11]));
-			e.nokeyring           = static_cast<int8_t>(atoi(row[12]));
-			e.triggerdoor         = static_cast<int16_t>(atoi(row[13]));
-			e.triggertype         = static_cast<int16_t>(atoi(row[14]));
-			e.doorisopen          = static_cast<int16_t>(atoi(row[15]));
-			e.door_param          = static_cast<int32_t>(atoi(row[16]));
-			e.dest_zone           = row[17] ? row[17] : "";
-			e.dest_x              = strtof(row[18], nullptr);
-			e.dest_y              = strtof(row[19], nullptr);
-			e.dest_z              = strtof(row[20], nullptr);
-			e.dest_heading        = strtof(row[21], nullptr);
-			e.invert_state        = static_cast<int32_t>(atoi(row[22]));
-			e.incline             = static_cast<int32_t>(atoi(row[23]));
-			e.size                = static_cast<uint16_t>(strtoul(row[24], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[25], nullptr, 10));
-			e.islift              = static_cast<int8_t>(atoi(row[26]));
-			e.close_time          = static_cast<int32_t>(atoi(row[27]));
-			e.can_open            = static_cast<int8_t>(atoi(row[28]));
+			e.pos_y               = row[4] ? strtof(row[4], nullptr) : 0;
+			e.pos_x               = row[5] ? strtof(row[5], nullptr) : 0;
+			e.pos_z               = row[6] ? strtof(row[6], nullptr) : 0;
+			e.heading             = row[7] ? strtof(row[7], nullptr) : 0;
+			e.opentype            = row[8] ? static_cast<int16_t>(atoi(row[8])) : 0;
+			e.lockpick            = row[9] ? static_cast<int16_t>(atoi(row[9])) : 0;
+			e.keyitem             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.altkeyitem          = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.nokeyring           = row[12] ? static_cast<int8_t>(atoi(row[12])) : 1;
+			e.triggerdoor         = row[13] ? static_cast<int16_t>(atoi(row[13])) : 0;
+			e.triggertype         = row[14] ? static_cast<int16_t>(atoi(row[14])) : 0;
+			e.doorisopen          = row[15] ? static_cast<int16_t>(atoi(row[15])) : 0;
+			e.door_param          = row[16] ? static_cast<int32_t>(atoi(row[16])) : 0;
+			e.dest_zone           = row[17] ? row[17] : "NONE";
+			e.dest_x              = row[18] ? strtof(row[18], nullptr) : 0;
+			e.dest_y              = row[19] ? strtof(row[19], nullptr) : 0;
+			e.dest_z              = row[20] ? strtof(row[20], nullptr) : 0;
+			e.dest_heading        = row[21] ? strtof(row[21], nullptr) : 0;
+			e.invert_state        = row[22] ? static_cast<int32_t>(atoi(row[22])) : 0;
+			e.incline             = row[23] ? static_cast<int32_t>(atoi(row[23])) : 0;
+			e.size                = row[24] ? static_cast<uint16_t>(strtoul(row[24], nullptr, 10)) : 100;
+			e.client_version_mask = row[25] ? static_cast<uint32_t>(strtoul(row[25], nullptr, 10)) : 4294967295;
+			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
+			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
+			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
 
 			all_entries.push_back(e);
 		}

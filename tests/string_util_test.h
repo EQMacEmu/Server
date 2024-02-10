@@ -29,6 +29,10 @@ public:
 		TEST_ADD(StringUtilTest::StringFormatTest);
 		TEST_ADD(StringUtilTest::EscapeStringTest);
 		TEST_ADD(StringUtilTest::EscapeStringMemoryTest);
+		TEST_ADD(StringUtilTest::SearchDeliminatedStringTest);
+		TEST_ADD(StringUtilTest::SplitStringTest);
+		TEST_ADD(StringUtilTest::TestIsFloat);
+		TEST_ADD(StringUtilTest::TestIsNumber);
 	}
 
 	~StringUtilTest() {
@@ -79,6 +83,75 @@ public:
 
 		auto s = Strings::EscapePair(t, 10);
 		TEST_ASSERT(s.compare("abc\\x00\\n\\r\\\\\\'\\\"\\x1a") == 0);
+	}
+
+	void SearchDeliminatedStringTest() {
+		std::string h =
+
+			"befallen,charasis,dalnir,frontiermtns,gukbottom,iceclad,lakeofillomen,northkarana,qey2hh1,soldunga,southro,wakening,podisease,velketor,akheva,riwwi,bothunder,poair";
+		TEST_ASSERT(Strings::SearchDelim(h, "befallen") == 0);
+		TEST_ASSERT(Strings::SearchDelim(h, "charasis") == 9);
+		TEST_ASSERT(Strings::SearchDelim(h, "dalnir") == 18);
+		TEST_ASSERT(Strings::SearchDelim(h, "frontiermtns") == 25);
+		TEST_ASSERT(Strings::SearchDelim(h, "gukbottom") == 38);
+		TEST_ASSERT(Strings::SearchDelim(h, "iceclad") == 48);
+		TEST_ASSERT(Strings::SearchDelim(h, "lakeofillomen") == 56);
+		TEST_ASSERT(Strings::SearchDelim(h, "northkarana") == 70);
+		TEST_ASSERT(Strings::SearchDelim(h, "qey2hh1") == 82);
+		TEST_ASSERT(Strings::SearchDelim(h, "soldunga") == 90);
+		TEST_ASSERT(Strings::SearchDelim(h, "southro") == 99);
+		TEST_ASSERT(Strings::SearchDelim(h, "wakening") == 107);
+		TEST_ASSERT(Strings::SearchDelim(h, "podisease") == 116);
+		TEST_ASSERT(Strings::SearchDelim(h, "velketor") == 126);
+		TEST_ASSERT(Strings::SearchDelim(h, "akheva") == 135);
+		TEST_ASSERT(Strings::SearchDelim(h, "riwwi") == 142);
+		TEST_ASSERT(Strings::SearchDelim(h, "bothunder") == 148);
+		TEST_ASSERT(Strings::SearchDelim(h, "poair") == 158);
+		TEST_ASSERT(Strings::SearchDelim(h, "pod") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "air") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "bef") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "wwi") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "bothunder,") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "poair,") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "befallen,") == std::string::npos);
+		TEST_ASSERT(Strings::SearchDelim(h, "wwi,") == std::string::npos);
+	}
+
+	void SplitStringTest() {
+		std::string s = "123,456,789,";
+		auto v = Strings::Split(s, ',');
+		TEST_ASSERT(v.size() == 3);
+		TEST_ASSERT(v[0] == "123");
+		TEST_ASSERT(v[1] == "456");
+		TEST_ASSERT(v[2] == "789");
+	}
+
+	void TestIsFloat() {
+		TEST_ASSERT_EQUALS(Strings::IsFloat("0.23424523"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("12312312313.23424523"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("12312312313"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat(".234234"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat(".234234f"), false);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("Johnson"), false);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("12312312313f"), false); // character at end
+		TEST_ASSERT_EQUALS(Strings::IsFloat("18446744073709551616"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("-18"), true);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("-f18"), false);
+		TEST_ASSERT_EQUALS(Strings::IsFloat("-18446744073709551616"), true);
+	}
+
+	void TestIsNumber() {
+		TEST_ASSERT_EQUALS(Strings::IsNumber("0.23424523"), false);
+		TEST_ASSERT_EQUALS(Strings::IsNumber("12312312313.23424523"), false);
+		TEST_ASSERT_EQUALS(Strings::IsNumber("12312312313"), true);
+		TEST_ASSERT_EQUALS(Strings::IsNumber("12312312313f"), false); // character at end
+		TEST_ASSERT_EQUALS(Strings::IsNumber("18446744073709551616"), true); // 64
+		TEST_ASSERT_EQUALS(Strings::IsNumber("-18"), true);
+		TEST_ASSERT_EQUALS(Strings::IsNumber("-f18"), false);
+		TEST_ASSERT_EQUALS(Strings::IsNumber("-18446744073709551616"), true); // 64
+		TEST_ASSERT_EQUALS(Strings::IsNumber("18446744073709551616f"), false); // 64
+		TEST_ASSERT_EQUALS(Strings::IsNumber("18446744073709551616.0"), false); // 64
+		TEST_ASSERT_EQUALS(Strings::IsNumber("18446744073709551616.0f"), false); // 64
 	}
 };
 

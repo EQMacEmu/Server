@@ -27,7 +27,7 @@ struct PathNode {
 	uint16 id;
 	glm::vec3 v;
 	float bestz;
-	NeighbourNode Neighbours[50];
+	NeighbourNode Neighbours[PATHNODENEIGHBOURS];
 };
 
 struct PathFileHeader {
@@ -504,40 +504,38 @@ void PathfinderWaypoint::Load(const std::string &filename) {
 	Head.PathNodeCount = 0;
 	Head.version = 2;
 	
-	FILE *f = fopen(filename.c_str(), "rb");
-	if (f) {
+	FILE *pathfile = fopen(filename.c_str(), "rb");
+	if (pathfile) {
 		char Magic[10];
 		size_t fread_var = 0;
-		fread_var = fread(&Magic, 9, 1, f);
+		fread_var = fread(&Magic, 9, 1, pathfile);
 	
-		if (strncmp(Magic, "EQEMUPATH", 9))
-		{
-			Log(Logs::General, Logs::Error, "Bad Magic String in .path file");
-			fclose(f);
+		if (strncmp(Magic, "EQEMUPATH", 9)) {
+			LogError("Bad Magic String in .path file");
+			fclose(pathfile);
 			return;
 		}
-		fread_var = fread(&Head, sizeof(Head), 1, f);
+		fread_var = fread(&Head, sizeof(Head), 1, pathfile);
 	
 		Log(Logs::General, Logs::Pathing, "Path File Header: Version %d, PathNodes %d",
 			(long)Head.version, (long)Head.PathNodeCount);
 
-		if (Head.version != 2 && Head.version != 3 && Head.version != 4)
-		{
-			Log(Logs::General, Logs::Error, "Unsupported path file version.");
-			fclose(f);
+		if (Head.version != 2 && Head.version != 3 && Head.version != 4) {
+			LogError("Unsupported path file version.");
+			fclose(pathfile);
 			return;
 		}
 	
-		LoadV2(f, Head);
+		LoadPath(pathfile, Head);
 		return;
 	}
 }
 
-void PathfinderWaypoint::LoadV2(FILE *f, const PathFileHeader &header)
+void PathfinderWaypoint::LoadPath(FILE *PathFile, const PathFileHeader &header)
 {
 	std::unique_ptr<PathNode[]> PathNodes(new PathNode[header.PathNodeCount]);
 	size_t fread_var = 0;
-	fread_var = fread(PathNodes.get(), sizeof(PathNode), header.PathNodeCount, f);
+	fread_var = fread(PathNodes.get(), sizeof(PathNode), header.PathNodeCount, PathFile);
 	int MaxNodeID = header.PathNodeCount - 1;
 	
 	m_impl->PathFileValid = true;
@@ -575,14 +573,14 @@ void PathfinderWaypoint::LoadV2(FILE *f, const PathFileHeader &header)
 	m_impl->HeadVersion = header.version;
 	m_impl->ClosedListFlag = new int[header.PathNodeCount];
 	if (m_impl->PathFileValid) {
-		Log(Logs::General, Logs::ZoneServer, "Pathfile v%d loaded.", header.version);
-		if (header.version != 4)
+		LogInfo("Pathfile v{}d loaded.", header.version);
+		if (header.version != 4) {
 			RecalcDistances();
+		}
 		ResizePathingVectors();
 		if (header.version == 4) {
-			for (uint32 i = 0; i < header.PathNodeCount; i++)
-			{
-				fread_var = fread(&m_impl->path_tree[i][0], sizeof(int16) * header.PathNodeCount, 1, f);
+			for (uint32 i = 0; i < header.PathNodeCount; i++) {
+				fread_var = fread(&m_impl->path_tree[i][0], sizeof(int16) * header.PathNodeCount, 1, PathFile);
 			}
 			// update teleports matrix
 			for (auto &node : m_impl->Nodes) {
@@ -593,7 +591,7 @@ void PathfinderWaypoint::LoadV2(FILE *f, const PathFileHeader &header)
 			}
 		}
 	}
-	fclose(f);
+	fclose(PathFile);
 }
 
 void PathfinderWaypoint::ShowNodes()
@@ -788,12 +786,23 @@ std::string DigitToWord(int i)
 	return ret;
 }
 
-void PathfinderWaypoint::ShowNode(const Node &n) {
-	auto npc_type = new NPCType;
-	memset(npc_type, 0, sizeof(NPCType));
+void PathfinderWaypoint::ShowNode(const Node &n) 
+{
+	auto npc_type = database.GetNPCTypeTemp(RuleI(NPC, NPCTemplateID));
 
-	sprintf(npc_type->name, "%s", DigitToWord(n.id).c_str());
-	sprintf(npc_type->lastname, "%i", n.id);
+	if (n.id < 10) {
+		sprintf(npc_type->name, "%s", DigitToWord(n.id).c_str());
+	}
+	else if (n.id < 100) {
+		sprintf(npc_type->name, "%s_%s", DigitToWord(n.id/10).c_str(), DigitToWord(n.id % 10).c_str());
+	}
+	else if (n.id < 1000) {
+		sprintf(npc_type->name, "%s_%s_%s", DigitToWord(n.id / 100).c_str(), DigitToWord((n.id % 100) / 10).c_str(), DigitToWord(((n.id % 100) % 10)).c_str());
+	}
+	else {
+		sprintf(npc_type->name, "%s_%s_%s_%s", DigitToWord(n.id / 1000).c_str(), DigitToWord((n.id % 1000) / 100).c_str(), DigitToWord(((n.id % 1000) % 100) / 10).c_str(), DigitToWord((((n.id % 1000) % 100) % 10)).c_str());
+	}
+
 	npc_type->cur_hp = 4000000;
 	npc_type->max_hp = 4000000;
 	npc_type->race = 151;
@@ -820,8 +829,10 @@ void PathfinderWaypoint::ShowNode(const Node &n) {
 	npc_type->WIS = 150;
 	npc_type->CHA = 150;
 
+	strcpy(npc_type->special_abilities, "19,1^20,1^24,1^35,1");
+
 	auto position = glm::vec4(n.v.x, n.v.y, n.v.z, 0.0f);
-	auto npc = new NPC(npc_type, nullptr, position, 1);
+	auto npc = new NPC(npc_type, nullptr, position, EQ::constants::Flying);
 
 	entity_list.AddNPC(npc, true, true);
 }

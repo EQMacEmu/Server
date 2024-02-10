@@ -2,6 +2,8 @@
 
 #include "pathfinder_interface.h"
 
+#define PATHNODENEIGHBOURS 50
+
 struct PathFileHeader;
 struct Node;
 
@@ -19,7 +21,7 @@ public:
 
 private:
 	void Load(const std::string &filename);
-	void LoadV2(FILE *f, const PathFileHeader &header);
+	void LoadPath(FILE *PathFile, const PathFileHeader &header);
 	void ShowNodes();
 	void NodeInfo(Client *c);
 	Node *FindPathNodeByCoordinates(float x, float y, float z);
