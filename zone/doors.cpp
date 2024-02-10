@@ -81,7 +81,7 @@ Doors::Doors(const DoorsRepository::Doors &door) :
 	close_time          = door.close_time;
 	can_open            = door.can_open;
 	client_version_mask = door.client_version_mask;
-	guildzonedoor = door.guildzonedoor;
+	guild_zone_door = door.guild_zone_door;
 
 	SetOpenState(false);
 
@@ -107,26 +107,26 @@ Doors::Doors(const char *model, const glm::vec4& position, uint8 opentype, uint1
 	strn0cpy(door_name, model, 32);
 	strn0cpy(destination_zone_name, "NONE", 32);
 
-	this->database_id		= database.GetDoorsCountPlusOne(zone->GetShortName());
-	this->door_id	= database.GetDoorsDBCountPlusOne(zone->GetShortName());
+	database_id		= database.GetDoorsCountPlusOne(zone->GetShortName());
+	door_id	= database.GetDoorsDBCountPlusOne(zone->GetShortName());
 
-	this->incline		= 0;
-	this->open_type		= opentype;
-	this->lockpick		= 0;
-	this->key_item_id	= 0;
-	this->no_key_ring	= 0;
-	this->alt_key_item_id	= 0;
-	this->trigger_door	= 0;
-	this->trigger_type	= 0;
-	this->triggered		= false;
-	this->door_param	= 0;
-	this->size			= size;
-	this->invert_state	= 0;
-	this->is_lift		= 0;
-	this->close_time	= 0;
-	this->can_open		= 0;
-	this->guildzonedoor = 0;
-	this->client_version_mask = 4294967295u;
+	incline		= 0;
+	open_type		= opentype;
+	lockpick		= 0;
+	key_item_id	= 0;
+	no_key_ring	= 0;
+	alt_key_item_id	= 0;
+	trigger_door	= 0;
+	trigger_type	= 0;
+	triggered		= false;
+	door_param	= 0;
+	size			= size;
+	invert_state	= 0;
+	is_lift		= 0;
+	close_time	= 0;
+	can_open		= 0;
+	guild_zone_door = 0;
+	client_version_mask = 4294967295u;
 
 	SetOpenState(false);
 	teleport = false;
@@ -306,15 +306,15 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 		uint8 keepoffkeyring = GetNoKeyring();
 		
 		uint32 zoneid = database.GetZoneID(destination_zone_name);
-		float temp_x = m_Destination.x;
-		float temp_y = m_Destination.y;
+		float temp_x = m_destination.x;
+		float temp_y = m_destination.y;
 		uint32 zoneguildid = GUILD_NONE;
 
 		if (zoneid != zone->GetZoneID() && !sender->CanBeInZone(zoneid)) {
 			return;
 		}
 
-		if (guildzonedoor)
+		if (guild_zone_door)
 		{
 
 			if (!sender)
@@ -342,7 +342,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 			zoneguildid = player_raid->GetLeaderGuildID();
 		}
 
-		if ((floor_port || strncmp(dest_zone,zone_name,strlen(zone_name)) == 0) && !keyneeded)
+		if ((floor_port || strncmp(destination_zone_name,zone_name,strlen(zone_name)) == 0) && !keyneeded)
 		{
 			if(!keepoffkeyring)
 			{
@@ -350,7 +350,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 			}
 			sender->MovePCGuildID(zone->GetZoneID(), zoneguildid, m_destination.x, m_destination.y, m_destination.z, m_destination.w);
 		}
-		else if ((!IsDoorOpen() || opentype == 58 || floor_port) && (keyneeded && ((keyneeded == playerkey) || sender->GetGM())))
+		else if ((!IsDoorOpen() || open_type == 58 || floor_port) && (keyneeded && ((keyneeded == playerkey) || sender->GetGM())))
 		{
 			if(!keepoffkeyring)
 			{
@@ -367,7 +367,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 			}
 		}
 
-		if ((!IsDoorOpen() || opentype == 58) && !keyneeded)
+		if ((!IsDoorOpen() || open_type == 58) && !keyneeded)
 		{
 			if(zoneid == zone->GetZoneID())
 			{
@@ -741,8 +741,10 @@ std::vector<DoorsRepository::Doors> ZoneDatabase::LoadDoors(const std::string &z
 {
 	auto door_entries = DoorsRepository::GetWhere(
 		*this, fmt::format(
-			"zone = '{}' ORDER BY doorid ASC",
-			zone_name));
+			"zone = '{}' "
+			" AND (({} >= min_expansion AND {} < max_expansion) OR (min_expansion = 0 AND max_expansion = 0)) "
+			" ORDER BY doorid ASC",
+			zone_name, RuleR(World, CurrentExpansion), RuleR(World, CurrentExpansion)));
 
 	LogInfo("Loaded doors for [{}]", zone_name);
 

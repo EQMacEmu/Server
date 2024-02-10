@@ -48,6 +48,9 @@ public:
 		int8_t      islift;
 		int32_t     close_time;
 		int8_t      can_open;
+		bool		guild_zone_door;
+		float		min_expansion;
+		float		max_expansion;
 	};
 
 	static std::string PrimaryKey()
@@ -87,6 +90,9 @@ public:
 			"islift",
 			"close_time",
 			"can_open",
+			"guild_zone_door",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -122,6 +128,9 @@ public:
 			"islift",
 			"close_time",
 			"can_open",
+			"guild_zone_door",
+			"min_expansion",
+			"max_expansion",
 		};
 	}
 
@@ -191,7 +200,9 @@ public:
 		e.islift              = 0;
 		e.close_time          = 5;
 		e.can_open            = 1;
-
+		e.guild_zone_door	  = false;
+		e.min_expansion		  = 0;
+		e.max_expansion		  = 0;
 		return e;
 	}
 
@@ -256,7 +267,9 @@ public:
 			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
-
+			e.guild_zone_door	  = row[29] ? static_cast<bool>(atoi(row[29])) : false;
+			e.min_expansion		  = row[30] ? strtof(row[30], nullptr) : 0.0f;
+			e.max_expansion		  = row[31] ? strtof(row[31], nullptr) : 0.0f;
 			return e;
 		}
 
@@ -317,6 +330,9 @@ public:
 		v.push_back(columns[26] + " = " + std::to_string(e.islift));
 		v.push_back(columns[27] + " = " + std::to_string(e.close_time));
 		v.push_back(columns[28] + " = " + std::to_string(e.can_open));
+		v.push_back(columns[29] + " = " + std::to_string(e.guild_zone_door));
+		v.push_back(columns[30] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[31] + " = " + std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -367,6 +383,9 @@ public:
 		v.push_back(std::to_string(e.islift));
 		v.push_back(std::to_string(e.close_time));
 		v.push_back(std::to_string(e.can_open));
+		v.push_back(std::to_string(e.guild_zone_door));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -425,6 +444,9 @@ public:
 			v.push_back(std::to_string(e.islift));
 			v.push_back(std::to_string(e.close_time));
 			v.push_back(std::to_string(e.can_open));
+			v.push_back(std::to_string(e.guild_zone_door));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -487,7 +509,9 @@ public:
 			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
-
+			e.guild_zone_door	  = row[29] ? static_cast<bool>(atoi(row[29])) : false;
+			e.min_expansion		  = row[30] ? strtof(row[30], nullptr) : 0.0f;
+			e.max_expansion		  = row[31] ? strtof(row[31], nullptr) : 0.0f;
 			all_entries.push_back(e);
 		}
 
@@ -540,6 +564,9 @@ public:
 			e.islift              = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time          = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open            = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
+			e.guild_zone_door	  = row[29] ? static_cast<bool>(atoi(row[29])) : 1;
+			e.min_expansion		  = row[30] ? strtof(row[30], nullptr) : 0.0f;
+			e.max_expansion		  = row[31] ? strtof(row[31], nullptr) : 0.0f;
 
 			all_entries.push_back(e);
 		}

@@ -98,6 +98,6 @@ private:
 	glm::vec4  m_destination;
 	uint32	   client_version_mask;
 	bool	   teleport;
-	bool	guildzonedoor;
+	bool	guild_zone_door;
 };
 #endif
