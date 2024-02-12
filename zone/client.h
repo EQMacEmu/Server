@@ -1200,7 +1200,7 @@ public:
 	bool IsLockSavePosition() const;
 	void SetLockSavePosition(bool lock_save_position);
 	inline bool IsMuleInitiated() { return mule_initiated; }
-	inline bool SetMuleInitiated(bool initiated) { mule_initiated = initiated; }
+	inline void SetMuleInitiated(bool initiated) { mule_initiated = initiated; }
 private:
 
 

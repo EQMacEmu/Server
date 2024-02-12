@@ -454,19 +454,17 @@ bool Database::SetMule(const char* charname) {
 	auto row = results.begin();
 	uint32 account_id = std::stoul(row[0]);
 	
-	// iterate over every character associated with account and verify they're all level 1
-	std::string query = StringFormat("SELECT `account_id`, `level` FROM `character_data` WHERE `account_id` = %u", account_id);
-	auto results = QueryDatabase(query);
-	for (auto row = results.begin(); row != results.end(); ++row) {
-		if (std::stoi(row[1]) != 1) {
-			Log(Logs::General, Logs::WorldServer, "Can not set mule status on account because character exists that is not level 1");
-			return false;
-		}
+	// iterate over every character associated with account and verify they're all level 1 (exclude char with charname)
+	query = StringFormat("SELECT `account_id` FROM `character_data` WHERE `account_id` = %u", account_id);
+	results = QueryDatabase(query);
+	if (results.RowCount() != 1) {
+		Log(Logs::General, Logs::WorldServer, "Can not set mule status on account because more than one character exists on account.");
+		return false;
 	}
 
 	// finally set account to mule status
-	std::string query = StringFormat("UPDATE account SET mule = %d where id = %u AND status < 80", 1, account_id);
-	auto results = QueryDatabase(query);
+	query = StringFormat("UPDATE account SET mule = %d where id = %u AND status < 80", 1, account_id);
+	results = QueryDatabase(query);
 	if (!results.Success()) {
 		return false;
 	}
@@ -1424,9 +1422,9 @@ bool Database::AddToNameFilter(const char* name) {
 	return true;
 }
 
-uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, int8* oRevoked) {
+uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* oStatus, int8* oRevoked, bool* isMule) {
 	uint32 account_id = 0;
-	std::string query = StringFormat("SELECT id, name, status, revoked FROM account WHERE lsaccount_id=%i", iLSID);
+	std::string query = StringFormat("SELECT id, name, status, revoked, mule FROM account WHERE lsaccount_id=%i", iLSID);
 	auto results = QueryDatabase(query);
 
 	if (!results.Success()) {
@@ -1445,6 +1443,8 @@ uint32 Database::GetAccountIDFromLSID(uint32 iLSID, char* oAccountName, int16* o
 			*oStatus = atoi(row[2]);
 		if (oRevoked)
 			*oRevoked = atoi(row[3]);
+		if (isMule)
+			*isMule = atoi(row[4]);
 	}
 
 	return account_id;
