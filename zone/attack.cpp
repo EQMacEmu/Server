@@ -1587,7 +1587,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 	Save();
 
-	if (!IsLD())
+	if (!IsLD() && zonesummon_id == 0)
 	{
 		GoToDeath();
 	}
@@ -2345,55 +2345,38 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 				if (r) {
 					r->LearnMembers();
 					r->VerifyRaid();
+					r->GetRaidDetails();
 					float raidHighestLevel = r->GetHighestLevel2();
 					int i = 0;
 					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
 					{
-						if (r->members[x].membername[0] == 0)
-						{
+						if (!r->members[x].membername[0])
 							continue;
-						}
-
-						auto engagedClientItr = m_EngagedClientNames.find(r->members[x].membername);
-
-						if (engagedClientItr == m_EngagedClientNames.end())
-							continue;
-
-
-						//TODO: Reimplement this.
-						bool is_self_only = !engagedClientItr->second.isSoloOnly;
 
 						switch (r->GetLootType())
 						{
-							case 0:
-							case 1:
-							{
-								if (r->members[x].IsRaidLeader)
-									corpse->AllowPlayerLoot(r->members[x].membername);
-								break;
-							}
-							case 2:
-							{
-
-								if (r->members[x].IsGroupLeader)
-									corpse->AllowPlayerLoot(r->members[x].membername);
-								else if (r->members[x].IsRaidLeader)
-									corpse->AllowPlayerLoot(r->members[x].membername);
-								break;
-							}
-							case 3:
-							{
-								if (r->members[x].IsRaidLeader)
-									corpse->AllowPlayerLoot(r->members[x].membername);
-								else if (r->members[x].IsLooter)
-									corpse->AllowPlayerLoot(r->members[x].membername);
-								break;
-							}
-							case 4:
+						case 0:
+						case 1:
+							if (r->members[x].IsRaidLeader)
 							{
 								corpse->AllowPlayerLoot(r->members[x].membername);
-								break;
 							}
+							break;
+						case 2:
+							if (r->members[x].IsRaidLeader || r->members[x].IsGroupLeader)
+							{
+								corpse->AllowPlayerLoot(r->members[x].membername);
+							}
+							break;
+						case 3:
+							if (r->members[x].IsRaidLeader || r->members[x].IsLooter)
+							{
+								corpse->AllowPlayerLoot(r->members[x].member);
+							}
+							break;
+						case 4:
+							corpse->AllowPlayerLoot(r->members[x].member);
+							break;
 						}
 					}
 				}
@@ -2599,8 +2582,8 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 			{
 				if (lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
 				{
-					other->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you to your bind.", GetCleanName() );
-					other->CastToClient()->GoToBind();
+					other->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you out.", GetCleanName() );
+					other->CastToClient()->BootFromGuildInstance();
 				}
 			}
 		}
@@ -2676,6 +2659,11 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 				if (lootLockoutItr != petowner->CastToClient()->loot_lockouts.end())
 				{
 					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
+					if (zone && zone->GetGuildID() != GUILD_NONE && lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
+					{
+						petowner->CastToClient()->Message(CC_Red, "You were locked out of %s. Sending you out.", GetCleanName());
+						petowner->CastToClient()->BootFromGuildInstance();
+					}
 				}
 				m_EngagedClientNames.emplace(petowner->GetCleanName(), record);
 			}
@@ -3287,6 +3275,8 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 		if (IsMezzed() && attacker) {
 			Log(Logs::Detail, Logs::Combat, "Breaking mez due to attack.");
 			BuffFadeByEffect(SE_Mez);
+			if(IsNPC())
+				entity_list.MessageClose(this, true, RuleI(Range, SpellMessages), CC_User_SpellWornOff, "%s is no longer mezzed. (%s - %s)", GetCleanName(), attacker->GetCleanName(), spell_id != SPELL_UNKNOWN ? GetSpellName(spell_id) : "melee" );
 		}
 
 		if(spell_id != SPELL_UNKNOWN && !iBuffTic) {
@@ -4635,49 +4625,47 @@ int Mob::GetOffense(EQ::skills::SkillType skill)
 	int mobLevel = GetLevel();
 	int offense = 0;
 	bool isSummonedPet = IsSummonedClientPet() || (IsPet() && GetSummonerID());
-	if (!isSummonedPet && mobLevel > 45 && mobLevel < 51)		// NPCs around level 43-50 have a flatter offense value because
-		mobLevel = 45;											// NPC weapon skills cap at 210 then jump to 250 at level 51
+	if (!isSummonedPet && mobLevel > 45 && mobLevel < 51) {		// NPCs around level 43-50 have a flatter offense value because
+		mobLevel = 45;                                          // NPC weapon skills cap at 210 then jump to 250 at level 51
+	}
 
 	int baseOffense = mobLevel * 55 / 10 - 4;	// parses indicate that the floor/baseline offense isn't level * 5.  don't know why
-	if (baseOffense > 320)
+	if (baseOffense > 320) {
 		baseOffense = 320;
+	}
 
 	int strOffense = 0;
 
-	if (mobLevel < 6)
-	{
+	if (mobLevel < 6) {
 		baseOffense = mobLevel * 4;
 		strOffense = mobLevel;
 	}
-	else if (mobLevel < 30)
-	{
+	else if (mobLevel < 30) {
 		strOffense = mobLevel / 2 + 1;
-	}
-	else
-	{
+	} else {
 		strOffense = mobLevel * 2 - 40;
-
-		if (!isSummonedPet && zone->GetZoneExpansion() == PlanesEQ)
-		{
+		if (!isSummonedPet && zone->GetZoneExpansion() == PlanesEQ) {
 			strOffense += 20;
 		}
+
 	}
 
-	if (isSummonedPet)
-	{
+	if (isSummonedPet) {
 		baseOffense = GetSkill(skill);
 		strOffense = 0;
 	}
 
 	strOffense += (itembonuses.STR + spellbonuses.STR) * 2 / 3;
-	if (strOffense < 0)
+	if (strOffense < 0) {
 		strOffense = 0;
+	}
 
 	offense = baseOffense + strOffense;
 
 	offense += ATK + spellbonuses.ATK;
-	if (offense < 1)
+	if (offense < 1) {
 		offense = 1;
+	}
 
 	return offense;
 }

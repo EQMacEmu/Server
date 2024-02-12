@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseCharacterBuffsRepository {
 public:
 	struct CharacterBuffs {
@@ -164,19 +163,19 @@ public:
 		if (results.RowCount() == 1) {
 			CharacterBuffs e{};
 
-			e.id            = static_cast<int32_t>(atoi(row[0]));
-			e.slot_id       = static_cast<uint8_t>(strtoul(row[1], nullptr, 10));
-			e.spell_id      = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.caster_level  = static_cast<uint8_t>(strtoul(row[3], nullptr, 10));
+			e.id            = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.slot_id       = row[1] ? static_cast<uint8_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.spell_id      = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.caster_level  = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.caster_name   = row[4] ? row[4] : "";
-			e.ticsremaining = static_cast<uint32_t>(strtoul(row[5], nullptr, 10));
-			e.counters      = static_cast<uint32_t>(strtoul(row[6], nullptr, 10));
-			e.melee_rune    = static_cast<uint32_t>(strtoul(row[7], nullptr, 10));
-			e.magic_rune    = static_cast<uint32_t>(strtoul(row[8], nullptr, 10));
-			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
-			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
-			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
-			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
+			e.ticsremaining = row[5] ? static_cast<uint32_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.counters      = row[6] ? static_cast<uint32_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.melee_rune    = row[7] ? static_cast<uint32_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.magic_rune    = row[8] ? static_cast<uint32_t>(strtoul(row[8], nullptr, 10)) : 0;
+			e.persistent    = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.ExtraDIChance = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bard_modifier = row[11] ? static_cast<uint8_t>(strtoul(row[11], nullptr, 10)) : 10;
+			e.bufftype      = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 
 			return e;
 		}
@@ -332,19 +331,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			CharacterBuffs e{};
 
-			e.id            = static_cast<int32_t>(atoi(row[0]));
-			e.slot_id       = static_cast<uint8_t>(strtoul(row[1], nullptr, 10));
-			e.spell_id      = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.caster_level  = static_cast<uint8_t>(strtoul(row[3], nullptr, 10));
+			e.id            = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.slot_id       = row[1] ? static_cast<uint8_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.spell_id      = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.caster_level  = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.caster_name   = row[4] ? row[4] : "";
-			e.ticsremaining = static_cast<uint32_t>(strtoul(row[5], nullptr, 10));
-			e.counters      = static_cast<uint32_t>(strtoul(row[6], nullptr, 10));
-			e.melee_rune    = static_cast<uint32_t>(strtoul(row[7], nullptr, 10));
-			e.magic_rune    = static_cast<uint32_t>(strtoul(row[8], nullptr, 10));
-			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
-			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
-			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
-			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
+			e.ticsremaining = row[5] ? static_cast<uint32_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.counters      = row[6] ? static_cast<uint32_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.melee_rune    = row[7] ? static_cast<uint32_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.magic_rune    = row[8] ? static_cast<uint32_t>(strtoul(row[8], nullptr, 10)) : 0;
+			e.persistent    = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.ExtraDIChance = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bard_modifier = row[11] ? static_cast<uint8_t>(strtoul(row[11], nullptr, 10)) : 10;
+			e.bufftype      = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -369,19 +368,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			CharacterBuffs e{};
 
-			e.id            = static_cast<int32_t>(atoi(row[0]));
-			e.slot_id       = static_cast<uint8_t>(strtoul(row[1], nullptr, 10));
-			e.spell_id      = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.caster_level  = static_cast<uint8_t>(strtoul(row[3], nullptr, 10));
+			e.id            = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.slot_id       = row[1] ? static_cast<uint8_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.spell_id      = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.caster_level  = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.caster_name   = row[4] ? row[4] : "";
-			e.ticsremaining = static_cast<uint32_t>(strtoul(row[5], nullptr, 10));
-			e.counters      = static_cast<uint32_t>(strtoul(row[6], nullptr, 10));
-			e.melee_rune    = static_cast<uint32_t>(strtoul(row[7], nullptr, 10));
-			e.magic_rune    = static_cast<uint32_t>(strtoul(row[8], nullptr, 10));
-			e.persistent    = static_cast<uint8_t>(strtoul(row[9], nullptr, 10));
-			e.ExtraDIChance = static_cast<int32_t>(atoi(row[10]));
-			e.bard_modifier = static_cast<uint8_t>(strtoul(row[11], nullptr, 10));
-			e.bufftype      = static_cast<int32_t>(atoi(row[12]));
+			e.ticsremaining = row[5] ? static_cast<uint32_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.counters      = row[6] ? static_cast<uint32_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.melee_rune    = row[7] ? static_cast<uint32_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.magic_rune    = row[8] ? static_cast<uint32_t>(strtoul(row[8], nullptr, 10)) : 0;
+			e.persistent    = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.ExtraDIChance = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bard_modifier = row[11] ? static_cast<uint8_t>(strtoul(row[11], nullptr, 10)) : 10;
+			e.bufftype      = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 
 			all_entries.push_back(e);
 		}

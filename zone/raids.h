@@ -95,6 +95,7 @@ public:
 	void	SetGroupLeader(const char *who, uint32 gid, bool flag = true);
 	void	UnSetGroupLeader(const char *who, const char *other, uint32 gid);
 	bool	IsGroupLeader(const char *who);
+	bool	IsRaidLeaderOrGroupLeader(const char * name);
 	bool	IsRaidMember(const char *name);
 	void	UpdateLevel(const char *name, int newLevel);
 	void	UpdatePlayer(Client* update);
@@ -116,10 +117,9 @@ public:
 	void	ChangeLootType(uint32 type);
 	void	AddRaidLooter(const char* looter);
 	void	RemoveRaidLooter(const char* looter);
-	bool	IsRaidLooter(const Client* c);
-	bool	IsRaidLeader(const Client* c);
-	bool	IsRaidLeaderOrLooter(const Client* c);
-	bool	IsRaidLeaderOrGroupLeader(const Client* c);
+	bool	IsRaidLooter(const char* name);
+	bool	IsRaidLeader(const char* name);
+	bool	IsRaidLeaderOrLooter(const char* name);
 
 	//util func
 	//keeps me from having to keep iterating through the list

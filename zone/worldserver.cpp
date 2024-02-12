@@ -274,7 +274,7 @@ void WorldServer::Process() {
 				auto outapp = new EQApplicationPacket(OP_ZoneChange,sizeof(ZoneChange_Struct));
 				ZoneChange_Struct* zc2=(ZoneChange_Struct*)outapp->pBuffer;
 				if(ztz->response <= 0) {
-					zc2->success = ZONE_ERROR_NOTREADY;
+					zc2->success = ZoningMessage::ZoneNotReady;
 					entity->CastToMob()->SetZone(ztz->current_zone_id, ztz->current_zone_guild_id);
 					entity->CastToClient()->SetZoning(false);
 					entity->CastToClient()->SetLockSavePosition(false);
@@ -1696,8 +1696,12 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadRules:
-		{
+		case ServerOP_ReloadRules: {
+			worldserver.SendEmoteMessage(
+				0, 0, 0, 15,
+				"Rules reloaded for Zone: '%s'",
+				zone->GetLongName()
+			);
 			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
 			break;
 		}

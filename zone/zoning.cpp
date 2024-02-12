@@ -284,58 +284,49 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	//OK, now we should know where were going...
 
 	//Check some rules first.
-	int8 myerror = 1;		//1 is succes
+	auto zoning_message = ZoningMessage::ZoneSuccess;
 
 	//not sure when we would use ZONE_ERROR_NOTREADY
 	
 	bool has_expansion = expansion & m_pp.expansions;
-	if(!ignorerestrictions && Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion)
-	{
-		myerror = ZONE_ERROR_NOEXPANSION;
+	if(!ignorerestrictions && Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
+		zoning_message = ZoningMessage::ZoneNoExpansion;
 		Log(Logs::General, Logs::Error, "Zoning %s: Does not have the required expansion (%d) to enter %s. Player expansions: %d", GetName(), expansion, target_zone_name, m_pp.expansions);
 	}
 
 	//enforce min status and level
-	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel))
-	{
-		myerror = ZONE_ERROR_NOEXPERIENCE;
+	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel)) {
+		zoning_message = ZoningMessage::ZoneNoExperience;
 	}
 
 	if(!ignorerestrictions && flag_needed[0] != '\0') {
 		//the flag needed string is not empty, meaning a flag is required.
-		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id))
-		{
+		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) {
 			Message(CC_Red, "You do not have the flag to enter %s.", target_zone_name);
-			myerror = ZONE_ERROR_NOEXPERIENCE;
+			zoning_message = ZoningMessage::ZoneNoExperience;
 		}
 	}
 
 	if (RuleB(Quarm, EastCommonMules)) {
 		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
 		{
-			myerror = ZONE_ERROR_NOEXPERIENCE;
+			zoning_message = ZoningMessage::ZoneNoExperience;
 			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before Luclin!");
 		}
 	}
-	else {
-		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() &&
-			(target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge))
-		{
-			myerror = ZONE_ERROR_NOEXPERIENCE;
-			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
-		}
+	else if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && (target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge)) {
+		zoning_message = ZoningMessage::ZoneNoExperience;
+		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
 	}
 
-	if(myerror == 1) 
-	{
+
+	if(zoning_message == ZoningMessage::ZoneSuccess) {
 		//we have successfully zoned
 		DoZoneSuccess(zc, target_zone_id, target_zone_guild_id, dest_x, dest_y, dest_z, dest_h, ignorerestrictions);
 		UpdateZoneChangeCount(target_zone_id);
-	} 
-	else 
-	{
+	} else {
 		Log(Logs::General, Logs::Error, "Zoning %s: Rules prevent this char from zoning into '%s'", GetName(), target_zone_name);
-		SendZoneError(zc, myerror);
+		SendZoneError(zc, zoning_message);
 	}
 }
 
@@ -347,7 +338,7 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
 	zc2->zoneID = database.GetClientZoneID(zone->GetZoneID());
-	zc2->success = ZONE_ERROR_NOTREADY;
+	zc2->success = ZoningMessage::ZoneNotReady;
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 

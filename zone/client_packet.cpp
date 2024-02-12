@@ -2855,12 +2855,10 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 		return;
 	}
 
-	char buf[20];
-	snprintf(buf, 19, "%u", cd->doorid);
-	buf[19] = '\0';
+	std::string  export_string = fmt::format("{}", cd->doorid);
 	std::vector<std::any> args;
 	args.push_back(currentdoor);
-	parse->EventPlayer(EVENT_CLICK_DOOR, this, buf, 0, &args);
+	parse->EventPlayer(EVENT_CLICK_DOOR, this, export_string, 0, &args);
 
 	if (!currentdoor->IsMoveable() || (currentdoor->IsTeleport() && currentdoor->GetOpenType() == 57))
 	{
@@ -2881,10 +2879,9 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		return;
 	}
 
-	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(click_object->drop_id);
+	auto* click_object = (ClickObject_Struct*)app->pBuffer;
+	auto* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
-
 		Object* object = entity->CastToObject();
 		if (object->IsPlayerDrop())
 		{
@@ -2919,16 +2916,14 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 				return;
 			}
 		}
-
+		
 		object->HandleClick(this, click_object);
 
 		std::vector<std::any> args;
 		args.push_back(object);
 
-		char buf[10];
-		snprintf(buf, 9, "%u", click_object->drop_id);
-		buf[9] = '\0';
-		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0, &args);
+		std::string export_string = fmt::format("{}", click_object->drop_id);
+		parse->EventPlayer(EVENT_CLICK_OBJECT, this, export_string, 0, &args);
 	}
 
 	return;
@@ -6209,6 +6204,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		Corpse *ent_corpse = ent->CastToCorpse();
 		if (DistanceSquaredNoZ(m_Position, ent_corpse->GetPosition()) > 1100) // About 33.2 coords away.
 		{
+			Message(CC_Red, "[DEBUG] Too far away from corpse.");
 			Corpse::SendLootReqErrorPacket(this);
 			return;
 		}
@@ -9624,16 +9620,17 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 	Disarm_Struct* disin = (Disarm_Struct*)app->pBuffer;
 	Mob* target = entity_list.GetMob(disin->target);
 
-	if(!target)
+	if (!target) {
 		return;
+	}
 
-	if(target != GetTarget())
+	if (target != GetTarget()) {
 		return;
+	}
 
-	// It looks like the client does its own check, but let's double check.
-	if(target->IsCorpse() || !IsAttackAllowed(target))
-	{
-		Message(CC_Red, "You cannot disarm this target.");
+	// It looks like the client does its own check except FD, but let's double check.
+	if(target->IsCorpse() || !IsAttackAllowed(target) || IsFeigned()) {
+		LogDebug("Client does not allow to disarm on corpse, non-combat npc, pvp, and while feign death");
 		return;
 	}
 
@@ -9645,28 +9642,31 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 
 	// this is completely made up and based on nothing other than disarm rates being seemingly around 20-25% in logs
 	float disarmchance = static_cast<float>(GetSkill(EQ::skills::SkillDisarm)) / static_cast<float>(std::max(static_cast<int>(target->GetSkill(EQ::skills::SkillOffense)), 5) * 3);
-	if (disarmchance > 0.95f)
+
+	if (disarmchance > 0.95f) {
 		disarmchance = 0.95f;
-	if (disarmchance < 0.05f)
+	}
+
+	if (disarmchance < 0.05f) {
 		disarmchance = 0.05f;
+	}
 
 	bool success = 0;
 	int8 disarm_result = 0;
 	
 	disarm_result = target->Disarm(disarmchance);
-	if (disarm_result < 2)
+	if (disarm_result < 2) {
 		success = false;
-	else
+	} else {
 		success = true;
+	}
 
-	if(target->IsNPC())
-	{
+	if(target->IsNPC()) {
 		if(!GetGM())
 			target->AddToHateList(this, 1);
 	}
 
-	if(disarm_result > 0)
-	{
+	if(disarm_result > 0) {
 		uint8 skillsuccess = disarm_result == 2 ? SKILLUP_SUCCESS : SKILLUP_FAILURE;
 		CheckIncreaseSkill(EQ::skills::SkillDisarm, target, zone->skill_difficulty[EQ::skills::SkillDisarm].difficulty, skillsuccess);
 	}

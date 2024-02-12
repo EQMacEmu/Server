@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseZonePointsRepository {
 public:
 	struct ZonePoints {
@@ -164,19 +163,19 @@ public:
 		if (results.RowCount() == 1) {
 			ZonePoints e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.zone                = row[1] ? row[1] : "";
-			e.number              = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.y                   = strtof(row[3], nullptr);
-			e.x                   = strtof(row[4], nullptr);
-			e.z                   = strtof(row[5], nullptr);
-			e.heading             = strtof(row[6], nullptr);
-			e.target_y            = strtof(row[7], nullptr);
-			e.target_x            = strtof(row[8], nullptr);
-			e.target_z            = strtof(row[9], nullptr);
-			e.target_heading      = strtof(row[10], nullptr);
-			e.target_zone_id      = static_cast<uint32_t>(strtoul(row[11], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
+			e.number              = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 1;
+			e.y                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.x                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.z                   = row[5] ? strtof(row[5], nullptr) : 0;
+			e.heading             = row[6] ? strtof(row[6], nullptr) : 0;
+			e.target_y            = row[7] ? strtof(row[7], nullptr) : 0;
+			e.target_x            = row[8] ? strtof(row[8], nullptr) : 0;
+			e.target_z            = row[9] ? strtof(row[9], nullptr) : 0;
+			e.target_heading      = row[10] ? strtof(row[10], nullptr) : 0;
+			e.target_zone_id      = row[11] ? static_cast<uint32_t>(strtoul(row[11], nullptr, 10)) : 0;
+			e.client_version_mask = row[12] ? static_cast<uint32_t>(strtoul(row[12], nullptr, 10)) : 4294967295;
 
 			return e;
 		}
@@ -331,19 +330,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			ZonePoints e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.zone                = row[1] ? row[1] : "";
-			e.number              = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.y                   = strtof(row[3], nullptr);
-			e.x                   = strtof(row[4], nullptr);
-			e.z                   = strtof(row[5], nullptr);
-			e.heading             = strtof(row[6], nullptr);
-			e.target_y            = strtof(row[7], nullptr);
-			e.target_x            = strtof(row[8], nullptr);
-			e.target_z            = strtof(row[9], nullptr);
-			e.target_heading      = strtof(row[10], nullptr);
-			e.target_zone_id      = static_cast<uint32_t>(strtoul(row[11], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
+			e.number              = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 1;
+			e.y                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.x                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.z                   = row[5] ? strtof(row[5], nullptr) : 0;
+			e.heading             = row[6] ? strtof(row[6], nullptr) : 0;
+			e.target_y            = row[7] ? strtof(row[7], nullptr) : 0;
+			e.target_x            = row[8] ? strtof(row[8], nullptr) : 0;
+			e.target_z            = row[9] ? strtof(row[9], nullptr) : 0;
+			e.target_heading      = row[10] ? strtof(row[10], nullptr) : 0;
+			e.target_zone_id      = row[11] ? static_cast<uint32_t>(strtoul(row[11], nullptr, 10)) : 0;
+			e.client_version_mask = row[12] ? static_cast<uint32_t>(strtoul(row[12], nullptr, 10)) : 4294967295;
 
 			all_entries.push_back(e);
 		}
@@ -368,19 +367,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			ZonePoints e{};
 
-			e.id                  = static_cast<int32_t>(atoi(row[0]));
+			e.id                  = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.zone                = row[1] ? row[1] : "";
-			e.number              = static_cast<uint16_t>(strtoul(row[2], nullptr, 10));
-			e.y                   = strtof(row[3], nullptr);
-			e.x                   = strtof(row[4], nullptr);
-			e.z                   = strtof(row[5], nullptr);
-			e.heading             = strtof(row[6], nullptr);
-			e.target_y            = strtof(row[7], nullptr);
-			e.target_x            = strtof(row[8], nullptr);
-			e.target_z            = strtof(row[9], nullptr);
-			e.target_heading      = strtof(row[10], nullptr);
-			e.target_zone_id      = static_cast<uint32_t>(strtoul(row[11], nullptr, 10));
-			e.client_version_mask = static_cast<uint32_t>(strtoul(row[12], nullptr, 10));
+			e.number              = row[2] ? static_cast<uint16_t>(strtoul(row[2], nullptr, 10)) : 1;
+			e.y                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.x                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.z                   = row[5] ? strtof(row[5], nullptr) : 0;
+			e.heading             = row[6] ? strtof(row[6], nullptr) : 0;
+			e.target_y            = row[7] ? strtof(row[7], nullptr) : 0;
+			e.target_x            = row[8] ? strtof(row[8], nullptr) : 0;
+			e.target_z            = row[9] ? strtof(row[9], nullptr) : 0;
+			e.target_heading      = row[10] ? strtof(row[10], nullptr) : 0;
+			e.target_zone_id      = row[11] ? static_cast<uint32_t>(strtoul(row[11], nullptr, 10)) : 0;
+			e.client_version_mask = row[12] ? static_cast<uint32_t>(strtoul(row[12], nullptr, 10)) : 4294967295;
 
 			all_entries.push_back(e);
 		}
