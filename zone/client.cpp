@@ -6799,6 +6799,11 @@ void Client::SetMarried(const char* playerName)
 	Client* c = entity_list.GetClientByName(playerName);
 	if (c)
 	{
+		if (c->CharacterID() == CharacterID())
+		{
+			Message(13, "Bristlebane notices your antics and is on to you. Marriage failed.");
+			return;
+		}
 		SetTemporaryMarriageCharacterID(c->CharacterID());
 
 		if (c->m_epp.married_character_id == 0 && m_epp.married_character_id == 0)
