@@ -1084,7 +1084,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	SetClientVersion(Connection()->ClientVersion());
 	m_ClientVersionBit = EQ::versions::ConvertClientVersionToClientVersionBit(Connection()->ClientVersion());
 
-	if(ClientVersion() == EQ::versions::ClientVersion::Mac)
+	if (ClientVersion() == EQ::versions::ClientVersion::Mac)
 	{
 		m_ClientVersionBit = versionbit;
 	}
@@ -1153,11 +1153,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/* Load Character Data */
 	query = StringFormat("SELECT `firstlogon`, `guild_id`, `rank` FROM `character_data` LEFT JOIN `guild_members` ON `id` = `char_id` WHERE `id` = %i", cid);
 	results = database.QueryDatabase(query);
-	for (auto row = results.begin(); row != results.end(); ++row) {		
-		if (row[1] && atoi(row[1]) > 0){
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		if (row[1] && atoi(row[1]) > 0) {
 			guild_id = atoi(row[1]);
-			if (row[2] != nullptr){ guildrank = atoi(row[2]); }
-			else{ guildrank = GUILD_RANK_NONE; }
+			if (row[2] != nullptr) { guildrank = atoi(row[2]); }
+			else { guildrank = GUILD_RANK_NONE; }
 		}
 
 		firstlogon = atoi(row[0]);
@@ -1252,7 +1252,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 			SaveCurrency();
 	}
 
-	if (level){ level = m_pp.level; }
+	if (level) { level = m_pp.level; }
 
 	if (gminvul) { invulnerable = true; }
 	/* Set Con State for Reporting */
@@ -1261,8 +1261,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	m_pp.zone_id = zone->GetZoneID();
 	m_epp.zone_guild_id = zone->GetGuildID();
 	ignore_zone_count = false;
-	
-	
+
+
 	SendToBoat();
 
 	/* Load Character Key Ring */
@@ -1272,7 +1272,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	LoadLootedLegacyItems();
 
 	prev_last_login_time = m_pp.lastlogin;
-		
+
 	/* Set Total Seconds Played */
 	m_pp.lastlogin = time(nullptr);
 	TotalSecondsPlayed = m_pp.timePlayedMin * 60;
@@ -1284,6 +1284,17 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	strcpy(name, m_pp.name);
 	strcpy(lastname, m_pp.last_name);
+
+	//Erollsi Marr Day Event
+	if (RuleB(Quarm, ErollsiDayEvent))
+	{
+		if (m_epp.temp_last_name[0])
+		{
+			memset(lastname, 0, 64);
+			strcpy(lastname, m_epp.temp_last_name);
+		}
+	}
+
 	/* If PP is set to weird coordinates */
 	if ((m_pp.x == -1 && m_pp.y == -1 && m_pp.z == -1) || (m_pp.x == -2 && m_pp.y == -2 && m_pp.z == -2)) {
         auto safePoint = zone->GetSafePoint();

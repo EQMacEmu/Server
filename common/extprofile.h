@@ -60,6 +60,8 @@ struct ExtendedProfile_Struct {
 	uint64				hardcore_death_time;
 	uint8				betabuff_gear_flag;
 	uint32				zone_guild_id;
+	char				temp_last_name[64]; /* Erollsi Holiday Event Related */
+	uint32				married_character_id;
 };
 
 #pragma pack()
