@@ -10996,13 +10996,17 @@ void command_makemule(Client* c, const Seperator* sep)
 	}
 	if (c->IsMuleInitiated() && sep->arg[1][0] != 0 && strcasecmp(sep->arg[1], "confirm") == 0) {
 		if (!database.SetMule(c->GetName())) {
-			c->Message(CC_Red, "Could not set mule status for this account. It may already be a mule account or more than one character already exist.");
+			c->Message(CC_Red, "Could not set mule status for this account. More than one character already exists on account.");
 		}
 		else {
 			c->Message(CC_Green, "Successfully flagged your account as a mule.");
 			c->SetLevel(1);
-			c->SetBindPoint(ecommons, glm::vec3(-164.0f, -1651.0f, 4.0f));
-			c->GoToBind();
+			if (RuleB(Quarm, EastCommonMules)) {
+				c->SetBindPoint(ecommons, glm::vec3(-164.0f, -1651.0f, 4.0f));
+			}
+			else {
+				c->SetBindPoint(bazaar, glm::vec3(140.0f, -821.0f, 5.0f));
+			}
 			c->WorldKick();
 		}
 		return;
@@ -11013,7 +11017,8 @@ void command_makemule(Client* c, const Seperator* sep)
 	}
 	c->SetMuleInitiated(true);
 	c->Message(CC_Default, "You have initiated the process to make this account a mule. Mules can not leave designated trader zones or level past 1.");
-	c->Message(CC_Default, "Once an account is made a mule it can not be undone. If you wish to proceed then type: #makemule confirm");
+	c->Message(CC_Default, "Once an account is made a mule it can not be undone. If successful then you will be disconnected and must re-enter the world.");
+	c->Message(CC_Default, "If you wish to proceed then type: #makemule confirm");
 }
 
 void command_mule(Client *c, const Seperator *sep)

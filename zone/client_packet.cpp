@@ -700,16 +700,17 @@ void Client::CompleteConnect()
 			if (IsMule())
 			{
 				if (RuleB(Quarm, EastCommonMules)) {
-					GoToSafeCoords(database.GetZoneID("ecommons"), GUILD_NONE);
+					MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
 				}
 				else {
 					m_pp.expansions = m_pp.expansions + LuclinEQ;
 					database.SetExpansion(AccountName(), m_pp.expansions);
 					GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
 				}
-			
 			}
-			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			else {
+				GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			}
 		}
 		return;
 	}
