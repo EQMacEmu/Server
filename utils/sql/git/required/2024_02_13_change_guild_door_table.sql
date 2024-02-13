@@ -1,0 +1,1 @@
+ALTER TABLE `doors` CHANGE COLUMN `guildzonedoor` `guild_zone_door` tinyint(3) NOT NULL DEFAULT 0 AFTER `max_expansion`;
