@@ -257,7 +257,7 @@ public:
 	int GetHandToHandDelay();
 	bool IsMarried();
 	void SetMarried(const char*);
-	void SetTemporaryLastName(const char*);
+	void SetTemporaryLastName(char*);
 	bool HasTemporaryLastName();
 };
 

@@ -1635,11 +1635,36 @@ void Client::ChangeLastName(const char* in_lastname) {
 	safe_delete(outapp);
 }
 
-void Client::SetTemporaryLastName(const char* in_lastname) {
+void Client::SetTemporaryLastName(char* in_lastname) {
 	if (!in_lastname)
 	{
 		return;
 	}
+
+	char *c = nullptr;
+	bool first = true;
+	for (c = in_lastname; *c; c++) {
+		if (first) {
+			*c = toupper(*c);
+			first = false;
+		}
+		else if (*c == '`' || *c == '\'') { // if we find a backtick, don't modify the next character's capitalization
+			// If this is the last character, we can break out of the loop
+			if (*(c + 1) == '\0')
+				break;
+
+			c++; // Move to the next character
+		}
+		else {
+			*c = tolower(*c);
+		}
+	}
+
+	if (strlen(in_lastname) >= 20) {
+		Message_StringID(CC_Yellow, SURNAME_TOO_LONG);
+		return;
+	}
+
 
 	if (in_lastname[0] != 0 && !database.CheckNameFilter(in_lastname, true))
 	{
@@ -6795,6 +6820,8 @@ void Client::SetMarried(const char* playerName)
 	if (!playerName || !playerName[0])
 		return;
 
+	if (strlen(playerName) > 20)
+		return;
 
 	Client* c = entity_list.GetClientByName(playerName);
 	if (c)

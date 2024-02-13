@@ -135,7 +135,7 @@ bool Lua_Client::IsMarried() {
 	return self->IsMarried();
 }
 
-void Lua_Client::SetTemporaryLastName(const char* temporary_name) {
+void Lua_Client::SetTemporaryLastName(char* temporary_name) {
 	Lua_Safe_Call_Void();
 	self->SetTemporaryLastName(temporary_name);
 }
