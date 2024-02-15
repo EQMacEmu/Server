@@ -1208,6 +1208,8 @@ private:
 public:
 	bool IsLockSavePosition() const;
 	void SetLockSavePosition(bool lock_save_position);
+	inline bool IsMuleInitiated() { return mule_initiated; }
+	inline void SetMuleInitiated(bool initiated) { mule_initiated = initiated; }
 private:
 
 
@@ -1375,9 +1377,8 @@ private:
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
 	int8 last_fatigue;
-
+	bool mule_initiated;
 	uint32 pending_marriage_character_id;
-
 };
 
 #endif

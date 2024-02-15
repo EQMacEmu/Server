@@ -307,10 +307,18 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		}
 	}
 
-	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && (target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge)) {
+	if (RuleB(Quarm, EastCommonMules)) {
+		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
+		{
+			zoning_message = ZoningMessage::ZoneNoExperience;
+			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before Luclin!");
+		}
+	}
+	else if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && (target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge)) {
 		zoning_message = ZoningMessage::ZoneNoExperience;
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
 	}
+
 
 	if(zoning_message == ZoningMessage::ZoneSuccess) {
 		//we have successfully zoned
@@ -1171,7 +1179,15 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 		return(false);
 	}
 
-	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && 
+	if (RuleB(Quarm, EastCommonMules)) {
+		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
+		{
+			Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave EC before Luclin!");
+			Message(CC_Red, "Trader accounts may not leave EC before Luclin!");
+			return(false);
+		}
+	} 
+	else if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && 
 		(target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge))
 	{
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");

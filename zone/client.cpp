@@ -360,6 +360,7 @@ Client::Client(EQStreamInterface* ieqs)
 	wake_corpse_id = 0;
 	ranged_attack_leeway_timer.Disable();
 	last_fatigue = 0;
+	mule_initiated = false;
 }
 
 Client::~Client() {
@@ -988,7 +989,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit) && !this->IsMule())
 				{
 					Message(CC_Default, "You do not have permission to talk in Auction at this time.");
 					return;
@@ -1035,7 +1036,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit) && !this->IsMule())
 				{
 					Message(CC_Default, "You do not have permission to talk in OOC at this time.");
 					return;
@@ -1068,7 +1069,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	}
 	case ChatChannel_Tell: { /* Tell */
 
-			if (GetLevel() < RuleI(Chat, GlobalChatLevelLimit))
+			if (GetLevel() < RuleI(Chat, GlobalChatLevelLimit) && !this->IsMule())
 			{
 				Message(CC_Default, "You do not have permission to send tells until level %i.", RuleI(Chat, GlobalChatLevelLimit));
 				return;
@@ -1076,7 +1077,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 
 			if(TotalKarma < RuleI(Chat, KarmaGlobalChatLimit))
 			{
-				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit))
+				if(GetLevel() < RuleI(Chat, KarmaGlobalChatLevelLimit) && !this->IsMule())
 				{
 					Message(CC_Default, "You do not have permission to send tells.");
 					return;

@@ -42,7 +42,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 	pIP = ip;
 	pLSID = iLSID;
 	if(iLSID > 0)
-		paccountid = database.GetAccountIDFromLSID(iLSID, paccountname, &padmin);
+		paccountid = database.GetAccountIDFromLSID(iLSID, paccountname, &padmin, 0, &pmule);
 	strn0cpy(plsname, iLoginName, sizeof(plsname));
 	strn0cpy(plskey, iLoginKey, sizeof(plskey));
 	strn0cpy(pForumName, iForumName, sizeof(pForumName));
@@ -70,6 +70,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 	//THIS IS FOR AN ALTERNATE LOGIN METHOD FOR RAPID TESTING. Hardcoded to the PC client because only PCs should be using this 'hackish' login method. Requires password field set in the database.
 	pversion = 2;
 	pRevoked = scl->Revoked;
+	pmule = scl->mule;
 
 	if (iOnline >= CLE_Status_Zoning)
 		Update(iZS, scl, iOnline);
@@ -103,10 +104,16 @@ void ClientListEntry::SetOnline(int8 iOnline) {
 	Log(Logs::Detail, Logs::WorldServer,"SetOnline Account: %i %i -> %i",AccountID(), pOnline, iOnline);
 
 	// this counting method, counts players connected to world.
-	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online)
-		numplayers++;
-	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online)
-		numplayers--;
+	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online) {
+		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+			numplayers++;
+		}
+	}
+	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online) {
+		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+			numplayers--;
+		}
+	}
 
 	// this counting method, counts players in zones.
 	//if (iOnline >= CLE_Status_Zoning && pOnline < CLE_Status_Zoning)

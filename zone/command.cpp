@@ -276,6 +276,7 @@ int command_init(void)
 		command_add("logs", "Manage anything to do with logs.", AccountStatus::GMCoder, command_logs) ||
 		command_add("logtest", "Performs log performance testing.", AccountStatus::GMImpossible, command_logtest) ||
 
+		command_add("makemule", "Flags the account of the player who runs the command as a mule.", AccountStatus::Player, command_makemule) ||
 		command_add("makepet", "[level] [class] [race] [texture] - Make a pet.", AccountStatus::QuestMaster, command_makepet) ||
 		command_add("mana", "- Fill your or your target's mana.", AccountStatus::GMMgmt, command_mana) ||
 		command_add("manaburn", "- Use AA Wizard class skill manaburn on target.", AccountStatus::GMAreas, command_manaburn) ||
@@ -10972,6 +10973,46 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 		c->Message(CC_Default, "#skills reload - Reloads skill difficulty in each zone.");
 		c->Message(CC_Default, "#skills values - Displays target's skill values.");
 	}
+}
+
+void command_makemule(Client* c, const Seperator* sep)
+{
+	if (!c) {
+		return;
+	}
+	if (c->IsMule()) {
+		c->Message(CC_Red, "Account is already flagged as a mule.");
+		return;
+	}
+	if (c->GetLevel() < RuleI(Chat, GlobalChatLevelLimit)) {
+		c->Message(CC_Red, "To flag an account as a mule you must first level to %i.", RuleI(Chat, GlobalChatLevelLimit));
+		return;
+	}
+	if (c->IsMuleInitiated() && sep->arg[1][0] != 0 && strcasecmp(sep->arg[1], "confirm") == 0) {
+		if (!database.SetMule(c->GetName())) {
+			c->Message(CC_Red, "Could not set mule status for this account. More than one character already exists on account.");
+		}
+		else {
+			c->Message(CC_Green, "Successfully flagged your account as a mule.");
+			c->SetLevel(1);
+			if (RuleB(Quarm, EastCommonMules)) {
+				c->SetBindPoint(ecommons, glm::vec3(-164.0f, -1651.0f, 4.0f));
+			}
+			else {
+				c->SetBindPoint(bazaar, glm::vec3(140.0f, -821.0f, 5.0f));
+			}
+			c->WorldKick();
+		}
+		return;
+	}
+	if (sep->arg[1][0] != 0 && strcasecmp(sep->arg[1], "confirm") != 0) {
+		c->Message(CC_Red, "To confirm your mule account you must type: #makemule confirm");
+		return;
+	}
+	c->SetMuleInitiated(true);
+	c->Message(CC_Default, "You have initiated the process to make this account a mule. Mules can not leave designated trader zones or level past 1.");
+	c->Message(CC_Default, "Once an account is made a mule it can not be undone. If successful then you will be disconnected and must re-enter the world.");
+	c->Message(CC_Default, "If you wish to proceed then type: #makemule confirm");
 }
 
 void command_mule(Client *c, const Seperator *sep)
