@@ -261,6 +261,7 @@ RULE_INT(Quarm, ClientInstanceBootGraceMS, 60000)
 RULE_INT(Quarm, DeletedCharacterMarkLevel, 10)
 RULE_BOOL(Quarm, EastCommonMules, true)
 RULE_BOOL(Quarm, IncludeMulesInServerCount, false)
+RULE_BOOL(Quarm, ErollsiDayEvent, false)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )

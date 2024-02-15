@@ -241,6 +241,7 @@ Client::Client(EQStreamInterface* ieqs)
 	keyring.clear();
 	bind_sight_target = nullptr;
 	clickyspellrecovery_burst = 0;
+	pending_marriage_character_id = 0;
 
 	//for good measure:
 	memset(&m_pp, 0, sizeof(m_pp));
@@ -1630,6 +1631,61 @@ void Client::ChangeLastName(const char* in_lastname) {
 	gmn->unknown[1]=1;
 	gmn->unknown[2]=1;
 	gmn->unknown[3]=1;
+	entity_list.QueueClients(this, outapp, false);
+	// Send name update packet here... once know what it is
+	safe_delete(outapp);
+}
+
+void Client::SetTemporaryLastName(char* in_lastname) {
+	if (!in_lastname)
+	{
+		return;
+	}
+
+	char *c = nullptr;
+	bool first = true;
+	for (c = in_lastname; *c; c++) {
+		if (first) {
+			*c = toupper(*c);
+			first = false;
+		}
+		else if (*c == '`' || *c == '\'') { // if we find a backtick, don't modify the next character's capitalization
+			// If this is the last character, we can break out of the loop
+			if (*(c + 1) == '\0')
+				break;
+
+			c++; // Move to the next character
+		}
+		else {
+			*c = tolower(*c);
+		}
+	}
+
+	if (strlen(in_lastname) >= 20) {
+		Message_StringID(CC_Yellow, SURNAME_TOO_LONG);
+		return;
+	}
+
+
+	if (in_lastname[0] != 0 && !database.CheckNameFilter(in_lastname, true))
+	{
+		Message_StringID(CC_Red, SURNAME_REJECTED);
+		return;
+	}
+
+	memset(m_epp.temp_last_name, 0, sizeof(m_epp.temp_last_name));
+	strn0cpy(m_epp.temp_last_name, in_lastname, sizeof(m_epp.temp_last_name));
+	memset(lastname, 0, sizeof(lastname));
+	strcpy(lastname, m_epp.temp_last_name);
+	auto outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
+	GMLastName_Struct* gmn = (GMLastName_Struct*)outapp->pBuffer;
+	strcpy(gmn->name, name);
+	strcpy(gmn->gmname, name);
+	strcpy(gmn->lastname, in_lastname);
+	gmn->unknown[0] = 1;
+	gmn->unknown[1] = 1;
+	gmn->unknown[2] = 1;
+	gmn->unknown[3] = 1;
 	entity_list.QueueClients(this, outapp, false);
 	// Send name update packet here... once know what it is
 	safe_delete(outapp);
@@ -6758,4 +6814,79 @@ uint16 Client::ScribeSpells(uint8 min_level, uint8 max_level)
 		SaveSpells();
 	}
 	return scribed_spells;
+}
+
+void Client::SetMarried(const char* playerName)
+{
+	if (!playerName || !playerName[0])
+		return;
+
+	if (strlen(playerName) > 20)
+		return;
+
+	Client* c = entity_list.GetClientByName(playerName);
+	if (c)
+	{
+		if (c->CharacterID() == CharacterID())
+		{
+			Message(13, "Bristlebane notices your antics and is on to you. Marriage failed.");
+			return;
+		}
+		SetTemporaryMarriageCharacterID(c->CharacterID());
+
+		if (c->m_epp.married_character_id == 0 && m_epp.married_character_id == 0)
+		{
+			if (c->m_epp.temp_last_name[0] && m_epp.temp_last_name[0])
+			{
+				if (strcmp(GetTemporaryLastName(), c->GetTemporaryLastName()) == 0)
+				{
+					if (c->GetTemporaryMarriageCharacterID() == CharacterID() && GetTemporaryMarriageCharacterID() == c->CharacterID())
+					{
+						m_epp.married_character_id = GetTemporaryMarriageCharacterID();
+						c->m_epp.married_character_id = c->GetTemporaryMarriageCharacterID();
+						c->Save(1);
+						Save(1);
+						c->Message(15, "Your marriage was a success! Erollsi has blessed and ordained the %s family. You will now receive a 20 percent experience bonus while traveling with your partner, %s, for the duration of the event.", GetTemporaryLastName(), GetCleanName());
+						Message(15, "Your marriage was a success! Erollsi has blessed and ordained the %s family. You will now receive a 20 percent experience bonus while traveling with your partner, %s, for the duration of the event.", c->GetTemporaryLastName(), c->GetCleanName());
+						return;
+					}
+					else
+					{
+						Message(13, "Your marriage requires the vows of your other partner. Please have them state your name. They must also have the same surname in order to confirm your vows.");
+						return;
+					}
+				}
+				else
+				{
+					Message(13, "Erollsi Marr whispers in your ear, 'You and your partner must share the same surname before you can truly tie the knot together.'");
+					return;
+				}
+			}
+			else
+			{
+				Message(13, "Erollsi Marr whispers in your ear, 'You and your partner must have a surname name before you can truly tie the knot together.'");
+				return;
+			}
+		}
+		else
+		{
+			Message(13, "Erollsi Marr whispers in your ear, 'You or your desired partner is already married. Try again next year when their marriage crumbles.'");
+			return;
+		}
+	}
+	else
+	{
+		Message(13, "Erollsi Marr whispers in your ear, 'Your marriage attempt failed. Your partner isn't here. Try again.'");
+		return;
+	}
+}
+
+bool Client::IsMarried()
+{
+	return m_epp.married_character_id != 0;
+}
+
+bool Client::HasTemporaryLastName()
+{
+	return m_epp.temp_last_name[0] != 0;
 }

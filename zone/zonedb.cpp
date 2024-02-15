@@ -814,7 +814,9 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		"`e_hardcore`,				"
 		"`e_hardcore_death_time`,	"
 		"`e_betabuff_gear_flag`,    "
-		"`e_zone_guild_id`		    "
+		"`e_zone_guild_id`,		    "
+		"`e_temp_last_name`,		"
+		"`e_married_character_id`	"
 		"FROM                       "
 		"character_data             "
 		"WHERE `id` = %i         ", character_id);
@@ -880,7 +882,9 @@ bool ZoneDatabase::LoadCharacterData(uint32 character_id, PlayerProfile_Struct* 
 		m_epp->hardcore = atoi(row[r]); r++;									 // "`e_hardcore`,				"
 		m_epp->hardcore_death_time = atoll(row[r]); r++;						 // "`e_hardcore_death_time",	"
 		m_epp->betabuff_gear_flag = atoi(row[r]); r++;							 // "`e_betabuff_gear_flag"		"
-		m_epp->zone_guild_id = atoi(row[r]); r++;							 // "`e_zone_guild_id"		"
+		m_epp->zone_guild_id = atoi(row[r]); r++;									// "`e_zone_guild_id"		"
+		strcpy(m_epp->temp_last_name, row[r]); r++;									// "e_temp_last_name,                 "
+		m_epp->married_character_id = atoi(row[r]); r++;							 // "`e_married_character_id"		"
 	}
 	return true;
 }
@@ -1215,7 +1219,9 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		" e_hardcore,				 "
 		" e_hardcore_death_time,     "
 		" e_betabuff_gear_flag,		 "
-		" e_zone_guild_id			 "
+		" e_zone_guild_id,			 "
+		" e_temp_last_name,			 "
+		" e_married_character_id	 "
 		")							 "
 		"VALUES ("
 		"%u,"  // id																" id,                        "
@@ -1280,7 +1286,9 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%u,"  // e_hardcore
 		"%lld," // e_hardcore_death_time
 		"%u,"   // e_betabuff_gear_flag
-		"%lu "   // e_zone_guild_id
+		"%lu, "   // e_zone_guild_id
+		"'%s', "  // e_temp_last_name
+		"%u "  // e_married_character_id
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1344,7 +1352,9 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		m_epp->hardcore,
 		m_epp->hardcore_death_time,
 		m_epp->betabuff_gear_flag,
-		(unsigned long)m_epp->zone_guild_id
+		(unsigned long)m_epp->zone_guild_id,
+		Strings::Escape(m_epp->temp_last_name).c_str(),
+		m_epp->married_character_id
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);

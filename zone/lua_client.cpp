@@ -125,6 +125,26 @@ const char *Lua_Client::GetLastName() {
 	return self->GetLastName();
 }
 
+void Lua_Client::SetMarried(const char* temporary_name) {
+	Lua_Safe_Call_Void();
+	self->SetMarried(temporary_name);
+}
+
+bool Lua_Client::IsMarried() {
+	Lua_Safe_Call_Bool();
+	return self->IsMarried();
+}
+
+void Lua_Client::SetTemporaryLastName(char* temporary_name) {
+	Lua_Safe_Call_Void();
+	self->SetTemporaryLastName(temporary_name);
+}
+
+bool Lua_Client::HasTemporaryLastName() {
+	Lua_Safe_Call_Bool();
+	return self->HasTemporaryLastName();
+}
+
 int Lua_Client::GetBaseSTR() {
 	Lua_Safe_Call_Int();
 	return self->GetBaseSTR();
@@ -1462,7 +1482,11 @@ luabind::scope lua_register_client() {
 		.def("SetSoloOnly", (void(Lua_Client::*)(int))&Lua_Client::SetSoloOnly)
 		.def("IsSoloOnly", (int(Lua_Client::*)(void))&Lua_Client::IsSoloOnly)
 		.def("ClearPlayerInfoAndGrantStartingItems", (void(Lua_Client::*)(void))&Lua_Client::ClearPlayerInfoAndGrantStartingItems)
-		.def("ScribeSpells", (uint16(Lua_Client::*)(uint8, uint8))& Lua_Client::ScribeSpells);
+		.def("ScribeSpells", (uint16(Lua_Client::*)(uint8, uint8))& Lua_Client::ScribeSpells)
+		.def("IsMarried", (bool(Lua_Client::*)())&Lua_Client::IsMarried)
+		.def("SetMarried", (void(Lua_Client::*)(const char*))&Lua_Client::SetMarried)
+		.def("SetTemporaryLastName", (void(Lua_Client::*)(const char*))&Lua_Client::SetTemporaryLastName)
+		.def("HasTemporaryLastName", (bool(Lua_Client::*)(void))&Lua_Client::HasTemporaryLastName);
 }
 
 luabind::scope lua_register_inventory_where() {

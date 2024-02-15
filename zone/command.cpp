@@ -4191,13 +4191,7 @@ void command_showquake(Client *c, const Seperator *sep)
 	
 	if (c->GuildID() == GUILD_NONE)
 	{
-		c->Message(CC_Default, "You must be part of a guild and be an officer rank or higher to use this command.");
-		return;
-	}
-
-	if (c->GuildRank() == 0)
-	{
-		c->Message(CC_Default, "You must be an officer rank or higher to use this command.");
+		c->Message(CC_Default, "You must be part of a guild to use this command.");
 		return;
 	}
 
