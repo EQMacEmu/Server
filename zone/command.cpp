@@ -4195,6 +4195,12 @@ void command_showquake(Client *c, const Seperator *sep)
 		return;
 	}
 
+	if (c->GuildRank() == 0)
+	{
+		c->Message(CC_Default, "You must be an officer rank or higher to use this command.");
+		return;
+	}
+
 	if (zone)
 	{
 		ServerEarthquakeImminent_Struct quake_struct;
