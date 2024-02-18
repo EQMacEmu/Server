@@ -2371,11 +2371,11 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 						case 3:
 							if (r->members[x].IsRaidLeader || r->members[x].IsLooter)
 							{
-								corpse->AllowPlayerLoot(r->members[x].member);
+								corpse->AllowPlayerLoot(r->members[x].membername);
 							}
 							break;
 						case 4:
-							corpse->AllowPlayerLoot(r->members[x].member);
+							corpse->AllowPlayerLoot(r->members[x].membername);
 							break;
 						}
 					}
