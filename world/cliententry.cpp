@@ -38,7 +38,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 : id(in_id)
 {
 	ClearVars(true);
-
+	incremented_player_count = false;
 	pIP = ip;
 	pLSID = iLSID;
 	if(iLSID > 0)
@@ -56,7 +56,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 : id(in_id)
 {
 	ClearVars(true);
-
+	incremented_player_count = false;
 	pIP = 0;
 	pForumName[0] = 0;
 	pLSID = scl->LSAccountID;
@@ -83,6 +83,13 @@ ClientListEntry::~ClientListEntry() {
 		Camp(); // updates zoneserver's numplayers
 		client_list.RemoveCLEReferances(this);
 	}
+
+	if (incremented_player_count)
+	{
+		numplayers--;
+		incremented_player_count = false;
+	}
+
 	SetOnline(CLE_Status_Offline);
 	SetAccountID(0);
 	for (auto &elem : tell_queue)
@@ -105,12 +112,14 @@ void ClientListEntry::SetOnline(int8 iOnline) {
 
 	// this counting method, counts players connected to world.
 	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online) {
-		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+		if (!mule() && !incremented_player_count || RuleB(Quarm, IncludeMulesInServerCount)) {
+			incremented_player_count = true;
 			numplayers++;
 		}
 	}
 	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online) {
-		if (!mule() || RuleB(Quarm, IncludeMulesInServerCount)) {
+		if (incremented_player_count || RuleB(Quarm, IncludeMulesInServerCount)) {
+			incremented_player_count = false;
 			numplayers--;
 		}
 	}

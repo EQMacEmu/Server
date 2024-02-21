@@ -126,6 +126,8 @@ private:
 	MD5		pMD5Pass;
 	int16	padmin;
 
+	bool incremented_player_count;
+
 	// Character info
 	ZoneServer* pzoneserver;
 	uint32	pzone;
