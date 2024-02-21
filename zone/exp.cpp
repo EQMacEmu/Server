@@ -141,7 +141,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		{
 			if (our_group->members[x] != nullptr && our_group->members[x]->IsClient()) // If Group Member is Client
 			{
-				if (m_epp.married_character_id = our_group->members[x]->CastToClient()->CharacterID())
+				if (m_epp.married_character_id == our_group->members[x]->CastToClient()->CharacterID())
 				{
 					class_mult += 0.20f;
 					Message(CC_Yellow, "You receive a bonus! (Partner)");
