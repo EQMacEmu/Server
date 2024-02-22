@@ -2264,6 +2264,14 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 	if (GetTarget() && GetTarget()->IsNPC())
 		npc = GetTarget()->CastToNPC();
 
+	if (npc && npc->GetSpecialAbility(NO_HARM_FROM_CLIENT))
+	{
+		return;
+	}
+
+	if (npc && DistanceSquaredNoZ(m_Position, npc->GetPosition()) >= 2200)
+		return;
+
 	uint16 beg_skill = GetSkill(EQ::skills::SkillBegging);
 	if (npc && !npc->IsPet() && zone->random.Int(1, 199) > beg_skill && zone->random.Roll(9))
 	{
