@@ -1180,7 +1180,7 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 						{
 							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
 							{
-								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and the loot is set to free-for-all..");
+								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and the loot is set to free-for-all.");
 								AddLooter(c);
 								break;
 							}
