@@ -1172,6 +1172,21 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 						}
 					}
 				}
+				else if (raid->GetLootType() == 4) // Raid Leader loot
+				{
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+					{
+						if (raid->members[x].membername[0])
+						{
+							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
+							{
+								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and the loot is set to free-for-all..");
+								AddLooter(c);
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 

@@ -2343,9 +2343,9 @@ void NPC::CreateCorpse(Mob* killer, int32 dmg_total, bool &corpse_bool)
 			{
 				Raid* r = entity_list.GetRaidByClient(killer->CastToClient());
 				if (r) {
+					r->GetRaidDetails();
 					r->LearnMembers();
 					r->VerifyRaid();
-					r->GetRaidDetails();
 					float raidHighestLevel = r->GetHighestLevel2();
 					int i = 0;
 					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
