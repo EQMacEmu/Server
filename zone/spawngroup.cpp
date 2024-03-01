@@ -24,6 +24,7 @@
 #include "spawngroup.h"
 #include "zone.h"
 #include "zonedb.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
 
 extern EntityList entity_list;
 extern Zone* zone;
@@ -197,30 +198,83 @@ bool SpawnGroupList::RemoveSpawnGroup(uint32 in_id)
 
 bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_group_list) {
 
-	std::string query = StringFormat("SELECT DISTINCT(spawngroupID), spawngroup.name, spawngroup.spawn_limit, "
-                                    "spawngroup.max_x, spawngroup.min_x, "
-                                    "spawngroup.max_y, spawngroup.min_y, spawngroup.delay, "
-                                    "spawngroup.despawn, spawngroup.despawn_timer, spawngroup.mindelay, spawngroup.wp_spawns "
-                                    "FROM spawn2, spawngroup WHERE spawn2.spawngroupID = spawngroup.ID "
-                                    "AND zone = '%s'", zone_name);
+	std::string query = fmt::format( 
+		SQL(
+			SELECT 
+			DISTINCT(spawngroupID),
+				spawngroup.name, 
+				spawngroup.spawn_limit, 
+				spawngroup.max_x, 
+				spawngroup.min_x,
+				spawngroup.max_y,
+				spawngroup.min_y,
+				spawngroup.delay,
+				spawngroup.despawn,
+				spawngroup.despawn_timer,
+				spawngroup.mindelay,
+				spawngroup.wp_spawns
+			FROM
+				spawn2,
+				spawngroup 
+			WHERE 
+				spawn2.spawngroupID = spawngroup.ID
+				AND 
+				zone = '{}'
+				{}
+		), 
+		zone_name, 
+		ContentFilterCriteria::apply()
+	);
+
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		return false;
     }
 
     for (auto row = results.begin(); row != results.end(); ++row) {
-        auto new_spawn_group = std::make_unique<SpawnGroup>(atoi(row[0]), row[1], atoi(row[2]), atof(row[3]),
-                                                    atof(row[4]), atof(row[5]), atof(row[6]), atof(row[7]),
-                                                    atoi(row[8]), atoi(row[9]), atoi(row[10]), atoi(row[11]));
+        auto new_spawn_group = std::make_unique<SpawnGroup>(
+			atoi(row[0]), 
+			row[1],
+			atoi(row[2]),
+			atof(row[3]),
+			atof(row[4]),
+			atof(row[5]),
+			atof(row[6]),
+			atof(row[7]),
+			atoi(row[8]),
+			atoi(row[9]),
+			atoi(row[10]),
+			atoi(row[11])
+		);
+
         spawn_group_list->AddSpawnGroup(new_spawn_group);
     }
 
-	query = StringFormat("SELECT DISTINCT spawnentry.spawngroupID, npcid, chance, "
-                        "npc_types.spawn_limit AS sl, mintime, maxtime "
-                        "FROM spawnentry, spawn2, npc_types "
-                        "WHERE spawnentry.npcID=npc_types.id "
-                        "AND spawnentry.spawngroupID = spawn2.spawngroupID "
-                        "AND zone = '%s'", zone_name);
+	query = fmt::format(
+		SQL(
+			SELECT 
+			DISTINCT 
+				spawnentry.spawngroupID,
+				npcid,
+				chance,
+				npc_types.spawn_limit 
+				AS sl, mintime, maxtime
+			FROM
+				spawnentry,
+				spawn2,
+				npc_types
+			WHERE 
+				spawnentry.npcID=npc_types.id
+				AND
+				spawnentry.spawngroupID = spawn2.spawngroupID
+				AND
+				zone = '{}'
+				{}
+			), 
+			zone_name,
+			ContentFilterCriteria::apply("spawnentry")
+	);
+
     results = QueryDatabase(query);
     if (!results.Success()) {
         Log(Logs::General, Logs::Error, "Error2 in PopulateZoneLists query '%'", query.c_str());
@@ -228,14 +282,21 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
     }
 
     for (auto row = results.begin(); row != results.end(); ++row) {
-        auto newSpawnEntry = std::make_unique<SpawnEntry>( atoi(row[1]), atoi(row[2]), row[3]?atoi(row[3]):0, atoi(row[4]), atoi(row[5]));
-		SpawnGroup *sg = spawn_group_list->GetSpawnGroup(atoi(row[0]));
+        auto newSpawnEntry = std::make_unique<SpawnEntry>( 
+			atoi(row[1]),
+			atoi(row[2]),
+			row[3]?atoi(row[3]):0,
+			atoi(row[4]),
+			atoi(row[5])
+		);
 
-		if (!sg) {
+		SpawnGroup *spawn_group = spawn_group_list->GetSpawnGroup(atoi(row[0]));
+
+		if (!spawn_group) {
             continue;
 		}
 
-		sg->AddSpawnEntry(newSpawnEntry);
+		spawn_group->AddSpawnEntry(newSpawnEntry);
     }
 
 	return true;

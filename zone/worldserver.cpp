@@ -1681,6 +1681,15 @@ void WorldServer::Process() {
 			}
 			break;
 		}
+		case ServerOP_UpdateSchedulerEvents : {
+			LogScheduler("Received signal from world to update");
+			if (m_zone_scheduler) {
+				m_zone_scheduler->LoadScheduledEvents();
+			}
+
+			break;
+		}
+
 		case ServerOP_ReloadRules: {
 			worldserver.SendEmoteMessage(
 				0, 0, 0, 15,
@@ -1688,6 +1697,27 @@ void WorldServer::Process() {
 				zone->GetLongName()
 			);
 			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
+			break;
+		}
+
+		case ServerOP_ReloadContentFlags: {
+			if (zone) {
+				worldserver.SendEmoteMessage(
+					0,
+					0,
+					AccountStatus::GMAdmin,
+					CC_Yellow,
+					fmt::format(
+						"Content flags (and expansion) reloaded for {}.",
+						fmt::format(
+							"{} ({})",
+							zone->GetLongName(),
+							zone->GetZoneID()
+						)
+					).c_str()
+				);
+			}
+			content_service.SetExpansionContext()->ReloadContentFlags();
 			break;
 		}
 		case ServerOP_ReloadLogs: {
@@ -1982,4 +2012,14 @@ void WorldServer::RequestTellQueue(const char *who)
 	SendPacket(pack);
 	safe_delete(pack);
 	return;
+}
+
+ZoneEventScheduler *WorldServer::GetScheduler() const
+{
+	return m_zone_scheduler;
+}
+
+void WorldServer::SetScheduler(ZoneEventScheduler *scheduler)
+{
+	WorldServer::m_zone_scheduler = scheduler;
 }

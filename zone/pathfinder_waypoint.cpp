@@ -788,7 +788,8 @@ std::string DigitToWord(int i)
 
 void PathfinderWaypoint::ShowNode(const Node &n) 
 {
-	auto npc_type = database.GetNPCTypeTemp(RuleI(NPC, NPCTemplateID));
+	auto npc_type = new NPCType;
+	memset(npc_type, 0, sizeof(NPCType));
 
 	if (n.id < 10) {
 		sprintf(npc_type->name, "%s", DigitToWord(n.id).c_str());

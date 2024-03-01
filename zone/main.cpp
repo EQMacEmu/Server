@@ -44,7 +44,10 @@
 #include "../common/spdat.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/event/timer.h"
+#include "../common/content/world_content_service.h"
+#include "../common/repositories/content_flags_repository.h"
 
+#include "zonedb.h"
 #include "zone_config.h"
 #include "masterentity.h"
 #include "worldserver.h"
@@ -57,6 +60,7 @@
 #include "quest_parser_collection.h"
 #include "lua_parser.h"
 #include "questmgr.h"
+#include "zone_event_scheduler.h"
 
 #include <iostream>
 #include <string>
@@ -74,11 +78,11 @@
 #endif
 
 #ifdef _WINDOWS
-	#include <conio.h>
-	#include <process.h>
+#include <conio.h>
+#include <process.h>
 #else
-	#include <pthread.h>
-	#include "../common/unix.h"
+#include <pthread.h>
+#include "../common/unix.h"
 #endif
 
 volatile bool RunLoops = true;
@@ -95,6 +99,8 @@ TitleManager title_manager;
 QueryServ *QServ = 0;
 QuestParserCollection *parse = 0;
 EQEmuLogSys LogSys;
+ZoneEventScheduler event_scheduler;
+WorldContentService content_service;
 const SPDat_Spell_Struct* spells;
 int32 SPDAT_RECORDS = -1;
 const ZoneConfig *Config;
@@ -323,6 +329,12 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	content_service.SetDatabase(&database)
+		->SetExpansionContext()
+		->ReloadContentFlags();
+
+	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
+
 	parse = new QuestParserCollection();
 #ifdef LUA_EQEMU
 	auto lua_parser = new LuaParser();
@@ -336,6 +348,8 @@ int main(int argc, char** argv) {
 	if (!worldserver.Connect()) {
 		LogError("Worldserver Connection Failed :: worldserver.Connect()");
 	}
+
+	worldserver.SetScheduler(&event_scheduler);
 
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	Timer RemoteCallProcessTimer(5000);
@@ -453,6 +467,7 @@ int main(int argc, char** argv) {
 				entity_list.MobProcess();
 				entity_list.BeaconProcess();
 				entity_list.EncounterProcess();
+				event_scheduler.Process(zone, &content_service);
 
 				if (zone) {
 					if (!zone->Process()) {

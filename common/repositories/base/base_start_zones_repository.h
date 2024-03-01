@@ -16,25 +16,28 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseStartZonesRepository {
 public:
 	struct StartZones {
-		float   x;
-		float   y;
-		float   z;
-		float   heading;
-		int32_t zone_id;
-		int32_t bind_id;
-		int32_t player_choice;
-		int32_t player_class;
-		int32_t player_deity;
-		int32_t player_race;
-		int32_t start_zone;
-		float   bind_x;
-		float   bind_y;
-		float   bind_z;
-		uint8_t select_rank;
+		float       x;
+		float       y;
+		float       z;
+		float       heading;
+		int32_t     zone_id;
+		int32_t     bind_id;
+		int32_t     player_choice;
+		int32_t     player_class;
+		int32_t     player_deity;
+		int32_t     player_race;
+		int32_t     start_zone;
+		float       bind_x;
+		float       bind_y;
+		float       bind_z;
+		uint8_t     select_rank;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -60,6 +63,10 @@ public:
 			"bind_y",
 			"bind_z",
 			"select_rank",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -81,6 +88,10 @@ public:
 			"bind_y",
 			"bind_z",
 			"select_rank",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -121,21 +132,25 @@ public:
 	{
 		StartZones e{};
 
-		e.x             = 0;
-		e.y             = 0;
-		e.z             = 0;
-		e.heading       = 0;
-		e.zone_id       = 0;
-		e.bind_id       = 0;
-		e.player_choice = 0;
-		e.player_class  = 0;
-		e.player_deity  = 0;
-		e.player_race   = 0;
-		e.start_zone    = 0;
-		e.bind_x        = 0;
-		e.bind_y        = 0;
-		e.bind_z        = 0;
-		e.select_rank   = 50;
+		e.x                      = 0;
+		e.y                      = 0;
+		e.z                      = 0;
+		e.heading                = 0;
+		e.zone_id                = 0;
+		e.bind_id                = 0;
+		e.player_choice          = 0;
+		e.player_class           = 0;
+		e.player_deity           = 0;
+		e.player_race            = 0;
+		e.start_zone             = 0;
+		e.bind_x                 = 0;
+		e.bind_y                 = 0;
+		e.bind_z                 = 0;
+		e.select_rank            = 50;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -172,21 +187,25 @@ public:
 		if (results.RowCount() == 1) {
 			StartZones e{};
 
-			e.x             = strtof(row[0], nullptr);
-			e.y             = strtof(row[1], nullptr);
-			e.z             = strtof(row[2], nullptr);
-			e.heading       = strtof(row[3], nullptr);
-			e.zone_id       = static_cast<int32_t>(atoi(row[4]));
-			e.bind_id       = static_cast<int32_t>(atoi(row[5]));
-			e.player_choice = static_cast<int32_t>(atoi(row[6]));
-			e.player_class  = static_cast<int32_t>(atoi(row[7]));
-			e.player_deity  = static_cast<int32_t>(atoi(row[8]));
-			e.player_race   = static_cast<int32_t>(atoi(row[9]));
-			e.start_zone    = static_cast<int32_t>(atoi(row[10]));
-			e.bind_x        = strtof(row[11], nullptr);
-			e.bind_y        = strtof(row[12], nullptr);
-			e.bind_z        = strtof(row[13], nullptr);
-			e.select_rank   = static_cast<uint8_t>(strtoul(row[14], nullptr, 10));
+			e.x                      = row[0] ? strtof(row[0], nullptr) : 0;
+			e.y                      = row[1] ? strtof(row[1], nullptr) : 0;
+			e.z                      = row[2] ? strtof(row[2], nullptr) : 0;
+			e.heading                = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zone_id                = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.bind_id                = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.player_choice          = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.player_class           = row[7] ? static_cast<int32_t>(atoi(row[7])) : 0;
+			e.player_deity           = row[8] ? static_cast<int32_t>(atoi(row[8])) : 0;
+			e.player_race            = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.start_zone             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bind_x                 = row[11] ? strtof(row[11], nullptr) : 0;
+			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
+			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
+			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
+			e.min_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.max_expansion          = row[16] ? static_cast<uint8_t>(strtoul(row[16], nullptr, 10)) : 0;
+			e.content_flags          = row[17] ? row[17] : "";
+			e.content_flags_disabled = row[18] ? row[18] : "";
 
 			return e;
 		}
@@ -235,6 +254,10 @@ public:
 		v.push_back(columns[12] + " = " + std::to_string(e.bind_y));
 		v.push_back(columns[13] + " = " + std::to_string(e.bind_z));
 		v.push_back(columns[14] + " = " + std::to_string(e.select_rank));
+		v.push_back(columns[15] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[16] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[17] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[18] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -271,6 +294,10 @@ public:
 		v.push_back(std::to_string(e.bind_y));
 		v.push_back(std::to_string(e.bind_z));
 		v.push_back(std::to_string(e.select_rank));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -315,6 +342,10 @@ public:
 			v.push_back(std::to_string(e.bind_y));
 			v.push_back(std::to_string(e.bind_z));
 			v.push_back(std::to_string(e.select_rank));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -348,21 +379,25 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			StartZones e{};
 
-			e.x             = strtof(row[0], nullptr);
-			e.y             = strtof(row[1], nullptr);
-			e.z             = strtof(row[2], nullptr);
-			e.heading       = strtof(row[3], nullptr);
-			e.zone_id       = static_cast<int32_t>(atoi(row[4]));
-			e.bind_id       = static_cast<int32_t>(atoi(row[5]));
-			e.player_choice = static_cast<int32_t>(atoi(row[6]));
-			e.player_class  = static_cast<int32_t>(atoi(row[7]));
-			e.player_deity  = static_cast<int32_t>(atoi(row[8]));
-			e.player_race   = static_cast<int32_t>(atoi(row[9]));
-			e.start_zone    = static_cast<int32_t>(atoi(row[10]));
-			e.bind_x        = strtof(row[11], nullptr);
-			e.bind_y        = strtof(row[12], nullptr);
-			e.bind_z        = strtof(row[13], nullptr);
-			e.select_rank   = static_cast<uint8_t>(strtoul(row[14], nullptr, 10));
+			e.x                      = row[0] ? strtof(row[0], nullptr) : 0;
+			e.y                      = row[1] ? strtof(row[1], nullptr) : 0;
+			e.z                      = row[2] ? strtof(row[2], nullptr) : 0;
+			e.heading                = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zone_id                = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.bind_id                = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.player_choice          = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.player_class           = row[7] ? static_cast<int32_t>(atoi(row[7])) : 0;
+			e.player_deity           = row[8] ? static_cast<int32_t>(atoi(row[8])) : 0;
+			e.player_race            = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.start_zone             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bind_x                 = row[11] ? strtof(row[11], nullptr) : 0;
+			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
+			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
+			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
+			e.min_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.max_expansion          = row[16] ? static_cast<uint8_t>(strtoul(row[16], nullptr, 10)) : 0;
+			e.content_flags          = row[17] ? row[17] : "";
+			e.content_flags_disabled = row[18] ? row[18] : "";
 
 			all_entries.push_back(e);
 		}
@@ -387,21 +422,25 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			StartZones e{};
 
-			e.x             = strtof(row[0], nullptr);
-			e.y             = strtof(row[1], nullptr);
-			e.z             = strtof(row[2], nullptr);
-			e.heading       = strtof(row[3], nullptr);
-			e.zone_id       = static_cast<int32_t>(atoi(row[4]));
-			e.bind_id       = static_cast<int32_t>(atoi(row[5]));
-			e.player_choice = static_cast<int32_t>(atoi(row[6]));
-			e.player_class  = static_cast<int32_t>(atoi(row[7]));
-			e.player_deity  = static_cast<int32_t>(atoi(row[8]));
-			e.player_race   = static_cast<int32_t>(atoi(row[9]));
-			e.start_zone    = static_cast<int32_t>(atoi(row[10]));
-			e.bind_x        = strtof(row[11], nullptr);
-			e.bind_y        = strtof(row[12], nullptr);
-			e.bind_z        = strtof(row[13], nullptr);
-			e.select_rank   = static_cast<uint8_t>(strtoul(row[14], nullptr, 10));
+			e.x                      = row[0] ? strtof(row[0], nullptr) : 0;
+			e.y                      = row[1] ? strtof(row[1], nullptr) : 0;
+			e.z                      = row[2] ? strtof(row[2], nullptr) : 0;
+			e.heading                = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zone_id                = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.bind_id                = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.player_choice          = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.player_class           = row[7] ? static_cast<int32_t>(atoi(row[7])) : 0;
+			e.player_deity           = row[8] ? static_cast<int32_t>(atoi(row[8])) : 0;
+			e.player_race            = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.start_zone             = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.bind_x                 = row[11] ? strtof(row[11], nullptr) : 0;
+			e.bind_y                 = row[12] ? strtof(row[12], nullptr) : 0;
+			e.bind_z                 = row[13] ? strtof(row[13], nullptr) : 0;
+			e.select_rank            = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 50;
+			e.min_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.max_expansion          = row[16] ? static_cast<uint8_t>(strtoul(row[16], nullptr, 10)) : 0;
+			e.content_flags          = row[17] ? row[17] : "";
+			e.content_flags_disabled = row[18] ? row[18] : "";
 
 			all_entries.push_back(e);
 		}

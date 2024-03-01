@@ -25,6 +25,7 @@
 #include "features.h"
 #include "eqemu_config.h"
 #include "data_verification.h"
+#include "repositories/criteria/content_filter_criteria.h"
 
 namespace ItemField
 {
@@ -201,29 +202,39 @@ bool SharedDatabase::SetStartingItems(PlayerProfile_Struct* pp, EQ::InventoryPro
 {
 	const EQ::ItemData* myitem;
 
-    std::string query = StringFormat("SELECT itemid, item_charges, slot FROM starting_items "
-                                    "WHERE (race = %i or race = 0) AND (class = %i or class = 0) AND "
-                                    "(deityid = %i or deityid = 0) AND (zoneid = %i or zoneid = 0) AND "
-                                    "gm <= %i ORDER BY id",
-                                    si_race, si_class, si_deity, si_current_zone, admin_level);
+    std::string query = StringFormat(
+		"SELECT itemid, item_charges, slot FROM starting_items "
+        "WHERE (race = %i or race = 0) AND (class = %i or class = 0) AND "
+        "(deityid = %i or deityid = 0) AND (zoneid = %i or zoneid = 0) AND "
+        "gm <= %i %s ORDER BY id",
+        si_race, 
+		si_class,
+		si_deity,
+		si_current_zone,
+		admin_level,
+		ContentFilterCriteria::apply().c_str()
+	);
+
     auto results = QueryDatabase(query);
-    if (!results.Success())
-        return false;
-
-
+	if (!results.Success()) {
+		return false;
+	}
+	
 	for (auto row = results.begin(); row != results.end(); ++row) {
 		int32 itemid = atoi(row[0]);
 		int32 charges = atoi(row[1]);
 		int32 slot = atoi(row[2]);
 		myitem = GetItem(itemid);
 
-		if(!myitem)
+		if (!myitem) {
 			continue;
+		}
 
 		EQ::ItemInstance* myinst = CreateBaseItem(myitem, charges);
 
-		if(slot < 0)
+		if (slot < 0) {
 			slot = inv->FindFreeSlot(0, 0);
+		}
 
 		inv->PutItem(slot, *myinst);
 		safe_delete(myinst);
@@ -1506,7 +1517,11 @@ void SharedDatabase::GetLootTableInfo(uint32 &loot_table_count, uint32 &max_loot
 	loot_table_count = 0;
 	max_loot_table = 0;
 	loot_table_entries = 0;
-	const std::string query = "SELECT COUNT(*), MAX(id), (SELECT COUNT(*) FROM loottable_entries) FROM loottable";
+	const std::string query =
+		fmt::format(
+			"SELECT COUNT(*), MAX(id), (SELECT COUNT(*) FROM loottable_entries) FROM loottable WHERE TRUE {}",
+			ContentFilterCriteria::apply()
+		);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
         return;
@@ -1528,7 +1543,10 @@ void SharedDatabase::GetLootDropInfo(uint32 &loot_drop_count, uint32 &max_loot_d
 	max_loot_drop = 0;
 	loot_drop_entries = 0;
 
-	const std::string query = "SELECT COUNT(*), MAX(id), (SELECT COUNT(*) FROM lootdrop_entries) FROM lootdrop";
+	const std::string query = fmt::format(
+		"SELECT COUNT(*), MAX(id), (SELECT COUNT(*) FROM lootdrop_entries) FROM lootdrop WHERE TRUE {}",
+		ContentFilterCriteria::apply()
+	);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
         return;
@@ -1551,10 +1569,33 @@ void SharedDatabase::LoadLootTables(void *data, uint32 size)
 	uint8 loot_table[sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * 128)];
 	LootTable_Struct *lt = reinterpret_cast<LootTable_Struct*>(loot_table);
 
-	const std::string query = "SELECT loottable.id, loottable.mincash, loottable.maxcash, loottable.avgcoin, "
-                            "loottable_entries.lootdrop_id, loottable_entries.multiplier, loottable_entries.droplimit, "
-                            "loottable_entries.mindrop, loottable_entries.probability, loottable_entries.multiplier_min FROM "
-							"loottable LEFT JOIN loottable_entries ON loottable.id = loottable_entries.loottable_id ORDER BY id";
+	const std::string query = fmt::format(
+		SQL(
+			SELECT
+			loottable.id,
+			loottable.mincash,
+			loottable.maxcash,
+			loottable.avgcoin,
+			loottable_entries.lootdrop_id,
+			loottable_entries.multiplier,
+			loottable_entries.droplimit,
+			loottable_entries.mindrop,
+			loottable_entries.probability,
+			loottable_entries.multiplier_min,
+			loottable.min_expansion,
+			loottable.max_expansion,
+			loottable.content_flags,
+			loottable.content_flags_disabled
+			FROM
+			loottable
+			LEFT JOIN loottable_entries ON loottable.id = loottable_entries.loottable_id
+			WHERE TRUE {}
+			ORDER BY
+			id
+		),
+		ContentFilterCriteria::apply()
+	);
+
     auto results = QueryDatabase(query);
     if (!results.Success()) {
         return;
@@ -1566,8 +1607,13 @@ void SharedDatabase::LoadLootTables(void *data, uint32 size)
     for (auto row = results.begin(); row != results.end(); ++row) {
         uint32 id = static_cast<uint32>(atoul(row[0]));
         if(id != current_id) {
-            if(current_id != 0)
-                hash.insert(current_id, loot_table, (sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lt->NumEntries)));
+			if (current_id != 0) {
+				hash.insert(
+					current_id,
+					loot_table,
+					(sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lt->NumEntries))
+				);
+			}
 
             memset(loot_table, 0, sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * 128));
             current_entry = 0;
@@ -1575,13 +1621,21 @@ void SharedDatabase::LoadLootTables(void *data, uint32 size)
             lt->mincash = static_cast<uint32>(atoul(row[1]));
             lt->maxcash = static_cast<uint32>(atoul(row[2]));
             lt->avgcoin = static_cast<uint32>(atoul(row[3]));
+
+			lt->content_flags.min_expansion = static_cast<int16>(atoi(row[10]));
+			lt->content_flags.max_expansion = static_cast<int16>(atoi(row[11]));
+
+			strn0cpy(lt->content_flags.content_flags, row[12], sizeof(lt->content_flags.content_flags));
+			strn0cpy(lt->content_flags.content_flags_disabled, row[13], sizeof(lt->content_flags.content_flags_disabled));
         }
 
-        if(current_entry > 128)
-            continue;
+		if (current_entry > 128) {
+			continue;
+		}
 
-        if(!row[4])
-            continue;
+		if (!row[4]) {
+			continue;
+		}
 
         lt->Entries[current_entry].lootdrop_id = static_cast<uint32>(atoul(row[4]));
         lt->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[5]));
@@ -1594,8 +1648,13 @@ void SharedDatabase::LoadLootTables(void *data, uint32 size)
         ++current_entry;
     }
 
-    if(current_id != 0)
-        hash.insert(current_id, loot_table, (sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lt->NumEntries)));
+	if (current_id != 0) {
+		hash.insert(
+			current_id,
+			loot_table,
+			(sizeof(LootTable_Struct) + (sizeof(LootTableEntries_Struct) * lt->NumEntries))
+		);
+	}
 
 }
 
@@ -1608,12 +1667,33 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
 {
 	EQ::FixedMemoryVariableHashSet<LootDrop_Struct> hash(reinterpret_cast<uint8*>(data), size);
 	uint8 loot_drop[sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * 1260)];
-	LootDrop_Struct *ld = reinterpret_cast<LootDrop_Struct*>(loot_drop);
+	LootDrop_Struct *p_loot_drop_struct = reinterpret_cast<LootDrop_Struct*>(loot_drop);
 
-	const std::string query = "SELECT lootdrop.id, lootdrop_entries.item_id, lootdrop_entries.item_charges, "
-                            "lootdrop_entries.equip_item, lootdrop_entries.chance, lootdrop_entries.minlevel, "
-                            "lootdrop_entries.maxlevel, lootdrop_entries.multiplier FROM lootdrop JOIN lootdrop_entries "
-                            "ON lootdrop.id = lootdrop_entries.lootdrop_id ORDER BY lootdrop_id";
+	const std::string query = fmt::format(
+		SQL(
+			SELECT
+				lootdrop.id,
+				lootdrop_entries.item_id,
+				lootdrop_entries.item_charges,
+				lootdrop_entries.equip_item,
+				lootdrop_entries.chance,
+				lootdrop_entries.minlevel,
+				lootdrop_entries.maxlevel,
+				lootdrop_entries.multiplier,
+				lootdrop.min_expansion,
+				lootdrop.max_expansion,
+				lootdrop.content_flags,
+				lootdrop.content_flags_disabled
+			FROM
+				lootdrop 
+				JOIN lootdrop_entries ON lootdrop.id = lootdrop_entries.lootdrop_id 
+			WHERE
+				TRUE {}
+			ORDER BY lootdrop_id
+		),
+		ContentFilterCriteria::apply()
+	);
+
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		return;
@@ -1625,31 +1705,39 @@ void SharedDatabase::LoadLootDrops(void *data, uint32 size)
     for (auto row = results.begin(); row != results.end(); ++row) {
         uint32 id = static_cast<uint32>(atoul(row[0]));
         if(id != current_id) {
-            if(current_id != 0)
-                hash.insert(current_id, loot_drop, (sizeof(LootDrop_Struct) +(sizeof(LootDropEntries_Struct) * ld->NumEntries)));
-
+			if (current_id != 0) {
+				hash.insert(current_id, loot_drop, (sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * p_loot_drop_struct->NumEntries)));
+			}
             memset(loot_drop, 0, sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * 1260));
 			current_entry = 0;
 			current_id = id;
+
+			p_loot_drop_struct->content_flags.min_expansion = static_cast<int16>(atoi(row[8]));
+			p_loot_drop_struct->content_flags.max_expansion = static_cast<int16>(atoi(row[9]));
+
+			strn0cpy(p_loot_drop_struct->content_flags.content_flags, row[10], sizeof(p_loot_drop_struct->content_flags.content_flags));
+			strn0cpy(p_loot_drop_struct->content_flags.content_flags_disabled, row[11], sizeof(p_loot_drop_struct->content_flags.content_flags_disabled));
         }
 
-		if(current_entry >= 1260)
-            continue;
+		if (current_entry >= 1260) {
+			continue;
+		}
 
-        ld->Entries[current_entry].item_id = static_cast<uint32>(atoul(row[1]));
-        ld->Entries[current_entry].item_charges = static_cast<int8>(atoi(row[2]));
-        ld->Entries[current_entry].equip_item = static_cast<uint8>(atoi(row[3]));
-        ld->Entries[current_entry].chance = static_cast<float>(atof(row[4]));
-        ld->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
-        ld->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
-        ld->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
+		p_loot_drop_struct->Entries[current_entry].item_id = static_cast<uint32>(atoul(row[1]));
+		p_loot_drop_struct->Entries[current_entry].item_charges = static_cast<int8>(atoi(row[2]));
+		p_loot_drop_struct->Entries[current_entry].equip_item = static_cast<uint8>(atoi(row[3]));
+		p_loot_drop_struct->Entries[current_entry].chance = static_cast<float>(atof(row[4]));
+		p_loot_drop_struct->Entries[current_entry].minlevel = static_cast<uint8>(atoi(row[5]));
+		p_loot_drop_struct->Entries[current_entry].maxlevel = static_cast<uint8>(atoi(row[6]));
+		p_loot_drop_struct->Entries[current_entry].multiplier = static_cast<uint8>(atoi(row[7]));
 
-        ++(ld->NumEntries);
+        ++(p_loot_drop_struct->NumEntries);
         ++current_entry;
     }
 
-    if(current_id != 0)
-        hash.insert(current_id, loot_drop, (sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * ld->NumEntries)));
+	if (current_id != 0) {
+		hash.insert(current_id, loot_drop, (sizeof(LootDrop_Struct) + (sizeof(LootDropEntries_Struct) * p_loot_drop_struct->NumEntries)));
+	}
 
 }
 

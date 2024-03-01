@@ -110,6 +110,7 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 	log_settings[Logs::LoginServer].log_to_console		= static_cast<uint8>(Logs::General);
 	log_settings[Logs::QuestErrors].log_to_gmsay		= static_cast<uint8>(Logs::General);
 	log_settings[Logs::QuestErrors].log_to_console		= static_cast<uint8>(Logs::General);
+	log_settings[Logs::Scheduler].log_to_console		= static_cast<uint8>(Logs::General);
 
 	/**
 	 * RFC 5424
@@ -180,11 +181,7 @@ bool EQEmuLogSys::IsRfc5424LogCategory(uint16 log_category)
 
 std::string EQEmuLogSys::FormatOutMessageString(uint16 log_category, const std::string &in_message)
 {
-	std::string return_string;
-
-	if (IsRfc5424LogCategory(log_category)) {
-		return_string = "[" + GetPlatformName() + "] ";
-	}
+	std::string return_string = "[" + GetPlatformName() + "] ";
 
 	return return_string + "[" + Logs::LogCategoryName[log_category] + "] " + in_message;
 }

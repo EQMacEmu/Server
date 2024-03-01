@@ -16,15 +16,18 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseFishingRepository {
 public:
 	struct Fishing {
-		int32_t id;
-		int32_t zoneid;
-		int32_t Itemid;
-		int16_t skill_level;
-		int16_t chance;
+		int32_t     id;
+		int32_t     zoneid;
+		int32_t     Itemid;
+		int16_t     skill_level;
+		int16_t     chance;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -40,6 +43,10 @@ public:
 			"Itemid",
 			"skill_level",
 			"chance",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -51,6 +58,10 @@ public:
 			"Itemid",
 			"skill_level",
 			"chance",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -91,11 +102,15 @@ public:
 	{
 		Fishing e{};
 
-		e.id          = 0;
-		e.zoneid      = 0;
-		e.Itemid      = 0;
-		e.skill_level = 0;
-		e.chance      = 0;
+		e.id                     = 0;
+		e.zoneid                 = 0;
+		e.Itemid                 = 0;
+		e.skill_level            = 0;
+		e.chance                 = 0;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -132,11 +147,15 @@ public:
 		if (results.RowCount() == 1) {
 			Fishing e{};
 
-			e.id          = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid      = static_cast<int32_t>(atoi(row[1]));
-			e.Itemid      = static_cast<int32_t>(atoi(row[2]));
-			e.skill_level = static_cast<int16_t>(atoi(row[3]));
-			e.chance      = static_cast<int16_t>(atoi(row[4]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.skill_level            = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
+			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.min_expansion          = row[5] ? static_cast<uint8_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.max_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.content_flags          = row[7] ? row[7] : "";
+			e.content_flags_disabled = row[8] ? row[8] : "";
 
 			return e;
 		}
@@ -174,6 +193,10 @@ public:
 		v.push_back(columns[2] + " = " + std::to_string(e.Itemid));
 		v.push_back(columns[3] + " = " + std::to_string(e.skill_level));
 		v.push_back(columns[4] + " = " + std::to_string(e.chance));
+		v.push_back(columns[5] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[6] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[7] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[8] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -200,6 +223,10 @@ public:
 		v.push_back(std::to_string(e.Itemid));
 		v.push_back(std::to_string(e.skill_level));
 		v.push_back(std::to_string(e.chance));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -234,6 +261,10 @@ public:
 			v.push_back(std::to_string(e.Itemid));
 			v.push_back(std::to_string(e.skill_level));
 			v.push_back(std::to_string(e.chance));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -267,11 +298,15 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Fishing e{};
 
-			e.id          = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid      = static_cast<int32_t>(atoi(row[1]));
-			e.Itemid      = static_cast<int32_t>(atoi(row[2]));
-			e.skill_level = static_cast<int16_t>(atoi(row[3]));
-			e.chance      = static_cast<int16_t>(atoi(row[4]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.skill_level            = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
+			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.min_expansion          = row[5] ? static_cast<uint8_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.max_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.content_flags          = row[7] ? row[7] : "";
+			e.content_flags_disabled = row[8] ? row[8] : "";
 
 			all_entries.push_back(e);
 		}
@@ -296,11 +331,15 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Fishing e{};
 
-			e.id          = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid      = static_cast<int32_t>(atoi(row[1]));
-			e.Itemid      = static_cast<int32_t>(atoi(row[2]));
-			e.skill_level = static_cast<int16_t>(atoi(row[3]));
-			e.chance      = static_cast<int16_t>(atoi(row[4]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.Itemid                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.skill_level            = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
+			e.chance                 = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.min_expansion          = row[5] ? static_cast<uint8_t>(strtoul(row[5], nullptr, 10)) : 0;
+			e.max_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.content_flags          = row[7] ? row[7] : "";
+			e.content_flags_disabled = row[8] ? row[8] : "";
 
 			all_entries.push_back(e);
 		}

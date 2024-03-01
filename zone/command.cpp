@@ -334,6 +334,7 @@ int command_init(void)
 		command_add("randomfeatures", "- Temporarily randomizes the Facial Features of your target.", AccountStatus::GMCoder, command_randomfeatures) ||
 		command_add("refreshgroup", "- Refreshes Group.", AccountStatus::EQSupport, command_refreshgroup) ||
 		command_add("reloadallrules", "Executes a reload of all rules.", AccountStatus::GMCoder, command_reloadallrules) ||
+		command_add("reloadcontentflags", "Executes a reload of all expansion and content flags", AccountStatus::QuestTroupe, command_reloadcontentflags) ||
 		command_add("reloademote", "Reloads NPC Emotes.", AccountStatus::GMCoder, command_reloademote) ||
 		command_add("reloadlevelmods", nullptr, AccountStatus::Max, command_reloadlevelmods) ||
 		command_add("reloadmerchants", "Reloads NPC merchant list.", AccountStatus::Max, command_reloadmerchants) ||
@@ -3157,20 +3158,47 @@ void command_level(Client *c, const Seperator *sep)
 	}
 }
 
-void command_spawn(Client *c, const Seperator *sep){
-	if (sep->arg[1][0] != 0){
-		Client* client = entity_list.GetClientByName(sep->arg[1]);
-		if (client){
-			c->Message(CC_Default, "You cannot spawn a mob with the same name as a character!");
-			return;
-		}
+void command_spawn(Client *c, const Seperator *sep)
+{
+	const auto arguments = sep->argnum;
+	if (!arguments) {
+		c->Message(CC_Default, "Usage: #spawn [Name]");
+		c->Message(
+			CC_Default,
+			"Optional Usage: #spawn [Name] [Race] [Level] [Texture] [Health] [Gender] [Class] [Primary Model] [Secondary Model] [Merchant ID] [Body Type]"
+		);
+		c->Message(
+			CC_Default,
+			"Name Format: NPCFirstname_NPCLastname - All numbers in a name are stripped and \"_\" characters become a space."
+		);
+		c->Message(
+			CC_Default,
+			"Note: Using \"-\" for gender will autoselect the gender for the race. Using \"-\" for HP will use the calculated maximum HP."
+		);
+		return;
 	}
 
-	NPC* npc = NPC::SpawnNPC(sep->argplus[1], c->GetPosition(), c);
-	if (!npc) {
-		c->Message(CC_Default, "Format: #spawn name race level material hp gender class priweapon secweapon merchantid bodytype - spawns a npc those parameters.");
-		c->Message(CC_Default, "Name Format: NPCFirstname_NPCLastname - All numbers in a name are stripped and \"_\" characters become a space.");
-		c->Message(CC_Default, "Note: Using \"-\" for gender will autoselect the gender for the race. Using \"-\" for HP will use the calculated maximum HP.");
+	const auto *m = entity_list.GetClientByName(sep->arg[1]);
+	if (m) {
+		c->Message(CC_Default, "You cannot spawn a mob with the same name as a character!");
+		return;
+	}
+
+	const auto* n = NPC::SpawnNPC(sep->argplus[1], c->GetPosition(), c);
+	if (!n) {
+		c->Message(CC_Default, "Usage: #spawn [Name]");
+		c->Message(
+			CC_Default,
+			"Optional Usage: #spawn [Name] [Race] [Level] [Texture] [Health] [Gender] [Class] [Primary Model] [Secondary Model] [Merchant ID] [Body Type]"
+		);
+		c->Message(
+			CC_Default,
+			"Name Format: NPCFirstname_NPCLastname - All numbers in a name are stripped and \"_\" characters become a space."
+		);
+		c->Message(
+			CC_Default,
+			"Note: Using \"-\" for gender will autoselect the gender for the race. Using \"-\" for HP will use the calculated maximum HP."
+		);
 	}
 }
 
@@ -3219,7 +3247,7 @@ void command_texture(Client *c, const Seperator *sep){
 void command_npctypespawn(Client *c, const Seperator *sep){
 	if (sep->IsNumber(1)) {
 		const NPCType* tmp = 0;
-		if ((tmp = database.GetNPCType(atoi(sep->arg[1])))) {
+		if ((tmp = database.LoadNPCTypesData(atoi(sep->arg[1])))) {
 			//tmp->fixedZ = 1;
 			auto npc = new NPC(tmp, 0, c->GetPosition(), EQ::constants::GravityBehavior::Water);
 			if (npc && sep->IsNumber(2))
@@ -3568,7 +3596,7 @@ void command_viewnpctype(Client *c, const Seperator *sep){
 	else
 	{
 		uint32 npctypeid = atoi(sep->arg[1]);
-		const NPCType* npct = database.GetNPCType(npctypeid);
+		const NPCType* npct = database.LoadNPCTypesData(npctypeid);
 		if (npct) {
 			c->Message(CC_Default, " NPCType Info, ");
 			c->Message(CC_Default, "  NPCTypeID: %u", npct->npc_id);
@@ -7953,7 +7981,7 @@ void command_qglobal(Client *c, const Seperator *sep)
 	}
 
 	if (!strcasecmp(sep->arg[1], "view")) {
-		const NPCType *type = database.GetNPCType(target->GetNPCTypeID());
+		const NPCType *type = database.LoadNPCTypesData(target->GetNPCTypeID());
 		if (!type)
 			c->Message(CC_Yellow, "Invalid NPC type.");
 		else if (type->qglobal)
@@ -9503,6 +9531,16 @@ void command_reloadallrules(Client *c, const Seperator *sep){
 		c->Message(CC_Red, "Successfully sent the packet to world to reload rules globally. (including world)");
 		safe_delete(pack);
 
+	}
+}
+
+void command_reloadcontentflags(Client *c, const Seperator *sep)
+{
+	if (c) {
+		auto pack = new ServerPacket(ServerOP_ReloadContentFlags, 0);
+		worldserver.SendPacket(pack);
+		c->Message(CC_Red, "Successfully sent the packet to world to reload content flags globally.");
+		safe_delete(pack);
 	}
 }
 

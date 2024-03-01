@@ -20,6 +20,7 @@
 
 #include <fmt/format.h>
 #include "eqemu_command_handler.h"
+#include "terminal_color.hpp"
 #include "../platform.h"
 
 namespace EQEmuCommand {
@@ -29,7 +30,7 @@ namespace EQEmuCommand {
 		char **argv,
 		argh::parser &cmd,
 		std::string &description
-	)> function_map;
+		)> function_map;
 
 	/**
 	 * @param cmd
@@ -68,21 +69,22 @@ namespace EQEmuCommand {
 	{
 		bool arguments_filled = true;
 
-		int index = 2;
+		int       index = 2;
 		for (auto &arg : arguments) {
 			if (cmd(arg).str().empty() && cmd(index).str().empty()) {
 				arguments_filled = false;
 			}
+			index++;
 		}
 
-		if (!arguments_filled || argc == 2) {
+		if (!arguments_filled || (argc == 2 && !cmd[{"-h", "--help"}]) || (argc == 3 && cmd[{"-h", "--help"}])) {
 			std::string arguments_string;
-			for (auto   &arg : arguments) {
+			for (auto &arg : arguments) {
 				arguments_string += " " + arg;
 			}
 
 			std::string options_string;
-			for (auto   &opt : options) {
+			for (auto &opt : options) {
 				options_string += "  " + opt + "\n";
 			}
 
@@ -99,7 +101,7 @@ namespace EQEmuCommand {
 
 			std::cout << command_string.str() << std::endl;
 
-			exit(1);
+			exit(0);
 		}
 	}
 
@@ -115,37 +117,27 @@ namespace EQEmuCommand {
 			char **argv,
 			argh::parser &cmd,
 			std::string &description
-		)> &in_function_map,
+			)> &in_function_map,
 		argh::parser &cmd,
 		int argc,
 		char **argv
 	)
 	{
 		std::string description;
-		bool        ran_command = false;
-		for (auto& it : in_function_map) {
-			if (it.first == argv[1]) {
-				(it.second)(argc, argv, cmd, description);
-				ran_command = true;
-			}
-		}
-
 		if (cmd[{"-h", "--help"}]) {
 			std::cout << std::endl;
 			std::cout <<
-					  "> " <<
-					  termcolor::yellow <<
-					  "EQEmulator [" + GetPlatformName() + "] CLI Menu" <<
-					  termcolor::reset
-					  << std::endl
-					  << std::endl;
+				"> " <<
+				termcolor::yellow <<
+				"EQEmulator [" + GetPlatformName() + "] CLI Menu" <<
+				termcolor::reset
+				<< std::endl
+				<< std::endl;
 
-			/**
-			 * Get max command length for padding length
-			 */
+			// Get max command length for padding length
 			int max_command_length = 0;
 
-			for (auto& it : in_function_map) {
+			for (auto &it : in_function_map) {
 				std::stringstream command;
 				command << termcolor::colorize << termcolor::yellow << it.first << termcolor::reset;
 				if (command.str().length() > max_command_length) {
@@ -153,27 +145,26 @@ namespace EQEmuCommand {
 				}
 			}
 
-			/**
-			 * Display command menu
-			 */
+			// Display command menu
 			std::string command_section;
-			for (auto   &it: in_function_map) {
-				description = "";
+			for (auto &it : in_function_map) {
+				description.clear();
 
 				(it.second)(argc, argv, cmd, description);
 
-				/**
-				 * Print section header
-				 */
+				// Print section header
 				std::string command_prefix = it.first.substr(0, it.first.find(":"));
+
+				if (command_prefix.find("test") != std::string::npos) {
+					continue;
+				}
+
 				if (command_section != command_prefix) {
 					command_section = command_prefix;
 					std::cout << termcolor::reset << command_prefix << std::endl;
 				}
 
-				/**
-				 * Print commands
-				 */
+				// Print commands
 				std::stringstream command;
 				command << termcolor::colorize << termcolor::yellow << it.first << termcolor::reset;
 				printf("  %-*s %s\n", max_command_length, command.str().c_str(), description.c_str());
@@ -181,13 +172,21 @@ namespace EQEmuCommand {
 
 			std::cout << std::endl;
 
-			std::exit(1);
+			std::exit(0);
 		}
-		
-		if	(ran_command) {
-			exit(1);
+
+		bool ran_command = false;
+
+		for (auto &it : in_function_map) {
+			if (it.first == argv[1]) {
+				(it.second)(argc, argv, cmd, description);
+				ran_command = true;
+			}
 		}
-		
+
+		if (ran_command) {
+			std::exit(0);
+		}
 	}
 
 }

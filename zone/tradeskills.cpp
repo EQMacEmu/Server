@@ -27,6 +27,7 @@
 
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
 
 #include "queryserv.h"
 #include "worldserver.h"
@@ -486,14 +487,34 @@ bool ZoneDatabase::GetTradeRecipe(const EQ::ItemInstance* container, uint8 c_typ
 		return false;
 	}
 
-	std::string query = StringFormat("SELECT tre.recipe_id "
-                                    "FROM tradeskill_recipe_entries AS tre "
-                                    "INNER JOIN tradeskill_recipe AS tr ON (tre.recipe_id = tr.id) "
-                                    "WHERE tr.enabled AND (( tre.item_id IN(%s) AND tre.componentcount > 0) "
-                                    "OR ( tre.item_id %s AND tre.iscontainer=1 ))"
-                                    "GROUP BY tre.recipe_id HAVING sum(tre.componentcount) = %u "
-                                    "AND sum(tre.item_id * tre.componentcount) = %u",
-                                    buf2.c_str(), containers.c_str(), count, sum);
+	std::string query = StringFormat(
+		SQL(
+			SELECT
+				tradeskill_recipe_entries.recipe_id
+			FROM 
+				tradeskill_recipe_entries
+			INNER JOIN 
+				tradeskill_recipe ON (tradeskill_recipe_entries.recipe_id = tradeskill_recipe.id)
+            WHERE 
+				tradeskill_recipe.enabled
+				 %s
+			AND 
+			(
+				(tradeskill_recipe_entries.item_id IN(%s) AND tradeskill_recipe_entries.componentcount > 0)
+			OR 
+				(tradeskill_recipe_entries.item_id %s AND tradeskill_recipe_entries.iscontainer=1 )
+			)
+			GROUP BY 
+				tradeskill_recipe_entries.recipe_id
+				HAVING 
+				sum(tradeskill_recipe_entries.componentcount) = %u AND sum(tradeskill_recipe_entries.item_id * tradeskill_recipe_entries.componentcount) = %u
+		),
+		ContentFilterCriteria::apply("tradeskill_recipe").c_str(),
+		buf2.c_str(),
+		containers.c_str(),
+		count,
+		sum
+	);
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
 		Log(Logs::General, Logs::Error, "Error in GetTradeRecipe search, query: %s", query.c_str());
@@ -666,12 +687,14 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 				tradeskill_recipe.id = %lu 
 				AND tradeskill_recipe_entries.item_id %s 
 				AND tradeskill_recipe_entries.iscontainer = 1
-                AND tradeskill_recipe.enabled 
+                AND tradeskill_recipe.enabled
+				%s
 			GROUP BY 
 				tradeskill_recipe.id
 			),
             (unsigned long)recipe_id, 
-			containers.c_str()
+			containers.c_str(),
+			ContentFilterCriteria::apply("tradeskill_recipe").c_str()
 	);
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {

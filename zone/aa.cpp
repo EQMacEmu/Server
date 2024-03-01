@@ -505,7 +505,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	TemporaryPetsEffect *pet = new TemporaryPetsEffect;
 
 	// create new npc type
-	const NPCType* npc_type_template = database.GetNPCType(record.npc_type);
+	const NPCType* npc_type_template = database.LoadNPCTypesData(record.npc_type);
 	if (npc_type_template == nullptr)
 	{
 		//log write

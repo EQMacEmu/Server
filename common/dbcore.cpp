@@ -59,7 +59,7 @@ void DBcore::ping() {
 	MDatabase.unlock();
 }
 
-MySQLRequestResult DBcore::QueryDatabase(std::string query, bool retryOnFailureOnce)
+MySQLRequestResult DBcore::QueryDatabase(const std::string& query, bool retryOnFailureOnce)
 {
 	return QueryDatabase(query.c_str(), query.length(), retryOnFailureOnce);
 }

@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 
+#include "../common/content/world_content_service.h"
 #include "lua_parser.h"
 #include "lua_item.h"
 #include "lua_iteminst.h"
@@ -1110,7 +1111,57 @@ void lua_reloadzonestaticdata() {
 	quest_manager.ReloadZoneStaticData();
 }
 
+/**
+ * Expansions
+ */
 
+bool lua_is_classic_enabled() {
+	return content_service.IsClassicEnabled();
+}
+
+bool lua_is_the_ruins_of_kunark_enabled() {
+	return content_service.IsTheRuinsOfKunarkEnabled();
+}
+
+bool lua_is_the_scars_of_velious_enabled() {
+	return content_service.IsTheScarsOfVeliousEnabled();
+}
+
+bool lua_is_the_shadows_of_luclin_enabled() {
+	return content_service.IsTheShadowsOfLuclinEnabled();
+}
+
+bool lua_is_the_planes_of_power_enabled() {
+	return content_service.IsThePlanesOfPowerEnabled();
+}
+
+bool lua_is_current_expansion_classic() {
+	return content_service.IsCurrentExpansionClassic();
+}
+
+bool lua_is_current_expansion_the_ruins_of_kunark() {
+	return content_service.IsCurrentExpansionTheRuinsOfKunark();
+}
+
+bool lua_is_current_expansion_the_scars_of_velious() {
+	return content_service.IsCurrentExpansionTheScarsOfVelious();
+}
+
+bool lua_is_current_expansion_the_shadows_of_luclin() {
+	return content_service.IsCurrentExpansionTheShadowsOfLuclin();
+}
+
+bool lua_is_current_expansion_the_planes_of_power() {
+	return content_service.IsCurrentExpansionThePlanesOfPower();
+}
+
+bool lua_is_content_flag_enabled(std::string content_flag) {
+	return content_service.IsContentFlagEnabled(content_flag);
+}
+
+void lua_set_content_flag(std::string flag_name, bool enabled) {
+	content_service.SetContentFlag(flag_name, enabled);
+}
 
 double lua_clock() {
 	timeval read_time;
@@ -1458,7 +1509,25 @@ luabind::scope lua_register_general() {
 		luabind::def("commify", &lua_commify),
 		luabind::def("get_language_name", &lua_get_language_name),
 		luabind::def("get_body_type_name", &lua_get_body_type_name),
-		luabind::def("get_consider_level_name", &lua_get_consider_level_name)
+		luabind::def("get_consider_level_name", &lua_get_consider_level_name),
+			/**
+ * Expansions
+ */
+		luabind::def("is_classic_enabled", &lua_is_classic_enabled),
+		luabind::def("is_the_ruins_of_kunark_enabled", &lua_is_the_ruins_of_kunark_enabled),
+		luabind::def("is_the_scars_of_velious_enabled", &lua_is_the_scars_of_velious_enabled),
+		luabind::def("is_the_shadows_of_luclin_enabled", &lua_is_the_shadows_of_luclin_enabled),
+		luabind::def("is_the_planes_of_power_enabled", &lua_is_the_planes_of_power_enabled),
+		luabind::def("is_current_expansion_classic", &lua_is_current_expansion_classic),
+		luabind::def("is_current_expansion_the_ruins_of_kunark", &lua_is_current_expansion_the_ruins_of_kunark),
+		luabind::def("is_current_expansion_the_scars_of_velious", &lua_is_current_expansion_the_scars_of_velious),
+		luabind::def("is_current_expansion_the_shadows_of_luclin", &lua_is_current_expansion_the_shadows_of_luclin),
+		luabind::def("is_current_expansion_the_planes_of_power", &lua_is_current_expansion_the_planes_of_power),
+		/**
+		*Content flags
+		*/
+		luabind::def("is_content_flag_enabled", (bool(*)(std::string)) & lua_is_content_flag_enabled),
+		luabind::def("set_content_flag", (void(*)(std::string, bool)) &lua_set_content_flag)
 	];
 }
 

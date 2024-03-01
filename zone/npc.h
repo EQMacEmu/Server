@@ -562,7 +562,7 @@ protected:
 
 	bool private_corpse; 
 	bool aggro_pc;
-	bool underwater; 
+	bool underwater = false;
 
 	bool engage_notice;
 

@@ -16,12 +16,15 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseLootdropRepository {
 public:
 	struct Lootdrop {
 		uint32_t    id;
 		std::string name;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -34,6 +37,10 @@ public:
 		return {
 			"id",
 			"name",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -42,6 +49,10 @@ public:
 		return {
 			"id",
 			"name",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -82,8 +93,12 @@ public:
 	{
 		Lootdrop e{};
 
-		e.id   = 0;
-		e.name = "";
+		e.id                     = 0;
+		e.name                   = "";
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -120,8 +135,12 @@ public:
 		if (results.RowCount() == 1) {
 			Lootdrop e{};
 
-			e.id   = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name = row[1] ? row[1] : "";
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.min_expansion          = row[2] ? static_cast<uint8_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.max_expansion          = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.content_flags          = row[4] ? row[4] : "";
+			e.content_flags_disabled = row[5] ? row[5] : "";
 
 			return e;
 		}
@@ -156,6 +175,10 @@ public:
 		auto columns = Columns();
 
 		v.push_back(columns[1] + " = '" + Strings::Escape(e.name) + "'");
+		v.push_back(columns[2] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[3] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[4] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[5] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -179,6 +202,10 @@ public:
 
 		v.push_back(std::to_string(e.id));
 		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -210,6 +237,10 @@ public:
 
 			v.push_back(std::to_string(e.id));
 			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -243,8 +274,12 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Lootdrop e{};
 
-			e.id   = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name = row[1] ? row[1] : "";
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.min_expansion          = row[2] ? static_cast<uint8_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.max_expansion          = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.content_flags          = row[4] ? row[4] : "";
+			e.content_flags_disabled = row[5] ? row[5] : "";
 
 			all_entries.push_back(e);
 		}
@@ -269,8 +304,12 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Lootdrop e{};
 
-			e.id   = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name = row[1] ? row[1] : "";
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.min_expansion          = row[2] ? static_cast<uint8_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.max_expansion          = row[3] ? static_cast<uint8_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.content_flags          = row[4] ? row[4] : "";
+			e.content_flags_disabled = row[5] ? row[5] : "";
 
 			all_entries.push_back(e);
 		}

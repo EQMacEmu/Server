@@ -146,9 +146,10 @@ RULE_REAL ( Zone, GroupEXPRange, 500 )
 RULE_BOOL ( Zone, IdleWhenEmpty, true) // After timer is expired, if zone is empty it will idle. Boat zones are excluded, as this will break boat functionality.
 RULE_INT ( Zone, IdleTimer, 600000) // 10 minutes
 RULE_INT ( Zone, BoatDistance, 50) //In zones where boat name is not set in the PP, this is how far away from the boat the client must be to move them to the boat's current location.
-RULE_BOOL ( Zone, EnableNexusPortals, true)
+RULE_BOOL ( Zone, EnableNexusPortals, false)
 RULE_INT ( Zone, NexusTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
 RULE_INT ( Zone, NexusScionTimer, 900000) //Nexus timer in ms. Defaults to 15 minutes.
+RULE_BOOL ( Zone, EnableNexusPortalsOnExpansion, true)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( AlKabor )
@@ -215,7 +216,8 @@ RULE_BOOL ( Watermap, CheckWaypointsInWaterWhenLoading, true ) // Does not apply
 RULE_BOOL ( Watermap, CheckForWaterOnSendTo, true)		// Checks if a mob has moved into/out of water on SendTo
 RULE_BOOL ( Watermap, CheckForWaterWhenFishing, true)		// Only lets a player fish near water (if a water map exists for the zone)
 RULE_REAL ( Watermap, FishingRodLength, 30)			// How far in front of player water must be for fishing to work
-RULE_REAL ( Watermap, FishingLineLength, 28)			// If water is more than this far below the player, it is considered too far to fish
+RULE_REAL (Watermap, FishingLineMaxLength, 100)		// If water is more than this far below the player, it is considered too far to fish
+RULE_REAL (Watermap, FishingLineStepSize, 1)		// Basic step size for fishing calc, too small and it will eat cpu, too large and it will miss potential water
 RULE_REAL ( Watermap, FishingLineExtension, 12)		// In some zones, setting a longer length causes the line to go underworld. This gives us a variable to work with in areas that need a longer line.
 RULE_CATEGORY_END()
 
@@ -426,6 +428,9 @@ RULE_CATEGORY(Petitions)
 RULE_BOOL(Petitions, PetitionSystemActive, false) // Activates bug reporting
 RULE_CATEGORY_END()
 
+RULE_CATEGORY(Expansion)
+RULE_INT(Expansion, CurrentExpansion, -1) // "The current expansion enabled for the server [-1 = All Expansion, 0 = Classic, 1 = Kunark etc.]")
+RULE_CATEGORY_END()
 
 #undef RULE_CATEGORY
 #undef RULE_INT

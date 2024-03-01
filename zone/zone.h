@@ -123,7 +123,7 @@ public:
 	SendAA_Struct*	FindAA(uint32 id, bool searchParent);
 	uint8	EmuToEQMacAA(uint32 id);
 	uint8	GetTotalAALevels(uint32 skill_id);
-	void	LoadZoneDoors(const char* zone);
+	void	LoadZoneDoors(std::string zone);
 	bool	LoadZoneObjects();
 	bool	LoadGroundSpawns();
 	void	ReloadStaticData();

@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <vector>
 #include "char_create_data.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
 
 WorldDatabase database;
 extern std::vector<RaceClassAllocation> character_create_allocations;
@@ -103,8 +104,13 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 		}
 
 		if (has_home == 0 || has_bind == 0){
-			cquery = StringFormat("SELECT `zone_id`, `bind_id`, `x`, `y`, `z` FROM `start_zones` WHERE `player_class` = %i AND `player_deity` = %i AND `player_race` = %i",
-				cs->class_[char_num], cs->deity[char_num], cs->race[char_num]);
+			cquery = StringFormat(
+				"SELECT `zone_id`, `bind_id`, `x`, `y`, `z` FROM `start_zones` WHERE `player_class` = %i AND `player_deity` = %i AND `player_race` = %i %s",
+				cs->class_[char_num], 
+				cs->deity[char_num], 
+				cs->race[char_num],
+				ContentFilterCriteria::apply().c_str()
+			);
 			auto results_bind = database.QueryDatabase(cquery);
 			for (auto row_d = results_bind.begin(); row_d != results_bind.end(); ++row_d) {
 				/* If a bind_id is specified, make them start there */
@@ -288,9 +294,15 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	in_pp->x = in_pp->y = in_pp->z = in_pp->heading = in_pp->zone_id = 0;
 	in_pp->binds[0].x = in_pp->binds[0].y = in_pp->binds[0].z = in_pp->binds[0].zoneId = 0;
 
-    std::string query = StringFormat("SELECT x, y, z, heading, bind_id,bind_x,bind_y,bind_z FROM start_zones WHERE zone_id = %i "
-                                    "AND player_class = %i AND player_deity = %i AND player_race = %i",
-                                    in_cc->start_zone, in_cc->class_, in_cc->deity, in_cc->race);
+    std::string query = StringFormat(
+		"SELECT x, y, z, heading, bind_id,bind_x,bind_y,bind_z FROM start_zones WHERE zone_id = %i "
+        "AND player_class = %i AND player_deity = %i AND player_race = %i %s",
+        in_cc->start_zone, 
+		in_cc->class_, 
+		in_cc->deity, 
+		in_cc->race,
+		ContentFilterCriteria::apply().c_str()
+	);
     auto results = QueryDatabase(query);
 	if(!results.Success()) {
 		return false;

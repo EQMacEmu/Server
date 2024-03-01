@@ -167,6 +167,7 @@ namespace DatabaseSchema {
 			"Banned_IPs",
 			"chatchannels",
 			"command_settings",
+			"content_flags",
 			"eqtime",
 			"gm_ips",
 			"hackers",
@@ -232,6 +233,7 @@ namespace DatabaseSchema {
 			"reports",
 			"respawn_times",
 			"saylink",
+			"server_scheduled_events",
 			"webdata_character",
 			"webdata_servers"
 		};

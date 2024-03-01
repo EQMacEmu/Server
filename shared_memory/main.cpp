@@ -33,8 +33,10 @@
 #include "skill_caps.h"
 #include "spells.h"
 #include "base_data.h"
+#include "../common/content/world_content_service.h"
 
 EQEmuLogSys LogSys;
+WorldContentService content_service;
 
 int main(int argc, char **argv) {
 	RegisterExecutablePlatform(ExePlatformSharedMemory);
@@ -72,6 +74,38 @@ int main(int argc, char **argv) {
 			database.QueryDatabase(query);
 		}
 	}
+
+	/**
+	 * Rules: TODO: Remove later
+	 */
+	{
+		std::string tmp;
+		if (database.GetVariable("RuleSet", tmp)) {
+			LogInfo("Loading rule set [{}]", tmp.c_str());
+			if (!RuleManager::Instance()->LoadRules(&database, tmp.c_str())) {
+				LogError("Failed to load ruleset [{}], falling back to defaults", tmp.c_str());
+			}
+		}
+		else {
+			if (!RuleManager::Instance()->LoadRules(&database, "default")) {
+				LogInfo("No rule set configured, using default rules");
+			}
+			else {
+				LogInfo("Loaded default rule set 'default'");
+			}
+		}
+	}
+
+	content_service.SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
+	content_service.SetDatabase(&database)
+		->SetExpansionContext()
+		->ReloadContentFlags();
+
+	LogInfo(
+		"Current expansion is [{}] ({})",
+		content_service.GetCurrentExpansion(),
+		content_service.GetCurrentExpansionName()
+	);
 
 	std::string hotfix_name = "";
 	bool load_all = true;

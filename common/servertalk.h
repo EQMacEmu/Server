@@ -169,6 +169,9 @@
 #define ServerOP_CZMessagePlayer 0x4008
 #define ServerOP_ReloadWorld 0x4009
 #define ServerOP_ReloadLogs 0x4010
+#define ServerOP_UpdateSchedulerEvents 0x4012
+#define ServerOP_ReloadContentFlags 0x4013
+
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013
 #define ServerOP_QSPlayerLogItemMoves				0x5014

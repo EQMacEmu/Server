@@ -24,8 +24,10 @@
 #include "../../common/crash.h"
 #include "../../common/rulesys.h"
 #include "../../common/strings.h"
+#include "../../common/content/world_content_service.h"
 
 EQEmuLogSys LogSys;
+WorldContentService content_service;
 
 void ImportSpells(SharedDatabase *db);
 void ImportSkillCaps(SharedDatabase *db);

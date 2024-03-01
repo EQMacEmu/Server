@@ -23,15 +23,15 @@ std::string GetPlatformName()
 {
 	switch (GetExecutablePlatformInt()) {
 	case EQEmuExePlatform::ExePlatformWorld:
-		return "WorldServer";
+		return "World";
 	case EQEmuExePlatform::ExePlatformQueryServ:
-		return "QueryServer";
+		return "QS";
 	case EQEmuExePlatform::ExePlatformZone:
-		return "ZoneServer";
+		return "Zone";
 	case EQEmuExePlatform::ExePlatformUCS:
 		return "UCS";
 	case EQEmuExePlatform::ExePlatformLogin:
-		return "LoginServer";
+		return "Login";
 	case EQEmuExePlatform::ExePlatformSharedMemory:
 		return "SharedMemory";
 	case EQEmuExePlatform::ExePlatformClientImport:

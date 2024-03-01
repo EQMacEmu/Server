@@ -16,19 +16,22 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseStartingItemsRepository {
 public:
 	struct StartingItems {
-		uint32_t id;
-		int32_t  race;
-		int32_t  class_;
-		int32_t  deityid;
-		int32_t  zoneid;
-		int32_t  itemid;
-		uint8_t  item_charges;
-		int8_t   gm;
-		int32_t  slot;
+		uint32_t    id;
+		int32_t     race;
+		int32_t     class_;
+		int32_t     deityid;
+		int32_t     zoneid;
+		int32_t     itemid;
+		uint8_t     item_charges;
+		int8_t      gm;
+		int32_t     slot;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -48,6 +51,10 @@ public:
 			"item_charges",
 			"gm",
 			"slot",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -63,6 +70,10 @@ public:
 			"item_charges",
 			"gm",
 			"slot",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -103,15 +114,19 @@ public:
 	{
 		StartingItems e{};
 
-		e.id           = 0;
-		e.race         = 0;
-		e.class_       = 0;
-		e.deityid      = 0;
-		e.zoneid       = 0;
-		e.itemid       = 0;
-		e.item_charges = 1;
-		e.gm           = 0;
-		e.slot         = -1;
+		e.id                     = 0;
+		e.race                   = 0;
+		e.class_                 = 0;
+		e.deityid                = 0;
+		e.zoneid                 = 0;
+		e.itemid                 = 0;
+		e.item_charges           = 1;
+		e.gm                     = 0;
+		e.slot                   = -1;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -148,15 +163,19 @@ public:
 		if (results.RowCount() == 1) {
 			StartingItems e{};
 
-			e.id           = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.race         = static_cast<int32_t>(atoi(row[1]));
-			e.class_       = static_cast<int32_t>(atoi(row[2]));
-			e.deityid      = static_cast<int32_t>(atoi(row[3]));
-			e.zoneid       = static_cast<int32_t>(atoi(row[4]));
-			e.itemid       = static_cast<int32_t>(atoi(row[5]));
-			e.item_charges = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
-			e.gm           = static_cast<int8_t>(atoi(row[7]));
-			e.slot         = static_cast<int32_t>(atoi(row[8]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.race                   = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.class_                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.deityid                = row[3] ? static_cast<int32_t>(atoi(row[3])) : 0;
+			e.zoneid                 = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.itemid                 = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
+			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
+			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
+			e.min_expansion          = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_expansion          = row[10] ? static_cast<uint8_t>(strtoul(row[10], nullptr, 10)) : 0;
+			e.content_flags          = row[11] ? row[11] : "";
+			e.content_flags_disabled = row[12] ? row[12] : "";
 
 			return e;
 		}
@@ -198,6 +217,10 @@ public:
 		v.push_back(columns[6] + " = " + std::to_string(e.item_charges));
 		v.push_back(columns[7] + " = " + std::to_string(e.gm));
 		v.push_back(columns[8] + " = " + std::to_string(e.slot));
+		v.push_back(columns[9] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[10] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[11] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[12] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -228,6 +251,10 @@ public:
 		v.push_back(std::to_string(e.item_charges));
 		v.push_back(std::to_string(e.gm));
 		v.push_back(std::to_string(e.slot));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -266,6 +293,10 @@ public:
 			v.push_back(std::to_string(e.item_charges));
 			v.push_back(std::to_string(e.gm));
 			v.push_back(std::to_string(e.slot));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -299,15 +330,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			StartingItems e{};
 
-			e.id           = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.race         = static_cast<int32_t>(atoi(row[1]));
-			e.class_       = static_cast<int32_t>(atoi(row[2]));
-			e.deityid      = static_cast<int32_t>(atoi(row[3]));
-			e.zoneid       = static_cast<int32_t>(atoi(row[4]));
-			e.itemid       = static_cast<int32_t>(atoi(row[5]));
-			e.item_charges = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
-			e.gm           = static_cast<int8_t>(atoi(row[7]));
-			e.slot         = static_cast<int32_t>(atoi(row[8]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.race                   = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.class_                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.deityid                = row[3] ? static_cast<int32_t>(atoi(row[3])) : 0;
+			e.zoneid                 = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.itemid                 = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
+			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
+			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
+			e.min_expansion          = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_expansion          = row[10] ? static_cast<uint8_t>(strtoul(row[10], nullptr, 10)) : 0;
+			e.content_flags          = row[11] ? row[11] : "";
+			e.content_flags_disabled = row[12] ? row[12] : "";
 
 			all_entries.push_back(e);
 		}
@@ -332,15 +367,19 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			StartingItems e{};
 
-			e.id           = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.race         = static_cast<int32_t>(atoi(row[1]));
-			e.class_       = static_cast<int32_t>(atoi(row[2]));
-			e.deityid      = static_cast<int32_t>(atoi(row[3]));
-			e.zoneid       = static_cast<int32_t>(atoi(row[4]));
-			e.itemid       = static_cast<int32_t>(atoi(row[5]));
-			e.item_charges = static_cast<uint8_t>(strtoul(row[6], nullptr, 10));
-			e.gm           = static_cast<int8_t>(atoi(row[7]));
-			e.slot         = static_cast<int32_t>(atoi(row[8]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.race                   = row[1] ? static_cast<int32_t>(atoi(row[1])) : 0;
+			e.class_                 = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.deityid                = row[3] ? static_cast<int32_t>(atoi(row[3])) : 0;
+			e.zoneid                 = row[4] ? static_cast<int32_t>(atoi(row[4])) : 0;
+			e.itemid                 = row[5] ? static_cast<int32_t>(atoi(row[5])) : 0;
+			e.item_charges           = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 1;
+			e.gm                     = row[7] ? static_cast<int8_t>(atoi(row[7])) : 0;
+			e.slot                   = row[8] ? static_cast<int32_t>(atoi(row[8])) : -1;
+			e.min_expansion          = row[9] ? static_cast<uint8_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_expansion          = row[10] ? static_cast<uint8_t>(strtoul(row[10], nullptr, 10)) : 0;
+			e.content_flags          = row[11] ? row[11] : "";
+			e.content_flags_disabled = row[12] ? row[12] : "";
 
 			all_entries.push_back(e);
 		}

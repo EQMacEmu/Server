@@ -113,6 +113,7 @@ namespace Logs{
 		Alert,
 		Notice,
 		QuestErrors,
+		Scheduler,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -182,7 +183,8 @@ namespace Logs{
 		"Emergency",
 		"Alert",
 		"Notice",
-		"QuestErrors"
+		"QuestErrors",
+		"Scheduler",
 	};
 }
 

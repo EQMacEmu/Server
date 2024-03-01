@@ -15,6 +15,8 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
+#define PLATFORM_WORLD 1
+
 #include "../common/global_define.h"
 
 #include <iostream>
@@ -85,6 +87,8 @@
 #include "ucs.h"
 #include "queryserv.h"
 #include "world_server_command_handler.h"
+#include "../common/content/world_content_service.h"
+#include "world_event_scheduler.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
@@ -95,6 +99,7 @@ LoginServerList loginserverlist;
 UCSConnection UCSLink;
 QueryServConnection QSLink;
 LauncherList launcher_list; 
+WorldEventScheduler event_scheduler;
 EQ::Random emu_random;
 volatile bool RunLoops = true;
 uint32 numclients = 0;
@@ -102,6 +107,7 @@ uint32 numzones = 0;
 bool holdzones = false;
 const WorldConfig *Config;
 EQEmuLogSys LogSys;
+WorldContentService content_service;
 
 extern ConsoleList console_list;
 
@@ -326,6 +332,13 @@ int main(int argc, char** argv) {
 	database.LoadCharacterCreateAllocations();
 	database.LoadCharacterCreateCombos();
 
+	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
+
+	LogInfo("Initializing [WorldContentService]");
+	content_service.SetDatabase(&database)
+		->SetExpansionContext()
+		->ReloadContentFlags();
+
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
 		LogInfo("Zone (TCP) listener started.");
@@ -425,6 +438,8 @@ int main(int argc, char** argv) {
 			if (i == 5)
 				break;
 		}
+
+		event_scheduler.Process(&zoneserver_list);
 
 		client_list.Process();
 		i = 0;

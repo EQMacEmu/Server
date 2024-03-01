@@ -99,6 +99,7 @@ SET(zone_sources
 	zone.cpp
 	zone_config.cpp
 	zonedb.cpp
+	zone_event_scheduler.cpp
 	zoning.cpp
 )
 
@@ -173,6 +174,7 @@ SET(zone_headers
 	water_map_v2.h
 	worldserver.h
 	zone.h
+	zone_event_scheduler.h
 	zone_config.h
 	zonedb.h
 	zonedump.h

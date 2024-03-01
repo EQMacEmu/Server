@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseGroundSpawnsRepository {
 public:
 	struct GroundSpawns {
@@ -33,6 +32,10 @@ public:
 		uint32_t    max_allowed;
 		std::string comment;
 		uint64_t    respawn_timer;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -56,6 +59,10 @@ public:
 			"max_allowed",
 			"comment",
 			"respawn_timer",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -75,6 +82,10 @@ public:
 			"max_allowed",
 			"comment",
 			"respawn_timer",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -115,19 +126,23 @@ public:
 	{
 		GroundSpawns e{};
 
-		e.id            = 0;
-		e.zoneid        = 0;
-		e.max_x         = 2000;
-		e.max_y         = 2000;
-		e.max_z         = 10000;
-		e.min_x         = -2000;
-		e.min_y         = -2000;
-		e.heading       = 0;
-		e.name          = "";
-		e.item          = 0;
-		e.max_allowed   = 1;
-		e.comment       = "";
-		e.respawn_timer = 300000;
+		e.id                     = 0;
+		e.zoneid                 = 0;
+		e.max_x                  = 2000;
+		e.max_y                  = 2000;
+		e.max_z                  = 10000;
+		e.min_x                  = -2000;
+		e.min_y                  = -2000;
+		e.heading                = 0;
+		e.name                   = "";
+		e.item                   = 0;
+		e.max_allowed            = 1;
+		e.comment                = "";
+		e.respawn_timer          = 300000;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -164,19 +179,23 @@ public:
 		if (results.RowCount() == 1) {
 			GroundSpawns e{};
 
-			e.id            = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.zoneid        = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.max_x         = strtof(row[2], nullptr);
-			e.max_y         = strtof(row[3], nullptr);
-			e.max_z         = strtof(row[4], nullptr);
-			e.min_x         = strtof(row[5], nullptr);
-			e.min_y         = strtof(row[6], nullptr);
-			e.heading       = strtof(row[7], nullptr);
-			e.name          = row[8] ? row[8] : "";
-			e.item          = static_cast<uint32_t>(strtoul(row[9], nullptr, 10));
-			e.max_allowed   = static_cast<uint32_t>(strtoul(row[10], nullptr, 10));
-			e.comment       = row[11] ? row[11] : "";
-			e.respawn_timer = strtoull(row[12], nullptr, 10);
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.max_x                  = row[2] ? strtof(row[2], nullptr) : 2000;
+			e.max_y                  = row[3] ? strtof(row[3], nullptr) : 2000;
+			e.max_z                  = row[4] ? strtof(row[4], nullptr) : 10000;
+			e.min_x                  = row[5] ? strtof(row[5], nullptr) : -2000;
+			e.min_y                  = row[6] ? strtof(row[6], nullptr) : -2000;
+			e.heading                = row[7] ? strtof(row[7], nullptr) : 0;
+			e.name                   = row[8] ? row[8] : "";
+			e.item                   = row[9] ? static_cast<uint32_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
+			e.comment                = row[11] ? row[11] : "";
+			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
+			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
+			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
 
 			return e;
 		}
@@ -222,6 +241,10 @@ public:
 		v.push_back(columns[10] + " = " + std::to_string(e.max_allowed));
 		v.push_back(columns[11] + " = '" + Strings::Escape(e.comment) + "'");
 		v.push_back(columns[12] + " = " + std::to_string(e.respawn_timer));
+		v.push_back(columns[13] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[14] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[15] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[16] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -256,6 +279,10 @@ public:
 		v.push_back(std::to_string(e.max_allowed));
 		v.push_back("'" + Strings::Escape(e.comment) + "'");
 		v.push_back(std::to_string(e.respawn_timer));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -298,6 +325,10 @@ public:
 			v.push_back(std::to_string(e.max_allowed));
 			v.push_back("'" + Strings::Escape(e.comment) + "'");
 			v.push_back(std::to_string(e.respawn_timer));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -331,19 +362,23 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			GroundSpawns e{};
 
-			e.id            = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.zoneid        = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.max_x         = strtof(row[2], nullptr);
-			e.max_y         = strtof(row[3], nullptr);
-			e.max_z         = strtof(row[4], nullptr);
-			e.min_x         = strtof(row[5], nullptr);
-			e.min_y         = strtof(row[6], nullptr);
-			e.heading       = strtof(row[7], nullptr);
-			e.name          = row[8] ? row[8] : "";
-			e.item          = static_cast<uint32_t>(strtoul(row[9], nullptr, 10));
-			e.max_allowed   = static_cast<uint32_t>(strtoul(row[10], nullptr, 10));
-			e.comment       = row[11] ? row[11] : "";
-			e.respawn_timer = strtoull(row[12], nullptr, 10);
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.max_x                  = row[2] ? strtof(row[2], nullptr) : 2000;
+			e.max_y                  = row[3] ? strtof(row[3], nullptr) : 2000;
+			e.max_z                  = row[4] ? strtof(row[4], nullptr) : 10000;
+			e.min_x                  = row[5] ? strtof(row[5], nullptr) : -2000;
+			e.min_y                  = row[6] ? strtof(row[6], nullptr) : -2000;
+			e.heading                = row[7] ? strtof(row[7], nullptr) : 0;
+			e.name                   = row[8] ? row[8] : "";
+			e.item                   = row[9] ? static_cast<uint32_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
+			e.comment                = row[11] ? row[11] : "";
+			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
+			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
+			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
 
 			all_entries.push_back(e);
 		}
@@ -368,19 +403,23 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			GroundSpawns e{};
 
-			e.id            = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.zoneid        = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.max_x         = strtof(row[2], nullptr);
-			e.max_y         = strtof(row[3], nullptr);
-			e.max_z         = strtof(row[4], nullptr);
-			e.min_x         = strtof(row[5], nullptr);
-			e.min_y         = strtof(row[6], nullptr);
-			e.heading       = strtof(row[7], nullptr);
-			e.name          = row[8] ? row[8] : "";
-			e.item          = static_cast<uint32_t>(strtoul(row[9], nullptr, 10));
-			e.max_allowed   = static_cast<uint32_t>(strtoul(row[10], nullptr, 10));
-			e.comment       = row[11] ? row[11] : "";
-			e.respawn_timer = strtoull(row[12], nullptr, 10);
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.max_x                  = row[2] ? strtof(row[2], nullptr) : 2000;
+			e.max_y                  = row[3] ? strtof(row[3], nullptr) : 2000;
+			e.max_z                  = row[4] ? strtof(row[4], nullptr) : 10000;
+			e.min_x                  = row[5] ? strtof(row[5], nullptr) : -2000;
+			e.min_y                  = row[6] ? strtof(row[6], nullptr) : -2000;
+			e.heading                = row[7] ? strtof(row[7], nullptr) : 0;
+			e.name                   = row[8] ? row[8] : "";
+			e.item                   = row[9] ? static_cast<uint32_t>(strtoul(row[9], nullptr, 10)) : 0;
+			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
+			e.comment                = row[11] ? row[11] : "";
+			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
+			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
+			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.content_flags          = row[15] ? row[15] : "";
+			e.content_flags_disabled = row[16] ? row[16] : "";
 
 			all_entries.push_back(e);
 		}

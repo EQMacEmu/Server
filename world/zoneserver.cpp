@@ -34,6 +34,7 @@
 #include "wguild_mgr.h"
 #include "ucs.h"
 #include "queryserv.h"
+#include "../common/content/world_content_service.h"
 
 extern ClientList client_list;
 extern ZSList zoneserver_list;
@@ -1005,6 +1006,11 @@ bool ZoneServer::Process() {
 			case ServerOP_ReloadRules: {
 				zoneserver_list.SendPacket(pack);
 				RuleManager::Instance()->LoadRules(&database, "default");
+				break;
+			}
+			case ServerOP_ReloadContentFlags: {
+				zoneserver_list.SendPacket(pack);
+				content_service.SetExpansionContext()->ReloadContentFlags();
 				break;
 			}
 			case ServerOP_ReloadRulesWorld:

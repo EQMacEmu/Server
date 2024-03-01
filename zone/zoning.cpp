@@ -28,6 +28,9 @@
 #include "worldserver.h"
 #include "zone.h"
 
+#include "../common/repositories/zone_repository.h"
+#include "../common/content/world_content_service.h"
+
 extern QueryServ* QServ;
 extern WorldServer worldserver;
 extern Zone* zone;
@@ -268,12 +271,6 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 
 	//not sure when we would use ZONE_ERROR_NOTREADY
 	
-	bool has_expansion = expansion & m_pp.expansions;
-	if(!ignorerestrictions && Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
-		zoning_message = ZoningMessage::ZoneNoExpansion;
-		Log(Logs::General, Logs::Error, "Zoning %s: Does not have the required expansion (%d) to enter %s. Player expansions: %d", GetName(), expansion, target_zone_name, m_pp.expansions);
-	}
-
 	//enforce min status and level
 	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel)) {
 		zoning_message = ZoningMessage::ZoneNoExperience;
@@ -292,12 +289,44 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
 	}
 
+	// Expansion checks and routing
+	if ((content_service.GetCurrentExpansion() >= Expansion::Classic && !GetGM())) {
+		bool meets_zone_expansion_check = false;
+
+		auto zones = ZoneRepository::GetWhere(
+			database,
+			fmt::format(
+				"expansion <= {} AND short_name = '{}'",
+				(content_service.GetCurrentExpansion()),
+				target_zone_name
+			)
+		);
+	
+		meets_zone_expansion_check = !zones.empty(); 
+		
+		LogInfo(
+			"Checking zone request [{}] for expansion [{}] ({}) success [{}]",
+			target_zone_name,
+			(content_service.GetCurrentExpansion()),
+			content_service.GetCurrentExpansionName(),
+			!zones.empty() ? "true" : "false"
+		);
+
+		if (!meets_zone_expansion_check) {
+			zoning_message = ZoningMessage::ZoneNoExpansion;
+		}
+	}
+
+	if (content_service.GetCurrentExpansion() >= Expansion::Classic && GetGM()) {
+		LogInfo("[{}] Bypassing Expansion zone checks because GM status is set", GetCleanName());
+	}
+
 	if(zoning_message == ZoningMessage::ZoneSuccess) {
 		//we have successfully zoned
 		DoZoneSuccess(zc, target_zone_id, dest_x, dest_y, dest_z, dest_h, ignorerestrictions);
 		UpdateZoneChangeCount(target_zone_id);
 	} else {
-		Log(Logs::General, Logs::Error, "Zoning %s: Rules prevent this char from zoning into '%s'", GetName(), target_zone_name);
+		LogError("Zoning [{}]: Rules prevent this char from zoning into [{}]", GetName(), target_zone_name);
 		SendZoneError(zc, zoning_message);
 	}
 }
@@ -310,7 +339,7 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
 	zc2->zoneID = zone->GetZoneID();
-	zc2->success = ZoningMessage::ZoneNotReady;
+	zc2->success = 1;
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
@@ -945,11 +974,9 @@ bool Client::CanBeInZone(uint32 zoneid)
 			return(false);
 		}
 	}
-
-	bool has_expansion = expansion & m_pp.expansions;
-	if(Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion)
-	{
-		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the required expansion (%d ~ %d)!", m_pp.expansions, expansion);
+	bool has_expansion = expansion && m_pp.expansions;
+	if(Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
+		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the required expansion (%d ~ %s)!", m_pp.expansions, expansion);
 		Message_StringID(CC_Red, NO_EXPAN);
 		return(false);
 	}

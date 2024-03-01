@@ -53,6 +53,8 @@
 #include "worldserver.h"
 #include "zone.h"
 #include "zone_config.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
+#include "../common/repositories/content_flags_repository.h"
 
 #include <time.h>
 #include <ctime>
@@ -161,8 +163,8 @@ bool Zone::LoadZoneObjects() {
 	std::string query = StringFormat("SELECT id, zoneid, xpos, ypos, zpos, heading, "
                                     "itemid, charges, objectname, type, icon, size, "
                                     "solid, incline FROM object "
-                                    "WHERE zoneid = %i",
-                                    zoneid);
+                                    "WHERE zoneid = %i %s",
+                                    zoneid, ContentFilterCriteria::apply().c_str());
     auto results = database.QueryDatabase(query);
     if (!results.Success()) {
 		LogError("Error Loading Objects from DB: {} ", results.ErrorMessage().c_str());
@@ -568,10 +570,12 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 			FROM 
 				merchantlist 
 			WHERE 
-				merchantid = {} 
+				merchantid = {}
+				{}
 			ORDER BY slot
 			),
-			merchantid
+			merchantid,
+			ContentFilterCriteria::apply()
 	);
 
     auto results = database.QueryDatabase(query);
@@ -581,18 +585,19 @@ void Zone::LoadNewMerchantData(uint32 merchantid) {
 
     for(auto row : results) {
         MerchantList ml;
-        ml.id = merchantid;
-        ml.item = std::stoul(row[0]);
-        ml.slot = std::stoul(row[1]);
+        ml.id               = merchantid;
+        ml.item             = std::stoul(row[0]);
+        ml.slot             = std::stoul(row[1]);
 		ml.faction_required = static_cast<int16>(std::stoi(row[2]));
-		ml.level_required = static_cast<int8>(std::stoul(row[3]));
+		ml.level_required   = static_cast<int8>(std::stoul(row[3]));
         ml.classes_required = std::stoul(row[4]);
-		ml.quantity = static_cast<int8>(std::stoul(row[5]));
+		ml.quantity         = static_cast<int8>(std::stoul(row[5]));
 
-		if(ml.quantity > 0)
+		if (ml.quantity > 0) {
 			ml.qty_left = ml.quantity;
-		else
+		} else {
 			ml.qty_left = 0;
+		}
 		merchant_list.push_back(ml);
     }
 
@@ -604,47 +609,31 @@ void Zone::GetMerchantDataForZoneLoad() {
 	LogInfo("Loading Merchant Lists...");
 
 	auto query = fmt::format(
-		SQL (
+		SQL(
 			SELECT
-				merchantid,
-				slot,
-				item,
-				faction_required,
-				level_required,
-				classes_required,
-				quantity
-			FROM 
-				merchantlist 
-			WHERE 
-				merchantid 
-			IN (
-				SELECT 
-					merchant_id 
-				FROM 
-					npc_types 
-				WHERE 
-					id 
-				IN (
-					SELECT 
-						npcID 
-					FROM 
-						spawnentry 
-					WHERE 
-						spawngroupID 
-					IN (
-						SELECT 
-							spawngroupID 
-						FROM 
-							spawn2 
-						WHERE 
-							`zone` = '{}'
-					)
-				)
-			)
-			ORDER BY 
-				merchantlist.slot
+				merchantlist.merchantid,
+				merchantlist.slot,
+				merchantlist.item,
+				merchantlist.faction_required,
+				merchantlist.level_required,
+				merchantlist.classes_required,
+				merchantlist.quantity
+			FROM
+				merchantlist,
+				npc_types,
+				spawnentry,
+				spawn2
+			WHERE
+				merchantlist.merchantid = npc_types.merchant_id
+				AND npc_types.id = spawnentry.npcID
+				AND spawn2.spawngroupID = spawnentry.spawngroupID
+				and spawn2.zone = '{}'
+				{}
+			ORDER BY
+			merchantlist.slot
 		),
-				GetShortName()
+		GetShortName(),
+		ContentFilterCriteria::apply("merchantlist")
 	);
 
 	auto results = database.QueryDatabase(query);
@@ -777,7 +766,7 @@ void Zone::Shutdown(bool quite)
 	LogSys.CloseFileLogs();
 }
 
-void Zone::LoadZoneDoors(const char* zone)
+void Zone::LoadZoneDoors(std::string zone)
 {
 	LogInfo("Loading doors for {} ...", zone);
 
@@ -873,28 +862,21 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	velious_active = true;
 	Nexus_Scion_Timer = nullptr;
 	Nexus_Portal_Timer = nullptr;
-	if(RuleB(Zone, EnableNexusPortals))
-	{
-		if(GetZoneID() == nexus)
-		{
+	if(RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) {
+		if(GetZoneID() == nexus) {
 			Nexus_Scion_Timer = new Timer(RuleI(Zone, NexusTimer));
 			Nexus_Scion_Timer->Start();
 			Log(Logs::General, Logs::Nexus, "Setting Velious portal timer to %d", RuleI(Zone, NexusTimer));
 
 			Nexus_Portal_Timer = new Timer(RuleI(Zone, NexusTimer));
-			if(RuleI(Zone, NexusTimer) < 900000)
-			{
+			if(RuleI(Zone, NexusTimer) < 900000) {
 				Nexus_Portal_Timer->Start();
 				Log(Logs::General, Logs::Nexus, "Starting Nexus timer without delay, due to timer being set to %d", RuleI(Zone, NexusTimer));
-			}
-			else
-			{
+			} else {
 				Nexus_Portal_Timer->Disable();
 			}
 
-		}
-		else if(IsNexusScionZone())
-		{
+		} else if(IsNexusScionZone()) {
 			Nexus_Scion_Timer = new Timer(RuleI(Zone, NexusScionTimer));
 			Nexus_Scion_Timer->Start();
 			Log(Logs::General, Logs::Nexus, "Setting Nexus scion timer to %d", RuleI(Zone, NexusScionTimer));
@@ -1108,6 +1090,9 @@ void Zone::ReloadStaticData() {
 		LoadZoneCFG(zone->GetFileName());
 	} // if that fails, try the file name, then load defaults
 
+	content_service.SetExpansionContext()->ReloadContentFlags();
+
+
 	LogInfo("Zone Static Data Reloaded.");
 }
 
@@ -1288,8 +1273,7 @@ bool Zone::Process() {
 		}
 	}
 
-	if(RuleB(Zone, EnableNexusPortals) && (IsNexusScionZone() || GetZoneID() == nexus))
-	{
+	if((RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) && (IsNexusScionZone() || GetZoneID() == nexus)) {
 		NexusProcess();
 	}
 
@@ -1686,16 +1670,20 @@ ZonePoint* Zone::GetClosestZonePointWithoutZone(float x, float y, float z, Clien
 	return closest_zp;
 }
 
-bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list, const char* zonename)
+bool ZoneDatabase::LoadStaticZonePoints(LinkedList<ZonePoint *> *zone_point_list, const char* zonename)
 {
 	zone_point_list->Clear();
 	zone->numzonepoints = 0;
-	std::string query = StringFormat("SELECT x, y, z, target_x, target_y, "
-					 "target_z, target_zone_id, heading, target_heading, "
-					 "number, client_version_mask "
-					 "FROM zone_points WHERE zone='%s' "
-					 "ORDER BY number",
-					 zonename);
+	std::string query = StringFormat(
+		"SELECT x, y, z, target_x, target_y, "
+		"target_z, target_zone_id, heading, target_heading, "
+		"number, client_version_mask "
+		"FROM zone_points WHERE zone='%s' %s "
+		"ORDER BY number",
+		zonename,
+		ContentFilterCriteria::apply().c_str()
+	);
+
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
 		return false;

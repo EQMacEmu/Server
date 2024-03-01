@@ -24,7 +24,7 @@
 	#include <pthread.h>
 	#include "../common/unix.h"
 #endif
-#include "../common/types.h"
+#include "types.h"
 
 class Mutex {
 public:

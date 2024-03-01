@@ -173,6 +173,7 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	CHA = d->CHA;
 	npc_mana = d->Mana;
 
+
 	//quick fix of ordering if they screwed it up in the DB
 	if (max_dmg < min_dmg) {
 		int tmp = min_dmg;
@@ -721,7 +722,8 @@ bool NPC::DatabaseCastAccepted(int spell_id) {
 
 void NPC::SpawnGridNodeNPC(const glm::vec4& position, int32 grid_number, int32 zoffset)
 {
-	NPCType* npc_type = database.GetNPCTypeTemp(RuleI(NPC, NPCTemplateID));
+	auto npc_type = new NPCType;
+	memset(npc_type, 0, sizeof(NPCType));
 
 	std::string str_zoffset = Strings::NumberToWords(zoffset);
 	std::string str_number = Strings::NumberToWords(grid_number);
@@ -891,7 +893,8 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 		}
 
 		//Time to create the NPC!!
-		NPCType* npc_type = database.GetNPCTypeTemp(RuleI(NPC, NPCTemplateID));
+		auto npc_type = new NPCType;
+		memset(npc_type, 0, sizeof(NPCType));
 
 		strncpy(npc_type->name, sep.arg[0], 60);
 		npc_type->cur_hp = atoi(sep.arg[4]);

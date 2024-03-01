@@ -18,12 +18,17 @@
  *
  */
 
+#include "../common/global_define.h"
 #include "world_server_command_handler.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/json/json.h"
 #include "../common/version.h"
+#include "worlddb.h"
 #include "../common/database_schema.h"
 #include "../common/database/database_dump_service.h"
+#include "../common/content/world_content_service.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
+#include "../common/rulesys.h"
 
 namespace WorldserverCommandHandler {
 
@@ -51,6 +56,8 @@ namespace WorldserverCommandHandler {
 		function_map["database:version"] = &WorldserverCommandHandler::DatabaseVersion;
 		function_map["database:schema"] = &WorldserverCommandHandler::DatabaseGetSchema;
 		function_map["database:dump"] = &WorldserverCommandHandler::DatabaseDump;
+		function_map["test:test"] = &WorldserverCommandHandler::TestCommand;
+		function_map["test:expansion"] = &WorldserverCommandHandler::ExpansionTestCommand;
 
 		EQEmuCommand::HandleMenu(function_map, cmd, argc, argv);
 	}
@@ -123,19 +130,19 @@ namespace WorldserverCommandHandler {
 
 		Json::Value              player_tables_json;
 		std::vector<std::string> player_tables = DatabaseSchema::GetPlayerTables();
-		for (const auto& table : player_tables) {
+		for (const auto& table: player_tables) {
 			player_tables_json.append(table);
 		}
 
 		Json::Value              content_tables_json;
 		std::vector<std::string> content_tables = DatabaseSchema::GetContentTables();
-		for (const auto& table : content_tables) {
+		for (const auto& table: content_tables) {
 			content_tables_json.append(table);
 		}
 
 		Json::Value              server_tables_json;
 		std::vector<std::string> server_tables = DatabaseSchema::GetServerTables();
-		for (const auto& table : server_tables) {
+		for (const auto& table: server_tables) {
 			server_tables_json.append(table);
 		}
 
@@ -215,5 +222,66 @@ namespace WorldserverCommandHandler {
 		 */
 		database_dump_service->Dump();
 	}
+
+	/**
+ * @param argc
+ * @param argv
+ * @param cmd
+ * @param description
+ */
+	void TestCommand(int argc, char **argv, argh::parser &cmd, std::string &description)
+	{
+		description = "Test command";
+
+		if (cmd[{"-h", "--help"}]) {
+			return;
+		}
+	}
+
+	/**
+	 * @param argc
+	 * @param argv
+	 * @param cmd
+	 * @param description
+	 */
+	void ExpansionTestCommand(int argc, char **argv, argh::parser &cmd, std::string &description)
+	{
+		description = "Expansion test command";
+
+		if (cmd[{"-h", "--help"}]) {
+			return;
+		}
+
+		if (!RuleManager::Instance()->LoadRules(&database, "default")) {
+			LogInfo("No rule set configured, using default rules");
+		}
+
+		content_service.SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
+
+		std::vector<ContentFlagsRepository::ContentFlags> flags = {};
+		auto                                              f = ContentFlagsRepository::NewEntity();
+		f.enabled = 1;
+
+		std::vector<std::string> flag_names = {
+			"hateplane_enabled",
+			"patch_nerf_7077",
+		};
+
+		for (auto &name : flag_names) {
+			f.flag_name = name;
+			flags.push_back(f);
+		}
+
+		content_service.SetContentFlags(flags);
+
+		LogInfo(
+			"Current expansion is [{}] ({}) is Velious Enabled [{}] Criteria [{}]",
+			content_service.GetCurrentExpansion(),
+			Expansion::ExpansionName[content_service.GetCurrentExpansion()],
+			content_service.IsTheScarsOfVeliousEnabled() ? "true" : "false",
+			ContentFilterCriteria::apply()
+		);
+	}
+
 
 }

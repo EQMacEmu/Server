@@ -10,6 +10,7 @@
 #include "groups.h"
 #include "zone.h"
 #include "zonedb.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/repositories/npc_types_repository.h"
 #include "../common/repositories/character_bind_repository.h"
 #include "../common/repositories/character_buffs_repository.h"
@@ -113,20 +114,24 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
 	*map_filename = new char[100];
 	zone_data->zone_id = zoneid;
 
-	auto query = fmt::format("SELECT ztype, fog_red, fog_green, fog_blue, fog_minclip, fog_maxclip, " // 5
-                                    "fog_red2, fog_green2, fog_blue2, fog_minclip2, fog_maxclip2, " // 5
-                                    "fog_red3, fog_green3, fog_blue3, fog_minclip3, fog_maxclip3, " // 5
-                                    "fog_red4, fog_green4, fog_blue4, fog_minclip4, fog_maxclip4, " // 5
-                                    "fog_density, sky, zone_exp_multiplier, safe_x, safe_y, safe_z, underworld, " // 7
-                                    "minclip, maxclip, time_type, canbind, cancombat, canlevitate, " // 6
-                                    "castoutdoor, ruleset, suspendbuffs, map_file_name, short_name, " // 5
-                                    "rain_chance1, rain_chance2, rain_chance3, rain_chance4, " // 4
-                                    "rain_duration1, rain_duration2, rain_duration3, rain_duration4, " // 4
-                                    "snow_chance1, snow_chance2, snow_chance3, snow_chance4, " // 4
-                                    "snow_duration1, snow_duration2, snow_duration3, snow_duration4, " // 4
-									"skylock, skip_los, music, expansion, dragaggro, never_idle, castdungeon, " 
-									"pull_limit, graveyard_time, max_z " // 8
-                                    "FROM zone WHERE zoneidnumber = {} ", zoneid);
+	auto query = fmt::format(
+		"SELECT ztype, fog_red, fog_green, fog_blue, fog_minclip, fog_maxclip, " // 5
+        "fog_red2, fog_green2, fog_blue2, fog_minclip2, fog_maxclip2, " // 5
+        "fog_red3, fog_green3, fog_blue3, fog_minclip3, fog_maxclip3, " // 5
+        "fog_red4, fog_green4, fog_blue4, fog_minclip4, fog_maxclip4, " // 5
+        "fog_density, sky, zone_exp_multiplier, safe_x, safe_y, safe_z, underworld, " // 7
+        "minclip, maxclip, time_type, canbind, cancombat, canlevitate, " // 6
+        "castoutdoor, ruleset, suspendbuffs, map_file_name, short_name, " // 5
+        "rain_chance1, rain_chance2, rain_chance3, rain_chance4, " // 4
+        "rain_duration1, rain_duration2, rain_duration3, rain_duration4, " // 4
+        "snow_chance1, snow_chance2, snow_chance3, snow_chance4, " // 4
+        "snow_duration1, snow_duration2, snow_duration3, snow_duration4, " // 4
+        "skylock, skip_los, music, expansion, dragaggro, never_idle, castdungeon, " 
+        "pull_limit, graveyard_time, max_z " // 8
+        "FROM zone WHERE zoneidnumber = {} {}",
+        zoneid,
+        ContentFilterCriteria::apply().c_str()
+	);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
         strcpy(*map_filename, "default");
@@ -208,22 +213,19 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
 
 	uint8 zone_expansion = atoi(row[58]);
 	if(zone_expansion == 1)
-		zone_data->expansion = ClassicEQ;
-
-	else if(zone_expansion == 2)
 		zone_data->expansion = KunarkEQ;
 
-	else if(zone_expansion == 3)
+	else if(zone_expansion == 2)
 		zone_data->expansion = VeliousEQ;
 
-	else if(zone_expansion == 4)
+	else if(zone_expansion == 3)
 		zone_data->expansion = LuclinEQ;
 
-	else if(zone_expansion == 5)
+	else if(zone_expansion == 4)
 		zone_data->expansion = PlanesEQ;
 
 	else
-		zone_data->expansion = 0;
+		zone_data->expansion = ClassicEQ;
 
 	drag_aggro = atoi(row[59]) == 0 ? false : true;
 	zone_data->never_idle = atoi(row[60]) == 0 ? false : true;
@@ -1438,14 +1440,15 @@ bool ZoneDatabase::DeleteCharacterConsent(char grantname[64], char ownername[64]
  * or nullptr otherwise. If id passed is 0, loads all npc_types for
  * the current zone, returning the last item added.
  */
-const NPCType* ZoneDatabase::GetNPCType (uint32 id, bool bulk_load) 
+const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 {
-	const NPCType *npc=nullptr;
+	const NPCType *npc = nullptr;
 
 	/* If there is a cached NPC entry, load it */
 	auto itr = zone->npctable.find(id);
-	if(itr != zone->npctable.end())
+	if (itr != zone->npctable.end()) {
 		return itr->second;
+	}
 
 	std::string filter = fmt::format("id = {}", id);
 
@@ -1465,127 +1468,105 @@ const NPCType* ZoneDatabase::GetNPCType (uint32 id, bool bulk_load)
 	}
 
     // Otherwise, get NPCs from database.
-	npc = GrabNPCType(id);
-
-	return npc;
-}
-
-NPCType* ZoneDatabase::GetNPCTypeTemp (uint32 id) {
-	NPCType *npc=nullptr;
-
-	// If NPC is already in tree, return it.
-	auto itr = zone->npctable.find(id);
-	if(itr != zone->npctable.end())
-		return itr->second;
-
-    // Otherwise, get NPCs from database.
-
-	npc = GrabNPCType(id);
-	return npc;
-}
-
-NPCType* ZoneDatabase::GrabNPCType(uint32 id)
-{	
-	std::string filter = fmt::format("id = {}", id);
-	NPCType *tmp_npctype;
-	tmp_npctype = new NPCType;
-	memset(tmp_npctype, 0, sizeof *tmp_npctype);
-
-	for (NpcTypesRepository::NpcTypes& n : NpcTypesRepository::GetWhere((Database&)database, filter))
+	for (NpcTypesRepository::NpcTypes &n : NpcTypesRepository::GetWhere((Database &)database, filter))
 	{
-		tmp_npctype->npc_id					= n.id;
+		NPCType *t;
+		t = new NPCType;
+		memset(t, 0, sizeof * t);
 
-		strn0cpy(tmp_npctype->name, n.name.c_str(), 50);
+		t->npc_id = n.id;
 
-		tmp_npctype->level					= n.level;
-		tmp_npctype->race					= n.race;
-		tmp_npctype->class_					= n.class_;
-		tmp_npctype->max_hp					= n.hp;
-		tmp_npctype->cur_hp					= tmp_npctype->max_hp;
-		tmp_npctype->Mana					= n.mana;
-		tmp_npctype->gender					= n.gender;
-		tmp_npctype->texture				= n.texture;
-		tmp_npctype->helmtexture			= n.helmtexture;
-		tmp_npctype->size					= n.size;
-		tmp_npctype->loottable_id			= n.loottable_id;
-		tmp_npctype->merchanttype			= n.merchant_id;
-		tmp_npctype->attack_delay			= n.attack_delay;
-		tmp_npctype->STR					= n.STR;
-		tmp_npctype->STA					= n.STA;
-		tmp_npctype->DEX					= n.DEX;
-		tmp_npctype->AGI					= n.AGI;
-		tmp_npctype->INT					= n._INT;
-		tmp_npctype->WIS					= n.WIS;
-		tmp_npctype->CHA					= n.CHA;
-		tmp_npctype->MR						= n.MR;
-		tmp_npctype->CR						= n.CR;
-		tmp_npctype->DR						= n.DR;
-		tmp_npctype->FR						= n.FR;
-		tmp_npctype->PR						= n.PR;
+		strn0cpy(t->name, n.name.c_str(), 50);
 
-		tmp_npctype->ignore_despawn			= n.ignore_despawn == 1 ? true : false;
-		tmp_npctype->min_dmg				= n.mindmg;
-		tmp_npctype->max_dmg				= n.maxdmg;
-		tmp_npctype->attack_count			= n.attack_count;
+		t->level = n.level;
+		t->race = n.race;
+		t->class_ = n.class_;
+		t->max_hp = n.hp;
+		t->cur_hp = t->max_hp;
+		t->Mana = n.mana;
+		t->gender = n.gender;
+		t->texture = n.texture;
+		t->helmtexture = n.helmtexture;
+		t->size = n.size;
+		t->loottable_id = n.loottable_id;
+		t->merchanttype = n.merchant_id;
+		t->attack_delay = n.attack_delay;
+		t->STR = n.STR;
+		t->STA = n.STA;
+		t->DEX = n.DEX;
+		t->AGI = n.AGI;
+		t->INT = n._INT;
+		t->WIS = n.WIS;
+		t->CHA = n.CHA;
+		t->MR = n.MR;
+		t->CR = n.CR;
+		t->DR = n.DR;
+		t->FR = n.FR;
+		t->PR = n.PR;
+
+		t->ignore_despawn = n.ignore_despawn == 1 ? true : false;
+		t->min_dmg = n.mindmg;
+		t->max_dmg = n.maxdmg;
+		t->attack_count = n.attack_count;
 		if (!n.special_abilities.empty()) {
-			strn0cpy(tmp_npctype->special_abilities, n.special_abilities.c_str(), 512);
+			strn0cpy(t->special_abilities, n.special_abilities.c_str(), 512);
 		}
 		else {
-			tmp_npctype->special_abilities[0] = '\0';
+			t->special_abilities[0] = '\0';
 		}
-		tmp_npctype->npc_spells_id			= n.npc_spells_id;
-		tmp_npctype->npc_spells_effects_id	= n.npc_spells_effects_id;
-		tmp_npctype->d_melee_texture1		= n.d_melee_texture1;
-		tmp_npctype->d_melee_texture2		= n.d_melee_texture2;
-		tmp_npctype->walkspeed				= n.walkspeed;
-		tmp_npctype->prim_melee_type		= n.prim_melee_type;
-		tmp_npctype->sec_melee_type			= n.sec_melee_type;
-		tmp_npctype->ranged_type			= n.ranged_type;
-		tmp_npctype->runspeed				= n.runspeed;
-		tmp_npctype->aggro_pc				= n.aggro_pc == 1 ? true : false;
-		tmp_npctype->ignore_distance		= n.ignore_distance;
-		tmp_npctype->hp_regen				= n.hp_regen_rate;
-		tmp_npctype->mana_regen				= n.mana_regen_rate;
+		t->npc_spells_id = n.npc_spells_id;
+		t->npc_spells_effects_id = n.npc_spells_effects_id;
+		t->d_melee_texture1 = n.d_melee_texture1;
+		t->d_melee_texture2 = n.d_melee_texture2;
+		t->walkspeed = n.walkspeed;
+		t->prim_melee_type = n.prim_melee_type;
+		t->sec_melee_type = n.sec_melee_type;
+		t->ranged_type = n.ranged_type;
+		t->runspeed = n.runspeed;
+		t->aggro_pc = n.aggro_pc == 1 ? true : false;
+		t->ignore_distance = n.ignore_distance;
+		t->hp_regen = n.hp_regen_rate;
+		t->mana_regen = n.mana_regen_rate;
 
 		// set defaultvalue for aggroradius
-		tmp_npctype->aggroradius			= n.aggroradius;
-		if (tmp_npctype->aggroradius <= 0) {
-			tmp_npctype->aggroradius = 70;
+		t->aggroradius = n.aggroradius;
+		if (t->aggroradius <= 0) {
+			t->aggroradius = 70;
 		}
 
-		tmp_npctype->assistradius			= n.assistradius;
-		if (tmp_npctype->assistradius <= 0) {
-			tmp_npctype->assistradius = tmp_npctype->aggroradius;
+		t->assistradius = n.assistradius;
+		if (t->assistradius <= 0) {
+			t->assistradius = t->aggroradius;
 		}
 
 		if (n.bodytype > 0) {
-			tmp_npctype->bodytype = n.bodytype;
+			t->bodytype = n.bodytype;
 		}
 		else {
-			tmp_npctype->bodytype = 0;
+			t->bodytype = 0;
 		}
 
-		tmp_npctype->npc_faction_id			= n.npc_faction_id;
+		t->npc_faction_id = n.npc_faction_id;
 
-		tmp_npctype->luclinface				= n.face;
-		tmp_npctype->hairstyle				= n.luclin_hairstyle;
-		tmp_npctype->haircolor				= n.luclin_haircolor;
-		tmp_npctype->eyecolor1				= n.luclin_eyecolor;
-		tmp_npctype->eyecolor2				= n.luclin_eyecolor2;
-		tmp_npctype->beardcolor				= n.luclin_beardcolor;
-		tmp_npctype->beard					= n.luclin_beard;
+		t->luclinface = n.face;
+		t->hairstyle = n.luclin_hairstyle;
+		t->haircolor = n.luclin_haircolor;
+		t->eyecolor1 = n.luclin_eyecolor;
+		t->eyecolor2 = n.luclin_eyecolor2;
+		t->beardcolor = n.luclin_beardcolor;
+		t->beard = n.luclin_beard;
 
-		uint32 armor_tint_id				= n.armortint_id;
+		uint32 armor_tint_id = n.armortint_id;
 
-		tmp_npctype->armor_tint.Head.Color = (n.armortint_red & 0xFF) << 16;
-		tmp_npctype->armor_tint.Head.Color |= (n.armortint_green & 0xFF) << 8;
-		tmp_npctype->armor_tint.Head.Color |= (n.armortint_blue & 0xFF);
-		tmp_npctype->armor_tint.Head.Color |= (tmp_npctype->armor_tint.Head.Color) ? (0xFF << 24) : 0;
+		t->armor_tint.Head.Color = (n.armortint_red & 0xFF) << 16;
+		t->armor_tint.Head.Color |= (n.armortint_green & 0xFF) << 8;
+		t->armor_tint.Head.Color |= (n.armortint_blue & 0xFF);
+		t->armor_tint.Head.Color |= (t->armor_tint.Head.Color) ? (0xFF << 24) : 0;
 
 		if (armor_tint_id == 0)
 			for (int index = EQ::textures::armorChest; index <= EQ::textures::LastTexture; index++)
-				tmp_npctype->armor_tint.Slot[index].Color = tmp_npctype->armor_tint.Slot[0].Color;
-		else if (tmp_npctype->armor_tint.Slot[0].Color == 0)
+				t->armor_tint.Slot[index].Color = t->armor_tint.Slot[0].Color;
+		else if (t->armor_tint.Slot[0].Color == 0)
 		{
 			std::string armortint_query = StringFormat(
 				"SELECT red1h, grn1h, blu1h, "
@@ -1605,13 +1586,13 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 				armor_tint_id = 0;
 			}
 			else {
-				auto& armorTint_row = armortint_results.begin();
+				auto &armorTint_row = armortint_results.begin();
 
 				for (int index = EQ::textures::textureBegin; index <= EQ::textures::LastTexture; index++) {
-					tmp_npctype->armor_tint.Slot[index].Color = atoi(armorTint_row[index * 3]) << 16;
-					tmp_npctype->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 1]) << 8;
-					tmp_npctype->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 2]);
-					tmp_npctype->armor_tint.Slot[index].Color |= (tmp_npctype->armor_tint.Slot[index].Color) ? (0xFF << 24) : 0;
+					t->armor_tint.Slot[index].Color = atoi(armorTint_row[index * 3]) << 16;
+					t->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 1]) << 8;
+					t->armor_tint.Slot[index].Color |= atoi(armorTint_row[index * 3 + 2]);
+					t->armor_tint.Slot[index].Color |= (t->armor_tint.Slot[index].Color) ? (0xFF << 24) : 0;
 				}
 			}
 		}
@@ -1619,60 +1600,62 @@ NPCType* ZoneDatabase::GrabNPCType(uint32 id)
 			armor_tint_id = 0;
 		}
 
-		tmp_npctype->see_invis				= n.see_invis;
-		tmp_npctype->see_invis_undead		= n.see_invis_undead == 0 ? false : true;	// Set see_invis_undead flag
+		t->see_invis = n.see_invis;
+		t->see_invis_undead = n.see_invis_undead == 0 ? false : true;	// Set see_invis_undead flag
 		if (!n.lastname.empty()) {
-			strn0cpy(tmp_npctype->lastname, n.lastname.c_str(), 32);
+			strn0cpy(t->lastname, n.lastname.c_str(), 32);
 		}
 
-		tmp_npctype->qglobal				= n.qglobal == 0 ? false : true;	// qglobal
-		tmp_npctype->AC						= n.AC;
-		tmp_npctype->npc_aggro				= n.npc_aggro == 0 ? false : true;
-		tmp_npctype->spawn_limit			= n.spawn_limit;
-		tmp_npctype->see_sneak				= (uint8)n.see_sneak;
-		tmp_npctype->see_improved_hide		= (uint8)n.see_improved_hide;
-		tmp_npctype->ATK					= n.ATK;
-		tmp_npctype->accuracy_rating		= n.Accuracy;
-		tmp_npctype->raid_target			= n.raid_target == 0 ? false : true;
-		tmp_npctype->slow_mitigation		= n.slow_mitigation;
-		tmp_npctype->maxlevel				= n.maxlevel;
-		tmp_npctype->scalerate				= n.scalerate;
-		tmp_npctype->private_corpse			= n.private_corpse == 1 ? true : false;
-		tmp_npctype->unique_spawn_by_name	= n.unique_spawn_by_name == 1 ? true : false;
-		tmp_npctype->underwater				= n.underwater == 1 ? true : false;
-		tmp_npctype->emoteid				= n.emoteid;
-		tmp_npctype->spellscale				= n.spellscale;
-		tmp_npctype->healscale				= n.healscale;
-		tmp_npctype->light					= (n.light & 0x0F);
-		tmp_npctype->combat_hp_regen		= n.combat_hp_regen;
-		tmp_npctype->combat_mana_regen		= n.combat_mana_regen;
-		tmp_npctype->armtexture				= n.armtexture;
-		tmp_npctype->bracertexture			= n.bracertexture;
-		tmp_npctype->handtexture			= n.handtexture;
-		tmp_npctype->legtexture				= n.legtexture;
-		tmp_npctype->feettexture			= n.feettexture;
-		tmp_npctype->chesttexture			= n.chesttexture;
-		tmp_npctype->avoidance				= n.avoidance;
-		tmp_npctype->exp_pct				= n.exp_pct;
-		tmp_npctype->greed					= n.greed;
-		tmp_npctype->engage_notice			= n.engage_notice == 1 ? true : false;
-		tmp_npctype->stuck_behavior			= n.stuck_behavior;
-		tmp_npctype->flymode				= n.flymode;
-		if (tmp_npctype->flymode < 0 || tmp_npctype->flymode > 3)
-			tmp_npctype->flymode = EQ::constants::GravityBehavior::Water;
+		t->qglobal = n.qglobal == 0 ? false : true;	// qglobal
+		t->AC = n.AC;
+		t->npc_aggro = n.npc_aggro == 0 ? false : true;
+		t->spawn_limit = n.spawn_limit;
+		t->see_sneak = (uint8)n.see_sneak;
+		t->see_improved_hide = (uint8)n.see_improved_hide;
+		t->ATK = n.ATK;
+		t->accuracy_rating = n.Accuracy;
+		t->raid_target = n.raid_target == 0 ? false : true;
+		t->slow_mitigation = n.slow_mitigation;
+		t->maxlevel = n.maxlevel;
+		t->scalerate = n.scalerate;
+		t->private_corpse = n.private_corpse == 1 ? true : false;
+		t->unique_spawn_by_name = n.unique_spawn_by_name == 1 ? true : false;
+		t->underwater = n.underwater == 1 ? true : false;
+		t->emoteid = n.emoteid;
+		t->spellscale = n.spellscale;
+		t->healscale = n.healscale;
+		t->light = (n.light & 0x0F);
+		t->combat_hp_regen = n.combat_hp_regen;
+		t->combat_mana_regen = n.combat_mana_regen;
+		t->armtexture = n.armtexture;
+		t->bracertexture = n.bracertexture;
+		t->handtexture = n.handtexture;
+		t->legtexture = n.legtexture;
+		t->feettexture = n.feettexture;
+		t->chesttexture = n.chesttexture;
+		t->avoidance = n.avoidance;
+		t->exp_pct = n.exp_pct;
+		t->greed = n.greed;
+		t->engage_notice = n.engage_notice == 1 ? true : false;
+		t->stuck_behavior = n.stuck_behavior;
+		t->flymode = n.flymode;
+		if (t->flymode < 0 || t->flymode > 3)
+			t->flymode = EQ::constants::GravityBehavior::Water;
 
 		// If NPC with duplicate NPC id already in table,
 		// free item we attempted to add.
-		if (zone->npctable.find(tmp_npctype->npc_id) != zone->npctable.end()) {
-			std::cerr << "Error loading duplicate NPC " << tmp_npctype->npc_id << std::endl;
-			delete tmp_npctype;
+		if (zone->npctable.find(t->npc_id) != zone->npctable.end()) {
+			std::cerr << "Error loading duplicate NPC " << t->npc_id << std::endl;
+			delete t;
 			return nullptr;
 		}
 
-		zone->npctable[tmp_npctype->npc_id] = tmp_npctype;
+		zone->npctable[t->npc_id] = t;
+		npc = t;
+
 	}
 
-	return tmp_npctype;
+	return npc;
 }
 
 uint8 ZoneDatabase::GetGridType(uint32 grid, uint32 zoneid) {

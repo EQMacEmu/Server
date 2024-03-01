@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseLoottableRepository {
 public:
 	struct Loottable {
@@ -26,6 +25,10 @@ public:
 		uint32_t    maxcash;
 		uint32_t    avgcoin;
 		int8_t      done;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -42,6 +45,10 @@ public:
 			"maxcash",
 			"avgcoin",
 			"done",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -54,6 +61,10 @@ public:
 			"maxcash",
 			"avgcoin",
 			"done",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -94,12 +105,16 @@ public:
 	{
 		Loottable e{};
 
-		e.id      = 0;
-		e.name    = "";
-		e.mincash = 0;
-		e.maxcash = 0;
-		e.avgcoin = 0;
-		e.done    = 0;
+		e.id                     = 0;
+		e.name                   = "";
+		e.mincash                = 0;
+		e.maxcash                = 0;
+		e.avgcoin                = 0;
+		e.done                   = 0;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -136,12 +151,16 @@ public:
 		if (results.RowCount() == 1) {
 			Loottable e{};
 
-			e.id      = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name    = row[1] ? row[1] : "";
-			e.mincash = static_cast<uint32_t>(strtoul(row[2], nullptr, 10));
-			e.maxcash = static_cast<uint32_t>(strtoul(row[3], nullptr, 10));
-			e.avgcoin = static_cast<uint32_t>(strtoul(row[4], nullptr, 10));
-			e.done    = static_cast<int8_t>(atoi(row[5]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.mincash                = row[2] ? static_cast<uint32_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
+			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
+			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.content_flags          = row[8] ? row[8] : "";
+			e.content_flags_disabled = row[9] ? row[9] : "";
 
 			return e;
 		}
@@ -180,6 +199,10 @@ public:
 		v.push_back(columns[3] + " = " + std::to_string(e.maxcash));
 		v.push_back(columns[4] + " = " + std::to_string(e.avgcoin));
 		v.push_back(columns[5] + " = " + std::to_string(e.done));
+		v.push_back(columns[6] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[7] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[8] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[9] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -207,6 +230,10 @@ public:
 		v.push_back(std::to_string(e.maxcash));
 		v.push_back(std::to_string(e.avgcoin));
 		v.push_back(std::to_string(e.done));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -242,6 +269,10 @@ public:
 			v.push_back(std::to_string(e.maxcash));
 			v.push_back(std::to_string(e.avgcoin));
 			v.push_back(std::to_string(e.done));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -275,12 +306,16 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Loottable e{};
 
-			e.id      = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name    = row[1] ? row[1] : "";
-			e.mincash = static_cast<uint32_t>(strtoul(row[2], nullptr, 10));
-			e.maxcash = static_cast<uint32_t>(strtoul(row[3], nullptr, 10));
-			e.avgcoin = static_cast<uint32_t>(strtoul(row[4], nullptr, 10));
-			e.done    = static_cast<int8_t>(atoi(row[5]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.mincash                = row[2] ? static_cast<uint32_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
+			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
+			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.content_flags          = row[8] ? row[8] : "";
+			e.content_flags_disabled = row[9] ? row[9] : "";
 
 			all_entries.push_back(e);
 		}
@@ -305,12 +340,16 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Loottable e{};
 
-			e.id      = static_cast<uint32_t>(strtoul(row[0], nullptr, 10));
-			e.name    = row[1] ? row[1] : "";
-			e.mincash = static_cast<uint32_t>(strtoul(row[2], nullptr, 10));
-			e.maxcash = static_cast<uint32_t>(strtoul(row[3], nullptr, 10));
-			e.avgcoin = static_cast<uint32_t>(strtoul(row[4], nullptr, 10));
-			e.done    = static_cast<int8_t>(atoi(row[5]));
+			e.id                     = row[0] ? static_cast<uint32_t>(strtoul(row[0], nullptr, 10)) : 0;
+			e.name                   = row[1] ? row[1] : "";
+			e.mincash                = row[2] ? static_cast<uint32_t>(strtoul(row[2], nullptr, 10)) : 0;
+			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
+			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
+			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
+			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
+			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.content_flags          = row[8] ? row[8] : "";
+			e.content_flags_disabled = row[9] ? row[9] : "";
 
 			all_entries.push_back(e);
 		}

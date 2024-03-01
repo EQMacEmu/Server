@@ -16,7 +16,6 @@
 #include "../../strings.h"
 #include <ctime>
 
-
 class BaseObjectRepository {
 public:
 	struct Object {
@@ -34,6 +33,10 @@ public:
 		int32_t     size;
 		int32_t     solid;
 		int32_t     incline;
+		uint8_t     min_expansion;
+		uint8_t     max_expansion;
+		std::string content_flags;
+		std::string content_flags_disabled;
 	};
 
 	static std::string PrimaryKey()
@@ -58,6 +61,10 @@ public:
 			"size",
 			"solid",
 			"incline",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -78,6 +85,10 @@ public:
 			"size",
 			"solid",
 			"incline",
+			"min_expansion",
+			"max_expansion",
+			"content_flags",
+			"content_flags_disabled",
 		};
 	}
 
@@ -118,20 +129,24 @@ public:
 	{
 		Object e{};
 
-		e.id         = 0;
-		e.zoneid     = 0;
-		e.xpos       = 0;
-		e.ypos       = 0;
-		e.zpos       = 0;
-		e.heading    = 0;
-		e.itemid     = 0;
-		e.charges    = 0;
-		e.objectname = "";
-		e.type       = 0;
-		e.icon       = 0;
-		e.size       = 0;
-		e.solid      = 0;
-		e.incline    = 0;
+		e.id                     = 0;
+		e.zoneid                 = 0;
+		e.xpos                   = 0;
+		e.ypos                   = 0;
+		e.zpos                   = 0;
+		e.heading                = 0;
+		e.itemid                 = 0;
+		e.charges                = 0;
+		e.objectname             = "";
+		e.type                   = 0;
+		e.icon                   = 0;
+		e.size                   = 0;
+		e.solid                  = 0;
+		e.incline                = 0;
+		e.min_expansion          = 0;
+		e.max_expansion          = 0;
+		e.content_flags          = "";
+		e.content_flags_disabled = "";
 
 		return e;
 	}
@@ -168,20 +183,24 @@ public:
 		if (results.RowCount() == 1) {
 			Object e{};
 
-			e.id         = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid     = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.xpos       = strtof(row[2], nullptr);
-			e.ypos       = strtof(row[3], nullptr);
-			e.zpos       = strtof(row[4], nullptr);
-			e.heading    = strtof(row[5], nullptr);
-			e.itemid     = static_cast<int32_t>(atoi(row[6]));
-			e.charges    = static_cast<uint16_t>(strtoul(row[7], nullptr, 10));
-			e.objectname = row[8] ? row[8] : "";
-			e.type       = static_cast<int32_t>(atoi(row[9]));
-			e.icon       = static_cast<int32_t>(atoi(row[10]));
-			e.size       = static_cast<int32_t>(atoi(row[11]));
-			e.solid      = static_cast<int32_t>(atoi(row[12]));
-			e.incline    = static_cast<int32_t>(atoi(row[13]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.xpos                   = row[2] ? strtof(row[2], nullptr) : 0;
+			e.ypos                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zpos                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.heading                = row[5] ? strtof(row[5], nullptr) : 0;
+			e.itemid                 = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.charges                = row[7] ? static_cast<uint16_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.objectname             = row[8] ? row[8] : "";
+			e.type                   = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.icon                   = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
+			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.content_flags          = row[16] ? row[16] : "";
+			e.content_flags_disabled = row[17] ? row[17] : "";
 
 			return e;
 		}
@@ -228,6 +247,10 @@ public:
 		v.push_back(columns[11] + " = " + std::to_string(e.size));
 		v.push_back(columns[12] + " = " + std::to_string(e.solid));
 		v.push_back(columns[13] + " = " + std::to_string(e.incline));
+		v.push_back(columns[14] + " = " + std::to_string(e.min_expansion));
+		v.push_back(columns[15] + " = " + std::to_string(e.max_expansion));
+		v.push_back(columns[16] + " = '" + Strings::Escape(e.content_flags) + "'");
+		v.push_back(columns[17] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -263,6 +286,10 @@ public:
 		v.push_back(std::to_string(e.size));
 		v.push_back(std::to_string(e.solid));
 		v.push_back(std::to_string(e.incline));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -306,6 +333,10 @@ public:
 			v.push_back(std::to_string(e.size));
 			v.push_back(std::to_string(e.solid));
 			v.push_back(std::to_string(e.incline));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -339,20 +370,24 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Object e{};
 
-			e.id         = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid     = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.xpos       = strtof(row[2], nullptr);
-			e.ypos       = strtof(row[3], nullptr);
-			e.zpos       = strtof(row[4], nullptr);
-			e.heading    = strtof(row[5], nullptr);
-			e.itemid     = static_cast<int32_t>(atoi(row[6]));
-			e.charges    = static_cast<uint16_t>(strtoul(row[7], nullptr, 10));
-			e.objectname = row[8] ? row[8] : "";
-			e.type       = static_cast<int32_t>(atoi(row[9]));
-			e.icon       = static_cast<int32_t>(atoi(row[10]));
-			e.size       = static_cast<int32_t>(atoi(row[11]));
-			e.solid      = static_cast<int32_t>(atoi(row[12]));
-			e.incline    = static_cast<int32_t>(atoi(row[13]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.xpos                   = row[2] ? strtof(row[2], nullptr) : 0;
+			e.ypos                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zpos                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.heading                = row[5] ? strtof(row[5], nullptr) : 0;
+			e.itemid                 = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.charges                = row[7] ? static_cast<uint16_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.objectname             = row[8] ? row[8] : "";
+			e.type                   = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.icon                   = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
+			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.content_flags          = row[16] ? row[16] : "";
+			e.content_flags_disabled = row[17] ? row[17] : "";
 
 			all_entries.push_back(e);
 		}
@@ -377,20 +412,24 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Object e{};
 
-			e.id         = static_cast<int32_t>(atoi(row[0]));
-			e.zoneid     = static_cast<uint32_t>(strtoul(row[1], nullptr, 10));
-			e.xpos       = strtof(row[2], nullptr);
-			e.ypos       = strtof(row[3], nullptr);
-			e.zpos       = strtof(row[4], nullptr);
-			e.heading    = strtof(row[5], nullptr);
-			e.itemid     = static_cast<int32_t>(atoi(row[6]));
-			e.charges    = static_cast<uint16_t>(strtoul(row[7], nullptr, 10));
-			e.objectname = row[8] ? row[8] : "";
-			e.type       = static_cast<int32_t>(atoi(row[9]));
-			e.icon       = static_cast<int32_t>(atoi(row[10]));
-			e.size       = static_cast<int32_t>(atoi(row[11]));
-			e.solid      = static_cast<int32_t>(atoi(row[12]));
-			e.incline    = static_cast<int32_t>(atoi(row[13]));
+			e.id                     = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
+			e.zoneid                 = row[1] ? static_cast<uint32_t>(strtoul(row[1], nullptr, 10)) : 0;
+			e.xpos                   = row[2] ? strtof(row[2], nullptr) : 0;
+			e.ypos                   = row[3] ? strtof(row[3], nullptr) : 0;
+			e.zpos                   = row[4] ? strtof(row[4], nullptr) : 0;
+			e.heading                = row[5] ? strtof(row[5], nullptr) : 0;
+			e.itemid                 = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
+			e.charges                = row[7] ? static_cast<uint16_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.objectname             = row[8] ? row[8] : "";
+			e.type                   = row[9] ? static_cast<int32_t>(atoi(row[9])) : 0;
+			e.icon                   = row[10] ? static_cast<int32_t>(atoi(row[10])) : 0;
+			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
+			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.content_flags          = row[16] ? row[16] : "";
+			e.content_flags_disabled = row[17] ? row[17] : "";
 
 			all_entries.push_back(e);
 		}
