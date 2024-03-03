@@ -1,0 +1,2 @@
+INSERT INTO `rule_values` VALUES (1, 'Expansion:CurrentExpansion', '-1', 'The current expansion enabled for the server [-1 = ALL, 0 = Classic, 1 = Kunark etc.]');
+INSERT INTO `rule_values` VALUES (1, 'Zone:EnableNexusPortalsOnExpansion', 'true', 'Set Nexus to enabled at luclin expansion');
