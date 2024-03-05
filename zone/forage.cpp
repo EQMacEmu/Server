@@ -133,7 +133,7 @@ uint32 ZoneDatabase::GetZoneFishing(uint32 ZoneID, uint8 skill)
 			FROM 
 			  fishing 
 			WHERE 
-			  (zoneid = '%i' || zoneid = 0) 
+			  zoneid = '{}'
 			AND 
 			  skill_level <= '{}'
 			  {}
