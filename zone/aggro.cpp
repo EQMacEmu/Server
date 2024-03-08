@@ -492,7 +492,7 @@ bool EntityList::AICheckClientAggro(NPC* aggressor)
 	{
 		Client *client = it->second;
 
-		if ((client->IsFeigned() && !aggressor->GetSpecialAbility(IMMUNE_FEIGN_DEATH)) || !client->InZone())
+		if ((client->IsFeigned() && !aggressor->GetSpecialAbility(IMMUNE_FEIGN_DEATH)) || !client->InZone() || client->IsMule())
 			continue;
 
 		if (!aggressor->CheckAggro(client) && aggressor->CheckWillAggro(client))
