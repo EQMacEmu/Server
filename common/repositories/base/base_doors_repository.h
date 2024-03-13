@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_DOORS_REPOSITORY_H
@@ -48,8 +48,8 @@ public:
 		int8_t      islift;
 		int32_t     close_time;
 		int8_t      can_open;
-		uint8_t     min_expansion;
-		uint8_t     max_expansion;
+		int8_t      min_expansion;
+		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -203,8 +203,8 @@ public:
 		e.islift                 = 0;
 		e.close_time             = 5;
 		e.can_open               = 1;
-		e.min_expansion          = 0;
-		e.max_expansion          = 0;
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 
@@ -272,8 +272,8 @@ public:
 			e.islift                 = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time             = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open               = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
-			e.min_expansion          = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 0;
-			e.max_expansion          = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
+			e.min_expansion          = row[29] ? static_cast<int8_t>(atoi(row[29])) : -1;
+			e.max_expansion          = row[30] ? static_cast<int8_t>(atoi(row[30])) : -1;
 			e.content_flags          = row[31] ? row[31] : "";
 			e.content_flags_disabled = row[32] ? row[32] : "";
 
@@ -519,8 +519,8 @@ public:
 			e.islift                 = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time             = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open               = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
-			e.min_expansion          = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 0;
-			e.max_expansion          = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
+			e.min_expansion          = row[29] ? static_cast<int8_t>(atoi(row[29])) : -1;
+			e.max_expansion          = row[30] ? static_cast<int8_t>(atoi(row[30])) : -1;
 			e.content_flags          = row[31] ? row[31] : "";
 			e.content_flags_disabled = row[32] ? row[32] : "";
 
@@ -576,8 +576,8 @@ public:
 			e.islift                 = row[26] ? static_cast<int8_t>(atoi(row[26])) : 0;
 			e.close_time             = row[27] ? static_cast<int32_t>(atoi(row[27])) : 5;
 			e.can_open               = row[28] ? static_cast<int8_t>(atoi(row[28])) : 1;
-			e.min_expansion          = row[29] ? static_cast<uint8_t>(strtoul(row[29], nullptr, 10)) : 0;
-			e.max_expansion          = row[30] ? static_cast<uint8_t>(strtoul(row[30], nullptr, 10)) : 0;
+			e.min_expansion          = row[29] ? static_cast<int8_t>(atoi(row[29])) : -1;
+			e.max_expansion          = row[30] ? static_cast<int8_t>(atoi(row[30])) : -1;
 			e.content_flags          = row[31] ? row[31] : "";
 			e.content_flags_disabled = row[32] ? row[32] : "";
 
@@ -638,6 +638,126 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const Doors &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back(std::to_string(e.doorid));
+		v.push_back("'" + Strings::Escape(e.zone) + "'");
+		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.pos_y));
+		v.push_back(std::to_string(e.pos_x));
+		v.push_back(std::to_string(e.pos_z));
+		v.push_back(std::to_string(e.heading));
+		v.push_back(std::to_string(e.opentype));
+		v.push_back(std::to_string(e.lockpick));
+		v.push_back(std::to_string(e.keyitem));
+		v.push_back(std::to_string(e.altkeyitem));
+		v.push_back(std::to_string(e.nokeyring));
+		v.push_back(std::to_string(e.triggerdoor));
+		v.push_back(std::to_string(e.triggertype));
+		v.push_back(std::to_string(e.doorisopen));
+		v.push_back(std::to_string(e.door_param));
+		v.push_back("'" + Strings::Escape(e.dest_zone) + "'");
+		v.push_back(std::to_string(e.dest_x));
+		v.push_back(std::to_string(e.dest_y));
+		v.push_back(std::to_string(e.dest_z));
+		v.push_back(std::to_string(e.dest_heading));
+		v.push_back(std::to_string(e.invert_state));
+		v.push_back(std::to_string(e.incline));
+		v.push_back(std::to_string(e.size));
+		v.push_back(std::to_string(e.client_version_mask));
+		v.push_back(std::to_string(e.islift));
+		v.push_back(std::to_string(e.close_time));
+		v.push_back(std::to_string(e.can_open));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<Doors> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back(std::to_string(e.doorid));
+			v.push_back("'" + Strings::Escape(e.zone) + "'");
+			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.pos_y));
+			v.push_back(std::to_string(e.pos_x));
+			v.push_back(std::to_string(e.pos_z));
+			v.push_back(std::to_string(e.heading));
+			v.push_back(std::to_string(e.opentype));
+			v.push_back(std::to_string(e.lockpick));
+			v.push_back(std::to_string(e.keyitem));
+			v.push_back(std::to_string(e.altkeyitem));
+			v.push_back(std::to_string(e.nokeyring));
+			v.push_back(std::to_string(e.triggerdoor));
+			v.push_back(std::to_string(e.triggertype));
+			v.push_back(std::to_string(e.doorisopen));
+			v.push_back(std::to_string(e.door_param));
+			v.push_back("'" + Strings::Escape(e.dest_zone) + "'");
+			v.push_back(std::to_string(e.dest_x));
+			v.push_back(std::to_string(e.dest_y));
+			v.push_back(std::to_string(e.dest_z));
+			v.push_back(std::to_string(e.dest_heading));
+			v.push_back(std::to_string(e.invert_state));
+			v.push_back(std::to_string(e.incline));
+			v.push_back(std::to_string(e.size));
+			v.push_back(std::to_string(e.client_version_mask));
+			v.push_back(std::to_string(e.islift));
+			v.push_back(std::to_string(e.close_time));
+			v.push_back(std::to_string(e.can_open));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_DOORS_REPOSITORY_H

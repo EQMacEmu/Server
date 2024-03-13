@@ -32,6 +32,7 @@
 #include "spawngroup.h"
 #include "pathfinder_interface.h"
 #include "position.h"
+#include "global_loot_manager.h"
 
 extern uint32 numclients;
 
@@ -271,6 +272,11 @@ public:
 
 	void ApplyRandomLoc(uint32 zoneid, float& x, float& y);
 
+	inline std::vector<int> GetGlobalLootTables(NPC *mob) const { return m_global_loot.GetGlobalLootTables(mob); }
+	inline void AddGlobalLootEntry(GlobalLootEntry &in) { return m_global_loot.AddEntry(in); }
+	inline void ShowZoneGlobalLoot(Client *to) { m_global_loot.ShowZoneGlobalLoot(to); }
+	inline void ShowNPCGlobalLoot(Client *to, NPC *who) { m_global_loot.ShowNPCGlobalLoot(to, who); }
+
 	// random object that provides random values for the zone
 	EQ::Random random;
 
@@ -355,6 +361,7 @@ private:
 	QGlobalCache *qGlobals;
 	MobMovementManager* mMovementManager;
 
+	GlobalLootManager m_global_loot;
 };
 
 #endif

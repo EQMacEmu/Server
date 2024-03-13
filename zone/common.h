@@ -410,7 +410,7 @@ typedef enum : uint16 {	//type arguments to DoAnim
 	Unknown76,
 	FiddleWeapon,
 	MountedFall
-} Animation;
+} DoAnimation;
 
 
 typedef enum {

@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_LOOTTABLE_REPOSITORY_H
@@ -25,8 +25,8 @@ public:
 		uint32_t    maxcash;
 		uint32_t    avgcoin;
 		int8_t      done;
-		uint8_t     min_expansion;
-		uint8_t     max_expansion;
+		int8_t      min_expansion;
+		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -111,8 +111,8 @@ public:
 		e.maxcash                = 0;
 		e.avgcoin                = 0;
 		e.done                   = 0;
-		e.min_expansion          = 0;
-		e.max_expansion          = 0;
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 
@@ -157,8 +157,8 @@ public:
 			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
 			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
-			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
-			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.min_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
+			e.max_expansion          = row[7] ? static_cast<int8_t>(atoi(row[7])) : -1;
 			e.content_flags          = row[8] ? row[8] : "";
 			e.content_flags_disabled = row[9] ? row[9] : "";
 
@@ -312,8 +312,8 @@ public:
 			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
 			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
-			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
-			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.min_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
+			e.max_expansion          = row[7] ? static_cast<int8_t>(atoi(row[7])) : -1;
 			e.content_flags          = row[8] ? row[8] : "";
 			e.content_flags_disabled = row[9] ? row[9] : "";
 
@@ -346,8 +346,8 @@ public:
 			e.maxcash                = row[3] ? static_cast<uint32_t>(strtoul(row[3], nullptr, 10)) : 0;
 			e.avgcoin                = row[4] ? static_cast<uint32_t>(strtoul(row[4], nullptr, 10)) : 0;
 			e.done                   = row[5] ? static_cast<int8_t>(atoi(row[5])) : 0;
-			e.min_expansion          = row[6] ? static_cast<uint8_t>(strtoul(row[6], nullptr, 10)) : 0;
-			e.max_expansion          = row[7] ? static_cast<uint8_t>(strtoul(row[7], nullptr, 10)) : 0;
+			e.min_expansion          = row[6] ? static_cast<int8_t>(atoi(row[6])) : -1;
+			e.max_expansion          = row[7] ? static_cast<int8_t>(atoi(row[7])) : -1;
 			e.content_flags          = row[8] ? row[8] : "";
 			e.content_flags_disabled = row[9] ? row[9] : "";
 
@@ -408,6 +408,80 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const Loottable &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.mincash));
+		v.push_back(std::to_string(e.maxcash));
+		v.push_back(std::to_string(e.avgcoin));
+		v.push_back(std::to_string(e.done));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<Loottable> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.mincash));
+			v.push_back(std::to_string(e.maxcash));
+			v.push_back(std::to_string(e.avgcoin));
+			v.push_back(std::to_string(e.done));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_LOOTTABLE_REPOSITORY_H

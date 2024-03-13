@@ -169,6 +169,9 @@ void Trap::Trigger(Mob* trigger)
 					auto spawnPosition = randomOffset + glm::vec4(m_Position, 0.0f);
 					auto new_npc = new NPC(tmp, nullptr, spawnPosition, EQ::constants::GravityBehavior::Water);
 					new_npc->AddLootTable();
+					if (new_npc->DropsGlobalLoot()) {
+						new_npc->CheckGlobalLootTables();
+					}
 					entity_list.AddNPC(new_npc);
 					new_npc->AddToHateList(trigger,1);
 				}
@@ -192,6 +195,9 @@ void Trap::Trigger(Mob* trigger)
 					auto spawnPosition = randomOffset + glm::vec4(m_Position, 0.0f);
 					auto new_npc = new NPC(tmp, nullptr, spawnPosition, EQ::constants::GravityBehavior::Water);
 					new_npc->AddLootTable();
+					if (new_npc->DropsGlobalLoot()) {
+						new_npc->CheckGlobalLootTables();
+					}
 					entity_list.AddNPC(new_npc);
 					new_npc->AddToHateList(trigger,1);
 				}

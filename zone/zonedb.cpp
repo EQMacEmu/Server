@@ -1639,8 +1639,11 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		t->engage_notice = n.engage_notice == 1 ? true : false;
 		t->stuck_behavior = n.stuck_behavior;
 		t->flymode = n.flymode;
-		if (t->flymode < 0 || t->flymode > 3)
+		if (t->flymode < 0 || t->flymode > 3) {
 			t->flymode = EQ::constants::GravityBehavior::Water;
+		}
+		t->skip_global_loot = n.skip_global_loot;
+		t->rare_spawn = n.rare_spawn;
 
 		// If NPC with duplicate NPC id already in table,
 		// free item we attempted to add.

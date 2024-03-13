@@ -1006,10 +1006,7 @@ namespace Mac {
 			mac_pop_item->common.Delay = item->Delay;          
 			mac_pop_item->common.Damage = item->Damage;               
 			mac_pop_item->common.Range = item->Range;
-			if (item->ItemType == 7) // Throwing
-				mac_pop_item->common.ItemType = 19; // casting throwing items to fixed stacking issue.
-			else
-				mac_pop_item->common.ItemType = item->ItemType;          
+			mac_pop_item->common.ItemType = item->ItemType;          
 			mac_pop_item->common.Magic = item->Magic;          
 			mac_pop_item->common.Material = item->Material;   
 			mac_pop_item->common.Color = item->Color;    

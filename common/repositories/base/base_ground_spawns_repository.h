@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_GROUND_SPAWNS_REPOSITORY_H
@@ -32,8 +32,8 @@ public:
 		uint32_t    max_allowed;
 		std::string comment;
 		uint64_t    respawn_timer;
-		uint8_t     min_expansion;
-		uint8_t     max_expansion;
+		int8_t      min_expansion;
+		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -139,8 +139,8 @@ public:
 		e.max_allowed            = 1;
 		e.comment                = "";
 		e.respawn_timer          = 300000;
-		e.min_expansion          = 0;
-		e.max_expansion          = 0;
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 
@@ -192,8 +192,8 @@ public:
 			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
 			e.comment                = row[11] ? row[11] : "";
 			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
-			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
-			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.min_expansion          = row[13] ? static_cast<int8_t>(atoi(row[13])) : -1;
+			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
 
@@ -375,8 +375,8 @@ public:
 			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
 			e.comment                = row[11] ? row[11] : "";
 			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
-			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
-			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.min_expansion          = row[13] ? static_cast<int8_t>(atoi(row[13])) : -1;
+			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
 
@@ -416,8 +416,8 @@ public:
 			e.max_allowed            = row[10] ? static_cast<uint32_t>(strtoul(row[10], nullptr, 10)) : 1;
 			e.comment                = row[11] ? row[11] : "";
 			e.respawn_timer          = row[12] ? strtoull(row[12], nullptr, 10) : 300000;
-			e.min_expansion          = row[13] ? static_cast<uint8_t>(strtoul(row[13], nullptr, 10)) : 0;
-			e.max_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
+			e.min_expansion          = row[13] ? static_cast<int8_t>(atoi(row[13])) : -1;
+			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
 
@@ -478,6 +478,94 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const GroundSpawns &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back(std::to_string(e.zoneid));
+		v.push_back(std::to_string(e.max_x));
+		v.push_back(std::to_string(e.max_y));
+		v.push_back(std::to_string(e.max_z));
+		v.push_back(std::to_string(e.min_x));
+		v.push_back(std::to_string(e.min_y));
+		v.push_back(std::to_string(e.heading));
+		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.item));
+		v.push_back(std::to_string(e.max_allowed));
+		v.push_back("'" + Strings::Escape(e.comment) + "'");
+		v.push_back(std::to_string(e.respawn_timer));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<GroundSpawns> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back(std::to_string(e.zoneid));
+			v.push_back(std::to_string(e.max_x));
+			v.push_back(std::to_string(e.max_y));
+			v.push_back(std::to_string(e.max_z));
+			v.push_back(std::to_string(e.min_x));
+			v.push_back(std::to_string(e.min_y));
+			v.push_back(std::to_string(e.heading));
+			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.item));
+			v.push_back(std::to_string(e.max_allowed));
+			v.push_back("'" + Strings::Escape(e.comment) + "'");
+			v.push_back(std::to_string(e.respawn_timer));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_GROUND_SPAWNS_REPOSITORY_H

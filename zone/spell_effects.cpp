@@ -643,7 +643,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					ps->command = 1;
 					entity_list.QueueClients(this, app);
 					safe_delete(app);
-					SendAppearancePacket(AT_Pet, caster->GetID(), true, true);
+					SendAppearancePacket(AppearanceType::Pet, caster->GetID(), true, true);
 				}
 
 				if (IsClient())
@@ -1183,7 +1183,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				//this sends the levitate packet to everybody else
 				//who does not otherwise receive the buff packet.
 				if(IsClient())
-					SendAppearancePacket(AT_Levitate, 2, true, false);
+					SendAppearancePacket(AppearanceType::FlyMode, 2, true, false);
 				break;
 			}
 
@@ -1243,7 +1243,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						if(!IsPlayableRace(caster->GetTarget()->GetRace()))
 						{
 							uint32 newsize = floor(caster->GetTarget()->GetSize() + 0.5);
-							caster->SendAppearancePacket(AT_Size, newsize);
+							caster->SendAppearancePacket(AppearanceType::Size, newsize);
 						}
 
 						for(int x = EQ::textures::textureBegin; x <= EQ::textures::LastTintableTexture; x++)
@@ -3088,7 +3088,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 				if(IsNPC() && !IsPlayableRace(GetBaseRace()))
 				{
 					uint32 newsize = floor(GetBaseSize() + 0.5);
-					SendAppearancePacket(AT_Size, newsize);
+					SendAppearancePacket(AppearanceType::Size, newsize);
 				}
 				else if(IsClient())
 				{
@@ -3114,7 +3114,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 			case SE_Levitate:
 			{
 				if (!AffectedBySpellExcludingSlot(slot, SE_Levitate) && IsClient())
-					SendAppearancePacket(AT_Levitate, 0, true, false);
+					SendAppearancePacket(AppearanceType::FlyMode, 0, true, false);
 				break;
 			}
 
@@ -3187,7 +3187,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 
 			case SE_Mez:
 			{
-				SendAppearancePacket(AT_Anim, ANIM_STAND);	// unfreeze
+				SendAppearancePacket(AppearanceType::Animation, Animation::Standing);	// unfreeze
 				this->mezzed = false;
 				if(IsNPC())
 					UnStun();
@@ -3202,7 +3202,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 				{
 					InterruptSpell();
 					CastToNPC()->RestoreGuardSpotCharm();
-					SendAppearancePacket(AT_Pet, 0, true, true);
+					SendAppearancePacket(AppearanceType::Pet, 0, true, true);
 					CastToNPC()->RestoreNPCFactionID();
 				}
 
@@ -3281,7 +3281,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 							AddToHateList(owner, charmBreakHate, 0);
 						}
 					}
-					SendAppearancePacket(AT_Anim, ANIM_STAND);
+					SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 				}
 				if (owner && owner->IsClient())
 				{

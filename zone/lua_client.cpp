@@ -957,12 +957,12 @@ int Lua_Client::GetCorpseItemAt(int corpse, int slot) {
 
 void Lua_Client::Freeze() {
 	Lua_Safe_Call_Void();
-	self->SendAppearancePacket(AT_Anim, ANIM_FREEZE);
+	self->SendAppearancePacket(AppearanceType::Animation, Animation::Freeze);
 }
 
 void Lua_Client::UnFreeze() {
 	Lua_Safe_Call_Void();
-	self->SendAppearancePacket(AT_Anim, ANIM_STAND);
+	self->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 }
 
 int Lua_Client::GetAggroCount() {

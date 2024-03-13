@@ -224,6 +224,8 @@ NPC::NPC(const NPCType* d, Spawn2* in_respawn, const glm::vec4& position, int if
 	roambox_delay = 1000;
 	p_depop = false;
 	loottable_id = d->loottable_id;
+	skip_global_loot = d->skip_global_loot;
+	rare_spawn = d->rare_spawn;
 
 	primary_faction = 0;
 	SetNPCFactionID(d->npc_faction_id);
@@ -1512,7 +1514,7 @@ void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 void NPC::SetLevel(uint8 in_level, bool command)
 {
 	level = in_level;
-	SendAppearancePacket(AT_WhoLevel, in_level);
+	SendAppearancePacket(AppearanceType::WhoLevel, in_level);
 }
 
 void NPC::ModifyNPCStat(const char *identifier, const char *newValue)

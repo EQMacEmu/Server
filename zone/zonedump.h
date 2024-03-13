@@ -130,6 +130,8 @@ struct NPCType
 	bool	engage_notice;
 	int8	stuck_behavior;
 	int8	flymode;
+	bool	skip_global_loot;
+	bool	rare_spawn;
 };
 
 struct PlayerCorpse_Struct {

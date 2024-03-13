@@ -57,15 +57,12 @@
 #include "../common/repositories/content_flags_repository.h"
 
 #include <time.h>
-#include <ctime>
-#include <iostream>
 
 #ifdef _WINDOWS
 #define snprintf	_snprintf
 #define strncasecmp	_strnicmp
 #define strcasecmp	_stricmp
 #endif
-
 
 
 extern bool staticzone;
@@ -1013,6 +1010,8 @@ bool Zone::Init(bool iStaticZone) {
 
 	//Load AA information
 	LoadAAs();
+
+	database.LoadGlobalLoot();
 
 	//Load merchant data
 	zone->GetMerchantDataForZoneLoad();

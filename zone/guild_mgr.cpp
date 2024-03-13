@@ -533,7 +533,7 @@ void GuildApproval::GuildApproved()
 	uint8 tmp = atoi(founders.c_str());
 	uint32 tmpeq = guild_mgr.CreateGuild(guild, owner->CharacterID());
 	guild_mgr.SetGuild(owner->CharacterID(),tmpeq,2);
-	owner->SendAppearancePacket(AT_GuildID,true,false);
+	owner->SendAppearancePacket(AppearanceType::GuildID,true,false);
 	for(int i=0;i<tmp;i++)
 	{
 		if(members[i])

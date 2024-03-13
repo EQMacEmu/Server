@@ -633,7 +633,7 @@ void Client::SetLevel(uint8 set_level, bool command)
 	lu->level = set_level;
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	this->SendAppearancePacket(AT_WhoLevel, set_level); // who level change
+	this->SendAppearancePacket(AppearanceType::WhoLevel, set_level); // who level change
 
 	Log(Logs::General, Logs::Normal, "Setting Level for %s to %i", GetName(), set_level);
 

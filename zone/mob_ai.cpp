@@ -587,7 +587,7 @@ void Client::AI_Start() {
 	pClientSideTarget = GetTarget() ? GetTarget()->GetID() : 0;
 
 	// this also interrupts casting client side so the spell gems pop back out
-	SendAppearancePacket(AT_Linkdead, 1); // Sending LD packet so *LD* appears by the player name when charmed/feared -Kasai
+	SendAppearancePacket(AppearanceType::Linkdead, 1); // Sending LD packet so *LD* appears by the player name when charmed/feared -Kasai
 
 	// freeze client
 	auto app = new EQApplicationPacket(OP_FreezeClientControl, 65);
@@ -673,8 +673,8 @@ void Client::AI_Stop() {
 	m_Delta = glm::vec4();
 	
 	SetTarget(entity_list.GetMob(pClientSideTarget));
-	SendAppearancePacket(AT_Anim, GetAppearanceValue(GetAppearance()));
-	SendAppearancePacket(AT_Linkdead, 0); // Removing LD packet so *LD* no longer appears by the player name when charmed/feared -Kasai
+	SendAppearancePacket(AppearanceType::Animation, GetAppearanceValue(GetAppearance()));
+	SendAppearancePacket(AppearanceType::Linkdead, 0); // Removing LD packet so *LD* no longer appears by the player name when charmed/feared -Kasai
 
 	if (!auto_attack) {
 		attack_timer.Disable();
@@ -1515,7 +1515,7 @@ void Mob::AI_Process() {
 				Mob *victim = GetTarget(); // the victim can die during this block and the NPC will retarget to the next mob on its hate list so need to hold onto this to check if it HasDied() before performing more attacks
 
 				if (IsPet() && GetPetOrder() == SPO_Sit && GetOwner()->IsClient()) {
-					SendAppearancePacket(AT_Anim, ANIM_STAND);
+					SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 					SetPetOrder(SPO_Follow);
 				}
 

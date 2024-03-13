@@ -57,13 +57,13 @@ void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 void Client::SendGuildSpawnAppearance() {
 	if (!IsInAGuild()) {
 		// clear guildtag
-		SendAppearancePacket(AT_GuildID, GUILD_NONE);
+		SendAppearancePacket(AppearanceType::GuildID, GUILD_NONE);
 		Log(Logs::Detail, Logs::Guilds, "Sending spawn appearance for no guild tag.");
 	} else {
 		uint8 rank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), CharacterID());
 		Log(Logs::Detail, Logs::Guilds, "Sending spawn appearance for guild %d at rank %d", GuildID(), rank);
-		SendAppearancePacket(AT_GuildID, GuildID());
-		SendAppearancePacket(AT_GuildRank, rank);
+		SendAppearancePacket(AppearanceType::GuildID, GuildID());
+		SendAppearancePacket(AppearanceType::GuildRank, rank);
 	}
 	UpdateWho();
 }

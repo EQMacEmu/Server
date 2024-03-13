@@ -330,6 +330,7 @@ public:
 	void		AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* itemlist, uint8 droplimit, uint8 mindrop);
 	uint32		GetMaxNPCSpellsID();
 	uint32		GetMaxNPCSpellsEffectsID();
+	void LoadGlobalLoot();
 
 	DBnpcspells_Struct*				GetNPCSpells(uint32 iDBSpellsID);
 	DBnpcspellseffects_Struct*		GetNPCSpellsEffects(uint32 iDBSpellsEffectsID);

@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_OBJECT_REPOSITORY_H
@@ -33,8 +33,8 @@ public:
 		int32_t     size;
 		int32_t     solid;
 		int32_t     incline;
-		uint8_t     min_expansion;
-		uint8_t     max_expansion;
+		int8_t      min_expansion;
+		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
 	};
@@ -143,8 +143,8 @@ public:
 		e.size                   = 0;
 		e.solid                  = 0;
 		e.incline                = 0;
-		e.min_expansion          = 0;
-		e.max_expansion          = 0;
+		e.min_expansion          = -1;
+		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
 
@@ -197,8 +197,8 @@ public:
 			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
 			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
-			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
-			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.min_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
+			e.max_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
 			e.content_flags          = row[16] ? row[16] : "";
 			e.content_flags_disabled = row[17] ? row[17] : "";
 
@@ -384,8 +384,8 @@ public:
 			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
 			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
-			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
-			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.min_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
+			e.max_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
 			e.content_flags          = row[16] ? row[16] : "";
 			e.content_flags_disabled = row[17] ? row[17] : "";
 
@@ -426,8 +426,8 @@ public:
 			e.size                   = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
 			e.solid                  = row[12] ? static_cast<int32_t>(atoi(row[12])) : 0;
 			e.incline                = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
-			e.min_expansion          = row[14] ? static_cast<uint8_t>(strtoul(row[14], nullptr, 10)) : 0;
-			e.max_expansion          = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
+			e.min_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
+			e.max_expansion          = row[15] ? static_cast<int8_t>(atoi(row[15])) : -1;
 			e.content_flags          = row[16] ? row[16] : "";
 			e.content_flags_disabled = row[17] ? row[17] : "";
 
@@ -488,6 +488,96 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const Object &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back(std::to_string(e.zoneid));
+		v.push_back(std::to_string(e.xpos));
+		v.push_back(std::to_string(e.ypos));
+		v.push_back(std::to_string(e.zpos));
+		v.push_back(std::to_string(e.heading));
+		v.push_back(std::to_string(e.itemid));
+		v.push_back(std::to_string(e.charges));
+		v.push_back("'" + Strings::Escape(e.objectname) + "'");
+		v.push_back(std::to_string(e.type));
+		v.push_back(std::to_string(e.icon));
+		v.push_back(std::to_string(e.size));
+		v.push_back(std::to_string(e.solid));
+		v.push_back(std::to_string(e.incline));
+		v.push_back(std::to_string(e.min_expansion));
+		v.push_back(std::to_string(e.max_expansion));
+		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<Object> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back(std::to_string(e.zoneid));
+			v.push_back(std::to_string(e.xpos));
+			v.push_back(std::to_string(e.ypos));
+			v.push_back(std::to_string(e.zpos));
+			v.push_back(std::to_string(e.heading));
+			v.push_back(std::to_string(e.itemid));
+			v.push_back(std::to_string(e.charges));
+			v.push_back("'" + Strings::Escape(e.objectname) + "'");
+			v.push_back(std::to_string(e.type));
+			v.push_back(std::to_string(e.icon));
+			v.push_back(std::to_string(e.size));
+			v.push_back(std::to_string(e.solid));
+			v.push_back(std::to_string(e.incline));
+			v.push_back(std::to_string(e.min_expansion));
+			v.push_back(std::to_string(e.max_expansion));
+			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
+			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_OBJECT_REPOSITORY_H

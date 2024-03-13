@@ -51,7 +51,7 @@ extern Zone* zone;
 bool Mob::AttackAnimation(EQ::skills::SkillType &skillinuse, int Hand, const EQ::ItemInstance* weapon)
 {
 	// Determine animation
-	Animation type = Animation::None;
+	DoAnimation type = DoAnimation::None;
 	if (weapon && weapon->IsType(EQ::item::ItemClassCommon)) {
 		const EQ::ItemData* item = weapon->GetItem();
 
@@ -62,49 +62,49 @@ bool Mob::AttackAnimation(EQ::skills::SkillType &skillinuse, int Hand, const EQ:
 			case EQ::item::ItemType1HSlash: // 1H Slashing
 			{
 				skillinuse = EQ::skills::Skill1HSlashing;
-				type = Animation::Weapon1H;
+				type = DoAnimation::Weapon1H;
 				break;
 			}
 			case EQ::item::ItemType2HSlash: // 2H Slashing
 			{
 				skillinuse = EQ::skills::Skill2HSlashing;
-				type = Animation::Slashing2H;
+				type = DoAnimation::Slashing2H;
 				break;
 			}
 			case EQ::item::ItemType1HPiercing: // Piercing
 			{
 				skillinuse = EQ::skills::Skill1HPiercing;
-				type = Animation::Piercing;
+				type = DoAnimation::Piercing;
 				break;
 			}
 			case EQ::item::ItemType1HBlunt: // 1H Blunt
 			{
 				skillinuse = EQ::skills::Skill1HBlunt;
-				type = Animation::Weapon1H;
+				type = DoAnimation::Weapon1H;
 				break;
 			}
 			case EQ::item::ItemType2HBlunt: // 2H Blunt
 			{
 				skillinuse = EQ::skills::Skill2HBlunt;
-				type = Animation::Weapon2H; //anim2HWeapon
+				type = DoAnimation::Weapon2H; //anim2HWeapon
               	break;
 			}
 			case EQ::item::ItemType2HPiercing: // 2H Piercing
 			{
 				skillinuse = EQ::skills::Skill1HPiercing; // change to Skill2HPiercing once activated
-				type = Animation::Weapon2H;
+				type = DoAnimation::Weapon2H;
 				break;
 			}
 			case EQ::item::ItemTypeMartial:
 			{
 				skillinuse = EQ::skills::SkillHandtoHand;
-				type = Animation::Hand2Hand;
+				type = DoAnimation::Hand2Hand;
 				break;
 			}
 			default:
 			{
 				skillinuse = EQ::skills::SkillHandtoHand;
-				type = Animation::Hand2Hand;
+				type = DoAnimation::Hand2Hand;
 				break;
 			}
 		}// switch
@@ -115,49 +115,49 @@ bool Mob::AttackAnimation(EQ::skills::SkillType &skillinuse, int Hand, const EQ:
 		{
 			case EQ::skills::Skill1HSlashing: // 1H Slashing
 			{
-				type = Animation::Weapon1H;
+				type = DoAnimation::Weapon1H;
 				break;
 			}
 			case EQ::skills::Skill2HSlashing: // 2H Slashing
 			{
-				type = Animation::Slashing2H;
+				type = DoAnimation::Slashing2H;
 				break;
 			}
 			case EQ::skills::Skill1HPiercing: // Piercing
 			{
-				type = Animation::Piercing;
+				type = DoAnimation::Piercing;
 				break;
 			}
 			case EQ::skills::Skill1HBlunt: // 1H Blunt
 			{
-				type = Animation::Weapon1H;
+				type = DoAnimation::Weapon1H;
 				break;
 			}
 			case EQ::skills::Skill2HBlunt: // 2H Blunt
 			{
-				type = Animation::Weapon2H;
+				type = DoAnimation::Weapon2H;
 				break;
 			}
 			case EQ::skills::SkillHandtoHand:
 			{
-				type = Animation::Hand2Hand;
+				type = DoAnimation::Hand2Hand;
 				break;
 			}
 			default:
 			{
-				type = Animation::Hand2Hand;
+				type = DoAnimation::Hand2Hand;
 				break;
 			}
 		}// switch
 	}
 	else {
 		skillinuse = EQ::skills::SkillHandtoHand;
-		type = Animation::Hand2Hand;
+		type = DoAnimation::Hand2Hand;
 	}
 
 	// If we're attacking with the secondary hand, play the dual wield anim
 	if (Hand == EQ::invslot::slotSecondary)	// DW anim
-		type = Animation::DualWield;
+		type = DoAnimation::DualWield;
 
 	DoAnim(type, 0, false);
 
@@ -3966,7 +3966,7 @@ void Mob::CommonBreakInvisible(bool skip_sneakhide)
 		// we want to make the client uninvis before we ask them to fade the buff slot, 
 		// otherwise the client will ask us to make it uninvis again by sending its own appearance packet to the server
 		// not calling SetInvisible so that we don't yet clear the invisible flags that are checked below
-		SendAppearancePacket(AT_Invis, 0, true, false);
+		SendAppearancePacket(AppearanceType::Invisibility, 0, true, false);
 
 		//break invis when you attack
 		if(invisible) 
@@ -4020,13 +4020,13 @@ void Mob::CommonBreakSneakHide(bool bug_sneak, bool skip_sneak)
 		// AK sometimes updated sneak server side, without sending the client a packet causing a desync. It never happened while hidden.
 		if (bug_sneak && !was_hidden)
 		{
-			SendAppearancePacket(AT_Sneak, 0, true, true);
+			SendAppearancePacket(AppearanceType::Sneak, 0, true, true);
 			Log(Logs::General, Logs::Skills, "Common break setting sneak to 0. Skipping self update...");
 			return;
 		}
 		else
 		{
-			SendAppearancePacket(AT_Sneak, 0);
+			SendAppearancePacket(AppearanceType::Sneak, 0);
 		}
 	}
 

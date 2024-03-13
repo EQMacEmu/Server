@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_SPAWNGROUP_REPOSITORY_H
@@ -15,7 +15,6 @@
 #include "../../database.h"
 #include "../../strings.h"
 #include <ctime>
-
 
 class BaseSpawngroupRepository {
 public:
@@ -176,22 +175,22 @@ public:
 		if (results.RowCount() == 1) {
 			Spawngroup e{};
 
-			e.id               = static_cast<int32_t>(atoi(row[0]));
+			e.id               = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name             = row[1] ? row[1] : "";
-			e.spawn_limit      = static_cast<int8_t>(atoi(row[2]));
-			e.max_x            = strtof(row[3], nullptr);
-			e.min_x            = strtof(row[4], nullptr);
-			e.max_y            = strtof(row[5], nullptr);
-			e.min_y            = strtof(row[6], nullptr);
-			e.delay            = static_cast<int32_t>(atoi(row[7]));
-			e.mindelay         = static_cast<int32_t>(atoi(row[8]));
-			e.despawn          = static_cast<int8_t>(atoi(row[9]));
-			e.despawn_timer    = static_cast<int32_t>(atoi(row[10]));
-			e.rand_spawns      = static_cast<int32_t>(atoi(row[11]));
-			e.rand_respawntime = static_cast<int32_t>(atoi(row[12]));
-			e.rand_variance    = static_cast<int32_t>(atoi(row[13]));
-			e.rand_condition_  = static_cast<int32_t>(atoi(row[14]));
-			e.wp_spawns        = static_cast<uint8_t>(strtoul(row[15], nullptr, 10));
+			e.spawn_limit      = row[2] ? static_cast<int8_t>(atoi(row[2])) : 0;
+			e.max_x            = row[3] ? strtof(row[3], nullptr) : 0;
+			e.min_x            = row[4] ? strtof(row[4], nullptr) : 0;
+			e.max_y            = row[5] ? strtof(row[5], nullptr) : 0;
+			e.min_y            = row[6] ? strtof(row[6], nullptr) : 0;
+			e.delay            = row[7] ? static_cast<int32_t>(atoi(row[7])) : 45000;
+			e.mindelay         = row[8] ? static_cast<int32_t>(atoi(row[8])) : 15000;
+			e.despawn          = row[9] ? static_cast<int8_t>(atoi(row[9])) : 0;
+			e.despawn_timer    = row[10] ? static_cast<int32_t>(atoi(row[10])) : 100;
+			e.rand_spawns      = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.rand_respawntime = row[12] ? static_cast<int32_t>(atoi(row[12])) : 1200;
+			e.rand_variance    = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.rand_condition_  = row[14] ? static_cast<int32_t>(atoi(row[14])) : 0;
+			e.wp_spawns        = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
 
 			return e;
 		}
@@ -355,22 +354,22 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Spawngroup e{};
 
-			e.id               = static_cast<int32_t>(atoi(row[0]));
+			e.id               = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name             = row[1] ? row[1] : "";
-			e.spawn_limit      = static_cast<int8_t>(atoi(row[2]));
-			e.max_x            = strtof(row[3], nullptr);
-			e.min_x            = strtof(row[4], nullptr);
-			e.max_y            = strtof(row[5], nullptr);
-			e.min_y            = strtof(row[6], nullptr);
-			e.delay            = static_cast<int32_t>(atoi(row[7]));
-			e.mindelay         = static_cast<int32_t>(atoi(row[8]));
-			e.despawn          = static_cast<int8_t>(atoi(row[9]));
-			e.despawn_timer    = static_cast<int32_t>(atoi(row[10]));
-			e.rand_spawns      = static_cast<int32_t>(atoi(row[11]));
-			e.rand_respawntime = static_cast<int32_t>(atoi(row[12]));
-			e.rand_variance    = static_cast<int32_t>(atoi(row[13]));
-			e.rand_condition_  = static_cast<int32_t>(atoi(row[14]));
-			e.wp_spawns        = static_cast<uint8_t>(strtoul(row[15], nullptr, 10));
+			e.spawn_limit      = row[2] ? static_cast<int8_t>(atoi(row[2])) : 0;
+			e.max_x            = row[3] ? strtof(row[3], nullptr) : 0;
+			e.min_x            = row[4] ? strtof(row[4], nullptr) : 0;
+			e.max_y            = row[5] ? strtof(row[5], nullptr) : 0;
+			e.min_y            = row[6] ? strtof(row[6], nullptr) : 0;
+			e.delay            = row[7] ? static_cast<int32_t>(atoi(row[7])) : 45000;
+			e.mindelay         = row[8] ? static_cast<int32_t>(atoi(row[8])) : 15000;
+			e.despawn          = row[9] ? static_cast<int8_t>(atoi(row[9])) : 0;
+			e.despawn_timer    = row[10] ? static_cast<int32_t>(atoi(row[10])) : 100;
+			e.rand_spawns      = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.rand_respawntime = row[12] ? static_cast<int32_t>(atoi(row[12])) : 1200;
+			e.rand_variance    = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.rand_condition_  = row[14] ? static_cast<int32_t>(atoi(row[14])) : 0;
+			e.wp_spawns        = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -395,22 +394,22 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			Spawngroup e{};
 
-			e.id               = static_cast<int32_t>(atoi(row[0]));
+			e.id               = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name             = row[1] ? row[1] : "";
-			e.spawn_limit      = static_cast<int8_t>(atoi(row[2]));
-			e.max_x            = strtof(row[3], nullptr);
-			e.min_x            = strtof(row[4], nullptr);
-			e.max_y            = strtof(row[5], nullptr);
-			e.min_y            = strtof(row[6], nullptr);
-			e.delay            = static_cast<int32_t>(atoi(row[7]));
-			e.mindelay         = static_cast<int32_t>(atoi(row[8]));
-			e.despawn          = static_cast<int8_t>(atoi(row[9]));
-			e.despawn_timer    = static_cast<int32_t>(atoi(row[10]));
-			e.rand_spawns      = static_cast<int32_t>(atoi(row[11]));
-			e.rand_respawntime = static_cast<int32_t>(atoi(row[12]));
-			e.rand_variance    = static_cast<int32_t>(atoi(row[13]));
-			e.rand_condition_  = static_cast<int32_t>(atoi(row[14]));
-			e.wp_spawns        = static_cast<uint8_t>(strtoul(row[15], nullptr, 10));
+			e.spawn_limit      = row[2] ? static_cast<int8_t>(atoi(row[2])) : 0;
+			e.max_x            = row[3] ? strtof(row[3], nullptr) : 0;
+			e.min_x            = row[4] ? strtof(row[4], nullptr) : 0;
+			e.max_y            = row[5] ? strtof(row[5], nullptr) : 0;
+			e.min_y            = row[6] ? strtof(row[6], nullptr) : 0;
+			e.delay            = row[7] ? static_cast<int32_t>(atoi(row[7])) : 45000;
+			e.mindelay         = row[8] ? static_cast<int32_t>(atoi(row[8])) : 15000;
+			e.despawn          = row[9] ? static_cast<int8_t>(atoi(row[9])) : 0;
+			e.despawn_timer    = row[10] ? static_cast<int32_t>(atoi(row[10])) : 100;
+			e.rand_spawns      = row[11] ? static_cast<int32_t>(atoi(row[11])) : 0;
+			e.rand_respawntime = row[12] ? static_cast<int32_t>(atoi(row[12])) : 1200;
+			e.rand_variance    = row[13] ? static_cast<int32_t>(atoi(row[13])) : 0;
+			e.rand_condition_  = row[14] ? static_cast<int32_t>(atoi(row[14])) : 0;
+			e.wp_spawns        = row[15] ? static_cast<uint8_t>(strtoul(row[15], nullptr, 10)) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -469,6 +468,92 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const Spawngroup &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.spawn_limit));
+		v.push_back(std::to_string(e.max_x));
+		v.push_back(std::to_string(e.min_x));
+		v.push_back(std::to_string(e.max_y));
+		v.push_back(std::to_string(e.min_y));
+		v.push_back(std::to_string(e.delay));
+		v.push_back(std::to_string(e.mindelay));
+		v.push_back(std::to_string(e.despawn));
+		v.push_back(std::to_string(e.despawn_timer));
+		v.push_back(std::to_string(e.rand_spawns));
+		v.push_back(std::to_string(e.rand_respawntime));
+		v.push_back(std::to_string(e.rand_variance));
+		v.push_back(std::to_string(e.rand_condition_));
+		v.push_back(std::to_string(e.wp_spawns));
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<Spawngroup> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.spawn_limit));
+			v.push_back(std::to_string(e.max_x));
+			v.push_back(std::to_string(e.min_x));
+			v.push_back(std::to_string(e.max_y));
+			v.push_back(std::to_string(e.min_y));
+			v.push_back(std::to_string(e.delay));
+			v.push_back(std::to_string(e.mindelay));
+			v.push_back(std::to_string(e.despawn));
+			v.push_back(std::to_string(e.despawn_timer));
+			v.push_back(std::to_string(e.rand_spawns));
+			v.push_back(std::to_string(e.rand_respawntime));
+			v.push_back(std::to_string(e.rand_variance));
+			v.push_back(std::to_string(e.rand_condition_));
+			v.push_back(std::to_string(e.wp_spawns));
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_SPAWNGROUP_REPOSITORY_H

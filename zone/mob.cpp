@@ -253,6 +253,7 @@ Mob::Mob(const char* in_name,
 	qglobal=0;
 	spawnpacket_sent = false;
 	spawned = false;
+	rare_spawn = false;
 
 	InitializeBuffSlots();
 
@@ -441,25 +442,25 @@ uint32 Mob::GetAppearanceValue(EmuAppearance iAppearance) {
 	switch (iAppearance) {
 		// 0 standing, 1 sitting, 2 ducking, 3 lieing down, 4 looting
 		case eaStanding: {
-			return ANIM_STAND;
+			return Animation::Standing;
 		}
 		case eaSitting: {
-			return ANIM_SIT;
+			return Animation::Sitting;
 		}
 		case eaCrouching: {
-			return ANIM_CROUCH;
+			return Animation::Crouching;
 		}
 		case eaDead: {
-			return ANIM_DEATH;
+			return Animation::Lying;
 		}
 		case eaLooting: {
-			return ANIM_LOOT;
+			return Animation::Looting;
 		}
 		//to shup up compiler:
 		case _eaMaxAppearance:
 			break;
 	}
-	return(ANIM_STAND);
+	return(Animation::Standing);
 }
 
 void Mob::SetInvisible(uint8 state, bool showInvis, bool skipSelf)
@@ -477,7 +478,7 @@ void Mob::SetInvisible(uint8 state, bool showInvis, bool skipSelf)
 
 	if(showInvis) 
 	{
-		SendAppearancePacket(AT_Invis, state, true, skipSelf);
+		SendAppearancePacket(AppearanceType::Invisibility, state, true, skipSelf);
 	}
 
 	// Invis and hide breaks charms
@@ -1367,7 +1368,7 @@ void Mob::ShowStats(Client* client)
 	}
 }
 
-void Mob::DoAnim(Animation animnum, int type, bool ackreq, eqFilterType filter) {
+void Mob::DoAnim(DoAnimation animnum, int type, bool ackreq, eqFilterType filter) {
 
 	auto outapp = new EQApplicationPacket(OP_Animation, sizeof(Animation_Struct));
 	Animation_Struct* anim = (Animation_Struct*)outapp->pBuffer;
@@ -1685,11 +1686,11 @@ void Mob::SetAppearance(EmuAppearance app, bool iIgnoreSelf)
 	if (_appearance != app) 
 	{
 		_appearance = app;
-		SendAppearancePacket(AT_Anim, GetAppearanceValue(app), true, iIgnoreSelf);
+		SendAppearancePacket(AppearanceType::Animation, GetAppearanceValue(app), true, iIgnoreSelf);
 		if (this->IsClient() && this->IsAIControlled())
 		{
 			if(!CastToClient()->has_zomm)
-				SendAppearancePacket(AT_Anim, ANIM_FREEZE, false, false);
+				SendAppearancePacket(AppearanceType::Animation, Animation::Freeze, false, false);
 		}
 	}
 }
@@ -1745,7 +1746,7 @@ void Mob::ChangeSize(float in_size = 0, bool bNoRestriction) {
 			CastToNPC()->SetGuardSpot(guard_spot.x,guard_spot.y,guard_spot.z,guard_spot.w);
 		}
 	}
-	SendAppearancePacket(AT_Size, (uint32)newsize);
+	SendAppearancePacket(AppearanceType::Size, (uint32)newsize);
 }
 
 Mob* Mob::GetOwnerOrSelf() {
@@ -2495,6 +2496,65 @@ const char *Mob::GetCleanOwnerName()
 	return clean_name_spaces;
 }
 
+std::string Mob::GetTargetDescription(Mob *target, uint8 description_type, uint16 entity_id_override)
+{
+	std::string self_return = "yourself";
+
+	switch (description_type)
+	{
+	case TargetDescriptionType::LCSelf:
+	{
+		self_return = "yourself";
+		break;
+	}
+	case TargetDescriptionType::UCSelf:
+	{
+		self_return = "Yourself";
+		break;
+	}
+	case TargetDescriptionType::LCYou:
+	{
+		self_return = "you";
+		break;
+	}
+	case TargetDescriptionType::UCYou:
+	{
+		self_return = "You";
+		break;
+	}
+	case TargetDescriptionType::LCYour:
+	{
+		self_return = "your";
+		break;
+	}
+	case TargetDescriptionType::UCYour:
+	{
+		self_return = "Your";
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+
+	auto d = fmt::format(
+		"{}",
+		(
+			target && this == target ?
+			self_return :
+			fmt::format(
+				"{} ({})",
+				target->GetCleanName(),
+				entity_id_override ? entity_id_override : target->GetID()
+			)
+			)
+	);
+
+	return d;
+}
+
 // hp event
 void Mob::SetNextHPEvent( int hpevent )
 {
@@ -2807,11 +2867,11 @@ void Mob::SetFlyMode(uint8 flymode)
 {
 	if(IsClient() && flymode >= 0 && flymode < 3)
 	{
-		this->SendAppearancePacket(AT_Levitate, flymode);
+		this->SendAppearancePacket(AppearanceType::FlyMode, flymode);
 	}
 	else if(IsNPC() && flymode >= 0 && flymode <= 3)
 	{
-		this->SendAppearancePacket(AT_Levitate, flymode);
+		this->SendAppearancePacket(AppearanceType::FlyMode, flymode);
 		this->CastToNPC()->SetFlyMode(flymode);
 	}
 }

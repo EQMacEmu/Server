@@ -31,7 +31,7 @@
 extern WorldServer worldserver;
 
 // set minDamage to DMG_INVUL if target is immune
-int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int base, int minDamage, int hate, Animation animation_type)
+int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int base, int minDamage, int hate, DoAnimation animation_type)
 {
 	if (!defender)
 		return 0;
@@ -84,7 +84,7 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 			TryCriticalHit(defender, skill, damage);
 	}
 
-	if (animation_type != Animation::None) {
+	if (animation_type != DoAnimation::None) {
 		DoAnim(animation_type, 0, false);
 	}
 
@@ -250,7 +250,7 @@ void Mob::DoBash(Mob* defender)
 	if (defender->IsImmuneToMelee(this, shieldBash? EQ::invslot::slotSecondary : EQ::invslot::slotPrimary))
 		minDmg = DMG_INVUL;
 
-	DoSpecialAttackDamage(defender, EQ::skills::SkillBash, base, minDmg, hate, Animation::Slam);
+	DoSpecialAttackDamage(defender, EQ::skills::SkillBash, base, minDmg, hate, DoAnimation::Slam);
 }
 
 void Mob::DoKick(Mob* defender)
@@ -267,7 +267,7 @@ void Mob::DoKick(Mob* defender)
 	int minDmg = 1;
 	if (defender->IsImmuneToMelee(this, EQ::invslot::slotFeet))
 		minDmg = DMG_INVUL;
-	DoSpecialAttackDamage(defender, EQ::skills::SkillKick, base, minDmg, 0, Animation::Kick);
+	DoSpecialAttackDamage(defender, EQ::skills::SkillKick, base, minDmg, 0, DoAnimation::Kick);
 }
 
 void NPC::DoBackstab(Mob* defender)
@@ -316,7 +316,7 @@ void NPC::DoBackstab(Mob* defender)
 	else
 		minHit = GetLevel() + db;
 
-	DoSpecialAttackDamage(defender, EQ::skills::SkillBackstab, base, minHit, Animation::Piercing);
+	DoSpecialAttackDamage(defender, EQ::skills::SkillBackstab, base, minHit, DoAnimation::Piercing);
 }
 
 void Client::DoBackstab(Mob* defender)
@@ -386,7 +386,7 @@ void Client::DoBackstab(Mob* defender)
 	for (int i = 0; i < stabs; i++)
 	{
 		if (defender->GetHP() > 0 && GetTarget() && !HasDied())
-			DoSpecialAttackDamage(defender, EQ::skills::SkillBackstab, baseDamage, minHit, hate, Animation::Piercing);
+			DoSpecialAttackDamage(defender, EQ::skills::SkillBackstab, baseDamage, minHit, hate, DoAnimation::Piercing);
 	}
 
 	if (defender->GetHP() > 0 && GetTarget() && !HasDied())
@@ -532,14 +532,14 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 	int min_dmg = 1;
 	EQ::skills::SkillType skill_type;	//to avoid casting... even though it "would work"
 	int itemslot = EQ::invslot::slotFeet;
-	Animation anim_type = Animation::None;
+	DoAnimation anim_type = DoAnimation::None;
 	switch(unchecked_type)
 	{
 		case EQ::skills::SkillFlyingKick:
 		{
 			skill_type = EQ::skills::SkillFlyingKick;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillFlyingKick, GetSkill(EQ::skills::SkillFlyingKick));
-			anim_type = Animation::FlyingKick;
+			anim_type = DoAnimation::FlyingKick;
 			reuse = FlyingKickReuseTime;
 			min_dmg = GetLevel() * 4 / 5;
 			break;
@@ -549,7 +549,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 			skill_type = EQ::skills::SkillDragonPunch;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillDragonPunch, GetSkill(EQ::skills::SkillDragonPunch));
 			itemslot = EQ::invslot::slotHands;
-			anim_type = Animation::Slam;
+			anim_type = DoAnimation::Slam;
 			reuse = TailRakeReuseTime;
 			break;
 		}
@@ -558,7 +558,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 			skill_type = EQ::skills::SkillEagleStrike;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillEagleStrike, GetSkill(EQ::skills::SkillEagleStrike));
 			itemslot = EQ::invslot::slotHands;
-			anim_type = Animation::EagleStrike;
+			anim_type = DoAnimation::EagleStrike;
 			reuse = EagleStrikeReuseTime;
 			break;
 		}
@@ -568,7 +568,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 			skill_type = EQ::skills::SkillTigerClaw;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillTigerClaw, GetSkill(EQ::skills::SkillTigerClaw));
 			itemslot = EQ::invslot::slotHands;
-			anim_type = Animation::TigerClaw;
+			anim_type = DoAnimation::TigerClaw;
 			reuse = TigerClawReuseTime;
 			break;
 		}
@@ -577,7 +577,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 		{
 			skill_type = EQ::skills::SkillRoundKick;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillRoundKick, GetSkill(EQ::skills::SkillRoundKick));
-			anim_type = Animation::RoundKick;
+			anim_type = DoAnimation::RoundKick;
 			reuse = RoundKickReuseTime;
 			break;
 		}
@@ -586,7 +586,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 		{
 			skill_type = EQ::skills::SkillKick;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillKick, GetSkill(EQ::skills::SkillKick));
-			anim_type = Animation::Kick;
+			anim_type = DoAnimation::Kick;
 			reuse = KickReuseTime;
 			break;
 		}
@@ -1728,7 +1728,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 			int minDmg = 1;
 			if (instillTarget->IsImmuneToMelee(this, EQ::invslot::slotFeet))
 				minDmg = DMG_INVUL;
-			int dmgDone = DoSpecialAttackDamage(instillTarget, EQ::skills::SkillIntimidation, base, minDmg, 0, Animation::None);
+			int dmgDone = DoSpecialAttackDamage(instillTarget, EQ::skills::SkillIntimidation, base, minDmg, 0, DoAnimation::None);
 
 			// the fear doesn't happen unless the kick dealt damage
 			if(dmgDone > 0)

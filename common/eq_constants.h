@@ -27,44 +27,43 @@
 
 #define MAX_GROUP_MEMBERS 6
 
-//SpawnAppearance types:
-#define AT_Die			0	// this causes the client to keel over and zone to bind point
-#define AT_WhoLevel		1	// the level that shows up on /who
-#define AT_MaxHP		2	// sets entity max hitpoints value
-#define AT_Invis		3	// 0 = visible, 1 = invisible
-#define AT_PVP			4	// 0 = blue, 1 = pvp (red)
-#define AT_Light		5	// light type emitted by player (lightstone, shiny shield)
-#define AT_Anim			14	// 100=standing, 110=sitting, 111=ducking, 115=feigned, 105=looting
-#define AT_Sneak		15	// 0 = normal, 1 = sneaking
-#define AT_SpawnID		16	// server to client, sets player spawn id
-#define AT_HP			17	// Client->Server, my HP has changed (like regen tic)
-#define AT_Linkdead		18	// 0 = normal, 1 = linkdead
-#define AT_Levitate		19	// 0=off, 1=flymode, 2=levitate
-#define AT_GM			20	// 0 = normal, 1 = GM - all odd numbers seem to make it GM
-#define AT_Anon			21	// 0 = normal, 1 = anon, 2 = roleplay
-#define AT_GuildID		22
-#define AT_GuildRank	23	// 0=member, 1=officer, 2=leader
-#define AT_AFK			24	// 0 = normal, 1 = afk
-#define AT_Pet			25	// Param is EntityID of owner, or 0 for when charm breaks
-#define AT_SummonedPC	27	// corresponds to field summoned_pc in Spawn_Struct
-#define AT_Split		28	// 0 = normal, 1 = autosplit on
-#define AT_Size			29	// spawn's size
-#define AT_NPC			30	// make the entity an NPC
-#define AT_NPCName		31	// change PC's name's color to NPC color 0 = normal, 1 = npc name
-#define AT_DamageState	44	// The damage state of a destructible object (0 through 4)
-//#define AT_Trader		300	// Bazzar Trader Mode
+namespace AppearanceType {
+	constexpr uint32 Die          = 0; // Causes the client to keel over and zone to bind point (default action)
+	constexpr uint32 WhoLevel     = 1; // Level that shows up on /who
+	constexpr uint32 MaxHealth    = 2;
+	constexpr uint32 Invisibility = 3; // 0 = Visible, 1 = Invisible
+	constexpr uint32 PVP          = 4; // 0 = Non-PVP, 1 = PVP
+	constexpr uint32 Light        = 5; // Light type emitted by player (lightstone, shiny shield)
+	constexpr uint32 Animation    = 14; // 100 = Standing, 102 = Freeze, 105 = Looting, 110 = Sitting, 111 = Crouching, 115 = Lying
+	constexpr uint32 Sneak        = 15; // 0 = Normal, 1 = Sneaking
+	constexpr uint32 SpawnID      = 16; // Server -> Client, sets player spawn ID
+	constexpr uint32 Health       = 17; // Client->Server, my HP has changed (like regen tic)
+	constexpr uint32 Linkdead     = 18; // 0 = Normal, 1 = Linkdead
+	constexpr uint32 FlyMode      = 19; // 0 = Off, 1 = Flying, 2 = Levitating, 3 = Water, 4 = Floating, 5 = Levitating while Running
+	constexpr uint32 GM           = 20; // 0 = Non-GM, 1 = GM
+	constexpr uint32 Anonymous    = 21; // 0 = Non-Anonymous, 1 = Anonymous, 2 = Roleplaying
+	constexpr uint32 GuildID      = 22;
+	constexpr uint32 GuildRank    = 23;
+	constexpr uint32 AFK          = 24; // 0 = Non-AFK, 1 = AFK
+	constexpr uint32 Pet          = 25; // Parameter is Entity ID of owner, or 0 for when charm breaks
+	constexpr uint32 Summoned     = 27;
+	constexpr uint32 Split        = 28; // 0 = No Split, 1 = uint32 Split
+	constexpr uint32 Size         = 29; // Spawn's Size
+	constexpr uint32 SetType      = 30; // 0 = PC, 1 = NPC, 2 = Corpse
+	constexpr uint32 NPCName      = 31; // Change PC name color to NPC name color
+	constexpr uint32 DamageState  = 44; // The damage state of a destructible object (0 through 10) plays sound IDs, most only have 2 or 4 states though
+}
 
-// solar: animations for AT_Anim
-enum AnimTypePositionEnum : int
-{
-	ANIM_STAND = 100,
-	ANIM_FREEZE = 102,
-	ANIM_LOOT = 105,
-	ANIM_SIT = 110,
-	ANIM_CROUCH = 111,
-	ANIM_DEATH = 115,
-	ANIM_CORPSE = 120
-};
+// solar: Animations for AnimationType:Animation
+namespace Animation {
+	constexpr uint32 Standing  = 100;
+	constexpr uint32 Freeze    = 102;
+	constexpr uint32 Looting   = 105;
+	constexpr uint32 Sitting   = 110;
+	constexpr uint32 Crouching = 111;
+	constexpr uint32 Lying     = 115;
+	constexpr uint32 Corpse    = 120;
+}
 
 typedef enum EmuAppearance {
 	eaStanding = 0,

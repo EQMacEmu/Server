@@ -155,25 +155,25 @@ void Lua_Mob::SetHP(int hp) {
 
 void Lua_Mob::DoAnim(int anim_num) {
 	Lua_Safe_Call_Void();
-	Animation animation = static_cast<Animation>(anim_num);
+	DoAnimation animation = static_cast<DoAnimation>(anim_num);
 	self->DoAnim(animation);
 }
 
 void Lua_Mob::DoAnim(int anim_num, int type) {
 	Lua_Safe_Call_Void();
-	Animation animation = static_cast<Animation>(anim_num);
+	DoAnimation animation = static_cast<DoAnimation>(anim_num);
 	self->DoAnim(animation, type);
 }
 
 void Lua_Mob::DoAnim(int anim_num, int type, bool ackreq) {
 	Lua_Safe_Call_Void();
-	Animation animation = static_cast<Animation>(anim_num);
+	DoAnimation animation = static_cast<DoAnimation>(anim_num);
 	self->DoAnim(animation, type, ackreq);
 }
 
 void Lua_Mob::DoAnim(int anim_num, int type, bool ackreq, int filter) {
 	Lua_Safe_Call_Void();
-	Animation animation = static_cast<Animation>(anim_num);
+	DoAnimation animation = static_cast<DoAnimation>(anim_num);
 	self->DoAnim(animation, type, ackreq, static_cast<eqFilterType>(filter));
 }
 
@@ -1138,7 +1138,7 @@ void Lua_Mob::DoSpecialAttackDamage(Lua_Mob other, int skill, int base_damage, i
 
 void Lua_Mob::DoSpecialAttackDamage(Lua_Mob other, int skill, int base_damage, int min_damage, int hate_override, int animation) {
 	Lua_Safe_Call_Void();
-	self->DoSpecialAttackDamage(other, static_cast<EQ::skills::SkillType>(skill), base_damage, min_damage, hate_override, static_cast<Animation>(animation));
+	self->DoSpecialAttackDamage(other, static_cast<EQ::skills::SkillType>(skill), base_damage, min_damage, hate_override, static_cast<DoAnimation>(animation));
 }
 
 bool Lua_Mob::CheckLoS(Lua_Mob other) {

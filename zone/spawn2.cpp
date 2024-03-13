@@ -280,6 +280,9 @@ bool Spawn2::Process() {
 
 		npcthis = npc;
 		npc->AddLootTable();
+		if (npc->DropsGlobalLoot()) {
+			npc->CheckGlobalLootTables();
+		}
 		npc->SetSp2(spawngroup_id_);
 		npc->SaveGuardPointAnim(anim);
 		npc->SetAppearance((EmuAppearance)anim);

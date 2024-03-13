@@ -162,7 +162,7 @@ public:
 	virtual void DoKick(Mob* defender = nullptr);
 	virtual void DoBackstab(Mob* defender = nullptr) {}
 	int DoMonkSpecialAttack(Mob* other, uint8 skill_used, bool fromWus = false);
-	int DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int base, int minDamage = 0, int hate = 0, Animation animation_type = Animation::None);
+	int DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int base, int minDamage = 0, int hate = 0, DoAnimation animation_type = DoAnimation::None);
 	virtual bool AvoidDamage(Mob* attacker, int32 &damage, bool noRiposte = false, bool isRangedAttack = false);
 	virtual bool AvoidanceCheck(Mob* attacker, EQ::skills::SkillType skillinuse);
 	virtual void TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBase = 0, int32 damageBonus = 0);
@@ -187,7 +187,7 @@ public:
 	//Appearance
 	virtual void SendWearChange(uint8 material_slot, Client* sendto = nullptr, bool skip_if_zero = false, bool update_textures = false, bool illusioned = false);
 	virtual void WearChange(uint8 material_slot, uint16 texture, uint32 color, Client* sendto = nullptr);
-	void DoAnim(Animation animnum, int type = 0, bool ackreq = false, eqFilterType filter = FilterNone);
+	void DoAnim(DoAnimation animnum, int type = 0, bool ackreq = false, eqFilterType filter = FilterNone);
 	void ProjectileAnimation(Mob* to, int item_id, bool IsItem = false, float speed = 0,
 		float angle = 0, float tilt = 0, float arc = 0, EQ::skills::SkillType skillInUse = EQ::skills::Skill1HBlunt);
 	void ChangeSize(float in_size, bool bNoRestriction = false);
@@ -374,6 +374,7 @@ public:
 	virtual void SetName(const char *new_name = nullptr) { new_name ? strn0cpy(name, new_name, 64) :
 		strn0cpy(name, GetName(), 64); return; };
 	inline Mob* GetTarget() const { return target; }
+	std::string GetTargetDescription(Mob *target, uint8 description_type = TargetDescriptionType::LCSelf, uint16 entity_id_override = 0);
 	virtual void SetTarget(Mob* mob);
 	virtual inline float GetHPRatio() const { return max_hp == 0 ? 0.0f : ((float)cur_hp/max_hp*100.0f); }
 	inline virtual int32 GetAC() const { return AC; }											// returns database AC value
@@ -581,6 +582,8 @@ public:
 	void SetFollowDistance(uint32 dist) { follow_dist = dist; }
 	uint32 GetFollowID() const { return follow; }
 	uint32 GetFollowDistance() const { return follow_dist; }
+	inline bool IsRareSpawn() const { return rare_spawn; }
+	inline void SetRareSpawn(bool in) { rare_spawn = in; }
 
 	virtual void Message(uint32 type, const char* message, ...) { }
 	virtual void Message_StringID(uint32 type, uint32 string_id, uint32 distance = 0) { }
@@ -1047,6 +1050,7 @@ protected:
 	int16 petfocusItemId;
 	uint32 follow;
 	uint32 follow_dist;
+	bool rare_spawn;
 	bool dire_charmed;
 	bool feared;
 	int16 bonusAvoidance;	// needed for NPCs but putting this in Mob class in case we put back in Ykesha era stats

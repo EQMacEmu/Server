@@ -276,8 +276,17 @@ int main(int argc, char** argv) {
 
 	LogInfo("Loading guilds..");
 	guild_mgr.LoadGuilds();
+
 	//rules:
 	{
+		if (!RuleManager::Instance()->UpdateOrphanedRules(&database)) {
+			LogInfo("Failed to process 'Orphaned Rules' update operation.");
+		}
+
+		if (!RuleManager::Instance()->UpdateInjectedRules(&database, "default")) {
+			LogInfo("Failed to process 'Injected Rules' for ruleset 'default' update operation.");
+		}
+
 		std::string tmp;
 		if (database.GetVariable("RuleSet", tmp)) {
 			LogInfo("Loading rule set [{0}]", tmp.c_str());
@@ -291,7 +300,12 @@ int main(int argc, char** argv) {
 				LogInfo("Loaded default rule set 'default'", tmp.c_str());
 			}
 		}
+
+		if (!RuleManager::Instance()->RestoreRuleNotes(&database)) {
+			LogInfo("Failed to process 'Restore Rule Notes' update operation.");
+		}
 	}
+
 	if(RuleB(World, ClearTempMerchantlist)){
 		LogInfo("Clearing temporary merchant lists...");
 		database.ClearMerchantTemp();

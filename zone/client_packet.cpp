@@ -535,20 +535,20 @@ void Client::CompleteConnect()
 				{
 					if (!GetGM())
 					{
-						SendAppearancePacket(AT_Levitate, 0);
+						SendAppearancePacket(AppearanceType::FlyMode, 0);
 						BuffFadeByEffect(SE_Levitate);
 						Message(CC_Red, "You can't levitate in this zone.");
 					}
 				}
 				else{
-					SendAppearancePacket(AT_Levitate, 2);
+					SendAppearancePacket(AppearanceType::FlyMode, 2);
 				}
 				break;
 			}
 			case SE_InvisVsUndead:
 			{
 				if (!hidden && !improved_hidden) {
-					SendAppearancePacket(AT_Invis, 3);
+					SendAppearancePacket(AppearanceType::Invisibility, 3);
 				}
 				invisible_undead = true;
 				break;
@@ -556,7 +556,7 @@ void Client::CompleteConnect()
 			case SE_InvisVsAnimals:
 			{
 				if (!hidden && !improved_hidden) {
-					SendAppearancePacket(AT_Invis, 2);
+					SendAppearancePacket(AppearanceType::Invisibility, 2);
 				}
 				invisible_animals = true;
 				break;
@@ -600,7 +600,7 @@ void Client::CompleteConnect()
 	client_data_loaded = true;
 
 	UpdateActiveLight();
-	SendAppearancePacket(AT_Light, GetActiveLightType());
+	SendAppearancePacket(AppearanceType::Light, GetActiveLightType());
 
 	Mob *pet = GetPet();
 	if (pet != nullptr) {
@@ -609,7 +609,7 @@ void Client::CompleteConnect()
 		}
 		// added due to wear change above
 		pet->UpdateActiveLight();
-		pet->SendAppearancePacket(AT_Light, pet->GetActiveLightType());
+		pet->SendAppearancePacket(AppearanceType::Light, pet->GetActiveLightType());
 	}
 
 	if (ShowHelm())
@@ -860,7 +860,7 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 	// Spawn Appearance Packet
 	auto outapp = new EQApplicationPacket(OP_SpawnAppearance, sizeof(SpawnAppearance_Struct));
 	SpawnAppearance_Struct* sa = (SpawnAppearance_Struct*)outapp->pBuffer;
-	sa->type = AT_SpawnID;			// Is 0x10 used to set the player id?
+	sa->type = AppearanceType::SpawnID;			// Is 0x10 used to set the player id?
 	sa->parameter = GetID();	// Four bytes for this parameter...
 	outapp->priority = 6;
 	QueuePacket(outapp);
@@ -879,7 +879,7 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 
 	SetSpawned();
 	if (GetPVP())	//force a PVP update until we fix the spawn struct
-		SendAppearancePacket(AT_PVP, GetPVP(), true, false);
+		SendAppearancePacket(AppearanceType::PVP, GetPVP(), true, false);
 
 	//Send AA Exp packet:
 	if (GetLevel() >= 51)
@@ -1977,7 +1977,7 @@ void Client::Handle_OP_Animation(const EQApplicationPacket *app)
 	Animation_Struct *s = (Animation_Struct *)app->pBuffer;
 
 	//might verify spawn ID, but it wouldent affect anything
-	Animation action = static_cast<Animation>(s->action);
+	DoAnimation action = static_cast<DoAnimation>(s->action);
 	DoAnim(action, s->value);
 
 	return;
@@ -4061,7 +4061,7 @@ void Client::Handle_OP_GMBecomeNPC(const EQApplicationPacket *app)
 			target->SetGM(false);
 		}
 
-		cli->SendAppearancePacket(AT_NPCName, 1, true);
+		cli->SendAppearancePacket(AppearanceType::NPCName, 1, true);
 		target->SetBecomeNPC(true);
 		target->SetBecomeNPCLevel(bnpc->maxlevel);
 		cli->Message_StringID(CC_Default, TOGGLE_OFF);
@@ -5483,7 +5483,7 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 		if (skipself)
 		{
 			// Non-Rogues will see themselves as invisible even if they fail. 
-			SendAppearancePacket(AT_Invis, 1, false, false, this);
+			SendAppearancePacket(AppearanceType::Invisibility , 1, false, false, this);
 		}
 	}
 
@@ -6177,7 +6177,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(MT_PetResponse, PET_FOLLOWING);
 			mypet->SetPetOrder(SPO_Follow);
-			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
 		break;
 	}
@@ -6210,7 +6210,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->SetHeld(false);
 			mypet->Say_StringID(MT_PetResponse, PET_GUARDME_STRING);
 			mypet->SetPetOrder(SPO_Follow);
-			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
 		break;
 	}
@@ -6222,7 +6222,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 				mypet->SetPetOrder(SPO_Sit);
 				if (!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
 					mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
-				mypet->SendAppearancePacket(AT_Anim, ANIM_SIT);
+				mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Sitting);
 		}
 		break;
 	}
@@ -6232,7 +6232,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			mypet->Say_StringID(MT_PetResponse, PET_SIT_STRING);
 			mypet->SetPetOrder(SPO_Follow);
-			mypet->SendAppearancePacket(AT_Anim, ANIM_STAND);
+			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
 		break;
 	}
@@ -6271,7 +6271,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->SetTarget(nullptr);
 			mypet->Say_StringID(MT_PetResponse, PET_CALMING);
 			mypet->SetPetOrder(SPO_Sit);
-			mypet->SendAppearancePacket(AT_Anim, ANIM_DEATH);
+			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Lying);
 
 			StartSpecialAbilityTimer(IMMUNE_FEIGN_DEATH, FeignDeathReuseTime*1000);
 
@@ -7748,7 +7748,7 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 		if (sneaking)
 		{
 			sneaking = false;
-			SendAppearancePacket(AT_Sneak, 0);
+			SendAppearancePacket(AppearanceType::Sneak, 0);
 			Log(Logs::General, Logs::Skills, "Fading sneak due to also being hidden while accessing a merchant.");
 		}
 		apperance_timer.Disable();
@@ -7862,7 +7862,7 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 
 	CheckIncreaseSkill(EQ::skills::SkillSneak, nullptr, zone->skill_difficulty[EQ::skills::SkillSneak].difficulty, success);
 
-	SendAppearancePacket(AT_Sneak, sneaking);
+	SendAppearancePacket(AppearanceType::Sneak, sneaking);
 	Log(Logs::General, Logs::Skills, "Sneak setting sneak to %d.", sneaking);
 
 	return;
@@ -7879,7 +7879,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 	if (sa->spawn_id != GetID())
 		return;
 
-	if (sa->type == AT_Invis) {
+	if (sa->type == AppearanceType::Invisibility) {
 		if (sa->parameter != 0)
 		{
 			return;
@@ -7890,11 +7890,11 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		Log(Logs::General, Logs::Skills, "Apperance Packet setting hide to 0. Skipping self update...");
 		return;
 	}
-	else if (sa->type == AT_Anim) {
+	else if (sa->type == AppearanceType::Animation) {
 		if (IsAIControlled() && !has_zomm)
 			return;
 
-		if (sa->parameter == ANIM_STAND) 
+		if (sa->parameter == Animation::Standing) 
 		{
 			SetAppearance(eaStanding);
 			playeraction = eaStanding;
@@ -7904,7 +7904,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			camping = false;
 			camp_desktop = false;
 		}
-		else if (sa->parameter == ANIM_SIT) 
+		else if (sa->parameter == Animation::Sitting) 
 		{
 			SetAppearance(eaSitting);
 			playeraction = eaSitting;
@@ -7917,7 +7917,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			SetFeigned(false);
 			BindWound(GetID(), false, true);
 		}
-		else if (sa->parameter == ANIM_CROUCH) 
+		else if (sa->parameter == Animation::Crouching) 
 		{
 			if (!UseBardSpellLogic())
 				InterruptSpell(SPELL_UNKNOWN, true);
@@ -7925,22 +7925,22 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 			playeraction = eaCrouching;
 			SetFeigned(false);
 		}
-		else if (sa->parameter == ANIM_DEATH) 
+		else if (sa->parameter == Animation::Lying) 
 		{ // feign death too
 			SetAppearance(eaDead);
 			playeraction = eaDead;
 			InterruptSpell();
 		}
-		else if (sa->parameter == ANIM_LOOT) 
+		else if (sa->parameter == Animation::Looting) 
 		{
 			SetAppearance(eaLooting);
 			playeraction = eaLooting;
 			SetFeigned(false);
 		}
-		else if (sa->parameter == ANIM_FREEZE) 
+		else if (sa->parameter == Animation::Freeze) 
 		{
 			Log(Logs::General, Logs::Error, "Recieved a client initiated freeze request.");
-			SendAppearancePacket(AT_Anim, ANIM_FREEZE, false);
+			SendAppearancePacket(AppearanceType::Animation, Animation::Freeze, false);
 			return;
 		}
 
@@ -7951,7 +7951,7 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 
 		entity_list.QueueClients(this, app, true);
 	}
-	else if (sa->type == AT_Anon) {
+	else if (sa->type == AppearanceType::Anonymous) {
 		if(!anon_toggle_timer.Check()) {
 			return;
 		}
@@ -7973,20 +7973,20 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		entity_list.QueueClients(this, app, true);
 		UpdateWho();
 	}
-	else if ((sa->type == AT_HP) && (dead == 0)) {
+	else if ((sa->type == AppearanceType::Health) && (dead == 0)) {
 		return;
 	}
-	else if (sa->type == AT_AFK) {
+	else if (sa->type == AppearanceType::AFK) {
 		if(afk_toggle_timer.Check()) {
 			AFK = (sa->parameter == 1);
 			entity_list.QueueClients(this, app, true);
 			UpdateWho();
 		}
 	}
-	else if (sa->type == AT_Split) {
+	else if (sa->type == AppearanceType::Split) {
 		m_pp.autosplit = (sa->parameter == 1);
 	}
-	else if (sa->type == AT_Sneak) {
+	else if (sa->type == AppearanceType::Sneak) {
 		if(sneaking == 0)
 			return;
 
@@ -8003,16 +8003,16 @@ void Client::Handle_OP_SpawnAppearance(const EQApplicationPacket *app)
 		entity_list.QueueClients(this, app, true);
 		Log(Logs::General, Logs::Skills, "Apperance Packet setting sneak to 0. Skipping self update...");
 	}
-	else if (sa->type == AT_Size)
+	else if (sa->type == AppearanceType::Size)
 	{
 		auto hack_str = fmt::format("Player sent OP_SpawnAppearance with AT_Size: {} ", sa->parameter);
 		database.SetMQDetectionFlag(this->account_name, this->name, hack_str, zone->GetShortName());
 	}
-	else if (sa->type == AT_Light)	// client emitting light (lightstone, shiny shield)
+	else if (sa->type == AppearanceType::Light)	// client emitting light (lightstone, shiny shield)
 	{
 		//don't do anything with this
 	}
-	else if (sa->type == AT_Levitate)
+	else if (sa->type == AppearanceType::FlyMode)
 	{
 		// don't do anything with this, we tell the client when it's
 		// levitating, not the other way around

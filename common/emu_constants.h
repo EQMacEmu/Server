@@ -178,11 +178,11 @@ namespace EQ
 		std::string GetConsiderLevelName(uint8 consider_level);
 
 
-		extern const std::map<uint8, std::string>& GetStuckBehaviorMap();
-		std::string GetStuckBehaviorName(uint8 behavior_id);
-
 		extern const std::map<uint8, std::string>& GetSpawnAnimationMap();
 		std::string GetSpawnAnimationName(uint8 animation_id);
+
+		extern const std::map<uint32, std::string> &GetAppearanceTypeMap();
+		std::string GetAppearanceTypeName(uint32 animation_type);
 
 	}
 
@@ -294,6 +294,14 @@ enum ConsiderLevel : uint8 {
 	Scowls
 };
 
+enum TargetDescriptionType : uint8 {
+	LCSelf,
+	UCSelf,
+	LCYou,
+	UCYou,
+	LCYour,
+	UCYour
+};
 
 
 #endif /*COMMON_EMU_CONSTANTS_H*/
