@@ -659,7 +659,7 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 				} 
 				if (spell_target->CastToClient()->IsSelfFound() && spell_target != this)
 				{
-					bool can_get_experience = caster->IsInLevelRange(spell_target->CastToClient()->GetLevel2());
+					bool can_get_experience = spell_target->CastToClient()->IsInLevelRange(caster->GetLevel2());
 					bool compatible = caster->IsSelfFound() == spell_target->CastToClient()->IsSelfFound();
 					if (!compatible)
 					{
