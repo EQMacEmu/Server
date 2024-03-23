@@ -2306,6 +2306,15 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 				recast -= GetAA(aaTouchoftheWicked) * 720;
 				CastToClient()->ExpendAATimer(aaImprovedHarmTouch);
 			}
+			else
+			{
+				recast += GetActSpellCasttime(spell_id, spells[spell_id].cast_time) / 1000 - 1;
+				if (
+					GetLevel() > 50 && spells[spell_id].goodEffect == 0 && spells[spell_id].cast_time > 2999 &&
+					(GetClass() == BEASTLORD || GetClass() == PALADIN || GetClass() == RANGER || GetClass() == SHADOWKNIGHT)
+				)
+					recast -= 1;
+			}
 
 			uint16 timer_id = spell_id;
 			if(spell_id == SPELL_HARM_TOUCH2)
