@@ -2575,6 +2575,7 @@ void NPC::AI_Event_SpellCastFinished(bool iCastSucceeded, uint16 slot)
 			if (casting_spell_AIindex < AIspells.size()) {
 				int32 recast_delay = AIspells[casting_spell_AIindex].recast_delay;
 				int32 cast_variance = zone->random.Int(0, 4) * 1000;
+        
 				if (AIspells[casting_spell_AIindex].spellid == SPELL_CAZIC_TOUCH) {
 					cast_variance = 0;
 				}
