@@ -699,12 +699,18 @@ void Client::CompleteConnect()
 			// Mules by their very nature require access to at least Luclin. Set that here.
 			if (IsMule())
 			{
-				m_pp.expansions = m_pp.expansions + LuclinEQ;
-				database.SetExpansion(AccountName(), m_pp.expansions);
-				GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+				if (RuleB(Quarm, EastCommonMules)) {
+					MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
+				}
+				else {
+					m_pp.expansions = m_pp.expansions + LuclinEQ;
+					database.SetExpansion(AccountName(), m_pp.expansions);
+					GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+				}
 			}
-
-			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			else {
+				GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			}
 		}
 		return;
 	}
@@ -1084,7 +1090,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	SetClientVersion(Connection()->ClientVersion());
 	m_ClientVersionBit = EQ::versions::ConvertClientVersionToClientVersionBit(Connection()->ClientVersion());
 
-	if(ClientVersion() == EQ::versions::ClientVersion::Mac)
+	if (ClientVersion() == EQ::versions::ClientVersion::Mac)
 	{
 		m_ClientVersionBit = versionbit;
 	}
@@ -1153,11 +1159,11 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/* Load Character Data */
 	query = StringFormat("SELECT `firstlogon`, `guild_id`, `rank` FROM `character_data` LEFT JOIN `guild_members` ON `id` = `char_id` WHERE `id` = %i", cid);
 	results = database.QueryDatabase(query);
-	for (auto row = results.begin(); row != results.end(); ++row) {		
-		if (row[1] && atoi(row[1]) > 0){
+	for (auto row = results.begin(); row != results.end(); ++row) {
+		if (row[1] && atoi(row[1]) > 0) {
 			guild_id = atoi(row[1]);
-			if (row[2] != nullptr){ guildrank = atoi(row[2]); }
-			else{ guildrank = GUILD_RANK_NONE; }
+			if (row[2] != nullptr) { guildrank = atoi(row[2]); }
+			else { guildrank = GUILD_RANK_NONE; }
 		}
 
 		firstlogon = atoi(row[0]);
@@ -1252,7 +1258,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 			SaveCurrency();
 	}
 
-	if (level){ level = m_pp.level; }
+	if (level) { level = m_pp.level; }
 
 	if (gminvul) { invulnerable = true; }
 	/* Set Con State for Reporting */
@@ -1261,8 +1267,8 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	m_pp.zone_id = zone->GetZoneID();
 	m_epp.zone_guild_id = zone->GetGuildID();
 	ignore_zone_count = false;
-	
-	
+
+
 	SendToBoat();
 
 	/* Load Character Key Ring */
@@ -1272,7 +1278,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	LoadLootedLegacyItems();
 
 	prev_last_login_time = m_pp.lastlogin;
-		
+
 	/* Set Total Seconds Played */
 	m_pp.lastlogin = time(nullptr);
 	TotalSecondsPlayed = m_pp.timePlayedMin * 60;
@@ -1284,6 +1290,17 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 
 	strcpy(name, m_pp.name);
 	strcpy(lastname, m_pp.last_name);
+
+	//Erollsi Marr Day Event
+	if (RuleB(Quarm, ErollsiDayEvent))
+	{
+		if (m_epp.temp_last_name[0])
+		{
+			memset(lastname, 0, 64);
+			strcpy(lastname, m_epp.temp_last_name);
+		}
+	}
+
 	/* If PP is set to weird coordinates */
 	if ((m_pp.x == -1 && m_pp.y == -1 && m_pp.z == -1) || (m_pp.x == -2 && m_pp.y == -2 && m_pp.z == -2)) {
         auto safePoint = zone->GetSafePoint();
@@ -2247,6 +2264,14 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 	if (GetTarget() && GetTarget()->IsNPC())
 		npc = GetTarget()->CastToNPC();
 
+	if (npc && npc->GetSpecialAbility(NO_HARM_FROM_CLIENT))
+	{
+		return;
+	}
+
+	if (npc && DistanceSquaredNoZ(m_Position, npc->GetPosition()) >= 2200)
+		return;
+
 	uint16 beg_skill = GetSkill(EQ::skills::SkillBegging);
 	if (npc && !npc->IsPet() && zone->random.Int(1, 199) > beg_skill && zone->random.Roll(9))
 	{
@@ -2850,12 +2875,10 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 		return;
 	}
 
-	char buf[20];
-	snprintf(buf, 19, "%u", cd->doorid);
-	buf[19] = '\0';
+	std::string  export_string = fmt::format("{}", cd->doorid);
 	std::vector<std::any> args;
 	args.push_back(currentdoor);
-	parse->EventPlayer(EVENT_CLICK_DOOR, this, buf, 0, &args);
+	parse->EventPlayer(EVENT_CLICK_DOOR, this, export_string, 0, &args);
 
 	if (!currentdoor->IsMoveable() || (currentdoor->IsTeleport() && currentdoor->GetOpenType() == 57))
 	{
@@ -2876,10 +2899,9 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 		return;
 	}
 
-	ClickObject_Struct* click_object = (ClickObject_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(click_object->drop_id);
+	auto* click_object = (ClickObject_Struct*)app->pBuffer;
+	auto* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
-
 		Object* object = entity->CastToObject();
 		if (object->IsPlayerDrop())
 		{
@@ -2914,16 +2936,14 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 				return;
 			}
 		}
-
+		
 		object->HandleClick(this, click_object);
 
 		std::vector<std::any> args;
 		args.push_back(object);
 
-		char buf[10];
-		snprintf(buf, 9, "%u", click_object->drop_id);
-		buf[9] = '\0';
-		parse->EventPlayer(EVENT_CLICK_OBJECT, this, buf, 0, &args);
+		std::string export_string = fmt::format("{}", click_object->drop_id);
+		parse->EventPlayer(EVENT_CLICK_OBJECT, this, export_string, 0, &args);
 	}
 
 	return;
@@ -3165,7 +3185,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			{
 
 				std::string warped = std::string(GetCleanName()) + " - entity moving too fast: dist: " + std::to_string(dist) + ", distDivTime: " + std::to_string(distDivTime) + "playerSpeed: " + std::to_string(speed);
-				worldserver.SendEmoteMessage(0, 0, 250, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
+				worldserver.SendEmoteMessage(0, 0, 100, CC_Default, "%s - entity moving too fast: %lf %lf - is_exempt_correct %s, playerSpeed %lf", GetCleanName(), dist, distDivTime, std::to_string(is_exempt_correct).c_str(), speed);
 				database.SetHackerFlag(this->account_name, this->name, warped.c_str());
 			}
 		}
@@ -6204,6 +6224,7 @@ void Client::Handle_OP_LootRequest(const EQApplicationPacket *app)
 		Corpse *ent_corpse = ent->CastToCorpse();
 		if (DistanceSquaredNoZ(m_Position, ent_corpse->GetPosition()) > 1100) // About 33.2 coords away.
 		{
+			Message(CC_Red, "[DEBUG] Too far away from corpse.");
 			Corpse::SendLootReqErrorPacket(this);
 			return;
 		}
@@ -9619,16 +9640,17 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 	Disarm_Struct* disin = (Disarm_Struct*)app->pBuffer;
 	Mob* target = entity_list.GetMob(disin->target);
 
-	if(!target)
+	if (!target) {
 		return;
+	}
 
-	if(target != GetTarget())
+	if (target != GetTarget()) {
 		return;
+	}
 
-	// It looks like the client does its own check, but let's double check.
-	if(target->IsCorpse() || !IsAttackAllowed(target))
-	{
-		Message(CC_Red, "You cannot disarm this target.");
+	// It looks like the client does its own check except FD, but let's double check.
+	if(target->IsCorpse() || !IsAttackAllowed(target) || IsFeigned()) {
+		LogDebug("Client does not allow to disarm on corpse, non-combat npc, pvp, and while feign death");
 		return;
 	}
 
@@ -9640,28 +9662,31 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 
 	// this is completely made up and based on nothing other than disarm rates being seemingly around 20-25% in logs
 	float disarmchance = static_cast<float>(GetSkill(EQ::skills::SkillDisarm)) / static_cast<float>(std::max(static_cast<int>(target->GetSkill(EQ::skills::SkillOffense)), 5) * 3);
-	if (disarmchance > 0.95f)
+
+	if (disarmchance > 0.95f) {
 		disarmchance = 0.95f;
-	if (disarmchance < 0.05f)
+	}
+
+	if (disarmchance < 0.05f) {
 		disarmchance = 0.05f;
+	}
 
 	bool success = 0;
 	int8 disarm_result = 0;
 	
 	disarm_result = target->Disarm(disarmchance);
-	if (disarm_result < 2)
+	if (disarm_result < 2) {
 		success = false;
-	else
+	} else {
 		success = true;
+	}
 
-	if(target->IsNPC())
-	{
+	if(target->IsNPC()) {
 		if(!GetGM())
 			target->AddToHateList(this, 1);
 	}
 
-	if(disarm_result > 0)
-	{
+	if(disarm_result > 0) {
 		uint8 skillsuccess = disarm_result == 2 ? SKILLUP_SUCCESS : SKILLUP_FAILURE;
 		CheckIncreaseSkill(EQ::skills::SkillDisarm, target, zone->skill_difficulty[EQ::skills::SkillDisarm].difficulty, skillsuccess);
 	}

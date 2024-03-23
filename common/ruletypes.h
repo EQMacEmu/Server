@@ -258,6 +258,10 @@ RULE_INT(Quarm, AOEThrottlingMaxAOETargets, 50) // This will curb nonsense with 
 RULE_INT(Quarm, AOEThrottlingMaxClients, 300) // This will curb nonsense with performance issues relating to amount of targets if the amount of clients exceeds 300 in a single zone.
 RULE_INT(Quarm, EnableLuclinEraShieldACOvercap, false)
 RULE_INT(Quarm, ClientInstanceBootGraceMS, 60000)
+RULE_INT(Quarm, DeletedCharacterMarkLevel, 10)
+RULE_BOOL(Quarm, EastCommonMules, true)
+RULE_BOOL(Quarm, IncludeMulesInServerCount, false)
+RULE_BOOL(Quarm, ErollsiDayEvent, false)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Map )
@@ -330,7 +334,7 @@ RULE_INT ( Spells, AI_IdleNoSpellMaxRecast, 6000) // AI spell recast time(MS) ch
 RULE_INT ( Spells, AI_IdleBeneficialChance, 100) // Chance while idle to do a beneficial spell on self or others.
 RULE_BOOL ( Spells, SHDProcIDOffByOne, true) // pre June 2009 SHD spell procs were off by 1, they stopped doing this in June 2009 (so UF+ spell files need this false)
 RULE_BOOL ( Spells, SwarmPetTargetLock, false) // Use old method of swarm pets target locking till target dies then despawning.
-RULE_INT ( Spells, SpellRecoveryTimer, 2500) // Begins when a cast is complete, and is checked after the next spell finishes casting. If not expired, the new spell is interrupted. Clickies are exempt.
+RULE_INT ( Spells, SpellRecoveryTimer, 3500) // Begins when a cast is complete, and is checked after the next spell finishes casting. If not expired, the new spell is interrupted. Clickies are exempt. 3500 is Sony's value
 RULE_BOOL ( Spells, JamFestAAOnlyAffectsBard, true) // Bard Jam Fest AA only worked on bards themselves but was changed after AK's era.  Changing this to false will put the client stats out of sync with the server.
 RULE_BOOL ( Spells, ReducePacifyDuration, false) // AK and the eqmac client have 60 tick Pacify (spell 45) duration.  This rule reduces the duration to 7 ticks without desyncing the cast bar and focus effects for custom servers that want this.
 RULE_CATEGORY_END()

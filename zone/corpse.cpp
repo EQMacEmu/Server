@@ -1103,11 +1103,13 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 
 			if (temporarily_allowed_itr == temporarily_allowed_looters.end() && c->IsLootLockedOutOfNPC(npctype_id))
 			{
+				c->Message(CC_Red, "You were locked out of this creature on its death, and are not eligible to loot.");
 				return false;
 			}
 		}
 
 		if (denied_looters.find(playername) != denied_looters.end()) {
+			c->Message(CC_Red, "You are not allowed to loot this NPC as you are locked out of the creature in question.");
 			return false;
 		}
 
@@ -1116,17 +1118,71 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		allow looting of the corpse if the raid looters can loot the corpse
 		*/
 		if (c->HasRaid()) {
-			Raid* raid = c->GetRaid();
-			if (raid->GetLootType() == 3) // Looter / Raid Leader loot
+			if (allowed_looters.find(c->GetCleanName()) == allowed_looters.end())
 			{
-				if (raid->IsRaidLooter(c)) {
-					for (int x = 0; x < MAX_RAID_MEMBERS; x++) {
-						if (raid->members[x].membername[0] && (raid->members[x].IsLooter || raid->members[x].IsRaidLeader)) {
-							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end()) {
+				Raid* raid = c->GetRaid();
+				if (raid->GetLootType() == 3) // Looter / Raid Leader loot
+				{
+					if (raid->IsRaidLooter(c->GetCleanName()))
+					{
+						for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+						{
+							if (raid->members[x].membername[0])
+							{
+								if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
 								{
+									c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid with another eligible member of the raid.");
 									AddLooter(c);
 									break;
 								}
+							}
+						}
+					}
+				}
+				else if (raid->GetLootType() == 2) // Group Leader / Raid Leader loot
+				{
+					if (raid->IsRaidLeader(c->GetCleanName()) || raid->IsGroupLeader(c->GetCleanName()))
+					{
+						for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+						{
+							if (raid->members[x].membername[0])
+							{
+								if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
+								{
+									c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and you're a group or raid leader.");
+									AddLooter(c);
+									break;
+								}
+							}
+						}
+					}
+				}
+				else if (raid->GetLootType() == 1 && raid->IsRaidLeader(c->GetCleanName())) // Raid Leader loot
+				{
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+					{
+						if (raid->members[x].membername[0])
+						{
+							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
+							{
+								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and you're the new raid leader.");
+								AddLooter(c);
+								break;
+							}
+						}
+					}
+				}
+				else if (raid->GetLootType() == 4) // Raid Leader loot
+				{
+					for (int x = 0; x < MAX_RAID_MEMBERS; x++)
+					{
+						if (raid->members[x].membername[0])
+						{
+							if (allowed_looters.find(raid->members[x].membername) != allowed_looters.end())
+							{
+								c->Message(CC_Cyan, "Adding you to the looter list of this corpse. You are in a raid and the loot is set to free-for-all.");
+								AddLooter(c);
+								break;
 							}
 						}
 					}
@@ -1155,6 +1211,9 @@ bool Corpse::CanPlayerLoot(std::string playername) {
 		if (allowed_looters.size() == 0) {
 				return true;
 		}
+	}
+	if (c && c->HasRaid()) {
+		c->Message(CC_Red, "[DEBUG] You are in a raid, but cannot loot this corpse.");
 	}
 	return false;
 }
@@ -1283,8 +1342,13 @@ void Corpse::AllowPlayerLoot(std::string character_name) {
 
 }
 void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* app) {
+
+	if (!client)
+		return;
+
 	// Added 12/08. Started compressing loot struct on live.
 	if(player_corpse_depop) {
+		client->Message(CC_Red, "[DEBUG] This corpse is being depooped!");
 		SendEndLootErrorPacket(client);
 		return;
 	}
@@ -1315,7 +1379,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 
 	if(this->being_looted_by != 0xFFFFFFFF) {
 		// lets double check....
-		Entity* looter = entity_list.GetID(this->being_looted_by);
+		Client* looter = entity_list.GetClientByID(this->being_looted_by);
 		if(looter == 0) { 
 			ResetLooter();
 		}
@@ -1331,6 +1395,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	if (this->being_looted_by != 0xFFFFFFFF && this->being_looted_by != client->GetID() && !contains_legacy_item) {
 		SendLootReqErrorPacket(client, 0);
 		Loot_Request_Type = 0;
+		client->Message(CC_Red, "[DEBUG] This corpse is being looted already by %i.", being_looted_by);
 	}
 	else if (IsPlayerCorpse() && char_id == client->CharacterID()) {
 		Loot_Request_Type = 2;
@@ -2562,6 +2627,16 @@ void Corpse::ProcessLootLockouts(Client* give_exp_client, NPC* in_npc)
 					c->loot_lockouts.emplace(in_npc->GetNPCTypeID(), lootLockout);
 				}
 			}
+			
+			std::string appendedCharName = record.second.character_name;
+
+			if (record.second.isSelfFound)
+				appendedCharName += "-SF";
+
+			if (record.second.isSoloOnly)
+				appendedCharName += "-Solo";
+
+			temporarily_allowed_looters.emplace(appendedCharName);
 		}
 		else
 		{

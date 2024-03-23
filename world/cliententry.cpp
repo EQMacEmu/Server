@@ -38,11 +38,11 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 : id(in_id)
 {
 	ClearVars(true);
-
+	incremented_player_count = false;
 	pIP = ip;
 	pLSID = iLSID;
 	if(iLSID > 0)
-		paccountid = database.GetAccountIDFromLSID(iLSID, paccountname, &padmin);
+		paccountid = database.GetAccountIDFromLSID(iLSID, paccountname, &padmin, 0, &pmule);
 	strn0cpy(plsname, iLoginName, sizeof(plsname));
 	strn0cpy(plskey, iLoginKey, sizeof(plskey));
 	strn0cpy(pForumName, iForumName, sizeof(pForumName));
@@ -56,7 +56,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 : id(in_id)
 {
 	ClearVars(true);
-
+	incremented_player_count = false;
 	pIP = 0;
 	pForumName[0] = 0;
 	pLSID = scl->LSAccountID;
@@ -70,6 +70,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 	//THIS IS FOR AN ALTERNATE LOGIN METHOD FOR RAPID TESTING. Hardcoded to the PC client because only PCs should be using this 'hackish' login method. Requires password field set in the database.
 	pversion = 2;
 	pRevoked = scl->Revoked;
+	pmule = scl->mule;
 
 	if (iOnline >= CLE_Status_Zoning)
 		Update(iZS, scl, iOnline);
@@ -82,6 +83,13 @@ ClientListEntry::~ClientListEntry() {
 		Camp(); // updates zoneserver's numplayers
 		client_list.RemoveCLEReferances(this);
 	}
+
+	if (incremented_player_count)
+	{
+		numplayers--;
+		incremented_player_count = false;
+	}
+
 	SetOnline(CLE_Status_Offline);
 	SetAccountID(0);
 	for (auto &elem : tell_queue)
@@ -103,10 +111,18 @@ void ClientListEntry::SetOnline(int8 iOnline) {
 	Log(Logs::Detail, Logs::WorldServer,"SetOnline Account: %i %i -> %i",AccountID(), pOnline, iOnline);
 
 	// this counting method, counts players connected to world.
-	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online)
-		numplayers++;
-	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online)
-		numplayers--;
+	if (iOnline >= CLE_Status_Online && pOnline < CLE_Status_Online) {
+		if (!mule() && !incremented_player_count || RuleB(Quarm, IncludeMulesInServerCount)) {
+			incremented_player_count = true;
+			numplayers++;
+		}
+	}
+	else if (iOnline < CLE_Status_Online && pOnline >= CLE_Status_Online) {
+		if (incremented_player_count || RuleB(Quarm, IncludeMulesInServerCount)) {
+			incremented_player_count = false;
+			numplayers--;
+		}
+	}
 
 	// this counting method, counts players in zones.
 	//if (iOnline >= CLE_Status_Zoning && pOnline < CLE_Status_Zoning)

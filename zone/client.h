@@ -371,6 +371,14 @@ public:
 
 	inline const char* GetLastName() const { return lastname; }
 
+	inline const char* GetTemporaryLastName() const { return m_epp.temp_last_name; }
+	bool HasTemporaryLastName();
+
+	uint32 GetTemporaryMarriageCharacterID() { return pending_marriage_character_id; }
+	void SetTemporaryMarriageCharacterID(uint32 pending_id) { pending_marriage_character_id = pending_id; }
+	void SetMarried(const char* playerName);
+	bool IsMarried();
+
 	typedef struct {
 		glm::vec4 l_Position;
 		float last_distance;
@@ -533,6 +541,7 @@ public:
 	void MovePC(float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	bool CheckLoreConflict(const EQ::ItemData* item);
 	void ChangeLastName(const char* in_lastname);
+	void SetTemporaryLastName(char* in_lastname);
 	void SacrificeConfirm(Client* caster);
 	void Sacrifice(Client* caster);
 	void GoToDeath();
@@ -1199,6 +1208,8 @@ private:
 public:
 	bool IsLockSavePosition() const;
 	void SetLockSavePosition(bool lock_save_position);
+	inline bool IsMuleInitiated() { return mule_initiated; }
+	inline void SetMuleInitiated(bool initiated) { mule_initiated = initiated; }
 private:
 
 
@@ -1366,6 +1377,8 @@ private:
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
 	int8 last_fatigue;
+	bool mule_initiated;
+	uint32 pending_marriage_character_id;
 };
 
 #endif

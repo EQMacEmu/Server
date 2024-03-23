@@ -134,6 +134,23 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (GetClass() == WARRIOR) class_mult = 10.0f / 9.0f;
 	if (GetClass() == ROGUE) class_mult = 10.0f / 9.05f;
 
+	if (m_epp.married_character_id != 0 && IsGrouped())
+	{
+		Group* our_group = GetGroup();
+		for (int x = 0; x < MAX_GROUP_MEMBERS; ++x)
+		{
+			if (our_group->members[x] != nullptr && our_group->members[x]->IsClient()) // If Group Member is Client
+			{
+				if (m_epp.married_character_id == our_group->members[x]->CastToClient()->CharacterID())
+				{
+					class_mult += 0.20f;
+					Message(CC_Yellow, "You receive a bonus! (Partner)");
+					break;
+				}
+			}
+		}
+	}
+
 	// This logic replicates the September 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
 	uint8 moblevel = killed_mob->GetLevel();
@@ -293,7 +310,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 			else if (GetRace() == TROLL || GetRace() == IKSAR)
 				race_mult = 0.8f;
 		}
-
+		
 		add_aaxp = static_cast<uint32>(add_aaxp * race_mult * aa_lvl_mod * aa_mult);
 	}
 

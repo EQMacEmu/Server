@@ -2047,15 +2047,16 @@ bool Mob::PlotPositionAroundTarget(Mob* target, float &x_dest, float &y_dest, fl
 bool Mob::CheckHateSummon(Mob* summoned) {
 	// check if mob has ability to summon
 	// 97% is the offical % that summoning starts on live, not 94
-	if (!summoned)
+	if (!summoned) {
 		return false;
+	}
 
-	if(IsCharmedPet() || summoned->PermaRooted() || (summoned->IsNPC() && summoned->GetMaxHP() > 300000)) // raid bosses may not have been summonable
+	if (IsCharmedPet() || summoned->PermaRooted() || (summoned->IsNPC() && summoned->GetMaxHP() > 300000)) { // raid bosses may not have been summonable
 		return false;
+	}
 
 	int summon_level = GetSpecialAbility(SPECATK_SUMMON);
-	if(summon_level != 1 && summon_level != 2) 
-	{
+	if(summon_level != 1 && summon_level != 2) {
 		//unsupported summon level or OFF
 		return false;
 	} 
@@ -2067,10 +2068,14 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 		return false;
 	}
 
+	// this is so we don't have to make duplicate types; some mob types are 48-52 and only the 51-52s should summon
+	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && zone->GetZoneExpansion() < LuclinEQ) {
+		return false;
+	}
+
 	// now validate the timer
 	Timer *timer = GetSpecialAbilityTimer(SPECATK_SUMMON);
-	if (!timer)
-	{
+	if (!timer) {
 		// dont currently have a timer going, so we are going to summon
 		return true;
 	} else {

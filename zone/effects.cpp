@@ -1030,7 +1030,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		}
 	}
 
-	else if (HasDirectDamageEffect(spell_id))
+	if (!caster->IsNPC() && HasDirectDamageEffect(spell_id))
 	{
 		// Damage Spells were limited to 4 targets.
 		bool exempt = false;

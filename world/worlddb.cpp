@@ -292,12 +292,22 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 
 	if (mule)
 	{
-		Log(Logs::General, Logs::Status, "%s: Starting mule character in Bazaar", in_pp->name);
-		in_pp->x = in_pp->binds[0].x = 140;
-		in_pp->y = in_pp->binds[0].y = -821;
-		in_pp->z = in_pp->binds[0].z = 5;
-		in_pp->zone_id = in_pp->binds[0].zoneId = bazaar;
-		return true;
+		if (RuleB(Quarm, EastCommonMules)) {
+			Log(Logs::General, Logs::Status, "%s: Starting mule character in EC", in_pp->name);
+			in_pp->x = in_pp->binds[0].x = -164;
+			in_pp->y = in_pp->binds[0].y = -1651;
+			in_pp->z = in_pp->binds[0].z = 4;
+			in_pp->zone_id = in_pp->binds[0].zoneId = ecommons;
+			return true;
+		}
+		else {
+			Log(Logs::General, Logs::Status, "%s: Starting mule character in Bazaar", in_pp->name);
+			in_pp->x = in_pp->binds[0].x = 140;
+			in_pp->y = in_pp->binds[0].y = -821;
+			in_pp->z = in_pp->binds[0].z = 5;
+			in_pp->zone_id = in_pp->binds[0].zoneId = bazaar;
+			return true;
+		}
 	}
 
 	in_pp->x = in_pp->y = in_pp->z = in_pp->heading = in_pp->zone_id = 0;
