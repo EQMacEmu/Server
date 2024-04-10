@@ -659,15 +659,17 @@ bool Mob::DoPreCastingChecks(uint16 spell_id, CastingSlot slot, uint16 spell_tar
 				} 
 				if (spell_target->CastToClient()->IsSelfFound() && spell_target != this)
 				{
-					bool can_get_experience = caster->IsInLevelRange(spell_target->CastToClient()->GetLevel2());
+					bool can_get_experience = spell_target->CastToClient()->IsInLevelRange(caster->GetLevel2());
 					bool compatible = caster->IsSelfFound() == spell_target->CastToClient()->IsSelfFound();
 					if (!compatible)
 					{
+						// if the spell target is self found, but the caster is not, don't allow the caster to buff
 						is_failed_cast = true;
 						fail_message = SELF_FOUND_ERROR;
 					}
 					else if(compatible && !can_get_experience)
 					{
+						// if the spell_target can not get EXP while grouped with the caster, don't allow the caster to buff
 						is_failed_cast = true;
 						fail_message = LEVEL_ERROR;
 					}
@@ -2303,6 +2305,15 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 			{
 				recast -= GetAA(aaTouchoftheWicked) * 720;
 				CastToClient()->ExpendAATimer(aaImprovedHarmTouch);
+			}
+			else
+			{
+				recast += GetActSpellCasttime(spell_id, spells[spell_id].cast_time) / 1000 - 1;
+				if (
+					GetLevel() > 50 && spells[spell_id].goodEffect == 0 && spells[spell_id].cast_time > 2999 &&
+					(GetClass() == BEASTLORD || GetClass() == PALADIN || GetClass() == RANGER || GetClass() == SHADOWKNIGHT)
+				)
+					recast -= 1;
 			}
 
 			uint16 timer_id = spell_id;
