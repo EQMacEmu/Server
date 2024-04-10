@@ -157,6 +157,12 @@ bool LoginServer::Process() {
 				}
 				if (utwrs->response == 1)
 				{
+					// ip limit checks
+					if (mule && RuleI(World, MaxMulesPerIP) >= 0 && !client_list.CheckMuleLimit(id, utwr->ip, status))
+						utwrs->response = -5;
+				}
+				if (utwrs->response == 1)
+				{
 					// forum account checks
 					if (RuleI(World, MaxClientsPerForumName) >= 0 && strlen(utwr->forum_name) > 0 && !mule && !client_list.CheckForumNameLimit(id, std::string(utwr->forum_name), status))
 						utwrs->response = -6;

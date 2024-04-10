@@ -59,6 +59,7 @@ public:
 	void	ClearGroup(uint32 group_id);
 	ClientListEntry* RemoveCLEByAccountID(uint32 accountID);
 	bool	CheckIPLimit(uint32 iAccID, uint32 iIP, uint16 admin, ClientListEntry* cle = nullptr);
+	bool	CheckMuleLimit(uint32 iAccID, uint32 iIP, uint16 admin, ClientListEntry * cle = nullptr);
 	bool	CheckForumNameLimit(uint32 iAccID, std::string forum_name, uint16 admin, ClientListEntry *cle = nullptr);
 	bool	CheckAccountActive(uint32 iAccID, ClientListEntry* cle = nullptr);
 	void	GetCLEIP(uint32 iIP);

@@ -327,6 +327,48 @@ bool ClientList::CheckIPLimit(uint32 iAccID, uint32 iIP, uint16 admin, ClientLis
 	return true;
 }
 
+bool ClientList::CheckMuleLimit(uint32 iAccID, uint32 iIP, uint16 admin, ClientListEntry *cle) {
+
+	ClientListEntry *curCLE = 0;
+	LinkedListIterator<ClientListEntry *> iterator(clientlist);
+	int MuleInstances = 1;
+	iterator.Reset();
+
+	while (iterator.MoreElements()) {
+
+		curCLE = iterator.GetData();
+
+		// If the forum name matches, and the connection admin status is below the exempt status,
+		// or exempt status is less than 0 (no-one is exempt)
+		if ((curCLE != nullptr && curCLE->GetIP() == iIP && curCLE->mule()) &&
+			((admin < (RuleI(World, ExemptMaxClientsStatus))) ||
+			(RuleI(World, ExemptMaxClientsStatus) < 0))) {
+
+			// Increment the occurrences of this forum name
+			if (curCLE->Online() >= CLE_Status_Zoning && (cle == nullptr || cle != curCLE))
+				MuleInstances++;
+		}
+		iterator.Advance();
+	}
+
+	if (MuleInstances > (RuleI(World, MaxMulesPerIP))) {
+
+		// If MaxClientsSetByStatus is set to True, override other IP Limit Rules
+		if (RuleB(World, MaxClientsSetByStatus)) {
+
+			// The IP Limit is set by the status of the account if status > MaxClientsPerIP
+			if (MuleInstances > admin) {
+				return false;
+			}
+		}
+		else
+		{
+			return false; // limit exceeded
+		}
+	}
+	return true;
+}
+
 bool ClientList::CheckForumNameLimit(uint32 iAccID, std::string forumName, uint16 admin, ClientListEntry *cle) {
 
 	ClientListEntry *curCLE = 0;

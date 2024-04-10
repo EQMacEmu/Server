@@ -268,7 +268,6 @@ void ClientListEntry::ClearVars(bool iAll) {
 	pClientVersion = 0;
 	pLD;
 	pbaserace = 0;
-	pmule = false;
 	pAFK = false;
 	pTrader = false;
 	pRevoked = 0;

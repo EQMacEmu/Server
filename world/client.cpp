@@ -227,6 +227,10 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		if(GetSessionLimit())
 			return false;
 
+		expansion = 0;
+		mule = false;
+		database.GetAccountRestriction(cle->AccountID(), expansion, mule);
+
 		if(cle->Online() < CLE_Status_Online)
 			cle->SetOnline();
 		
@@ -263,13 +267,8 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 			safe_delete(pack);
 		}
 
-		expansion = 0;
-		mule = false;
-		database.GetAccountRestriction(cle->AccountID(), expansion, mule);
-
 		SendLogServer();
 		SendApproveWorld();
-
 
 		if (pZoning)
 		{
