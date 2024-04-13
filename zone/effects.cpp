@@ -1018,6 +1018,8 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 
 	bool limit_all_aoes = false;
 
+	bool limit_all_detrimental_aes = false;
+
 	if (caster->IsNPC())
 		MAX_TARGETS_ALLOWED = 999;
 
@@ -1026,6 +1028,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		if (caster->CastToClient()->Admin() == 0 && entity_list.GetClientCount() >= RuleI(Quarm, AOEThrottlingMaxClients))
 		{
 			MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEThrottlingMaxAOETargets);
+			limit_all_aoes = true;
+		}
+
+		if (IsDetrimentalSpell(spell_id) && RuleB(Quarm, LimitPBAOEDetrimentalSpells))
+		{
+			MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEMaxHostilePBAOETargets);
 			limit_all_aoes = true;
 		}
 	}
