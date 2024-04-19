@@ -4564,29 +4564,13 @@ void command_corpse(Client *c, const Seperator *sep)
 			uint32 corpseid;
 			Client *t = c;
 
-			if (c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
-				t = c->GetTarget()->CastToClient();
-			else
-			{
-				c->Message(CC_Default, "You must first turn your GM flag on and select a target!");
-				return;
-			}
-
 			if (!sep->IsNumber(2))
 			{
-				c->Message(CC_Default, "Usage: #corpse restore [corpse_id] [charid].");
+				c->Message(CC_Default, "Usage: #corpse restore [corpse_id].");
 				return;
 			}
 			else
 				corpseid = atoi(sep->arg[2]);
-
-			uint32 charid = 0;
-			if (!sep->arg[3][0])
-			{
-				charid = t->CharacterID();
-			}
-			else
-				charid = database.GetCharacterID(sep->arg[3]);
 
 			if(!database.IsValidCorpseBackup(corpseid))
 			{
@@ -4602,7 +4586,7 @@ void command_corpse(Client *c, const Seperator *sep)
 			{
 				if(database.CopyBackupCorpse(corpseid))
 				{
-					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, charid, t->GetZoneID(), zone->GetGuildID(), t->GetPosition());
+					Corpse* PlayerCorpse = database.SummonCharacterCorpse(corpseid, 0, zone->GetZoneID(), zone->GetGuildID(), c->GetPosition());
 
 					if (!PlayerCorpse)
 						c->Message(CC_Default, "Summoning of backup corpse failed. Please escalate this issue.");

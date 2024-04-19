@@ -3535,16 +3535,16 @@ Corpse* ZoneDatabase::SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_z
 Corpse* ZoneDatabase::SummonCharacterCorpse(uint32 corpse_id, uint32 char_id, uint32 dest_zone_id, uint32 dest_zone_guild_id, const glm::vec4& position) {
 	Corpse* NewCorpse = 0;
 	std::string query = StringFormat(
-		"SELECT `id`, `charname`, UNIX_TIMESTAMP(time_of_death), `is_rezzed` FROM `character_corpses` WHERE `charid` = '%u' AND `id` = %u", 
-		char_id, corpse_id
+		"SELECT `id`, `charid`, UNIX_TIMESTAMP(time_of_death), `is_rezzed`, `charname` FROM `character_corpses` WHERE `id` = %u", 
+		corpse_id
 	);
 	auto results = QueryDatabase(query);
 
 	for (auto& row = results.begin(); row != results.end(); ++row) {
 		NewCorpse = Corpse::LoadCharacterCorpseEntity(
 			atoul(row[0]), 			 // uint32 in_dbid
-			char_id, 				 // uint32 in_charid
-			row[1], 				 // char* in_charname
+			atoul(row[1]), 				 // uint32 in_charid
+			row[4], 				 // char* in_charname
 			position,
 			atoul(row[2]), 				 // char* time_of_death
 			atoi(row[3]) == 1, 		 // bool rezzed
