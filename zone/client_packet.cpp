@@ -1318,7 +1318,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	level = m_pp.level;
 	last_position_update_time = std::chrono::high_resolution_clock::now();
 	m_RewindLocation = glm::vec3();
-	m_LastLocation = glm::vec3();
+	m_LastLocation = glm::vec4();
 	m_Position.x = m_pp.x;
 	m_Position.y = m_pp.y;
 	m_Position.z = m_pp.z;
@@ -3071,6 +3071,19 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		SendPosUpdate();
 		return;
 	}
+
+	auto current_update_time = std::chrono::high_resolution_clock::now();
+	auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
+	if (IsStunned() || IsMezzed())
+	{
+		if (timeDiff.count() >= 1.0)
+		{
+			last_position_update_time = current_update_time;
+			m_Position = m_LastLocation;
+			SendPosUpdate(1);
+		}
+		return;
+	}
 	// client does crappy floor function below 0
 	if (ppu->x_pos < 0)
 		ppu->x_pos--;
@@ -3107,14 +3120,15 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	if ((rewind_x_diff > 5000) || (rewind_y_diff > 5000))
 		m_RewindLocation = glm::vec3(ppu->x_pos, ppu->y_pos, (float)ppu->z_pos / 10.0f);
 
-	glm::vec3 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f);
+	glm::vec4 newPosition(ppu->x_pos, ppu->y_pos, ppu->z_pos / 10.0f, ppu->heading);
 	bool bSkip = false;
-	if (m_LastLocation == glm::vec3())
+	if (m_LastLocation == glm::vec4())
 	{
 		m_LastLocation = newPosition;
 		m_Position.x = newPosition.x;
 		m_Position.y = newPosition.y;
 		m_Position.z = newPosition.z;
+		m_Position.w = newPosition.w;
 
 		bSkip = true;
 	}		
@@ -3262,7 +3276,6 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	m_RewindLocation = m_Position;
 	if (RuleB(Quarm, EnableProjectSpeedie))
 	{
-		auto current_update_time = std::chrono::high_resolution_clock::now();
 		auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
 		if (timeDiff.count() >= 1.0)
 		{

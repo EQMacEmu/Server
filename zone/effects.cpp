@@ -1232,7 +1232,9 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (limit_all_aoes)
 				{
-					++targets_hit;
+
+					if(curmob->IsNPC())
+						++targets_hit;
 					if (targets_hit >= MAX_TARGETS_ALLOWED)
 						break;
 				}
