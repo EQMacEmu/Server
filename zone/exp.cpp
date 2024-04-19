@@ -134,7 +134,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (GetClass() == WARRIOR) class_mult = 10.0f / 9.0f;
 	if (GetClass() == ROGUE) class_mult = 10.0f / 9.05f;
 
-	if (m_epp.married_character_id != 0 && IsGrouped())
+	if (RuleB(Quarm, ErollsiDayEvent) && m_epp.married_character_id != 0 && IsGrouped())
 	{
 		Group* our_group = GetGroup();
 		for (int x = 0; x < MAX_GROUP_MEMBERS; ++x)

@@ -6824,6 +6824,12 @@ void Client::SetMarried(const char* playerName)
 	if (strlen(playerName) > 20)
 		return;
 
+	if (!RuleB(Quarm, ErollsiDayEvent))
+	{
+		Message(13, "Marriage season is not active.. Marriage failed.");
+		return;
+	}
+
 	Client* c = entity_list.GetClientByName(playerName);
 	if (c)
 	{
