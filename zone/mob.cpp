@@ -369,7 +369,7 @@ Mob::Mob(const char* in_name,
 
 	m_targetable = true;
 
-	flymode = EQ::constants::GravityBehavior::Water;
+	flymode = GravityBehavior::Water;
 
 	hate_list.SetOwner(this);
 
@@ -1010,11 +1010,11 @@ void Mob::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 	// 3 - Mobs in water do not sink. A value of 3 in this field appears to be the default setting for all mobs
 	if (IsCorpse())
 	{
-		ns->spawn.flymode = EQ::constants::GravityBehavior::Ground;
+		ns->spawn.flymode = GravityBehavior::Ground;
 	}
 	else if(IsClient())
 	{
-		ns->spawn.flymode = FindType(SE_Levitate) ? EQ::constants::GravityBehavior::Levitating : EQ::constants::GravityBehavior::Ground;
+		ns->spawn.flymode = FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground;
 	}
 	else
 		ns->spawn.flymode = flymode;
@@ -2863,17 +2863,9 @@ bool Mob::EntityVariableExists(const char *id)
 	return false;
 }
 
-void Mob::SetFlyMode(uint8 flymode)
+void Mob::SetFlyMode(GravityBehavior flymode)
 {
-	if(IsClient() && flymode >= 0 && flymode < 3)
-	{
-		this->SendAppearancePacket(AppearanceType::FlyMode, flymode);
-	}
-	else if(IsNPC() && flymode >= 0 && flymode <= 3)
-	{
-		this->SendAppearancePacket(AppearanceType::FlyMode, flymode);
-		this->CastToNPC()->SetFlyMode(flymode);
-	}
+	this->flymode = flymode;
 }
 
 void Mob::Teleport(const glm::vec3& pos)

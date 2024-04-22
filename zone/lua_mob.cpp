@@ -1199,7 +1199,7 @@ void Lua_Mob::ProjectileAnimation(Lua_Mob to, int item_id, bool is_arrow, double
 
 void Lua_Mob::SetFlyMode(int in) {
 	Lua_Safe_Call_Void();
-	self->SetFlyMode(in);
+	self->SetFlyMode(static_cast<GravityBehavior>(in));
 }
 
 void Lua_Mob::SetTexture(int in) {

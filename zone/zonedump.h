@@ -164,7 +164,7 @@ struct PlayerCorpse_Struct {
 	bool  rezzable;
 	uint32	rez_time;
 	uint32 time_of_death;
-	ServerLootItem_Struct	items[0];
+	LootItem items[0];
 	//std::list<player_lootitem::ServerLootItem_Struct*> items;
 };
 

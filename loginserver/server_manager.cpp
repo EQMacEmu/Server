@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "../common/eqemu_logsys.h"
+#include "../common/ip_util.h"
 
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
@@ -137,12 +138,11 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 		string servername = (*iter)->GetLongName().c_str();
 		servername.append(" Server");
 
-		if (world_ip.compare(client_ip) == 0)
-		{
+		if(world_ip.compare(client_ip) == 0) {
 			packet_size += servername.size() + 1 + (*iter)->GetLocalIP().size() + 1 + sizeof(ServerListServerFlags_Struct);
 		}
-		else if (client_ip.find(server.options.GetLocalNetwork()) != string::npos)
-		{
+		else if (IpUtil::IsIpInPrivateRfc1918(client_ip)) {
+			LogInfo("Client is requesting server list from a local address [{0}]", client_ip);
 			packet_size += servername.size() + 1 + (*iter)->GetLocalIP().size() + 1 + sizeof(ServerListServerFlags_Struct);
 		}
 		else
@@ -195,7 +195,7 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 			memcpy(data_ptr, (*iter)->GetLocalIP().c_str(), (*iter)->GetLocalIP().size());
 			data_ptr += ((*iter)->GetLocalIP().size() + 1);
 		}
-		else if (client_ip.find(server.options.GetLocalNetwork()) != string::npos)
+		else if (IpUtil::IsIpInPrivateRfc1918(client_ip))
 		{
 			memcpy(data_ptr, (*iter)->GetLocalIP().c_str(), (*iter)->GetLocalIP().size());
 			data_ptr += ((*iter)->GetLocalIP().size() + 1);

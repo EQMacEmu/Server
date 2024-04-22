@@ -21,6 +21,7 @@
 #include "config.h"
 
 #include "../common/eqemu_logsys.h"
+#include "../common/ip_util.h"
 
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
@@ -554,10 +555,11 @@ void WorldServer::SendClientAuth(unsigned int ip, string account, string key, un
 	in.s_addr = connection->GetrIP();
 	string world_address(inet_ntoa(in));
 
-	if (client_address.compare(world_address) == 0) {
+	if(client_address.compare(world_address) == 0) {
 		client_auth->local = 1;
 	}
-	else if (client_address.find(server.options.GetLocalNetwork()) != string::npos) {
+	else if (IpUtil::IsIpInPrivateRfc1918(client_address)) {
+		LogInfo("Client is authenticating from a local address [{0}]", client_address);
 		client_auth->local = 1;
 	}
 	else {

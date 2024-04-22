@@ -281,8 +281,7 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	if(!in_pp || !in_cc)
 		return false;
 
-	if (mule)
-	{
+	if (mule && content_service.IsTheShadowsOfLuclinEnabled()) {
 		Log(Logs::General, Logs::Status, "%s: Starting mule character in Bazaar", in_pp->name);
 		in_pp->x = in_pp->binds[0].x = 140;
 		in_pp->y = in_pp->binds[0].y = -821;
@@ -308,18 +307,14 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		return false;
 	}
 
-	Log(Logs::General, Logs::Status, "Start zone query: %s", query.c_str());
-
     if (results.RowCount() == 0) {
-        Log(Logs::General, Logs::Status, "%s: No start_zones entry in database, using defaults", in_pp->name);
-		in_pp->x = in_pp->binds[0].x = 140;
-		in_pp->y = in_pp->binds[0].y = -821;
-		in_pp->z = in_pp->binds[0].z = 5;
-		in_pp->zone_id = in_pp->binds[0].zoneId = bazaar;
+		LogStatus("{}: No start_zones entry in database, character create is rejected", in_pp->name);
+		// character creation will be rejected however the client message will be name rejected choose another.
+		// This is an optional to use for min expansion server side rather than setting it client side.
+		return false;
     }
-    else
-	{
-		Log(Logs::General, Logs::Status, "%s: Found starting location in start_zones", in_pp->name);
+    else {
+		LogStatus("{}: Found starting location in start_zones", in_pp->name);
 		auto row = results.begin();
 		in_pp->x = atof(row[0]);
 		in_pp->y = atof(row[1]);

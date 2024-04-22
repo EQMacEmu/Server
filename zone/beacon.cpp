@@ -511,7 +511,7 @@ void Beacon::Tracer(int16 src_id, int16 tgt_id, glm::vec4 pos)
 	npc_type->WIS = 150;
 	npc_type->CHA = 150;
 
-	NPC* npc = new NPC(npc_type, 0, pos, EQ::constants::GravityBehavior::Flying);
+	NPC* npc = new NPC(npc_type, 0, pos, GravityBehavior::Flying);
 
 	entity_list.AddNPC(npc, true, true);
 }

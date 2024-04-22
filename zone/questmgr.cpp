@@ -221,7 +221,7 @@ Mob* QuestManager::spawn2(int npc_type, int grid, int unused, const glm::vec4& p
 		strcpy(tmp->name, name);
 	}
 
-	auto npc = new NPC(tmp, nullptr, position, EQ::constants::GravityBehavior::Water);
+	auto npc = new NPC(tmp, nullptr, position, GravityBehavior::Water);
 	if (name)
 		strcpy(tmp->name, tmp_name);
 
@@ -247,7 +247,7 @@ Mob* QuestManager::unique_spawn(int npc_type, int grid, int unused, const glm::v
 	const NPCType* tmp = 0;
 	if (tmp = database.LoadNPCTypesData(npc_type))
 	{
-		auto npc = new NPC(tmp, nullptr, position, EQ::constants::GravityBehavior::Water);
+		auto npc = new NPC(tmp, nullptr, position, GravityBehavior::Water);
 		npc->AddLootTable();
 		if (npc->DropsGlobalLoot()) {
 			npc->CheckGlobalLootTables();
@@ -326,7 +326,7 @@ Mob* QuestManager::spawn_from_spawn2(uint32 spawn2_id)
         auto position = glm::vec4(found_spawn->GetX(), found_spawn->GetY(), found_spawn->GetZ(), found_spawn->GetHeading());
 
 		position.w = FixHeading(position.w);
-	auto npc = new NPC(tmp, found_spawn, position, EQ::constants::GravityBehavior::Water);
+	auto npc = new NPC(tmp, found_spawn, position, GravityBehavior::Water);
 
 	found_spawn->SetNPCPointer(npc);
 	npc->AddLootTable();
@@ -1564,7 +1564,7 @@ void QuestManager::respawn(int npcTypeID, int grid) {
 	const NPCType* npcType = nullptr;
 	if ((npcType = database.LoadNPCTypesData(npcTypeID)))
 	{
-		owner = new NPC(npcType, nullptr, owner->GetPosition(), EQ::constants::GravityBehavior::Water);
+		owner = new NPC(npcType, nullptr, owner->GetPosition(), GravityBehavior::Water);
 		owner->CastToNPC()->AddLootTable();
 		if (owner->CastToNPC()->DropsGlobalLoot()) {
 			owner->CastToNPC()->CheckGlobalLootTables();
@@ -2202,22 +2202,18 @@ bool QuestManager::IsRunning()
 	return owner->IsRunning();
 }
 
-void QuestManager::FlyMode(uint8 flymode)
+void QuestManager::FlyMode(GravityBehavior flymode)
 {
 	QuestManagerCurrentQuestVars();
 	if(initiator)
 	{
-		if (flymode >= 0 && flymode < 3) {
-			initiator->SendAppearancePacket(AppearanceType::FlyMode, flymode);
-			return;
-		}
+		initiator->SendAppearancePacket(AppearanceType::FlyMode, static_cast<int>(flymode));
+		initiator->SetFlyMode(flymode);
 	}
-	if(owner)
+	else if(owner)
 	{
-		if (flymode >= 0 && flymode < 3) {
-			owner->SendAppearancePacket(AppearanceType::FlyMode, flymode);
-			return;
-		}
+		owner->SendAppearancePacket(AppearanceType::FlyMode, static_cast<int>(flymode));
+		owner->SetFlyMode(flymode);
 	}
 }
 

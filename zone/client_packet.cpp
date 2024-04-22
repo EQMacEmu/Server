@@ -66,6 +66,7 @@
 #include "../common/misc.h"
 #include "position.h"
 #include "mob_movement_manager.h"
+#include "../common/repositories/account_repository.h"
 
 #include <limits.h>
 
@@ -418,39 +419,36 @@ void Client::CompleteConnect()
 
 	if (GetGM())
 	{
-		bool levitating = flymode == EQ::constants::GravityBehavior::Levitating || FindType(SE_Levitate);
-		if (GetHideMe() || GetGMSpeed() || GetGMInvul() || (levitating || flymode != EQ::constants::GravityBehavior::Ground) || tellsoff)
+		bool levitating = flymode == GravityBehavior::Levitating || FindType(SE_Levitate);
+		if (GetGM() || GetHideMe() || GetGMSpeed() || GetGMInvul() || (levitating || flymode != GravityBehavior::Ground) || tellsoff)
 		{
-			std::string state = "currently ";
+			std::vector<std::string> state;
 
 			if (GetHideMe()) {
-				state += "hidden to all clients, ";
+				state.emplace_back("hidden to all clients");
 			}
 
 			if (GetGMSpeed()) {
-				state += "running at GM speed, ";
+				state.emplace_back("running at GM speed");
 			}
 
 			if (GetGMInvul()) {
-				state += "invulnerable to all damage, ";
+				state.emplace_back("invulnerable to all damage");
 			}
 
-			if (flymode == EQ::constants::GravityBehavior::Flying) {
-				state += "flying, ";
+			if (flymode == GravityBehavior::Flying) {
+				state.emplace_back("flying");
 			}
-			else if (levitating) {
-				state += "levitating, ";
+			else if (flymode == GravityBehavior::Levitating) {
+				state.emplace_back("levitating");
 			}
 
 			if (tellsoff) {
-				state += "ignoring tells, ";
+				state.emplace_back("ignoring tells");
 			}
 
-			if (state.size() > 0)
-			{
-				//Remove last two characters from the string
-				state.resize(state.size() - 2);
-				Message(CC_Red, "[GM Debug] You are %s.", state.c_str());
+			if (!state.empty()) {
+				Message(CC_Red, "[GM] You are currently %s.", Strings::Join(state, ", ").c_str());
 			}
 		}
 	}
@@ -1103,25 +1101,25 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	database.RemoveTempFactions(this);
 	database.LoadCharacterFactionValues(cid, factionvalues);
 
-	/* Load Character Account Data: Temp until I move */
-	query = StringFormat("SELECT `status`, `name`, `lsaccount_id`, `gmspeed`, `revoked`, `hideme`, `time_creation`, `gminvul`, `flymode`, `ignore_tells` FROM `account` WHERE `id` = %u", this->AccountID());
-	auto results = database.QueryDatabase(query);
-	for (auto row = results.begin(); row != results.end(); ++row) {
-		admin = atoi(row[0]);
-		strncpy(account_name, row[1], 30);
-		lsaccountid = atoi(row[2]);
-		gmspeed = atoi(row[3]);
-		revoked = atoi(row[4]);
-		gmhideme = atoi(row[5]);
-		account_creation = atoul(row[6]);
-		gminvul = atoi(row[7]);
-		flymode = atoi(row[8]);
-		tellsoff = atoi(row[9]);
+	/* Load Character Account Data */
+	auto a = AccountRepository::FindOne(database, AccountID());
+	if (a.id > 0) {
+		strn0cpy(account_name, a.name.c_str(), sizeof(account_name));
+
+		admin = a.status;
+		lsaccountid = a.lsaccount_id;
+		gmspeed = a.gmspeed;
+		revoked = a.revoked;
+		gmhideme = a.hideme;
+		account_creation = a.time_creation;
+		gminvul = a.gminvul;
+		flymode = static_cast<GravityBehavior>(a.flymode);
+		tellsoff = gmhideme;
 	}
 
 	/* Load Character Data */
 	query = StringFormat("SELECT `firstlogon`, `guild_id`, `rank` FROM `character_data` LEFT JOIN `guild_members` ON `id` = `char_id` WHERE `id` = %i", cid);
-	results = database.QueryDatabase(query);
+	auto results = database.QueryDatabase(query);
 	for (auto row = results.begin(); row != results.end(); ++row) {		
 		if (row[1] && atoi(row[1]) > 0){
 			guild_id = atoi(row[1]);
@@ -1782,7 +1780,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	sze->class_ = GetClass();
 
 	sze->gender = m_pp.gender;
-	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? EQ::constants::GravityBehavior::Levitating : EQ::constants::GravityBehavior::Ground);
+	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground);
 	sze->prev = 0xa0ae0e00;
 	sze->next = 0xa0ae0e00;
 	sze->extra[10] = 0xFF;
@@ -5805,7 +5803,7 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 		return;
 	}
 
-	entity->CastToCorpse()->LootItem(this, app);
+	entity->CastToCorpse()->LootCorpseItem(this, app);
 }
 
 void Client::Handle_OP_LootRequest(const EQApplicationPacket *app) 

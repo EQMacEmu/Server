@@ -449,6 +449,7 @@ public:
 	inline const float GetTarVZ() const { return m_TargetV.z; }
 	inline const float GetTarVector() const { return tar_vector; }
 	inline const uint8 GetTarNDX() const { return tar_ndx; }
+	inline const GravityBehavior GetFlyMode() const { return flymode; }
 	bool IsBoat() const;
 
 	//Group
@@ -492,7 +493,7 @@ public:
 	bool Spawned() { return spawned; };
 	void SendPosition(bool everyone = false, bool ackreq = false);
 	void SendRealPosition();
-	void SetFlyMode(uint8 flymode);
+	void SetFlyMode(GravityBehavior flymode);
 	void Teleport(const glm::vec3& pos);
 	void Teleport(const glm::vec4& pos);
 	void SetAnimation(int8 anim) { animation = anim; } // For Eye of Zomm. It's a NPC, but uses PC position updates.
@@ -827,6 +828,7 @@ public:
 	void				FixZInWater();
 	float				GetFixedZ(const glm::vec3& destination, float z_find_offset = 5.0f);
 	virtual int			GetStuckBehavior() const { return 0; }
+	virtual				EQ::InventoryProfile &GetInv() { return m_inv; }
 	float				FindGroundZ(float new_x, float new_y, float z_offset = 0.0);
 	float				FindDestGroundZ(glm::vec3 dest, float z_find_offset = 0.0);
 
@@ -966,8 +968,6 @@ public:
 	void SetGMSpellException(uint8 value) { casting_gm_override = value; };
 	bool PermaRooted() { return permarooted; }
 	bool PacifyImmune;
-	int GetFlyMode() { return flymode; }
-
 
 protected:
 	void CommonDamage(Mob* other, int32 &damage, const uint16 spell_id, const  EQ::skills::SkillType  attack_skill, bool &avoidable, const int8 buffslot, const bool iBuffTic);
@@ -1277,9 +1277,7 @@ protected:
 	float tar_vector;
 	float test_vector;
 
-
-
-	int flymode;
+	GravityBehavior flymode;
 	bool m_targetable;
 	int QGVarDuration(const char *fmt);
 	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);
@@ -1297,6 +1295,9 @@ protected:
 	Timer instillDoubtStageTimer;
 
 private:
+
+	EQ::InventoryProfile m_inv;
+
 	void _StopSong(); //this is not what you think it is
 	int int_runspeed;
 	int int_walkspeed;

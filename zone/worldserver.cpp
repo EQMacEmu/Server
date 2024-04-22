@@ -1820,11 +1820,6 @@ void WorldServer::Process() {
 				LogError("Loading npcs faction lists FAILED!");
 			}
 
-			LogInfo("Loading loot tables");
-			if(!database.LoadLoot(hotfix_name)) {
-				LogError("Loading loot FAILED!");
-			}
-
 			LogInfo("Loading skill caps");
 			if(!database.LoadSkillCaps(std::string(hotfix_name))) {
 				LogError("Loading skill caps FAILED!");

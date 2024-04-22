@@ -167,7 +167,7 @@ void Trap::Trigger(Mob* trigger)
 				{
 					auto randomOffset = glm::vec4(zone->random.Int(-5, 5),zone->random.Int(-5, 5),zone->random.Int(-5, 5), zone->random.Int(0, 249));
 					auto spawnPosition = randomOffset + glm::vec4(m_Position, 0.0f);
-					auto new_npc = new NPC(tmp, nullptr, spawnPosition, EQ::constants::GravityBehavior::Water);
+					auto new_npc = new NPC(tmp, nullptr, spawnPosition, GravityBehavior::Water);
 					new_npc->AddLootTable();
 					if (new_npc->DropsGlobalLoot()) {
 						new_npc->CheckGlobalLootTables();
@@ -193,7 +193,7 @@ void Trap::Trigger(Mob* trigger)
 				{
 					auto randomOffset = glm::vec4(zone->random.Int(-2, 2), zone->random.Int(-2, 2), zone->random.Int(-2, 2), zone->random.Int(0, 249));
 					auto spawnPosition = randomOffset + glm::vec4(m_Position, 0.0f);
-					auto new_npc = new NPC(tmp, nullptr, spawnPosition, EQ::constants::GravityBehavior::Water);
+					auto new_npc = new NPC(tmp, nullptr, spawnPosition, GravityBehavior::Water);
 					new_npc->AddLootTable();
 					if (new_npc->DropsGlobalLoot()) {
 						new_npc->CheckGlobalLootTables();
@@ -479,7 +479,7 @@ void Trap::CreateHiddenTrigger()
 	make_npc->d_melee_texture2 = 0;
 	make_npc->level = level;
 	strcpy(make_npc->special_abilities, "19,1^20,1^24,1^25,1");
-	NPC* npca = new NPC(make_npc, nullptr, glm::vec4(m_Position, 0.0f), EQ::constants::GravityBehavior::Water);
+	NPC* npca = new NPC(make_npc, nullptr, glm::vec4(m_Position, 0.0f), GravityBehavior::Water);
 	entity_list.AddNPC(npca);
 
 	hiddenTrigger = npca;

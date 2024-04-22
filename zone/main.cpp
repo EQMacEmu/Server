@@ -264,11 +264,7 @@ int main(int argc, char** argv) {
 		LogError("Loading npcs faction lists FAILED!");
 		return 1;
 	}
-	LogInfo("Loading loot tables");
-	if(!database.LoadLoot(hotfix_name)) {
-		LogError("Loading loot FAILED!");
-		return 1;
-	}
+
 	LogInfo("Loading skill caps");
 	if(!database.LoadSkillCaps(std::string(hotfix_name))) {
 		LogError("Loading skill caps FAILED!");

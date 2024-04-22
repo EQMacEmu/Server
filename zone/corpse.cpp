@@ -72,16 +72,16 @@ void Corpse::SendLootReqErrorPacket(Client* client, uint8 response) {
 Corpse* Corpse::LoadCharacterCorpseEntity(uint32 in_dbid, uint32 in_charid, std::string in_charname, const glm::vec4& position, uint32 timestamp, bool rezzed, bool was_at_graveyard){
 	uint32 item_count = database.GetCharacterCorpseItemCount(in_dbid);
 	auto buffer =
-	    new char[sizeof(PlayerCorpse_Struct) + (item_count * sizeof(ServerLootItem_Struct))];
+	    new char[sizeof(PlayerCorpse_Struct) + (item_count * sizeof(LootItem))];
 	PlayerCorpse_Struct *pcs = (PlayerCorpse_Struct*)buffer;
 	database.LoadCharacterCorpseData(in_dbid, pcs);
 
 	/* Load Items */ 
-	ItemList itemlist;
-	ServerLootItem_Struct* tmp = nullptr;
+	LootItems itemlist;
+	LootItem* tmp = nullptr;
 	for (unsigned int i = 0; i < pcs->itemcount; i++) {
-		tmp = new ServerLootItem_Struct;
-		memcpy(tmp, &pcs->items[i], sizeof(ServerLootItem_Struct));
+		tmp = new LootItem;
+		memcpy(tmp, &pcs->items[i], sizeof(LootItem));
 		itemlist.push_back(tmp);
 	}
 
@@ -145,7 +145,7 @@ Corpse* Corpse::LoadCharacterCorpseEntity(uint32 in_dbid, uint32 in_charid, std:
 	return pc;
 }
 
-Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime, bool is_client_pet)
+Corpse::Corpse(NPC* in_npc, LootItems* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime, bool is_client_pet)
 	: Mob("Unnamed_Corpse",		// const char* in_name,
 	"",							// const char* in_lastname,
 	0,							// int32		in_cur_hp,
@@ -211,7 +211,7 @@ Corpse::Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NP
 	rezzable = false;
 	is_owner_online = false;
 	is_locked = false;
-	flymode = 0;
+	flymode = GravityBehavior::Ground;
 	being_looted_by = 0xFFFFFFFF;
 	if (in_itemlist) {
 		itemlist = *in_itemlist;
@@ -342,7 +342,7 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	rezzable		= true;
 	rez_time		= 0;
 	is_owner_online = false; // We can't assume they are online just because they just died. Perhaps they rage smashed their router.
-	flymode			= 0;
+	flymode			= GravityBehavior::Ground;
 	time_of_death	= static_cast<uint32>(time(nullptr));
 
 	owner_online_timer.Start(RuleI(Character, CorpseOwnerOnlineTimeMS));
@@ -517,7 +517,7 @@ std::list<uint32> Corpse::MoveItemToCorpse(Client *client, EQ::ItemInstance *ite
 
 /* Called from Database Load */
 
-Corpse::Corpse(uint32 in_dbid, uint32 in_charid, const char* in_charname, ItemList* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, const glm::vec4& position, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture, uint32 in_rezexp, uint32 in_gmrezexp, uint8 in_killedby, bool in_rezzable, uint32 in_rez_time, bool wasAtGraveyard)
+Corpse::Corpse(uint32 in_dbid, uint32 in_charid, const char* in_charname, LootItems* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, const glm::vec4& position, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture, uint32 in_rezexp, uint32 in_gmrezexp, uint8 in_killedby, bool in_rezzable, uint32 in_rez_time, bool wasAtGraveyard)
 	: Mob("Unnamed_Corpse", // const char* in_name,
 	"",						// const char* in_lastname,
 	0,						// int32		in_cur_hp,
@@ -633,11 +633,11 @@ Corpse::~Corpse() {
 	if (is_player_corpse && !(player_corpse_depop && corpse_db_id == 0)) {
 		Save();
 	}
-	ItemList::iterator cur, end;
+	LootItems::iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		ServerLootItem_Struct* item = *cur;
+		LootItem* item = *cur;
 		safe_delete(item);
 	}
 	itemlist.clear();
@@ -667,7 +667,7 @@ bool Corpse::Save() {
 		return true;
 
 	uint32 tmp = this->CountItems();
-	uint32 tmpsize = sizeof(PlayerCorpse_Struct) + (tmp * sizeof(ServerLootItem_Struct));
+	uint32 tmpsize = sizeof(PlayerCorpse_Struct) + (tmp * sizeof(LootItem));
 
 	PlayerCorpse_Struct* dbpc = (PlayerCorpse_Struct*) new uchar[tmpsize];
 	memset(dbpc, 0, tmpsize);
@@ -701,12 +701,12 @@ bool Corpse::Save() {
 	dbpc->time_of_death = time_of_death;
 
 	uint32 x = 0;
-	ItemList::iterator cur, end;
+	LootItems::iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		ServerLootItem_Struct* item = *cur;
-		memcpy((char*)&dbpc->items[x++], (char*)item, sizeof(ServerLootItem_Struct));
+		LootItem* item = *cur;
+		memcpy((char*)&dbpc->items[x++], (char*)item, sizeof(LootItem));
 	}
 
 	/* Create New Corpse*/
@@ -777,9 +777,9 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot) {
 
 	is_corpse_changed = true;
 
-	auto item = new ServerLootItem_Struct;
+	auto item = new LootItem;
 	
-	memset(item, 0, sizeof(ServerLootItem_Struct));
+	memset(item, 0, sizeof(LootItem));
 	item->item_id = itemnum;
 	item->charges = charges;
 	item->equip_slot = slot;
@@ -788,10 +788,10 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot) {
 	UpdateEquipmentLight();
 }
 
-ServerLootItem_Struct* Corpse::GetItem(uint16 lootslot, ServerLootItem_Struct** bag_item_data) {
-	ServerLootItem_Struct *sitem = nullptr, *sitem2 = nullptr;
+LootItem* Corpse::GetItem(uint16 lootslot, LootItem** bag_item_data) {
+	LootItem *sitem = nullptr, *sitem2 = nullptr;
 
-	ItemList::iterator cur, end;
+	LootItems::iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for(; cur != end; ++cur) {
@@ -818,11 +818,11 @@ ServerLootItem_Struct* Corpse::GetItem(uint16 lootslot, ServerLootItem_Struct** 
 }
 
 uint32 Corpse::GetWornItem(int16 equipSlot) const {
-	ItemList::const_iterator cur, end;
+	LootItems::const_iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		ServerLootItem_Struct* item = *cur;
+		LootItem* item = *cur;
 		if (item->equip_slot == equipSlot) {
 			return item->item_id;
 		}
@@ -835,11 +835,11 @@ void Corpse::RemoveItem(uint16 lootslot) {
 	if (lootslot == 0xFFFF)
 		return;
 
-	ItemList::iterator cur, end;
+	LootItems::iterator cur, end;
 	cur = itemlist.begin();
 	end = itemlist.end();
 	for (; cur != end; ++cur) {
-		ServerLootItem_Struct* sitem = *cur;
+		LootItem* sitem = *cur;
 		if (sitem->lootslot == lootslot) {
 			RemoveItem(sitem);
 			return;
@@ -847,7 +847,7 @@ void Corpse::RemoveItem(uint16 lootslot) {
 	}
 }
 
-void Corpse::RemoveItem(ServerLootItem_Struct* item_data)
+void Corpse::RemoveItem(LootItem* item_data)
 {
 	for (auto iter = itemlist.begin(); iter != itemlist.end(); ++iter) {
 		auto sitem = *iter;
@@ -1189,14 +1189,14 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 
 		int i = 0;
 		const EQ::ItemData* item = nullptr;
-		ItemList::iterator cur, end;
+		LootItems::iterator cur, end;
 		cur = itemlist.begin();
 		end = itemlist.end();
 
 		int corpselootlimit = EQ::inventory::Lookup(EQ::versions::ConvertClientVersionToMobVersion(client->ClientVersion()))->InventoryTypeSize[EQ::invtype::typeCorpse];
 
 		for (; cur != end; ++cur) {
-			ServerLootItem_Struct* item_data = *cur;
+			LootItem* item_data = *cur;
 			item_data->lootslot = 0xFFFF;
 
 			// Don't display the item if it's in a bag
@@ -1241,7 +1241,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				int8 slot = EQ::invslot::GENERAL_BEGIN;
 				for (; cur != end; ++cur) 
 				{
-					ServerLootItem_Struct* item_data = *cur;
+					LootItem* item_data = *cur;
 					item = database.GetItem(item_data->item_id);
 					if(item)
 					{
@@ -1262,7 +1262,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 	client->QueuePacket(app);
 }
 
-void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
+void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 	/* This gets sent no matter what as a sort of ACK */
 	client->QueuePacket(app);
 
@@ -1311,7 +1311,7 @@ void Corpse::LootItem(Client* client, const EQApplicationPacket* app) {
 	}
 	const EQ::ItemData* item = nullptr;
 	EQ::ItemInstance *inst = nullptr;
-	ServerLootItem_Struct* item_data = nullptr, * bag_item_data[10] = {};
+	LootItem* item_data = nullptr, * bag_item_data[10] = {};
 
 	memset(bag_item_data, 0, sizeof(bag_item_data));
 	if (GetPlayerKillItem() > 1){

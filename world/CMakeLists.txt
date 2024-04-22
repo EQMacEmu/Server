@@ -10,13 +10,13 @@ SET(world_sources
 	launcher_list.cpp
 	login_server.cpp
 	login_server_list.cpp
-	net.cpp
+	main.cpp
 	queryserv.cpp
 	ucs.cpp
 	wguild_mgr.cpp
 	world_event_scheduler.cpp
 	world_config.cpp
-	world_server_command_handler.cpp
+	world_server_cli.cpp
 	worlddb.cpp
 	zonelist.cpp
 	zoneserver.cpp
@@ -32,14 +32,14 @@ SET(world_headers
 	launcher_list.h
 	login_server.h
 	login_server_list.h
-	net.h
+	main.h
 	queryserv.h
 	char_create_data.h
 	ucs.h
 	wguild_mgr.h
 	world_config.h
 	world_tcp_connection.h
-	world_server_command_handler.h
+	world_server_cli.h
 	worlddb.h
 	world_event_scheduler.h
 	zonelist.h

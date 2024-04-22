@@ -26,8 +26,9 @@
 #include "../strings.h"
 #include "../eqemu_config.h"
 #include "../database_schema.h"
-#include "../file_util.h"
+#include "../file.h"
 #include "../process/process.h"
+#include "../termcolor/rang.hpp"
 
 #include <ctime>
 
@@ -36,6 +37,7 @@
 #else
 
 #include <sys/time.h>
+#include <thread>
 
 #endif
 
@@ -196,7 +198,7 @@ std::string DatabaseDumpService::GetDumpFileNameWithPath()
 	return GetSetDumpPath() + GetDumpFileName();
 }
 
-void DatabaseDumpService::Dump()
+void DatabaseDumpService::DatabaseDump()
 {
 	if (!IsMySQLInstalled()) {
 		LogError("MySQL is not installed; Please check your PATH for a valid MySQL installation");
@@ -288,8 +290,8 @@ void DatabaseDumpService::Dump()
 		pipe_file
 	);
 
-	if (!FileUtil::exists(GetSetDumpPath()) && !IsDumpOutputToConsole()) {
-		FileUtil::mkdir(GetSetDumpPath());
+	if (!File::Exists(GetSetDumpPath()) && !IsDumpOutputToConsole()) {
+		File::Makedir(GetSetDumpPath());
 	}
 
 	if (IsDumpDropTableSyntaxOnly()) {
@@ -330,6 +332,7 @@ void DatabaseDumpService::Dump()
 					)
 				);
 				LogInfo("Compressed dump created at [{}.tar.gz]", GetDumpFileNameWithPath());
+
 			}
 			else if (Is7ZipAvailable()) {
 				Process::execute(

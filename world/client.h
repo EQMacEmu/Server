@@ -83,6 +83,8 @@ private:
 	uint32 m_ClientVersionBit;
 	bool OPCharCreate(char *name, CharCreate_Struct *cc);
 
+	bool CheckCharCreateInfo(CharCreate_Struct *cc);
+
 	void SetClassStartingSkills( PlayerProfile_Struct *pp );
 	void SetRaceStartingSkills( PlayerProfile_Struct *pp );
 	void SetRacialLanguages( PlayerProfile_Struct *pp );
@@ -110,7 +112,5 @@ private:
 	uint8	charcount;
 	bool	mule;
 };
-
-bool CheckCharCreateInfo(CharCreate_Struct *cc);
 
 #endif

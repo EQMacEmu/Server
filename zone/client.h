@@ -34,7 +34,6 @@ struct ItemData;
 #include "../common/ptimer.h"
 #include "../common/emu_opcodes.h"
 #include "../common/eq_packet_structs.h"
-//#include "../common/eq_constants.h"
 #include "../common/emu_constants.h" // inv2 watch
 #include "../common/eq_stream_intf.h"
 #include "../common/eq_packet.h"
@@ -45,7 +44,6 @@ struct ItemData;
 #include "../common/inventory_profile.h"
 #include "../common/guilds.h"
 #include "../common/item_data.h"
-//#include "../common/clientversions.h"
 
 #include "aa.h"
 #include "common.h"
@@ -715,8 +713,8 @@ public:
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	SwapItemResync(MoveItem_Struct* move_slots);
 	void	QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call = false);
-	void	PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, ServerLootItem_Struct** bag_item_data = 0);
-	bool	AutoPutLootInInventory(EQ::ItemInstance& inst, bool try_worn = false, bool try_cursor = true, ServerLootItem_Struct** bag_item_data = 0);
+	void	PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, LootItem** bag_item_data = 0);
+	bool	AutoPutLootInInventory(EQ::ItemInstance& inst, bool try_worn = false, bool try_cursor = true, LootItem** bag_item_data = 0);
 	bool	SummonItem(uint32 item_id, int8 quantity = -1, uint16 to_slot = EQ::invslot::slotCursor, bool force_charges = false);
 	void	DropItem(int16 slot_id);
 	void	SendLootItemInPacket(const EQ::ItemInstance* inst, int16 slot_id);

@@ -155,7 +155,7 @@ namespace NPCSpawnTypes {
 }
 
 class ZoneDatabase : public SharedDatabase {
-	typedef std::list<ServerLootItem_Struct*> ItemList;
+	typedef std::list<LootItem*> ItemList;
 public:
 	ZoneDatabase();
 	ZoneDatabase(const char* host, const char* user, const char* passwd, const char* database,uint32 port);
@@ -326,8 +326,8 @@ public:
 	uint32		UpdateNPCTypeAppearance(Client *client, NPC* spawn);
 	bool		GetPetEntry(const char *pet_type, PetRecord *into);
 	bool		GetPoweredPetEntry(const char *pet_type, int16 petpower, PetRecord *into);
-	void		AddLootTableToNPC(NPC* npc, uint32 loottable_id, ItemList* itemlist, uint32* copper, uint32* silver, uint32* gold, uint32* plat);
-	void		AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, ItemList* itemlist, uint8 droplimit, uint8 mindrop);
+	void		AddLootTableToNPC(NPC* npc, uint32 loottable_id, LootItems* itemlist, uint32* copper, uint32* silver, uint32* gold, uint32* plat);
+	void		AddLootDropToNPC(NPC* npc, uint32 lootdrop_id, LootItems* itemlist, uint8 droplimit, uint8 mindrop);
 	uint32		GetMaxNPCSpellsID();
 	uint32		GetMaxNPCSpellsEffectsID();
 	void LoadGlobalLoot();

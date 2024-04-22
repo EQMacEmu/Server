@@ -102,7 +102,7 @@ void Lua_Corpse::SetCash(uint32 copper, uint32 silver, uint32 gold, uint32 plati
 	self->SetCash(copper, silver, gold, platinum);
 }
 
-void Lua_Corpse::RemoveCash() {
+void Lua_Corpse::RemoveLootCash() {
 	Lua_Safe_Call_Void();
 	self->RemoveCash();
 }
@@ -181,7 +181,7 @@ luabind::scope lua_register_corpse() {
 		.def("GetWornItem", (uint32(Lua_Corpse::*)(int16))&Lua_Corpse::GetWornItem)
 		.def("RemoveItem", (void(Lua_Corpse::*)(uint16))&Lua_Corpse::RemoveItem)
 		.def("SetCash", (void(Lua_Corpse::*)(uint32, uint32, uint32, uint32))&Lua_Corpse::SetCash)
-		.def("RemoveCash", (void(Lua_Corpse::*)(void))&Lua_Corpse::RemoveCash)
+		.def("RemoveCash", (void(Lua_Corpse::*)(void))&Lua_Corpse::RemoveLootCash)
 		.def("IsEmpty", (bool(Lua_Corpse::*)(void))&Lua_Corpse::IsEmpty)
 		.def("SetDecayTimer", (void(Lua_Corpse::*)(uint32))&Lua_Corpse::SetDecayTimer)
 		.def("CanMobLoot", (bool(Lua_Corpse::*)(int))&Lua_Corpse::CanMobLoot)

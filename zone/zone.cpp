@@ -2565,3 +2565,5 @@ Timer Zone::GetInitgridsTimer()
 {
 	return initgrids_timer;
 }
+
+#include "zone_loot.cpp"

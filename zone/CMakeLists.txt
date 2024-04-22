@@ -27,7 +27,7 @@ SET(zone_sources
 	hate_list.cpp
 	horse.cpp
 	inventory.cpp
-	loottables.cpp
+	loot.cpp
 	lua_bit.cpp
 	lua_corpse.cpp
 	lua_client.cpp
@@ -50,17 +50,6 @@ SET(zone_sources
 	lua_raid.cpp
 	lua_spawn.cpp
 	lua_spell.cpp
-	entity.cpp
-	exp.cpp
-	fearpath.cpp
-	forage.cpp
-	groups.cpp
-	guild.cpp
-	guild_mgr.cpp
-	hate_list.cpp
-	horse.cpp
-	inventory.cpp
-	loottables.cpp
 	main.cpp
 	map.cpp
 	mob.cpp

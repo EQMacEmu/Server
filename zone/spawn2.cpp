@@ -276,7 +276,7 @@ bool Spawn2::Process() {
 			}
 		}
 
-		NPC* npc = new NPC(tmp, this, loc, EQ::constants::GravityBehavior::Water);
+		NPC* npc = new NPC(tmp, this, loc, GravityBehavior::Water);
 
 		npcthis = npc;
 		npc->AddLootTable();

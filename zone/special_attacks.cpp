@@ -1092,7 +1092,7 @@ void NPC::RangedAttack(Mob* other)
 	CommonBreakInvisible();
 
 	if (ammo && GetSpecialAbility(SPECATK_RANGED_ATK) == 3)	{
-		ServerLootItem_Struct* sitem = GetItem(EQ::invslot::slotAmmo);
+		LootItem* sitem = GetItem(EQ::invslot::slotAmmo);
 		RemoveItem(sitem, 1);
 	}
 }

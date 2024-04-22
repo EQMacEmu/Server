@@ -205,7 +205,7 @@ public:
 	const char* getguildnamebyid(int guild_id);
 	void SetRunning(bool val);
 	bool IsRunning();
-	void FlyMode(uint8 flymode);
+	void FlyMode(GravityBehavior flymode);
 	uint8 FactionValue();
 	void wearchange(uint8 slot, uint16 texture);
     void SendMail(const char *to, const char *from, const char *subject, const char *message);

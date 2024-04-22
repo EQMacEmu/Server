@@ -3360,6 +3360,8 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 					if (curfp)
 					{
 						curfp = false;
+						if (IsNPC())
+							StopNavigation();
 					}
 				}
 				else

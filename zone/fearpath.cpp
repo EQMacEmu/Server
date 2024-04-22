@@ -350,7 +350,7 @@ void Mob::CalculateNewFearpoint()
 	// fallback logic if pathing system can't be used
 	bool inliquid = zone->HasWaterMap() && zone->watermap->InLiquid(glm::vec3(GetPosition())) || zone->IsWaterZone(GetZ());
 	bool stay_inliquid = (inliquid && IsNPC() && CastToNPC()->IsUnderwaterOnly());
-	bool levitating = IsClient() && (FindType(SE_Levitate) || flymode != EQ::constants::GravityBehavior::Ground);
+	bool levitating = IsClient() && (FindType(SE_Levitate) || flymode != GravityBehavior::Ground);
 	bool open_outdoor_zone = !zone->CanCastDungeon() && !zone->IsCity();
 
 	int loop = 0;

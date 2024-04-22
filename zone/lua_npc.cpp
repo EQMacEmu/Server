@@ -39,29 +39,29 @@ void Lua_NPC::AddLootTable(int id) {
 
 void Lua_NPC::RemoveItem(int item_id) {
 	Lua_Safe_Call_Void();
-	ServerLootItem_Struct* sitem = self->GetItemByID(item_id);
+	LootItem* sitem = self->GetItemByID(item_id);
 	self->RemoveItem(sitem);
 }
 
 void Lua_NPC::RemoveItem(int item_id, int slot) {
 	Lua_Safe_Call_Void();
-	ServerLootItem_Struct* sitem = self->GetItem(slot, item_id);
+	LootItem* sitem = self->GetItem(slot, item_id);
 	self->RemoveItem(sitem);
 }
 
-void Lua_NPC::ClearItemList() {
+void Lua_NPC::ClearLootItems() {
 	Lua_Safe_Call_Void();
-	self->ClearItemList();
+	self->ClearLootItems();
 }
 
-void Lua_NPC::AddCash(int copper, int silver, int gold, int platinum) {
+void Lua_NPC::AddLootCash(int copper, int silver, int gold, int platinum) {
 	Lua_Safe_Call_Void();
-	self->AddCash(copper, silver, gold, platinum);
+	self->AddLootCash(copper, silver, gold, platinum);
 }
 
-void Lua_NPC::RemoveCash() {
+void Lua_NPC::RemoveLootCash() {
 	Lua_Safe_Call_Void();
-	self->RemoveCash();
+	self->RemoveLootCash();
 }
 
 int Lua_NPC::CountLoot() {
@@ -638,9 +638,9 @@ luabind::scope lua_register_npc() {
 		.def("AddLootTable", (void(Lua_NPC::*)(int))&Lua_NPC::AddLootTable)
 		.def("RemoveItem", (void(Lua_NPC::*)(int))&Lua_NPC::RemoveItem)
 		.def("RemoveItem", (void(Lua_NPC::*)(int, int))&Lua_NPC::RemoveItem)
-		.def("ClearItemList", (void(Lua_NPC::*)(void))&Lua_NPC::ClearItemList)
-		.def("AddCash", (void(Lua_NPC::*)(int, int, int, int))&Lua_NPC::AddCash)
-		.def("RemoveCash", (void(Lua_NPC::*)(void))&Lua_NPC::RemoveCash)
+		.def("ClearItemList", (void(Lua_NPC::*)(void))&Lua_NPC::ClearLootItems)
+		.def("AddCash", (void(Lua_NPC::*)(int, int, int, int))&Lua_NPC::AddLootCash)
+		.def("RemoveCash", (void(Lua_NPC::*)(void))&Lua_NPC::RemoveLootCash)
 		.def("CountLoot", (int(Lua_NPC::*)(void))&Lua_NPC::CountLoot)
 		.def("GetLoottableID", (int(Lua_NPC::*)(void))&Lua_NPC::GetLoottableID)
 		.def("GetCopper", (uint32(Lua_NPC::*)(void))&Lua_NPC::GetCopper)

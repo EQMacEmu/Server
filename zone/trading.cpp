@@ -698,7 +698,9 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 					{
 						if (item->NoDrop != 0 && npc->CountQuestItem(item->ID) == 0)
 						{
-							npc->AddLootDrop(item, &npc->itemlist, inst->GetCharges(), 0, 255, true, true);
+							auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
+							loot_drop_entry.item_charges = static_cast<int8>(inst->GetCharges());
+							npc->AddLootDrop(item, loot_drop_entry, true, true);
 							Log(Logs::General, Logs::Trading, "Adding loot item %s to Quest NPC %s due to bad faction.", item->Name, npc->GetName());
 						}
 					}
@@ -721,7 +723,9 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 								{
 									if(GetGM())
 									{
-										npc->AddLootDrop(bagitem, &npc->itemlist,baginst->GetCharges(), 0, 255, true, true);
+										auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
+										loot_drop_entry.item_charges = static_cast<int8>(baginst->GetCharges());
+										npc->AddLootDrop(bagitem, loot_drop_entry, true, true);
 										Log(Logs::General, Logs::Trading, "GM: Adding loot item %s (bag) to non-Quest NPC %s", bagitem->Name, npc->GetName());
 									}
 									// Destroy duplicate and nodrop items on charmed pets.
@@ -752,7 +756,9 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 					}
 					if(GetGM())
 					{
-						npc->AddLootDrop(item, &npc->itemlist,inst->GetCharges(), 0, 255, true, true);
+						auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
+						loot_drop_entry.item_charges = static_cast<int8>(inst->GetCharges());
+						npc->AddLootDrop(item, loot_drop_entry, true, true);
 						Log(Logs::General, Logs::Trading, "GM: Adding loot item %s to non-Quest NPC %s", item->Name, npc->GetName());
 					}
 					// Destroy duplicate and nodrop items on charmed pets.

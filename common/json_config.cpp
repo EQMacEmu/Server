@@ -1,18 +1,15 @@
 #include "json_config.h"
 #include <fstream>
+#include <iostream>
 
-EQ::JsonConfigFile::JsonConfigFile()
-{
-}
+EQ::JsonConfigFile::JsonConfigFile() = default;
 
 EQ::JsonConfigFile::JsonConfigFile(const Json::Value &value)
 {
 	m_root = value;
 }
 
-EQ::JsonConfigFile::~JsonConfigFile()
-{
-}
+EQ::JsonConfigFile::~JsonConfigFile() = default;
 
 EQ::JsonConfigFile EQ::JsonConfigFile::Load(const std::string &filename)
 {

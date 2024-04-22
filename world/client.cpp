@@ -1102,7 +1102,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	Log(Logs::Detail, Logs::WorldServer, "Beard: %d  Beardcolor: %d", cc->beard, cc->beardcolor);
 
 	/* Validate the char creation struct */
-		if(!CheckCharCreateInfo(cc)) {
+		if(!Client::CheckCharCreateInfo(cc)) {
 			Log(Logs::Detail, Logs::WorldServer,"CheckCharCreateInfo did not validate the request (bad race/class/stats)");
 			return false;
 		}
@@ -1215,12 +1215,14 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 }
 
 // returns true if the request is ok, false if there's an error
-bool CheckCharCreateInfo(CharCreate_Struct *cc)
+bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 {
 	if (!cc)
 		return false;
 
 	Log(Logs::Detail, Logs::WorldServer, "Validating char creation info...");
+
+	int currentExpansions = GetExpansion(); // Get expansion value from account table
 
 	RaceClassCombos class_combo;
 	bool found = false;
@@ -1229,7 +1231,9 @@ bool CheckCharCreateInfo(CharCreate_Struct *cc)
 		if (character_create_race_class_combos[i].Class == cc->class_ &&
 				character_create_race_class_combos[i].Race == cc->race &&
 				character_create_race_class_combos[i].Deity == cc->deity &&
-				character_create_race_class_combos[i].Zone == cc->start_zone) {
+				character_create_race_class_combos[i].Zone == cc->start_zone &&
+			((currentExpansions & character_create_race_class_combos[i].ExpansionRequired) == character_create_race_class_combos[i].ExpansionRequired || 
+				character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];
 			found = true;
 			break;

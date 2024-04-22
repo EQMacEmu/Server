@@ -33,10 +33,11 @@ SET(common_sources
 	extprofile.cpp
 	faction.cpp
 	fastmath.cpp
-	file_util.cpp
+	file.cpp
 	guild_base.cpp
 	inventory_profile.cpp
 	ipc_mutex.cpp
+	ip_util.cpp
 	item_data.cpp
 	item_instance.cpp
 	json_config.cpp
@@ -361,7 +362,7 @@ SET(common_headers
 	faction.h
 	fastmath.h
 	features.h
-	file_util.h
+	file.h
 	fixed_memory_hash_set.h
 	fixed_memory_variable_hash_set.h
 	global_define.h
@@ -369,6 +370,7 @@ SET(common_headers
 	guilds.h
 	inventory_profile.h
 	ipc_mutex.h
+	ip_util.h
 	item_data.h
 	item_fieldlist.h
 	item_instance.h
@@ -376,7 +378,7 @@ SET(common_headers
 	languages.h
 	light_source.h
 	linked_list.h
-	loottable.h
+	loot.h
 	md5.h
 	memory_buffer.h
 	memory_mapped_file.h
@@ -443,6 +445,7 @@ SET(common_headers
 	SocketLib/socket_include.h
 	SocketLib/Utility.h
 	StackWalker/StackWalker.h
+	termcolor/rang.hpp
 	tinyxml/tinystr.h
 	tinyxml/tinyxml.h
 )

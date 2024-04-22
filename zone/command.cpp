@@ -1207,8 +1207,8 @@ void command_npcloot(Client *c, const Seperator *sep){
 		//#npcloot remove all
 		if (strcasecmp(sep->arg[2], "all") == 0)
 		{
-			c->GetTarget()->CastToNPC()->ClearItemList();
-			c->GetTarget()->CastToNPC()->RemoveCash();
+			c->GetTarget()->CastToNPC()->ClearLootItems();
+			c->GetTarget()->CastToNPC()->RemoveLootCash();
 			c->Message(CC_Default, "Removed all loot from %s.", c->GetTarget()->GetCleanName());
 		}
 		//#npcloot remove itemid
@@ -1221,7 +1221,7 @@ void command_npcloot(Client *c, const Seperator *sep){
 
 				if (npc)
 				{
-					ServerLootItem_Struct* sitem = npc->GetItemByID(item);
+					LootItem* sitem = npc->GetItemByID(item);
 					npc->RemoveItem(sitem);
 					c->Message(CC_Default, "Removed item(%i) from %s's loot.", item, npc->GetCleanName());
 				}
@@ -1239,7 +1239,7 @@ void command_npcloot(Client *c, const Seperator *sep){
 		{
 			if ((atoi(sep->arg[2]) < 34465 && atoi(sep->arg[2]) >= 0) && (atoi(sep->arg[3]) < 34465 && atoi(sep->arg[3]) >= 0) && (atoi(sep->arg[4]) < 34465 && atoi(sep->arg[4]) >= 0) && (atoi(sep->arg[5]) < 34465 && atoi(sep->arg[5]) >= 0))
 			{
-				c->GetTarget()->CastToNPC()->AddCash(atoi(sep->arg[5]), atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]));
+				c->GetTarget()->CastToNPC()->AddLootCash(atoi(sep->arg[5]), atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]));
 				c->Message(CC_Default, "Set %i Platinum, %i Gold, %i Silver, and %i Copper as %s's money.", atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), atoi(sep->arg[5]), c->GetTarget()->GetName());
 			}
 			else
@@ -2801,8 +2801,8 @@ void command_flymode(Client *c, const Seperator *sep)
 	auto flymode_id = std::stoul(sep->arg[1]);
 	uint32 account = c->AccountID();
 	if (
-		flymode_id < EQ::constants::GravityBehavior::Ground &&
-		flymode_id > EQ::constants::GravityBehavior::Water
+		flymode_id <GravityBehavior::Ground &&
+		flymode_id > GravityBehavior::Water
 		) {
 		c->Message(CC_Default, "Usage:: #flymode [Flymode ID]");
 		c->Message(CC_Default, "0 = Ground, 1 = Flying, 2 = Levitating, 3 = Water");
@@ -2810,7 +2810,7 @@ void command_flymode(Client *c, const Seperator *sep)
 	}
 
 	target->SendAppearancePacket(AppearanceType::FlyMode, flymode_id);
-	database.SetGMFlymode(account, static_cast<EQ::constants::GravityBehavior>(flymode_id));
+	database.SetGMFlymode(account, static_cast<GravityBehavior>(flymode_id));
 	c->Message(
 		CC_Default,
 		fmt::format(
@@ -3251,7 +3251,7 @@ void command_npctypespawn(Client *c, const Seperator *sep){
 		const NPCType* tmp = 0;
 		if ((tmp = database.LoadNPCTypesData(atoi(sep->arg[1])))) {
 			//tmp->fixedZ = 1;
-			auto npc = new NPC(tmp, 0, c->GetPosition(), EQ::constants::GravityBehavior::Water);
+			auto npc = new NPC(tmp, 0, c->GetPosition(), GravityBehavior::Water);
 			if (npc && sep->IsNumber(2)) {
 				npc->SetNPCFactionID(atoi(sep->arg[2]));
 			}
@@ -10914,7 +10914,7 @@ void command_playsound(Client* c, const Seperator* sep)
 
 void command_viewzoneloot(Client* c, const Seperator* sep)
 {
-	std::map<uint32, ItemList> zone_loot_list;
+	std::map<uint32, LootItems> zone_loot_list;
 	auto npc_list = entity_list.GetNPCList();
 	uint32 loot_amount = 0, loot_id = 1, search_item_id = 0;
 	if (sep->argnum == 1 && sep->IsNumber(1)) {
@@ -10928,7 +10928,7 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 		return;
 	}
 	for (auto npc_entity : npc_list) {
-		auto current_npc_item_list = npc_entity.second->GetItemList();
+		auto current_npc_item_list = npc_entity.second->GetLootItems();
 		zone_loot_list.insert({ npc_entity.second->GetID(), current_npc_item_list });
 	}
 	for (auto loot_item : zone_loot_list) {

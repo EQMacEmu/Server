@@ -921,7 +921,7 @@ void Mob::SendTo(float new_x, float new_y, float new_z) {
 	m_Position.z = new_z;
 	Log(Logs::Detail, Logs::AI, "Sent To (%.3f, %.3f, %.3f)", new_x, new_y, new_z);
 
-	if(flymode == EQ::constants::GravityBehavior::Flying)
+	if(flymode == GravityBehavior::Flying)
 		return;
 
 	bool skip_z = false;
@@ -992,7 +992,7 @@ float Mob::GetFixedZ(const glm::vec3& destination, float z_find_offset) {
 
 	if (zone->HasMap()) {
 
-		if (!IsClient() && (flymode == EQ::constants::GravityBehavior::Flying || flymode == EQ::constants::GravityBehavior::Levitating)) {
+		if (!IsClient() && (flymode == GravityBehavior::Flying || flymode == GravityBehavior::Levitating)) {
 			return new_z;
 		}
 

@@ -44,7 +44,7 @@ public:
 	uint32 GetWornItem(int16 equipSlot);
 	void RemoveItem(uint16 lootslot);
 	void SetCash(uint32 copper, uint32 silver, uint32 gold, uint32 platinum);
-	void RemoveCash();
+	void RemoveLootCash();
 	bool IsEmpty();
 	void SetDecayTimer(uint32 decaytime);
 	bool CanMobLoot(int charid);

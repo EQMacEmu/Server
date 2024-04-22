@@ -24,6 +24,10 @@
 #include "qglobals.h"
 #include "zonedb.h"
 #include "zonedump.h"
+#include "../common/repositories/loottable_repository.h"
+#include "../common/repositories/loottable_entries_repository.h"
+#include "../common/repositories/lootdrop_repository.h"
+#include "../common/repositories/lootdrop_entries_repository.h"
 
 #include <deque>
 #include <list>
@@ -97,7 +101,7 @@ class NPC : public Mob
 public:
 	static NPC* SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* client = nullptr);
 
-	NPC(const NPCType* data, Spawn2* respawn, const glm::vec4& position, int iflymode, bool IsCorpse = false);
+	NPC(const NPCType *npc_type_data, Spawn2* respawn, const glm::vec4& position, GravityBehavior iflymode, bool IsCorpse = false);
 
 	virtual ~NPC();
 
@@ -179,23 +183,25 @@ public:
 	virtual void SpellProcess();
 	virtual void FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho);
 
-	void	AddLootDrop(const EQ::ItemData*dbitem, ItemList* itemlistconst, int8 charges, uint8 minlevel, uint8 maxlevel, bool equipit, bool wearchange = false, bool quest = false, bool pet = false, bool force_equip = false);
-	void	AddItem(uint32 itemid, int8 charges, bool equipitem = true, bool quest = false);
-	void	AddLootTable();
-	void	AddLootTable(uint32 ldid);
-	void	CheckGlobalLootTables();
-	bool	MoveItemToGeneralInventory(ServerLootItem_Struct* item);
-	void	CheckMinMaxLevel(Mob *them);
-	void	ClearItemList();
-	inline const ItemList& GetItemList() { return itemlist; }
-	ServerLootItem_Struct*	GetItem(int slot_id, int16 itemid = 0);
-	ServerLootItem_Struct*	GetItemByID(int16 itemid);
-	void	AddCash(uint16 in_copper, uint16 in_silver, uint16 in_gold, uint16 in_platinum);
-	void	AddCash();
-	void	RemoveCash();
-	void	QueryLoot(Client* to);
+	//loot
+	void AddItem(const EQ::ItemData *item, int8 charges, bool equip_item = true, bool quest = false);
+	void AddItem(uint32 itemid, int8 charges, bool equipitem = true, bool quest = false);
+	void AddLootTable();
+	void AddLootTable(uint32 loottable_id, bool is_global = false);
+	void AddLootDropTable(uint32 lootdrop_id, uint8 drop_limit, uint8 min_drop);
+	void CheckGlobalLootTables();
+	void RemoveItem(LootItem *item_data, uint8 quantity = 0);
+	void 	ClearLootItems();
+	inline const LootItems &GetLootItems() { return m_loot_items; }
+	LootItem *GetItem(int slot_id, int16 itemid = 0);
+	LootItem *GetItemByID(int16 itemid);
+	void	AddLootCash(uint16 in_copper, uint16 in_silver, uint16 in_gold, uint16 in_platinum);
+	void	AddLootCash();
+	void	RemoveLootCash();
+	void	QueryLoot(Client *to);
 	uint32	CountLoot();
-	inline uint32	GetLoottableID()	const { return loottable_id; }
+	bool	MoveItemToGeneralInventory(LootItem *item);
+	void	CheckMinMaxLevel(Mob *them);
 	bool	HasQuestLootItem(int16 itemid);
 	bool	HasPetLootItem(int16 itemid);
 	bool	HasQuestLoot(); 
@@ -205,27 +211,36 @@ public:
 	void	CleanQuestLootItems();
 	uint8	CountQuestItem(uint16 itemid);
 	uint8	CountQuestItems();
-	void	RemoveItem(ServerLootItem_Struct* item_data, uint8 quantity = 0);
 	bool	AddQuestLoot(int16 itemid, int8 charges = 1);
 	bool	AddPetLoot(int16 itemid, int8 charges = 1, bool fromquest = false);
 	void	DeleteQuestLoot(int16 itemid1, int16 itemid2 = 0, int16 itemid3 = 0, int16 itemid4 = 0);
 	void	DeleteInvalidQuestLoot();
+
+	inline uint32 GetLoottableID()	const { return m_loottable_id; }
+	inline bool DropsGlobalLoot() const { return !m_skip_global_loot; }
+	inline uint32 GetCopper() const { return m_loot_copper; }
+	inline uint32 GetSilver() const { return m_loot_silver; }
+	inline uint32 GetGold() const { return m_loot_gold; }
+	inline uint32 GetPlatinum() const { return m_loot_platinum; }
+	inline void SetCopper(uint32 amt) { m_loot_copper = amt; }
+	inline void SetSilver(uint32 amt) { m_loot_silver = amt; }
+	inline void SetGold(uint32 amt) { m_loot_gold = amt; }
+	inline void SetPlatinum(uint32 amt) { m_loot_platinum = amt; }
+
+	void AddLootDrop(
+		const EQ::ItemData *item2, 
+		LootdropEntriesRepository::LootdropEntries loot_drop, 
+		bool equipit = false,
+		bool wearchange = false, 
+		bool quest = false, 
+		bool pet = false, 
+		bool force_equip = false
+	);
+
 	void	DeleteEquipment(int16 slotid);
 	virtual void UpdateEquipmentLight();
-	inline bool DropsGlobalLoot() const { return !skip_global_loot; }
 	uint32	GetEquipment(uint8 material_slot) const;	// returns item id
 	int32	GetEquipmentMaterial(uint8 material_slot) const;
-
-	inline uint32	GetCopper()		const { return copper; }
-	inline uint32	GetSilver()		const { return silver; }
-	inline uint32	GetGold()		const { return gold; }
-	inline uint32	GetPlatinum()	const { return platinum; }
-
-	inline void	SetCopper(uint32 amt)		{ copper = amt; }
-	inline void	SetSilver(uint32 amt)		{ silver = amt; }
-	inline void	SetGold(uint32 amt)			{ gold = amt; }
-	inline void	SetPlatinum(uint32 amt)		{ platinum = amt; }
-
 
 	virtual int32 CalcMaxMana();
 	void SetGrid(int32 grid_){ grid=grid_; }
@@ -242,9 +257,6 @@ public:
 	glm::vec4 const GetGuardPoint() const { return m_GuardPoint; }
 	EmuAppearance GetGuardPointAnim() const { return guard_anim; }
 	void SaveGuardPointAnim(EmuAppearance anim) { guard_anim = anim; }
-
-	void SetFlyMode(uint8 FlyMode){ flymode=FlyMode; }
-	uint32 GetFlyMode() const { return flymode; }
 
 	uint8 GetPrimSkill()	const { return prim_melee_type; }
 	uint8 GetSecSkill()	const { return sec_melee_type; }
@@ -355,8 +367,6 @@ public:
 	inline const uint32 GetNPCSpellsID()	const { return npc_spells_id; }
 	inline const uint32 GetNPCSpellsEffectsID()	const { return npc_spells_effects_id; }
 
-	ItemList	itemlist; //kathgar - why is this public? Doing other things or I would check the code
-
 	NPCProximity* proximity;
 	Spawn2*	respawn2;
 	QGlobalCache *GetQGlobals() { return qGlobals; }
@@ -458,13 +468,17 @@ protected:
 
 	friend class EntityList;
 	std::list<struct NPCFaction*> faction_list;
-	uint32	copper;
-	uint32	silver;
-	uint32	gold;
-	uint32	platinum;
+
 	int32	grid;
 	uint32	spawn_group;
 	void	InitializeGrid(int start_wp);
+
+	// loot
+	uint32    m_loot_copper;
+	uint32    m_loot_silver;
+	uint32    m_loot_gold;
+	uint32    m_loot_platinum;
+	LootItems m_loot_items;
 
 	int32	npc_faction_id;
 	int32	precharm_npc_faction_id;
@@ -571,8 +585,8 @@ protected:
 	uint8 stuck_behavior;
 
 private:
-	uint32	loottable_id;
-	bool	skip_global_loot;
+	uint32	m_loottable_id;
+	bool	m_skip_global_loot;
 	bool	p_depop;
 	glm::vec3 push_vector;
 	float wall_normal1_x;

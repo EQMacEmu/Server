@@ -416,7 +416,7 @@ NPC *Mob::CreateTemporaryPet(const NPCType *npc_type, uint32 pet_duration_second
 	// but for swarm pets we're making a copy and will need to delete it in the NPC destructor
 	NPCType* npc_type_copy = new NPCType;
 	memcpy(npc_type_copy, npc_type, sizeof(NPCType));
-	NPC* swarm_pet_npc = new NPC(npc_type_copy, 0, position, EQ::constants::GravityBehavior::Water);
+	NPC* swarm_pet_npc = new NPC(npc_type_copy, 0, position, GravityBehavior::Water);
 	if (swarm_pet_npc->GetRace() != EYE_OF_ZOMM)
 	{
 		swarm_pet_npc->SetOwnerID(GetID());
@@ -464,7 +464,7 @@ NPC *Mob::CreateTemporaryPet(const NPCType *npc_type, uint32 pet_duration_second
 	{
 		swarm_pet_npc->iszomm = true;
 		swarm_pet_npc->SetNPCFactionID(0);
-		swarm_pet_npc->flymode = EQ::constants::GravityBehavior::Ground;
+		swarm_pet_npc->flymode = GravityBehavior::Ground;
 		swarm_pet_npc->pAIControlled = false;
 
 		// Zomm always spawns in front of the caster.
@@ -567,7 +567,9 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 				sitem = corpse->GetWornItem(x);
 				if (sitem) {
 					const EQ::ItemData *itm = database.GetItem(sitem);
-					wakePet->AddLootDrop(itm, &wakePet->itemlist, 1, 0, 255, true, true);
+					auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
+					loot_drop_entry.item_charges = 1;
+					wakePet->AddLootDrop(itm, loot_drop_entry, true, true);
 				}
 			}
 

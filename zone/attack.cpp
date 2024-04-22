@@ -2077,7 +2077,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 	if (GetOwner() && GetOwner()->IsClient())
 		is_client_pet = true;
 
-	auto corpse = new Corpse(this, &itemlist, GetNPCTypeID(), &NPCTypedata, 
+	auto corpse = new Corpse(this, &m_loot_items, GetNPCTypeID(), &NPCTypedata, 
 		level > 54 ? RuleI(NPC, MajorNPCCorpseDecayTimeMS) : RuleI(NPC, MinorNPCCorpseDecayTimeMS),
 		is_client_pet);
 	corpse_bool = true;
@@ -4727,148 +4727,138 @@ int Client::GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int sp
 	if (acSum < 0)
 		acSum = 0;
 
-	int32 softcap;
+	int32 softcap = 350; // AC cap is 350 for all classes in Classic era and for levels 50 and under
 
-	// the AC softcap values and logic were taken from Demonstar55's client decompile
-	switch (playerClass)
-	{
-		case WARRIOR:
-		{
-			softcap = 430;
-			break;
+	if (level > 50) {
+		if (content_service.IsTheScarsOfVeliousEnabled()) { // earliest known client with these caps is April 4, 2001; defaulting this to Velious Era
+			switch (playerClass) {
+				case WARRIOR: {
+					softcap = 430;
+					break;
+				}
+				case PALADIN:
+				case SHADOWKNIGHT:
+				case CLERIC:
+				case BARD: {
+					softcap = 403;
+					break;
+				}
+				case RANGER:
+				case SHAMAN: {
+					softcap = 375;
+					break;
+				}
+				case MONK: {
+					softcap = RuleB(AlKabor, ReducedMonkAC) ? 315 : 350;
+					break;
+				}
+				default: {
+					softcap = 350;		// dru, rog, wiz, ench, nec, mag, bst
+				}
+			}
 		}
-		case PALADIN:
-		case SHADOWKNIGHT:
-		case CLERIC:
-		case BARD:
-		{
-			softcap = 403;
-			break;
-		}
-		case RANGER:
-		case SHAMAN:
-		{
-			softcap = 375;
-			break;
-		}
-		case MONK:
-		{
-			softcap = RuleB(AlKabor, ReducedMonkAC) ? 315 : 350;
-			break;
-		}
-		default:
-		{
-			softcap = 350;		// dru, rog, wiz, ench, nec, mag, bst
+		else {
+			if (playerClass == WARRIOR && content_service.IsTheRuinsOfKunarkEnabled()) {
+				softcap = 405;
+			}
 		}
 	}
 
 	// Combat Stability AA - this raises the softcap
 	softcap += combat_stability_percent * softcap / 100;
 
-	// shield AC is not capped
-	softcap += shield_ac;
+	if (content_service.IsTheShadowsOfLuclinEnabled()) {
+		// shield AC is not capped in Luclin
+		softcap += shield_ac;
+	}
 
-	if (!ignoreCap && acSum > softcap)
-	{
-		if (level <= 50)
-		{
+	if (!ignoreCap && acSum > softcap) {
+		if (level <= 50) {
 			return softcap;		// it's hard <= level 50
 		}
 
+		if (!content_service.IsTheShadowsOfLuclinEnabled()) {
+			return softcap;
+		}
+
 		int32 overcap = acSum - softcap;
-		int32 returns = 20;					// CLR, DRU, SHM, NEC, WIZ, MAG, ENC
+		int32 returns = 20;
 
-		if (playerClass == WARRIOR)
-		{
-			if (level <= 61)
-			{
-				returns = 5;
-			}
-			else if (level <= 63)
-			{
-				returns = 4;
-			}
-			else
-			{
-				returns = 3;
+		if (!content_service.IsThePlanesOfPowerEnabled()) {
+			return 12;
+			if (playerClass == CLERIC || playerClass == DRUID || playerClass == SHAMAN || playerClass == WIZARD || playerClass == MAGICIAN || playerClass == ENCHANTER || playerClass == NECROMANCER) {
+				overcap = 0; // melee only until PoP
 			}
 		}
-		else if (playerClass == PALADIN || playerClass == SHADOWKNIGHT)
-		{
-			if (level <= 61)
-			{
-				returns = 6;
+		else {
+			if (playerClass == WARRIOR) {
+				if (level <= 61) {
+					returns = 5;
+				}
+				else if (level <= 63) {
+					returns = 4;
+				}
+				else {
+					returns = 3;
+				}
 			}
-			else if (level <= 63)
-			{
-				returns = 5;
+			else if (playerClass == PALADIN || playerClass == SHADOWKNIGHT) {
+				if (level <= 61) {
+					returns = 6;
+				}
+				else if (level <= 63) {
+					returns = 5;
+				}
+				else {
+					returns = 4;
+				}
 			}
-			else
-			{
-				returns = 4;
+			else if (playerClass == BARD) {
+				if (level <= 61) {
+					returns = 8;
+				}
+				else if (level <= 63) {
+					returns = 7;
+				}
+				else {
+					returns = 6;
+				}
 			}
-		}
-		else if (playerClass == BARD)
-		{
-			if (level <= 61)
-			{
-				returns = 8;
+			else if (playerClass == MONK || playerClass == ROGUE) {
+				if (level <= 61) {
+					returns = 20;
+				}
+				else if (level == 62) {
+					returns = 18;
+				}
+				else if (level == 63) {
+					returns = 16;
+				}
+				else if (level == 64) {
+					returns = 14;
+				}
+				else {
+					returns = 12;
+				}
 			}
-			else if (level <= 63)
-			{
-				returns = 7;
-			}
-			else
-			{
-				returns = 6;
-			}
-		}
-		else if (playerClass == MONK || playerClass == ROGUE)
-		{
-			if (level <= 61)
-			{
-				returns = 20;
-			}
-			else if (level == 62)
-			{
-				returns = 18;
-			}
-			else if (level == 63)
-			{
-				returns = 16;
-			}
-			else if (level == 64)
-			{
-				returns = 14;
-			}
-			else
-			{
-				returns = 12;
-			}
-		}
-		else if (playerClass == RANGER || playerClass == BEASTLORD)
-		{
-			if (level <= 61)
-			{
-				returns = 10;
-			}
-			else if (level == 62)
-			{
-				returns = 9;
-			}
-			else if (level == 63)
-			{
-				returns = 8;
-			}
-			else
-			{
-				returns = 7;
+			else if (playerClass == RANGER || playerClass == BEASTLORD)	{
+				if (level <= 61) {
+					returns = 10;
+				}
+				else if (level == 62) {
+					returns = 9;
+				}
+				else if (level == 63) {
+					returns = 8;
+				}
+				else {
+					returns = 7;
+				}
 			}
 		}
-
 		acSum = softcap + overcap / returns;
-	}
 
+	}
 	return acSum;
 }
 

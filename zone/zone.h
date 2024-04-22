@@ -27,6 +27,10 @@
 #include "zonedb.h"
 #include "../common/repositories/grid_repository.h"
 #include "../common/repositories/grid_entries_repository.h"
+#include "../common/repositories/loottable_repository.h"
+#include "../common/repositories/loottable_entries_repository.h"
+#include "../common/repositories/lootdrop_repository.h"
+#include "../common/repositories/lootdrop_entries_repository.h"
 #include "qglobals.h"
 #include "spawn2.h"
 #include "spawngroup.h"
@@ -310,6 +314,16 @@ public:
 
 	bool	HasCharmedNPC;
 
+	// loot
+	void LoadLootTable(const uint32 loottable_id);
+	void LoadLootTables(const std::vector<uint32> in_loottable_ids);
+	void ClearLootTables();
+	void ReloadLootTables();
+	LoottableRepository::Loottable *GetLootTable(const uint32 loottable_id);
+	std::vector<LoottableEntriesRepository::LoottableEntries> GetLootTableEntries(const uint32 loottable_id) const;
+	LootdropRepository::Lootdrop GetLootdrop(const uint32 lootdrop_id) const;
+	std::vector<LootdropEntriesRepository::LootdropEntries> GetLootdropEntries(const uint32 lootdrop_id) const;
+
 private:
 	uint32	zoneid;
 	char*	short_name;
@@ -362,6 +376,12 @@ private:
 	MobMovementManager* mMovementManager;
 
 	GlobalLootManager m_global_loot;
+
+	// loot
+	std::vector<LoottableRepository::Loottable>               m_loottables = {};
+	std::vector<LoottableEntriesRepository::LoottableEntries> m_loottable_entries = {};
+	std::vector<LootdropRepository::Lootdrop>                 m_lootdrops = {};
+	std::vector<LootdropEntriesRepository::LootdropEntries>   m_lootdrop_entries = {};
 };
 
 #endif

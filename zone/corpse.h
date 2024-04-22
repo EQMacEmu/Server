@@ -20,6 +20,8 @@
 #define CORPSE_H
 
 #include "mob.h"
+#include "client.h"
+#include "../common/loot.h"
 
 class Client;
 class EQApplicationPacket;
@@ -42,9 +44,9 @@ class Corpse : public Mob {
 	static void SendEndLootErrorPacket(Client* client);
 	static void SendLootReqErrorPacket(Client* client, uint8 response = 2);
 
-	Corpse(NPC* in_npc, ItemList* in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime = 600000, bool is_client_pet = false);
+	Corpse(NPC* in_npc, LootItems *in_itemlist, uint32 in_npctypeid, const NPCType** in_npctypedata, uint32 in_decaytime = 600000, bool is_client_pet = false);
 	Corpse(Client* client, int32 in_rezexp, uint8 killedby = 0);
-	Corpse(uint32 in_corpseid, uint32 in_charid, const char* in_charname, ItemList* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, const glm::vec4& position, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture, uint32 in_rezexp, uint32 in_gmrezexp, uint8 in_killedby, bool in_rezzable, uint32 in_rez_time, bool wasAtGraveyard = false);
+	Corpse(uint32 in_corpseid, uint32 in_charid, const char* in_charname, LootItems* in_itemlist, uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_plat, const glm::vec4& position, float in_size, uint8 in_gender, uint16 in_race, uint8 in_class, uint8 in_deity, uint8 in_level, uint8 in_texture, uint8 in_helmtexture, uint32 in_rezexp, uint32 in_gmrezexp, uint8 in_killedby, bool in_rezzable, uint32 in_rez_time, bool wasAtGraveyard = false);
 	~Corpse();
 	static Corpse* LoadCharacterCorpseEntity(uint32 in_dbid, uint32 in_charid, std::string in_charname, const glm::vec4& position, uint32 time_of_death, bool rezzed, bool was_at_graveyard);
 
@@ -84,21 +86,21 @@ class Corpse : public Mob {
 	void			LoadPlayerCorpseDecayTime(uint32 dbid, bool empty);
 
 	/* Corpse: Items */
-	uint32					GetWornItem(int16 equipSlot) const;
-	ServerLootItem_Struct*	GetItem(uint16 lootslot, ServerLootItem_Struct** bag_item_data = 0); 
-	void	SetPlayerKillItemID(int32 pk_item_id) { player_kill_item = pk_item_id; }
-	int32	GetPlayerKillItem() { return player_kill_item; } 
-	void	RemoveItem(uint16 lootslot);
-	void	RemoveItem(ServerLootItem_Struct* item_data);
-	void	AddItem(uint32 itemnum, int8 charges, int16 slot = 0);
+	uint32 GetWornItem(int16 equipSlot) const;
+	LootItem* GetItem(uint16 lootslot, LootItem** bag_item_data = 0); 
+	void SetPlayerKillItemID(int32 pk_item_id) { player_kill_item = pk_item_id; }
+	int32 GetPlayerKillItem() { return player_kill_item; } 
+	void RemoveItem(uint16 lootslot);
+	void RemoveItem(LootItem* item_data);
+	void AddItem(uint32 itemnum, int8 charges, int16 slot = 0);
 	
 	/* Corpse: Coin */
-	void	SetCash(uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_platinum);
-	void	RemoveCash();
-	uint32	GetCopper()		{ return copper; }
-	uint32	GetSilver()		{ return silver; }
-	uint32	GetGold()		{ return gold; }
-	uint32	GetPlatinum()	{ return platinum; }
+	void SetCash(uint32 in_copper, uint32 in_silver, uint32 in_gold, uint32 in_platinum);
+	void RemoveCash();
+	uint32 GetCopper() { return copper; }
+	uint32 GetSilver() { return silver; }
+	uint32 GetGold() { return gold; }
+	uint32 GetPlatinum() { return platinum; }
 
 	/* Corpse: Resurrection */
 	bool	IsRezzed() { return rez; }
@@ -110,7 +112,7 @@ class Corpse : public Mob {
 
 	/* Corpse: Loot */
 	void	QueryLoot(Client* to);
-	void	LootItem(Client* client, const EQApplicationPacket* app);
+	void	LootCorpseItem(Client* client, const EQApplicationPacket* app);
 	void	EndLoot(Client* client, const EQApplicationPacket* app);
 	void	MakeLootRequestPackets(Client* client, const EQApplicationPacket* app);
 	void	AllowPlayerLoot(Mob *them, uint8 slot);
@@ -155,7 +157,7 @@ private:
 	int32		player_kill_item;
 	uint32		corpse_db_id;
 	uint32		char_id;
-	ItemList	itemlist;
+	LootItems	itemlist;
 	uint32		copper;
 	uint32		silver;
 	uint32		gold;

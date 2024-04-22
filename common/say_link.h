@@ -22,12 +22,11 @@
 
 
 #include "types.h"
-
 #include <string>
+#include "loot.h"
 
 
-
-struct ServerLootItem_Struct;
+struct LootItem;
 
 namespace EQ
 {
@@ -63,7 +62,7 @@ namespace EQ
 
 		void SetLinkType(saylink::SayLinkType  link_type) { m_LinkType = link_type; }
 		void SetItemData(const EQ::ItemData* item_data) { m_ItemData = item_data; }
-		void SetLootData(const ServerLootItem_Struct* loot_data) { m_LootData = loot_data; }
+		void SetLootData(const LootItem* loot_data) { m_LootData = loot_data; }
 		void SetItemInst(const EQ::ItemInstance* item_inst) { m_ItemInst = item_inst; }
 
 		// mainly for saylinks..but, not limited to
@@ -89,9 +88,9 @@ namespace EQ
 		void generate_text();
 
 		int m_LinkType;
-		const EQ::ItemData* m_ItemData;
-		const ServerLootItem_Struct* m_LootData;
-		const EQ::ItemInstance* m_ItemInst;
+		const ItemData     * m_ItemData;
+		const LootItem     * m_LootData;
+		const ItemInstance * m_ItemInst;
 
 		SayLinkBody_Struct m_LinkBodyStruct;
 		SayLinkProxy_Struct m_LinkProxyStruct;

@@ -29,7 +29,6 @@
 #include "../common/strings.h"
 #include "items.h"
 #include "npc_faction.h"
-#include "loot.h"
 #include "skill_caps.h"
 #include "spells.h"
 #include "base_data.h"
@@ -111,7 +110,6 @@ int main(int argc, char **argv) {
 	bool load_all = true;
 	bool load_items = false;
 	bool load_factions = false;
-	bool load_loot = false;
 	bool load_skill_caps = false;
 	bool load_spells = false;
 	bool load_bd = false;
@@ -135,13 +133,6 @@ int main(int argc, char **argv) {
 			case 'f':
 				if(strcasecmp("factions", argv[i]) == 0) {
 					load_factions = true;
-					load_all = false;
-				}
-				break;
-	
-			case 'l':
-				if(strcasecmp("loot", argv[i]) == 0) {
-					load_loot = true;
 					load_all = false;
 				}
 				break;
@@ -189,16 +180,6 @@ int main(int argc, char **argv) {
 		Log(Logs::General, Logs::Status, "Loading factions...");
 		try {
 			LoadFactions(&database, hotfix_name);
-		} catch(std::exception &ex) {
-			LogError("{}", ex.what());
-			return 1;
-		}
-	}
-	
-	if(load_all || load_loot) {
-		Log(Logs::General, Logs::Status, "Loading loot...");
-		try {
-			LoadLoot(&database, hotfix_name);
 		} catch(std::exception &ex) {
 			LogError("{}", ex.what());
 			return 1;

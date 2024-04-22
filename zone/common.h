@@ -55,6 +55,14 @@ typedef enum {	//focus types
 } focusType; //Any new FocusType needs to be added to the Mob::IsFocus function
 #define HIGHEST_FOCUS	focusSpellHateMod //Should always be last focusType in enum
 
+// This is actually FlyMode, from MQ2
+enum GravityBehavior {
+	Ground,
+	Flying,
+	Levitating,
+	Water
+};
+
 enum {
 	SPECATK_SUMMON = 1,
 	SPECATK_ENRAGE = 2,

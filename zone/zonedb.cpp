@@ -1467,6 +1467,8 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		);
 	}
 
+	std::vector<uint32> loottable_ids;
+
     // Otherwise, get NPCs from database.
 	for (NpcTypesRepository::NpcTypes &n : NpcTypesRepository::GetWhere((Database &)database, filter))
 	{
@@ -1514,6 +1516,14 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		else {
 			t->special_abilities[0] = '\0';
 		}
+
+		if (n.loottable_id > 0) {
+			// check if we already have this loottable_id before inserting it
+			if (std::find(loottable_ids.begin(), loottable_ids.end(), n.loottable_id) == loottable_ids.end()) {
+				loottable_ids.emplace_back(n.loottable_id);
+			}
+		}
+
 		t->npc_spells_id = n.npc_spells_id;
 		t->npc_spells_effects_id = n.npc_spells_effects_id;
 		t->d_melee_texture1 = n.d_melee_texture1;
@@ -1640,7 +1650,7 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		t->stuck_behavior = n.stuck_behavior;
 		t->flymode = n.flymode;
 		if (t->flymode < 0 || t->flymode > 3) {
-			t->flymode = EQ::constants::GravityBehavior::Water;
+			t->flymode = GravityBehavior::Water;
 		}
 		t->skip_global_loot = n.skip_global_loot;
 		t->rare_spawn = n.rare_spawn;
@@ -1657,6 +1667,8 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		npc = t;
 
 	}
+
+	zone->LoadLootTables(loottable_ids);
 
 	return npc;
 }
@@ -3365,7 +3377,7 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct
 	pcs->itemcount = results.RowCount();
 	uint16 r = 0;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
-		memset(&pcs->items[i], 0, sizeof (ServerLootItem_Struct));
+		memset(&pcs->items[i], 0, sizeof (LootItem));
 		pcs->items[i].equip_slot = atoi(row[r++]);		// equip_slot,
 		pcs->items[i].item_id = atoul(row[r++]); 		// item_id,
 		pcs->items[i].charges = atoi(row[r++]); 		// charges,

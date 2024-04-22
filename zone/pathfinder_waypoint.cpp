@@ -833,7 +833,7 @@ void PathfinderWaypoint::ShowNode(const Node &n)
 	strcpy(npc_type->special_abilities, "19,1^20,1^24,1^35,1");
 
 	auto position = glm::vec4(n.v.x, n.v.y, n.v.z, 0.0f);
-	auto npc = new NPC(npc_type, nullptr, position, EQ::constants::Flying);
+	auto npc = new NPC(npc_type, nullptr, position, GravityBehavior::Flying);
 
 	entity_list.AddNPC(npc, true, true);
 }
