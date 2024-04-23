@@ -3074,16 +3074,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	auto current_update_time = std::chrono::high_resolution_clock::now();
 	auto timeDiff = std::chrono::duration<double>(current_update_time - last_position_update_time);
-	if (IsStunned() || IsMezzed())
-	{
-		if (timeDiff.count() >= 1.0)
-		{
-			last_position_update_time = current_update_time;
-			m_Position = m_LastLocation;
-			SendPosUpdate(1);
-		}
-		return;
-	}
+	
 	// client does crappy floor function below 0
 	if (ppu->x_pos < 0)
 		ppu->x_pos--;
