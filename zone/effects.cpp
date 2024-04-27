@@ -1030,12 +1030,6 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEThrottlingMaxAOETargets);
 			limit_all_aoes = true;
 		}
-
-		if (IsDetrimentalSpell(spell_id) && RuleB(Quarm, LimitPBAOEDetrimentalSpells))
-		{
-			MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEMaxHostilePBAOETargets);
-			limit_all_aoes = true;
-		}
 	}
 
 	if (!caster->IsNPC() && HasDirectDamageEffect(spell_id))
@@ -1055,6 +1049,13 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		{
 			MAX_TARGETS_ALLOWED = 4;
 		}
+	}
+
+
+	if (!limit_all_aoes && IsDetrimentalSpell(spell_id) && spells[spell_id].targettype == ST_AECaster && RuleB(Quarm, LimitPBAOEDetrimentalSpells))
+	{
+		MAX_TARGETS_ALLOWED = RuleI(Quarm, AOEMaxHostilePBAOETargets);
+		limit_all_aoes = true;
 	}
 
 	int targets_hit = 0;
