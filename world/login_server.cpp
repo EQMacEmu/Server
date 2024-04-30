@@ -155,12 +155,6 @@ bool LoginServer::Process() {
 					if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(id, utwr->ip, status))
 						utwrs->response = -5;
 				}
-				if (utwrs->response == 1)
-				{
-					// forum account checks
-					if (RuleI(World, MaxClientsPerForumName) >= 0 && strlen(utwr->forum_name) > 0 && !mule && !client_list.CheckForumNameLimit(id, std::string(utwr->forum_name), status))
-						utwrs->response = -6;
-				}
 
 				utwrs->worldid = utwr->worldid;
 				SendPacket(outpack);
@@ -170,7 +164,7 @@ bool LoginServer::Process() {
 			case ServerOP_LSClientAuth: {
 				ServerLSClientAuth* slsca = (ServerLSClientAuth*) pack->pBuffer;
 
-				client_list.CLEAdd(slsca->lsaccount_id, slsca->name, slsca->forum_name, slsca->key, slsca->worldadmin, slsca->ip, slsca->local, slsca->version);
+				client_list.CLEAdd(slsca->lsaccount_id, slsca->name, slsca->key, slsca->worldadmin, slsca->ip, slsca->local, slsca->version);
 				break;
 			}
 			case ServerOP_LSFatalError: {

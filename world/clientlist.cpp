@@ -327,48 +327,6 @@ bool ClientList::CheckIPLimit(uint32 iAccID, uint32 iIP, uint16 admin, ClientLis
 	return true;
 }
 
-bool ClientList::CheckForumNameLimit(uint32 iAccID, std::string forumName, uint16 admin, ClientListEntry *cle) {
-
-	ClientListEntry *curCLE = 0;
-	LinkedListIterator<ClientListEntry *> iterator(clientlist);
-	int ForumNameInstances = 1;
-	iterator.Reset();
-
-	while (iterator.MoreElements()) {
-
-		curCLE = iterator.GetData();
-
-		// If the forum name matches, and the connection admin status is below the exempt status,
-		// or exempt status is less than 0 (no-one is exempt)
-		if ((curCLE != nullptr && curCLE->GetForumName().length() > 0 && curCLE->GetForumName() == forumName && !curCLE->mule()) &&
-			((admin < (RuleI(World, ExemptMaxClientsStatus))) ||
-				(RuleI(World, ExemptMaxClientsStatus) < 0))) {
-
-			// Increment the occurrences of this forum name
-			if (curCLE->Online() >= CLE_Status_Zoning && (cle == nullptr || cle != curCLE))
-				ForumNameInstances++;
-		}
-		iterator.Advance();
-	}
-
-	if (ForumNameInstances > (RuleI(World, MaxClientsPerForumName))) {
-
-		// If MaxClientsSetByStatus is set to True, override other IP Limit Rules
-		if (RuleB(World, MaxClientsSetByStatus)) {
-
-			// The IP Limit is set by the status of the account if status > MaxClientsPerIP
-			if (ForumNameInstances > admin) {
-				return false;
-			}
-		}
-		else
-		{
-			return false; // limit exceeded
-		}
-	}
-	return true;
-}
-
 bool ClientList::CheckAccountActive(uint32 iAccID, ClientListEntry *cle) {
 
 	ClientListEntry* countCLEIPs = 0;
@@ -486,8 +444,8 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 }
 
 
-void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
-	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName, iForumName, iLoginKey, iWorldAdmin, ip, local, version);
+void ClientList::CLEAdd(uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version) {
+	auto tmp = new ClientListEntry(GetNextCLEID(), iLSID, iLoginName,iLoginKey, iWorldAdmin, ip, local, version);
 
 	clientlist.Append(tmp);
 }
@@ -595,7 +553,7 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 	if (accid) {
 		uint32 lsid = 0;
 		database.GetAccountIDByName(iName, &tmpadmin, &lsid);
-		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, 0, iPassword, tmpadmin, 0, 0, 2);
+		auto tmp = new ClientListEntry(GetNextCLEID(), lsid, iName, iPassword, tmpadmin, 0, 0, 2);
 		clientlist.Append(tmp);
 		return tmp;
 	}

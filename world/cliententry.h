@@ -21,7 +21,7 @@ struct ServerClientList_Struct;
 
 class ClientListEntry {
 public:
-	ClientListEntry(uint32 id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin = 0, uint32 ip = 0, uint8 local=0, uint8 version=0);
+	ClientListEntry(uint32 id, uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin = 0, uint32 ip = 0, uint8 local=0, uint8 version=0);
 	ClientListEntry(uint32 id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline);
 	~ClientListEntry();
 	bool	CheckStale();
@@ -39,7 +39,6 @@ public:
 	inline const uint32	GetID() const	{ return id; }
 	inline const uint32	GetIP() const	{ return pIP; }
 	inline void			SetIP(const uint32& iIP) { pIP = iIP; }
-	inline const std::string	GetForumName() const { return pForumName; }
 	inline void			KeepAlive()		{ stale = 0; }
 	inline uint8			GetStaleCounter() const { return stale; }
 	void	LeavingZone(ZoneServer* iZS = 0, int8 iOnline = CLE_Status_Offline);
@@ -103,7 +102,6 @@ private:
 
 	const uint32	id;
 	uint32	pIP;
-	char	pForumName[31];
 	int8	pOnline;
 	uint8	stale;
 

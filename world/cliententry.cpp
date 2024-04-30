@@ -34,7 +34,7 @@ extern ZSList zoneserver_list;
 extern ClientList		client_list;
 extern volatile bool RunLoops;
 
-ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iForumName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version)
+ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginName, const char* iLoginKey, int16 iWorldAdmin, uint32 ip, uint8 local, uint8 version)
 : id(in_id)
 {
 	ClearVars(true);
@@ -45,7 +45,6 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 		paccountid = database.GetAccountIDFromLSID(iLSID, paccountname, &padmin);
 	strn0cpy(plsname, iLoginName, sizeof(plsname));
 	strn0cpy(plskey, iLoginKey, sizeof(plskey));
-	strn0cpy(pForumName, iForumName, sizeof(pForumName));
 	pworldadmin = iWorldAdmin;
 	plocal=(local==1);
 	pversion = version;
@@ -57,7 +56,6 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 	ClearVars(true);
 
 	pIP = 0;
-	pForumName[0] = 0;
 	pLSID = scl->LSAccountID;
 	strn0cpy(plsname, scl->name, sizeof(plsname));
 	strn0cpy(plskey, scl->lskey, sizeof(plskey));
