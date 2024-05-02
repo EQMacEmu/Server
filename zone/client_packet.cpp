@@ -3090,6 +3090,9 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		return;
 	}
 
+	if (IsDraggingCorpse())
+		DragCorpses();
+
 	//Check to see if PPU should trigger an update to the rewind position.
 	float rewind_x_diff = 0;
 	float rewind_y_diff = 0;
@@ -3698,6 +3701,11 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 	CorpseDrag_Struct *cds = (CorpseDrag_Struct*)app->pBuffer;
 
+
+	cds->CorpseName[63] = '\0';
+
+	cds->DraggerName[63] = '\0';
+
 	Mob* corpse = entity_list.GetMob(cds->CorpseName);
 
 	if (!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted())
@@ -3721,6 +3729,50 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 	DraggedCorpses.push_back(std::pair<std::string, uint16>(cds->CorpseName, corpse->GetID()));
 
 	Message_StringID(MT_DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
+}
+
+void Client::Handle_OP_CorpseDrop(const EQApplicationPacket *app)
+{
+	if (app->size == 1 || app->size == 0)
+	{
+		Message_StringID(CC_Default, CORPSEDRAG_STOPALL);
+		ClearDraggedCorpses();
+		return;
+	}
+
+	VERIFY_PACKET_LENGTH(OP_CorpseDrop, app, CorpseDrag_Struct);
+
+	CorpseDrag_Struct *cds = (CorpseDrag_Struct*)app->pBuffer;
+
+	cds->CorpseName[63] = '\0';
+
+	cds->DraggerName[63] = '\0';
+
+	Mob* corpse = entity_list.GetMob(cds->CorpseName);
+
+	if (!corpse || !corpse->IsPlayerCorpse() || corpse->CastToCorpse()->IsBeingLooted())
+		return;
+
+	Client *c = entity_list.FindCorpseDragger(corpse->GetID());
+
+	if (c)
+	{
+		if (c == this)
+		{
+			for (auto It = DraggedCorpses.begin(); It != DraggedCorpses.end(); ++It) {
+				if (!strcasecmp(It->first.c_str(), cds->CorpseName))
+				{
+					It = DraggedCorpses.erase(It);
+					Message_StringID(MT_DefaultText, CORPSEDRAG_STOP, corpse->GetCleanName());
+					return;
+				}
+			}
+
+		}
+		else
+			Message_StringID(MT_DefaultText, CORPSEDRAG_SOMEONE_ELSE, corpse->GetCleanName());
+		return;
+	}
 }
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app)

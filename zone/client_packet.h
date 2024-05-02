@@ -43,6 +43,7 @@
 	void Handle_OP_Consume(const EQApplicationPacket *app);
 	void Handle_OP_ControlBoat(const EQApplicationPacket *app);
 	void Handle_OP_CorpseDrag(const EQApplicationPacket *app);
+	void Handle_OP_CorpseDrop(const EQApplicationPacket *app);
 	void Handle_OP_CreateObject(const EQApplicationPacket *app);
 	void Handle_OP_Damage(const EQApplicationPacket *app);
 	void Handle_OP_Death(const EQApplicationPacket *app);
