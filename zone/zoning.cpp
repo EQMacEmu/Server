@@ -1179,7 +1179,7 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 		return(false);
 	}
 
-	if (RuleB(Quarm, RestrictIksarsToNonKunark) && zone && zone->GetZoneExpansion() == KunarkEQEra)
+	if (RuleB(Quarm, RestrictIksarsToKunark) && zone && zone->GetZoneExpansion() == KunarkEQEra)
 	{
 		if (GetBaseRace() == IKSAR && expansion != KunarkEQEra)
 		{
