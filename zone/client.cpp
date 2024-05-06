@@ -1188,6 +1188,10 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num, uint8 language, uint8 lang_skill, const char* message, ...) {
 	if ((chan_num==ChatChannel_GMSAY && !(this->GetGM())) || (chan_num==ChatChannel_Petition && this->Admin() < AccountStatus::QuestTroupe)) // dont need to send /pr & /petition to everybody
 		return;
+
+	if (!Connected())
+		return;
+
 	char message_sender[64];
 
 	EQApplicationPacket app(OP_ChannelMessage, sizeof(ChannelMessage_Struct)+strlen(message)+1);
@@ -1225,6 +1229,8 @@ void Client::Message(uint32 type, const char* message, ...) {
 	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
 		return;
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
+	if (!Connected())
 		return;
 
 		va_list argptr;

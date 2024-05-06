@@ -2114,6 +2114,10 @@ void EntityList::ChannelMessageFromWorld(const char *from, const char *to,
 {
 	for (auto it = client_list.begin(); it != client_list.end(); ++it) {
 		Client *client = it->second;
+
+		if (!client->Connected())
+			continue;
+
 		if (chan_num == ChatChannel_Guild) {
 			if (!client->IsInGuild(guild_id) && !client->IsGMInGuild(guild_id))
 				continue;
