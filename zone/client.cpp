@@ -2791,6 +2791,9 @@ void Client::Message_StringID(uint32 type, uint32 string_id, uint32 distance)
 		return;
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
 		return;
+	if (!Connected())
+		return;
+
 	auto outapp = new EQApplicationPacket(OP_FormattedMessage, 12);
 	FormattedMessage_Struct *fm = (FormattedMessage_Struct *)outapp->pBuffer;
 	fm->string_id = string_id;
@@ -2818,6 +2821,9 @@ void Client::Message_StringID(uint32 type, uint32 string_id, const char* message
 	if (GetFilter(FilterMeleeCrits) == FilterHide && type == MT_CritMelee) //98 is self...
 		return;
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == MT_SpellCrits)
+		return;
+
+	if (!Connected())
 		return;
 
 	int i, argcount, length;
@@ -2939,6 +2945,9 @@ void Client::FilteredMessage_StringID(Mob *sender, uint32 type, eqFilterType fil
 	if (!FilteredMessageCheck(sender, filter))
 		return;
 
+	if (!Connected())
+		return;
+
 	int i, argcount, length;
 	char *bufptr;
 	const char *message_arg[9] = {0};
@@ -2988,6 +2997,9 @@ void Client::FilteredMessage_StringID(Mob *sender, uint32 type, eqFilterType fil
 
 void Client::Tell_StringID(uint32 string_id, const char *who, const char *message)
 {
+
+	if (!Connected())
+		return;
 	char string_id_str[10];
 	snprintf(string_id_str, 10, "%d", string_id);
 
