@@ -10974,6 +10974,17 @@ void command_makemule(Client* c, const Seperator* sep)
 		c->Message(CC_Red, "Account is already flagged as a mule.");
 		return;
 	}
+
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (c->GetBaseRace() == IKSAR)
+		{
+			c->Message(CC_Red, "Iksars cannot be mules during the pre-launch period.");
+			return;
+		}
+	}
+
 	if (c->GetLevel() < RuleI(Chat, GlobalChatLevelLimit)) {
 		c->Message(CC_Red, "To flag an account as a mule you must first level to %i.", RuleI(Chat, GlobalChatLevelLimit));
 		return;

@@ -693,7 +693,12 @@ void Client::CompleteConnect()
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
 		if (m_pp.expansions & LuclinEQ)
 		{
-			GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+			if (RuleB(Quarm, EastCommonMules)) {
+				MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
+			}
+			else {
+				GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
+			}
 		}
 		else
 		{
@@ -704,16 +709,29 @@ void Client::CompleteConnect()
 					MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
 				}
 				else {
-					m_pp.expansions = m_pp.expansions + LuclinEQ;
-					database.SetExpansion(AccountName(), m_pp.expansions);
 					GoToSafeCoords(database.GetZoneID("bazaar"), GUILD_NONE);
 				}
 			}
 			else {
-				GoToSafeCoords(database.GetZoneID("arena"), GUILD_NONE);
+				MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
 			}
 		}
 		return;
+	}
+
+
+	if (RuleB(Quarm, RestrictIksarsToKunark))
+	{
+		if (GetBaseRace() == IKSAR && zone->GetZoneExpansion() != KunarkEQEra && zone->GetZoneID())
+		{
+			GoToSafeCoords(database.GetZoneID("fieldofbone"), GUILD_NONE);
+			return;
+		}
+		else if (GetBaseRace() != IKSAR && zone->GetZoneExpansion() == KunarkEQEra)
+		{
+			MovePC(database.GetZoneID("ecommons"), -164.0f, -1651.0f, 4.0f, 0.0f);
+			return;
+		}
 	}
 
 	else if (m_epp.hardcore_death_time > 0)

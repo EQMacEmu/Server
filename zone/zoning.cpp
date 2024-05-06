@@ -1179,6 +1179,20 @@ bool Client::CanBeInZone(uint32 zoneid, uint32 guild_id)
 		return(false);
 	}
 
+	if (RuleB(Quarm, RestrictIksarsToNonKunark) && zone && zone->GetZoneExpansion() == KunarkEQEra)
+	{
+		if (GetBaseRace() == IKSAR && expansion != KunarkEQEra)
+		{
+			Message_StringID(CC_Red, NO_EXPAN);
+			return false;
+		}
+		else if (GetBaseRace() != IKSAR && expansion == KunarkEQEra)
+		{
+			Message_StringID(CC_Red, NO_EXPAN);
+			return false;
+		}
+	}
+
 	if (RuleB(Quarm, EastCommonMules)) {
 		if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && target_zone_id != ecommons)
 		{
