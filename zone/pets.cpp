@@ -206,6 +206,10 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 	auto npc_type = new NPCType;
 	memcpy(npc_type, base, sizeof(NPCType));
 
+	if ((GetClass() == NECROMANCER || GetClass() == SHADOWKNIGHT) && GetBaseRace() == IKSAR && npc_type->race == SKELETON) {
+		npc_type->race = IKSAR_SKELETON;
+    }
+
 	npc_type->loot_lockout = 0;
 	// If pet power is set to -1 in the DB, use stat scaling
 	// Torven: Al'Kabor pre-dates pet power, and focii do different stats per class in our era, so needs to be hardcoded anyway

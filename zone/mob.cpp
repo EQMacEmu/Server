@@ -4961,9 +4961,10 @@ void Mob::PurgePoison(Client* caster)
 void Mob::ApplyIllusion(const SPDat_Spell_Struct &spell, int i, Mob* caster)
 {
 	uint16 spell_id = spell.id;
+	uint16 spell_base = spell.base[i];
 
 	// Gender Illusions
-	if (spell.base[i] == -1)
+	if (spell_base == -1)
 	{
 		int specific_gender = -1;
 		// Male
@@ -4993,7 +4994,7 @@ void Mob::ApplyIllusion(const SPDat_Spell_Struct &spell, int i, Mob* caster)
 	}
 	else // Racial Illusions
 	{
-		int8 gender = Mob::GetDefaultGender(spell.base[i], GetGender());
+		int8 gender = Mob::GetDefaultGender(spell_base, GetGender());
 		// Texture doesn't seem to be in our spell data :I
 		int8 texture = 0;
 		if (IsRacialIllusion(spell_id))
@@ -5059,12 +5060,20 @@ void Mob::ApplyIllusion(const SPDat_Spell_Struct &spell, int i, Mob* caster)
 				break;
 			}
 
+            case 644:
+            case 1611:
+            {
+                if (GetBaseRace() == IKSAR && spell_base == SKELETON)
+                    spell_base = IKSAR_SKELETON;
+                break;
+            }
+
 			}
 		}
 
 		SendIllusionPacket
 		(
-			spell.base[i],
+			spell_base,
 			gender,
 			texture,
 			spell.max[i], // seems to be 0 for every illusion
