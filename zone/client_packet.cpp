@@ -2536,6 +2536,12 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		std::cout << "Wrong size: OP_CastSpell, size=" << app->size << ", expected " << sizeof(CastSpell_Struct) << std::endl;
 		return;
 	}
+	CastSpell_Struct *castspell = (CastSpell_Struct *)app->pBuffer;
+	if (!IsValidSpell(castspell->spell_id) || castspell->slot > 10)
+	{
+		Log(Logs::General, Logs::Spells, "OP CastSpell error: Invalid cast packet from player %s! slot=%d, spell=%d, target=%d, inv=%lx", GetName(), castspell->slot, castspell->spell_id, castspell->target_id, (unsigned long)castspell->inventoryslot);
+		return;
+	}
 	if (IsAIControlled() && !has_zomm) {
 		this->Message_StringID(CC_Red, NOT_IN_CONTROL);
 		return;
@@ -2549,7 +2555,6 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		Message_StringID(CC_User_SpellFailure, FEIGN_BROKEN_CAST);
 	}
 
-	CastSpell_Struct* castspell = (CastSpell_Struct*)app->pBuffer;
 	clicky_override = false;
 
 	Log(Logs::General, Logs::Spells, "OP CastSpell: slot=%d, spell=%d, target=%d, inv=%lx", castspell->slot, castspell->spell_id, castspell->target_id, (unsigned long)castspell->inventoryslot);
@@ -2569,7 +2574,7 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 
 	if (Admin() > 20 && GetGM() && IsValidSpell(castspell->spell_id)) {
 		Mob* SpellTarget = entity_list.GetMob(castspell->target_id);
-		char szArguments[64];
+		char szArguments[512];
 		sprintf(szArguments, "ID %i (%s), Slot %i, InvSlot %i", castspell->spell_id, spells[castspell->spell_id].name, castspell->slot, castspell->inventoryslot);
 		QServ->QSLogCommands(this, "spell", szArguments, SpellTarget);
 	}

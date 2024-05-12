@@ -31,7 +31,6 @@ WorldContentService content_service;
 
 void ImportSpells(SharedDatabase *db);
 void ImportSkillCaps(SharedDatabase *db);
-void ImportBaseData(SharedDatabase *db);
 
 int main(int argc, char **argv) {
 	RegisterExecutablePlatform(ExePlatformClientImport);
@@ -61,7 +60,6 @@ int main(int argc, char **argv) {
 
 	ImportSpells(&database);
 	ImportSkillCaps(&database);
-	ImportBaseData(&database);
 
 	LogSys.CloseFileLogs();
 	
@@ -221,47 +219,3 @@ void ImportSkillCaps(SharedDatabase *db) {
 	fclose(f);
 }
 
-void ImportBaseData(SharedDatabase *db) {
-	Log(Logs::General, Logs::Status, "Importing Base Data...");
-
-	FILE *f = fopen("import/BaseData.txt", "r");
-	if(!f) {
-		Log(Logs::General, Logs::Error, "Unable to open import/BaseData.txt to read, skipping.");
-		return;
-	}
-
-	std::string delete_sql = "DELETE FROM base_data";
-	db->QueryDatabase(delete_sql);
-
-	char buffer[2048];
-	while(fgets(buffer, 2048, f)) {
-		auto split = Strings::Split(buffer, '^');
-
-		if(split.size() < 10) {
-			continue;
-		}
-
-		std::string sql;
-		int level, class_id;
-		double hp, mana, end, unk1, unk2, hp_fac, mana_fac, end_fac;
-
-		level = atoi(split[0].c_str());
-		class_id = atoi(split[1].c_str());
-		hp = atof(split[2].c_str());
-		mana = atof(split[3].c_str());
-		end = atof(split[4].c_str());
-		unk1 = atof(split[5].c_str());
-		unk2 = atof(split[6].c_str());
-		hp_fac = atof(split[7].c_str());
-		mana_fac = atof(split[8].c_str());
-		end_fac = atof(split[9].c_str());
-
-		sql = StringFormat("INSERT INTO base_data(level, class, hp, mana, end, unk1, unk2, hp_fac, "
-			"mana_fac, end_fac) VALUES(%d, %d, %f, %f, %f, %f, %f, %f, %f, %f)",
-			level, class_id, hp, mana, end, unk1, unk2, hp_fac, mana_fac, end_fac);
-
-		db->QueryDatabase(sql);
-	}
-
-	fclose(f);
-}

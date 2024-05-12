@@ -281,12 +281,6 @@ int main(int argc, char** argv) {
 	database.SetSharedItemsCount(database.GetItemsCount());
 	database.SetSharedSpellsCount(database.GetSpellsCount());
 
-	LogInfo("Loading base data");
-	if(!database.LoadBaseData(hotfix_name)) {
-		LogError("Loading base data FAILED!");
-		return 1;
-	}
-
 	LogInfo("Loading guilds");
 	guild_mgr.LoadGuilds();
 	

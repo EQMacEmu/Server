@@ -33,7 +33,6 @@ WorldContentService content_service;
 
 void ExportSpells(SharedDatabase *db);
 void ExportSkillCaps(SharedDatabase *db);
-void ExportBaseData(SharedDatabase *db);
 
 int main(int argc, char **argv) {
 	RegisterExecutablePlatform(ExePlatformClientExport);
@@ -63,7 +62,6 @@ int main(int argc, char **argv) {
 
 	ExportSpells(&database);
 	ExportSkillCaps(&database);
-	ExportBaseData(&database);
 
 	LogSys.CloseFileLogs();
 
@@ -167,36 +165,3 @@ void ExportSkillCaps(SharedDatabase *db) {
 
 	fclose(f);
 }
-
-void ExportBaseData(SharedDatabase *db) {
-	Log(Logs::General, Logs::Status, "Exporting Base Data...");
-
-	FILE *f = fopen("export/BaseData.txt", "w");
-	if(!f) {
-		Log(Logs::General, Logs::Error, "Unable to open export/BaseData.txt to write, skipping.");
-		return;
-	}
-
-	const std::string query = "SELECT * FROM base_data ORDER BY level, class";
-	auto results = db->QueryDatabase(query);
-	if(results.Success()) {
-        for (auto row = results.begin();row != results.end();++row) {
-			std::string line;
-			unsigned int fields = results.ColumnCount();
-			for(unsigned int rowIndex = 0; rowIndex < fields; ++rowIndex) {
-				if(rowIndex != 0)
-					line.push_back('^');
-
-				if(row[rowIndex] != nullptr) {
-					line += row[rowIndex];
-				}
-			}
-
-			fprintf(f, "%s\n", line.c_str());
-		}
-	} else {
-	}
-
-	fclose(f);
-}
-

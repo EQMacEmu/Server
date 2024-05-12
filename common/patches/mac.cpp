@@ -14,6 +14,7 @@
 #include "../inventory_profile.h"
 #include "mac_structs.h"
 #include "../rulesys.h"
+#include "../content/world_content_service.h"
 
 namespace Mac {
 
@@ -964,10 +965,13 @@ namespace Mac {
 			mac_pop_item->ReqLevel = item->ReqLevel; 
 			mac_pop_item->BardType = item->BardType;
 			mac_pop_item->BardValue = item->BardValue;
-			if(item->Focus.Effect < 0)
-				mac_pop_item->FocusEffect = 0;
-			else
+
+			if (item->Focus.Effect > 0 && content_service.IsTheShadowsOfLuclinEnabled()) {
 				mac_pop_item->FocusEffect = item->Focus.Effect;
+			}
+			else {
+				mac_pop_item->FocusEffect = 0;
+			}
 
 			if(item->ItemClass == 1)
 			{

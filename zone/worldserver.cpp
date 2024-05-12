@@ -1829,11 +1829,6 @@ void WorldServer::Process() {
 			if(!database.LoadSpells(hotfix_name, &SPDAT_RECORDS, &spells)) {
 				LogError("Loading spells FAILED!");
 			}
-
-			LogInfo("Loading base data");
-			if(!database.LoadBaseData(hotfix_name)) {
-				LogError("Loading base data FAILED!");
-			}
 			break;
 		}
 		case ServerOP_ReloadSkills: 

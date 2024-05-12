@@ -21,6 +21,7 @@
 #include "../common/faction.h"
 #include "../common/rulesys.h"
 #include "../common/spdat.h"
+#include "../common/content/world_content_service.h"
 
 #include "client.h"
 #include "corpse.h"
@@ -1412,7 +1413,16 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 					nonDamageHate += standardSpellHate;
 				break;
 			}
-			//case SE_DiseaseCounter:						// disease counter hate was removed most likely in early May 2002
+			case SE_DiseaseCounter: // disease counter hate was removed most likely in early May 2002
+			{
+				if (!content_service.IsTheShadowsOfLuclinEnabled()) {
+					if (IsSlowSpell(spell_id)) {
+						break;
+					}
+					nonDamageHate += standardSpellHate;
+				}
+				break;
+			}
 			case SE_PoisonCounter:
 			{
 				nonDamageHate += standardSpellHate;

@@ -94,7 +94,6 @@ namespace DatabaseSchema {
 			"aa_actions",
 			"aa_effects",
 			"altadv_vars",
-			"base_data",
 			"blocked_spells",
 			"books",
 			"char_create_combinations",

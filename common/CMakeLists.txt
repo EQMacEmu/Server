@@ -202,7 +202,6 @@ SET(repositories
 	repositories/base/base_account_repository.h
 	repositories/base/base_account_rewards_repository.h
 	repositories/base/base_altadv_vars_repository.h
-	repositories/base/base_base_data_repository.h
 	
 	# Extended Repositories
 	repositories/bugs_repository.h
@@ -305,14 +304,12 @@ SET(repositories
 	repositories/account_repository.h
 	repositories/account_rewards_repository.h
 	repositories/altadv_vars_repository.h
-	repositories/base_data_repository.h
 	repositories/blocked_spells_repository.h
 	)
 
 SET(common_headers
 	additive_lagged_fibonacci_engine.h
 	base_packet.h
-	base_data.h
 	bodytypes.h
 	chat_oplist.h
 	classes.h

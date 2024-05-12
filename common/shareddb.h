@@ -7,7 +7,6 @@
 #include "skills.h"
 #include "spdat.h"
 #include "item_instance.h"
-#include "base_data.h"
 #include "fixed_memory_hash_set.h"
 #include "fixed_memory_variable_hash_set.h"
 #include "say_link.h"
@@ -106,12 +105,6 @@ public:
 		uint32 GetSharedSpellsCount() { return m_shared_spells_count; }
 		uint32 GetSpellsCount();
 
-		//base data
-		int GetMaxBaseDataLevel();
-		bool LoadBaseData(const std::string &prefix);
-		void LoadBaseData(void *data, int max_level);
-		const BaseDataStruct* GetBaseData(int lvl, int cl);
-
 		std::string CreateItemLink(uint32 item_id) {
 			EQ::SayLinkEngine linker;
 			linker.SetLinkType(EQ::saylink::SayLinkItemData);
@@ -127,7 +120,6 @@ protected:
 		std::unique_ptr<EQ::FixedMemoryHashSet<EQ::ItemData>>   items_hash;
 		std::unique_ptr<EQ::MemoryMappedFile>                   faction_mmf;
 		std::unique_ptr<EQ::FixedMemoryHashSet<NPCFactionList>> faction_hash;
-		std::unique_ptr<EQ::MemoryMappedFile>                   base_data_mmf;
 		std::unique_ptr<EQ::MemoryMappedFile>                   spells_mmf;
 
 public:
