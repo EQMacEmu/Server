@@ -238,8 +238,7 @@ void Mob::DoBash(Mob* defender)
 
 			const EQ::ItemData *itm = item->GetItem();
 			int32 fbMult = GetFuriousBash(itm->Focus.Effect);
-			if (fbMult)
-			{
+			if (fbMult && content_service.IsTheShadowsOfLuclinEnabled()) {  // Disable Focus Effect until Luclin
 				fbMult = zone->random.Int(1, fbMult);
 				hate = base * (100 + fbMult) / 100;
 			}

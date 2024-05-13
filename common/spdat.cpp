@@ -69,10 +69,6 @@
 	and not SpellFinished().
 
 */
-#include "../common/eqemu_logsys.h"
-
-
-
 #include "../common/eqemu_logsys.h" 
 
 #include "classes.h"

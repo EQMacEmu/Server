@@ -16,6 +16,7 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "../common/classes.h"
+#include "../common/content/world_content_service.h"
 #include "../common/global_define.h"
 #include "../common/item_instance.h"
 #include "../common/rulesys.h"
@@ -252,7 +253,7 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		ApplySpellsBonuses(item->Worn.Effect ? item->Worn.Effect : item->Proc.Effect, item->Worn.Level > 0 ? item->Worn.Level : GetLevel(), newbon, 0, true);
 	}
 
-	if (item->Focus.Effect>0 && (item->Focus.Type == EQ::item::ItemEffectFocus)) { // focus effects
+	if (item->Focus.Effect>0 && (item->Focus.Type == EQ::item::ItemEffectFocus) && content_service.IsTheShadowsOfLuclinEnabled()) { // focus effects
 		ApplySpellsBonuses(item->Focus.Effect, GetLevel(), newbon, 0, true);
 	}
 

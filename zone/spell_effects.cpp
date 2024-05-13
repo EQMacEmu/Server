@@ -4199,12 +4199,18 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 
 int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_name, bool dot_tick, int spell_level, bool include_items, bool include_spells, bool include_aa) {
 
-	if (IsBardSong(spell_id))
+	if (IsBardSong(spell_id)) {
 		return 0;
+	}
 
-	if ((type == focusManaCost || type == focusSpellHaste) && 
-		(casting_spell_slot == EQ::spells::CastingSlot::Item || casting_aa > 0))
+	if ((type == focusManaCost || type == focusSpellHaste) &&
+		(casting_spell_slot == EQ::spells::CastingSlot::Item || casting_aa > 0)) {
 		return 0;
+	}
+
+	if (!content_service.IsTheShadowsOfLuclinEnabled()) {
+		return 0;
+	}
 
 	int16 realTotal = 0;
 	int16 realTotal2 = 0;
