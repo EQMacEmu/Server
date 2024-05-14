@@ -27,6 +27,7 @@
 #include "database.h"
 #include "chatchannel.h"
 
+#include "../common/eqemu_config.h"
 #include "../common/eq_stream_factory.h"
 #include "../common/emu_tcp_connection.h"
 #include "../common/emu_tcp_server.h"
@@ -194,8 +195,11 @@ Clientlist::Clientlist(int ChatPort) {
 	chatsf = new EQStreamFactory(ChatStream, ChatPort, 60000);
 
 	ChatOpMgr = new RegularOpcodeManager;
-
-	if(!ChatOpMgr->LoadOpcodes("chat_opcodes.conf"))
+	auto Config = EQEmuConfig::get();
+	std::string opfile = Config->PatchDir;
+	opfile += "chat_opcodes";
+	opfile += ".conf";
+	if(!ChatOpMgr->LoadOpcodes(opfile.c_str()))
 		exit(1);
 
 	if (chatsf->Open()) {
