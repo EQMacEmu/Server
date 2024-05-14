@@ -27,13 +27,12 @@
 		},
 		"world": {
 			"longname": "New Devbox",
-			"address": "192.168.1.100",
-			"localaddress": "192.168.1.100",
-			"loginserver1": {
+			"address": "10.0.0.20",
+			"localaddress": "10.0.0.20",
+			"loginserver": {
 				"account": "",
 				"password": "",
-				"legacy": 0,
-				"host": "login.projecteq.net",
+				"host": "127.0.0.1",
 				"port": "5998"
 			},
 			"tcp": {
