@@ -137,11 +137,18 @@ ifeq (,$(wildcard .devcontainer/base/db/db.sql.zip))
 	@-cd .devcontainer/base/db && unzip db.sql.zip
 endif
 	@echo "Sourcing db may take a while, please wait..."
+	@echo "Sourcing alkabor_2024-04-21-15_36.sql..."
 	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source alkabor_2024-04-21-15_36.sql"
+	@echo "Sourcing data_tables_2024-04-21-15_36.sql..."
 	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source data_tables_2024-04-21-15_36.sql"
+	@echo "Sourcing login_tables_2024-04-21-15_36.sql..."
 	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source login_tables_2024-04-21-15_36.sql"
+	@echo "Sourcing player_tables_2024-04-21-15_36.sql..."
 	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source player_tables_2024-04-21-15_36.sql"
+	@echo "Sourcing system_tables_2024-04-21-15_36.sql..."
 	@cd utils/sql/git/required/ && sudo mariadb --database peq -e "source 2024_2_10_server_scheduled_events.sql"
+	@echo "Sourcing tblloginserversettings.sql..."
+	@cd loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
 
 	@echo "MariaDB is now injected."
 
