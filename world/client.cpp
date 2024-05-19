@@ -331,29 +331,38 @@ bool Client::HandleNameApprovalPacket(const EQApplicationPacket *app)
 	auto outapp = new EQApplicationPacket(OP_ApproveName, sizeof(NameApprovalReply_Struct));
 	NameApprovalReply_Struct* nr = (NameApprovalReply_Struct *)outapp->pBuffer;
 
-	bool valid = false;
-	if (!database.CheckNameFilter(char_name)) 
-	{
-		Log(Logs::Detail, Logs::WorldServer, "Name is not valid or did not pass the filter.");
-		valid = false; 
+	auto length = snprintf(char_name, 64, "%s", (char*)app->pBuffer);
+	bool valid = true;
+	/* Name must be between 4 and 15 characters long, packet forged if this is true */
+	if (length < 4 || length > 15) {
+		valid = false;
 	}
-	/* Name must begin with an upper-case letter. */
-	else if (islower(char_name[0])) 
-	{
-		Log(Logs::Detail, Logs::WorldServer, "Name must begin with uppercase.");
-		valid = false; 
-	} 
-	else if (database.ReserveName(GetAccountID(), char_name)) 
-	{
-		Log(Logs::Detail, Logs::WorldServer, "Name is valid.");
-		valid = true; 	
+	/* Name must begin with an upper-case letter, can be sent with some tricking of the client */
+	else if (islower(char_name[0])) {
+		valid = false;
 	}
-	else 
-	{
-		Log(Logs::Detail, Logs::WorldServer, "Name is not valid.");
-		valid = false; 
+	/* Name must not have any spaces, packet forged if this is true */
+	else if (strstr(char_name, " ")) {
+		valid = false;
+	}
+	/* I would like to do this later, since it's likely more expensive, but oh well */
+	else if (!database.CheckNameFilter(char_name)) {
+		valid = false;
+	}
+	else {
+		/* Name must not not contain any uppercase letters, can be sent with some tricking of the client */
+		for (int i = 1; i < length; ++i) {
+			if (isupper(char_name[i])) {
+				valid = false;
+				break;
+			}
+		}
 	}
 
+	/* Still not invalid, let's see if it's taken */
+	if (valid) {
+		valid = database.ReserveName(GetAccountID(), char_name);
+	}
 	nr->approval = valid? 1 : 0;
 	QueuePacket(outapp);
 	safe_delete(outapp);
