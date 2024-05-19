@@ -1079,7 +1079,7 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 			switch (message)
 			{
 			case SONG_ENDS:
-				message_other = SONG_ENDS_OTHER;
+				message_other = 0;
 				color = CC_User_Spells;
 				break;
 			case SONG_ENDS_ABRUPTLY:
@@ -1111,7 +1111,9 @@ void Mob::InterruptSpell(uint16 message, uint16 color, uint16 spellid, bool fizz
 			}
 
 			if (message_other > 0)
+			{
 				entity_list.MessageClose_StringID(this, true, 200, color, message_other, this->GetCleanName());
+			}
 		}
 	}
 }
