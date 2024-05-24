@@ -49,7 +49,7 @@ namespace EQ
 
 	struct SayLinkBody_Struct {
 		uint8 action_id;		/* %1X */
-		uint16 item_id;			/* %05X */
+		uint32 item_id;			/* %05X */
 	};
 
 	struct SayLinkProxy_Struct : SayLinkBody_Struct {
@@ -105,7 +105,8 @@ namespace EQ
 
 class Saylink {
 public:
-	static std::string Create(std::string saylink_text, bool silent, std::string link_name);
+	static std::string Create(const std::string &saylink_text, bool silent,  const std::string &link_name = "");
+	static std::string Silent(const std::string &saylink_text,  const std::string &link_name = "");
 };
 
 #endif /* COMMON_SAY_LINK_H */

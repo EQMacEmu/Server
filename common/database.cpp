@@ -1324,6 +1324,15 @@ void Database::ClearMerchantTemp(){
 	QueryDatabase("DELETE FROM merchantlist_temp");
 }
 
+void Database::ClearSayLink() {
+	std::string query = StringFormat("DELETE FROM saylink");
+	auto results = QueryDatabase(query);
+
+	if (results.Success()) {
+		QueryDatabase("ALTER TABLE saylink AUTO_INCREMENT = 32770");
+	}
+}
+
 bool Database::UpdateName(const char* oldname, const char* newname) { 
 	std::cout << "Renaming " << oldname << " to " << newname << "..." << std::endl; 
 	std::string query = StringFormat("UPDATE `character_data` SET `name` = '%s' WHERE `name` = '%s';", newname, oldname);
@@ -2044,6 +2053,15 @@ void Database::ClearRaidDetails(uint32 rid) {
 
 	if (!results.Success())
 		std::cout << "Unable to clear raid details: " << results.ErrorMessage() << std::endl;
+}
+
+void Database::PurgeAllDeletedDataBuckets() {
+	std::string query = StringFormat(
+		"DELETE FROM `data_buckets` WHERE (`expires` < %lld AND `expires` > 0)",
+		(long long)std::time(nullptr)
+	);
+
+	QueryDatabase(query);
 }
 
 // returns 0 on error or no raid for that character, or

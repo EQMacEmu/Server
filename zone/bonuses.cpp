@@ -186,27 +186,24 @@ void Client::CalcItemBonuses(StatBonuses* newbon) {
 }
 
 void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
-	if(!inst || !inst->IsType(EQ::item::ItemClassCommon))
-	{
+	if(!inst || !inst->IsType(EQ::item::ItemClassCommon)) {
 		return;
 	}
 
 	const EQ::ItemData *item = inst->GetItem();
 
-	if(!inst->IsEquipable(GetBaseRace(),GetClass()))
-	{
-		if(item->ItemType != EQ::item::ItemTypeFood && item->ItemType != EQ::item::ItemTypeDrink)
+	if(!inst->IsEquipable(GetBaseRace(),GetClass())) {
+		if (item->ItemType != EQ::item::ItemTypeFood && item->ItemType != EQ::item::ItemTypeDrink) {
 			return;
+		}
 	}
 
 	// The client always applies bonuses if the item is equipped, so skip this check for devels who deleved themselves in testing.
-	if(GetLevel() < item->ReqLevel && Admin() < 80)
-	{
+	if(GetLevel() < item->ReqLevel && Admin() < 80) {
 		return;
 	}
 
-	if(GetLevel() >= item->RecLevel)
-	{
+	if(GetLevel() >= item->RecLevel) {
 		newbon->AC += item->AC;
 		newbon->HP += item->HP;
 		newbon->Mana += item->Mana;
@@ -224,8 +221,7 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		newbon->PR += (item->PR);
 		newbon->DR += (item->DR);
 	}
-	else
-	{
+	else {
 		int lvl = GetLevel();
 		int reclvl = item->RecLevel;
 
@@ -257,8 +253,7 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		ApplySpellsBonuses(item->Focus.Effect, GetLevel(), newbon, 0, true);
 	}
 
-	switch(item->BardType)
-	{
+	switch(item->BardType) {
 	case 51: /* All (e.g. Singing Short Sword) */
 		{
 			if(item->BardValue > newbon->singingMod)

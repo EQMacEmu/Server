@@ -21,6 +21,9 @@
 #include "../common/rulesys.h"
 #include "../common/strings.h"
 #include "../common/data_verification.h"
+#include "../common/repositories/npc_spells_repository.h"
+#include "../common/repositories/npc_spells_entries_repository.h"
+#include "../common/repositories/criteria/content_filter_criteria.h"
 #include "client.h"
 #include "entity.h"
 #include "map.h"
@@ -3178,14 +3181,10 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 		_idle_no_sp_recast_min = parentlist->idle_no_sp_recast_min;
 		_idle_no_sp_recast_max = parentlist->idle_no_sp_recast_max;
 		_idle_beneficial_chance = parentlist->idle_beneficial_chance;
-		for (i=0; i<parentlist->numentries; i++) {
-			if (GetLevel() >= parentlist->entries[i].minlevel && GetLevel() <= parentlist->entries[i].maxlevel && parentlist->entries[i].spellid > 0) {
-				if (!IsSpellInList(spell_list, parentlist->entries[i].spellid))
-				{
-					AddSpellToNPCList(parentlist->entries[i].priority,
-						parentlist->entries[i].spellid, parentlist->entries[i].type,
-						parentlist->entries[i].manacost, parentlist->entries[i].recast_delay,
-						parentlist->entries[i].resist_adjust);
+		for (auto &e : parentlist->entries) {
+			if (GetLevel() >= e.minlevel && GetLevel() <= e.maxlevel && e.spellid > 0) {
+				if (!IsSpellInList(spell_list, e.spellid)) {
+					AddSpellToNPCList(e.priority, e.spellid, e.type, e.manacost, e.recast_delay, e.resist_adjust);
 				}
 			}
 		}
@@ -3219,14 +3218,12 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 		_idle_beneficial_chance = spell_list->idle_beneficial_chance;
 	}
 
-	for (i=0; i<spell_list->numentries; i++) {
-		if (GetLevel() >= spell_list->entries[i].minlevel && GetLevel() <= spell_list->entries[i].maxlevel && spell_list->entries[i].spellid > 0) {
-			AddSpellToNPCList(spell_list->entries[i].priority,
-				spell_list->entries[i].spellid, spell_list->entries[i].type,
-				spell_list->entries[i].manacost, spell_list->entries[i].recast_delay,
-				spell_list->entries[i].resist_adjust);
+	for (auto &e : spell_list->entries) {
+		if (GetLevel() >= e.minlevel && GetLevel() <= e.maxlevel && e.spellid > 0) {
+			AddSpellToNPCList(e.priority, e.spellid, e.type, e.manacost, e.recast_delay, e.resist_adjust);
 		}
 	}
+
 	std::sort(AIspells.begin(), AIspells.end(), [](const AISpells_Struct& a, const AISpells_Struct& b) {
 		return a.priority > b.priority;
 	});
@@ -3353,11 +3350,9 @@ bool IsSpellEffectInList(DBnpcspellseffects_Struct* spelleffect_list, uint16 iSp
 }
 
 bool IsSpellInList(DBnpcspells_Struct* spell_list, int16 iSpellID) {
-	for (uint32 i=0; i < spell_list->numentries; i++) {
-		if (spell_list->entries[i].spellid == iSpellID)
-			return true;
-	}
-	return false;
+	auto it = std::find_if(spell_list->entries.begin(), spell_list->entries.end(),
+		[iSpellID](const DBnpcspells_entries_Struct &a) { return a.spellid == iSpellID; });
+	return it != spell_list->entries.end();
 }
 
 // adds a spell to the list, taking into account priority and resorting list as needed.
@@ -3413,113 +3408,81 @@ void NPC::AISpellsList(Client *c)
 	return;
 }
 
-DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 iDBSpellsID) {
-	if (iDBSpellsID == 0)
+DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 npc_spells_id) 
+{
+	if (npc_spells_id == 0) {
 		return nullptr;
-
-	if (!npc_spells_cache) {
-		npc_spells_maxid = GetMaxNPCSpellsID();
-		npc_spells_cache = new DBnpcspells_Struct*[npc_spells_maxid+1];
-		npc_spells_loadtried = new bool[npc_spells_maxid+1];
-		for (uint32 i=0; i<=npc_spells_maxid; i++) {
-			npc_spells_cache[i] = 0;
-			npc_spells_loadtried[i] = false;
-		}
 	}
 
-	if (iDBSpellsID > npc_spells_maxid)
-		return nullptr;
-	if (npc_spells_cache[iDBSpellsID]) { // it's in the cache, easy =)
-		return npc_spells_cache[iDBSpellsID];
+	auto it = npc_spells_cache.find(npc_spells_id);
+	if (it != npc_spells_cache.end()) { // it's in the cache, easy =)
+		return &it->second;
 	}
 
-	else if (!npc_spells_loadtried[iDBSpellsID]) { // no reason to ask the DB again if we have failed once already
-		npc_spells_loadtried[iDBSpellsID] = true;
+	if (!npc_spells_loadtried.count(npc_spells_id)) { // no reason to ask the DB again if we have failed once already
+		npc_spells_loadtried.insert(npc_spells_id);
 
-		std::string query = StringFormat("SELECT id, parent_list, attack_proc, proc_chance, "
-                                        "range_proc, rproc_chance, defensive_proc, dproc_chance, "
-                                        "fail_recast, engaged_no_sp_recast_min, engaged_no_sp_recast_max, "
-                                        "engaged_b_self_chance, engaged_b_other_chance, engaged_d_chance, "
-                                        "pursue_no_sp_recast_min, pursue_no_sp_recast_max, "
-                                        "pursue_d_chance, idle_no_sp_recast_min, idle_no_sp_recast_max, "
-                                        "idle_b_chance FROM npc_spells WHERE id=%d", iDBSpellsID);
-        auto results = QueryDatabase(query);
-        if (!results.Success()) {
+		auto ns = NpcSpellsRepository::FindOne(*this, npc_spells_id);
+		if (!ns.id) {
 			return nullptr;
         }
 
-        if (results.RowCount() != 1)
-            return nullptr;
+		DBnpcspells_Struct ss;
 
-        auto row = results.begin();
-        uint32 tmpparent_list = atoi(row[1]);
-        uint16 tmpattack_proc = atoi(row[2]);
-        uint8 tmpproc_chance = atoi(row[3]);
-        uint16 tmprange_proc = atoi(row[4]);
-        int16 tmprproc_chance = atoi(row[5]);
-        uint16 tmpdefensive_proc = atoi(row[6]);
-        int16 tmpdproc_chance = atoi(row[7]);
-        uint32 tmppfail_recast = atoi(row[8]);
-        uint32 tmpengaged_no_sp_recast_min = atoi(row[9]);
-        uint32 tmpengaged_no_sp_recast_max = atoi(row[10]);
-        uint8 tmpengaged_b_self_chance = atoi(row[11]);
-        uint8 tmpengaged_b_other_chance = atoi(row[12]);
-        uint8 tmpengaged_d_chance = atoi(row[13]);
-        uint32 tmpidle_no_sp_recast_min = atoi(row[17]);
-        uint32 tmpidle_no_sp_recast_max = atoi(row[18]);
-        uint8 tmpidle_b_chance = atoi(row[19]);
+		ss.parent_list                       = ns.parent_list;
+        ss.attack_proc                       = ns.attack_proc;
+        ss.proc_chance                       = ns.proc_chance;
+        ss.range_proc                        = ns.range_proc;
+        ss.rproc_chance                      = ns.rproc_chance;
+        ss.defensive_proc                    = ns.defensive_proc;
+        ss.dproc_chance                      = ns.dproc_chance;
+        ss.fail_recast                       = ns.fail_recast;
+        ss.engaged_no_sp_recast_min          = ns.engaged_no_sp_recast_min;
+        ss.engaged_no_sp_recast_max          = ns.engaged_no_sp_recast_max;
+        ss.engaged_beneficial_self_chance    = ns.engaged_b_self_chance;
+        ss.engaged_beneficial_other_chance   = ns.engaged_b_other_chance;
+        ss.engaged_detrimental_chance        = ns.engaged_d_chance;
+        ss.idle_no_sp_recast_min             = ns.engaged_no_sp_recast_min;
+        ss.idle_no_sp_recast_max             = ns.engaged_no_sp_recast_max;
+        ss.idle_beneficial_chance            = ns.idle_b_chance;
 
-        query = StringFormat("SELECT spellid, type, minlevel, maxlevel, "
-                            "manacost, recast_delay, priority, resist_adjust "
-                            "FROM npc_spells_entries "
-                            "WHERE npc_spells_id=%d ORDER BY minlevel", iDBSpellsID);
-        results = QueryDatabase(query);
+		auto entries = NpcSpellsEntriesRepository::GetWhere(
+			*this,
+			fmt::format(
+				"npc_spells_id = {} {} ORDER BY minlevel",
+				npc_spells_id,
+				ContentFilterCriteria::apply()
+			)
+		);
 
-        if (!results.Success())
-        {
+		if (entries.empty()) {
 			return nullptr;
         }
 
-        uint32 tmpSize = sizeof(DBnpcspells_Struct) + (sizeof(DBnpcspells_entries_Struct) * results.RowCount());
-        npc_spells_cache[iDBSpellsID] = (DBnpcspells_Struct*) new uchar[tmpSize];
-        memset(npc_spells_cache[iDBSpellsID], 0, tmpSize);
-        npc_spells_cache[iDBSpellsID]->parent_list = tmpparent_list;
-        npc_spells_cache[iDBSpellsID]->attack_proc = tmpattack_proc;
-        npc_spells_cache[iDBSpellsID]->proc_chance = tmpproc_chance;
-        npc_spells_cache[iDBSpellsID]->range_proc = tmprange_proc;
-        npc_spells_cache[iDBSpellsID]->rproc_chance = tmpdproc_chance;
-        npc_spells_cache[iDBSpellsID]->defensive_proc = tmpdefensive_proc;
-        npc_spells_cache[iDBSpellsID]->dproc_chance = tmpdproc_chance;
-        npc_spells_cache[iDBSpellsID]->fail_recast = tmppfail_recast;
-        npc_spells_cache[iDBSpellsID]->engaged_no_sp_recast_min = tmpengaged_no_sp_recast_min;
-        npc_spells_cache[iDBSpellsID]->engaged_no_sp_recast_max = tmpengaged_no_sp_recast_max;
-        npc_spells_cache[iDBSpellsID]->engaged_beneficial_self_chance = tmpengaged_b_self_chance;
-        npc_spells_cache[iDBSpellsID]->engaged_beneficial_other_chance = tmpengaged_b_other_chance;
-        npc_spells_cache[iDBSpellsID]->engaged_detrimental_chance = tmpengaged_d_chance;
-        npc_spells_cache[iDBSpellsID]->idle_no_sp_recast_min = tmpidle_no_sp_recast_min;
-        npc_spells_cache[iDBSpellsID]->idle_no_sp_recast_max = tmpidle_no_sp_recast_max;
-        npc_spells_cache[iDBSpellsID]->idle_beneficial_chance = tmpidle_b_chance;
-        npc_spells_cache[iDBSpellsID]->numentries = results.RowCount();
+		for (auto &e : entries) {
+			DBnpcspells_entries_Struct se{};
 
-        int entryIndex = 0;
-        for (row = results.begin(); row != results.end(); ++row, ++entryIndex)
-        {
-            int spell_id = atoi(row[0]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].spellid = spell_id;
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].type = atoi(row[1]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].minlevel = atoi(row[2]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].maxlevel = atoi(row[3]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].manacost = atoi(row[4]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].recast_delay = atoi(row[5]);
-            npc_spells_cache[iDBSpellsID]->entries[entryIndex].priority = atoi(row[6]);
+			se.spellid = e.spellid;
+			se.type = e.type;
+			se.minlevel = e.minlevel;
+			se.maxlevel = e.maxlevel;
+			se.manacost = e.manacost;
+			se.recast_delay = e.recast_delay;
+			se.priority = e.priority;
 
-            if(row[7])
-                npc_spells_cache[iDBSpellsID]->entries[entryIndex].resist_adjust = atoi(row[7]);
-            else if(IsValidSpell(spell_id))
-                npc_spells_cache[iDBSpellsID]->entries[entryIndex].resist_adjust = spells[spell_id].ResistDiff;
-        }
+			if (e.resist_adjust) {
+				se.resist_adjust = e.resist_adjust;
+			}
+			else if (IsValidSpell(e.id)) {
+				se.resist_adjust = spells[e.id].ResistDiff;
+			}
 
-        return npc_spells_cache[iDBSpellsID];
+			ss.entries.push_back(se);
+		 }
+
+		npc_spells_cache.emplace(std::make_pair(npc_spells_id, ss));
+
+		return &npc_spells_cache[npc_spells_id];
     }
 
 	return nullptr;

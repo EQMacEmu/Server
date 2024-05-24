@@ -13,6 +13,7 @@ SET(zone_sources
 	client_process.cpp
 	command.cpp
 	corpse.cpp
+	data_bucket.cpp
 	doors.cpp
 	effects.cpp
 	encounter.cpp
@@ -101,6 +102,7 @@ SET(zone_headers
 	command.h
 	common.h
 	corpse.h
+	data_bucket.h
 	doors.h
 	encounter.h
 	entity.h

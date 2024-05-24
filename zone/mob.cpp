@@ -19,6 +19,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 
+#include "data_bucket.h"
 #include "quest_parser_collection.h"
 #include "string_ids.h"
 #include "worldserver.h"
@@ -1073,11 +1074,9 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 	{
 		if (ds->hp < GetNextHPEvent())
 		{
-			char buf[10];
-			snprintf(buf, 9, "%i", GetNextHPEvent());
-			buf[9] = '\0';
+			std::string export_string = fmt::format("{}", GetNextHPEvent());
 			SetNextHPEvent(-1);
-			parse->EventNPC(EVENT_HP, CastToNPC(), nullptr, buf, 0);
+			parse->EventNPC(EVENT_HP, CastToNPC(), nullptr, export_string, 0);
 		}
 	}
 
@@ -1085,11 +1084,9 @@ void Mob::CreateHPPacket(EQApplicationPacket* app)
 	{
 		if (ds->hp > GetNextIncHPEvent())
 		{
-			char buf[10];
-			snprintf(buf, 9, "%i", GetNextIncHPEvent());
-			buf[9] = '\0';
+			std::string export_string = fmt::format("{}", GetNextIncHPEvent());
 			SetNextIncHPEvent(-1);
-			parse->EventNPC(EVENT_HP, CastToNPC(), nullptr, buf, 1);
+			parse->EventNPC(EVENT_HP, CastToNPC(), nullptr, export_string, 1);
 		}
 	}
 }
@@ -5341,4 +5338,54 @@ void Mob::SetRandomFeatures()
 			break;
 		}
 	}
+}
+
+void Mob::DeleteBucket(std::string bucket_name) {
+	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
+	DataBucket::DeleteData(full_bucket_name);
+}
+
+std::string Mob::GetBucket(std::string bucket_name) {
+	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
+	std::string bucket_value = DataBucket::GetData(full_bucket_name);
+	if (!bucket_value.empty()) {
+		return bucket_value;
+	}
+	return std::string();
+}
+
+std::string Mob::GetBucketExpires(std::string bucket_name) {
+	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
+	std::string bucket_expiration = DataBucket::GetDataExpires(full_bucket_name);
+	if (!bucket_expiration.empty()) {
+		return bucket_expiration;
+	}
+	return std::string();
+}
+
+std::string Mob::GetBucketKey() {
+	if (IsClient()) {
+		return fmt::format("character-{}", CastToClient()->CharacterID());
+	}
+	else if (IsNPC()) {
+		return fmt::format("npc-{}", GetNPCTypeID());
+	}
+	return std::string();
+}
+
+std::string Mob::GetBucketRemaining(std::string bucket_name) {
+	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
+	std::string bucket_remaining = DataBucket::GetDataRemaining(full_bucket_name);
+	if (!bucket_remaining.empty() && atoi(bucket_remaining.c_str()) > 0) {
+		return bucket_remaining;
+	}
+	else if (atoi(bucket_remaining.c_str()) == 0) {
+		return "0";
+	}
+	return std::string();
+}
+
+void Mob::SetBucket(std::string bucket_name, std::string bucket_value, std::string expiration) {
+	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
+	DataBucket::SetData(full_bucket_name, bucket_value, expiration);
 }

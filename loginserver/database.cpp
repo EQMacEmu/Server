@@ -136,8 +136,8 @@ bool Database::CreateLoginData(const std::string &name, const std::string &passw
 
 	id = atoi(row[0]);
 
-	auto insert_query = fmt::format("INSERT INTO {0} (AccountName, AccountPassword, AccountEmail, LastLoginDate, LastIPAddress, creationIP, forumname) "
-		" VALUES('{1}', SHA('{2}'), 'local_creation', NOW(), '127.0.0.1', '127.0.0.1', ''); ",
+	auto insert_query = fmt::format("INSERT INTO {0} (AccountName, AccountPassword, AccountEmail, LastLoginDate, LastIPAddress, creationIP) "
+		" VALUES('{1}', SHA('{2}'), 'local_creation', NOW(), '127.0.0.1', '127.0.0.1'); ",
 		server.options.GetAccountTable(),
 		Strings::Escape(name),
 		Strings::Escape(password)

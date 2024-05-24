@@ -3,6 +3,7 @@
 
 #include "../common/eq_packet_structs.h"
 #include "../common/linked_list.h"
+#include "../common/json/json.h"
 #include "../common/timer.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
@@ -72,6 +73,8 @@ public:
 	int GetClientCount();
 	void GetClients(const char *zone_name, std::vector<ClientListEntry *> &into);
 	bool WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int16 admin, int whomlen);
+
+	void GetClientList(Json::Value &response);
 
 protected:
 	inline uint32 GetNextCLEID() { return NextCLEID++; }

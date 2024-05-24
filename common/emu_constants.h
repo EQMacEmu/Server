@@ -143,7 +143,7 @@ namespace EQ
 
 		const size_t SAY_LINK_OPENER_SIZE = 1;
 		using Mac::constants::SAY_LINK_BODY_SIZE;
-		const size_t SAY_LINK_TEXT_SIZE = 200;
+		const size_t SAY_LINK_TEXT_SIZE = 400;
 		const size_t SAY_LINK_CLOSER_SIZE = 1;
 		const size_t SAY_LINK_MAXIMUM_SIZE = (SAY_LINK_OPENER_SIZE + SAY_LINK_BODY_SIZE + SAY_LINK_TEXT_SIZE + SAY_LINK_CLOSER_SIZE);
 

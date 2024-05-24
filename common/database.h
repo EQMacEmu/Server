@@ -217,12 +217,14 @@ public:
 	uint8	GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16 in_level);
 	uint8	GetRaceSkill(uint8 skillid, uint8 in_race);
 	void	ClearMerchantTemp();
+	void	ClearSayLink();
 	void	SetFirstLogon(uint32 CharID, uint8 firstlogon);
 	void	AddReport(std::string who, std::string against, std::string lines);
 	struct TimeOfDay_Struct		LoadTime(time_t &realtime);
 	bool	SaveTime(int8 minute, int8 hour, int8 day, int8 month, int16 year);
 	bool	AdjustSpawnTimes();
 	uint8   GetZoneRandomLoc(uint32 zoneid);
+	void	PurgeAllDeletedDataBuckets();
 
 private:
 	std::map<uint32,std::string>	zonename_array;

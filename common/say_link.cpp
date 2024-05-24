@@ -18,7 +18,7 @@
 */
 
 #include "say_link.h"
-#include "eq_constants.h"
+#include "emu_constants.h"
 
 #include "strings.h"
 #include "item_instance.h"
@@ -29,20 +29,21 @@
 bool EQ::saylink::DegenerateLinkBody(SayLinkBody_Struct& say_link_body_struct, const std::string& say_link_body)
 {
 	memset(&say_link_body_struct, 0, sizeof(say_link_body_struct));
-	if (say_link_body.length() != EQ::constants::SAY_LINK_BODY_SIZE)
+	if (say_link_body.length() != EQ::constants::SAY_LINK_BODY_SIZE) {
+		LogError("say_link_body is : {} : ", say_link_body.length(), EQ::constants::SAY_LINK_BODY_SIZE);
 		return false;
+	}
 
 	say_link_body_struct.action_id = (uint8)strtol(say_link_body.substr(0, 1).c_str(), nullptr, 16);
-	say_link_body_struct.item_id = (uint32)strtol(say_link_body.substr(1, 5).c_str(), nullptr, 16);
+	say_link_body_struct.item_id = strtol(say_link_body.substr(1, 6).c_str(), nullptr, 16);
 
 	return true;
 }
 
 bool EQ::saylink::GenerateLinkBody(std::string& say_link_body, const SayLinkBody_Struct& say_link_body_struct)
 {
-
 	static char itemid[7];
-	sprintf(itemid, "%06d", say_link_body_struct.item_id);
+	sprintf(itemid, "%6d", say_link_body_struct.item_id);
 
 	say_link_body = StringFormat(
 		"%1X" "%s",
@@ -50,8 +51,10 @@ bool EQ::saylink::GenerateLinkBody(std::string& say_link_body, const SayLinkBody
 		itemid
 	);
 
-	if (say_link_body.length() != EQ::constants::SAY_LINK_BODY_SIZE)
+	if (say_link_body.length() != EQ::constants::SAY_LINK_BODY_SIZE) {
+		LogError("say_link_body is : {} : ", say_link_body.length(), EQ::constants::SAY_LINK_BODY_SIZE);
 		return false;
+	}
 
 	return true;
 }
@@ -142,10 +145,12 @@ void EQ::SayLinkEngine::generate_body()
 		break;
 	}
 
-	if (m_LinkProxyStruct.action_id)
+	if (m_LinkProxyStruct.action_id) {
 		m_LinkBodyStruct.action_id = m_LinkProxyStruct.action_id;
-	if (m_LinkProxyStruct.item_id)
+	}
+	if (m_LinkProxyStruct.item_id) {
 		m_LinkBodyStruct.item_id = m_LinkProxyStruct.item_id;
+	}
 
 	static char itemid[7];
 	sprintf(itemid, "%06d", m_LinkBodyStruct.item_id);
@@ -196,50 +201,67 @@ void EQ::SayLinkEngine::generate_text()
 std::string EQ::SayLinkEngine::GenerateQuestSaylink(std::string saylink_text, bool silent, std::string link_name)
 {
 	uint32 saylink_id = 0;
+	bool saylink_id_found = false;
 
 	/**
-	 * Query for an existing phrase and id in the saylink table
+	 * Query for an existing phrase and id in the saylink table 
 	 */
 	std::string query = StringFormat(
-		"SELECT `id` FROM `saylink` WHERE `phrase` = '%s' LIMIT 1",
+		"SELECT MAX(`id`) FROM `saylink` WHERE `phrase` = '%s'",
 		Strings::Escape(saylink_text).c_str());
 
 	auto results = database.QueryDatabase(query);
-
 	if (results.Success()) {
 		if (results.RowCount() >= 1) {
 			for (auto row = results.begin(); row != results.end(); ++row)
-				saylink_id = static_cast<uint32>(atoi(row[0]));
-		}
-		else {
-			std::string insert_query = StringFormat(
-				"INSERT INTO `saylink` (`phrase`) VALUES ('%s')",
-				Strings::Escape(saylink_text).c_str());
-
-			results = database.QueryDatabase(insert_query);
-			if (!results.Success()) {
-				LogError("Error in saylink phrase queries {} ", results.ErrorMessage().c_str());
-			}
-			else {
-				saylink_id = results.LastInsertedID();
+			{
+				if (row[0])
+				{
+					saylink_id = static_cast<uint32>(atoi(row[0]));
+					saylink_id_found = true;
+				}
 			}
 		}
 	}
 
+	/**
+	* Insert new entry if not found
+	*/
+	if (!saylink_id_found) {
+		std::string insert_query = StringFormat(
+			"INSERT INTO `saylink` (`phrase`) VALUES ('%s')",
+			Strings::Escape(saylink_text).c_str());
+
+		results = database.QueryDatabase(insert_query);
+		if (!results.Success()) {
+			LogError("Error in saylink phrase queries {}", results.ErrorMessage().c_str());
+		}
+		else {
+			saylink_id = results.LastInsertedID();
+		}
+	}
+
+	uint32 client_saylink_id = saylink_id % 0x4000 + 0x8000;
+
 	if (silent)
-		saylink_id = saylink_id + 500;
+	{
+		client_saylink_id = client_saylink_id + 0x4000;
+	}
 
 	/**
 	 * Generate the actual link
 	 */
 	EQ::SayLinkEngine linker;
-	linker.SetProxyItemID(saylink_id);
+	linker.SetProxyItemID(client_saylink_id);
 	linker.SetProxyText(link_name.c_str());
-
+	
 	return linker.GenerateLink();
 }
 
-std::string Saylink::Create(std::string saylink_text, bool silent, std::string link_name)
-{
-	return EQ::SayLinkEngine::GenerateQuestSaylink(saylink_text, silent, link_name);
+std::string Saylink::Create(const std::string &saylink_text, bool silent, const std::string &link_name) {
+	return EQ::SayLinkEngine::GenerateQuestSaylink(saylink_text, silent, (link_name.empty() ? saylink_text : link_name));
+}
+
+std::string Saylink::Silent(const std::string &saylink_text, const std::string &link_name) {
+	return EQ::SayLinkEngine::GenerateQuestSaylink(saylink_text, true, (link_name.empty() ? saylink_text : link_name));
 }

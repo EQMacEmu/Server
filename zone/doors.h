@@ -66,6 +66,10 @@ public:
 
 	bool HasDestinationZone() const;
 	bool IsDestinationZoneSame() const;
+
+	float GetX();
+	float GetY();
+	float GetZ();
 			
 private:
 

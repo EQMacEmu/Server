@@ -36,6 +36,7 @@
 #include "../common/rulesys.h"
 #include "../common/strings.h"
 #include "../common/data_verification.h"
+#include "data_bucket.h"
 #include "position.h"
 #include "worldserver.h"
 #include "zonedb.h"
@@ -163,6 +164,7 @@ Client::Client(EQStreamInterface* ieqs)
 	berserk = false;
 	dead = false;
 	is_client_moving = false;
+	SetDevToolsEnabled(true);
 	eqs = ieqs;
 	ip = eqs->GetRemoteIP();
 	port = ntohs(eqs->GetRemotePort());
@@ -6143,4 +6145,74 @@ uint16 Client::ScribeSpells(uint8 min_level, uint8 max_level)
 		SaveSpells();
 	}
 	return scribed_spells;
+}
+
+bool Client::IsDevToolsEnabled() const
+{
+	return dev_tools_enabled && RuleB(World, EnableDevTools);
+}
+
+void Client::SetDevToolsEnabled(bool in_dev_tools_enabled)
+{
+	Client::dev_tools_enabled = in_dev_tools_enabled;
+}
+
+void Client::ShowDevToolsMenu()
+{
+	std::string menu_commands_search;
+	std::string menu_commands_show;
+	std::string reload_commands_show;
+	std::string clear_commands_show;
+	std::string devtools_toggle;
+
+	/**
+	 * Search entity commands
+	 */
+	menu_commands_search += "[" + Saylink::Silent("#list npcs", "NPC") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#list players", "Players") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#list corpses", "Corpses") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#list doors", "Doors") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#list objects", "Objects") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#fz", "Zones") + "] ";
+	menu_commands_search += "[" + Saylink::Silent("#itemsearch", "Items") + "] ";
+
+	/**
+	 * Show
+	 */
+	//menu_commands_show += "[" + EQ::SayLinkEngine::GenerateQuestSaylink("#showzonepoints", false, "Zone Points") + "] ";
+	menu_commands_show += "[" + Saylink::Silent("#showzonegloballoot", "Zone Global Loot") + "] ";
+
+	/**
+	 * Reload
+	 */
+	reload_commands_show += "[" + Saylink::Silent("#reloadqst", "Quests") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadmerchants", "Merchants") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadallrules", "Rules Globally") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadstatic", "Zone Static Data") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadtraps", "Traps") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadzps", "Zone Points") + "] ";
+	reload_commands_show += "[" + Saylink::Silent("#reloadcontentflags", "Content Flags") + "] ";
+
+	/**
+	 * Show window status
+	 */
+	devtools_toggle = "Disabled [" + Saylink::Silent("#devtools enable", "Enable") + "] ";
+	if (IsDevToolsEnabled()) {
+		devtools_toggle = "Enabled [" + Saylink::Silent("#devtools disable", "Disable") + "] ";
+	}
+
+	/**
+	 * Print menu
+	 */
+	SendChatLineBreak();
+	Message(CC_Default, "| [Devtools] %s Show this menu with %s", devtools_toggle.c_str(), Saylink::Silent("#devtools", "#dev").c_str());
+	Message(CC_Default, "| [Devtools] Search %s", menu_commands_search.c_str());
+	Message(CC_Default, "| [Devtools] Show %s", menu_commands_show.c_str());
+	Message(CC_Default, "| [Devtools] Reload %s", reload_commands_show.c_str());
+	Message(CC_Default, "| [Devtools] Search commands with #help <search>");
+	SendChatLineBreak();
+}
+
+void Client::SendChatLineBreak(uint16 color) {
+	Message(color, "------------------------------------------------");
 }

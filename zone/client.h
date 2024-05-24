@@ -172,6 +172,11 @@ public:
 
 	bool is_client_moving;
 
+	bool IsDevToolsEnabled() const;
+	void SetDevToolsEnabled(bool in_dev_tools_enabled);
+
+	void SendChatLineBreak(uint16 color = CC_Default);
+
 	//abstract virtual function implementations required by base abstract class
 	virtual bool Death(Mob* killerMob, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, uint8 killedby = 0, bool bufftic = false);
 	virtual void Damage(Mob* from, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, bool avoidable = true, int8 buffslot = -1, bool iBuffTic = false);
@@ -1020,6 +1025,8 @@ public:
 	void CorpseSummoned(Corpse *corpse);
 	void CorpseSummonOnPositionUpdate();
 
+	void ShowDevToolsMenu();
+
 protected:
 	friend class Mob;
 	void CalcItemBonuses(StatBonuses* newbon);
@@ -1140,7 +1147,7 @@ public:
 	bool IsLockSavePosition() const;
 	void SetLockSavePosition(bool lock_save_position);
 private:
-
+	bool dev_tools_enabled;
 
 	PlayerProfile_Struct		m_pp;
 	ExtendedProfile_Struct		m_epp;

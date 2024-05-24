@@ -51,6 +51,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/zone_numbers.h"
+#include "data_bucket.h"
 #include "event_codes.h"
 #include "guild_mgr.h"
 #include "mob.h"
@@ -703,6 +704,10 @@ void Client::CompleteConnect()
 		}
 		return;
 	}
+
+	if (GetGM() && IsDevToolsEnabled()) {
+		ShowDevToolsMenu();
+	}
 }
 
 
@@ -1048,6 +1053,16 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 			get_auth_timer.Start();
 		}
 		return;
+	}
+
+	/**
+	 * DevTools Load Settings
+	 */
+	if (Admin() > 200) {
+		std::string dev_tools_window_key = StringFormat("%i-dev-tools-disabled", AccountID());
+		if (DataBucket::GetData(dev_tools_window_key) == "true") {
+			dev_tools_enabled = false;
+		}
 	}
 
 	SetClientVersion(Connection()->ClientVersion());
@@ -5619,90 +5634,74 @@ void Client::Handle_OP_ItemLinkResponse(const EQApplicationPacket *app)
 		return;
 	}
 
-	ItemViewRequest_Struct* ivrs = (ItemViewRequest_Struct*)app->pBuffer;
-	const EQ::ItemData* item = database.GetItem(ivrs->item_id);
-	if (!item) {
-		if (ivrs->item_id > 0) //&& ivrs->item_id  < 1001)
+	ItemViewRequest_Struct *ivrs = (ItemViewRequest_Struct *)app->pBuffer;
+
+	if (ivrs->item_id > 0x8000) // saylink uses item ids > 0x8000 (32768)
+	{
+		std::string response = "";
+		int sayid = ivrs->item_id - 0x8000;
+		bool silentsaylink = false;
+
+		if (sayid > 0x4000)	//Silent Saylink
 		{
-			std::string response = "";
-			int sayid = ivrs->item_id;
-			bool silentsaylink = false;
+			sayid = sayid - 0x4000;
+			silentsaylink = true;
+		}
 
-			if (sayid > 500)	//Silent Saylink
+		if (sayid > 0)
+		{
+			std::string query = StringFormat("SELECT `phrase` FROM saylink WHERE id%%0x4000 = %i ORDER BY id DESC LIMIT 1", sayid);
+			auto results = database.QueryDatabase(query);
+			if (!results.Success())
 			{
-				sayid = sayid - 500;
-				silentsaylink = true;
-			}
-
-			if (sayid > 0)
-			{
-
-				std::string query = StringFormat("SELECT `phrase` FROM saylink WHERE `id` = '%i'", sayid);
-				auto results = database.QueryDatabase(query);
-				if (!results.Success()) {
-					Message(CC_Red, "Error: The saylink (%s) was not found in the database.", response.c_str());
-					return;
-				}
-
-				if (results.RowCount() != 1) {
-					Message(CC_Red, "Error: The saylink (%s) was not found in the database.", response.c_str());
-					return;
-				}
-
-				auto row = results.begin();
-				response = row[0];
-
-			}
-
-			if ((response).size() > 0)
-			{
-				if (GetTarget() && GetTarget()->IsNPC())
-				{
-					if (silentsaylink)
-					{
-						parse->EventNPC(EVENT_SAY, GetTarget()->CastToNPC(), this, response.c_str(), 0);
-						parse->EventPlayer(EVENT_SAY, this, response.c_str(), 0);
-					}
-					else
-					{
-						Message(CC_Say, "You say, '%s'", response.c_str());
-						ChannelMessageReceived(ChatChannel_Say, 0, 100, response.c_str());
-					}
-					return;
-				}
-				else
-				{
-					if (silentsaylink)
-					{
-						parse->EventPlayer(EVENT_SAY, this, response.c_str(), 0);
-					}
-					else
-					{
-						Message(CC_Say, "You say, '%s'", response.c_str());
-						ChannelMessageReceived(ChatChannel_Say, 0, 100, response.c_str());
-					}
-					return;
-				}
-			}
-			else
-			{
-				Message(CC_Red, "Error: Say Link not found or is too long.");
+				Message(CC_Red, "Error: The saylink (%s) was not found in the database.", response.c_str());
 				return;
 			}
+
+			if (results.RowCount() != 1)
+			{
+				Message(CC_Red, "Error: The saylink (%s) was not found in the database.", response.c_str());
+				return;
+			}
+
+			auto row = results.begin();
+			response = row[0];
+
 		}
-		else {
+
+		if (!response.empty())
+		{
+			if (!silentsaylink)
+			{
+				Message(CC_Say, "You say, '%s'", response.c_str());
+			}
+
+			ChannelMessageReceived(ChatChannel_Say, 0, 100, response.c_str());
+
+			return;
+		}
+		else
+		{
 			Message(CC_Red, "Error: The item for the link you have clicked on does not exist!");
 			return;
 		}
-
+	}
+	else // item link
+	{
+		const EQ::ItemData *item = database.GetItem(ivrs->item_id);
+		if (!item) 
+		{
+			Message(CC_Red, "Error: The item for the link you have clicked on does not exist!");
+			return;
+		}
 	}
 
 	EQ::ItemInstance* inst = database.CreateItem(ivrs->item_id);
-	if (inst) {
+	if (inst)
+	{
 		SendItemPacket(0, inst, ItemPacketViewLink);
 		safe_delete(inst);
 	}
-	return;
 }
 
 void Client::Handle_OP_Jump(const EQApplicationPacket *app)

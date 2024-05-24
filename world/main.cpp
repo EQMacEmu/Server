@@ -92,6 +92,7 @@
 #include "world_server_cli.h"
 #include "../common/content/world_content_service.h"
 #include "world_event_scheduler.h"
+#include "../zone/data_bucket.h"
 
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
@@ -260,6 +261,8 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	LogInfo("Purging expiring data buckets...");
+	database.PurgeAllDeletedDataBuckets();
 	LogInfo("Loading zones..");
 	database.LoadZoneNames();
 	LogInfo("Clearing groups..");
@@ -327,6 +330,9 @@ int main(int argc, char** argv) {
 
 	LogInfo("Loading launcher list..");
 	launcher_list.LoadList();
+
+	LogInfo("Clearing Saylinks..");
+	database.ClearSayLink();
 
 	LogInfo("Deleted [{0}] stale player corpses from database", database.DeleteStalePlayerCorpses());
 

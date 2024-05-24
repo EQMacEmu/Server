@@ -206,10 +206,13 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 
 void Mob::DoBash(Mob* defender)
 {
-	if (!defender)
+	if (!defender) {
 		defender = GetTarget();
-	if (defender == this || !defender)
+	}
+
+	if (defender == this || !defender) {
 		return;
+	}
 
 	uint16 skill_level = GetSkill(EQ::skills::SkillBash);
 	bool is_trained = skill_level > 0 && skill_level < 253;
@@ -217,37 +220,36 @@ void Mob::DoBash(Mob* defender)
 	int hate = base;
 	bool shieldBash = false;
 
-	if (is_trained && IsClient() && (GetClass() == WARRIOR || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == CLERIC))
-	{
+	if (is_trained && IsClient() && (GetClass() == WARRIOR || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == CLERIC)) {
 		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBash, GetTarget(), zone->skill_difficulty[EQ::skills::SkillBash].difficulty);
 
 		EQ::ItemInstance* item = nullptr;
 		item = CastToClient()->GetInv().GetItem(EQ::invslot::slotSecondary);
 
-		if (item)
-		{
-			if (item->GetItem()->ItemType == EQ::item::ItemTypeShield)
-			{
+		if (item) {
+			if (item->GetItem()->ItemType == EQ::item::ItemTypeShield) {
 				shieldBash = true;
 				int cap = base + GetLevel() / 5 + 2;
 				base += item->GetItem()->AC;
-				if (base > cap)
+				if (base > cap) {
 					base = cap;
+				}
 				hate = base;
 			}
 
 			const EQ::ItemData *itm = item->GetItem();
-			int32 fbMult = GetFuriousBash(itm->Focus.Effect);
-			if (fbMult && content_service.IsTheShadowsOfLuclinEnabled()) {  // Disable Focus Effect until Luclin
-				fbMult = zone->random.Int(1, fbMult);
-				hate = base * (100 + fbMult) / 100;
+			int32 fbash = GetFuriousBash(itm->Focus.Effect);
+			if (fbash && content_service.IsTheShadowsOfLuclinEnabled()) { // Disable Focus Effect until Luclin
+				fbash = zone->random.Int(1, fbash);
+				hate = base * (100 + fbash) / 100;
 			}
 		}
 	}
 
 	int minDmg = 1;
-	if (defender->IsImmuneToMelee(this, shieldBash? EQ::invslot::slotSecondary : EQ::invslot::slotPrimary))
+	if (defender->IsImmuneToMelee(this, shieldBash ? EQ::invslot::slotSecondary : EQ::invslot::slotPrimary)) {
 		minDmg = DMG_INVUL;
+	}
 
 	DoSpecialAttackDamage(defender, EQ::skills::SkillBash, base, minDmg, hate, DoAnimation::Slam);
 }

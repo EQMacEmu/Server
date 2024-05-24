@@ -792,3 +792,18 @@ bool Doors::IsDestinationZoneSame() const
 {
 	return m_same_destination_zone;
 }
+
+float Doors::GetX()
+{
+	return m_position.x;
+}
+
+float Doors::GetY()
+{
+	return m_position.y;
+}
+
+float Doors::GetZ()
+{
+	return m_position.z;
+}

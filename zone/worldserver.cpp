@@ -385,7 +385,7 @@ void WorldServer::Process() {
 		case ServerOP_Motd: {
 			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
 			auto outapp = new EQApplicationPacket(OP_MOTD);
-			char tmp[500] = {0};
+			char tmp[512] = {0};
 			sprintf(tmp, "%s", smotd->motd);
 
 			outapp->size = strlen(tmp)+1;

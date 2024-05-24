@@ -318,6 +318,14 @@ public:
 	int GetSnaredAmount();
 	bool IsCasting();
 	int GetDamageShieldAmount();
+
+	void DeleteBucket(std::string bucket_name);
+	std::string GetBucket(std::string bucket_name);
+	std::string GetBucketExpires(std::string bucket_name);
+	std::string GetBucketKey();
+	std::string GetBucketRemaining(std::string bucket_name);
+	void SetBucket(std::string bucket_name, std::string bucket_value);
+	void SetBucket(std::string bucket_name, std::string bucket_value, std::string expiration);
 };
 
 #endif

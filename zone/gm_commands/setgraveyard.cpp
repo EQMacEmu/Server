@@ -1,0 +1,41 @@
+#include "../client.h"
+
+void command_setgraveyard(Client *c, const Seperator *sep){
+	uint32 zoneid = 0;
+	uint32 graveyard_id = 0;
+	Client *t = c;
+
+	if (c->GetTarget() && c->GetTarget()->IsClient() && c->GetGM())
+		t = c->GetTarget()->CastToClient();
+
+	if (!sep->arg[1][0]) {
+		c->Message(CC_Default, "Usage: #setgraveyard [zonename]");
+		return;
+	}
+
+	zoneid = database.GetZoneID(sep->arg[1]);
+
+	if (zoneid > 0) {
+		graveyard_id = database.CreateGraveyardRecord(zoneid, t->GetPosition());
+
+		if (graveyard_id > 0) {
+			c->Message(CC_Default, "Successfuly added a new record for this graveyard!");
+			if (database.AddGraveyardIDToZone(zoneid, graveyard_id) > 0) {
+				c->Message(CC_Default, "Successfuly added this new graveyard for the zone %s.", sep->arg[1]);
+				// TODO: Set graveyard data to the running zone process.
+				c->Message(CC_Default, "Done!");
+			}
+			else
+				c->Message(CC_Default, "Unable to add this new graveyard to the zone %s.", sep->arg[1]);
+		}
+		else {
+			c->Message(CC_Default, "Unable to create a new graveyard record in the database.");
+		}
+	}
+	else {
+		c->Message(CC_Default, "Unable to retrieve a ZoneID for the zone: %s", sep->arg[1]);
+	}
+
+	return;
+}
+

@@ -131,8 +131,7 @@ void Timer::Start(uint32 duration, bool ChangeResetTimer)
 	enabled = true;
 }
 
-uint32 Timer::GetRemainingTime()
-{
+uint32 Timer::GetRemainingTime() const {
 	if (enabled)
 	{
 		if ((current_time >= TriggerTime && current_era == TriggerEra) || current_era > TriggerEra)
