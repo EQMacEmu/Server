@@ -3122,33 +3122,47 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 	// ok, this function should load the list, and the parent list then shove them into the struct and sort
 	npc_spells_id = iDBSpellsID;
 	AIspells.clear();
-	if (iDBSpellsID == 0) {
+	if (npc_spells_id == 0) {
 		AIautocastspell_timer->Disable();
 		return false;
 	}
-	DBnpcspells_Struct* spell_list = database.GetNPCSpells(iDBSpellsID);
+	DBnpcspells_Struct* spell_list = database.GetNPCSpells(npc_spells_id);
 	if (!spell_list) {
 		AIautocastspell_timer->Disable();
 		return false;
 	}
 	DBnpcspells_Struct* parentlist = database.GetNPCSpells(spell_list->parent_list);
 	uint32 i;
-#if MobAI_DEBUG_Spells >= 10
-	std::cout << "Loading NPCSpells onto " << this->GetName() << ": dbspellsid=" << iDBSpellsID;
+	std::string debug_msg = StringFormat("Loading NPCSpells onto %s: dbspellsid=%u, level=%u", GetName(), npc_spells_id, GetLevel());
 	if (spell_list) {
-		std::cout << " (found, " << spell_list->numentries << "), parentlist=" << spell_list->parent_list;
+		debug_msg.append(StringFormat(" (found, %u), parentlist=%u", spell_list->entries.size(), spell_list->parent_list));
 		if (spell_list->parent_list) {
 			if (parentlist) {
-				std::cout << " (found, " << parentlist->numentries << ")";
+				debug_msg.append(StringFormat(" (found, %u)", parentlist->entries.size()));
 			}
-			else
-				std::cout << " (not found)";
+			else {
+				debug_msg.append(" (not found)");
+			}
 		}
 	}
-	else
-		std::cout << " (not found)";
-	std::cout << std::endl;
-#endif
+	else {
+		debug_msg.append(" (not found)");
+	}
+	LogAI("[{}]", debug_msg.c_str());
+
+	if (parentlist) {
+		for (const auto &iter : parentlist->entries) {
+			LogAIDetail("([{}]) [{}]", iter.spellid, spells[iter.spellid].name);
+		}
+	}
+	LogAI("fin (parent list)");
+	if (spell_list) {
+		for (const auto &iter : spell_list->entries) {
+			LogAIDetail("([{}]) [{}]", iter.spellid, spells[iter.spellid].name);
+		}
+	}
+	LogAI("fin (spell list)");
+
 	uint16 attack_proc_spell = -1;
 	int8 proc_chance = 3;
 	uint16 range_proc_spell = -1;
@@ -3195,8 +3209,6 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 		attack_proc_spell = spell_list->attack_proc;
 		proc_chance = spell_list->proc_chance;
 	}
-	innateProcSpellId = IsValidSpell(attack_proc_spell) ? attack_proc_spell : 0;
-	innateProcChance = proc_chance;
 
 	if (spell_list->range_proc >= 0) {
 		range_proc_spell = spell_list->range_proc;
@@ -3228,6 +3240,11 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 		return a.priority > b.priority;
 	});
 
+	if (IsValidSpell(attack_proc_spell)) {
+		innateProcSpellId = attack_proc_spell;
+		innateProcChance = proc_chance;
+	}
+
 	//Set AI casting variables
 
 	AISpellVar.fail_recast = (_fail_recast) ? _fail_recast : RuleI(Spells, AI_SpellCastFinishedFailRecast);
@@ -3247,6 +3264,8 @@ bool NPC::AI_AddNPCSpells(uint32 iDBSpellsID) {
 
 	if (AIspells.empty())
 		AIautocastspell_timer->Disable();
+	else
+		AIautocastspell_timer->Trigger();
 	return true;
 }
 
@@ -3267,22 +3286,20 @@ bool NPC::AI_AddNPCSpellsEffects(uint32 iDBSpellsEffectsID) {
 	DBnpcspellseffects_Struct* parentlist = database.GetNPCSpellsEffects(spell_effects_list->parent_list);
 
 	uint32 i;
-#if MobAI_DEBUG_Spells >= 10
-	std::cout << "Loading NPCSpellsEffects onto " << this->GetName() << ": dbspellseffectsid=" << iDBSpellsEffectsID;
+	std::string debug_msg = StringFormat("Loading NPCSpellsEffects onto %s: dbspellseffectid=%u", GetName(), iDBSpellsEffectsID);
 	if (spell_effects_list) {
-		std::cout << " (found, " << spell_effects_list->numentries << "), parentlist=" << spell_effects)list->parent_list;
+		debug_msg.append(StringFormat(" (found, %u), parentlist=%u", spell_effects_list->numentries, spell_effects_list->parent_list));
 		if (spell_effects_list->parent_list) {
-			if (parentlist) {
-				std::cout << " (found, " << parentlist->numentries << ")";
-			}
+			if (parentlist)
+				debug_msg.append(StringFormat(" (found, %u)", parentlist->numentries));
 			else
-				std::cout << " (not found)";
+				debug_msg.append(" (not found)");
 		}
 	}
-	else
-		std::cout << " (not found)";
-	std::cout << std::endl;
-#endif
+	else {
+		debug_msg.append(" (not found)");
+	}
+	LogAI("[{}]", debug_msg.c_str());
 
 	if (parentlist) {
 		for (i=0; i<parentlist->numentries; i++) {
@@ -3338,6 +3355,7 @@ void NPC::AddSpellEffectToNPCList(uint16 iSpellEffectID, int32 base, int32 limit
 	t.limit = limit;
 	t.max = max;
 	AIspellsEffects.push_back(t);
+
 }
 
 bool IsSpellEffectInList(DBnpcspellseffects_Struct* spelleffect_list, uint16 iSpellEffectID, int32 base, int32 limit, int32 max) {
@@ -3375,11 +3393,10 @@ void NPC::AddSpellToNPCList(int16 iPriority, int16 iSpellID, uint16 iType,
 	t.resist_adjust = iResistAdjust;
 
 	AIspells.push_back(t);
-	if (!AIautocastspell_timer->Enabled())
-		AIautocastspell_timer->Start(100, false);
 
-	if (iPriority == 0 && iType & (SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez | SpellType_Slow | SpellType_Debuff | SpellType_Charm | SpellType_Root))
-		hasZeroPrioritySpells = true;
+	// If we're going from an empty list, we need to start the timer
+	if (AIspells.size() == 1)
+		AIautocastspell_timer->Start(100, false);
 }
 
 void NPC::RemoveSpellFromNPCList(int16 spell_id)
@@ -3401,9 +3418,74 @@ void NPC::AISpellsList(Client *c)
 	if (!c)
 		return;
 
-	for (auto it = AIspells.begin(); it != AIspells.end(); ++it)
-		c->Message(CC_Default, "%s (%d): Type %d, Priority %d",
-				spells[it->spellid].name, it->spellid, it->type, it->priority);
+	if (AIspells.size() > 0) {
+		c->Message(
+			CC_Default,
+			fmt::format(
+				"{} has {} AI spells.",
+				GetCleanName(),
+				AIspells.size()
+			).c_str()
+		);
+
+		int spell_slot = 1;
+		for (const auto &ai_spell : AIspells) {
+			c->Message(
+				CC_Default,
+				fmt::format(
+					"Spell {} | Name: {} ({}) Type: {} Mana Cost: {}",
+					spell_slot,
+					GetSpellName(ai_spell.spellid),
+					ai_spell.spellid,
+					ai_spell.type,
+					ai_spell.manacost
+				).c_str()
+			);
+
+			c->Message(
+				CC_Default,
+				fmt::format(
+					"Spell {} | Priority: {} Recast Delay: {}",
+					spell_slot,
+					ai_spell.priority,
+					ai_spell.recast_delay
+				).c_str()
+			);
+
+			if (ai_spell.time_cancast) {
+				c->Message(
+					CC_Default,
+					fmt::format(
+						"Spell {} | Time Can Cast : {}",
+						spell_slot,
+						ai_spell.time_cancast
+					).c_str()
+				);
+			}
+
+			if (ai_spell.resist_adjust) {
+				c->Message(
+					CC_Default,
+					fmt::format(
+						"Spell {} | Resist Adjust: {}",
+						spell_slot,
+						ai_spell.resist_adjust
+					).c_str()
+				);
+			}
+
+			spell_slot++;
+		}
+	}
+	else {
+		c->Message(
+			CC_Default,
+			fmt::format(
+				"{} has no AI spells.",
+				GetCleanName()
+			).c_str()
+		);
+	}
 
 	return;
 }
@@ -3455,10 +3537,6 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 npc_spells_id)
 			)
 		);
 
-		if (entries.empty()) {
-			return nullptr;
-        }
-
 		for (auto &e : entries) {
 			DBnpcspells_entries_Struct se{};
 
@@ -3469,6 +3547,11 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 npc_spells_id)
 			se.manacost = e.manacost;
 			se.recast_delay = e.recast_delay;
 			se.priority = e.priority;
+
+			// some spell types don't make much since to be priority 0, so fix that
+			if (!(se.type & SpellTypes_Innate) && se.priority == 0) {
+				se.priority = 1;
+			}
 
 			if (e.resist_adjust) {
 				se.resist_adjust = e.resist_adjust;

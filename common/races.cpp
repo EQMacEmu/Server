@@ -17,6 +17,7 @@
 */
 
 #include "../common/races.h"
+#include "data_verification.h"
 
 const char* GetRaceIDName(uint16 race_id)
 {
@@ -1321,4 +1322,12 @@ const char* GetGenderName(uint32 gender_id) {
 		gender_name = "Neuter";
 	}
 	return gender_name;
+}
+
+bool IsPlayerRace(uint16 race_id) {
+	return (
+		EQ::ValueWithin(race_id, HUMAN, GNOME) ||
+		race_id == IKSAR ||
+		race_id == VAHSHIR
+		);
 }

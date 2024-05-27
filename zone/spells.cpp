@@ -1894,6 +1894,11 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 		Shout("%s!",spell_target->name);
 	}
 
+	if (spell_id == SPELL_MANA_CONVERT && zone->GetZoneExpansion() != ClassicEQ) { // Manastone restricted to classic
+		Message_StringID(CC_User_SpellFailure, SPELL_DOES_NOT_WORK_HERE);
+		return false;
+	}
+
 	if(IsClient() && !CastToClient()->GetGM()){
 
 		if(zone->IsSpellBlocked(spell_id, glm::vec3(GetPosition()))){

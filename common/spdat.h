@@ -37,6 +37,7 @@
 #define SPELL_RESURRECTION_EFFECTS 756
 #define SPELL_DRAGON_CHARM 841
 #define SPELL_NPC_HARM_TOUCH 929		// this is only used by a single NPC that I can see from logs (Nortlav)
+#define SPELL_MANA_CONVERT 940		// This is the spell used for Manastone (should be restricted to Classi)
 #define SPELL_CAZIC_TOUCH 982
 #define SPELL_DIMENSIONAL_RETURN 1133
 #define SPELL_CASSINDRAS_CHANT_OF_CLARITY 1287
@@ -88,6 +89,7 @@ const int SpellType_Resurrect = 65536;
 
 const int SpellTypes_Detrimental = SpellType_Nuke|SpellType_Root|SpellType_Lifetap|SpellType_Snare|SpellType_DOT|SpellType_Dispel|SpellType_Mez|SpellType_Charm|SpellType_Debuff|SpellType_Slow;
 const int SpellTypes_Beneficial = SpellType_Heal|SpellType_Buff|SpellType_Escape|SpellType_Pet|SpellType_InCombatBuff|SpellType_Cure;
+const int SpellTypes_Innate = SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez | SpellType_Slow | SpellType_Debuff | SpellType_Charm | SpellType_Root;
 
 #define SpellType_Any		0xFFFF
 

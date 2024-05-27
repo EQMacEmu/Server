@@ -876,12 +876,13 @@ bool EQ::InventoryProfile::CanItemFitInContainer(const ItemData* ItemToTry, cons
 bool EQ::InventoryProfile::SupportsClickCasting(int16 slot_id)
 {
 	// there are a few non-potion items that identify as ItemTypePotion..so, we still need to ubiquitously include the equipment range
-	if ((uint16)slot_id <= invslot::GENERAL_END)
-	{
+	if (slot_id >= invslot::EQUIPMENT_BEGIN && slot_id <= invslot::EQUIPMENT_END) {
 		return true;
 	}
-	else if (slot_id >= invbag::GENERAL_BAGS_BEGIN && slot_id <= invbag::GENERAL_BAGS_END)
-	{
+	else if (slot_id >= invslot::GENERAL_BEGIN && slot_id <= invslot::GENERAL_END) {
+		return true;
+	}
+	else if (slot_id >= invbag::GENERAL_BAGS_BEGIN && slot_id <= invbag::GENERAL_BAGS_END) {
 		if (inventory::Lookup(m_mob_version)->AllowClickCastFromBag)
 			return true;
 	}

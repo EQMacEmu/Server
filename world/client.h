@@ -75,7 +75,7 @@ private:
 	uint32	charid;
 	char	char_name[64];
 	uint32	zoneID;
-	bool	pZoning;
+	bool	is_player_zoning;
 	Timer	autobootup_timeout;
 	uint32	pwaitingforbootup;
 
