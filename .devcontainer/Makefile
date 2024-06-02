@@ -126,29 +126,27 @@ mariadb:
 .PHONY: inject-mariadb
 inject-mariadb:
 	-sudo service mariadb start
-	-mkdir -p .devcontainer/base/db/
+	-mkdir -p base/db/
 	-sudo mariadb -e 'DROP DATABASE IF EXISTS peq;'
 	-sudo mariadb -e 'CREATE DATABASE peq;'
 	-sudo mariadb -e "CREATE USER IF NOT EXISTS 'peq'@'127.0.0.1' IDENTIFIED BY 'peqpass';"
 	-sudo mariadb -e "GRANT ALL PRIVILEGES ON *.* TO 'peq'@'127.0.0.1';"
-ifeq (,$(wildcard .devcontainer/base/db/db.sql.zip))
-	@echo ".devcontainer/base/db.sql.zip not found. Downloading latest from https://db.projecteq.net/"
-	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_2024-04-21-15_36.tar.gz -O .devcontainer/base/db/db.sql.zip
-	@-cd .devcontainer/base/db && unzip db.sql.zip
+ifeq (,$(wildcard base/db/db.sql.zip))
+	@echo "base/db.sql.zip not found. Downloading latest from EQMacEmu"
+	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_latest.zip -O base/db/db.sql.zip
+	@-cd base/db && unzip db.sql.zip
 endif
 	@echo "Sourcing db may take a while, please wait..."
-	@echo "Sourcing alkabor_2024-04-21-15_36.sql..."
-	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source alkabor_2024-04-21-15_36.sql"
-	@echo "Sourcing data_tables_2024-04-21-15_36.sql..."
-	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source data_tables_2024-04-21-15_36.sql"
-	@echo "Sourcing login_tables_2024-04-21-15_36.sql..."
-	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source login_tables_2024-04-21-15_36.sql"
-	@echo "Sourcing player_tables_2024-04-21-15_36.sql..."
-	@cd .devcontainer/base/db/alkabor_2024-04-21-15_36 && sudo mariadb --database peq -e "source player_tables_2024-04-21-15_36.sql"
-	@echo "Sourcing system_tables_2024-04-21-15_36.sql..."
-	@cd utils/sql/git/required/ && sudo mariadb --database peq -e "source 2024_2_10_server_scheduled_events.sql"
-	@echo "Sourcing tblloginserversettings.sql..."
-	@cd loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
+	@echo "Sourcing alkabor..."
+	@cd base/db/alkabor* && for f in alkabor_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing data_tables..."
+	@cd base/db/alkabor* && for f in data_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing login_tables..."
+	@cd base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing player_tables..."
+	@cd base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing loginserver..."
+	@cd ../loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
 
 	@echo "MariaDB is now injected."
 
