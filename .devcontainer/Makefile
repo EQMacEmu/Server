@@ -75,6 +75,8 @@ endif
 	@cd /src/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
 	@echo "Sourcing eqlaunch boats..."
 	@cd /src/.devcontainer/base/db && sudo mariadb --database peq -e "source launcher_boats.sql"
+	@echo "Sourcing auto creation of login accounts..."
+	@cd /src/.devcontainer/base/db && sudo mariadb --database peq -e "source auto_create_login.sql"
 
 	@echo "MariaDB is now injected."
 
@@ -104,7 +106,6 @@ prep:
 	@cp -Rup /src/loginserver/login_util/*.conf /src/.devcontainer/bin
 	@cp -Rup /src/utils/patches/*.conf /src/.devcontainer/bin
 
-# Todo - source this from a properties file
 	@echo "Copying env files..."
 	@cp -Rup /src/.devcontainer/base/eqemu_config.json /src/.devcontainer/bin
 	@cp -Rup /src/.devcontainer/base/login.ini /src/.devcontainer/bin
@@ -112,16 +113,29 @@ prep:
 	@echo "Symlinking binaries..."
 	@find /src/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} /src/.devcontainer/bin \;
 
+	@echo "Done. Re-run this anytime /src/.devcontainer/base/eqemu_config.json changes."
+
 # launches stack
 .PHONY: start
 start:
-	/src/.devcontainer/bin/shared_memory &> /src/.devcontainer/bin/logs/shared_memory.log
-	/src/.devcontainer/bin/loginserver &> /src/.devcontainer/bin/logs/login.log &
-	/src/.devcontainer/bin/world &> /src/.devcontainer/bin/logs/world.log &
-	/src/.devcontainer/bin/eqlaunch 'dynzone1' &> /src/.devcontainer/bin/logs/eqlaunch.log &
-	/src/.devcontainer/bin/eqlaunch 'boats' &> /src/.devcontainer/bin/logs/eqlaunch-boats.log &
-	/src/.devcontainer/bin/queryserv &> /src/.devcontainer/bin/logs/queryserv.log &
-	/src/.devcontainer/bin/ucs &> /src/.devcontainer/bin/logs/ucs.log &
+	cd /src/.devcontainer/bin && ./shared_memory &> /src/.devcontainer/bin/logs/shared_memory.log
+	cd /src/.devcontainer/bin && ./loginserver &> /src/.devcontainer/bin/logs/login.log &
+	cd /src/.devcontainer/bin && ./world &> /src/.devcontainer/bin/logs/world.log &
+	cd /src/.devcontainer/bin && ./eqlaunch 'dynzone1' &> /src/.devcontainer/bin/logs/eqlaunch.log &
+	cd /src/.devcontainer/bin && ./eqlaunch 'boats' &> /src/.devcontainer/bin/logs/eqlaunch-boats.log &
+	cd /src/.devcontainer/bin && ./queryserv &> /src/.devcontainer/bin/logs/queryserv.log &
+	cd /src/.devcontainer/bin && ./ucs &> /src/.devcontainer/bin/logs/ucs.log &
+
+# kills stack (ignores errors about process not running)
+.PHONY: stop
+stop:
+	@-pkill queryserv 2> /dev/null || true
+	@-pkill ucs 2> /dev/null || true
+	@-pkill eqlaunch 2> /dev/null || true
+	@-pkill zone 2> /dev/null || true
+	@-pkill world 2> /dev/null || true
+	@-pkill shared_memory 2> /dev/null || true
+	@-pkill loginserver 2> /dev/null || true
 
 # Runs tests
 .PHONY: test
