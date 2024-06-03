@@ -48,45 +48,90 @@ endif
 
 docker-clean: clean
 
+# Initializes a fresh database based on EQMacEmu latest
+.PHONY: inject-mariadb
+inject-mariadb:
+	-sudo service mariadb start
+	-mkdir -p /src/.devcontainer/base/db
+	-sudo mariadb -e 'DROP DATABASE IF EXISTS peq;'
+	-sudo mariadb -e 'CREATE DATABASE peq;'
+	-sudo mariadb -e "CREATE USER IF NOT EXISTS 'peq'@'127.0.0.1' IDENTIFIED BY 'peqpass';"
+	-sudo mariadb -e "GRANT ALL PRIVILEGES ON *.* TO 'peq'@'127.0.0.1';"
+ifeq (,$(wildcard /src/.devcontainer/base/db/alkabor_latest.zip))
+	@echo "/src/.devcontainer/base/db/alkabor_latest.zip not found. Downloading latest from EQMacEmu"
+	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_latest.zip -O /src/.devcontainer/base/db/alkabor_latest.zip
+	@-cd /src/.devcontainer/base/db && unzip alkabor_latest.zip
+endif
+	@echo "Sourcing db may take a while, please wait..."
+	@echo "Sourcing alkabor..."
+	@cd /src/.devcontainer/base/db/alkabor* && for f in alkabor_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing data_tables..."
+	@cd /src/.devcontainer/base/db/alkabor* && for f in data_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing login_tables..."
+	@cd /src/.devcontainer/base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing player_tables..."
+	@cd /src/.devcontainer/base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@echo "Sourcing loginserver..."
+	@cd /src/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
+	@echo "Sourcing eqlaunch boats..."
+	@cd /src/.devcontainer/base/db && sudo mariadb --database peq -e "source launcher_boats.sql"
+
+	@echo "MariaDB is now injected."
+
+# clones or pulls Maps (EQEmuConfig::MapDir is hard coded with capital M)
+.PHONY: maps
+maps:
+	@cd /src/.devcontainer/base && ([ -d "Maps" ] && (cd Maps && git pull) || git clone https://github.com/EQMacEmu/Maps Maps)
+
+# clones or pulls quests
+.PHONY: quests
+quests:
+	@cd /src/.devcontainer/base && ([ -d "quests" ] && (cd quests && git pull) || git clone https://github.com/EQMacEmu/quests.git quests)
+
+# prep a separate runtime location so "clean" can be done on build/bin
 .PHONY: prep
 prep:
 	@echo "Preparing /src/.devcontainer/bin/ for runtime files..."
-	@mkdir -p bin/logs
-	@mkdir -p bin/shared
+	@rm -rf /src/.devcontainer/bin
+	@mkdir -p /src/.devcontainer/bin/logs
+	@mkdir /src/.devcontainer/bin/shared
 
 	@echo "Symlinking Maps and quests..."
-	@-ln -s /src/.devcontainer/base/Maps bin/Maps
-	@-ln -s /src/.devcontainer/base/quests bin/quests
+	@-ln -s /src/.devcontainer/base/Maps /src/.devcontainer/bin/Maps
+	@-ln -s /src/.devcontainer/base/quests /src/.devcontainer/bin/quests
 
 	@echo "Copying static opcodes..."
-	@cp -Rup /src/loginserver/login_util/*.conf bin
-	@cp -Rup /src/utils/patches/*.conf bin
+	@cp -Rup /src/loginserver/login_util/*.conf /src/.devcontainer/bin
+	@cp -Rup /src/utils/patches/*.conf /src/.devcontainer/bin
 
 # Todo - source this from a properties file
 	@echo "Copying env files..."
-	@cp -Rup base/eqemu_config.json bin
-	@cp -Rup base/login.ini bin
+	@cp -Rup /src/.devcontainer/base/eqemu_config.json /src/.devcontainer/bin
+	@cp -Rup /src/.devcontainer/base/login.ini /src/.devcontainer/bin
 
 	@echo "Symlinking binaries..."
-	@find /src/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} bin \;
+	@find /src/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} /src/.devcontainer/bin \;
 
-# clones or pulls Maps (EQEmuConfig::MapDir is hard coded with capital M)
-maps:
-	@cd base && ([ -d "Maps" ] && (cd Maps && git pull) || git clone https://github.com/EQMacEmu/Maps Maps)
-
-# clones or pulls quests
-quests:
-	@cd base && ([ -d "quests" ] && (cd quests && git pull) || git clone https://github.com/EQMacEmu/quests.git quests)
+# launches stack
+.PHONY: start
+start:
+	/src/.devcontainer/bin/shared_memory &> /src/.devcontainer/bin/logs/shared_memory.log
+	/src/.devcontainer/bin/loginserver &> /src/.devcontainer/bin/logs/login.log &
+	/src/.devcontainer/bin/world &> /src/.devcontainer/bin/logs/world.log &
+	/src/.devcontainer/bin/eqlaunch 'dynzone1' &> /src/.devcontainer/bin/logs/eqlaunch.log &
+	/src/.devcontainer/bin/eqlaunch 'boats' &> /src/.devcontainer/bin/logs/eqlaunch-boats.log &
+	/src/.devcontainer/bin/queryserv &> /src/.devcontainer/bin/logs/queryserv.log &
+	/src/.devcontainer/bin/ucs &> /src/.devcontainer/bin/logs/ucs.log &
 
 # Runs tests
 .PHONY: test
 test:
-	cd build/bin && ./tests
+	cd /src/build/bin && ./tests
 
 # Runs login binary
 .PHONY: login
 login:
-	cd build/bin && ./loginserver
+	cd /src/build/bin && ./loginserver
 
 # Runs shared_memory binary
 .PHONY: shared
@@ -125,34 +170,6 @@ valgrind-%:
 .PHONY: mariadb
 mariadb:
 	@sudo service mariadb start
-
-.PHONY: inject-mariadb
-inject-mariadb:
-	-sudo service mariadb start
-	-mkdir -p base/db/
-	-sudo mariadb -e 'DROP DATABASE IF EXISTS peq;'
-	-sudo mariadb -e 'CREATE DATABASE peq;'
-	-sudo mariadb -e "CREATE USER IF NOT EXISTS 'peq'@'127.0.0.1' IDENTIFIED BY 'peqpass';"
-	-sudo mariadb -e "GRANT ALL PRIVILEGES ON *.* TO 'peq'@'127.0.0.1';"
-ifeq (,$(wildcard base/db/db.sql.zip))
-	@echo "base/db.sql.zip not found. Downloading latest from EQMacEmu"
-	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_latest.zip -O base/db/db.sql.zip
-	@-cd base/db && unzip db.sql.zip
-endif
-	@echo "Sourcing db may take a while, please wait..."
-	@echo "Sourcing alkabor..."
-	@cd base/db/alkabor* && for f in alkabor_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
-	@echo "Sourcing data_tables..."
-	@cd base/db/alkabor* && for f in data_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
-	@echo "Sourcing login_tables..."
-	@cd base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
-	@echo "Sourcing player_tables..."
-	@cd base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
-	@echo "Sourcing loginserver..."
-	@cd ../loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
-
-	@echo "MariaDB is now injected."
-
 
 .PHONY: gm-%
 gm-%:
