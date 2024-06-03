@@ -73,10 +73,8 @@ endif
 	@cd /src/.devcontainer/base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing loginserver..."
 	@cd /src/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
-	@echo "Sourcing eqlaunch boats..."
-	@cd /src/.devcontainer/base/db && sudo mariadb --database peq -e "source launcher_boats.sql"
-	@echo "Sourcing auto creation of login accounts..."
-	@cd /src/.devcontainer/base/db && sudo mariadb --database peq -e "source auto_create_login.sql"
+	@echo "Sourcing local development scripts"
+	@cd /src/.devcontainer/base/db/local && for f in *.sql; do sudo mariadb --database=peq -e "source $$f"; done
 
 	@echo "MariaDB is now injected."
 

@@ -2,6 +2,5 @@
 base/Maps
 base/quests
 base/db/*
-!base/db/launcher_boats.sql
-!base/db/auto_create_login.sql
+!base/db/local
 !base/expansion/Makefile
