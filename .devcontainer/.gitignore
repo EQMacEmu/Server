@@ -1,7 +1,6 @@
 !Makefile
-base/*.sql
-base/*.zip
-base/db/
-base/maps/
+base/Maps
 base/quests
+base/db/*
+!base/db/launcher_boats.sql
 !base/expansion/Makefile
