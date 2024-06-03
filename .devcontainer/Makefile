@@ -50,30 +50,33 @@ docker-clean: clean
 
 .PHONY: prep
 prep:
-	@echo "Preparing build/bin for usage..."
-	mkdir -p build/bin/assets/patches
-	cp -R -u -p .devcontainer/base/eqemu_config.json build/bin/eqemu_config.json
-	cp -R -u -p .devcontainer/base/login.ini build/bin/login.ini
-	cp -R -u -p loginserver/login_util/* build/bin/assets/patches/
-	mkdir -p build/bin/assets
-	cp -R -u -p utils/patches build/bin/assets/
-	@-ln -s .devcontainer/base/assets/ build/bin/
-	@-cd build/bin && ln -s assets/patches/login_opcodes_oldver.conf login_opcodes_oldver.conf
-	-unlink build/bin/lua_modules
-	cd build/bin && ln -s quests/lua_modules lua_modules
-	-unlink build/bin/mods
-	cd build/bin && ln -s quests/mods mods
-	-unlink build/bin/maps
-	cd build/bin && ln -s ../../base/maps maps
-	mkdir -p build/bin/logs
-	mkdir -p build/bin/shared
-	@echo "Eqemu is prepared. Edit build/bin/eqemu_config.json to configure."
+	@echo "Preparing /src/.devcontainer/bin/ for runtime files..."
+	@mkdir -p bin/logs
+	@mkdir -p bin/shared
 
+	@echo "Symlinking Maps and quests..."
+	@-ln -s /src/.devcontainer/base/Maps bin/Maps
+	@-ln -s /src/.devcontainer/base/quests bin/quests
+
+	@echo "Copying static opcodes..."
+	@cp -Rup /src/loginserver/login_util/*.conf bin
+	@cp -Rup /src/utils/patches/*.conf bin
+
+# Todo - source this from a properties file
+	@echo "Copying env files..."
+	@cp -Rup base/eqemu_config.json bin
+	@cp -Rup base/login.ini bin
+
+	@echo "Symlinking binaries..."
+	@find /src/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} bin \;
+
+# clones or pulls Maps (EQEmuConfig::MapDir is hard coded with capital M)
 maps:
-	@cd .devcontainer/base && git clone https://github.com/EQMacEmu/Maps maps
+	@cd base && ([ -d "Maps" ] && (cd Maps && git pull) || git clone https://github.com/EQMacEmu/Maps Maps)
 
+# clones or pulls quests
 quests:
-	@cd build/bin && git clone https://github.com/EQMacEmu/quests.git quests
+	@cd base && ([ -d "quests" ] && (cd quests && git pull) || git clone https://github.com/EQMacEmu/quests.git quests)
 
 # Runs tests
 .PHONY: test
