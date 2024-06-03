@@ -1,7 +1,10 @@
 NAME := eqemu-server
 
-DOCKER_ARGS := --rm  --name ${NAME} -v $$PWD:/src -w /src ${NAME}
-DOCKER_ARM64_ARGS := --rm --platform linux/arm64 --name ${NAME}-arm64 -v $$PWD:/src -w /src ${NAME}-arm64
+DIR_SRC := /src
+DIR_DEVCONT := ${DIR_SRC}/.devcontainer
+
+DOCKER_ARGS := --rm  --name ${NAME} -v $$PWD:${DIR_SRC} -w ${DIR_SRC} ${NAME}
+DOCKER_ARM64_ARGS := --rm --platform linux/arm64 --name ${NAME}-arm64 -v $$PWD:${DIR_SRC} -w ${DIR_SRC} ${NAME}-arm64
 
 .PHONY: build
 build:
@@ -52,77 +55,79 @@ docker-clean: clean
 .PHONY: inject-mariadb
 inject-mariadb:
 	-sudo service mariadb start
-	-mkdir -p /src/.devcontainer/base/db
+	-mkdir -p ${DIR_DEVCONT}/base/db
 	-sudo mariadb -e 'DROP DATABASE IF EXISTS peq;'
 	-sudo mariadb -e 'CREATE DATABASE peq;'
 	-sudo mariadb -e "CREATE USER IF NOT EXISTS 'peq'@'127.0.0.1' IDENTIFIED BY 'peqpass';"
 	-sudo mariadb -e "GRANT ALL PRIVILEGES ON *.* TO 'peq'@'127.0.0.1';"
-ifeq (,$(wildcard /src/.devcontainer/base/db/alkabor_latest.zip))
-	@echo "/src/.devcontainer/base/db/alkabor_latest.zip not found. Downloading latest from EQMacEmu"
-	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_latest.zip -O /src/.devcontainer/base/db/alkabor_latest.zip
-	@-cd /src/.devcontainer/base/db && unzip alkabor_latest.zip
+ifeq (,$(wildcard ${DIR_DEVCONT}/base/db/alkabor_latest.zip))
+	@echo "${DIR_DEVCONT}/base/db/alkabor_latest.zip not found. Downloading latest from EQMacEmu"
+	wget -nc https://github.com/EQMacEmu/Server/raw/main/utils/sql/database_full/alkabor_latest.zip -O ${DIR_DEVCONT}/base/db/alkabor_latest.zip
+	@-cd ${DIR_DEVCONT}/base/db && unzip alkabor_latest.zip
 endif
 	@echo "Sourcing db may take a while, please wait..."
 	@echo "Sourcing alkabor..."
-	@cd /src/.devcontainer/base/db/alkabor* && for f in alkabor_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in alkabor_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing data_tables..."
-	@cd /src/.devcontainer/base/db/alkabor* && for f in data_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in data_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing login_tables..."
-	@cd /src/.devcontainer/base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing player_tables..."
-	@cd /src/.devcontainer/base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing loginserver..."
-	@cd /src/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
+	@cd ${DIR_SRC}/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
 	@echo "Sourcing local development scripts"
-	@cd /src/.devcontainer/base/db/local && for f in *.sql; do sudo mariadb --database=peq -e "source $$f"; done
+	@cd ${DIR_DEVCONT}/base/db/local && for f in *.sql; do sudo mariadb --database=peq -e "source $$f"; done
 
 	@echo "MariaDB is now injected."
 
 # clones or pulls Maps (EQEmuConfig::MapDir is hard coded with capital M)
 .PHONY: maps
 maps:
-	@cd /src/.devcontainer/base && ([ -d "Maps" ] && (cd Maps && git pull) || git clone https://github.com/EQMacEmu/Maps Maps)
+	@cd ${DIR_DEVCONT}/base && ([ -d "Maps" ] && (cd Maps && git pull) || git clone https://github.com/EQMacEmu/Maps Maps)
 
 # clones or pulls quests
 .PHONY: quests
 quests:
-	@cd /src/.devcontainer/base && ([ -d "quests" ] && (cd quests && git pull) || git clone https://github.com/EQMacEmu/quests.git quests)
+	@cd ${DIR_DEVCONT}/base && ([ -d "quests" ] && (cd quests && git pull) || git clone https://github.com/EQMacEmu/quests.git quests)
 
 # prep a separate runtime location so "clean" can be done on build/bin
 .PHONY: prep
 prep:
-	@echo "Preparing /src/.devcontainer/bin/ for runtime files..."
-	@rm -rf /src/.devcontainer/bin
-	@mkdir -p /src/.devcontainer/bin/logs
-	@mkdir /src/.devcontainer/bin/shared
+	@echo "Preparing ${DIR_DEVCONT}/bin/ for runtime files..."
+	@rm -rf ${DIR_DEVCONT}/bin
+	@mkdir -p ${DIR_DEVCONT}/bin/logs
+	@mkdir ${DIR_DEVCONT}/bin/shared
 
 	@echo "Symlinking Maps and quests..."
-	@-ln -s /src/.devcontainer/base/Maps /src/.devcontainer/bin/Maps
-	@-ln -s /src/.devcontainer/base/quests /src/.devcontainer/bin/quests
+	@-ln -s ${DIR_DEVCONT}/base/Maps ${DIR_DEVCONT}/bin/Maps
+	@-ln -s ${DIR_DEVCONT}/base/quests ${DIR_DEVCONT}/bin/quests
 
 	@echo "Copying static opcodes..."
-	@cp -Rup /src/loginserver/login_util/*.conf /src/.devcontainer/bin
-	@cp -Rup /src/utils/patches/*.conf /src/.devcontainer/bin
+	@cp -Rup ${DIR_SRC}/loginserver/login_util/*.conf ${DIR_DEVCONT}/bin
+	@cp -Rup ${DIR_SRC}/utils/patches/*.conf ${DIR_DEVCONT}/bin
 
 	@echo "Copying env files..."
-	@cp -Rup /src/.devcontainer/base/eqemu_config.json /src/.devcontainer/bin
-	@cp -Rup /src/.devcontainer/base/login.ini /src/.devcontainer/bin
+	@cp -Rup ${DIR_DEVCONT}/base/eqemu_config.json ${DIR_DEVCONT}/bin
+	@cp -Rup ${DIR_DEVCONT}/base/login.ini ${DIR_DEVCONT}/bin
 
 	@echo "Symlinking binaries..."
-	@find /src/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} /src/.devcontainer/bin \;
+	@find ${DIR_SRC}/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} ${DIR_DEVCONT}/bin \;
 
-	@echo "Done. Re-run this anytime /src/.devcontainer/base/eqemu_config.json changes."
+	@echo "Done. Re-run this anytime ${DIR_DEVCONT}/base/eqemu_config.json changes."
 
 # launches stack
 .PHONY: start
 start:
-	cd /src/.devcontainer/bin && ./shared_memory &> /src/.devcontainer/bin/logs/shared_memory.log
-	cd /src/.devcontainer/bin && ./loginserver &> /src/.devcontainer/bin/logs/login.log &
-	cd /src/.devcontainer/bin && ./world &> /src/.devcontainer/bin/logs/world.log &
-	cd /src/.devcontainer/bin && ./eqlaunch 'dynzone1' &> /src/.devcontainer/bin/logs/eqlaunch.log &
-	cd /src/.devcontainer/bin && ./eqlaunch 'boats' &> /src/.devcontainer/bin/logs/eqlaunch-boats.log &
-	cd /src/.devcontainer/bin && ./queryserv &> /src/.devcontainer/bin/logs/queryserv.log &
-	cd /src/.devcontainer/bin && ./ucs &> /src/.devcontainer/bin/logs/ucs.log &
+	cd ${DIR_DEVCONT}/bin && ./shared_memory &> ${DIR_DEVCONT}/bin/logs/shared_memory.log
+# shared_memory will complete prior to flushing disk
+	sleep 3
+	cd ${DIR_DEVCONT}/bin && ./loginserver &> ${DIR_DEVCONT}/bin/logs/login.log &
+	cd ${DIR_DEVCONT}/bin && ./world &> ${DIR_DEVCONT}/bin/logs/world.log &
+	cd ${DIR_DEVCONT}/bin && ./eqlaunch 'dynzone1' &> ${DIR_DEVCONT}/bin/logs/eqlaunch.log &
+	cd ${DIR_DEVCONT}/bin && ./eqlaunch 'boats' &> ${DIR_DEVCONT}/bin/logs/eqlaunch-boats.log &
+	cd ${DIR_DEVCONT}/bin && ./queryserv &> ${DIR_DEVCONT}/bin/logs/queryserv.log &
+	cd ${DIR_DEVCONT}/bin && ./ucs &> ${DIR_DEVCONT}/bin/logs/ucs.log &
 
 # kills stack (ignores errors about process not running)
 .PHONY: stop
@@ -138,12 +143,12 @@ stop:
 # Runs tests
 .PHONY: test
 test:
-	cd /src/build/bin && ./tests
+	cd ${DIR_SRC}/build/bin && ./tests
 
 # Runs login binary
 .PHONY: login
 login:
-	cd /src/build/bin && ./loginserver
+	cd ${DIR_SRC}/build/bin && ./loginserver
 
 # Runs shared_memory binary
 .PHONY: shared
