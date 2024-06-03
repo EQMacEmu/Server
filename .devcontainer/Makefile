@@ -8,45 +8,43 @@ DOCKER_ARM64_ARGS := --rm --platform linux/arm64 --name ${NAME}-arm64 -v $$PWD:$
 
 .PHONY: build
 build:
-	cd build$$BUILD_SUFFIX && cmake --build . --config Release --target all --
+	cd ${DIR_SRC}/build$$BUILD_SUFFIX && cmake --build . --config Release --target all --
 
 .PHONY: cmake
 cmake:
-	@echo "working directory: $$PWD"
-	mkdir -p build$$BUILD_SUFFIX
-	@cd build$$BUILD_SUFFIX && cmake -DEQEMU_BUILD_LOGIN=ON \
+	mkdir -p ${DIR_SRC}/build$$BUILD_SUFFIX
+	@cd ${DIR_SRC}/build$$BUILD_SUFFIX && cmake -DEQEMU_BUILD_LOGIN=ON \
 			-DEQEMU_BUILD_TESTS=ON \
 			-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja ..
 
 clean:
-	rm -rf build
+	rm -rf ${DIR_SRC}/build
 
 docker-cmake:
-	@echo "working directory: $$PWD"
-	git submodule update --init --recursive
-	docker run ${DOCKER_ARGS} make cmake
+	cd ${DIR_SRC} && git submodule update --init --recursive
+	cd ${DIR_SRC} && docker run ${DOCKER_ARGS} make cmake
 
 docker-build:
-	docker run ${DOCKER_ARGS} make build
+	cd ${DIR_SRC} && docker run ${DOCKER_ARGS} make build
 
 # Build image if it doesn't exist
 docker-image-build:
 ifeq ($(shell docker images -q ${NAME} 2> /dev/null),)
 	@echo "Docker image not found. Building..."
-	docker build -f Dockerfile.debian.dev -t ${NAME} .
+	cd ${DIR_DEVCONT} && docker build -f Dockerfile.debian.dev -t ${NAME} .
 endif
 
 docker-arm-cmake: docker-arm-image-build
-	git submodule update --init --recursive
-	docker run ${DOCKER_ARM64_ARGS} make cmake BUILD_SUFFIX=arm64
+	cd ${DIR_SRC} && git submodule update --init --recursive
+	cd ${DIR_SRC} && docker run ${DOCKER_ARM64_ARGS} make cmake BUILD_SUFFIX=arm64
 
 docker-arm-build: docker-arm-image-build
-	docker run ${DOCKER_ARM64_ARGS} make build BUILD_SUFFIX=arm64
+	cd ${DIR_SRC} && docker run ${DOCKER_ARM64_ARGS} make build BUILD_SUFFIX=arm64
 
 docker-arm-image-build:
 ifeq ($(shell docker images -q ${NAME}-arm64 2> /dev/null),)
 	@echo "Docker image not found. Building..."
-	docker build -f Dockerfile.debian.arm.dev -t ${NAME}-arm64 .
+	cd ${DIR_DEVCONT} && docker build -f Dockerfile.debian.arm.dev -t ${NAME}-arm64 .
 endif
 
 docker-clean: clean
@@ -153,35 +151,35 @@ login:
 # Runs shared_memory binary
 .PHONY: shared
 shared:
-	@cd build/bin && mkdir -p shared
-	cd build/bin && ./shared_memory
+	@cd ${DIR_SRC}/build/bin && mkdir -p shared
+	cd ${DIR_SRC}/build/bin && ./shared_memory
 
 # Runs zone binary
 .PHONY: zone
 zone:
-	@-rm build/bin/logs/zone/zone*.log
-	cd build/bin && ./zone
+	@-rm ${DIR_SRC}/build/bin/logs/zone/zone*.log
+	cd ${DIR_SRC}/build/bin && ./zone
 
 # Runs world binary
 .PHONY: world
 world:
-	@-rm build/bin/logs/world*.log
-	cd build/bin && ./world
+	@-rm ${DIR_SRC}/build/bin/logs/world*.log
+	cd ${DIR_SRC}/build/bin && ./world
 
 # Runs ucs binary
 .PHONY: ucs
 ucs:
-	@-rm build/bin/logs/ucs*.log
-	cd build/bin && ./ucs
+	@-rm ${DIR_SRC}/build/bin/logs/ucs*.log
+	cd ${DIR_SRC}/build/bin && ./ucs
 
 # Runs queryserv binary
 .PHONY: queryserv
 queryserv:
-	@-rm build/bin/logs/query_server*.log
-	cd build/bin && ./queryserv
+	@-rm ${DIR_SRC}/build/bin/logs/query_server*.log
+	cd ${DIR_SRC}/build/bin && ./queryserv
 
 valgrind-%:
-	cd build/bin && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=logs/$*.valgrind.log ./$*
+	cd ${DIR_SRC}/build/bin && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=logs/$*.valgrind.log ./$*
 
 # Start mariaDB standalone
 .PHONY: mariadb
@@ -196,34 +194,34 @@ gm-%:
 depends:
 	sudo apt install graphviz pip time
 	pip3 install graphviz
-	mkdir -p build/depends
-	@if [ ! -f "build/depends/dependency_graph.py" ]; then \
+	mkdir -p ${DIR_SRC}/build/depends
+	@if [ ! -f "${DIR_SRC}/build/depends/dependency_graph.py" ]; then \
 		wget https://raw.githubusercontent.com/pvigier/dependency-graph/master/dependency_graph.py -O build/depends/dependency_graph.py; \
 	fi
 	@echo "Generating dependency graphs (This may take a while)..."
 	@echo "Login..."
-	time python3 build/depends/dependency_graph.py -f png login build/depends/login.dot
+	time python3 ${DIR_SRC}/build/depends/dependency_graph.py -f png login ${DIR_SRC}/build/depends/login.dot
 	@echo "World..."
-	time python3 build/depends/dependency_graph.py -f png world build/depends/world.dot
+	time python3 ${DIR_SRC}/build/depends/dependency_graph.py -f png world ${DIR_SRC}/build/depends/world.dot
 	@echo "Zone..."
-	time python3 build/depends/dependency_graph.py -f png zone build/depends/zone.dot
+	time python3 ${DIR_SRC}/build/depends/dependency_graph.py -f png zone ${DIR_SRC}/build/depends/zone.dot
 	@echo "Common..."
-	time python3 build/depends/dependency_graph.py -f png common build/depends/common.dot
+	time python3 ${DIR_SRC}/build/depends/dependency_graph.py -f png common ${DIR_SRC}/build/depends/common.dot
 
 backup:
-	@mkdir -p build/bin/backup
-	cd build/bin && ./world database:dump --compress --player-tables --state-tables --system-tables --query-serv-tables
+	@mkdir -p ${DIR_SRC}/build/bin/backup
+	cd ${DIR_SRC}/build/bin && ./world database:dump --compress --player-tables --state-tables --system-tables --query-serv-tables
 
 cpu-zone:
-	@cd build/bin && mkdir -p tmp
-	cd build/bin && CPUPROFILE=prof.out ./zone
+	@cd ${DIR_SRC}/build/bin && mkdir -p tmp
+	cd ${DIR_SRC}/build/bin && CPUPROFILE=prof.out ./zone
 
 pprof-zone:
-	cd build/bin && google-pprof --pdf zone prof.out > prof.pdf
+	cd ${DIR_SRC}/build/bin && google-pprof --pdf zone prof.out > prof.pdf
 pprof-web-zone:
-	cd build/bin && google-pprof --web zone prof.out
+	cd ${DIR_SRC}/build/bin && google-pprof --web zone prof.out
 pprof-gv-zone:
-	cd build/bin && google-pprof --gv zone prof.out > prof.gv
+	cd ${DIR_SRC}/build/bin && google-pprof --gv zone prof.out > prof.gv
 heap-zone:
-	@cd build/bin && mkdir -p tmp
-	cd build/bin && HEAPPROFILE=prof.out ./zone
+	@cd ${DIR_SRC}/build/bin && mkdir -p tmp
+	cd ${DIR_SRC}/build/bin && HEAPPROFILE=prof.out ./zone
