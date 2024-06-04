@@ -9,6 +9,7 @@ Dev containers uses Docker and VSCode to create a development environment that i
 1. Install [Docker](https://www.docker.com/products/docker-desktop)
 2. Install [VSCode](https://code.visualstudio.com/)
 
+#
 
 ### Setup 1: Initialize repo and dev container
 1. Clone this repo
@@ -16,41 +17,49 @@ Dev containers uses Docker and VSCode to create a development environment that i
 3. Wait for the container to build and start. VSCode will auto-prompt to view container logs in terminal.
 4. Once complete, select New-Terminal (Ctr-Shift-\`) which will open a shell within the container. You know you're in the container if the prompt looks like... `vscode -> /src`
 
+#
 
 ### Setup 2: Building
 1. Execute `make cmake` to configure the environment
 2. Execute `make build` to build - may take a little bit.
 3. Verify your `build/bin` folder within VSCode or `/src/build/bin` within the terminal for binaries (zone, world, queryserv, etc.)
 
+#
 
 ### Setup 3: Inject the Database
 1. Execute `make inject-mariadb` to DROP and CREATE the database and source the latest backup, with a few extra sql files to facilitate local dev.
 
 	* - A sql file is executed to enable auto-creation of accounts at the login server.
 
+#
 
 ### Setup 4: Clone Quests and Maps
 1. Execute `make quests` and `make maps` to clone the repos or pull latest if they exist.
 
+#
 
 ### Setup 5: Prep the environment
-1. Execute `make prep` which will create a runtime location in `/src/.devcontainer/bin`. This will copy static config files and symlink binaries. Cleaning the project's build dir will not require re-running above steps. If you do modify values in `/src/.devcontainer/eqemu_config.json` then you need to rerun this command.
+1. Execute `make prep` which will create a runtime location in `/src/.devcontainer/bin`. This will copy static config files and symlink binaries. Cleaning the project's build dir will not require re-running above steps. If you do modify values in `/src/.devcontainer/eqemu_config.json` or `login.ini` then you need to rerun this command.
 
+#
 
 ### Setup 6: Start the server
-1. Execute `make start` to launch the server stack
+1. Execute `make start` to launch the server stack. Use `make stop` to kill all processes
 
+#
 
 ### Setup 7: Log in and set yourself GM
 1. Be sure your EQ client's eqhosts.txt file matches `/src/.devcontainer/base/login.ini` which defaults to `"127.0.0.1:6000"`.
 2. Enter in any username/password (twice) to auto-create an account and login.
 3. To set your account as a GM, execute `make gm-accountname`. You can do it prior to logging in.
 
+#
 
 ### Setup 8: Connect to Database
 1. Use preferred SQL client to connect to the database based on parameters in `/src/.devcontainer/eqemu_config.json`
 2. You may also connect within the dev container terminal via `mysql -h127.0.0.1`
 
+#
 
 ### Debugging
 You can optionally debug by attaching via gdb to the running processes. This is only recommended if you are familiar with gdb and debugging in general.
@@ -59,6 +68,7 @@ You can optionally debug by attaching via gdb to the running processes. This is 
 3. When your code reaches said break point, you will get a call stack and variable dump on left
 4. While the break point is triggered, all code is frozen, so a connection client will slowly disconnect if you're not quick to resume the breakpoint
 
+#
 
 ### Troubleshooting
 - Errors during image creation and container boot will be shown as logs within the VSCode terminal. Sometimes restarting the docker daemon (Docker Desktop in Windows) can resolve errors.
@@ -66,8 +76,9 @@ You can optionally debug by attaching via gdb to the running processes. This is 
 - Errors during server startup and runtime will appear as logs within VSCode terminal and are persisted in log files under `/src/.devcontainer/bin/logs`
 - Specific zone crashes are also logged under logs directory.
 
+#
 
-### Cleaning 
+### Cleaning
 - Execute `make clean` to clean C++ binaries in `/src/build/bin`. Step 2 above reverts this.
 - Execute `make clean-assets` to remove downloaded assets from `/src/.devcontainer/base`. Step 3 & 4 above reverts this, which means this will drop your database.
 - Execute `make clean-runtime` to clean runtime files in `/src/.devcontainer/bin/`, such as config and logs. Step 5 above reverts this.
