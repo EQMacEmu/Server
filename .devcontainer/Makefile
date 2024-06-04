@@ -19,6 +19,16 @@ cmake:
 
 clean:
 	rm -rf ${DIR_SRC}/build
+	
+clean-runtime:
+	rm -rf ${DIR_DEVCONT}/bin
+	
+clean-assets:
+	rm -rf ${DIR_DEVCONT}/base/Maps
+	rm -rf ${DIR_DEVCONT}/base/quests
+	rm -rf ${DIR_DEVCONT}/base/db/alkabor*
+	
+clean-all: clean clean-runtime clean-assets
 
 docker-cmake:
 	cd ${DIR_SRC} && git submodule update --init --recursive
