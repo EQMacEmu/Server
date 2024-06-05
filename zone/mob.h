@@ -1114,7 +1114,7 @@ protected:
 	char orig_name[64];
 	char clean_name[64];
 	char clean_name_spaces[64];
-	char lastname[64];
+	char lastname[32];
 
 	glm::vec4 m_Delta;
 

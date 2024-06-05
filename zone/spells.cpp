@@ -70,6 +70,7 @@ Copyright (C) 2001-2002 EQEMu Development Team (http://eqemu.org)
 #include "../common/bodytypes.h"
 #include "../common/classes.h"
 #include "../common/content/world_content_service.h"
+#include "../common/data_verification.h"
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/item_instance.h"
@@ -331,14 +332,13 @@ bool Mob::CastSpell(uint16 spell_id, uint16 target_id, CastingSlot slot,
 		}
 	}
 
+	std::string export_string = fmt::format("{}", spell_id);
 	if(IsClient()) {
-		char temp[64];
-		sprintf(temp, "%d", spell_id);
-		parse->EventPlayer(EVENT_CAST_BEGIN, CastToClient(), temp, 0);
+		if (parse->EventPlayer(EVENT_CAST_BEGIN, CastToClient(), export_string, 0) != 0) {
+			return false;
+		}
 	} else if(IsNPC()) {
-		char temp[64];
-		sprintf(temp, "%d", spell_id);
-		parse->EventNPC(EVENT_CAST_BEGIN, CastToNPC(), nullptr, temp, 0);
+		parse->EventNPC(EVENT_CAST_BEGIN, CastToNPC(), nullptr, export_string, 0);
 	}
 
 	//To prevent NPC ghosting when spells are cast from scripts
@@ -1322,14 +1322,11 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 	// at this point the spell has successfully been cast
 	//
 
+	std::string export_string = fmt::format("{}", spell_id);
 	if(IsClient()) {
-		char temp[64];
-		sprintf(temp, "%d", spell_id);
-		parse->EventPlayer(EVENT_CAST, CastToClient(), temp, 0);
+		parse->EventPlayer(EVENT_CAST, CastToClient(), export_string, 0);
 	} else if(IsNPC()) {
-		char temp[64];
-		sprintf(temp, "%d", spell_id);
-		parse->EventNPC(EVENT_CAST, CastToNPC(), nullptr, temp, 0);
+		parse->EventNPC(EVENT_CAST, CastToNPC(), nullptr, export_string, 0);
 	}
 
 	if(IsClient())
@@ -1893,11 +1890,6 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 	if (spell_target && spell_id == SPELL_CAZIC_TOUCH && IsNPC() && zone->GetZoneExpansion() != PlanesEQ)
 	{
 		Shout("%s!",spell_target->name);
-	}
-
-	if (spell_id == SPELL_MANA_CONVERT && zone->GetZoneExpansion() != ClassicEQ) { // Manastone restricted to classic
-		Message_StringID(CC_User_SpellFailure, SPELL_DOES_NOT_WORK_HERE);
-		return false;
 	}
 
 	if(IsClient() && !CastToClient()->GetGM()){
@@ -2574,8 +2566,7 @@ bool Mob::CancelMagicShouldAggro(uint16 spell_id, Mob* spelltar)
 bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_resist_adjust, int16 resist_adjust, bool isproc, uint16 ae_caster_id, bool isrecourse, int recourse_spell_level)
 {
 	// well we can't cast a spell on target without a target
-	if(!spelltar)
-	{
+	if(!spelltar) {
 		Log(Logs::Detail, Logs::Spells, "Unable to apply spell %d without a target", spell_id);
 		Message(CC_Red, "SOT: You must have a target for this spell.");
 		return false;
@@ -2590,16 +2581,13 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	}
 
 	//We have to check for Gate failure before its cast, because the client resolves on its own.
-	if(IsGateSpell(spell_id))
-	{
+	if(IsGateSpell(spell_id)) {
 		if (spellbonuses.AntiGate) {
 			InterruptSpell(spell_id);
 			return false;
 		}
-		else if (spelltar->IsClient())
-		{
-			if (spelltar->CastToClient()->GetBindZoneID() != zone->GetZoneID())
-			{
+		else if (spelltar->IsClient()) {
+			if (spelltar->CastToClient()->GetBindZoneID() != zone->GetZoneID()) {
 				CastToClient()->zone_mode = GateToBindPoint;
 			}
 			else {
@@ -2612,8 +2600,9 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	EQApplicationPacket *action_packet = nullptr, *message_packet = nullptr;
 	float spell_effectiveness;
 
-	if(!IsValidSpell(spell_id))
+	if (!IsValidSpell(spell_id)) {
 		return false;
+	}
 
 	// reversed tap spell
 	bool is_tap_recourse = (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && spelltar == this;
@@ -2634,28 +2623,23 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	Action_Struct* action = (Action_Struct*) action_packet->pBuffer;
 
 	// select source
-	if(IsClient() && CastToClient()->GMHideMe())
-	{
+	if(IsClient() && CastToClient()->GMHideMe()) {
 		action->source = spelltar->GetID();
 	}
-	else if (ae_caster_id > 0)
-	{
+	else if (ae_caster_id > 0) {
 		action->source = ae_caster_id;
 		Log(Logs::General, Logs::Spells, "Rain spell is using entityid %d as caster.", ae_caster_id);
 	}
-	else
-	{
+	else {
 		action->source = GetID();
 	}
 
 	// select target
 	if	// Bind Sight line of spells
-	(IsBindSightSpell(spell_id))
-	{
+	(IsBindSightSpell(spell_id)) {
 		action->target = GetID();
 	}
-	else
-	{
+	else {
 		action->target = spelltar->GetID();
 	}
 
@@ -2666,63 +2650,52 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	action->instrument_mod = GetInstrumentMod(spell_id);
 	action->buff_unknown = 0;
 
-	if(!IsDisc(spell_id))
-	{
+	if(!IsDisc(spell_id)) {
 		Log(Logs::Moderate, Logs::Spells, "Sending Action packet #1 for spell %d", spell_id);
 
-		if (spelltar != this && spelltar->IsClient())	// send to target
+		if (spelltar != this && spelltar->IsClient()) {	// send to target
 			spelltar->CastToClient()->QueuePacket(action_packet);
+		}
 
-		if (IsClient())	// send to caster
+		if (IsClient()) {	// send to caster
 			CastToClient()->QueuePacket(action_packet);
+		}
 
 		// send to people in the area, ignoring caster and target
 		entity_list.QueueCloseClients(spelltar, action_packet, true, RuleI(Range, SpellAnims), this, false, FilterNone);
 	}
-	else
-	{
+	else {
 		Message(MT_Disciplines, "%s", spells[spell_id].cast_on_you);
 	}
 
 	/* Send the EVENT_CAST_ON event */
-	if(spelltar->IsNPC())
-	{
-		char temp1[100];
-		sprintf(temp1, "%d", spell_id);
-		parse->EventNPC(EVENT_CAST_ON, spelltar->CastToNPC(), this, temp1, 0);
+	std::string export_string = fmt::format("{}", spell_id);
+	if(spelltar->IsNPC()) {
+		parse->EventNPC(EVENT_CAST_ON, spelltar->CastToNPC(), this, export_string, 0);
 	}
-	else if (spelltar->IsClient())
-	{
-		char temp1[100];
-		sprintf(temp1, "%d", spell_id);
-		parse->EventPlayer(EVENT_CAST_ON, spelltar->CastToClient(),temp1, 0);
+	else if (spelltar->IsClient()) {
+		parse->EventPlayer(EVENT_CAST_ON, spelltar->CastToClient(), export_string, 0);
 	}
 
 	// Casting on an entity in a different region silently fails after letting the spell be cast
-	if ((IsClient() || IsPet()) && (!CheckRegion(spelltar) && !IsBindSightSpell(spell_id) && !IsSummonPCSpell(spell_id)))
-	{
-		if (IsClient() && spelltar->IsClient())
-		{
+	if ((IsClient() || IsPet()) && (!CheckRegion(spelltar) && !IsBindSightSpell(spell_id) && !IsSummonPCSpell(spell_id))) {
+		if (IsClient() && spelltar->IsClient()) 	{
 			spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetName());
 		}
 		safe_delete(action_packet);
 		return false;
 	}
 
-	if (IsEffectInSpell(spell_id, SE_Levitate))
-	{
-		if (spelltar->IsClient() && spelltar->CastToClient()->Trader)
-		{
+	if (IsEffectInSpell(spell_id, SE_Levitate)) {
+		if (spelltar->IsClient() && spelltar->CastToClient()->Trader) {
 			Log(Logs::General, Logs::Spells, "Levitate cannot be cast on a trader.");
 			Message_StringID(CC_User_SpellFailure, SPELL_NO_HOLD);
 			safe_delete(action_packet);
 			return true; // We want the spell to finish casting.
 		}
 	}
-	if (IsCharmSpell(spell_id))
-	{
-		if ((IsClient() && (spelltar->IsClient() || (spelltar->GetOwner() && spelltar->GetOwner()->IsClient()) || spelltar->IsCharmedPet())) || spelltar->IsCorpse())
-		{
+	if (IsCharmSpell(spell_id)) {
+		if ((IsClient() && (spelltar->IsClient() || (spelltar->GetOwner() && spelltar->GetOwner()->IsClient()) || spelltar->IsCharmedPet())) || spelltar->IsCorpse()) {
 			if (spelltar->IsClient()) {
 				spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetName());
 				Message_StringID(CC_User_SpellFailure, SPELL_NO_HOLD);
@@ -2734,42 +2707,36 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 			return false;
 		}
 
-		if (IsClient() && GetPet() != nullptr)
-		{
+		if (IsClient() && GetPet() != nullptr) {
 			Message_StringID(CC_User_SpellFailure, ONLY_ONE_PET);
 			safe_delete(action_packet);
 			return false;
 		}
 	}
-	if (IsEffectInSpell(spell_id, SE_CallPet))
-	{
+	if (IsEffectInSpell(spell_id, SE_CallPet)) {
 		Mob *pet = spelltar->GetPet();
-		if (IsClient() && pet)
-		{
-			if (entity_list.Fighting(pet))
-			{
+		if (IsClient() && pet) {
+			if (entity_list.Fighting(pet)) {
 				Message_StringID(CC_User_SpellFailure, SUSPEND_MINION_HAS_AGGRO);
 				safe_delete(action_packet);
 				return false;
 			}
 		}
 	}
-	if (IsHarmonySpell(spell_id))
-	{
+	if (IsHarmonySpell(spell_id))  {
 		spelltar->PacifyImmune = false;
-		for (int i = 0; i < EFFECT_COUNT; i++)
-		{
+		for (int i = 0; i < EFFECT_COUNT; i++) {
 			// not important to check limit on SE_Lull as it doesn't have one and if the other components won't land, then SE_Lull wont either
-			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony)
-			{
-			 // Harmony was nerfed in the October 21, 2002 patch, "Reduced the max NPC level that Harmony can effect." to L40; this disables this nerf until PoP
+			if (spells[spell_id].effectid[i] == SE_ChangeFrenzyRad || spells[spell_id].effectid[i] == SE_Harmony) {
+				// Harmony was nerfed in the October 21, 2002 patch,
+				// "Reduced the max NPC level that Harmony can effect." 
+				// to L40; this disables this nerf until PoP
 				bool is_spell_target_out_of_range = spelltar->GetLevel() > spells[spell_id].max[i];
-				if (!content_service.IsThePlanesOfPowerEnabled() && spell_id == 250)
-				{
+				if (!content_service.IsThePlanesOfPowerEnabled() && spell_id == 250) {
 					is_spell_target_out_of_range = false;
 				}
 				if ((IsClient() && spelltar->IsNPC() && spells[spell_id].max[i] != 0 && is_spell_target_out_of_range) ||
-					spelltar->GetSpecialAbility(IMMUNE_PACIFY))
+					spelltar->GetSpecialAbility(IMMUNE_PACIFY)) 
 				{
 					spelltar->PacifyImmune = true;
 					Message_StringID(CC_User_SpellFailure, SPELL_NO_EFFECT);
@@ -2778,8 +2745,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		}
 
 		// prevent dirty exploiters from pulling mobs between floors with lull in VT
-		if (GetZoneID() == vexthal && (spelltar->GetHP() > 600000 || (std::abs(spelltar->GetPosition().z - m_Position.z) > 50.0f)))
-		{
+		if (GetZoneID() == vexthal && (spelltar->GetHP() > 600000 || (std::abs(spelltar->GetPosition().z - m_Position.z) > 50.0f))) {
 			safe_delete(action_packet);
 			return false;
 		}
@@ -2790,27 +2756,23 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		targetIsGM = spelltar->CastToClient()->GetGMInvul();
 
 	// invuln: cazic touch penetrates DA for non-GMs; allow beneficial if GM mode only
-	if (spelltar->GetInvul() || spelltar->DivineAura())
-	{
+	if (spelltar->GetInvul() || spelltar->DivineAura()) {
 		bool spellHit = false;
-		if (spells[spell_id].effectid[0] == SE_Teleport2) // Banishment of the Pantheon, Dimensional Rift, Dimensional Return, Insanity of Tylis, Visions of Argan, Torment's Beckon
-		{
+		if (spells[spell_id].effectid[0] == SE_Teleport2) { // Banishment of the Pantheon, Dimensional Rift, Dimensional Return, Insanity of Tylis, Visions of Argan, Torment's Beckon
 			spellHit = true;
 		}
-		else if (IsDisc(spell_id))
-		{
+		else if (IsDisc(spell_id)) {
 			spellHit = true;
 		}
-		else if (IsDetrimentalSpell(spell_id))
-		{
+		else if (IsDetrimentalSpell(spell_id)) {
 			if (spell_id == SPELL_CAZIC_TOUCH && !targetIsGM)
 				spellHit = true;
 		}
-		else if (targetIsGM)
+		else if (targetIsGM) {
 			spellHit = true;		// beneficial on GMs only
+		}
 
-		if (!spellHit)
-		{
+		if (!spellHit) {
 			Log(Logs::Detail, Logs::Spells, "Casting spell %d on %s aborted: they are invulnerable.", spell_id, spelltar->GetName());
 			if (targetIsGM)
 				spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetName());
@@ -2840,11 +2802,9 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		}
 	}
 
-	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id))	// GMs can cast on anything
-	{
+	if(!(IsClient() && CastToClient()->GetGM()) && !IsHarmonySpell(spell_id)) {	// GMs can cast on anything
 		// Beneficial spells check
-		if(IsBeneficialSpell(spell_id))
-		{
+		if(IsBeneficialSpell(spell_id)) {
 			if(IsClient() &&	//let NPCs do beneficial spells on anybody if they want, should be the job of the AI, not the spell code to prevent this from going wrong
 				spelltar != this)
 			{
@@ -2872,8 +2832,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 					nGroup = pRaid->GetGroup(pClient) + 1;
 
 				//Target client pointers
-				if(spelltar->IsClient())
-				{
+				if(spelltar->IsClient()) {
 					pClientTarget = spelltar->CastToClient();
 					pRaidTarget = entity_list.GetRaidByClient(pClientTarget);
 					pBasicGroupTarget = entity_list.GetGroupByMob(spelltar);
@@ -2881,11 +2840,9 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 						nGroupTarget = pRaidTarget->GetGroup(pClientTarget) + 1;
 				}
 
-				if(spelltar->IsPet())
-				{
+				if(spelltar->IsPet()) {
 					Mob *owner = spelltar->GetOwner();
-					if(owner->IsClient())
-					{
+					if(owner->IsClient()) {
 						pClientTargetPet = owner->CastToClient();
 						pRaidTargetPet = entity_list.GetRaidByClient(pClientTargetPet);
 						pBasicGroupTargetPet = entity_list.GetGroupByMob(owner);
@@ -2907,8 +2864,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 					)
 				)
 				{
-					if(!IsNeutralSpell(spell_id))
-					{
+					if(!IsNeutralSpell(spell_id)) {
 						if(spells[spell_id].targettype == ST_AEBard) {
 							//if it was a beneficial AE bard song don't spam the window that it would not hold
 							Log(Logs::General, Logs::Spells, "Beneficial ae bard song %d can't take hold %s -> %s, IBA? %d", spell_id, GetName(), spelltar->GetName(), IsBeneficialAllowed(spelltar));
@@ -2923,15 +2879,13 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 			}
 		}
 		else if (spells[spell_id].goodEffect != 0 && IsEffectInSpell(spell_id, SE_CancelMagic)){
-			if (!CancelMagicIsAllowedOnTarget(spelltar))
-			{
+			if (!CancelMagicIsAllowedOnTarget(spelltar)) {
 				spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetCleanName());
 				safe_delete(action_packet);
 				return false;
 			}
 		}
-		else if	( !IsAttackAllowed(spelltar, true, spell_id) && !IsResurrectionEffects(spell_id) && spell_id != 721) // Detrimental spells - PVP check. This also is used for Bard AE detrimental songs.
-		{
+		else if	( !IsAttackAllowed(spelltar, true, spell_id) && !IsResurrectionEffects(spell_id) && spell_id != 721) { // Detrimental spells - PVP check. This also is used for Bard AE detrimental songs.
 			Log(Logs::Detail, Logs::Spells, "Detrimental spell %d can't take hold %s -> %s", spell_id, GetName(), spelltar->GetName());
 			spelltar->Message_StringID(CC_User_SpellFailure, YOU_ARE_PROTECTED, GetCleanName());
 			if((GetClass() == BARD && IsBardSong(spell_id)) == false) // no spam for bard songs, including single target ones
@@ -2945,8 +2899,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	// but we need to check special cases and resists
 
 	// check immunities
-	if(spelltar->IsImmuneToSpell(spell_id, this, isproc))
-	{
+	if(spelltar->IsImmuneToSpell(spell_id, this, isproc)) {
 		//the above call does the message to the client if needed
 		Log(Logs::Detail, Logs::Spells, "Spell %d can't take hold due to immunity %s -> %s", spell_id, GetName(), spelltar->GetName());
 		safe_delete(action_packet);
@@ -3010,14 +2963,11 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	}
 
 	Log(Logs::Moderate, Logs::Spells, "Checking Resists for spell %d", spell_id);
-	if(!is_tap_recourse && IsResistableSpell(spell_id))
-	{
+	if(!is_tap_recourse && IsResistableSpell(spell_id)) {
 		spell_effectiveness = spelltar->CheckResistSpell(spells[spell_id].resisttype, spell_id, this, spelltar, use_resist_adjust, resist_adjust);
 
-		if(spell_effectiveness < 100)
-		{
-			if(spell_effectiveness == 0 || !IsPartialCapableSpell(spell_id) )
-			{
+		if(spell_effectiveness < 100) {
+			if(spell_effectiveness == 0 || !IsPartialCapableSpell(spell_id) ) {
 				Log(Logs::Moderate, Logs::Spells, "Spell %d was completely resisted by %s", spell_id, spelltar->GetName());
 				spelltar->ResistSpell(this, spell_id, isproc);
 
@@ -3031,8 +2981,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 		spell_effectiveness = 100;
 	}
 
-	if (spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id) && !is_tap_recourse)
-	{
+	if (spelltar->spellbonuses.SpellDamageShield && IsDetrimentalSpell(spell_id) && !is_tap_recourse) {
 		spelltar->DamageShield(this, true);
 	}
 	else if (IsDetrimentalSpell(spell_id) && !is_tap_recourse && !IsHarmonySpell(spell_id) && !IsAllianceSpellLine(spell_id) &&
@@ -3040,33 +2989,32 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	{
 		Log(Logs::Moderate, Logs::Spells, "Applying aggro for spell %d", spell_id);
 		// Damage aggro is handled in CommonDamage()
-		if (!HasDirectDamageEffect(spell_id))
-		{
+		if (!HasDirectDamageEffect(spell_id)) {
 			spelltar->AggroPet(this);
 		}
 
-		if (spelltar->IsAIControlled())
-		{
+		if (spelltar->IsAIControlled()) {
 			int32 aggro_amount = CheckAggroAmount(spell_id, spelltar);
 			int32 current_hate = spelltar->GetHateAmount(this, false);
 
 			Log(Logs::Detail, Logs::Spells, "Spell %d cast on %s generated %d hate current hate is: %d", spell_id, spelltar->GetName(), aggro_amount, current_hate);
-			if (current_hate == 0)
-			{
-				if (!spelltar->IsEngaged() && IsDirectDamageSpell(spell_id))
+			if (current_hate == 0) {
+				if (!spelltar->IsEngaged() && IsDirectDamageSpell(spell_id)) {
 					// don't aggro pet if NPC is not aggro and is damage spell; Damage routine will aggro pet if needed
 					// have to do this so we can poof pet if spell one-shots it since we call AddToHateList() twice on damage casts
 					spelltar->AddToHateList(this, aggro_amount, 0, false, false, false);
-				else
+				}
+				else {
 					spelltar->AddToHateList(this, aggro_amount);
+				}
 			}
-			else
-			{
+			else {
 				spelltar->AddHate(this, aggro_amount);
 			}
 
-			if (spelltar->IsNPC())
+			if (spelltar->IsNPC()) {
 				spelltar->CastToNPC()->CallForHelp(this);	// this will fail if timer is ticking down, so won't spam
+			}
 		}
 	}
 	else if ((IsBeneficialSpell(spell_id) || is_tap_recourse) && !IsSummonPCSpell(spell_id) && !IsAEMemBlurSpell(spell_id) && !IsBindSightSpell(spell_id)
@@ -3872,10 +3820,8 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 	}
 
 	// Lull spells DO NOT use regular resists on initial cast, instead they use a value of 15.  Prathun pseudocode and live parses confirm.  Late luclin era change
-	if (content_service.IsThePlanesOfPowerEnabled())
-	{
-		if (IsHarmonySpell(spell_id))
-		{
+	if (content_service.IsThePlanesOfPowerEnabled()) {
+		if (IsHarmonySpell(spell_id)) {
 			target_resist = 15;
 			Log(Logs::Detail, Logs::Spells, "CheckResistSpell(): Spell: %d  Lull spell is overriding MR. target_resist is: %i resist_modifier is: %i", spell_id, target_resist, resist_modifier);
 		}
@@ -5004,4 +4950,14 @@ bool Mob::InSameRaid(Mob *other)
 			return true;
 
 	return false;
+}
+
+bool Client::RestictedManastoneClick(int16 zone_id)
+{
+	return {
+		EQ::ValueWithin(zone_id, fieldofbone, potimeb) ||
+		zone_id == airplane ||
+		zone_id == hateplane ||
+		zone_id == fearplane
+	};
 }

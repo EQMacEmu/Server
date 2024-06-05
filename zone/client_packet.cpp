@@ -2395,10 +2395,8 @@ void Client::Handle_OP_BoardBoat(const EQApplicationPacket *app)
 		m_pp.boatid = boat->GetNPCTypeID(); //For EQMac's boat system.
 		strcpy(m_pp.boat, boatname);
 
-		char buf[24];
-		snprintf(buf, 23, "%d", boat->GetNPCTypeID());
-		buf[23] = '\0';
-		parse->EventPlayer(EVENT_BOARD_BOAT, this, buf, 0);
+		std::string export_string = fmt::format("{}", boat->GetNPCTypeID());
+		parse->EventPlayer(EVENT_BOARD_BOAT, this, export_string, 0);
 	}
 
 	return;
@@ -2559,6 +2557,12 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 	}
 	if (IsAIControlled() && !has_zomm) {
 		this->Message_StringID(CC_Red, NOT_IN_CONTROL);
+		return;
+	}
+
+	if (castspell->spell_id == SPELL_MANA_CONVERT && RestictedManastoneClick(zone->GetZoneID())) {
+		Message_StringID(CC_Red, SPELL_DOES_NOT_WORK_HERE);
+		InterruptSpell(castspell->spell_id);
 		return;
 	}
 
@@ -3541,9 +3545,13 @@ void Client::Handle_OP_Damage(const EQApplicationPacket *app)
 
 		/* EVENT_ENVIRONMENTAL_DAMAGE */
 		int final_damage = (damage * RuleR(Character, EnvironmentDamageMulipliter));
-		char buf[24];
-		snprintf(buf, 23, "%u %u %i", ed->damage, ed->type, final_damage);
-		parse->EventPlayer(EVENT_ENVIRONMENTAL_DAMAGE, this, buf, 0);
+		std::string export_string = fmt::format(
+			"{} {} {}",
+			ed->damage,
+			ed->type,
+			final_damage
+		);
+		parse->EventPlayer(EVENT_ENVIRONMENTAL_DAMAGE, this, export_string, 0);
 	}
 
 	SendHPUpdate();
@@ -5728,10 +5736,8 @@ void Client::Handle_OP_LeaveBoat(const EQApplicationPacket *app)
 		if ((boat->GetTarget() == this) && boat->GetHateAmount(this) == 0)	// if the client somehow left while still controlling the boat (and the boat isn't attacking them)
 			boat->SetTarget(0);			// fix it to stop later problems
 
-		char buf[24];
-		snprintf(buf, 23, "%d", boat->GetNPCTypeID());
-		buf[23] = '\0';
-		parse->EventPlayer(EVENT_LEAVE_BOAT, this, buf, 0);
+		std::string export_string = fmt::format("{}", boat->GetNPCTypeID());
+		parse->EventPlayer(EVENT_LEAVE_BOAT, this, export_string, 0);
 	}
 
 	this->BoatID = 0;
@@ -7799,10 +7805,8 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 	auto outapp = new EQApplicationPacket(OP_ShopRequest, sizeof(Merchant_Click_Struct));
 	Merchant_Click_Struct* mco = (Merchant_Click_Struct*)outapp->pBuffer;
 
-	char buf[24];
-	snprintf(buf, 23, "%d", tmp->GetNPCTypeID());
-	buf[23] = '\0';
-	parse->EventPlayer(EVENT_CLICK_MERCHANT, this, buf, 0);
+	std::string export_string = fmt::format("{}", tmp->GetNPCTypeID());
+	parse->EventPlayer(EVENT_CLICK_MERCHANT, this, export_string, 0);
 
 	mco->npcid = mc->npcid;
 	mco->playerid = 0;

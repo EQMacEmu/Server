@@ -1488,16 +1488,24 @@ void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 			ns->spawn.is_pet = 1;
 			if (!IsCharmedPet() && GetOwnerID()) {
 				Client *c = entity_list.GetClientByID(GetOwnerID());
-				if(c)
-					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+				if (c) {
+					const auto &tmp_lastname = fmt::format("{}'s Pet", c->GetName());
+					if (tmp_lastname.size() < sizeof(ns->spawn.lastName)) {
+						strn0cpy(ns->spawn.lastName, tmp_lastname.c_str(), sizeof(ns->spawn.lastName));
+					}
+				}
 			}
 			else if (GetSwarmOwner()) {
 				ns->spawn.bodytype = 11;
 				if(!IsCharmedPet())
 				{
 					Client *c = entity_list.GetClientByID(GetSwarmOwner());
-					if(c)
-						sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+					if (c) {
+						const auto &tmp_lastname = fmt::format("{}'s Pet", c->GetName());
+						if (tmp_lastname.size() < sizeof(ns->spawn.lastName)) {
+							strn0cpy(ns->spawn.lastName, tmp_lastname.c_str(), sizeof(ns->spawn.lastName));
+						}
+					}
 				}
 			}
 		}
@@ -1506,8 +1514,12 @@ void NPC::FillSpawnStruct(NewSpawn_Struct* ns, Mob* ForWho)
 			ns->spawn.is_pet = 1;
 			if (!IsCharmedPet() && GetOwnerID()) {
 				Client *c = entity_list.GetClientByID(GetOwnerID());
-				if(c)
-					sprintf(ns->spawn.lastName, "%s's Pet", c->GetName());
+				if (c) {
+					const auto &tmp_lastname = fmt::format("{}'s Pet", c->GetName());
+					if (tmp_lastname.size() < sizeof(ns->spawn.lastName)) {
+						strn0cpy(ns->spawn.lastName, tmp_lastname.c_str(), sizeof(ns->spawn.lastName));
+					}
+				}
 			}
 		} else
 			ns->spawn.is_pet = 0;

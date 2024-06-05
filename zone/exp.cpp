@@ -1123,28 +1123,28 @@ bool Client::IsInLevelRange(uint8 maxlevel)
 
 void Client::GetExpLoss(Mob* killerMob, uint16 spell, int &exploss, uint8 killedby)
 {
-	float loss;
-	uint8 level = GetLevel();
-	if(level >= 1 && level <= 30)
-		loss = 0.08f;
-	if(level >= 31 && level <= 35)
-		loss = 0.075f;
-	if(level >= 36 && level <= 40)
-		loss = 0.07f;
-	if(level >= 41 && level <= 45)
-		loss = 0.065f;
-	if(level >= 46 && level <= 58)
-		loss = 0.06f;
-	if (level == 59)
-		loss = 0.05f;
-	if (level == 60)
-		loss = 0.16f;
-	if (level >= 61)
-		loss = 0.07f;
+	if (GetLevel() < 2)
+	{
+		exploss = 0;
+		return;
+	}
+	int last_level_xp = GetEXPForLevel(GetLevel()) - GetEXPForLevel(GetLevel() - 1);
+	if (GetLevel() >= 25)
+		exploss = last_level_xp / 4;
+	else
+		exploss = last_level_xp * GetLevel() / 100;
 
-	int requiredxp = GetEXPForLevel(level + 1) - GetEXPForLevel(level);
-	exploss=(int)((float)requiredxp * (loss * RuleR(Character, EXPLossMultiplier)));
+	exploss /= 2;						// death loss was cut in half on May 24 1999
+	exploss = exploss * 9 / 10;			// death loss was based on warrior exp.  since we don't have class bonuses or penalties, everybody is reduced here
+	if (exploss > 6000000)
+		exploss = 6000000;
 
+	if (GetLevel() == 31 || GetLevel() == 36 || GetLevel() == 41 || GetLevel() == 46)
+		exploss /= 2;					// these post-hell levels had double exp loss until March 19 2002
+
+	exploss = static_cast<int>(static_cast<float>(exploss) * RuleR(Character, EXPLossMultiplier));
+
+	// Death exp loss started at level 6 until March 19 2002, then it was 11
 	if( (level < RuleI(Character, DeathExpLossLevel)) || (level > RuleI(Character, DeathExpLossMaxLevel)) || IsBecomeNPC() )
 	{
 		exploss = 0;

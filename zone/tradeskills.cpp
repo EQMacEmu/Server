@@ -185,10 +185,10 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	}
 
 	if (success) {
-		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name.c_str(), spec.recipe_id);
+		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name, spec.recipe_id);
 	}
 	else {
-		parse->EventPlayer(EVENT_COMBINE_FAILURE, user, spec.name.c_str(), spec.recipe_id);
+		parse->EventPlayer(EVENT_COMBINE_FAILURE, user, spec.name, spec.recipe_id);
 	}
 }
 

@@ -519,6 +519,7 @@ struct ServerLSClientAuth {
 	uint32	ip;
 	uint8	local;			// 1 if the client is from the local network
 	uint8	version;		// Client version if Mac
+	char	forum_name[31];
 };
 
 struct ServerSystemwideMessage {
@@ -660,6 +661,7 @@ struct UsertoWorldRequest_Struct {
 	uint32  ip;
 	uint32	FromID;
 	uint32	ToID;
+	char	forum_name[31];
 };
 
 struct UsertoWorldResponse_Struct {

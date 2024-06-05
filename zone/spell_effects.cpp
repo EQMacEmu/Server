@@ -1757,17 +1757,18 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 			case SE_Destroy:
 			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Destroy");
-#endif
 				if(IsNPC()) {
-					if(GetLevel() <= 52)
-					{
+					if(GetLevel() <= 52) {
 						CastToNPC()->Depop(true);
 
-						char buffer[48] = { 0 };
-						snprintf(buffer, 47, "%d %d %d %d", caster ? caster->GetID() : 0, 0, spell_id, static_cast<int>(EQ::skills::SkillTigerClaw));
-						parse->EventNPC(EVENT_DEATH, this->CastToNPC(), caster, buffer, 0);
+						std::string export_string = fmt::format(
+							"{} {} {} {}",
+							caster ? caster->GetID() : 0,
+							0,
+							spell_id,
+							static_cast<int>(EQ::skills::SkillTigerClaw)
+						);
+						parse->EventNPC(EVENT_DEATH, this->CastToNPC(), caster, export_string, 0);
 					}
 					else
 					{
@@ -1779,9 +1780,6 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 			case SE_TossUp:
 			{
-#ifdef SPELL_EFFECT_SPAM
-				snprintf(effect_desc, _EDLEN, "Toss Up: %d", effect_value);
-#endif
 				// This is only used in 4 spells and those spells also have push components which are taken care of by the spell's OP_Action already.
 
 				break;

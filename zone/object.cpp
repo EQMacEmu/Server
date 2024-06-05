@@ -525,12 +525,10 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 				}
 			}
 
-			char buf[10];
-			snprintf(buf, 9, "%u", m_inst->GetItem()->ID);
-			buf[9] = '\0';
+			std::string export_string = fmt::format("{}", m_inst->GetItem()->ID);
 			std::vector<std::any> args;
 			args.push_back(m_inst);
-			parse->EventPlayer(EVENT_PLAYER_PICKUP, sender, buf, 0, &args);
+			parse->EventPlayer(EVENT_PLAYER_PICKUP, sender, export_string, 0, &args);
 
 			int charges = m_inst->GetCharges();
 			uint32 item_id = m_inst->GetItem()->ID;

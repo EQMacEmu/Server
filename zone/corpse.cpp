@@ -1364,16 +1364,17 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 			}
 		}
 
-		char buf[88];
-		char corpse_name[64];
-		strcpy(corpse_name, GetName());
-		snprintf(buf, 87, "%d %d %s", inst->GetItem()->ID, inst->GetCharges(), EntityList::RemoveNumbers(corpse_name));
-		buf[87] = '\0';
+		std::string export_string = fmt::format(
+			"{} {} {}",
+			inst->GetItem()->ID,
+			inst->GetCharges(),
+			EntityList::RemoveNumbers(corpse_name)
+		);
 		std::vector<std::any> args;
 		args.push_back(inst);
 		args.push_back(this);
-		parse->EventPlayer(EVENT_LOOT, client, buf, 0, &args);
-		parse->EventItem(EVENT_LOOT, client, inst, this, buf, 0);
+		parse->EventPlayer(EVENT_LOOT, client, export_string, 0, &args);
+		parse->EventItem(EVENT_LOOT, client, inst, this, export_string, 0);
 
 		if ((RuleB(Character, EnableDiscoveredItems))) {
 			if (client && !client->GetGM() && !client->IsDiscovered(inst->GetItem()->ID))

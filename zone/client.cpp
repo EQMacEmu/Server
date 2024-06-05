@@ -3562,10 +3562,8 @@ void Client::SetPortExemption(bool v)
 
 void Client::Signal(uint32 data)
 {
-	char buf[32];
-	snprintf(buf, 31, "%d", data);
-	buf[31] = '\0';
-	parse->EventPlayer(EVENT_SIGNAL, this, buf, 0);
+	std::string export_string = fmt::format("{}", data);
+	parse->EventPlayer(EVENT_SIGNAL, this, export_string, 0);
 }
 
 const bool Client::IsMQExemptedArea(uint32 zoneID, float x, float y, float z) const

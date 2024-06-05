@@ -2285,9 +2285,12 @@ void NPC::AI_DoMovement() {
 						}
 					}
 					//kick off event_waypoint arrive
-					char temp[32] = { 0 };
-					snprintf(temp, 31, "%d %d", cur_wp, gridno);
-					parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), nullptr, temp, 0);
+					std::string export_string = fmt::format(
+						"{} {}", 
+						cur_wp,
+						gridno
+						);
+					parse->EventNPC(EVENT_WAYPOINT_ARRIVE, CastToNPC(), nullptr, export_string, 0);
 					if (!AIwalking_timer->Enabled()) {
 						AI_SetupNextWaypoint();
 					}
@@ -2394,9 +2397,12 @@ void NPC::AI_SetupNextWaypoint() {
 		entity_list.OpenDoorsNear(CastToNPC());
 
 		//kick off event_waypoint depart
-		char temp[32] = { 0 };
-		snprintf(temp, 31, "%d %d", cur_wp, GetGrid());
-		parse->EventNPC(EVENT_WAYPOINT_DEPART, CastToNPC(), nullptr, temp, 0);
+		std::string export_string = fmt::format(
+			"{} {}",
+			cur_wp,
+			GetGrid()
+		);
+		parse->EventNPC(EVENT_WAYPOINT_DEPART, CastToNPC(), nullptr, export_string, 0);
 
 		//setup our next waypoint, if we are still on our normal grid
 		//remember that the quest event above could have done anything it wanted with our grid
@@ -3093,24 +3099,22 @@ uint32 Mob::GetLevelCon(uint8 mylevel, uint8 iOtherLevel) {
 
 void NPC::CheckSignal()
 {
-	if (!signal_q.empty())
-	{
+	if (!signal_q.empty()) {
 		int signal_id = signal_q.front();
 		signal_q.pop_front();
 		std::string signal_data = signal_strq.front();
 		signal_strq.pop_front();
-		char buf[32];
-		snprintf(buf, 31, "%d", signal_id);
-		buf[31] = '\0';
-		if (!signal_data.empty())
-		{
+		std::string export_string = fmt::format(
+			"{}",
+			signal_id
+		);
+		if (!signal_data.empty()) {
 			std::vector<std::any> info_ptrs;
 			info_ptrs.push_back(&signal_data);
-			parse->EventNPC(EVENT_SIGNAL, this, nullptr, buf, 0, &info_ptrs);
+			parse->EventNPC(EVENT_SIGNAL, this, nullptr, export_string, 0, &info_ptrs);
 		}
-		else
-		{
-			parse->EventNPC(EVENT_SIGNAL, this, nullptr, buf, 0);
+		else {
+			parse->EventNPC(EVENT_SIGNAL, this, nullptr, export_string, 0);
 		}
 	}
 }
@@ -3445,7 +3449,7 @@ void NPC::AISpellsList(Client *c)
 			c->Message(
 				CC_Default,
 				fmt::format(
-					"Spell {} | Priority: {} Recast Delay: {}",
+					"Spell {} | Priority: {} | Recast Delay: {}",
 					spell_slot,
 					ai_spell.priority,
 					ai_spell.recast_delay
@@ -3556,8 +3560,8 @@ DBnpcspells_Struct* ZoneDatabase::GetNPCSpells(uint32 npc_spells_id)
 			if (e.resist_adjust) {
 				se.resist_adjust = e.resist_adjust;
 			}
-			else if (IsValidSpell(e.id)) {
-				se.resist_adjust = spells[e.id].ResistDiff;
+			else if (IsValidSpell(e.spellid)) {
+				se.resist_adjust = spells[e.spellid].ResistDiff;
 			}
 
 			ss.entries.push_back(se);

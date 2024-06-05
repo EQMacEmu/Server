@@ -1273,9 +1273,13 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	if(!spell)
 		spell = SPELL_UNKNOWN;
 
-	char buffer[48] = { 0 };
-	snprintf(buffer, 47, "%d %d %d %d", killerMob ? killerMob->GetID() : 0, damage, spell, static_cast<int>(attack_skill));
-	if(parse->EventPlayer(EVENT_DEATH, this, buffer, 0) != 0) {
+	std::string export_string = fmt::format(
+		"{} {} {} {}",
+		killerMob ? killerMob->GetID() : 0,
+		damage,
+		spell,
+		static_cast<int>(attack_skill)
+	);	if(parse->EventPlayer(EVENT_DEATH, this, export_string, 0) != 0) {
 		if(GetHP() < 0) {
 			SetHP(0);
 		}
@@ -1559,7 +1563,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 		QServ->QSDeathBy(this->CharacterID(), this->GetZoneID(), killer_name, spell, damage, killedby);
 	}
 
-	parse->EventPlayer(EVENT_DEATH_COMPLETE, this, buffer, 0);
+	parse->EventPlayer(EVENT_DEATH_COMPLETE, this, export_string, 0);
 
 	return true;
 }
@@ -1800,12 +1804,15 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 		oos = killerMob->GetOwnerOrSelf();
 
-		char buffer[48] = { 0 };
-		snprintf(buffer, 47, "%d %d %d %d", killerMob ? killerMob->GetID() : 0, damage, spell, static_cast<int>(attack_skill));
-		if(parse->EventNPC(EVENT_DEATH, this, oos, buffer, 0) != 0)
-		{
-			if(GetHP() < 0) 
-			{
+		std::string export_string = fmt::format(
+			"{} {} {} {}",
+			killerMob ? killerMob->GetID() : 0,
+			damage,
+			spell,
+			static_cast<int>(attack_skill)
+		);		
+		if(parse->EventNPC(EVENT_DEATH, this, oos, export_string, 0) != 0) {
+			if(GetHP() < 0) {
 				SetHP(0);
 			}
 			return false;
@@ -1831,10 +1838,14 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	} 
 	else 
 	{
-
-		char buffer[48] = { 0 };
-		snprintf(buffer, 47, "%d %d %d %d", killerMob ? killerMob->GetID() : 0, damage, spell, static_cast<int>(attack_skill));
-		if(parse->EventNPC(EVENT_DEATH, this, nullptr, buffer, 0) != 0)
+		std::string export_string = fmt::format(
+			"{} {} {} {}",
+			killerMob ? killerMob->GetID() : 0,
+			damage,
+			spell,
+			static_cast<int>(attack_skill)
+		);
+		if(parse->EventNPC(EVENT_DEATH, this, nullptr, export_string, 0) != 0)
 		{
 			if(GetHP() < 0) 
 			{
@@ -1851,9 +1862,15 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	/* Zone controller process EVENT_DEATH_ZONE (Death events) */
 	if (entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID) && this->GetNPCTypeID() != ZONE_CONTROLLER_NPC_ID)
 	{
-		char data_pass[100] = { 0 };
-		snprintf(data_pass, 99, "%d %d %d %d %d", killerMob ? killerMob->GetID() : 0, damage, spell, static_cast<int>(attack_skill), this->GetNPCTypeID());
-		parse->EventNPC(EVENT_DEATH_ZONE, entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID)->CastToNPC(), nullptr, data_pass, 0);
+		std::string export_string = fmt::format(
+			"{} {} {} {} {}",
+			killerMob ? killerMob->GetID() : 0,
+			damage,
+			spell,
+			static_cast<int>(attack_skill),
+			this->GetNPCTypeID()
+		);
+		parse->EventNPC(EVENT_DEATH_ZONE, entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID)->CastToNPC(), nullptr, export_string, 0);
 	}
 
 	SetHP(0);
@@ -2006,9 +2023,14 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	if(killerMob && killerMob->GetTarget() == this) //we can kill things without having them targeted
 		killerMob->SetTarget(nullptr); //via AE effects and such..
 
-	char buffer[48] = { 0 };
-	snprintf(buffer, 47, "%d %d %d %d", killer ? killer->GetID() : 0, dmg_amt, spell, static_cast<int>(attack_skill));
-	parse->EventNPC(EVENT_DEATH_COMPLETE, this, oos, buffer, 0);
+	std::string export_string = fmt::format(
+		"{} {} {} {}",
+		killerMob ? killerMob->GetID() : 0,
+		damage,
+		spell,
+		static_cast<int>(attack_skill)
+	);
+	parse->EventNPC(EVENT_DEATH_COMPLETE, this, oos, export_string, 0);
 
 	return true;
 }

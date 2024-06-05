@@ -1038,7 +1038,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 	ClientListEntry* cle = 0;
 	char tmpgm[25] = "";
 	char accinfo[150] = "";
-	char line[300] = "";
+	char line[450] = "";
 	char tmpguild[50] = "";
 	char LFG[10] = "";
 	char Trader[10] = "";
