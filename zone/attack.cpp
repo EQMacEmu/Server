@@ -2025,8 +2025,8 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 	std::string export_string = fmt::format(
 		"{} {} {} {}",
-		killerMob ? killerMob->GetID() : 0,
-		damage,
+		killer ? killer->GetID() : 0,
+		dmg_amt,
 		spell,
 		static_cast<int>(attack_skill)
 	);
