@@ -3810,12 +3810,8 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	entity->CastToClient()->SetDueling(false);
 	initiator->CastToClient()->SetDuelTarget(0);
 	initiator->CastToClient()->SetDueling(false);
-	if (GetID() == initiator->GetID())
-		// not sure how this would ever be true, because not even eqlive allows the initiator to /decline
-		entity->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, initiator->CastToClient()->GetName());
-	else
-		// inform initiator the duel was declined (the client handles informing the decliner)
-		initiator->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, GetName());
+	// inform initiator the duel was declined (the client handles informing the decliner)
+	initiator->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, GetName());
 	return;
 }
 
