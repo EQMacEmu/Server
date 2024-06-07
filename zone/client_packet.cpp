@@ -3798,9 +3798,8 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	if (app->size != sizeof(DuelResponse_Struct))
 		return;
 	DuelResponse_Struct* ds = (DuelResponse_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(ds->target_id);
-	Entity* initiator = entity_list.GetID(ds->entity_id);
-	
+	Entity* entity = entity_list.GetID(ds->duel_target);
+	Entity* initiator = entity_list.GetID(ds->duel_initiator);
 	if(!entity || !initiator)
 		return;
 	
@@ -3811,10 +3810,8 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	entity->CastToClient()->SetDueling(false);
 	initiator->CastToClient()->SetDuelTarget(0);
 	initiator->CastToClient()->SetDueling(false);
-	if (GetID() == initiator->GetID())
-		entity->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, initiator->GetName());
-	else
-		initiator->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, entity->GetName());
+	// inform initiator the duel was declined (the client handles informing the decliner)
+	initiator->CastToClient()->Message_StringID(CC_Default, DUEL_DECLINE, GetName());
 	return;
 }
 

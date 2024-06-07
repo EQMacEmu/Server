@@ -73,9 +73,9 @@ struct Duel_Struct
 
 struct DuelResponse_Struct
 {
-	uint32 target_id;
-	uint32 entity_id;
-	uint32 unknown;
+	uint16 duel_initiator;
+	uint16 duel_target;
+	uint16 unknown;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
