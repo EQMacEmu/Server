@@ -3,8 +3,8 @@
 	"editor.insertSpaces": false,
 	"editor.tabSize": 4,
 	"editor.autoIndent": "full",
-	"editor.trimAutoWhitespace": true,
-	"files.trimTrailingWhitespace": true,
+	"editor.trimAutoWhitespace": false,
+	"files.trimTrailingWhitespace": false,
 	//"editor.formatOnSave": true,
 	"search.exclude": {
 		"dependencies": false,
