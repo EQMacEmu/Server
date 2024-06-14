@@ -365,6 +365,7 @@ public:
 
 	void	Process();
 	void	ClearAggro(Mob* targ);
+	void	NotifyFeigned(Mob* targ, bool feigned);
 	void	ClearFeignAggro(Mob* targ);
 	void	AggroZone(Mob* who, int hate = 0, bool use_ignore_dist = false);
 
