@@ -5,29 +5,37 @@
 //
 // For the license information refer to format.h.
 
-#include <time.h>
-#include <climits>
-
-#include "gmock.h"
-#include "gtest-extra.h"
 #include "scan.h"
 
-TEST(ScanTest, ReadText) {
+#include <time.h>
+
+#include <climits>
+#include <thread>
+
+#include "fmt/os.h"
+#include "gmock/gmock.h"
+#include "gtest-extra.h"
+
+TEST(scan_test, read_text) {
   fmt::string_view s = "foo";
   auto end = fmt::scan(s, "foo");
   EXPECT_EQ(end, s.end());
   EXPECT_THROW_MSG(fmt::scan("fob", "foo"), fmt::format_error, "invalid input");
 }
 
-TEST(ScanTest, ReadInt) {
+TEST(scan_test, read_int) {
   int n = 0;
   fmt::scan("42", "{}", n);
   EXPECT_EQ(n, 42);
   fmt::scan("-42", "{}", n);
   EXPECT_EQ(n, -42);
+  fmt::scan("42", "{:}", n);
+  EXPECT_EQ(n, 42);
+  EXPECT_THROW_MSG(fmt::scan(std::to_string(INT_MAX + 1u), "{}", n),
+                   fmt::format_error, "number is too big");
 }
 
-TEST(ScanTest, ReadLongLong) {
+TEST(scan_test, read_longlong) {
   long long n = 0;
   fmt::scan("42", "{}", n);
   EXPECT_EQ(n, 42);
@@ -35,7 +43,7 @@ TEST(ScanTest, ReadLongLong) {
   EXPECT_EQ(n, -42);
 }
 
-TEST(ScanTest, ReadUInt) {
+TEST(scan_test, read_uint) {
   unsigned n = 0;
   fmt::scan("42", "{}", n);
   EXPECT_EQ(n, 42);
@@ -43,7 +51,7 @@ TEST(ScanTest, ReadUInt) {
                    "invalid input");
 }
 
-TEST(ScanTest, ReadULongLong) {
+TEST(scan_test, read_ulonglong) {
   unsigned long long n = 0;
   fmt::scan("42", "{}", n);
   EXPECT_EQ(n, 42);
@@ -51,64 +59,130 @@ TEST(ScanTest, ReadULongLong) {
                    "invalid input");
 }
 
-TEST(ScanTest, ReadString) {
+TEST(scan_test, read_hex) {
+  unsigned n = 0;
+  fmt::scan("2a", "{:x}", n);
+  EXPECT_EQ(n, 42);
+  auto num_digits = std::numeric_limits<unsigned>::digits / 4;
+  EXPECT_THROW_MSG(fmt::scan(fmt::format("1{:0{}}", 0, num_digits), "{:x}", n),
+                   fmt::format_error, "number is too big");
+}
+
+TEST(scan_test, read_string) {
   std::string s;
   fmt::scan("foo", "{}", s);
   EXPECT_EQ(s, "foo");
 }
 
-TEST(ScanTest, ReadStringView) {
+TEST(scan_test, read_string_view) {
   fmt::string_view s;
   fmt::scan("foo", "{}", s);
   EXPECT_EQ(s, "foo");
 }
 
-#ifndef _WIN32
-namespace fmt {
-template <> struct scanner<tm> {
-  std::string format;
+TEST(scan_test, separator) {
+  int n1 = 0, n2 = 0;
+  fmt::scan("10 20", "{} {}", n1, n2);
+  EXPECT_EQ(n1, 10);
+  EXPECT_EQ(n2, 20);
+}
 
-  scan_parse_context::iterator parse(scan_parse_context& ctx) {
-    auto it = ctx.begin();
-    if (it != ctx.end() && *it == ':') ++it;
-    auto end = it;
-    while (end != ctx.end() && *end != '}') ++end;
-    format.reserve(internal::to_unsigned(end - it + 1));
-    format.append(it, end);
-    format.push_back('\0');
-    return end;
+struct num {
+  int value;
+};
+
+namespace fmt {
+template <> struct scanner<num> {
+  bool hex = false;
+
+  auto parse(scan_parse_context& ctx) -> scan_parse_context::iterator {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && *it == 'x') hex = true;
+    if (it != end && *it != '}') throw_format_error("invalid format");
+    return it;
   }
 
   template <class ScanContext>
-  typename ScanContext::iterator scan(tm& t, ScanContext& ctx) {
-    auto result = strptime(ctx.begin(), format.c_str(), &t);
-    if (!result) throw format_error("failed to parse time");
-    return result;
+  auto scan(num& n, ScanContext& ctx) const -> typename ScanContext::iterator {
+    // TODO: handle specifier
+    return fmt::scan(ctx, "{}", n.value);
   }
 };
 }  // namespace fmt
 
-TEST(ScanTest, ReadCustom) {
-  const char* input = "Date: 1985-10-25";
-  auto t = tm();
-  fmt::scan(input, "Date: {0:%Y-%m-%d}", t);
-  EXPECT_EQ(t.tm_year, 85);
-  EXPECT_EQ(t.tm_mon, 9);
-  EXPECT_EQ(t.tm_mday, 25);
+TEST(scan_test, read_custom) {
+  auto input = "42";
+  auto n = num();
+  fmt::scan(input, "{:}", n);
+  EXPECT_EQ(n.value, 42);
 }
-#endif
 
-TEST(ScanTest, InvalidFormat) {
+TEST(scan_test, invalid_format) {
   EXPECT_THROW_MSG(fmt::scan("", "{}"), fmt::format_error,
                    "argument index out of range");
   EXPECT_THROW_MSG(fmt::scan("", "{"), fmt::format_error,
                    "invalid format string");
 }
 
-TEST(ScanTest, Example) {
+TEST(scan_test, example) {
   std::string key;
-  int value;
+  int value = 0;
   fmt::scan("answer = 42", "{} = {}", key, value);
   EXPECT_EQ(key, "answer");
   EXPECT_EQ(value, 42);
 }
+
+TEST(scan_test, end_of_input) {
+  int value = 0;
+  fmt::scan("", "{}", value);
+}
+
+#if FMT_USE_FCNTL
+TEST(scan_test, file) {
+  fmt::file read_end, write_end;
+  fmt::file::pipe(read_end, write_end);
+
+  fmt::string_view input = "10 20";
+  write_end.write(input.data(), input.size());
+  write_end.close();
+
+  int n1 = 0, n2 = 0;
+  fmt::buffered_file f = read_end.fdopen("r");
+  fmt::scan(f.get(), "{} {}", n1, n2);
+  EXPECT_EQ(n1, 10);
+  EXPECT_EQ(n2, 20);
+}
+
+TEST(scan_test, lock) {
+  fmt::file read_end, write_end;
+  fmt::file::pipe(read_end, write_end);
+
+  std::thread producer([&]() {
+    fmt::string_view input = "42 ";
+    for (int i = 0; i < 1000; ++i) write_end.write(input.data(), input.size());
+    write_end.close();
+  });
+
+  std::atomic<int> count(0);
+  fmt::buffered_file f = read_end.fdopen("r");
+  auto fun = [&]() {
+    int value = 0;
+    while (fmt::scan(f.get(), "{}", value)) {
+      if (value != 42) {
+        read_end.close();
+        EXPECT_EQ(value, 42);
+        break;
+      }
+      ++count;
+    }
+  };
+  std::thread consumer1(fun);
+  std::thread consumer2(fun);
+  
+  producer.join();
+  consumer1.join();
+  consumer2.join();
+  EXPECT_EQ(count, 1000);
+
+}
+#endif  // FMT_USE_FCNTL

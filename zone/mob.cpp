@@ -2499,40 +2499,40 @@ std::string Mob::GetTargetDescription(Mob *target, uint8 description_type, uint1
 
 	switch (description_type)
 	{
-	case TargetDescriptionType::LCSelf:
-	{
-		self_return = "yourself";
-		break;
-	}
-	case TargetDescriptionType::UCSelf:
-	{
-		self_return = "Yourself";
-		break;
-	}
-	case TargetDescriptionType::LCYou:
-	{
-		self_return = "you";
-		break;
-	}
-	case TargetDescriptionType::UCYou:
-	{
-		self_return = "You";
-		break;
-	}
-	case TargetDescriptionType::LCYour:
-	{
-		self_return = "your";
-		break;
-	}
-	case TargetDescriptionType::UCYour:
-	{
-		self_return = "Your";
-		break;
-	}
-	default:
-	{
-		break;
-	}
+		case TargetDescriptionType::LCSelf:
+		{
+			self_return = "yourself";
+			break;
+		}
+		case TargetDescriptionType::UCSelf:
+		{
+			self_return = "Yourself";
+			break;
+		}
+		case TargetDescriptionType::LCYou:
+		{
+			self_return = "you";
+			break;
+		}
+		case TargetDescriptionType::UCYou:
+		{
+			self_return = "You";
+			break;
+		}
+		case TargetDescriptionType::LCYour:
+		{
+			self_return = "your";
+			break;
+		}
+		case TargetDescriptionType::UCYour:
+		{
+			self_return = "Your";
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 
 
@@ -2546,7 +2546,7 @@ std::string Mob::GetTargetDescription(Mob *target, uint8 description_type, uint1
 				target->GetCleanName(),
 				entity_id_override ? entity_id_override : target->GetID()
 			)
-			)
+		)
 	);
 
 	return d;

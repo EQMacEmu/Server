@@ -194,6 +194,7 @@ public:
 	int GetDamageBonus();
 	int GetHandToHandDamage();
 	int GetHandToHandDelay();
+	uint16 GetWeaponEffectID(int slot = EQ::invslot::slotPrimary);
 
 	float GetQuiverHaste();
 	int	GetHasteCap();

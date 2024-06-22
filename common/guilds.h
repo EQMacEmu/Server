@@ -43,4 +43,6 @@ typedef enum {
 	_MaxGuildAction
 } GuildAction;
 
+constexpr int format_as(GuildAction action) { return static_cast<int>(action); }
+
 #endif

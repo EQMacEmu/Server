@@ -1,6 +1,7 @@
-<!-- Please read the contribution guidelines before submitting a pull request. -->
-<!-- By submitting this pull request, you agree that your contributions are licensed under the {fmt} license,
-     and agree to future changes to the licensing. -->
-<!-- If you're a first-time contributor, please acknowledge it by leaving the statement below. -->
-
-I agree that my contributions are licensed under the {fmt} license, and agree to future changes to the licensing.
+<!--
+Please read the contribution guidelines before submitting a pull request:
+https://github.com/fmtlib/fmt/blob/master/CONTRIBUTING.md.
+By submitting this pull request, you agree to license your contribution(s)
+under the terms outlined in LICENSE.rst and represent that you have the right
+to do so.
+-->

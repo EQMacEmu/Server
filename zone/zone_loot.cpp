@@ -4,10 +4,11 @@
 #include "../common/repositories/loottable_entries_repository.h"
 #include "../common/repositories/lootdrop_repository.h"
 #include "../common/repositories/lootdrop_entries_repository.h"
-#include "../common/repositories/criteria/content_filter_criteria.h"
 
 void Zone::LoadLootTables(const std::vector<uint32> in_loottable_ids)
 {
+	BenchTimer timer;
+
 	// copy loottable_ids
 	std::vector<uint32> loottable_ids = in_loottable_ids;
 
@@ -162,7 +163,7 @@ void Zone::LoadLootTables(const std::vector<uint32> in_loottable_ids)
 	}
 
 	if (loottable_ids.size() > 1) {
-		//LogInfo("Loaded [{}] loottables ({}s)", m_loottables.size(), std::to_string(timer.elapsed()));
+		LogInfo("Loaded [{}] loottables ({}s)", m_loottables.size(), std::to_string(timer.elapsed()));
 	}
 }
 
@@ -208,18 +209,21 @@ LoottableRepository::Loottable *Zone::GetLootTable(const uint32 loottable_id)
 {
 	for (auto &e : m_loottables) {
 		if (e.id == loottable_id) {
-			auto content_flags = ContentFlags{};
-			content_flags.min_expansion = e.min_expansion;
-			content_flags.max_expansion = e.max_expansion;
-			content_flags.content_flags = e.content_flags;
-			content_flags.content_flags_disabled = e.content_flags_disabled;
-			if (!content_service.DoesPassContentFiltering(content_flags)) {
+			if (!content_service.DoesPassContentFiltering(
+				ContentFlags{
+					.min_expansion = e.min_expansion,
+					.max_expansion = e.max_expansion,
+					.content_flags = e.content_flags,
+					.content_flags_disabled = e.content_flags_disabled
+				}
+			)) {
 				LogLootDetail(
 					"Loot table [{}] does not pass content filtering",
 					loottable_id
 				);
 				continue;
 			}
+
 			return &e;
 		}
 	}
@@ -243,12 +247,14 @@ LootdropRepository::Lootdrop Zone::GetLootdrop(const uint32 lootdrop_id) const
 {
 	for (const auto &e : m_lootdrops) {
 		if (e.id == lootdrop_id) {
-			auto content_flags = ContentFlags{};
-			content_flags.min_expansion = e.min_expansion;
-			content_flags.max_expansion = e.max_expansion;
-			content_flags.content_flags = e.content_flags;
-			content_flags.content_flags_disabled = e.content_flags_disabled;
-			if (!content_service.DoesPassContentFiltering(content_flags)) {
+			if (!content_service.DoesPassContentFiltering(
+				ContentFlags{
+					.min_expansion = e.min_expansion,
+					.max_expansion = e.max_expansion,
+					.content_flags = e.content_flags,
+					.content_flags_disabled = e.content_flags_disabled
+				}
+			)) {
 				LogLootDetail(
 					"Lootdrop table [{}] does not pass content filtering",
 					lootdrop_id
@@ -268,12 +274,14 @@ std::vector<LootdropEntriesRepository::LootdropEntries> Zone::GetLootdropEntries
 
 	std::vector<LootdropEntriesRepository::LootdropEntries> entries = {};
 	for (const auto &e : m_lootdrop_entries) {
-		auto content_flags = ContentFlags{};
-		content_flags.min_expansion = e.min_expansion;
-		content_flags.max_expansion = e.max_expansion;
-		content_flags.content_flags = e.content_flags;
-		content_flags.content_flags_disabled = e.content_flags_disabled;
-		if (!content_service.DoesPassContentFiltering(content_flags)) {
+		if (!content_service.DoesPassContentFiltering(
+			ContentFlags{
+				.min_expansion = e.min_expansion,
+				.max_expansion = e.max_expansion,
+				.content_flags = e.content_flags,
+				.content_flags_disabled = e.content_flags_disabled
+			}
+		)) {
 			LogLootDetail(
 				"Lootdrop [{}] Item [{}] ({}) does not pass content filtering",
 				lootdrop_id,

@@ -27,8 +27,9 @@
 #include "corpse.h"
 #include "entity.h"
 #include "mob.h"
-#include "water_map.h"
+
 #include "map.h"
+#include "water_map.h"
 
 extern Zone* zone;
 //#define LOSDEBUG 6
@@ -75,86 +76,146 @@ void EntityList::CheckCorpseDragAggro(Client *around)
 	}
 }
 
-void EntityList::DescribeAggro(Client *towho, NPC *from_who, float d, bool verbose) {
-	float d2 = d*d;
+void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verbose) {
+	float distance_squared = (d * d);
 
-	towho->Message(CC_Default, "Describing aggro for %s", from_who->GetName());
+	to_who->Message(
+		CC_Default, 
+		fmt::format(
+			"Describing aggro for {}", 
+			to_who->GetTargetDescription(from_who)
+		).c_str()
+	);
 
-	bool engaged = from_who->IsEngaged();
-	if(engaged) {
+	bool is_engaged = from_who->IsEngaged();
+	bool Will_aggro_npcs = from_who->WillAggroNPCs();
+	if(is_engaged) {
 		Mob *top = from_who->GetHateTop();
-		towho->Message(CC_Default, ".. I am currently fighting with %s", top == nullptr?"(nullptr)":top->GetName());
+		to_who->Message(
+			CC_Default, 
+			fmt::format(
+				"I am currently engaged with {}.",
+				(
+					!top ?
+					"nothing" :
+					from_who->GetTargetDescription(top)
+					)
+			).c_str()
+		);
 	}
-	bool check_npcs = from_who->WillAggroNPCs();
 
 	if(verbose) {
-		char namebuf[256];
-
-		int my_primary = from_who->GetPrimaryFaction();
-		Mob *own = from_who->GetOwner();
-		if(own != nullptr)
-			my_primary = own->GetPrimaryFaction();
-
-		if(my_primary == 0) {
-			strcpy(namebuf, "(No faction)");
-		} else if(my_primary < 0) {
-			strcpy(namebuf, "(Special faction)");
-		} else {
-			if(!database.GetFactionName(my_primary, namebuf, sizeof(namebuf)))
-				strcpy(namebuf, "(Unknown)");
+		int faction_id = from_who->GetPrimaryFaction();
+		Mob *owner = from_who->GetOwner();
+		if (owner) {
+			faction_id = owner->GetPrimaryFaction();
 		}
-		towho->Message(CC_Default, ".. I am on faction %s (%d)\n", namebuf, my_primary);
+
+		std::string faction_name = (
+			faction_id > 0 ?
+			database.GetFactionName(faction_id) :
+			(
+				faction_id == 0 ?
+				"None" :
+				fmt::format(
+					"Special Faction {}",
+					faction_id
+				)
+			)
+		);
+
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is on Faction {} ({}).",
+				to_who->GetTargetDescription(from_who),
+				faction_name,
+				faction_id
+			).c_str()
+		);
 	}
 
-	for (auto it = mob_list.begin(); it != mob_list.end(); ++it) {
-		Mob *mob = it->second;
-		if (!mob) {
+	for (const auto &npc_entity : entity_list.GetNPCList()) {
+		auto entity_id = npc_entity.first;
+		auto npc = npc_entity.second;
+		if (npc == from_who) {
 			continue;
 		}
-		if (DistanceSquared(mob->GetPosition(), from_who->GetPosition()) > d2)
-			continue;
 
-		if (engaged) {
-			uint32 amm = from_who->GetHateAmount(mob);
-			if (amm == 0)
-				towho->Message(CC_Default, "... %s is not on my hate list.", mob->GetName());
-			else
-				towho->Message(CC_Default, "... %s is on my hate list with value %lu", mob->GetName(), (unsigned long)amm);
-		} else if (!check_npcs && mob->IsNPC()) {
-				towho->Message(CC_Default, "... %s is an NPC and my npc_aggro is disabled.", mob->GetName());
-		} 
-			
-		from_who->DescribeAggro(towho, mob, verbose);
+		if (DistanceSquared(npc->GetPosition(), from_who->GetPosition()) > distance_squared) {
+			continue;
+		}
+
+		if (is_engaged) {
+			uint32 hate_amount = from_who->GetHateAmount(npc);
+			to_who->Message(
+				CC_Default,
+				fmt::format(
+					"{} is {}on my hate list{}.",
+					to_who->GetTargetDescription(npc),
+					!hate_amount ? "not " : "",
+					(
+						!hate_amount ?
+						"" :
+						fmt::format(
+							" with a hate amount of {}.",
+							hate_amount
+						)
+						)
+				).c_str()
+			);
+		} else if (!Will_aggro_npcs && npc->IsNPC()) {
+			to_who->Message(
+				CC_Default,
+				fmt::format(
+					"{} is an NPC and my npc_aggro is disabled.",
+					to_who->GetTargetDescription(npc)
+				).c_str()
+			);
+		}
+		else {
+			from_who->DescribeAggro(to_who, npc, verbose);
+		}
 	}
 }
 
-void NPC::DescribeAggro(Client *towho, Mob *mob, bool verbose) {
+void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 	//this logic is duplicated from below, try to keep it up to date.
-	float iAggroRange = GetAggroRange();
+	float aggro_range = GetAggroRange();
 
-	float t1, t2, t3;
-	t1 = mob->GetX() - GetX();
-	t2 = mob->GetY() - GetY();
-	t3 = mob->GetZ() - GetZ();
-	//Cheap ABS()
-	if(t1 < 0)
-		t1 = 0 - t1;
-	if(t2 < 0)
-		t2 = 0 - t2;
-	if(t3 < 0)
-		t3 = 0 - t3;
-	if(( t1 > iAggroRange)
-		|| ( t2 > iAggroRange)
-		|| ( t3 > iAggroRange) ) {
-		towho->Message(CC_Default, "...%s is out of range (fast). distances (%.3f,%.3f,%.3f), range %.3f", mob->GetName(),
-		t1, t2, t3, iAggroRange);
+	float x_range = std::abs(mob->GetX() - GetX());
+	float y_range = std::abs(mob->GetY() - GetY());
+	float z_range = std::abs(mob->GetZ() - GetZ());
+	if (
+		x_range > aggro_range ||
+		y_range > aggro_range ||
+		z_range > aggro_range
+		) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is out of range. X Range: {} Y Range: {} Z Range: {} Aggro Range: {}",
+				to_who->GetTargetDescription(mob),
+				x_range,
+				y_range,
+				z_range,
+				aggro_range
+			).c_str()
+		);
 		return;
 	}
 
-	if(mob->IsInvisible(this)) {
-		towho->Message(CC_Default, "...%s is invisible to me. ", mob->GetName());
+	if (mob->IsInvisible(this)) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is invisible to me.",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 		return;
 	}
+
 	if((mob->IsClient() &&
 		(!mob->CastToClient()->Connected()
 		|| mob->CastToClient()->IsLD()
@@ -163,102 +224,175 @@ void NPC::DescribeAggro(Client *towho, Mob *mob, bool verbose) {
 		)
 		))
 	{
-		towho->Message(CC_Default, "...%s a GM or is not connected. ", mob->GetName());
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is a GM or is not connected.",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 		return;
 	}
 
 
-	if(mob == GetOwner()) {
-		towho->Message(CC_Default, "...%s is my owner. ", mob->GetName());
+	if (mob == GetOwner()) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is my owner.",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 		return;
 	}
 
 	if(mob->IsPet() && !mob->IsCharmedPet())
 	{
-		towho->Message(CC_Default, "...%s is a summoned pet. ", mob->GetName());
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+			"{} is a summoned pet. ",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 		return;
 	}
 
-	float dist2 = DistanceSquared(mob->GetPosition(), m_Position);
-
-	float iAggroRange2 = iAggroRange*iAggroRange;
-	if( dist2 > iAggroRange2 ) {
-		towho->Message(CC_Default, "...%s is out of range. %.3f > %.3f ", mob->GetName(),
-		dist2, iAggroRange2);
+	float distance_squared = DistanceSquared(mob->GetPosition(), m_Position);
+	float aggro_range_squared = (aggro_range * aggro_range);
+	if(distance_squared > aggro_range_squared) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is out of range. Distance: {:.2f} Aggro Range: {:.2f}",
+				to_who->GetTargetDescription(mob),
+				distance_squared,
+				aggro_range_squared
+			).c_str()
+		);
 		return;
 	}
 
-	if (GetLevel() < 18 && mob->GetLevelCon(GetLevel()) == CON_GREEN && GetBodyType() != BT_Undead && !IsAggroOnPC())
-	{
-		towho->Message(CC_Default, "...%s is red to me (basically)", mob->GetName(), dist2, iAggroRange2);
+	if (GetLevel() < 18 && mob->GetLevelCon(GetLevel()) == CON_GREEN && GetBodyType() != BT_Undead && !IsAggroOnPC()) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} considers Red to me.",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 		return;
 	}
 
 	if(verbose) {
-		int my_primary = GetPrimaryFaction();
-		int mob_primary = mob->GetPrimaryFaction();
-		Mob *own = GetOwner();
-		if(own != nullptr)
-			my_primary = own->GetPrimaryFaction();
-		own = mob->GetOwner();
-		if(mob_primary > 0 && own != nullptr)
-			mob_primary = own->GetPrimaryFaction();
+		int faction_id = GetPrimaryFaction();
+		int mob_faction_id = mob->GetPrimaryFaction();
+		Mob *owner = GetOwner();
+		if (owner) {
+			faction_id = owner->GetPrimaryFaction();
+		}
 
-		if(mob_primary == 0) {
-			towho->Message(CC_Default, "...%s has no primary faction", mob->GetName());
-		} else if(mob_primary < 0) {
-			towho->Message(CC_Default, "...%s is on special faction %d", mob->GetName(), mob_primary);
+		owner = mob->GetOwner();
+		if (mob_faction_id) {
+			mob_faction_id = owner->GetPrimaryFaction();
+		}
+
+		if(!mob_faction_id) {
+			to_who->Message(
+				CC_Default,
+				fmt::format(
+					"{} has no primary Faction.",
+					to_who->GetTargetDescription(mob)
+				).c_str()
+			);
+		} else if(mob_faction_id < 0) {
+			to_who->Message(
+				CC_Default,
+				fmt::format(
+					"{} is on special Faction {}.",
+					to_who->GetTargetDescription(mob),
+					mob_faction_id
+				).c_str()
+			);
 		} else {
-			char namebuf[256];
-			if(!database.GetFactionName(mob_primary, namebuf, sizeof(namebuf)))
-				strcpy(namebuf, "(Unknown)");
-			std::list<struct NPCFaction*>::iterator cur,end;
-			cur = faction_list.begin();
-			end = faction_list.end();
-			bool res = false;
-			for(; cur != end; ++cur) {
-				struct NPCFaction* fac = *cur;
-				if ((int32)fac->factionID == mob_primary) {
-					if (fac->npc_value > 0) {
-						towho->Message(CC_Default, "...%s is on ALLY faction %s (%d) with %d", mob->GetName(), namebuf, mob_primary, fac->npc_value);
-						res = true;
-						break;
-					} else if (fac->npc_value < 0) {
-						towho->Message(CC_Default, "...%s is on ENEMY faction %s (%d) with %d", mob->GetName(), namebuf, mob_primary, fac->npc_value);
-						res = true;
-						break;
-					} else {
-						towho->Message(CC_Default, "...%s is on NEUTRAL faction %s (%d) with 0", mob->GetName(), namebuf, mob_primary);
-						res = true;
-						break;
-					}
+			auto faction_name = database.GetFactionName(mob_faction_id);
+			bool has_entry = false;
+			for (auto faction : faction_list) {
+				if (static_cast<int>(faction->factionID) == mob_faction_id) {
+					to_who->Message(
+						CC_Default,
+						fmt::format(
+							"{} has {} standing with Faction {} ({}) with their Faction Level of {}",
+							to_who->GetTargetDescription(mob),
+							(
+								faction->npc_value != 0 ?
+								(
+									faction->npc_value > 0 ?
+									"positive" :
+									"negative"
+									) :
+								"neutral"
+								),
+							faction_name,
+							faction->factionID,
+							faction->npc_value
+						).c_str()
+					);
+					has_entry = true;
+					break;
 				}
 			}
-			if(!res) {
-				towho->Message(CC_Default, "...%s is on faction %s (%d), which I have no entry for.", mob->GetName(), namebuf, mob_primary);
+
+			if (!has_entry) {
+				to_who->Message(
+					CC_Default,
+					fmt::format(
+						"{} is on Faction {} ({}), for which I do not have an entry.",
+						to_who->GetTargetDescription(mob),
+						faction_name,
+						mob_faction_id
+					).c_str()
+				);
 			}
 		}
 	}
 
 	auto faction_value = mob->GetReverseFactionCon(this);
-
-	if(!(
-		faction_value == FACTION_SCOWLS
-			||
-		faction_value == FACTION_THREATENINGLY
-		)) {
-		towho->Message(CC_Default, "...%s faction not low enough. value='%s'", mob->GetName(), FactionValueToString(faction_value));
+	if (
+		!(
+			faction_value == FACTION_THREATENINGLY ||
+			faction_value == FACTION_SCOWLS
+			)
+		) {
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} does not have low enough faction, their Faction Level is {} ({}).",
+				to_who->GetTargetDescription(mob),
+				FactionValueToString(faction_value),
+				static_cast<int>(faction_value)
+			).c_str()
+		);
 		return;
-	}
-	if(faction_value == FACTION_THREATENINGLY) {
-		towho->Message(CC_Default, "...%s threatening to me, so they only have a %d chance per check of attacking.", mob->GetName());
 	}
 
 	if(!CheckLosFN(mob)) {
-		towho->Message(CC_Default, "...%s is out of sight.", mob->GetName());
+		to_who->Message(
+			CC_Default,
+			fmt::format(
+				"{} is out of sight.",
+				to_who->GetTargetDescription(mob)
+			).c_str()
+		);
 	}
 
-	towho->Message(CC_Default, "...%s meets all conditions, I should be attacking them.", mob->GetName());
+	to_who->Message(
+		CC_Default,
+		fmt::format(
+			"{} meets all conditions, I should be attacking them.",
+			to_who->GetTargetDescription(mob)
+		).c_str()
+	);
 }
 
 /*
@@ -271,8 +405,9 @@ void NPC::DescribeAggro(Client *towho, Mob *mob, bool verbose) {
 */
 bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 {
-	if (!mob)
+	if (!mob) {
 		return false;
+	}
 
 	// lets make sure we've finished connecting
 	// Check if it's a client, and that the client is connected and not linkdead,
@@ -288,49 +423,43 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 			oos->CastToClient()->IsBecomeNPC() || 
 			oos->CastToClient()->GetGM()))
 	{
-		return(false);
+		return false;
 	}
 
 	Mob *ownr = mob->GetOwner();
-	float iAggroRange = GetAggroRange();
-	float t1, t2, t3;
-	t1 = mob->GetX() - GetX();
-	t2 = mob->GetY() - GetY();
-	t3 = mob->GetZ() - GetZ();
-	//Cheap ABS()
-	if (t1 < 0)
-		t1 = 0 - t1;
-	if (t2 < 0)
-		t2 = 0 - t2;
-	if (t3 < 0)
-		t3 = 0 - t3;
-	if ((t1 > iAggroRange)
-		|| (t2 > iAggroRange)
-		|| (t3 > iAggroRange)
-		|| (mob->IsInvisible(this) || (ownr && ownr->IsInvisible(this)))
+	float aggro_range = GetAggroRange();
+	float x_range = std::abs(mob->GetX() - GetX());
+	float y_range = std::abs(mob->GetY() - GetY());
+	float z_range = std::abs(mob->GetZ() - GetZ());
+
+	if (
+		x_range > aggro_range ||
+		y_range > aggro_range ||
+		z_range > aggro_range || 
+		(mob->IsInvisible(this) || (ownr && ownr->IsInvisible(this)))
 		|| (IsMezzed())
 		|| (mob == GetOwner()))
 	{
-		return(false);
+		return false;
 	}
 
 	// Summoned pets are indifferent
 	if ((mob->IsClient() && mob->CastToClient()->has_zomm) || mob->iszomm || (mob->IsPet() && !mob->IsCharmedPet()))
 	{
 		Log(Logs::Moderate, Logs::Aggro, "Zomm or Pet: Skipping aggro.");
-		return(false);
+		return false;
 	}
 
-	float dist2 = DistanceSquared(mob->GetPosition(), m_Position);
-	float iAggroRange2 = iAggroRange*iAggroRange;
+	float distance_squared = DistanceSquared(mob->GetPosition(), m_Position);
+	float aggro_range_squared = aggro_range * aggro_range;
 
-	if (dist2 > iAggroRange2) {
+	if (distance_squared > aggro_range_squared) {
 		// Skip it, out of range
-		return(false);
+		return false;
 	}
 
 	//Get their current target and faction value now that its required this function call should seem backwards
-	FACTION_VALUE fv = oos->GetReverseFactionCon(this);
+	FACTION_VALUE faction_value = oos->GetReverseFactionCon(this);
 
 	// Make sure they're still in the zone
 	// Are they in range?
@@ -346,18 +475,18 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 		|| (mob->IsClient() && mob->CastToClient()->IsSitting())
 		|| (oos->GetLevelCon(GetLevel()) != CON_GREEN))
 	&&
-		((fv == FACTION_SCOWLS
-		|| (fv == FACTION_THREATENINGLY && zone->random.Roll(THREATENINGLY_ARRGO_CHANCE))))
+		((faction_value == FACTION_SCOWLS
+		|| (faction_value == FACTION_THREATENINGLY && zone->random.Roll(THREATENINGLY_ARRGO_CHANCE))))
 	)
 	{
 		//make sure we can see them. last since it is very expensive
 		if (zone->SkipLoS() || CheckLosFN(mob)) {
 			Log(Logs::Moderate, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
-			return(true);
+			return true;
 		}
 	}
 
-	if (turn_mobs && mob->IsClient() && IsNPC() && dist2 < 600 && !IsEngaged() && !IsMoving() && GetAppearance() == eaStanding && fv < FACTION_THREATENINGLY
+	if (turn_mobs && mob->IsClient() && IsNPC() && distance_squared < 600 && !IsEngaged() && !IsMoving() && GetAppearance() == eaStanding && faction_value < FACTION_THREATENINGLY
 		&& CastToNPC()->CanTalk() && !CastToNPC()->GetRefaceTimer()->Enabled() && zone->random.Roll(0.01))
 	{
 		FaceTarget(mob);
@@ -365,14 +494,15 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 		AIhail_timer->Start(38000);
 	}
 
-	Log(Logs::Detail, Logs::Aggro, "Is In zone?:%d\n", mob->InZone());
-	Log(Logs::Detail, Logs::Aggro, "Dist^2: %f\n", dist2);
-	Log(Logs::Detail, Logs::Aggro, "Range^2: %f\n", iAggroRange2);
-	Log(Logs::Detail, Logs::Aggro, "Faction: %d\n", fv);
-	Log(Logs::Detail, Logs::Aggro, "Int: %d\n", GetINT());
-	Log(Logs::Detail, Logs::Aggro, "Con: %d\n", GetLevelCon(oos->GetLevel()));
+	LogAggro("Is In zone?:[{}]\n", mob->InZone());
+	LogAggro("Dist^2: [{}]\n", distance_squared);
+	LogAggro("Range^2: [{}]\n", aggro_range_squared);
+	LogAggro("Faction: [{}]\n", static_cast<int>(faction_value));
+	LogAggro("AlwaysAggroFlag: [{}]\n", CastToNPC()->IsAggroOnPC());
+	LogAggro("Int: [{}]\n", GetINT());
+	LogAggro("Con: [{}]\n", GetLevelCon(mob->GetLevel()));
 
-	return(false);
+	return false;
 }
 
 // This is used for checks in certain Velious zones, where dragging a corpse will cause aggro.
@@ -1516,6 +1646,10 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			case SE_InstantHate:
 			{
 				instantHate += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id);
+				// Warrior epic effects; they used to do a AC debuff; need to do this else other procs will do more hate on high HP targets
+				if ((spell_id == 1935 || spell_id == 1933) && !content_service.IsTheScarsOfVeliousEnabled()) {
+					instantHate = standardSpellHate;
+				}
 				break;
 			}
 		}
@@ -1530,8 +1664,12 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 
 	// procs and clickables capped at 400.  Sony did it this way instead of using a 'isproc' parameter
 	// damage aggro is still added later, so procs like the SoD's anarchy still do more than 400
-	if (!CanClassCastSpell(spell_id) && nonDamageHate > 400)
-		nonDamageHate = 400;
+	if (!CanClassCastSpell(spell_id) && nonDamageHate > 400) {
+		if (!IsClient() || content_service.IsTheScarsOfVeliousEnabled()
+			|| (CastToClient()->GetWeaponEffectID() != spell_id && CastToClient()->GetWeaponEffectID(EQ::invslot::slotSecondary) != spell_id)) {
+			nonDamageHate = 400;
+		}
+	}
 
 	// bard spell hate is capped very low.  this was from Live server experiments
 	if (GetClass() == BARD)

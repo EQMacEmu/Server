@@ -5,108 +5,160 @@
 //
 // For the license information refer to format.h.
 
-#include <algorithm>
-#include <climits>
-#include <cstring>
-#include <functional>
-#include <iterator>
-#include <limits>
-#include <string>
-#include <type_traits>
-#include <memory>
-
+// clang-format off
 #include "test-assert.h"
-
-#include "gmock.h"
-
-// Check if fmt/core.h compiles with windows.h included before it.
-#ifdef _WIN32
-# include <windows.h>
-#endif
+// clang-format on
 
 #include "fmt/core.h"
 
-#undef min
-#undef max
+#include <algorithm>    // std::copy_n
+#include <climits>      // INT_MAX
+#include <cstring>      // std::strlen
+#include <functional>   // std::equal_to
+#include <iterator>     // std::back_insert_iterator
+#include <limits>       // std::numeric_limits
+#include <string>       // std::string
+#include <type_traits>  // std::is_same
 
-using fmt::basic_format_arg;
-using fmt::internal::basic_buffer;
-using fmt::internal::value;
+#include "gmock/gmock.h"
+
 using fmt::string_view;
+using fmt::detail::buffer;
 
 using testing::_;
-using testing::StrictMock;
+using testing::Invoke;
+using testing::Return;
 
-namespace {
+#ifdef FMT_FORMAT_H_
+#  error core-test includes format.h
+#endif
 
-struct test_struct {};
-
-template <typename Context, typename T>
-basic_format_arg<Context> make_arg(const T &value) {
-  return fmt::internal::make_arg<Context>(value);
+TEST(string_view_test, value_type) {
+  static_assert(std::is_same<string_view::value_type, char>::value, "");
 }
-}  // namespace
 
-FMT_BEGIN_NAMESPACE
-template <typename Char>
-struct formatter<test_struct, Char> {
-  template <typename ParseContext>
-  auto parse(ParseContext &ctx) -> decltype(ctx.begin()) {
-    return ctx.begin();
+TEST(string_view_test, ctor) {
+  EXPECT_STREQ("abc", fmt::string_view("abc").data());
+  EXPECT_EQ(3u, fmt::string_view("abc").size());
+
+  EXPECT_STREQ("defg", fmt::string_view(std::string("defg")).data());
+  EXPECT_EQ(4u, fmt::string_view(std::string("defg")).size());
+}
+
+TEST(string_view_test, length) {
+  // Test that string_view::size() returns string length, not buffer size.
+  char str[100] = "some string";
+  EXPECT_EQ(std::strlen(str), string_view(str).size());
+  EXPECT_LT(std::strlen(str), sizeof(str));
+}
+
+// Check string_view's comparison operator.
+template <template <typename> class Op> void check_op() {
+  const char* inputs[] = {"foo", "fop", "fo"};
+  size_t num_inputs = sizeof(inputs) / sizeof(*inputs);
+  for (size_t i = 0; i < num_inputs; ++i) {
+    for (size_t j = 0; j < num_inputs; ++j) {
+      string_view lhs(inputs[i]), rhs(inputs[j]);
+      EXPECT_EQ(Op<int>()(lhs.compare(rhs), 0), Op<string_view>()(lhs, rhs));
+    }
   }
+}
 
-  typedef std::back_insert_iterator<basic_buffer<Char>> iterator;
+TEST(string_view_test, compare) {
+  EXPECT_EQ(string_view("foo").compare(string_view("foo")), 0);
+  EXPECT_GT(string_view("fop").compare(string_view("foo")), 0);
+  EXPECT_LT(string_view("foo").compare(string_view("fop")), 0);
+  EXPECT_GT(string_view("foo").compare(string_view("fo")), 0);
+  EXPECT_LT(string_view("fo").compare(string_view("foo")), 0);
 
-  auto format(test_struct, basic_format_context<iterator, char> &ctx)
-      -> decltype(ctx.out()) {
-    const Char *test = "test";
-    return std::copy_n(test, std::strlen(test), ctx.out());
-  }
-};
-FMT_END_NAMESPACE
+  EXPECT_TRUE(string_view("foo").starts_with('f'));
+  EXPECT_FALSE(string_view("foo").starts_with('o'));
+  EXPECT_FALSE(string_view().starts_with('o'));
+
+  EXPECT_TRUE(string_view("foo").starts_with("fo"));
+  EXPECT_TRUE(string_view("foo").starts_with("foo"));
+  EXPECT_FALSE(string_view("foo").starts_with("fooo"));
+  EXPECT_FALSE(string_view().starts_with("fooo"));
+
+  check_op<std::equal_to>();
+  check_op<std::not_equal_to>();
+  check_op<std::less>();
+  check_op<std::less_equal>();
+  check_op<std::greater>();
+  check_op<std::greater_equal>();
+}
+
+TEST(core_test, is_output_iterator) {
+  EXPECT_TRUE((fmt::detail::is_output_iterator<char*, char>::value));
+  EXPECT_FALSE((fmt::detail::is_output_iterator<const char*, char>::value));
+  EXPECT_FALSE((fmt::detail::is_output_iterator<std::string, char>::value));
+  EXPECT_TRUE(
+      (fmt::detail::is_output_iterator<std::back_insert_iterator<std::string>,
+                                       char>::value));
+  EXPECT_TRUE(
+      (fmt::detail::is_output_iterator<std::string::iterator, char>::value));
+  EXPECT_FALSE((fmt::detail::is_output_iterator<std::string::const_iterator,
+                                                char>::value));
+}
+
+TEST(core_test, buffer_appender) {
+  // back_insert_iterator is not default-constructible before C++20, so
+  // buffer_appender can only be default-constructible when back_insert_iterator
+  // is.
+  static_assert(
+      std::is_default_constructible<
+          std::back_insert_iterator<fmt::detail::buffer<char>>>::value ==
+          std::is_default_constructible<
+              fmt::detail::buffer_appender<char>>::value,
+      "");
+
+#ifdef __cpp_lib_ranges
+  static_assert(std::output_iterator<fmt::detail::buffer_appender<char>, char>);
+#endif
+}
 
 #if !FMT_GCC_VERSION || FMT_GCC_VERSION >= 470
-TEST(BufferTest, Noncopyable) {
-  EXPECT_FALSE(std::is_copy_constructible<basic_buffer<char> >::value);
-#if !FMT_MSC_VER
+TEST(buffer_test, noncopyable) {
+  EXPECT_FALSE(std::is_copy_constructible<buffer<char>>::value);
+#  if !FMT_MSC_VERSION
   // std::is_copy_assignable is broken in MSVC2013.
-  EXPECT_FALSE(std::is_copy_assignable<basic_buffer<char> >::value);
-#endif
+  EXPECT_FALSE(std::is_copy_assignable<buffer<char>>::value);
+#  endif
 }
 
-TEST(BufferTest, Nonmoveable) {
-  EXPECT_FALSE(std::is_move_constructible<basic_buffer<char> >::value);
-#if !FMT_MSC_VER
+TEST(buffer_test, nonmoveable) {
+  EXPECT_FALSE(std::is_move_constructible<buffer<char>>::value);
+#  if !FMT_MSC_VERSION
   // std::is_move_assignable is broken in MSVC2013.
-  EXPECT_FALSE(std::is_move_assignable<basic_buffer<char> >::value);
-#endif
+  EXPECT_FALSE(std::is_move_assignable<buffer<char>>::value);
+#  endif
 }
 #endif
 
-// A test buffer with a dummy grow method.
-template <typename T>
-struct test_buffer : basic_buffer<T> {
-  void grow(std::size_t capacity) { this->set(FMT_NULL, capacity); }
-};
+TEST(buffer_test, indestructible) {
+  static_assert(!std::is_destructible<fmt::detail::buffer<int>>(),
+                "buffer's destructor is protected");
+}
 
-template <typename T>
-struct mock_buffer : basic_buffer<T> {
-  MOCK_METHOD1(do_grow, void (std::size_t capacity));
+template <typename T> struct mock_buffer final : buffer<T> {
+  MOCK_METHOD(size_t, do_grow, (size_t));
 
-  void grow(std::size_t capacity) {
-    this->set(this->data(), capacity);
-    do_grow(capacity);
+  void grow(size_t capacity) override {
+    this->set(this->data(), do_grow(capacity));
   }
 
-  mock_buffer() {}
-  mock_buffer(T *data) { this->set(data, 0); }
-  mock_buffer(T *data, std::size_t capacity) { this->set(data, capacity); }
+  mock_buffer(T* data = nullptr, size_t buf_capacity = 0) {
+    this->set(data, buf_capacity);
+    ON_CALL(*this, do_grow(_)).WillByDefault(Invoke([](size_t capacity) {
+      return capacity;
+    }));
+  }
 };
 
-TEST(BufferTest, Ctor) {
+TEST(buffer_test, ctor) {
   {
     mock_buffer<int> buffer;
-    EXPECT_EQ(FMT_NULL, &buffer[0]);
+    EXPECT_EQ(nullptr, buffer.data());
     EXPECT_EQ(static_cast<size_t>(0), buffer.size());
     EXPECT_EQ(static_cast<size_t>(0), buffer.capacity());
   }
@@ -119,7 +171,7 @@ TEST(BufferTest, Ctor) {
   }
   {
     int dummy;
-    std::size_t capacity = std::numeric_limits<std::size_t>::max();
+    size_t capacity = std::numeric_limits<size_t>::max();
     mock_buffer<int> buffer(&dummy, capacity);
     EXPECT_EQ(&dummy, &buffer[0]);
     EXPECT_EQ(static_cast<size_t>(0), buffer.size());
@@ -127,66 +179,63 @@ TEST(BufferTest, Ctor) {
   }
 }
 
-struct dying_buffer : test_buffer<int> {
-  MOCK_METHOD0(die, void());
-  ~dying_buffer() { die(); }
-};
-
-TEST(BufferTest, VirtualDtor) {
-  typedef StrictMock<dying_buffer> stict_mock_buffer;
-  stict_mock_buffer *mock_buffer = new stict_mock_buffer();
-  EXPECT_CALL(*mock_buffer, die());
-  basic_buffer<int> *buffer = mock_buffer;
-  delete buffer;
-}
-
-TEST(BufferTest, Access) {
+TEST(buffer_test, access) {
   char data[10];
   mock_buffer<char> buffer(data, sizeof(data));
   buffer[0] = 11;
   EXPECT_EQ(11, buffer[0]);
   buffer[3] = 42;
   EXPECT_EQ(42, *(&buffer[0] + 3));
-  const basic_buffer<char> &const_buffer = buffer;
+  const fmt::detail::buffer<char>& const_buffer = buffer;
   EXPECT_EQ(42, const_buffer[3]);
 }
 
-TEST(BufferTest, Resize) {
+TEST(buffer_test, try_resize) {
   char data[123];
   mock_buffer<char> buffer(data, sizeof(data));
   buffer[10] = 42;
   EXPECT_EQ(42, buffer[10]);
-  buffer.resize(20);
+  buffer.try_resize(20);
   EXPECT_EQ(20u, buffer.size());
   EXPECT_EQ(123u, buffer.capacity());
   EXPECT_EQ(42, buffer[10]);
-  buffer.resize(5);
+  buffer.try_resize(5);
   EXPECT_EQ(5u, buffer.size());
   EXPECT_EQ(123u, buffer.capacity());
   EXPECT_EQ(42, buffer[10]);
-  // Check if resize calls grow.
+  // Check if try_resize calls grow.
   EXPECT_CALL(buffer, do_grow(124));
-  buffer.resize(124);
+  buffer.try_resize(124);
   EXPECT_CALL(buffer, do_grow(200));
-  buffer.resize(200);
+  buffer.try_resize(200);
 }
 
-TEST(BufferTest, Clear) {
-  test_buffer<char> buffer;
-  buffer.resize(20);
-  buffer.resize(0);
+TEST(buffer_test, try_resize_partial) {
+  char data[10];
+  mock_buffer<char> buffer(data, sizeof(data));
+  EXPECT_CALL(buffer, do_grow(20)).WillOnce(Return(15));
+  buffer.try_resize(20);
+  EXPECT_EQ(buffer.capacity(), 15);
+  EXPECT_EQ(buffer.size(), 15);
+}
+
+TEST(buffer_test, clear) {
+  mock_buffer<char> buffer;
+  EXPECT_CALL(buffer, do_grow(20));
+  buffer.try_resize(20);
+  buffer.try_resize(0);
   EXPECT_EQ(static_cast<size_t>(0), buffer.size());
   EXPECT_EQ(20u, buffer.capacity());
 }
 
-TEST(BufferTest, Append) {
+TEST(buffer_test, append) {
   char data[15];
   mock_buffer<char> buffer(data, 10);
-  const char *test = "test";
+  auto test = "test";
   buffer.append(test, test + 5);
   EXPECT_STREQ(test, &buffer[0]);
   EXPECT_EQ(5u, buffer.size());
-  buffer.resize(10);
+  buffer.try_resize(10);
   EXPECT_CALL(buffer, do_grow(12));
   buffer.append(test, test + 2);
   EXPECT_EQ('t', buffer[10]);
@@ -194,95 +243,105 @@ TEST(BufferTest, Append) {
   EXPECT_EQ(12u, buffer.size());
 }
 
-TEST(BufferTest, AppendAllocatesEnoughStorage) {
+TEST(buffer_test, append_partial) {
+  char data[10];
+  mock_buffer<char> buffer(data, sizeof(data));
+  testing::InSequence seq;
+  EXPECT_CALL(buffer, do_grow(15)).WillOnce(Return(10));
+  EXPECT_CALL(buffer, do_grow(15)).WillOnce(Invoke([&buffer](size_t) {
+    EXPECT_EQ(fmt::string_view(buffer.data(), buffer.size()), "0123456789");
+    buffer.clear();
+    return 10;
+  }));
+  auto test = "0123456789abcde";
+  buffer.append(test, test + 15);
+}
+
+TEST(buffer_test, append_allocates_enough_storage) {
   char data[19];
   mock_buffer<char> buffer(data, 10);
-  const char *test = "abcdefgh";
-  buffer.resize(10);
+  auto test = "abcdefgh";
+  buffer.try_resize(10);
   EXPECT_CALL(buffer, do_grow(19));
   buffer.append(test, test + 9);
 }
 
-TEST(ArgTest, FormatArgs) {
-  fmt::format_args args;
+struct custom_context {
+  using char_type = char;
+  using parse_context_type = fmt::format_parse_context;
+
+  bool called = false;
+
+  template <typename T> struct formatter_type {
+    FMT_CONSTEXPR auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
+      return ctx.begin();
+    }
+
+    const char* format(const T&, custom_context& ctx) {
+      ctx.called = true;
+      return nullptr;
+    }
+  };
+
+  void advance_to(const char*) {}
+};
+
+struct test_struct {};
+
+FMT_BEGIN_NAMESPACE
+template <typename Char> struct formatter<test_struct, Char> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(test_struct, format_context& ctx) const -> decltype(ctx.out()) {
+    auto test = string_view("test");
+    return std::copy_n(test.data(), test.size(), ctx.out());
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(arg_test, format_args) {
+  auto args = fmt::format_args();
   EXPECT_FALSE(args.get(1));
 }
 
-struct custom_context {
-  typedef char char_type;
-
-  template <typename T>
-  struct formatter_type {
-    struct type {
-      template <typename ParseContext>
-      auto parse(ParseContext &ctx) -> decltype(ctx.begin()) {
-        return ctx.begin();
-      }
-
-      const char *format(const T &, custom_context& ctx) {
-        ctx.called = true;
-        return FMT_NULL;
-      }
-    };
-  };
-
-  bool called;
-
-  fmt::format_parse_context parse_context() {
-    return fmt::format_parse_context("");
-  }
-  void advance_to(const char *) {}
-};
-
-TEST(ArgTest, MakeValueWithCustomContext) {
-  test_struct t;
-  fmt::internal::value<custom_context> arg =
-      fmt::internal::make_value<custom_context>(t);
-  custom_context ctx = {false};
-  arg.custom.format(&t, ctx);
+TEST(arg_test, make_value_with_custom_context) {
+  auto t = test_struct();
+  auto arg = fmt::detail::value<custom_context>(
+      fmt::detail::arg_mapper<custom_context>().map(t));
+  auto ctx = custom_context();
+  auto parse_ctx = fmt::format_parse_context("");
+  arg.custom.format(&t, parse_ctx, ctx);
   EXPECT_TRUE(ctx.called);
 }
-
-FMT_BEGIN_NAMESPACE
-namespace internal {
-template <typename Char>
-bool operator==(custom_value<Char> lhs, custom_value<Char> rhs) {
-  return lhs.value == rhs.value;
-}
-}
-FMT_END_NAMESPACE
 
 // Use a unique result type to make sure that there are no undesirable
 // conversions.
 struct test_result {};
 
-template <typename T>
-struct mock_visitor {
-  template <typename U>
-  struct result { typedef test_result type; };
+template <typename T> struct mock_visitor {
+  template <typename U> struct result { using type = test_result; };
 
   mock_visitor() {
-    ON_CALL(*this, visit(_)).WillByDefault(testing::Return(test_result()));
+    ON_CALL(*this, visit(_)).WillByDefault(Return(test_result()));
   }
 
-  MOCK_METHOD1_T(visit, test_result (T value));
-  MOCK_METHOD0_T(unexpected, void ());
+  MOCK_METHOD(test_result, visit, (T));
+  MOCK_METHOD(void, unexpected, ());
 
-  test_result operator()(T value) { return visit(value); }
+  auto operator()(T value) -> test_result { return visit(value); }
 
-  template <typename U>
-  test_result operator()(U) {
+  template <typename U> auto operator()(U) -> test_result {
     unexpected();
     return test_result();
   }
 };
 
-template <typename T>
-struct visit_type { typedef T Type; };
+template <typename T> struct visit_type { using type = T; };
 
-#define VISIT_TYPE(Type_, visit_type_) \
-  template <> \
-  struct visit_type<Type_> { typedef visit_type_ Type; }
+#define VISIT_TYPE(type_, visit_type_) \
+  template <> struct visit_type<type_> { using type = visit_type_; }
 
 VISIT_TYPE(signed char, int);
 VISIT_TYPE(unsigned char, unsigned);
@@ -297,317 +356,503 @@ VISIT_TYPE(long, long long);
 VISIT_TYPE(unsigned long, unsigned long long);
 #endif
 
-VISIT_TYPE(float, double);
+#define CHECK_ARG(Char, expected, value)                                  \
+  {                                                                       \
+    testing::StrictMock<mock_visitor<decltype(expected)>> visitor;        \
+    EXPECT_CALL(visitor, visit(expected));                                \
+    using iterator = std::back_insert_iterator<buffer<Char>>;             \
+    auto var = value;                                                     \
+    fmt::visit_format_arg(                                                \
+        visitor,                                                          \
+        fmt::detail::make_arg<fmt::basic_format_context<iterator, Char>>( \
+            var));                                                        \
+  }
 
-#define CHECK_ARG_(Char, expected, value) { \
-  testing::StrictMock<mock_visitor<decltype(expected)>> visitor; \
-  EXPECT_CALL(visitor, visit(expected)); \
-  typedef std::back_insert_iterator<basic_buffer<Char>> iterator; \
-  fmt::visit(visitor, \
-      make_arg<fmt::basic_format_context<iterator, Char>>(value)); \
-}
+#define CHECK_ARG_SIMPLE(value)                             \
+  {                                                         \
+    using value_type = decltype(value);                     \
+    typename visit_type<value_type>::type expected = value; \
+    CHECK_ARG(char, expected, value)                        \
+    CHECK_ARG(wchar_t, expected, value)                     \
+  }
 
-#define CHECK_ARG(value, typename_) { \
-  typedef decltype(value) value_type; \
-  typename_ visit_type<value_type>::Type expected = value; \
-  CHECK_ARG_(char, expected, value) \
-  CHECK_ARG_(wchar_t, expected, value) \
-}
+template <typename T> class numeric_arg_test : public testing::Test {};
 
-template <typename T>
-class NumericArgTest : public testing::Test {};
+using test_types =
+    testing::Types<bool, signed char, unsigned char, short, unsigned short, int,
+                   unsigned, long, unsigned long, long long, unsigned long long,
+                   float, double, long double>;
+TYPED_TEST_SUITE(numeric_arg_test, test_types);
 
-typedef ::testing::Types<
-  bool, signed char, unsigned char, signed, unsigned short,
-  int, unsigned, long, unsigned long, long long, unsigned long long,
-  float, double, long double> Types;
-TYPED_TEST_CASE(NumericArgTest, Types);
-
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value, T>::type test_value() {
+template <typename T, fmt::enable_if_t<std::is_integral<T>::value, int> = 0>
+auto test_value() -> T {
   return static_cast<T>(42);
 }
 
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
-    test_value() {
+template <typename T,
+          fmt::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+auto test_value() -> T {
   return static_cast<T>(4.2);
 }
 
-TYPED_TEST(NumericArgTest, MakeAndVisit) {
-  CHECK_ARG(test_value<TypeParam>(), typename);
-  CHECK_ARG(std::numeric_limits<TypeParam>::min(), typename);
-  CHECK_ARG(std::numeric_limits<TypeParam>::max(), typename);
+TYPED_TEST(numeric_arg_test, make_and_visit) {
+  CHECK_ARG_SIMPLE(test_value<TypeParam>());
+  CHECK_ARG_SIMPLE(std::numeric_limits<TypeParam>::min());
+  CHECK_ARG_SIMPLE(std::numeric_limits<TypeParam>::max());
 }
 
-TEST(ArgTest, CharArg) {
-  CHECK_ARG_(char, 'a', 'a');
-  CHECK_ARG_(wchar_t, L'a', 'a');
-  CHECK_ARG_(wchar_t, L'a', L'a');
-}
+TEST(arg_test, char_arg) { CHECK_ARG(char, 'a', 'a'); }
 
-TEST(ArgTest, StringArg) {
+TEST(arg_test, string_arg) {
   char str_data[] = "test";
-  char *str = str_data;
-  const char *cstr = str;
-  CHECK_ARG_(char, cstr, str);
+  char* str = str_data;
+  const char* cstr = str;
+  CHECK_ARG(char, cstr, str);
 
-  string_view sref(str);
-  CHECK_ARG_(char, sref, std::string(str));
+  auto sv = fmt::string_view(str);
+  CHECK_ARG(char, sv, std::string(str));
 }
 
-TEST(ArgTest, WStringArg) {
+TEST(arg_test, wstring_arg) {
   wchar_t str_data[] = L"test";
-  wchar_t *str = str_data;
-  const wchar_t *cstr = str;
+  wchar_t* str = str_data;
+  const wchar_t* cstr = str;
 
-  fmt::wstring_view sref(str);
-  CHECK_ARG_(wchar_t, cstr, str);
-  CHECK_ARG_(wchar_t, cstr, cstr);
-  CHECK_ARG_(wchar_t, sref, std::wstring(str));
-  CHECK_ARG_(wchar_t, sref, fmt::wstring_view(str));
+  auto sv = fmt::basic_string_view<wchar_t>(str);
+  CHECK_ARG(wchar_t, cstr, str);
+  CHECK_ARG(wchar_t, cstr, cstr);
+  CHECK_ARG(wchar_t, sv, std::wstring(str));
+  CHECK_ARG(wchar_t, sv, fmt::basic_string_view<wchar_t>(str));
 }
 
-TEST(ArgTest, PointerArg) {
-  void *p = FMT_NULL;
-  const void *cp = FMT_NULL;
-  CHECK_ARG_(char, cp, p);
-  CHECK_ARG_(wchar_t, cp, p);
-  CHECK_ARG(cp, );
+TEST(arg_test, pointer_arg) {
+  void* p = nullptr;
+  const void* cp = nullptr;
+  CHECK_ARG(char, cp, p);
+  CHECK_ARG(wchar_t, cp, p);
+  CHECK_ARG_SIMPLE(cp);
 }
 
 struct check_custom {
-  test_result operator()(
-      fmt::basic_format_arg<fmt::format_context>::handle h) const {
-    struct test_buffer : fmt::internal::basic_buffer<char> {
+  auto operator()(fmt::basic_format_arg<fmt::format_context>::handle h) const
+      -> test_result {
+    struct test_buffer final : fmt::detail::buffer<char> {
       char data[10];
-      test_buffer() : fmt::internal::basic_buffer<char>(data, 0, 10) {}
-      void grow(std::size_t) {}
+      test_buffer() : fmt::detail::buffer<char>(data, 0, 10) {}
+      void grow(size_t) override {}
     } buffer;
-    fmt::internal::basic_buffer<char> &base = buffer;
-    fmt::format_context ctx(std::back_inserter(base), "", fmt::format_args());
-    h.format(ctx);
+    auto parse_ctx = fmt::format_parse_context("");
+    auto ctx = fmt::format_context(fmt::detail::buffer_appender<char>(buffer),
+                                   fmt::format_args());
+    h.format(parse_ctx, ctx);
     EXPECT_EQ("test", std::string(buffer.data, buffer.size()));
     return test_result();
   }
 };
 
-TEST(ArgTest, CustomArg) {
-  test_struct test;
-  typedef mock_visitor<fmt::basic_format_arg<fmt::format_context>::handle>
-    visitor;
-  testing::StrictMock<visitor> v;
-  EXPECT_CALL(v, visit(_)).WillOnce(testing::Invoke(check_custom()));
-  fmt::visit(v, make_arg<fmt::format_context>(test));
+TEST(arg_test, custom_arg) {
+  auto test = test_struct();
+  using visitor =
+      mock_visitor<fmt::basic_format_arg<fmt::format_context>::handle>;
+  auto&& v = testing::StrictMock<visitor>();
+  EXPECT_CALL(v, visit(_)).WillOnce(Invoke(check_custom()));
+  fmt::visit_format_arg(v, fmt::detail::make_arg<fmt::format_context>(test));
 }
 
-TEST(ArgTest, VisitInvalidArg) {
-  testing::StrictMock< mock_visitor<fmt::monostate> > visitor;
+TEST(arg_test, visit_invalid_arg) {
+  auto&& visitor = testing::StrictMock<mock_visitor<fmt::monostate>>();
   EXPECT_CALL(visitor, visit(_));
-  fmt::basic_format_arg<fmt::format_context> arg;
-  visit(visitor, arg);
+  auto arg = fmt::basic_format_arg<fmt::format_context>();
+  fmt::visit_format_arg(visitor, arg);
 }
 
-TEST(StringViewTest, Length) {
-  // Test that StringRef::size() returns string length, not buffer size.
-  char str[100] = "some string";
-  EXPECT_EQ(std::strlen(str), string_view(str).size());
-  EXPECT_LT(std::strlen(str), sizeof(str));
-}
+#if FMT_USE_CONSTEXPR
 
-// Check string_view's comparison operator.
-template <template <typename> class Op>
-void check_op() {
-  const char *inputs[] = {"foo", "fop", "fo"};
-  std::size_t num_inputs = sizeof(inputs) / sizeof(*inputs);
-  for (std::size_t i = 0; i < num_inputs; ++i) {
-    for (std::size_t j = 0; j < num_inputs; ++j) {
-      string_view lhs(inputs[i]), rhs(inputs[j]);
-      EXPECT_EQ(Op<int>()(lhs.compare(rhs), 0), Op<string_view>()(lhs, rhs));
-    }
+enum class arg_id_result { none, empty, index, name };
+struct test_arg_id_handler {
+  arg_id_result res = arg_id_result::none;
+  int index = 0;
+  string_view name;
+
+  constexpr void on_auto() { res = arg_id_result::empty; }
+
+  constexpr void on_index(int i) {
+    res = arg_id_result::index;
+    index = i;
   }
-}
 
-TEST(StringViewTest, Compare) {
-  EXPECT_EQ(string_view("foo").compare(string_view("foo")), 0);
-  EXPECT_GT(string_view("fop").compare(string_view("foo")), 0);
-  EXPECT_LT(string_view("foo").compare(string_view("fop")), 0);
-  EXPECT_GT(string_view("foo").compare(string_view("fo")), 0);
-  EXPECT_LT(string_view("fo").compare(string_view("foo")), 0);
-  check_op<std::equal_to>();
-  check_op<std::not_equal_to>();
-  check_op<std::less>();
-  check_op<std::less_equal>();
-  check_op<std::greater>();
-  check_op<std::greater_equal>();
-}
-
-enum basic_enum {};
-
-TEST(CoreTest, ConvertToInt) {
-  EXPECT_FALSE((fmt::convert_to_int<char, char>::value));
-  EXPECT_FALSE((fmt::convert_to_int<const char *, char>::value));
-  EXPECT_TRUE((fmt::convert_to_int<basic_enum, char>::value));
-}
-
-enum enum_with_underlying_type : char {};
-
-TEST(CoreTest, IsEnumConvertibleToInt) {
-  EXPECT_TRUE((fmt::convert_to_int<enum_with_underlying_type, char>::value));
-}
-
-namespace my_ns {
-template <typename Char>
-class my_string {
- public:
-  my_string(const Char *s) : s_(s) {}
-  const Char * data() const FMT_NOEXCEPT { return s_.data(); }
-  std::size_t length() const FMT_NOEXCEPT { return s_.size(); }
-  operator const Char*() const { return s_.c_str(); }
- private:
-  std::basic_string<Char> s_;
+  constexpr void on_name(string_view n) {
+    res = arg_id_result::name;
+    name = n;
+  }
 };
 
-template <typename Char>
-inline fmt::basic_string_view<Char>
-    to_string_view(const my_string<Char> &s) FMT_NOEXCEPT {
-  return { s.data(), s.length() };
+template <size_t N>
+constexpr test_arg_id_handler parse_arg_id(const char (&s)[N]) {
+  auto h = test_arg_id_handler();
+  fmt::detail::parse_arg_id(s, s + N, h);
+  return h;
 }
 
-struct non_string {};
+TEST(core_test, constexpr_parse_arg_id) {
+  static_assert(parse_arg_id(":").res == arg_id_result::empty, "");
+  static_assert(parse_arg_id("}").res == arg_id_result::empty, "");
+  static_assert(parse_arg_id("42:").res == arg_id_result::index, "");
+  static_assert(parse_arg_id("42:").index == 42, "");
+  static_assert(parse_arg_id("foo:").res == arg_id_result::name, "");
+  static_assert(parse_arg_id("foo:").name.size() == 3, "");
 }
 
-namespace FakeQt {
-class QString {
- public:
-  QString(const wchar_t *s) : s_(std::make_shared<std::wstring>(s)) {}
-  const wchar_t *utf16() const FMT_NOEXCEPT { return s_->data(); }
-  int size() const FMT_NOEXCEPT { return static_cast<int>(s_->size()); }
-#ifdef FMT_STRING_VIEW
-  operator FMT_STRING_VIEW<wchar_t>() const FMT_NOEXCEPT { return *s_; }
-#endif
- private:
-  std::shared_ptr<std::wstring> s_;
+template <size_t N> constexpr auto parse_test_specs(const char (&s)[N]) {
+  auto ctx = fmt::detail::compile_parse_context<char>(fmt::string_view(s, N),
+                                                      43, nullptr);
+  auto specs = fmt::detail::dynamic_format_specs<>();
+  fmt::detail::parse_format_specs(s, s + N - 1, specs, ctx,
+                                  fmt::detail::type::float_type);
+  return specs;
+}
+
+TEST(core_test, constexpr_parse_format_specs) {
+  static_assert(parse_test_specs("<").align == fmt::align::left, "");
+  static_assert(parse_test_specs("*^").fill[0] == '*', "");
+  static_assert(parse_test_specs("+").sign == fmt::sign::plus, "");
+  static_assert(parse_test_specs("-").sign == fmt::sign::minus, "");
+  static_assert(parse_test_specs(" ").sign == fmt::sign::space, "");
+  static_assert(parse_test_specs("#").alt, "");
+  static_assert(parse_test_specs("0").align == fmt::align::numeric, "");
+  static_assert(parse_test_specs("L").localized, "");
+  static_assert(parse_test_specs("42").width == 42, "");
+  static_assert(parse_test_specs("{42}").width_ref.val.index == 42, "");
+  static_assert(parse_test_specs(".42").precision == 42, "");
+  static_assert(parse_test_specs(".{42}").precision_ref.val.index == 42, "");
+  static_assert(
+      parse_test_specs("f").type == fmt::presentation_type::fixed_lower, "");
+}
+
+struct test_format_string_handler {
+  constexpr void on_text(const char*, const char*) {}
+
+  constexpr auto on_arg_id() -> int { return 0; }
+
+  template <typename T> constexpr auto on_arg_id(T) -> int { return 0; }
+
+  constexpr void on_replacement_field(int, const char*) {}
+
+  constexpr auto on_format_specs(int, const char* begin, const char*) -> const
+      char* {
+    return begin;
+  }
+
+  constexpr void on_error(const char*) { error = true; }
+
+  bool error = false;
 };
 
-inline fmt::basic_string_view<wchar_t> to_string_view(
-    const QString &s) FMT_NOEXCEPT {
-  return {s.utf16(),
-          static_cast<std::size_t>(s.size())};
-}
-}
-
-template <typename T>
-class IsStringTest : public testing::Test {};
-
-typedef ::testing::Types<char, wchar_t, char16_t, char32_t> StringCharTypes;
-TYPED_TEST_CASE(IsStringTest, StringCharTypes);
-
-namespace {
-template <typename Char>
-struct derived_from_string_view : fmt::basic_string_view<Char> {};
+template <size_t N> constexpr bool parse_string(const char (&s)[N]) {
+  auto h = test_format_string_handler();
+  fmt::detail::parse_format_string<true>(fmt::string_view(s, N - 1), h);
+  return !h.error;
 }
 
-TYPED_TEST(IsStringTest, IsString) {
-  EXPECT_TRUE((fmt::internal::is_string<TypeParam *>::value));
-  EXPECT_TRUE((fmt::internal::is_string<const TypeParam *>::value));
-  EXPECT_TRUE((fmt::internal::is_string<TypeParam[2]>::value));
-  EXPECT_TRUE((fmt::internal::is_string<const TypeParam[2]>::value));
-  EXPECT_TRUE((fmt::internal::is_string<std::basic_string<TypeParam>>::value));
-  EXPECT_TRUE(
-        (fmt::internal::is_string<fmt::basic_string_view<TypeParam>>::value));
-  EXPECT_TRUE(
-        (fmt::internal::is_string<derived_from_string_view<TypeParam>>::value));
-#ifdef FMT_STRING_VIEW
-  EXPECT_TRUE((fmt::internal::is_string<FMT_STRING_VIEW<TypeParam>>::value));
+TEST(core_test, constexpr_parse_format_string) {
+  static_assert(parse_string("foo"), "");
+  static_assert(!parse_string("}"), "");
+  static_assert(parse_string("{}"), "");
+  static_assert(parse_string("{42}"), "");
+  static_assert(parse_string("{foo}"), "");
+  static_assert(parse_string("{:}"), "");
+}
+#endif  // FMT_USE_CONSTEXPR
+
+struct enabled_formatter {};
+struct enabled_ptr_formatter {};
+struct disabled_formatter {};
+struct disabled_formatter_convertible {
+  operator int() const { return 42; }
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<enabled_formatter> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(enabled_formatter, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    return ctx.out();
+  }
+};
+
+template <> struct formatter<enabled_ptr_formatter*> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(enabled_ptr_formatter*, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    return ctx.out();
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(core_test, has_formatter) {
+  using fmt::has_formatter;
+  using context = fmt::format_context;
+  static_assert(has_formatter<enabled_formatter, context>::value, "");
+  static_assert(!has_formatter<disabled_formatter, context>::value, "");
+  static_assert(!has_formatter<disabled_formatter_convertible, context>::value,
+                "");
+}
+
+struct const_formattable {};
+struct nonconst_formattable {};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<const_formattable> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(const const_formattable&, format_context& ctx)
+      -> decltype(ctx.out()) {
+    auto test = string_view("test");
+    return std::copy_n(test.data(), test.size(), ctx.out());
+  }
+};
+
+template <> struct formatter<nonconst_formattable> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(nonconst_formattable&, format_context& ctx)
+      -> decltype(ctx.out()) {
+    auto test = string_view("test");
+    return std::copy_n(test.data(), test.size(), ctx.out());
+  }
+};
+FMT_END_NAMESPACE
+
+struct convertible_to_pointer {
+  operator const int*() const { return nullptr; }
+};
+
+struct convertible_to_pointer_formattable {
+  operator const int*() const { return nullptr; }
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<convertible_to_pointer_formattable> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(convertible_to_pointer_formattable, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    auto test = string_view("test");
+    return std::copy_n(test.data(), test.size(), ctx.out());
+  }
+};
+FMT_END_NAMESPACE
+
+enum class unformattable_scoped_enum {};
+
+TEST(core_test, is_formattable) {
+  static_assert(!fmt::is_formattable<wchar_t>::value, "");
+#ifdef __cpp_char8_t
+  static_assert(!fmt::is_formattable<char8_t>::value, "");
 #endif
-  EXPECT_TRUE((fmt::internal::is_string<my_ns::my_string<TypeParam>>::value));
-  EXPECT_FALSE((fmt::internal::is_string<my_ns::non_string>::value));
-  EXPECT_TRUE((fmt::internal::is_string<FakeQt::QString>::value));
+  static_assert(!fmt::is_formattable<char16_t>::value, "");
+  static_assert(!fmt::is_formattable<char32_t>::value, "");
+  static_assert(!fmt::is_formattable<signed char*>::value, "");
+  static_assert(!fmt::is_formattable<unsigned char*>::value, "");
+  static_assert(!fmt::is_formattable<const signed char*>::value, "");
+  static_assert(!fmt::is_formattable<const unsigned char*>::value, "");
+  static_assert(!fmt::is_formattable<const wchar_t*>::value, "");
+  static_assert(!fmt::is_formattable<const wchar_t[3]>::value, "");
+  static_assert(!fmt::is_formattable<fmt::basic_string_view<wchar_t>>::value,
+                "");
+  static_assert(fmt::is_formattable<enabled_formatter>::value, "");
+  static_assert(!fmt::is_formattable<enabled_ptr_formatter*>::value, "");
+  static_assert(!fmt::is_formattable<disabled_formatter>::value, "");
+  static_assert(!fmt::is_formattable<disabled_formatter_convertible>::value,
+                "");
+
+  static_assert(fmt::is_formattable<const_formattable&>::value, "");
+  static_assert(fmt::is_formattable<const const_formattable&>::value, "");
+
+  static_assert(fmt::is_formattable<nonconst_formattable&>::value, "");
+#if !FMT_MSC_VERSION || FMT_MSC_VERSION >= 1910
+  static_assert(!fmt::is_formattable<const nonconst_formattable&>::value, "");
+#endif
+
+  static_assert(!fmt::is_formattable<convertible_to_pointer>::value, "");
+  const auto f = convertible_to_pointer_formattable();
+  EXPECT_EQ(fmt::format("{}", f), "test");
+
+  static_assert(!fmt::is_formattable<void (*)()>::value, "");
+
+  struct s;
+  static_assert(!fmt::is_formattable<int(s::*)>::value, "");
+  static_assert(!fmt::is_formattable<int (s::*)()>::value, "");
+  static_assert(!fmt::is_formattable<unformattable_scoped_enum>::value, "");
+  static_assert(!fmt::is_formattable<unformattable_scoped_enum>::value, "");
 }
 
-TEST(CoreTest, Format) {
-  // This should work without including fmt/format.h.
-#ifdef FMT_FORMAT_H_
-# error fmt/format.h must not be included in the core test
-#endif
-  EXPECT_EQ(fmt::format("{}", 42), "42");
-}
+TEST(core_test, format) { EXPECT_EQ(fmt::format("{}", 42), "42"); }
 
-TEST(CoreTest, FormatTo) {
-  // This should work without including fmt/format.h.
-#ifdef FMT_FORMAT_H_
-# error fmt/format.h must not be included in the core test
-#endif
-  std::string s;
+TEST(core_test, format_to) {
+  auto s = std::string();
   fmt::format_to(std::back_inserter(s), "{}", 42);
   EXPECT_EQ(s, "42");
 }
 
-TEST(CoreTest, ToStringViewForeignStrings) {
-  using namespace my_ns;
-  using namespace FakeQt;
-  EXPECT_EQ(to_string_view(my_string<char>("42")), "42");
-  EXPECT_EQ(to_string_view(my_string<wchar_t>(L"42")), L"42");
-  EXPECT_EQ(to_string_view(QString(L"42")), L"42");
-  fmt::internal::type type =
-      fmt::internal::get_type<fmt::format_context, my_string<char>>::value;
-  EXPECT_EQ(type, fmt::internal::string_type);
-  type =
-      fmt::internal::get_type<fmt::wformat_context, my_string<wchar_t>>::value;
-  EXPECT_EQ(type, fmt::internal::string_type);
-  type = fmt::internal::get_type<fmt::wformat_context, QString>::value;
-  EXPECT_EQ(type, fmt::internal::string_type);
-  // Does not compile: only wide format contexts are compatible with QString!
-  // type = fmt::internal::get_type<fmt::format_context, QString>::value;
+#ifdef __cpp_lib_byte
+TEST(core_test, format_byte) {
+  EXPECT_EQ(fmt::format("{}", std::byte(42)), "42");
+}
+#endif
+
+struct convertible_to_int {
+  operator int() const { return 42; }
+};
+
+struct convertible_to_cstring {
+  operator const char*() const { return "foo"; }
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<convertible_to_int> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(convertible_to_int, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    return std::copy_n("foo", 3, ctx.out());
+  }
+};
+
+template <> struct formatter<convertible_to_cstring> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+  auto format(convertible_to_cstring, format_context& ctx) const
+      -> decltype(ctx.out()) {
+    return std::copy_n("bar", 3, ctx.out());
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(core_test, formatter_overrides_implicit_conversion) {
+  EXPECT_EQ(fmt::format("{}", convertible_to_int()), "foo");
+  EXPECT_EQ(fmt::format("{}", convertible_to_cstring()), "bar");
 }
 
-TEST(CoreTest, FormatForeignStrings) {
-  using namespace my_ns;
-  using namespace FakeQt;
-  EXPECT_EQ(fmt::format(my_string<char>("{}"), 42), "42");
-  EXPECT_EQ(fmt::format(my_string<wchar_t>(L"{}"), 42), L"42");
-  EXPECT_EQ(fmt::format(QString(L"{}"), 42), L"42");
-  EXPECT_EQ(fmt::format(QString(L"{}"), my_string<wchar_t>(L"42")), L"42");
-  EXPECT_EQ(fmt::format(my_string<wchar_t>(L"{}"), QString(L"42")), L"42");
+// Test that check is not found by ADL.
+template <typename T> void check(T);
+TEST(core_test, adl_check) {
+  EXPECT_EQ(fmt::format("{}", test_struct()), "test");
 }
 
 struct implicitly_convertible_to_string_view {
   operator fmt::string_view() const { return "foo"; }
 };
 
-TEST(FormatterTest, FormatImplicitlyConvertibleToStringView) {
-  EXPECT_EQ("foo", fmt::format("{}", implicitly_convertible_to_string_view()));
+TEST(core_test, no_implicit_conversion_to_string_view) {
+  EXPECT_FALSE(
+      fmt::is_formattable<implicitly_convertible_to_string_view>::value);
 }
 
+#ifdef FMT_USE_STRING_VIEW
+struct implicitly_convertible_to_std_string_view {
+  operator std::string_view() const { return "foo"; }
+};
+
+TEST(core_test, no_implicit_conversion_to_std_string_view) {
+  EXPECT_FALSE(
+      fmt::is_formattable<implicitly_convertible_to_std_string_view>::value);
+}
+#endif
+
 // std::is_constructible is broken in MSVC until version 2015.
-#if FMT_USE_EXPLICIT && (!FMT_MSC_VER || FMT_MSC_VER >= 1900)
+#if !FMT_MSC_VERSION || FMT_MSC_VERSION >= 1900
 struct explicitly_convertible_to_string_view {
   explicit operator fmt::string_view() const { return "foo"; }
 };
 
-TEST(FormatterTest, FormatExplicitlyConvertibleToStringView) {
-  EXPECT_EQ("foo", fmt::format("{}", explicitly_convertible_to_string_view()));
+TEST(core_test, format_explicitly_convertible_to_string_view) {
+  // Types explicitly convertible to string_view are not formattable by
+  // default because it may introduce ODR violations.
+  static_assert(
+      !fmt::is_formattable<explicitly_convertible_to_string_view>::value, "");
 }
 
-struct explicitly_convertible_to_wstring_view {
-  explicit operator fmt::wstring_view() const { return L"foo"; }
+#  ifdef FMT_USE_STRING_VIEW
+struct explicitly_convertible_to_std_string_view {
+  explicit operator std::string_view() const { return "foo"; }
 };
 
-TEST(FormatterTest, FormatExplicitlyConvertibleToWStringView) {
-  EXPECT_EQ(L"foo",
-            fmt::format(L"{}", explicitly_convertible_to_wstring_view()));
+TEST(core_test, format_explicitly_convertible_to_std_string_view) {
+  // Types explicitly convertible to string_view are not formattable by
+  // default because it may introduce ODR violations.
+  static_assert(
+      !fmt::is_formattable<explicitly_convertible_to_std_string_view>::value,
+      "");
 }
-
-struct explicitly_convertible_to_string_like {
-  template <
-      typename String,
-      typename = typename std::enable_if<
-        std::is_constructible<String, const char*, std::size_t>::value>::type>
-  FMT_EXPLICIT operator String() const { return String("foo", 3u); }
-};
-
-TEST(FormatterTest, FormatExplicitlyConvertibleToStringLike) {
-  EXPECT_EQ("foo", fmt::format("{}", explicitly_convertible_to_string_like()));
-}
+#  endif
 #endif
+
+namespace adl_test {
+template <typename... T> void make_format_args(const T&...) = delete;
+
+struct string : std::string {};
+}  // namespace adl_test
+
+// Test that formatting functions compile when make_format_args is found by ADL.
+TEST(core_test, adl) {
+  // Only check compilation and don't run the code to avoid polluting the output
+  // and since the output is tested elsewhere.
+  if (fmt::detail::const_check(true)) return;
+  auto s = adl_test::string();
+  char buf[10];
+  (void)fmt::format("{}", s);
+  fmt::format_to(buf, "{}", s);
+  fmt::format_to_n(buf, 10, "{}", s);
+  (void)fmt::formatted_size("{}", s);
+  fmt::print("{}", s);
+  fmt::print(stdout, "{}", s);
+}
+
+TEST(core_test, has_const_formatter) {
+  EXPECT_TRUE((fmt::detail::has_const_formatter<const_formattable,
+                                                fmt::format_context>()));
+  EXPECT_FALSE((fmt::detail::has_const_formatter<nonconst_formattable,
+                                                 fmt::format_context>()));
+}
+
+TEST(core_test, format_nonconst) {
+  EXPECT_EQ(fmt::format("{}", nonconst_formattable()), "test");
+}
+
+struct its_a_trap {
+  template <typename T> operator T() const {
+    auto v = T();
+    v.x = 42;
+    return v;
+  }
+};
+
+FMT_BEGIN_NAMESPACE
+template <> struct formatter<its_a_trap> {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.begin();
+  }
+
+  auto format(its_a_trap, format_context& ctx) const -> decltype(ctx.out()) {
+    auto s = string_view("42");
+    return std::copy(s.begin(), s.end(), ctx.out());
+  }
+};
+FMT_END_NAMESPACE
+
+TEST(core_test, trappy_conversion) {
+  EXPECT_EQ(fmt::format("{}", its_a_trap()), "42");
+}

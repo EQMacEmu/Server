@@ -66,6 +66,9 @@ MySQLRequestResult DBcore::QueryDatabase(const std::string& query, bool retryOnF
 
 MySQLRequestResult DBcore::QueryDatabase(const char* query, uint32 querylen, bool retryOnFailureOnce)
 {
+	BenchTimer timer;
+	timer.reset();
+
 	LockMutex lock(&MDatabase);
 
 	// Reconnect if we are not connected before hand.
@@ -73,24 +76,21 @@ MySQLRequestResult DBcore::QueryDatabase(const char* query, uint32 querylen, boo
 		Open();
 
 	// request query. != 0 indicates some kind of error.
-	if (mysql_real_query(&mysql, query, querylen) != 0)
-	{
+	if (mysql_real_query(&mysql, query, querylen) != 0) {
 		unsigned int errorNumber = mysql_errno(&mysql);
 
-		if (errorNumber == CR_SERVER_GONE_ERROR)
+		if (errorNumber == CR_SERVER_GONE_ERROR) {
 			pStatus = Error;
+		}
 
 		// error appears to be a disconnect error, may need to try again.
-		if (errorNumber == CR_SERVER_LOST || errorNumber == CR_SERVER_GONE_ERROR)
-		{
+		if (errorNumber == CR_SERVER_LOST || errorNumber == CR_SERVER_GONE_ERROR) {
 
-			if (retryOnFailureOnce)
-			{
+			if (retryOnFailureOnce) {
 				LogInfo("Database Error: Lost connection, attempting to recover....");
 				MySQLRequestResult requestResult = QueryDatabase(query, querylen, false);
 
-				if (requestResult.Success())
-				{
+				if (requestResult.Success()) {
 					LogInfo("Reconnection to database successful.");
 					return requestResult;
 				}
@@ -109,9 +109,11 @@ MySQLRequestResult DBcore::QueryDatabase(const char* query, uint32 querylen, boo
 		auto errorBuffer = new char[MYSQL_ERRMSG_SIZE];
 		snprintf(errorBuffer, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(&mysql), mysql_error(&mysql));
 
-		/* Implement Logging at the Root */
-		if (mysql_errno(&mysql) > 0 && strlen(query) > 0){
-			LogMySQLError("[{0}] [{1}]\n[{2}]", mysql_errno(&mysql), mysql_error(&mysql), query);
+		/**
+		 * Error logging
+		 */
+		if (mysql_errno(&mysql) > 0 && query[0] != '\0'){
+			LogMySQLError("MySQL Error ({}) [{}] Query [{}]", mysql_errno(&mysql), mysql_error(&mysql), query);
 		}
 
 		return MySQLRequestResult(nullptr, 0, 0, 0, 0, mysql_errno(&mysql),errorBuffer);
@@ -122,13 +124,27 @@ MySQLRequestResult DBcore::QueryDatabase(const char* query, uint32 querylen, boo
 	MYSQL_RES* res = mysql_store_result(&mysql);
 	uint32 rowCount = 0;
 
-	if (res != nullptr)
-        rowCount = (uint32)mysql_num_rows(res);
+	if (res != nullptr) {
+		rowCount = (uint32)mysql_num_rows(res);
+	}
 
-	MySQLRequestResult requestResult(res, (uint32)mysql_affected_rows(&mysql), rowCount, (uint32)mysql_field_count(&mysql), (uint32)mysql_insert_id(&mysql));
+	MySQLRequestResult requestResult(
+		res, 
+		(uint32)mysql_affected_rows(&mysql), 
+		rowCount, 
+		(uint32)mysql_field_count(&mysql), 
+		(uint32)mysql_insert_id(&mysql)
+	);
 	
-	if (LogSys.log_settings[Logs::MySQLQuery].is_category_enabled == 1)
-		LogMySQLQuery("[{0}] ([{1}] rows returned)", query, rowCount, requestResult.RowCount());
+	if (LogSys.log_settings[Logs::MySQLQuery].is_category_enabled == 1) {
+		LogMySQLQuery(
+			"{0} -- ({1} row{2} returned) ({3}s)",
+			query,
+			rowCount,
+			requestResult.RowCount(),
+			std::to_string(timer.elapsed())
+		);
+	}
 
 	return requestResult;
 }

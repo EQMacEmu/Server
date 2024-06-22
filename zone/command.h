@@ -45,6 +45,7 @@ int command_add(std::string command_name, const char *desc, int access, CmdFuncP
 int command_notavail(Client *c, const char *message);
 int command_realdispatch(Client *c, char const *message);
 void command_logcommand(Client *c, const char *message);
+void SendRuleSubCommands(Client *c);
 
 //commands
 void command_advnpcspawn(Client *c, const Seperator *sep);

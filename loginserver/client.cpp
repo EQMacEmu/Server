@@ -186,8 +186,7 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 	if (version != cv_old)
 	{
 		//Not old client, gtfo haxxor!
-		string error = "Unauthorized client from " + string(inet_ntoa(in)) + " , exiting them.";
-		LogError(error.c_str());
+		LogError( "Unauthorized client from {}, exiting them.", inet_ntoa(in));
 		return;
 	}
 	else if (status != cs_waiting_for_login)
@@ -236,8 +235,7 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 
 	if (!allowedClient)
 	{
-		string error = "Unauthorized client from " + string(inet_ntoa(in)) + " using client < " + client + " > , exiting them.";
-		LogError(error.c_str());
+		LogError("Unauthorized client from {} using client < {} > , exiting them.", inet_ntoa(in), client);
 		return;
 	}
 

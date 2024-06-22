@@ -382,7 +382,7 @@ int Client::HandlePacket(const EQApplicationPacket *app)
 	case CLIENT_WAITING_FOR_AUTH:
 		break;
 	default:
-		Log(Logs::General, Logs::Error, "Unknown client_state: %d\n", client_state);
+		LogDebug("Unknown client_state: [{}]\n", static_cast<int>(client_state));
 		break;
 	}
 
@@ -3798,8 +3798,8 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	if (app->size != sizeof(DuelResponse_Struct))
 		return;
 	DuelResponse_Struct* ds = (DuelResponse_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(ds->duel_target);
-	Entity* initiator = entity_list.GetID(ds->duel_initiator);
+	Entity *entity = entity_list.GetID(ds->duel_target);
+	Entity *initiator = entity_list.GetID(ds->duel_initiator);
 	if(!entity || !initiator)
 		return;
 	

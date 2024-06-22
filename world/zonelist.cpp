@@ -234,33 +234,33 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 		strcpy(locked, "No");
 	}
 
-	fmt::memory_buffer out;
+	std::vector<char> out;
 
 	if (connection->IsConsole())
 	{
-		fmt::format_to(out, "World Locked: {}\r\n", locked);
+		fmt::format_to(std::back_inserter(out), "World Locked: {}\r\n", locked);
 	}
 	else
 	{
-		fmt::format_to(out, "World Locked: {}^", locked);
-	}
-
-	if (connection->IsConsole())
-	{
-		fmt::format_to(out, "UCS Server: {}\r\n", UCSLink.Connected() ? "Connected" : "Unavailable");
-	}
-	else
-	{
-		fmt::format_to(out, "UCS Server: {}^", UCSLink.Connected() ? "Connected" : "Unavailable");
+		fmt::format_to(std::back_inserter(out), "World Locked: {}^", locked);
 	}
 
 	if (connection->IsConsole())
 	{
-		fmt::format_to(out, "Zoneservers online:\r\n");
+		fmt::format_to(std::back_inserter(out), "UCS Server: {}\r\n", UCSLink.Connected() ? "Connected" : "Unavailable");
 	}
 	else
 	{
-		fmt::format_to(out, "Zoneservers online:^");
+		fmt::format_to(std::back_inserter(out), "UCS Server: {}^", UCSLink.Connected() ? "Connected" : "Unavailable");
+	}
+
+	if (connection->IsConsole())
+	{
+		fmt::format_to(std::back_inserter(out), "Zoneservers online:\r\n");
+	}
+	else
+	{
+		fmt::format_to(std::back_inserter(out), "Zoneservers online:^");
 	}
 
 	int avail_zones = 0, booted_zones = 0, servers_online = 0, static_zones = 0;
@@ -308,7 +308,7 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 			zone_data_string = "AVAILABLE";
 		}
 
-		fmt::format_to(out,
+		fmt::format_to(std::back_inserter(out),
 			"{} {} :: {}  :: {}:{} :: {} :: {}:{} :: {} :: ({})", 
 			buffer.c_str(),
 			zone_server_data->GetID(), 
@@ -323,16 +323,15 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 		);
 			
 		if (out.size() >= 3584) {
-			auto output = fmt::to_string(out);
-			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 			out.clear();
 		}
 		else 
 		{
 			if (connection->IsConsole())
-				fmt::format_to(out, "\r\n");
+				fmt::format_to(std::back_inserter(out), "\r\n");
 			else
-				fmt::format_to(out, "^");
+				fmt::format_to(std::back_inserter(out), "^");
 		}
 
 		++servers_online;
@@ -341,22 +340,21 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 
 	if (connection->IsConsole())
 	{
-		fmt::format_to(out, "{} {} servers online.\r\n", buffer.c_str(), servers_online);
+		fmt::format_to(std::back_inserter(out), "{} {} servers online.\r\n", buffer.c_str(), servers_online);
 	}
 	else 
 	{
-		fmt::format_to(out, "{} {} servers online.^", buffer.c_str(), servers_online);
+		fmt::format_to(std::back_inserter(out), "{} {} servers online.^", buffer.c_str(), servers_online);
 	}
 
-	fmt::format_to(out, "{} {} zones are static zones, {} zones are booted zones, {} zones available.", buffer.c_str(), static_zones, booted_zones, avail_zones);
+	fmt::format_to(std::back_inserter(out), "{} {} zones are static zones, {} zones are booted zones, {} zones available.", buffer.c_str(), static_zones, booted_zones, avail_zones);
 
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 void ZSList::SendZoneCountConsole(const char* to, int16 admin, WorldTCPConnection* connection, bool zonepop)
 {
-	fmt::memory_buffer out;
+	std::vector<char> out;
 	int avail_zones = 0, booted_zones = 0, servers_online = 0, static_zones = 0, num_players = 0;
 	ZoneServer* zone_server_data = 0;
 	bool booted = false;
@@ -385,7 +383,7 @@ void ZSList::SendZoneCountConsole(const char* to, int16 admin, WorldTCPConnectio
 
 		if (zonepop && booted)
 		{
-			fmt::format_to(out, "{}:{}\r\n", zone_server_data->GetZoneName(), zone_server_data->NumPlayers());
+			fmt::format_to(std::back_inserter(out), "{}:{}\r\n", zone_server_data->GetZoneName(), zone_server_data->NumPlayers());
 		}
 
 		num_players += zone_server_data->NumPlayers();
@@ -397,11 +395,10 @@ void ZSList::SendZoneCountConsole(const char* to, int16 admin, WorldTCPConnectio
 
 	if (!zonepop)
 	{
-		fmt::format_to(out, "static:{} total:{} dyn:{} pop:{}\r\n", static_zones, servers_online, avail_zones, num_players);
+		fmt::format_to(std::back_inserter(out), "static:{} total:{} dyn:{} pop:{}\r\n", static_zones, servers_online, avail_zones, num_players);
 	}
 
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 void ZSList::SendChannelMessage(const char* from, const char* to, uint8 chan_num, uint8 language, uint8 lang_skill, const char* message, ...) {

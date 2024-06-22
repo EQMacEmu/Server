@@ -115,6 +115,7 @@ namespace Logs{
 		QuestErrors,
 		Scheduler,
 		Loot,
+		FixZ,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -186,7 +187,8 @@ namespace Logs{
 		"Notice",
 		"QuestErrors",
 		"Scheduler",
-		"Loot"
+		"Loot",
+		"FixZ"
 	};
 }
 

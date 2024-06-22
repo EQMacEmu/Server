@@ -9,14 +9,14 @@
       * Redistributions in binary form must reproduce the above copyright
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
-      * Neither the name of cereal nor the
+      * Neither the name of the copyright holder nor the
         names of its contributors may be used to endorse or promote products
         derived from this software without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  DISCLAIMED. IN NO EVENT SHALL RANDOLPH VOORHIES AND SHANE GRANT BE LIABLE FOR ANY
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -63,7 +63,7 @@ inline void swapBytes( T & t )
     CHECK_EQ(i_uint64 , o_uint64);              \
     CHECK_EQ(i_int64  , o_int64);               \
     if( !std::isnan(i_float) && !std::isnan(o_float) ) CHECK_EQ(i_float , doctest::Approx(o_float).epsilon(1e-5F)); \
-    if( !std::isnan(i_float) && !std::isnan(o_float) ) CHECK_EQ(i_double, doctest::Approx(o_double).epsilon(1e-5));
+    if( !std::isnan(i_double) && !std::isnan(o_double) ) CHECK_EQ(i_double, doctest::Approx(o_double).epsilon(1e-5));
 
 // Last parameter exists to keep everything hidden in options
 template <class IArchive, class OArchive> inline

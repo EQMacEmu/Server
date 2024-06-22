@@ -48,11 +48,12 @@ void NPC::AddLootTable(uint32 loottable_id, bool is_global)
 		is_global
 	);
 
-	auto content_flags = ContentFlags{};
-	content_flags.min_expansion = l->min_expansion;
-	content_flags.max_expansion = l->max_expansion;
-	content_flags.content_flags = l->content_flags;
-	content_flags.content_flags_disabled = l->content_flags_disabled;
+	auto content_flags = ContentFlags{
+		.min_expansion = l->min_expansion,
+		.max_expansion = l->max_expansion,
+		.content_flags = l->content_flags,
+		.content_flags_disabled = l->content_flags_disabled
+	};
 
 	if (!content_service.DoesPassContentFiltering(content_flags)) {
 		return;

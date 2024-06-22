@@ -55,6 +55,7 @@
 #include "zone_config.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/repositories/content_flags_repository.h"
+#include "../common/repositories/rule_sets_repository.h"
 
 #include <time.h>
 
@@ -926,7 +927,7 @@ bool Zone::Init(bool iStaticZone) {
 
 	if (RuleManager::Instance()->GetActiveRulesetID() != default_ruleset)
 	{
-		std::string r_name = RuleManager::Instance()->GetRulesetName(&database, default_ruleset);
+		std::string r_name = RuleSetsRepository::GetRuleSetName(database, default_ruleset);
 		if (r_name.size() > 0)
 		{
 			RuleManager::Instance()->LoadRules(&database, r_name.c_str());

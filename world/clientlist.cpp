@@ -406,7 +406,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 		strcpy(newline, "\r\n");
 	else
 		strcpy(newline, "^");
-	fmt::memory_buffer out;
+	std::vector<char> out;
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
@@ -415,17 +415,16 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			struct in_addr in;
 			in.s_addr = cle->GetIP();
 			if (addnewline) {
-				fmt::format_to(out, newline);
+				fmt::format_to(std::back_inserter(out), fmt::runtime(newline));
 			}
-			fmt::format_to(out, "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
-			fmt::format_to(out, "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
+			fmt::format_to(std::back_inserter(out), "ID: {}  Acc# {}  AccName: {}  IP: {}", cle->GetID(), cle->AccountID(), cle->AccountName(), inet_ntoa(in));
+			fmt::format_to(std::back_inserter(out), "{}  Stale: {}  Online: {}  Admin: {}", newline, cle->GetStaleCounter(), cle->Online(), cle->Admin());
 			if (cle->LSID())
-				fmt::format_to(out, "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
+				fmt::format_to(std::back_inserter(out), "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
 			if (cle->CharID())
-				fmt:format_to(out, "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+				fmt::format_to(std::back_inserter(out), "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
 			if (out.size() >= 3072) {
-				auto output = fmt::to_string(out);
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 				addnewline = false;
 				out.clear();
 			}
@@ -438,9 +437,8 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 		iterator.Advance();
 		x++;
 	}
-	fmt::format_to(out, "{}{} CLEs in memory. {} CLEs listed. numplayers = {}.", newline, x, y, numplayers);
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	fmt::format_to(std::back_inserter(out), "{}{} CLEs in memory. {} CLEs listed. numplayers = {}.", newline, x, y, numplayers);
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 
@@ -1047,8 +1045,8 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 	if (whom)
 		whomlen = strlen(whom->whom);
 
-	fmt::memory_buffer out;
-	fmt::format_to(out, "Players on server:\r\n");
+	std::vector<char> out;
+	fmt::format_to(std::back_inserter(out), "Players on server:\r\n");
 	iterator.Reset();
 	while(iterator.MoreElements()) 
 	{
@@ -1149,17 +1147,16 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 			else
 				sprintf(line, "  %s[%i %s] %s (%s)%s zone: %s%s%s%s", tmpgm, cle->level(), GetClassIDName(cle->class_(),cle->level()), cle->name(), GetRaceIDName(cle->race()), tmpguild, tmpZone, LFG, Trader, accinfo);
 
-			fmt::format_to(out, line);
+			fmt::format_to(std::back_inserter(out), fmt::runtime(line));
 			if (out.size() >= 3584) {
-				auto output = fmt::to_string(out);
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 				out.clear();
 			}
 			else {
 				if (connection->IsConsole())
-					fmt::format_to(out, "\r\n");
+					fmt::format_to(std::back_inserter(out), "\r\n");
 				else
-					fmt::format_to(out, "\n");
+					fmt::format_to(std::back_inserter(out), "\n");
 			}
 			x++;
 			if (x >= 20 && admin < AccountStatus::QuestTroupe)
@@ -1169,21 +1166,20 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 	}
 
 	if (x >= 20 && admin < AccountStatus::QuestTroupe)
-		fmt::format_to(out, "too many results...20 players shown");
+		fmt::format_to(std::back_inserter(out), "too many results...20 players shown");
 	else
-		fmt::format_to(out, "{} players online\r\n", x);
+		fmt::format_to(std::back_inserter(out), "{} players online\r\n", x);
 	if (admin >= 150 && (whom == 0 || whom->gmlookup != -1)) 
 	{
 		if (connection->IsConsole())
 			
-			fmt::format_to(out, "\r\n");
+			fmt::format_to(std::back_inserter(out), "\r\n");
 		else
-			fmt::format_to(out, "\n");
+			fmt::format_to(std::back_inserter(out), "\n");
 		
 		//console_list.SendConsoleWho(connection, to, admin);
 	}
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 void ClientList::ConsoleTraderCount(const char* to, WorldTCPConnection* connection)
@@ -1193,7 +1189,7 @@ void ClientList::ConsoleTraderCount(const char* to, WorldTCPConnection* connecti
 
 	uint32 tradercount = 0;
 
-	fmt::memory_buffer out;
+	std::vector<char> out;
 
 	iterator.Reset();
 	while (iterator.MoreElements())
@@ -1208,9 +1204,8 @@ void ClientList::ConsoleTraderCount(const char* to, WorldTCPConnection* connecti
 		iterator.Advance();
 	}
 
-	fmt::format_to(out, " {} traders online\r\n", tradercount);
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	fmt::format_to(std::back_inserter(out), " {} traders online\r\n", tradercount);
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 void ClientList::Add(Client* client) {
@@ -1475,7 +1470,7 @@ void ClientList::ConsoleClientVersionSummary(const char* to, WorldTCPConnection*
 	uint32 ClientPCCount = 0;
 	uint32 ClientIntelCount = 0;
 
-	fmt::memory_buffer out;
+	std::vector<char> out;
 
 	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
 
@@ -1515,9 +1510,8 @@ void ClientList::ConsoleClientVersionSummary(const char* to, WorldTCPConnection*
 
 	}
 
-	fmt::format_to(out, " {} PC {} Intel clients online.\r\n", ClientPCCount, ClientIntelCount);
-	auto output = fmt::to_string(out);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, output.c_str());
+	fmt::format_to(std::back_inserter(out), " {} PC {} Intel clients online.\r\n", ClientPCCount, ClientIntelCount);
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
 }
 
 bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int16 admin, int whomlen)

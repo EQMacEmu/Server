@@ -71,13 +71,13 @@ namespace EQ
 
 		template<typename T>
 		void Write(T val) {
-			static_assert(std::is_pod<T>::value, "MemoryBuffer::Write<T>(T val) only works on pod and string types.");
+			static_assert(std::is_standard_layout<T>::value, "MemoryBuffer::Write<T>(T val) only works on pod and string types.");
 			Write((const char*)&val, sizeof(T));
 		}
 
 		template<typename T>
 		T Read() {
-			static_assert(std::is_pod<T>::value, "MemoryBuffer::Read<T>() only works on pod and string types.");
+			static_assert(std::is_standard_layout<T>::value, "MemoryBuffer::Read<T>() only works on pod and string types.");
 			T temp;
 			Read((uchar*)&temp, sizeof(T));
 			return temp;

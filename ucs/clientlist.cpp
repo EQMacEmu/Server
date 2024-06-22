@@ -22,7 +22,9 @@
 #include "../common/eqemu_logsys.h"
 #include "../common/races.h"
 #include "../common/classes.h"
+#include "../common/misc_functions.h"
 
+#include "ucsconfig.h"
 #include "clientlist.h"
 #include "database.h"
 #include "chatchannel.h"
@@ -195,11 +197,12 @@ Clientlist::Clientlist(int ChatPort) {
 	chatsf = new EQStreamFactory(ChatStream, ChatPort, 60000);
 
 	ChatOpMgr = new RegularOpcodeManager;
+
 	auto Config = EQEmuConfig::get();
 	std::string opfile = Config->PatchDir;
 	opfile += "chat_opcodes";
 	opfile += ".conf";
-	if(!ChatOpMgr->LoadOpcodes(opfile.c_str()))
+	if (!ChatOpMgr->LoadOpcodes(opfile.c_str()))
 		exit(1);
 
 	if (chatsf->Open()) {
@@ -446,7 +449,7 @@ void Clientlist::Process()
 			}
 
 			default: {
-				LogInfo("Unhandled chat opcode {:08x}", opcode);
+				LogInfo("Unhandled chat opcode {:#04x}", opcode);
 				break;
 			}
 			}

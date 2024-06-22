@@ -149,7 +149,6 @@ void WorldServer::Process() {
 
 	ServerPacket *pack = 0;
 	while((pack = tcpc.PopPacket())) {
-		Log(Logs::Detail, Logs::ZoneServer, "Got 0x%04x from world:", pack->opcode);
 		switch(pack->opcode) {
 		case 0:
 		case ServerOP_KeepAlive: {

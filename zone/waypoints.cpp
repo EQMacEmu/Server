@@ -987,6 +987,8 @@ void Mob::SendToFixZ(float new_x, float new_y, float new_z) {
 }
 
 float Mob::GetFixedZ(const glm::vec3& destination, float z_find_offset) {
+	BenchTimer timer;
+	timer.reset();
 
 	float new_z = destination.z;
 
@@ -1023,6 +1025,17 @@ float Mob::GetFixedZ(const glm::vec3& destination, float z_find_offset) {
 		else {
 			new_z = destination.z;
 		}
+
+		auto duration = timer.elapsed();
+
+		LogFixZ("[{}] returned [{}] at [{}] [{}] [{}] - Took [{}]",
+			GetCleanName(),
+			new_z,
+			destination.x,
+			destination.y,
+			destination.z,
+			duration);
+
 	}
 
 	return new_z;
