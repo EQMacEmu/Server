@@ -4,6 +4,8 @@ Based off of https://docs.eqemu.io/server/installation/dev-container/
 
 Dev containers uses Docker and VSCode to create a development environment that is consistent across all developers. This is a great way to ensure that everyone is using the same tools and versions. You can also use this to develop on Windows, Mac, or Linux. The entire project directory is mounted within the VSCode dev container yet build and runtime files reside within the project directory on the host. This means building, submodules, and configuration persist across docker container reboots, image deletion, and even volume deletion. Database data does not persist after volume deletion.
 
+This configuration is meant for ephemeral development, there are commands in here that will drop your database when restoring updates. Unless you understand Docker volumes and what the make commands are doing, this should not be used for custom database content creation or long-running servers.
+
 
 ## Prerequisites
 1. Install [Docker](https://www.docker.com/products/docker-desktop)
@@ -60,6 +62,12 @@ Dev containers uses Docker and VSCode to create a development environment that i
 2. You may also connect within the dev container terminal via `mysql -h127.0.0.1`
 
 #
+
+### Resuming
+If you've completely exited vscode and docker, and have not removed the docker volume, you may resume development rather quickly. You do not need to rebuild the container nor the binaries, and your database will be retained.
+1. Start docker and vscode, wait for vscode to launch the container.
+2. Execute a `make mariadb` to start the database without dropping.
+3. Execute a `make start` to launch the server.
 
 ### Debugging
 You can optionally debug by attaching via gdb to the running processes. This is only recommended if you are familiar with gdb and debugging in general.
