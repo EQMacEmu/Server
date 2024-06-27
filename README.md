@@ -11,7 +11,7 @@ EQMacEmu is an EverQuest server emulating the original Macintosh version called 
 For developers, and advanced users, the entire server stack and content is all open source. This project was originally forked from [EQEmu](https://github.com/EQEmu) but has diverged, however the [documentation](https://docs.eqemu.io/) still has many relevant parts and is overall a good place for information. 
 
 
-- For a traditional, manual, Windows installation for developing and running the server. You may use EQEmu documentation [for a manual Windows install](https://docs.eqemu.io/server/installation/ground-up-windows-install/) using the [x64 dependencies found here](https://eqemu.github.io/). You would use this if you want to learn the most and don't mind directly installing all dependencies on your Windows computer. You would also follow this if you would like to use Visual Studios for C++ development.
+- For a traditional, manual, Windows installation for developing and running the server. You may use EQEmu documentation [for a manual Windows install](https://docs.eqemu.io/server/installation/ground-up-windows-install/). You would use this if you want to learn the most and don't mind directly installing all dependencies on your Windows computer. You would also follow this if you would like to use Visual Studios for C++ development.
 
 - For a manual Linux installation you should just follow the scripts used in the Docker Hub or devcontainer repos described below.
 
