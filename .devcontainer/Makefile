@@ -117,7 +117,7 @@ prep:
 
 	@echo "Copying env files..."
 	@cp -Rup ${DIR_DEVCONT}/base/eqemu_config.json ${DIR_DEVCONT}/bin
-	@cp -Rup ${DIR_DEVCONT}/base/login.ini ${DIR_DEVCONT}/bin
+	@cp -Rup ${DIR_DEVCONT}/base/login.json ${DIR_DEVCONT}/bin
 
 	@echo "Symlinking binaries..."
 	@find ${DIR_SRC}/build/bin -type f ! -name "*.*" -exec cp --symbolic-link {} ${DIR_DEVCONT}/bin \;

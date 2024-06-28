@@ -2,14 +2,14 @@
     "database": {
       "host": "127.0.0.1",
       "port": "3306",
-      "db": "eqemu",
-      "user": "user",
-      "password": "password",
+      "db": "peq",
+      "user": "peq",
+      "password": "peqpass",
       "subsystem": "MySQL"
     },
     "account": {
-      "auto_create_accounts": false,
-      "auto_account_activate": false
+      "auto_create_accounts": true,
+      "auto_account_activate": true
     },
     "worldservers": {
       "unregistered_allowed": true,
