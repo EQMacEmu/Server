@@ -41,7 +41,7 @@ This configuration is meant for ephemeral development, there are commands in her
 #
 
 ### Setup 5: Prep the environment
-1. Execute `make prep` which will create a runtime location in `/src/.devcontainer/bin`. This will copy static config files and symlink binaries. Cleaning the project's build dir will not require re-running above steps. If you do modify values in `/src/.devcontainer/eqemu_config.json` or `login.ini` then you need to rerun this command.
+1. Execute `make prep` which will create a runtime location in `/src/.devcontainer/bin`. This will copy static config files and symlink binaries. Cleaning the project's build dir will not require re-running above steps. If you do modify values in `/src/.devcontainer/eqemu_config.json` or `login.json` then you need to rerun this command.
 
 #
 
@@ -51,7 +51,7 @@ This configuration is meant for ephemeral development, there are commands in her
 #
 
 ### Setup 7: Log in and set yourself GM
-1. Be sure your EQ client's eqhosts.txt file matches `/src/.devcontainer/base/login.ini` which defaults to `"127.0.0.1:6000"`.
+1. Be sure your EQ client's eqhosts.txt file matches `/src/.devcontainer/base/login.json` which defaults to `"127.0.0.1:6000"`.
 2. Enter in any username/password (twice) to auto-create an account and login.
 3. To set your account as a GM, execute `make gm-accountname`. You can do it prior to logging in.
 
