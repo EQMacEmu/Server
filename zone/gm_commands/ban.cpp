@@ -6,26 +6,26 @@ void command_ban(Client *c, const Seperator *sep)
 {
 	int arguments = sep->argnum;
 	if (arguments < 2) {
-		c->Message(CC_Default, "Usage: #ban [Character Name] [Reason]");
+		c->Message(Chat::White, "Usage: #ban [Character Name] [Reason]");
 		return;
 	}
 
 	std::string character_name = sep->arg[1];
 	if (character_name.empty()) {
-		c->Message(CC_Default, "Usage: #ban [Character Name] [Reason]");
+		c->Message(Chat::White, "Usage: #ban [Character Name] [Reason]");
 		return;
 	}
 
 	std::string reason = sep->argplus[2];
 	if (reason.empty()) {
-		c->Message(CC_Default, "Usage: #ban [Character Name] [Reason]");
+		c->Message(Chat::White, "Usage: #ban [Character Name] [Reason]");
 		return;
 	}
 
 	auto account_id = database.GetAccountIDByChar(character_name.c_str());
 	if (!account_id) {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Character {} does not exist.",
 				character_name
@@ -41,7 +41,7 @@ void command_ban(Client *c, const Seperator *sep)
 	);
 	auto results = database.QueryDatabase(query);
 
-	c->Message(CC_Default, 
+	c->Message(Chat::White, 
 		fmt::format(
 			"Account ID {} with the character {} has been banned for the following reason: \"{}\"",
 			account_id,

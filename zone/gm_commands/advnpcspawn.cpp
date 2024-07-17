@@ -5,15 +5,15 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 {
 	int arguments = sep->argnum;
 	if (!arguments) {
-		c->Message(CC_Default, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance] - Adds a new Spawngroup Entry");
-		c->Message(CC_Default, "Usage: #advnpcspawn addspawn [Spawngroup ID] - Adds a new Spawngroup Entry from an existing Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn clearbox [Spawngroup ID] - Clears the roambox of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn deletespawn - Deletes a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]  - Edit the roambox of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance] - Edit the Respawn Timer of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay] - Makes a new Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn makenpc - Makes a new NPC");
-		c->Message(CC_Default, "Usage: #advnpcspawn movespawn - Moves a Spawngroup to your current location");
+		c->Message(Chat::White, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance] - Adds a new Spawngroup Entry");
+		c->Message(Chat::White, "Usage: #advnpcspawn addspawn [Spawngroup ID] - Adds a new Spawngroup Entry from an existing Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn clearbox [Spawngroup ID] - Clears the roambox of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn deletespawn - Deletes a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]  - Edit the roambox of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance] - Edit the Respawn Timer of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay] - Makes a new Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn makenpc - Makes a new NPC");
+		c->Message(Chat::White, "Usage: #advnpcspawn movespawn - Moves a Spawngroup to your current location");
 		return;
 	}
 
@@ -38,22 +38,22 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		!is_make_npc &&
 		!is_move_spawn
 		) {
-		c->Message(CC_Default, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance] - Adds a new Spawngroup Entry");
-		c->Message(CC_Default, "Usage: #advnpcspawn addspawn [Spawngroup ID] - Adds a new Spawngroup Entry from an existing Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn clearbox [Spawngroup ID] - Clears the roambox of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn deletespawn - Deletes a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]  - Edit the roambox of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance] - Edit the Respawn Timer of a Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay] - Makes a new Spawngroup");
-		c->Message(CC_Default, "Usage: #advnpcspawn makenpc - Makes a new NPC");
-		c->Message(CC_Default, "Usage: #advnpcspawn movespawn - Moves a Spawngroup to your current location");
+		c->Message(Chat::White, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance] - Adds a new Spawngroup Entry");
+		c->Message(Chat::White, "Usage: #advnpcspawn addspawn [Spawngroup ID] - Adds a new Spawngroup Entry from an existing Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn clearbox [Spawngroup ID] - Clears the roambox of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn deletespawn - Deletes a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]  - Edit the roambox of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance] - Edit the Respawn Timer of a Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay] - Makes a new Spawngroup");
+		c->Message(Chat::White, "Usage: #advnpcspawn makenpc - Makes a new NPC");
+		c->Message(Chat::White, "Usage: #advnpcspawn movespawn - Moves a Spawngroup to your current location");
 		return;
 	}
 
 
 	if (is_add_entry) {
 		if (arguments < 4) {
-			c->Message(CC_Default, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance]");
+			c->Message(Chat::White, "Usage: #advnpcspawn addentry [Spawngroup ID] [NPC ID] [Spawn Chance]");
 			return;
 		}
 
@@ -72,12 +72,12 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to add entry to Spawngroup.");
+			c->Message(Chat::White, "Failed to add entry to Spawngroup.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"({}) added to Spawngroup {}, its spawn chance is {}%%.",
 				npc_id,
@@ -96,7 +96,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			std::stoi(sep->arg[2])
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawn Added | Added spawn from Spawngroup ID {}.",
 				std::stoi(sep->arg[2])
@@ -106,7 +106,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 	}
 	else if (is_clear_box) {
 		if (arguments != 2 || !sep->IsNumber(2)) {
-			c->Message(CC_Default, "Usage: #advnpcspawn clearbox [Spawngroup ID]");
+			c->Message(Chat::White, "Usage: #advnpcspawn clearbox [Spawngroup ID]");
 			return;
 		}
 
@@ -116,26 +116,26 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to clear Spawngroup box.");
+			c->Message(Chat::White, "Failed to clear Spawngroup box.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Cleared | Delay: 0 Distance: 0.00",
 				std::stoi(sep->arg[2])
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Cleared | Minimum X: 0.00 Maximum X: 0.00",
 				std::stoi(sep->arg[2])
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Cleared | Minimum Y: 0.00 Maximum Y: 0.00",
 				std::stoi(sep->arg[2])
@@ -145,14 +145,14 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 	}
 	else if (is_delete_spawn) {
 		if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-			c->Message(CC_Default, "You must target an NPC to use this command.");
+			c->Message(Chat::White, "You must target an NPC to use this command.");
 			return;
 		}
 
 		NPC* target = c->GetTarget()->CastToNPC();
 		Spawn2* spawn2 = target->respawn2;
 		if (!spawn2) {
-			c->Message(CC_Default, "Failed to delete spawn because NPC has no Spawn2.");
+			c->Message(Chat::White, "Failed to delete spawn because NPC has no Spawn2.");
 			return;
 		}
 
@@ -163,12 +163,12 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to delete spawn.");
+			c->Message(Chat::White, "Failed to delete spawn.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawn2 {} Deleted | Name: {} ({})",
 				spawn2_id,
@@ -188,7 +188,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			!sep->IsNumber(6) ||
 			!sep->IsNumber(7)
 			) {
-			c->Message(CC_Default, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]");
+			c->Message(Chat::White, "Usage: #advnpcspawn editbox [Spawngroup ID] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]");
 			return;
 		}
 		auto spawngroup_id = std::stoi(sep->arg[2]);
@@ -209,12 +209,12 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to edit Spawngroup box.");
+			c->Message(Chat::White, "Failed to edit Spawngroup box.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Edited | Delay: {}",
 				spawngroup_id,
@@ -222,7 +222,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Edited | Minimum X: {:.2f} Maximum X: {:.2f}",
 				spawngroup_id,
@@ -231,7 +231,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Roambox Edited | Minimum Y: {:.2f} Maximum Y: {:.2f}",
 				spawngroup_id,
@@ -243,19 +243,19 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 	}
 	else if (is_edit_respawn) {
 		if (arguments < 2 || !sep->IsNumber(2)) {
-			c->Message(CC_Default, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance]");
+			c->Message(Chat::White, "Usage: #advnpcspawn editrespawn [Respawn Timer] [Variance]");
 			return;
 		}
 
 		if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-			c->Message(CC_Default, "You must target an NPC to use this command.");
+			c->Message(Chat::White, "You must target an NPC to use this command.");
 			return;
 		}
 
 		NPC* target = c->GetTarget()->CastToNPC();
 		Spawn2* spawn2 = target->respawn2;
 		if (!spawn2) {
-			c->Message(CC_Default, "Failed to edit respawn because NPC has no Spawn2.");
+			c->Message(Chat::White, "Failed to edit respawn because NPC has no Spawn2.");
 			return;
 		}
 
@@ -274,12 +274,12 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to edit respawn.");
+			c->Message(Chat::White, "Failed to edit respawn.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawn2 {} Respawn Modified | Name: {} ({}) Respawn Timer: {} Variance: {}",
 				spawn2_id,
@@ -303,7 +303,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			!sep->IsNumber(7) ||
 			!sep->IsNumber(8)
 			) {
-			c->Message(CC_Default, "Usage: #advncspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]");
+			c->Message(Chat::White, "Usage: #advncspawn makegroup [Spawn Group Name] [Spawn Limit] [Minimum X] [Maximum X] [Minimum Y] [Maximum Y] [Delay]");
 			return;
 		}
 		std::string spawngroup_name = sep->arg[2];
@@ -328,13 +328,13 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to make Spawngroup.");
+			c->Message(Chat::White, "Failed to make Spawngroup.");
 			return;
 		}
 
 		auto spawngroup_id = results.LastInsertedID();
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Created | Name: {} Spawn Limit: {}",
 				spawngroup_id,
@@ -343,7 +343,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Created | Delay: {}",
 				spawngroup_id,
@@ -351,7 +351,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Created | Minimum X: {:.2f} Maximum X: {:.2f}",
 				spawngroup_id,
@@ -360,7 +360,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawngroup {} Created | Minimum Y: {:.2f} Maximum Y: {:.2f}",
 				spawngroup_id,
@@ -372,7 +372,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 	}
 	else if (is_make_npc) {
 		if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-			c->Message(CC_Default, "You must target an NPC to use this command.");
+			c->Message(Chat::White, "You must target an NPC to use this command.");
 			return;
 		}
 
@@ -387,14 +387,14 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 	}
 	else if (is_move_spawn) {
 		if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-			c->Message(CC_Default, "You must target an NPC to use this command.");
+			c->Message(Chat::White, "You must target an NPC to use this command.");
 			return;
 		}
 
 		NPC* target = c->GetTarget()->CastToNPC();
 		Spawn2* spawn2 = target->respawn2;
 		if (!spawn2) {
-			c->Message(CC_Default, "Failed to move spawn because NPC has no Spawn2.");
+			c->Message(Chat::White, "Failed to move spawn because NPC has no Spawn2.");
 			return;
 		}
 
@@ -410,12 +410,12 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 		);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success()) {
-			c->Message(CC_Default, "Failed to move spawn.");
+			c->Message(Chat::White, "Failed to move spawn.");
 			return;
 		}
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawn2 {} Moved | Name: {} ({})",
 				spawn2_id,
@@ -424,7 +424,7 @@ void command_advnpcspawn(Client* c, const Seperator* sep)
 			).c_str()
 		);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Spawn2 {} Moved | XYZ: {}, {}, {} Heading: {}",
 				spawn2_id,

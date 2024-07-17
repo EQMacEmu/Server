@@ -40,14 +40,14 @@ void command_globalview(Client *c, const Seperator *sep){
 		auto iter = globalMap.begin();
 		uint32 gcount = 0;
 
-		c->Message(CC_Default, "Name, Value");
+		c->Message(Chat::White, "Name, Value");
 		while (iter != globalMap.end())
 		{
-			c->Message(CC_Default, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
+			c->Message(Chat::White, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
 			++iter;
 			++gcount;
 		}
-		c->Message(CC_Default, "%u globals loaded.", gcount);
+		c->Message(Chat::White, "%u globals loaded.", gcount);
 	}
 	else
 	{
@@ -73,14 +73,14 @@ void command_globalview(Client *c, const Seperator *sep){
 		auto iter = globalMap.begin();
 		uint32 gcount = 0;
 
-		c->Message(CC_Default, "Name, Value");
+		c->Message(Chat::White, "Name, Value");
 		while (iter != globalMap.end())
 		{
-			c->Message(CC_Default, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
+			c->Message(Chat::White, "%s %s", (*iter).name.c_str(), (*iter).value.c_str());
 			++iter;
 			++gcount;
 		}
-		c->Message(CC_Default, "%u globals loaded.", gcount);
+		c->Message(Chat::White, "%u globals loaded.", gcount);
 	}
 }
 

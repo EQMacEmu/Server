@@ -66,11 +66,11 @@ bool Database::Connect(const char* host, const char* user, const char* passwd, c
 	uint32 errnum= 0;
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	if (!Open(host, user, passwd, database, port, &errnum, errbuf)) {
-		LogError("[MySQL] Failed to connect to database: Error: [{}] ", errbuf); 
+		LogError("Failed to connect to database: Error: [{}] ", errbuf); 
 		return false; 
 	}
 	else {
-		LogInfo("[MySQL] Using database [{}] at [{}] : [{}] ", database, host, port);
+		LogInfo("Using database [{}] at [{}] : [{}] ", database, host, port);
 		return true;
 	}
 }
@@ -691,7 +691,7 @@ bool Database::StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, EQ::I
 	if(zname == nullptr) {
 		/* Zone not in the DB, something to prevent crash... */
 		strn0cpy(zone, "bazaar", 49);
-		pp->zone_id = bazaar;
+		pp->zone_id = Zones::BAZAAR;
 	}
 	else{ strn0cpy(zone, zname, 49); }
 
@@ -886,6 +886,8 @@ bool Database::LoadVariables() {
 		std::transform(std::begin(key), std::end(key), std::begin(key), ::tolower); // keys are lower case, DB doesn't have to be
 		varcache.Add(key, value);
 	}
+
+	LogInfo("Loaded [{}] variable(s)", Strings::Commify(std::to_string(results.RowCount())));
 
 	return true;
 }

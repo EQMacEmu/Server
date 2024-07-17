@@ -7,7 +7,7 @@ void command_npcshout(Client *c, const Seperator *sep){
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #npcshout message (requires NPC target");
+		c->Message(Chat::White, "Usage: #npcshout message (requires NPC target");
 	}
 }
 

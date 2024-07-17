@@ -11,7 +11,7 @@ void command_starve(Client *c, const Seperator *sep){
 
 	t->SetConsumption(0,0);
 	t->SendStaminaUpdate();
-	c->Message(CC_Default, "Target starved.");
+	c->Message(Chat::White, "Target starved.");
 
 }
 

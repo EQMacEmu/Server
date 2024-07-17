@@ -69,9 +69,9 @@ private:
 	*/
 	void ProcessDisconnect();
 
-	list<Client*> clients;
-	OpcodeManager* old_ops;
-	EQStreamFactory* old_stream;
+	std::list<Client *> clients;
+	OpcodeManager       *old_ops;
+	EQStreamFactory     *old_stream;
 };
 
 #endif

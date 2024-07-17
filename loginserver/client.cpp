@@ -17,7 +17,6 @@
 */
 #include "client.h"
 #include "login_server.h"
-#include "login_structures.h"
 #include "../common/md5.h"
 #include "../common/misc_functions.h"
 #include "../common/eqemu_logsys.h"
@@ -28,181 +27,159 @@ extern EQCrypto eq_crypto;
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
 
-Client::Client(std::shared_ptr<EQStreamInterface> c, ClientVersion v)
+Client::Client(std::shared_ptr<EQStreamInterface> c, LSClientVersion v)
 {
-	connection = c;
-	version = v;
-	status = cs_not_sent_session_ready;
-	account_id = 0;
-	sentsessioninfo = false;
-	play_server_id = 0;
-	play_sequence_id = 0;
+	m_connection = c;
+	m_client_version = v;
+	m_client_status = cs_not_sent_session_ready;
+	m_account_id = 0;
+	m_sent_session_info = false;
+	m_play_server_id = 0;
+	m_play_sequence_id = 0;
 }
 
 bool Client::Process()
 {
-	EQApplicationPacket *app = connection->PopPacket();
+	EQApplicationPacket *app = m_connection->PopPacket();
 	while(app)
 	{
-		LogDebug("Application packet received from client.");
-		if(server.options.IsDumpInPacketsOn())
-		{
-			LogDebug("[Size: {0}] [{1}]", app->size, DumpPacketToString(app).c_str());
-		}
+		LogPacketClientServer(
+			"[{}] [{:#06x}] Size [{}] {}",
+			OpcodeManager::EmuToName(app->GetOpcode()),
+			m_connection->GetOpcodeManager()->EmuToEQ(app->GetOpcode()),
+			app->Size(),
+			(LogSys.IsLogEnabled(Logs::Detail, Logs::PacketClientServer) ? DumpPacketToString(app) : "")
+		);
 
-		switch(app->GetOpcode())
-		{
-			case OP_SessionReady:
-			{
-				LogInfo("Session ready received from client.");
+		switch(app->GetOpcode()) {
+			case OP_SessionReady: {
+				LogInfo("Session ready received from client account {}", GetClientDescription());
 				Handle_SessionReady((const char*)app->pBuffer, app->Size());
 				break;
 			}
-			case OP_LoginOSX:
-			{
+			case OP_LoginOSX: {
 				std::string client;
 				std::string check = DumpPacketToRawString(app->pBuffer, app->Size());
 
-				if (check.find("eqworld-52.989studios.com") != std::string::npos)
-				{
-					LogInfo("Login received from OSX client.");
+				if (check.find("eqworld-52.989studios.com") != std::string::npos) {
+					LogInfo("Login received from OSX client {}", GetClientDescription());
 					client = "OSX";
 				}
-				else
-				{
-					LogInfo("Login received from ticketed PC client.");
+				else {
+					LogInfo("Login received from ticketed PC client {}", GetClientDescription());
 					client = "PCT";
 				}
+
 				Handle_Login((const char*)app->pBuffer, app->Size(), client);
 				break;
 			}
-			case OP_LoginPC:
-			{
-				if(app->Size() < 20)
-				{
+			case OP_LoginPC: {
+				if(app->Size() < 20) {
 					LogError("Login received but it is too small, discarding.");
 					break;
 				}
 
-				LogInfo("Login received from PC client.");
+				LogInfo("Login received from PC client. {}", GetClientDescription());
 				Handle_Login((const char*)app->pBuffer, app->Size(), "PC");
 				break;
 			}
-			case OP_LoginComplete:
-			{
+			case OP_LoginComplete: {
 				LogInfo("Login complete received from client.");
 				Handle_LoginComplete((const char*)app->pBuffer, app->Size());
 				break;
 			}
-			case OP_LoginUnknown1: //Seems to be related to world status in older clients; we use our own logic for that though.
-			{
+			case OP_LoginUnknown1: { //Seems to be related to world status in older clients; we use our own logic for that though.
 				LogInfo("OP_LoginUnknown1 received from client.");
 				auto outapp = new EQApplicationPacket(OP_LoginUnknown2, 0);
-				connection->QueuePacket(outapp);
+				m_connection->QueuePacket(outapp);
 				delete(outapp);
 				break;
 			}
-			case OP_ServerListRequest:
-			{
-				LogInfo("Server list request received from client.");
+			case OP_ServerListRequest: {
+				LogInfo("Server list request received from client {}", GetClientDescription());
+
 				SendServerListPacket();
 				break;
 			}
-			case OP_PlayEverquestRequest:
-			{
-				if(app->Size() < sizeof(PlayEverquestRequest_Struct) && version != cv_old)
-				{
+			case OP_PlayEverquestRequest: {
+				if(app->Size() < sizeof(PlayEverquestRequest_Struct) && m_client_version != cv_old) {
 					LogError("Play received but it is too small, discarding.");
 					break;
 				}
 				Handle_Play((const char*)app->pBuffer);
 				break;
 			}
-			case OP_LoginBanner:
-			{
+			case OP_LoginBanner: {
 				Handle_Banner(app->Size());
 				break;
 			}
-			default:
-			{
-				if (LogSys.log_settings[Logs::PacketClientServerUnhandled].is_category_enabled == 1) {
-					char dump[64];
-					app->build_header_dump(dump);
-					LogError("Recieved unhandled application packet from the client: [{0}]", dump);
-				}
+			default: {
+				char dump[64];
+				app->build_header_dump(dump);
+				LogError("Received unhandled application packet from the client: [{}]", dump);
 			}
 		}
 		delete app;
-		app = connection->PopPacket();
+		app = m_connection->PopPacket();
 	}
 	return true;
 }
 
 void Client::Handle_SessionReady(const char* data, unsigned int size)
 {
-	if(status != cs_not_sent_session_ready)
-	{
+	if(m_client_status != cs_not_sent_session_ready)	{
 		LogError("Session ready received again after already being received.");
 		return;
 	}
 
-	if (version != cv_old)
-	{
-		if (size < sizeof(unsigned int))
-		{
+	if (m_client_version != cv_old) {
+		if (size < sizeof(unsigned int)) {
 			LogError("Session ready was too small.");
 			return;
 		}
 
 		unsigned int mode = *((unsigned int*)data);
-		if (mode == (unsigned int)lm_from_world)
-		{
+		if (mode == (unsigned int)lm_from_world) {
 			LogError("Session ready indicated logged in from world(unsupported feature), disconnecting.");
-			connection->Close();
+			m_connection->Close();
 			return;
 		}
 	}
 
-	status = cs_waiting_for_login;
+	m_client_status = cs_waiting_for_login;
 
-	if(version == cv_old)
-	{
+	if(m_client_version == cv_old) {
 		//Special logic for old streams.
 		char buf[20];
 		strcpy(buf, "12-4-2002 1800");
 		auto outapp = new EQApplicationPacket(OP_SessionReady, strlen(buf) + 1);
 		strcpy((char*)outapp->pBuffer, buf);
-		connection->QueuePacket(outapp);
-		delete outapp;
 		LogInfo("EQMac Stream selected.");
+		m_connection->QueuePacket(outapp);
+		delete outapp;
 	}
 }
 
-void Client::Handle_Login(const char* data, unsigned int size, std::string client)
-{
+void Client::Handle_Login(const char* data, unsigned int size, std::string client) {
 	in_addr in{};
-	in.s_addr = connection->GetRemoteIP();
+	in.s_addr = m_connection->GetRemoteIP();
 
-	if (version != cv_old)
-	{
+	if (m_client_version != cv_old) {
 		//Not old client, gtfo haxxor!
 		LogError( "Unauthorized client from {}, exiting them.", inet_ntoa(in));
 		return;
 	}
-	else if (status != cs_waiting_for_login)
-	{
+	else if (m_client_status != cs_waiting_for_login) {
 		LogError("Login received after already having logged in.");
 		return;
 	}
 
-	else if (client != "PCT" && size < sizeof(LoginServerInfo_Struct))
-	{
+	else if (client != "PCT" && size < sizeof(LoginServerInfo_Struct)) {
 		LogError("Bad Login Struct size {0}.", size);
 		return;
 	}
 
-	else if (client == "PCT" && size < sizeof(LoginServerInfo_Struct) - 21)
-	{
+	else if (client == "PCT" && size < sizeof(LoginServerInfo_Struct) - 21) {
 		LogError("Bad Login Struct size {0}.", size);
 		return;
 	}
@@ -220,27 +197,22 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 	std::transform(allowPC.begin(), allowPC.end(), allowPC.begin(), ::toupper);
 	std::transform(allowPCT.begin(), allowPCT.end(), allowPCT.begin(), ::toupper);
 
-	if (client == "OSX" && allowOSX != "TRUE")
-	{
+	if (client == "OSX" && allowOSX != "TRUE") {
 		allowedClient = 0;
 	}
-	else if (client == "PC" && allowPC != "TRUE")
-	{
+	else if (client == "PC" && allowPC != "TRUE") {
 		allowedClient = 0;
 	}
-	else if (client == "PCT" && allowPCT != "TRUE")
-	{
+	else if (client == "PCT" && allowPCT != "TRUE")	{
 		allowedClient = 0;
 	}
 
-	if (!allowedClient)
-	{
+	if (!allowedClient)	{
 		LogError("Unauthorized client from {} using client < {} > , exiting them.", inet_ntoa(in), client);
 		return;
 	}
 
-	if (client == "OSX")
-	{
+	if (client == "OSX") {
 		string ourdata = data;
 
 		if (size < strlen("eqworld-52.989studios.com") + 1)
@@ -252,10 +224,9 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		username = userpass.substr(0, userpass.find("/"));
 		password = userpass.substr(userpass.find("/") + 1);
 		platform = "OSX";
-		macversion = intel;
+		m_client_mac_version = intel;
 	}
-	else if (client == "PC")
-	{
+	else if (client == "PC") {
 		string e_hash;
 		char* e_buffer = nullptr;
 		string d_pass_hash;
@@ -265,10 +236,9 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		username = lcs->username;
 		password = lcs->password;
 		platform = "PC";
-		macversion = pc;
+		m_client_mac_version = pc;
 	}
-	else if (client == "PCT")
-	{
+	else if (client == "PCT") {
 		string ourdata = data;
 		if (size < strlen("none") + 1)
 			return;
@@ -279,91 +249,80 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		username = userpass.substr(0, userpass.find("/"));
 		password = userpass.substr(userpass.find("/") + 1);
 		platform = "PCT";
-		macversion = pc;
+		m_client_mac_version = pc;
 	}
 	string userandpass = password;
-	status = cs_logged_in;
+	m_client_status = cs_logged_in;
 	unsigned int d_account_id = 0;
 	string d_pass_hash;
 	bool result = false;
 	uchar sha1pass[40];
 	char sha1hash[41];
 
-	if (!server.db->GetLoginDataFromAccountName(username, d_pass_hash, d_account_id))
-	{
+	if (!server.db->GetLoginDataFromAccountName(username, d_pass_hash, d_account_id)) {
 		LogError("Error logging in, user {0} does not exist in the database.", username.c_str());
 		LogError("platform : {} , username : {} does not exist", platform, username);
-		if (server.options.CanAutoCreateAccounts())
-		{
+		if (server.options.CanAutoCreateAccounts())	{
 			LogInfo("platform : {} , username : {} is created", platform, username);
 			server.db->CreateLoginData(username.c_str(), userandpass, d_account_id);
 			
 		}
-		else
-		{
+		else {
 			FatalError("Account does not exist and auto creation is not enabled.");
 			return;
 		}
 		result = false;
 	}
-	else
-	{
+	else {
 		sha1::calc(userandpass.c_str(), (int)userandpass.length(), sha1pass);
 		sha1::toHexString(sha1pass, sha1hash);
-		if (d_pass_hash.compare((char*)sha1hash) == 0)
-		{
+		if (d_pass_hash.compare((char*)sha1hash) == 0) {
 			result = true;
 		}
-		else
-		{
+		else {
 			LogInfo("badpassword");
 			LogError("[{0}]", sha1hash);
 			result = false;
 		}
 	}
-	if (result)
-	{
-		if (!sentsessioninfo)
-		{
+	if (result)	{
+		if (!m_sent_session_info) {
 			LogInfo("username : {} logging on platform : {} is a success", username, platform);
 			server.db->UpdateLSAccountData(d_account_id, string(inet_ntoa(in)));
 			GenerateKey();
-			account_id = d_account_id;
-			account_name = username.c_str();
+			m_account_id = d_account_id;
+			m_account_name = username.c_str();
 
-			if (client == "OSX")
-			{
+			if (client == "OSX") {
 				auto outapp = new EQApplicationPacket(OP_LoginAccepted, sizeof(SessionIdEQMacPPC_Struct));
 				SessionIdEQMacPPC_Struct* s_id = (SessionIdEQMacPPC_Struct*)outapp->pBuffer;
 				// this is submitted to world server as "username"
-				sprintf(s_id->session_id, "LS#%i", account_id);
+				sprintf(s_id->session_id, "LS#%i", m_account_id);
 				strcpy(s_id->unused, "unused");
 				s_id->unknown = 4;
-				connection->QueuePacket(outapp);
+				m_connection->QueuePacket(outapp);
 				delete outapp;
 
 				string buf = server.options.GetNetworkIP();
 				auto outapp2 = new EQApplicationPacket(OP_ServerName, (uint32)buf.length() + 1);
 				strncpy((char*)outapp2->pBuffer, buf.c_str(), buf.length() + 1);
-				connection->QueuePacket(outapp2);
+				m_connection->QueuePacket(outapp2);
 				delete outapp2;
-				sentsessioninfo = true;
+				m_sent_session_info = true;
 			}
-			else
-			{
+			else {
 				auto outapp = new EQApplicationPacket(OP_LoginAccepted, sizeof(SessionId_Struct));
 				SessionId_Struct* s_id = (SessionId_Struct*)outapp->pBuffer;
 				// this is submitted to world server as "username"
-				sprintf(s_id->session_id, "LS#%i", account_id);
+				sprintf(s_id->session_id, "LS#%i", m_account_id);
 				strcpy(s_id->unused, "unused");
 				s_id->unknown = 4;
-				connection->QueuePacket(outapp);
+				m_connection->QueuePacket(outapp);
 				delete outapp;
 			}
 		}
 	}
-	else
-	{
+	else {
 		FatalError("Invalid username or password.");
 	}
 	return;
@@ -374,7 +333,7 @@ void Client::FatalError(const char* message) {
 	if (strlen(message) > 1) {
 		strcpy((char*)outapp->pBuffer, message);
 	}
-	connection->QueuePacket(outapp);
+	m_connection->QueuePacket(outapp);
 	delete outapp;
 	return;
 }
@@ -382,7 +341,7 @@ void Client::FatalError(const char* message) {
 void Client::Handle_LoginComplete(const char* data, unsigned int size) {
 	auto outapp = new EQApplicationPacket(OP_LoginComplete, 20);
 	outapp->pBuffer[0] = 1;
-	connection->QueuePacket(outapp);
+	m_connection->QueuePacket(outapp);
 	delete outapp;
 	return;
 }
@@ -390,36 +349,28 @@ void Client::Handle_LoginComplete(const char* data, unsigned int size) {
 
 void Client::Handle_Play(const char* data)
 {
-	if(status != cs_logged_in)
-	{
+	if(m_client_status != cs_logged_in) {
 		LogError("Client sent a play request when they either were not logged in, discarding.");
 		return;
 	}
 
-	if (data)
-	{
-		server.server_manager->SendOldUserToWorldRequest(data, account_id, connection->GetRemoteIP());
+	if (data) {
+		server.server_manager->SendOldUserToWorldRequest(data, m_account_id, m_connection->GetRemoteIP());
 	}
 }
 
 void Client::SendServerListPacket()
 {
-	EQApplicationPacket* outapp = server.server_manager->CreateOldServerListPacket(this);
+	auto *outapp = server.server_manager->CreateOldServerListPacket(this);
 
-	if (server.options.IsDumpOutPacketsOn())
-	{
-		LogInfo("[Size: {0}] [{1}]", outapp->size, DumpPacketToString(outapp).c_str());
-	}
-
-	connection->QueuePacket(outapp);
+	m_connection->QueuePacket(outapp);
 	delete outapp;
 }
 
 void Client::Handle_Banner(unsigned int size)
 {
 	std::string ticker = "Welcome to EQMacEmu";
-	if (server.db->CheckExtraSettings("ticker"))
-	{
+	if (server.db->CheckExtraSettings("ticker")) {
 		ticker = server.db->LoginSettings("ticker");
 	}
 
@@ -432,27 +383,24 @@ void Client::Handle_Banner(unsigned int size)
 	outapp->pBuffer[2] = 0;
 	outapp->pBuffer[3] = 0;
 	strcpy((char*)&outapp->pBuffer[4], ticker.c_str());
-	connection->QueuePacket(outapp);
+	m_connection->QueuePacket(outapp);
 	delete outapp;
 }
 
 void Client::SendPlayResponse(EQApplicationPacket *outapp)
 {
-	LogDebug("Sending play response to client.");
-	LogDebug("[Size: {0}] [{1}]", outapp->size, DumpPacketToString(outapp).c_str());
+	LogInfo("Sending play response for {}", GetClientDescription());
 
-	connection->QueuePacket(outapp);
-	status = cs_logged_in;
+	m_connection->QueuePacket(outapp);
+	m_client_status = cs_logged_in;
 }
 
 void Client::GenerateKey()
 {
-	key.clear();
+	m_key.clear();
 	int count = 0;
-	while (count < 10)
-	{
-		static const char key_selection[] =
-		{
+	while (count < 10) {
+		static const char key_selection[] =	{
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 			'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
 			'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -460,7 +408,21 @@ void Client::GenerateKey()
 			'6', '7', '8', '9'
 		};
 
-		key.append((const char*)&key_selection[random.Int(0, 35)], 1);
+		m_key.append((const char*)&key_selection[m_random.Int(0, 35)], 1);
 		count++;
 	}
+}
+
+std::string Client::GetClientDescription()
+{
+	in_addr in{};
+	in.s_addr = GetConnection()->GetRemoteIP();
+	std::string client_ip = inet_ntoa(in);
+
+	return fmt::format(
+		"account_name [{}] account_id ({}) ip_address [{}]",
+		GetAccountName(),
+		GetAccountID(),
+		client_ip
+	);
 }

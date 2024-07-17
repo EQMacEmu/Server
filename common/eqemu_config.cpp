@@ -96,6 +96,7 @@ void EQEmuConfig::parse_config() {
 
 	SpellsFile = _root["server"]["files"].get("spells", "spells_us.txt").asString();
 	OpCodesFile = _root["server"]["files"].get("opcodes", "opcodes.conf").asString();
+	ChatOpCodesFile = _root["server"]["files"].get("chat_opcodes", "chat_opcodes.conf").asString();
 
 	MapDir = _root["server"]["directories"].get("maps", "Maps/").asString();
 	QuestDir = _root["server"]["directories"].get("quests", "quests/").asString();
@@ -195,6 +196,9 @@ std::string EQEmuConfig::GetByName(const std::string &var_name) const
 	if (var_name == "OpCodesFile") {
 		return (OpCodesFile);
 	}
+	if (var_name == "ChatOpCodesFile") {
+		return (ChatOpCodesFile);
+	}
 	if (var_name == "MapDir") {
 		return (MapDir);
 	}
@@ -266,6 +270,7 @@ void EQEmuConfig::Dump() const
 	std::cout << "QSDatabasePort = " << QSDatabasePort << std::endl;
 	std::cout << "SpellsFile = " << SpellsFile << std::endl;
 	std::cout << "OpCodesFile = " << OpCodesFile << std::endl;
+	std::cout << "ChatOpcodesFile = " << ChatOpCodesFile << std::endl;
 	std::cout << "MapDir = " << MapDir << std::endl;
 	std::cout << "QuestDir = " << QuestDir << std::endl;
 	std::cout << "LuaModuleDir = " << LuaModuleDir << std::endl;

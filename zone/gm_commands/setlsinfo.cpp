@@ -5,7 +5,7 @@ extern WorldServer worldserver;
 void command_setlsinfo(Client* c, const Seperator* sep) {
 	int arguments = sep->argnum;
 	if (arguments < 2) {
-		c->Message(CC_Default, "Usage: #setlsinfo [Email] [Password]");
+		c->Message(Chat::White, "Usage: #setlsinfo [Email] [Password]");
 		return;
 	}
 
@@ -17,6 +17,6 @@ void command_setlsinfo(Client* c, const Seperator* sep) {
 	strn0cpy(s->userpassword, sep->arg[2], 16);
 	worldserver.SendPacket(pack);
 	safe_delete(pack);
-	c->Message(CC_Default, "Your email and local loginserver password have been set.");
+	c->Message(Chat::White, "Your email and local loginserver password have been set.");
 }
 

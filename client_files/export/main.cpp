@@ -27,9 +27,11 @@
 #include "../../common/rulesys.h"
 #include "../../common/strings.h"
 #include "../../common/content/world_content_service.h"
+#include "../../common/path_manager.h"
 
 EQEmuLogSys LogSys;
 WorldContentService content_service;
+PathManager path;
 
 void ExportSpells(SharedDatabase *db);
 void ExportSkillCaps(SharedDatabase *db);
@@ -39,9 +41,11 @@ int main(int argc, char **argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	Log(Logs::General, Logs::Status, "Client Files Export Utility");
+	path.LoadPaths();
+
+	LogInfo("Client Files Export Utility");
 	if(!EQEmuConfig::LoadConfig()) {
-		Log(Logs::General, Logs::Error, "Unable to load configuration file.");
+		LogError("Unable to load configuration file");
 		return 1;
 	}
 
@@ -57,6 +61,7 @@ int main(int argc, char **argv) {
 	}
 
 	LogSys.SetDatabase(&database)
+		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
@@ -71,7 +76,8 @@ int main(int argc, char **argv) {
 void ExportSpells(SharedDatabase *db) {
 	Log(Logs::General, Logs::Status, "Exporting Spells...");
 
-	FILE *f = fopen("export/spells_us.txt", "w");
+	std::string file = fmt::format("{}/export/spells_us.txt", path.GetServerPath());
+	FILE *f = fopen(file.c_str(), "w");
 	if(!f) {
 		Log(Logs::General, Logs::Error, "Unable to open export/spells_us.txt to write, skipping.");
 		return;
@@ -140,7 +146,8 @@ int GetSkill(SharedDatabase *db, int skill_id, int class_id, int level) {
 void ExportSkillCaps(SharedDatabase *db) {
 	Log(Logs::General, Logs::Status, "Exporting Skill Caps...");
 
-	FILE *f = fopen("export/SkillCaps.txt", "w");
+	std::string file = fmt::format("{}/export/SkillCaps.txt", path.GetServerPath());
+	FILE *f = fopen(file.c_str(), "w");
 	if(!f) {
 		Log(Logs::General, Logs::Error, "Unable to open export/SkillCaps.txt to write, skipping.");
 		return;

@@ -335,7 +335,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 					}
 
 					if (caster != this)
-						Message_StringID(CC_User_SpellFailure, ALREADY_INVIS, caster->GetCleanName());
+						Message_StringID(Chat::SpellFailure, ALREADY_INVIS, caster->GetCleanName());
 					return 0;
 				}
 			}
@@ -356,7 +356,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 			{
 				if (spellbonuses.Screech + new_spelldata->base[effect_slot] >= 0)
 				{
-					Message_StringID(CC_User_SpellFailure, SCREECH_BUFF_BLOCK, new_spelldata->name);
+					Message_StringID(Chat::SpellFailure, SCREECH_BUFF_BLOCK, new_spelldata->name);
 					return 0;
 				}
 			}
@@ -840,8 +840,8 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 				cd->sequence = action->sequence;
 				cd->damage = 0;
 
-				Log(Logs::Moderate, Logs::Spells, "AssignBuffSlot: SpellMessage target: %i, source: %i, type: %i, spellid: %i, sequence: %f, damage: %i BardSong: %i", cd->target, cd->source, cd->type, cd->spellid, cd->sequence, cd->damage, IsBardSong(spell_id));
-				Log(Logs::Moderate, Logs::Spells, "Sending Message packet for spell %d", spell_id);
+				Log(Logs::Detail, Logs::Spells, "AssignBuffSlot: SpellMessage target: %i, source: %i, type: %i, spellid: %i, sequence: %f, damage: %i BardSong: %i", cd->target, cd->source, cd->type, cd->spellid, cd->sequence, cd->damage, IsBardSong(spell_id));
+				Log(Logs::Detail, Logs::Spells, "Sending Message packet for spell %d", spell_id);
 
 				// send to target unfiltered.
 				if (IsClient())

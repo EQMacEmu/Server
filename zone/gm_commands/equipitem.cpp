@@ -32,7 +32,7 @@ void command_equipitem(Client *c, const Seperator *sep){
 
 			if (partialmove) { // remove this con check if someone can figure out removing charges from cursor stack issue below
 				// mi->number_in_stack is always from_inst->GetCharges() when partialmove is false
-				c->Message(CC_Red, "Error: Partial stack added to existing stack exceeds allowable stacksize");
+				c->Message(Chat::Red, "Error: Partial stack added to existing stack exceeds allowable stacksize");
 				safe_delete(outapp);
 				return;
 			}
@@ -41,18 +41,18 @@ void command_equipitem(Client *c, const Seperator *sep){
 				return;
 			}
 			else {
-				c->Message(CC_Red, "Error: Unable to equip current item");
+				c->Message(Chat::Red, "Error: Unable to equip current item");
 			}
 			safe_delete(outapp);
 
 			// also send out a wear change packet?
 		}
 		else if (from_inst == nullptr)
-			c->Message(CC_Red, "Error: There is no item on your cursor");
+			c->Message(Chat::Red, "Error: There is no item on your cursor");
 		else
-			c->Message(CC_Red, "Error: Item on your cursor cannot be equipped");
+			c->Message(Chat::Red, "Error: Item on your cursor cannot be equipped");
 	}
 	else
-		c->Message(CC_Default, "Usage: #equipitem slotid[0-21] - equips the item on your cursor to the position");
+		c->Message(Chat::White, "Usage: #equipitem slotid[0-21] - equips the item on your cursor to the position");
 }
 

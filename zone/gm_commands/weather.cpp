@@ -6,7 +6,7 @@ void command_weather(Client *c, const Seperator *sep)
 {
 	if (!(sep->arg[1][0] == '0' || sep->arg[1][0] == '1' || sep->arg[1][0] == '2')) 
 	{
-		c->Message(CC_Default, "Usage: #weather <0/1/2> - Off/Rain/Snow <0/1> - Serverwide <minutes> - Duration");
+		c->Message(Chat::White, "Usage: #weather <0/1/2> - Off/Rain/Snow <0/1> - Serverwide <minutes> - Duration");
 		return;
 	}
 
@@ -21,7 +21,7 @@ void command_weather(Client *c, const Seperator *sep)
 	//Turn off weather
 	if(weather_type == 0)
 	{
-		c->Message(CC_Yellow, "Turning off weather.");
+		c->Message(Chat::Yellow, "Turning off weather.");
 		zone->zone_weather = 0;
 		zone->weather_intensity = 0;
 
@@ -51,9 +51,9 @@ void command_weather(Client *c, const Seperator *sep)
 		if (weather_type == 2)
 		{
 			if(timer > 0)
-				c->Message(CC_Yellow, "Changing weather to snow for %d seconds.", timer);
+				c->Message(Chat::Yellow, "Changing weather to snow for %d seconds.", timer);
 			else
-				c->Message(CC_Yellow, "Changing weather to snow until the next cycle.");
+				c->Message(Chat::Yellow, "Changing weather to snow until the next cycle.");
 			zone->zone_weather = 2;
 			zone->weather_intensity = intensity;
 
@@ -79,9 +79,9 @@ void command_weather(Client *c, const Seperator *sep)
 		else if (weather_type == 1)
 		{
 			if(timer > 0)
-				c->Message(CC_Yellow, "Changing weather to rain for %d seconds.", timer);
+				c->Message(Chat::Yellow, "Changing weather to rain for %d seconds.", timer);
 			else
-				c->Message(CC_Yellow, "Changing weather to rain until the next cycle.");
+				c->Message(Chat::Yellow, "Changing weather to rain until the next cycle.");
 			zone->zone_weather = 1;
 			zone->weather_intensity = intensity;
 
@@ -107,7 +107,7 @@ void command_weather(Client *c, const Seperator *sep)
 	{
 		if(weather_type != 0)
 		{
-			c->Message(CC_Yellow, "You cannot change from one type of weather to another without first stopping it.");
+			c->Message(Chat::Yellow, "You cannot change from one type of weather to another without first stopping it.");
 			return;
 		}
 	}

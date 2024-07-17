@@ -1276,7 +1276,7 @@ void NPC::QueryLoot(Client* to)
 {
 	if (!m_loot_items.empty()) {
 		to->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Loot | Name: {} ID: {} Loottable ID: {}",
 				GetName(),
@@ -1304,7 +1304,7 @@ void NPC::QueryLoot(Client* to)
 			linker.SetLootData(current_item);
 
 			to->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Item {} | Name: {} ({}){}",
 					item_number,
@@ -1325,7 +1325,7 @@ void NPC::QueryLoot(Client* to)
 	}
 	else
 	{
-		to->Message(CC_Default, "NPC::QueryLoot() - Does not have any item loot");
+		to->Message(Chat::White, "NPC::QueryLoot() - Does not have any item loot");
 	}
 
 	bool has_money = (
@@ -1336,7 +1336,7 @@ void NPC::QueryLoot(Client* to)
 		);
 	if (has_money) {
 		to->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Money | {}",
 				Strings::Money(

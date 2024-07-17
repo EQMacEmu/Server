@@ -27,6 +27,9 @@ public:
 	void TransactionRollback();
 	uint32	DoEscapeString(char* tobuf, const char* frombuf, uint32 fromlen);
 	void	ping();
+
+	bool DoesTableExist(const std::string &table_name);
+
 	MYSQL*	getMySQL(){ return &mysql; }
 
 protected:

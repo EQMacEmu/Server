@@ -97,7 +97,7 @@ bool LoginServer::Process() {
 	ServerPacket *pack = 0;
 	while((pack = tcpc->PopPacket()))
 	{
-		Log(Logs::Detail, Logs::WorldServer,"Recevied ServerPacket from LS OpCode 0x%04x",pack->opcode);
+		LogNetcode("Received ServerPacket from LS OpCode {:#04x}", pack->opcode);
 
 		switch(pack->opcode) {
 			case 0:
@@ -214,10 +214,10 @@ bool LoginServer::Process() {
 bool LoginServer::InitLoginServer() {
 	if(Connected() == false) {
 		if(ConnectReady()) {
-			Log(Logs::Detail, Logs::WorldServer, "Connecting to login server: %s:%d",LoginServerAddress,LoginServerPort);
+			LogInfo("Connecting to login server: [{0}:{1}]",LoginServerAddress,LoginServerPort);
 			Connect();
 		} else {
-			Log(Logs::Detail, Logs::WorldServer, "Not connected but not ready to connect, this is bad: %s:%d",
+			LogInfo("Not connected but not ready to connect, this is bad: [{0}:{1}]",
 			LoginServerAddress, LoginServerPort);
 			database.LSDisconnect();
 		}
@@ -229,19 +229,19 @@ bool LoginServer::Connect() {
 
 	char errbuf[TCPConnection_ErrorBufferSize];
 	if ((LoginServerIP = ResolveIP(LoginServerAddress, errbuf)) == 0) {
-		Log(Logs::Detail, Logs::WorldServer, "Unable to resolve '%s' to an IP.",LoginServerAddress);
+		LogInfo("Unable to resolve [{}] to an IP", LoginServerAddress);
 		database.LSDisconnect();
 		return false;
 	}
 
 	if (LoginServerIP == 0 || LoginServerPort == 0) {
-		Log(Logs::Detail, Logs::WorldServer, "Connect info incomplete, cannot connect: %s:%d",LoginServerAddress,LoginServerPort);
+		LogInfo("Connect info incomplete, cannot connect: [{0}:{1}]",LoginServerAddress,LoginServerPort);
 		database.LSDisconnect();
 		return false;
 	}
 
 	if (tcpc->ConnectIP(LoginServerIP, LoginServerPort, errbuf)) {
-		Log(Logs::Detail, Logs::WorldServer, "Connected to Loginserver: %s:%d",LoginServerAddress,LoginServerPort);
+		LogInfo("Connected to Loginserver: [{0}:{1}]",LoginServerAddress,LoginServerPort);
 		database.LSConnected(LoginServerPort);
 		SendNewInfo();
 		SendStatus();
@@ -249,7 +249,7 @@ bool LoginServer::Connect() {
 		return true;
 	}
 	else {
-		Log(Logs::Detail, Logs::WorldServer, "Could not connect to login server: %s:%d %s",LoginServerAddress,LoginServerPort,errbuf);
+		LogInfo("Could not connect to login server: [{0}]:[{1}] {2}",LoginServerAddress,LoginServerPort,errbuf);
 		database.LSDisconnect();
 		return false;
 	}

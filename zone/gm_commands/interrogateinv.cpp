@@ -16,14 +16,14 @@ void command_interrogateinv(Client *c, const Seperator *sep)
 
 	if (strcasecmp(sep->arg[1], "help") == 0) {
 		if (c->Admin() < commandInterrogateInv) {
-			c->Message(CC_Default, "Usage: #interrogateinv");
-			c->Message(CC_Default, "  Displays your inventory's current in-memory nested storage references");
+			c->Message(Chat::White, "Usage: #interrogateinv");
+			c->Message(Chat::White, "  Displays your inventory's current in-memory nested storage references");
 		}
 		else {
-			c->Message(CC_Default, "Usage: #interrogateinv [log] [silent]");
-			c->Message(CC_Default, "  Displays your or your Player target inventory's current in-memory nested storage references");
-			c->Message(CC_Default, "  [log] - Logs interrogation to file");
-			c->Message(CC_Default, "  [silent] - Omits the in-game message portion of the interrogation");
+			c->Message(Chat::White, "Usage: #interrogateinv [log] [silent]");
+			c->Message(Chat::White, "  Displays your or your Player target inventory's current in-memory nested storage references");
+			c->Message(Chat::White, "  [log] - Logs interrogation to file");
+			c->Message(Chat::White, "  [silent] - Omits the in-game message portion of the interrogation");
 		}
 		return;
 	}
@@ -37,8 +37,8 @@ void command_interrogateinv(Client *c, const Seperator *sep)
 
 	if (c->Admin() < commandInterrogateInv) {
 		if (c->GetInterrogateInvState()) {
-			c->Message(CC_Red, "The last use of #interrogateinv on this inventory instance discovered an error...");
-			c->Message(CC_Red, "Logging out, zoning or re-arranging items at this point will result in item loss!");
+			c->Message(Chat::Red, "The last use of #interrogateinv on this inventory instance discovered an error...");
+			c->Message(Chat::Red, "Logging out, zoning or re-arranging items at this point will result in item loss!");
 			return;
 		}
 		target = c;
@@ -65,6 +65,6 @@ void command_interrogateinv(Client *c, const Seperator *sep)
 	bool success = target->InterrogateInventory(c, log, silent, allowtrip, error);
 
 	if (!success)
-		c->Message(CC_Red, "An unknown error occurred while processing Client::InterrogateInventory()");
+		c->Message(Chat::Red, "An unknown error occurred while processing Client::InterrogateInventory()");
 }
 

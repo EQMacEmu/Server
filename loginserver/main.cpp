@@ -24,6 +24,7 @@
 #include "../common/crash.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/event/timer.h"
+#include "../common/path_manager.h"
 
 #include "eq_crypto.h"
 #include "login_server.h"
@@ -37,9 +38,22 @@ LoginServer server;
 EQEmuLogSys LogSys;
 EQCrypto eq_crypto;
 bool run_server = true;
+PathManager path;
 
 void CatchSignal(int sig_num)
 {
+}
+
+void LoadDatabaseConnection()
+{
+	LogInfo("MySQL Database Init.");
+	server.db = (Database *)new Database(
+		server.config.GetVariableString("database", "user", "user"),
+		server.config.GetVariableString("database", "password", "password"),
+		server.config.GetVariableString("database", "host", "127.0.0.1"),
+		server.config.GetVariableString("database", "port", "3306"),
+		server.config.GetVariableString("database", "db", "eqemu")
+	);
 }
 
 int main()
@@ -51,17 +65,15 @@ int main()
 
 	LogSys.log_settings[Logs::Error].log_to_console = Logs::General;
 
+	path.LoadPaths();
 
-	server.config = EQ::JsonConfigFile::Load("login.json");
+	server.config = EQ::JsonConfigFile::Load(
+		fmt::format("{}/login.json", path.GetServerPath())
+	);
 	LogInfo("Config System Init.");
 
 	server.options.AutoCreateAccounts(server.config.GetVariableBool("account", "auto_create_accounts", true));
 	server.options.RejectDuplicateServers(server.config.GetVariableBool("worldservers", "reject_duplicate_servers", false));
-
-	server.options.Trace(server.config.GetVariableBool("logging", "trace", false));
-	server.options.WorldTrace(server.config.GetVariableBool("logging", "world_trace", false));
-	server.options.DumpInPackets(server.config.GetVariableBool("logging", "dump_packets_in", false));
-	server.options.DumpOutPackets(server.config.GetVariableBool("logging", "dump_packets_out", false));
 
 	server.options.AllowUnregistered(server.config.GetVariableBool("security", "unregistered_allowed", true));
 	server.options.AllowTokenLogin(server.config.GetVariableBool("security", "allow_token_login", false));
@@ -79,14 +91,13 @@ int main()
 
 	/* Create database connection */
 	if (server.config.GetVariableString("database", "subsystem", "MySQL").compare("MySQL") == 0) {
-		LogInfo("MySQL Database Init.");
-		server.db = (Database*)new Database(
-			server.config.GetVariableString("database", "user", "user"),
-			server.config.GetVariableString("database", "password", "password"),
-			server.config.GetVariableString("database", "host", "127.0.0.1"),
-			server.config.GetVariableString("database", "port", "3306"),
-			server.config.GetVariableString("database", "db", "eqemu"));
+		LoadDatabaseConnection();
 	}
+
+	LogSys.SetDatabase(server.db)
+		->SetLogPath("logs")
+		->LoadLogDatabaseSettings()
+		->StartFileLogs();
 
 	/* Make sure our database got created okay, otherwise cleanup and exit. */
 	if (!server.db) {

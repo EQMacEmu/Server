@@ -32,17 +32,6 @@
 #include <deque>
 #include <list>
 
-#define LEAVECOMBAT 0
-#define ENTERCOMBAT 1
-#define	ONDEATH		2
-#define	AFTERDEATH	3
-#define HAILED		4
-#define	KILLEDPC	5
-#define	KILLEDNPC	6
-#define	ONSPAWN		7
-#define	ONDESPAWN	8
-#define KILLED		9
-
 typedef struct {
 	float min_x;
 	float max_x;
@@ -328,6 +317,8 @@ public:
 	float	GetWallAngle2(float x, float y) { return wall_normal2_x * x + wall_normal2_y * y; };
 	bool	IsWalled() { if (wall_normal1_x || wall_normal1_y || wall_normal2_x || wall_normal2_y) return true; else return false; };
 	void	SetBaseHP(uint32 new_hp) { base_hp = new_hp; CalcMaxHP(); }
+	void	SetMaxDamage(uint32 new_max_damage) { max_dmg = new_max_damage; }
+	void	SetMinDamage(uint32 new_min_damage) { min_dmg = new_min_damage; }
 
 	//waypoint crap
 	int					GetMaxWp() const { return max_wp; }
@@ -410,8 +401,8 @@ public:
 	void RemoveSpellFromNPCList(int16 spell_id);
 	Timer *GetRefaceTimer() const { return reface_timer; }
 
-	NPC_Emote_Struct* GetNPCEmote(uint16 emoteid, uint8 event_);
-	void DoNPCEmote(uint8 event_, uint16 emoteid, Mob* target = nullptr);
+	NPC_Emote_Struct* GetNPCEmote(uint32 emoteid, uint8 event_);
+	void DoNPCEmote(uint8 event_, uint32 emoteid, Mob* target = nullptr);
 	void DoFactionEmote();
 	bool CanTalk();
 	void DoQuestPause(Mob *other);

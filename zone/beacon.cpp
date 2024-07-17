@@ -85,14 +85,14 @@ Beacon::Beacon(Mob *at_mob, int lifetime)
 		remove_timer.Start();
 	}
 #ifdef SOLAR
-	entity_list.Message(CC_Default, 0, "Beacon being created at %0.2f %0.2f %0.2f heading %0.2f lifetime %d", GetX(), GetY(), GetZ(), GetHeading(), lifetime);
+	entity_list.Message(Chat::White, 0, "Beacon being created at %0.2f %0.2f %0.2f heading %0.2f lifetime %d", GetX(), GetY(), GetZ(), GetHeading(), lifetime);
 #endif
 }
 
 Beacon::~Beacon()
 {
 #ifdef SOLAR
-	entity_list.Message(CC_Default, 0, "Beacon %d being removed at %0.2f %0.2f %0.2f heading %0.2f", GetID(), GetX(), GetY(), GetZ(), GetHeading());
+	entity_list.Message(Chat::White, 0, "Beacon %d being removed at %0.2f %0.2f %0.2f heading %0.2f", GetID(), GetX(), GetY(), GetZ(), GetHeading());
 #endif
 }
 
@@ -265,7 +265,7 @@ bool Beacon::Process()
 
 								if (!fail_cast && RuleB(AlKabor, BlockProjectileCorners) && target->CastToNPC()->IsCornered())
 								{
-									Log(Logs::Moderate, Logs::Combat, "Poofing bolt; %s is cornered", target->GetName());
+									Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is cornered", target->GetName());
 									fail_cast = true;
 								}
 
@@ -284,14 +284,14 @@ bool Beacon::Process()
 									// allow the bolt if fired parallel to the wall; deny if fired perpendicular
 									if (xy_angle > 0.4f)
 									{
-										Log(Logs::Moderate, Logs::Combat, "Poofing bolt; %s is against a wall(1)  xy_angle: %0.4f", target->GetName(), xy_angle);
+										Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is against a wall(1)  xy_angle: %0.4f", target->GetName(), xy_angle);
 										fail_cast = true;
 									}
 
 									xy_angle = fabs(-target->CastToNPC()->GetWallAngle2(vector_x, vector_y));
 									if (xy_angle > 0.4f)
 									{
-										Log(Logs::Moderate, Logs::Combat, "Poofing bolt; %s is against a wall(2)  xy_angle: %0.4f", target->GetName(), xy_angle);
+										Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is against a wall(2)  xy_angle: %0.4f", target->GetName(), xy_angle);
 										fail_cast = true;
 									}
 								}
@@ -312,7 +312,7 @@ bool Beacon::Process()
 							if (Assassinate_Dmg)
 							{
 								weapon_dmg = Assassinate_Dmg;
-								entity_list.MessageClose_StringID(caster, false, 200, MT_CritMelee, ASSASSINATES, caster->GetName());
+								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, ASSASSINATES, caster->GetName());
 							}
 							else
 							{
@@ -327,7 +327,7 @@ bool Beacon::Process()
 								&& zone->random.Roll(static_cast<double>(caster->GetDEX()) / 3500.0)
 							)
 							{
-								entity_list.MessageClose_StringID(caster, false, 200, MT_CritMelee, FATAL_BOW_SHOT, caster->GetName());
+								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, FATAL_BOW_SHOT, caster->GetName());
 								weapon_dmg = 32000;
 							}
 							else
@@ -355,7 +355,7 @@ bool Beacon::Process()
 									if (dobonus)
 									{
 										weapon_dmg *= 2;
-										caster->Message_StringID(MT_CritMelee, BOW_DOUBLE_DAMAGE);
+										caster->Message_StringID(Chat::MeleeCrit, BOW_DOUBLE_DAMAGE);
 									}
 								}
 
@@ -531,7 +531,7 @@ bool Beacon::CheckProjectileCollision(glm::vec3 oloc) {
 }
 
 bool EntityList::CheckMobCloseForCollision(Mob *attacker, Mob *exclude, float x, float y, float dist, uint8 beaconType) {
-	if (!attacker || (attacker->GetUltimateOwner()->IsNPC() && zone->GetZoneID() != mischiefplane))
+	if (!attacker || (attacker->GetUltimateOwner()->IsNPC() && zone->GetZoneID() != Zones::MISCHIEFPLANE))
 		return false;
 
 	const float xmax = x + dist;

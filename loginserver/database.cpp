@@ -47,15 +47,15 @@ Database::Database(string user, string pass, string host, string port, string na
 		exit(1);
 	}
 	else {
-		Log(Logs::General, Logs::Status, "Using database '%s' at %s:%d", database, host, port);
+		Log(Logs::General, Logs::Status, "Using database '%s' at %s:%d", m_database, host, port);
 	}
 }
 
 Database::~Database()
 {
-	if(database)
+	if(m_database)
 	{
-		mysql_close(database);
+		mysql_close(m_database);
 	}
 }
 

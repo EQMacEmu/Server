@@ -80,25 +80,6 @@ static char *buffer=nullptr;
 static int buffsize=0;
 static char *temp=nullptr;
 	if (!buffsize || buffsize<(length+1)) {
-		/*
-		C6308	Realloc leak	'realloc' might return null pointer:
-		assigning null pointer to 'char * `bool __cdecl
-		ItemParse(char const *,int,class std::map<int,class std::map<int,
-		class std::basic_string<char,struct std::char_traits<char>,
-		class std::allocator<char> >,struct std::less<int>,
-		class std::allocator<struct std::pair<int const ,
-		class std::basic_string<char,struct std::char_traits<char>,
-		class std::allocator<char> > > > >,struct std::less<int>,
-		class std::allocator<struct std::pair<int const ,
-		class std::map<int,class std::basic_string<char,struct std::char_traits<char>,
-		class std::allocator<char> >,struct std::less<int>,
-		class std::allocator<struct std::pair<int const ,
-		class std::basic_string<char,struct std::char_traits<char>,
-		class std::allocator<char> > > > > > > > &,int,int,int,int)'::`2'::buffer', 
-		which is passed as an argument to 'realloc', will cause the original memory block to be leaked.	
-		common	misc.cpp	90
-		similar message for 91
-		*/
 		buffer=(char *)realloc(buffer,length+1);
 		temp=(char *)realloc(temp,length+1);
 		buffsize=length+1;
@@ -383,7 +364,7 @@ void print_hex(const char *data, unsigned long length) {
 	uint32 offset;
 	for(offset=0;offset<length;offset+=16) {
 		build_hex_line((const char *)data,length,offset,buffer,5);
-		Log(Logs::General, Logs::Netcode, "%s\n", buffer);	//%s is to prevent % escapes in the ascii
+		printf("%s\n", buffer);	//%s is to prevent % escapes in the ascii
 	}
 }
 

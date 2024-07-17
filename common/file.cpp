@@ -36,34 +36,47 @@
 #endif
 
 #include <fmt/format.h>
-#include <iostream>
-#include <sys/stat.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
+
+/**
+ * @param name
+ * @return
+ */
 bool File::Exists(const std::string &name)
 {
-	struct stat sb {};
-	if (stat(name.c_str(), &sb) == 0) {
-		return true;
-	}
-
-	return false;
+	return fs::exists(fs::path{ name });
 }
 
 /**
  * @param directory_name
  */
-void File::Makedir(const std::string& directory_name)
+void File::Makedir(const std::string &directory_name)
 {
-	bool dir_exists = Exists(directory_name);
-#ifdef _WINDOWS
-	if (dir_exists) {
-		return;
+	fs::create_directory(directory_name);
+	fs::permissions(directory_name, fs::perms::owner_all);
+}
+
+std::string File::FindEqemuConfigPath()
+{
+	if (File::Exists(fs::path{ File::GetCwd() + "/eqemu_config.json" }.string())) {
+		return File::GetCwd();
 	}
-	_mkdir(directory_name.c_str());
-#else
-	if (dir_exists) {
-		return;
+	else if (File::Exists(fs::path{ File::GetCwd() + "/../eqemu_config.json" }.string())) {
+		return canonical(fs::path{ File::GetCwd() + "/../" }).string();
 	}
-	::mkdir(directory_name.c_str(), 0755);
-#endif
+	else if (File::Exists(fs::path{ File::GetCwd() + "/login.json" }.string())) {
+		return File::GetCwd();
+	}
+	else if (File::Exists(fs::path{ File::GetCwd() + "/../login.json" }.string())) {
+		return canonical(fs::path{ File::GetCwd() + "/../" }).string();
+	}
+
+	return {};
+}
+
+std::string File::GetCwd()
+{
+	return fs::current_path().string();
 }

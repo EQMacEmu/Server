@@ -5,9 +5,9 @@ void command_fixmob(Client *c, const Seperator *sep){
 	const char* Usage = "Usage: #fixmob [race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev]";
 
 	if (!sep->arg[1])
-		c->Message(CC_Default, Usage);
+		c->Message(Chat::White, Usage);
 	else if (!target)
-		c->Message(CC_Default, "Error: this command requires a target");
+		c->Message(Chat::White, "Error: this command requires a target");
 	else
 	{
 
@@ -168,14 +168,14 @@ void command_fixmob(Client *c, const Seperator *sep){
 
 		if (ChangeType == nullptr)
 		{
-			c->Message(CC_Default, Usage);
+			c->Message(Chat::White, Usage);
 		}
 		else
 		{
 			target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 				EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF);
 
-			c->Message(CC_Default, "%s=%i", ChangeType, ChangeSetting);
+			c->Message(Chat::White, "%s=%i", ChangeType, ChangeSetting);
 		}
 	}
 }

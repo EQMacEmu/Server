@@ -13,9 +13,9 @@ void command_godmode(Client *c, const Seperator *sep){
 		database.SetGMFlymode(account, state);
 		c->SetHideMe(state);
 		database.SetGMIgnoreTells(account, state ? 1 : 0);
-		c->Message(CC_Default, "Turning GodMode %s for %s (zone for gmspeed to take effect)", state ? "On" : "Off", c->GetName());
+		c->Message(Chat::White, "Turning GodMode %s for %s (zone for gmspeed to take effect)", state ? "On" : "Off", c->GetName());
 	}
 	else
-		c->Message(CC_Default, "Usage: #godmode [on/off]");
+		c->Message(Chat::White, "Usage: #godmode [on/off]");
 }
 

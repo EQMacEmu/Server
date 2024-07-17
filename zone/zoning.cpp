@@ -85,7 +85,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 					//unable to find a zone point... is there anything else
 					//that can be a valid un-zolicited zone request?
 
-					Message(CC_Red, "Invalid unsolicited zone request.");
+					Message(Chat::Red, "Invalid unsolicited zone request.");
 					LogError("Zoning %s: Invalid unsolicited zone request to zone id '%d'.", GetName(), target_zone_id);
 					if (target_zone_id == GetBindZoneID()) {
 						// possible gate to bind hack
@@ -137,7 +137,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	const char *target_zone_name = database.GetZoneName(target_zone_id);
 	if(target_zone_name == nullptr) {
 		//invalid zone...
-		Message(CC_Red, "Invalid target zone ID.");
+		Message(Chat::Red, "Invalid target zone ID.");
 		Log(Logs::General, Logs::Error, "Zoning %s: Unable to get zone name for zone id '%d'.", GetName(), target_zone_id);
 		SendZoneCancel(zc);
 		return;
@@ -150,13 +150,13 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	char flag_needed[128];
 	if(!database.GetSafePoints(target_zone_name, &safe_x, &safe_y, &safe_z, &safe_heading, &minstatus, &minlevel, flag_needed, &expansion)) {
 		//invalid zone...
-		Message(CC_Red, "Invalid target zone while getting safe points.");
+		Message(Chat::Red, "Invalid target zone while getting safe points.");
 		Log(Logs::General, Logs::Error, "Zoning %s: Unable to get safe coordinates for zone '%s'.", GetName(), target_zone_name);
 		SendZoneCancel(zc);
 		return;
 	}
 
-	if (target_zone_id == airplane)
+	if (target_zone_id == Zones::AIRPLANE)
 		BuffFadeAll(true);
 
 	std::string export_string = fmt::format(
@@ -221,10 +221,10 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			//999999 is a placeholder for 'same as where they were from'
 			//The client compile shows 1044 difference when zoning freport <-> nro.  this fixes server side when using 999999.
 			if (zone_point->target_x == 999999) {  
-				if (zone->GetZoneID() == freporte && zone_point->target_zone_id == nro) {
+				if (zone->GetZoneID() == Zones::FREPORTE && zone_point->target_zone_id == Zones::NRO) {
 					dest_x = GetX() + 1044;
 				}
-				else if (zone->GetZoneID() == nro && zone_point->target_zone_id == freporte) {
+				else if (zone->GetZoneID() == Zones::NRO && zone_point->target_zone_id == Zones::FREPORTE) {
 					dest_x = GetX() - 1044;
 				}
 				else {
@@ -279,12 +279,12 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	if(!ignorerestrictions && flag_needed[0] != '\0') {
 		//the flag needed string is not empty, meaning a flag is required.
 		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) {
-			Message(CC_Red, "You do not have the flag to enter %s.", target_zone_name);
+			Message(Chat::Red, "You do not have the flag to enter %s.", target_zone_name);
 			zoning_message = ZoningMessage::ZoneNoExperience;
 		}
 	}
 
-	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && (target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge)) {
+	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && (target_zone_id != Zones::BAZAAR && target_zone_id != Zones::NEXUS && target_zone_id != Zones::POKNOWLEDGE)) {
 		zoning_message = ZoningMessage::ZoneNoExperience;
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
 	}
@@ -486,7 +486,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 			break;
 		case GMSummon:
 			if (!GetGM())
-				Message(CC_Yellow, "You have been summoned by a GM!");
+				Message(Chat::Yellow, "You have been summoned by a GM!");
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case ZoneToBindPoint:
@@ -497,11 +497,11 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 			break;
 		case SummonPC:
 			if(!GetGM())
-				Message_StringID(CC_Yellow, BEEN_SUMMONED);
+				Message_StringID(Chat::Yellow, BEEN_SUMMONED);
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case Rewind:
-			Message(CC_Yellow, "Rewinding to previous location.");
+			Message(Chat::Yellow, "Rewinding to previous location.");
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		default:
@@ -523,7 +523,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 	SetPortExemption(true);
 
 	if(!pZoneName) {
-		Message(CC_Red, "Invalid zone number specified");
+		Message(Chat::Red, "Invalid zone number specified");
 		safe_delete_array(pZoneName);
 		return;
 	}
@@ -674,11 +674,11 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 			auto outapp = new EQApplicationPacket(OP_RequestClientZoneChange, sizeof(RequestClientZoneChange_Struct));
 			RequestClientZoneChange_Struct* gmg = (RequestClientZoneChange_Struct*) outapp->pBuffer;
 
-			if (this->GetZoneID() == qeynos) {
-				gmg->zone_id = qeynos2;
+			if (this->GetZoneID() == Zones::QEYNOS) {
+				gmg->zone_id = Zones::QEYNOS2;
 			}
 			else {
-				gmg->zone_id = qeynos;
+				gmg->zone_id = Zones::QEYNOS;
 			}
 
 			gmg->x = x;
@@ -755,7 +755,7 @@ void Client::Gate()
 }
 
 void NPC::Gate() {
-	entity_list.FilteredMessageClose_StringID(this, true, RuleI(Range,SpellMessages), CC_User_SpellCrit, FilterSpellCrits, GATES, GetCleanName());
+	entity_list.FilteredMessageClose_StringID(this, true, RuleI(Range,SpellMessages), Chat::SpellCrit, FilterSpellCrits, GATES, GetCleanName());
 	
 	if (GetHPRatio() < 25.0f)
 	{
@@ -898,11 +898,11 @@ bool Client::HasZoneFlag(uint32 zone_id) {
 
 void Client::SendZoneFlagInfo(Client *to) {
 	if(ZoneFlags.Count() == 0) {
-		to->Message(CC_Default, "%s has no zone flags.", GetName());
+		to->Message(Chat::White, "%s has no zone flags.", GetName());
 		return;
 	}
 
-	to->Message(CC_Default, "Flags for %s:", GetName());
+	to->Message(Chat::White, "Flags for %s:", GetName());
 	char empty[1] = { '\0' };
 	LinkedListIterator<ZoneFlags_Struct*> iterator(ZoneFlags);
 	iterator.Reset();
@@ -926,7 +926,7 @@ void Client::SendZoneFlagInfo(Client *to) {
 			strcpy(flag_name, "(ERROR GETTING NAME)");
 		}
 
-		to->Message(CC_Default, "Has Flag %s for zone %s (%d,%s)", flag_name, long_name, zoneid, short_name);
+		to->Message(Chat::White, "Has Flag %s for zone %s (%d,%s)", flag_name, long_name, zoneid, short_name);
 		if(long_name != empty)
 			delete[] long_name;
 
@@ -977,15 +977,15 @@ bool Client::CanBeInZone(uint32 zoneid)
 	bool has_expansion = expansion && m_pp.expansions;
 	if(Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the required expansion (%d ~ %s)!", m_pp.expansions, expansion);
-		Message_StringID(CC_Red, NO_EXPAN);
+		Message_StringID(Chat::Red, NO_EXPAN);
 		return(false);
 	}
 
 	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && 
-		(target_zone_id != bazaar && target_zone_id != nexus && target_zone_id != poknowledge))
+		(target_zone_id != Zones::BAZAAR && target_zone_id != Zones::NEXUS && target_zone_id != Zones::POKNOWLEDGE))
 	{
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
-		Message(CC_Red, "Trader accounts may not leave Bazaar, Plane of Knowledge, or Nexus!");
+		Message(Chat::Red, "Trader accounts may not leave Bazaar, Plane of Knowledge, or Nexus!");
 		return(false);
 	}
 

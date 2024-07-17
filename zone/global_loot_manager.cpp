@@ -24,7 +24,7 @@ void GlobalLootManager::ShowZoneGlobalLoot(Client *to) const
 
 	for (auto &e : m_entries) {
 		to->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Table {} | Name: {}",
 				table_number,
@@ -33,7 +33,7 @@ void GlobalLootManager::ShowZoneGlobalLoot(Client *to) const
 		);
 
 		to->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Table {} | Global Table ID: {} Loot Table ID: {}",
 				table_number,
@@ -53,7 +53,7 @@ void GlobalLootManager::ShowNPCGlobalLoot(Client *to, NPC *who) const
 	for (auto &e : m_entries) {
 		if (e.PassesRules(who)) {
 			to->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Table {} | Name: {}",
 					table_number,
@@ -62,7 +62,7 @@ void GlobalLootManager::ShowNPCGlobalLoot(Client *to, NPC *who) const
 			);
 
 			to->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Table {} | Global Table ID: {} Loot Table ID: {}",
 					table_number,

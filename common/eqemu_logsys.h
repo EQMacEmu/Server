@@ -38,8 +38,7 @@
 namespace Logs{
 	enum DebugLevel {
 		General = 1,	/* 1 - Low-Level general debugging, useful info on single line */
-		Moderate,		/* 2 - Informational based, used in functions, when particular things load */
-		Detail,			/* 3 - Use this for extreme detail in logging, usually in extreme debugging in the stack or interprocess communication */
+		Detail          // 2 - Use this for very chatty logging you want to leave in but don't want on by default
 	};
 
 	/*
@@ -53,7 +52,7 @@ namespace Logs{
 		AI,
 		Aggro,
 		Attack,
-		PacketClientServer,
+		DeprecatedCS, // deprecated
 		Combat,
 		Commands,
 		Crash,
@@ -64,33 +63,33 @@ namespace Logs{
 		Inventory,
 		Launcher,
 		Netcode,
-		Normal,
+		Normal, // deprecated
 		Object,
 		Pathing,
-		QSServer,
+		QSServer, // deprecated
 		Quests,
 		Rules,
 		Skills,
 		Spawns,
 		Spells,
-		Status,
+		Status, // deprecated
 		TCPConnection,
 		Tasks,
 		Tradeskills,
 		Trading,
-		LoginServer,
-		UCSServer,
-		WebInterfaceServer,
-		WorldServer,
-		ZoneServer,
+		LoginServer, // deprecated
+		UCSServer, // deprecated
+		WebInterfaceServer, // deprecated
+		WorldServer, // deprecated
+		ZoneServer, // deprecated
 		MySQLError,
 		MySQLQuery,
 		EQMac,
 		QuestDebug,
-		PacketServerClient,
-		PacketClientServerUnhandled,
-		PacketServerClientWithDump,
-		PacketClientServerWithDump,
+		DeprecatedSC, // deprecated
+		DeprecatedCSU, // deprecated
+		DeprecatedSCD, // deprecated
+		DeprecatedCSD, // deprecated
 		Maps,
 		Character,
 		Faction,
@@ -108,14 +107,17 @@ namespace Logs{
 		Death,
 		Info,
 		Warning,
-		Critical,
-		Emergency,
-		Alert,
-		Notice,
+		Critical, // deprecated
+		Emergency, // deprecated
+		Alert, // deprecated
+		Notice, // deprecated
 		QuestErrors,
 		Scheduler,
 		Loot,
 		FixZ,
+		PacketServerClient,
+		PacketClientServer,
+		PacketServerToServer,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -126,7 +128,7 @@ namespace Logs{
 		"AI",
 		"Aggro",
 		"Attack",
-		"Packet :: Client -> Server",
+		"Deprecated",
 		"Combat",
 		"Commands",
 		"Crash",
@@ -137,33 +139,33 @@ namespace Logs{
 		"Inventory",
 		"Launcher",
 		"Netcode",
-		"Normal",
+		"Normal (Deprecated)",
 		"Object",
 		"Pathing",
-		"QS Server",
+		"QS Server (Deprecated)",
 		"Quests",
 		"Rules",
 		"Skills",
 		"Spawns",
 		"Spells",
-		"Status",
+		"Status (Deprecated)",
 		"TCP Connection",
 		"Tasks",
 		"Tradeskills",
 		"Trading",
-		"Login Server",
-		"UCS Server",
-		"WebInterface Server",
-		"World Server",
-		"Zone Server",
-		"MySQL Error",
-		"MySQL Query",
+		"Login Server (Deprecated)",
+		"UCS Server (Deprecated)",
+		"Web Interface (Deprecated)",
+		"World Server (Deprecated)",
+		"Zone Server (Deprecated)",
+		"QueryEr",
+		"Query",
 		"EQMac",
 		"Quest Debug",
-		"Packet :: Server -> Client",
-		"Packet :: Client -> Server Unhandled",
-		"Packet :: Server -> Client (Dump)",
-		"Packet :: Client -> Server (Dump)",
+		"Legacy Packet Logging (Deprecated)",
+		"Legacy Packet Logging (Deprecated)",
+		"Legacy Packet Logging (Deprecated)",
+		"Legacy Packet Logging (Deprecated)",
 		"Maps",
 		"Character",
 		"Faction",
@@ -181,14 +183,17 @@ namespace Logs{
 		"Death",
 		"Info",
 		"Warning",
-		"Critical",
-		"Emergency",
-		"Alert",
-		"Notice",
+		"Critical (Deprecated)",
+		"Emergency (Deprecated)",
+		"Alert (Deprecated)",
+		"Notice (Deprecated)",
 		"QuestErrors",
 		"Scheduler",
 		"Loot",
-		"FixZ"
+		"FixZ",
+		"Packet S->C",
+		"Packet C->S",
+		"Packet S->S"
 	};
 }
 
@@ -266,47 +271,90 @@ public:
 	*/
 	LogSettings log_settings[Logs::LogCategory::MaxCategoryID];
 
-	bool file_logs_enabled = false; 
+	// temporary bucket to re-load after silencing
+	LogSettings pre_silence_settings[Logs::LogCategory::MaxCategoryID]{};
 
-	int				log_platform = 0;
-	std::string		platform_file_name;
+	struct LogEnabled {
+		bool log_to_file_enabled;
+		bool log_to_console_enabled;
+		bool log_to_gmsay_enabled;
+		bool log_enabled;
+	};
+
+	LogEnabled GetLogsEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category);
+	bool IsLogEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category);
 
 	// gmsay
 	uint16 GetGMSayColorFromCategory(uint16 log_category);
 
-	EQEmuLogSys* SetGMSayHandler(std::function<void(uint16 log_type, const std::string&)> f) {
-		on_log_gmsay_hook = f; 
+	EQEmuLogSys *SetGMSayHandler(const std::function<void(uint16 log_type, const char *func, const std::string &)> &f) {
+		m_on_log_gmsay_hook = f; 
 		return this;
 	}
 
-	void SetConsoleHandler(std::function<void(uint16 debug_level, uint16 log_type, const std::string&)> f) { 
-		on_log_console_hook = f; 
+	// console
+	void SetConsoleHandler(
+		std::function<void(
+			uint16 log_type,
+			const std::string &
+			)> f
+	) {
+		m_on_log_console_hook = f;
 	}
 	void SilenceConsoleLogging();
 	void EnableConsoleLogging();
 
+
 	// database
 	EQEmuLogSys * SetDatabase(Database* db);
+
+	void DisableMySQLErrorLogs();
+	void EnableMySQLErrorLogs();
+
+	[[nodiscard]] const std::string &GetLogPath() const;
+	EQEmuLogSys *SetLogPath(const std::string &log_path);
 
 private:
 
 	// reference to database
-	Database* m_database;
+	Database *m_database;
+	std::function<void(uint16 log_category, const char *func, const std::string &)> m_on_log_gmsay_hook;
+	std::function<void(uint16 log_category, const std::string &)>                   m_on_log_console_hook;
+	bool                                                                            m_file_logs_enabled = false;
+	int                                                                             m_log_platform = 0;
+	std::string                                                                     m_platform_file_name;
+	std::string                                                                   m_log_path;
 
-	std::function<void(uint16 log_category, const std::string&)>						on_log_gmsay_hook;
-	std::function<void(uint16 debug_level, uint16 log_category, const std::string&)>	on_log_console_hook;
-
-	std::string FormatOutMessageString(uint16 log_category, const std::string &in_message);
-	std::string GetLinuxConsoleColorFromCategory(uint16 log_category);
-	uint16 GetWindowsConsoleColorFromCategory(uint16 log_category);
-
-	void ProcessConsoleMessage(uint16 debug_level, uint16 log_category, const std::string &message); /* ProcessConsoleMessage called via Log.Out */
-	void ProcessGMSay(uint16 debug_level, uint16 log_category, const std::string &message); /* ProcessGMSay called via Log.Out */
-	void ProcessLogWrite(uint16 debug_level, uint16 log_category, const std::string &message); /* ProcessLogWrite called via Log.Out */
-	bool IsRfc5424LogCategory(uint16 log_category);
+	void ProcessConsoleMessage(
+		uint16 log_category,
+		const std::string &message,
+		const char *file,
+		const char *func,
+		int line
+	);
+	void ProcessLogWrite(uint16 log_category, const std::string &message);
+	void InjectTablesIfNotExist();
 };
 
 extern EQEmuLogSys LogSys;
+
+/**
+template<typename... Args>
+void OutF(
+	EQEmuLogSys &ls,
+	Logs::DebugLevel debug_level,
+	uint16 log_category,
+	const char *file,
+	const char *func,
+	int line,
+	const char *fmt,
+	const Args &... args
+)
+{
+	std::string log_str = fmt::format(fmt, args...);
+	ls.Out(debug_level, log_category, file, func, line, log_str.c_str());
+}
+ **/
 
 #define OutF(ls, debug_level, log_category, file, func, line, formatStr, ...) \
 do { \

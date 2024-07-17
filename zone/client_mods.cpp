@@ -1123,7 +1123,7 @@ int32 Client::CalcAGI() {
 	}
 
 	//Encumbered penalty
-	if (IsEncumbered() && GetZoneID() != bazaar)
+	if (IsEncumbered() && GetZoneID() != Zones::BAZAAR)
 	{
 		//AGI is halved when we double our weight, zeroed (defaults to 1) when we triple it. this includes AGI from AAs
 		encum_factor = fmaxf(0.0, encum_factor - (weight / 10.0f - str) / (float)(str + str));
@@ -1782,7 +1782,7 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	if (effectmod > effectmodcap)
 		effectmod = effectmodcap;
 
-	Log(Logs::Moderate, Logs::Spells, "%s::GetInstrumentMod() song=%d mod=%d modcap=%d\n",
+	Log(Logs::Detail, Logs::Spells, "%s::GetInstrumentMod() song=%d mod=%d modcap=%d\n",
 			GetName(), spell_id, effectmod, effectmodcap);
 
 	// it's unclear if the 2 cassindra clarity songs should be modded.  there are conflicting accounts on old forum posts.

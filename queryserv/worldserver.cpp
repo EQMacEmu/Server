@@ -60,7 +60,7 @@ void WorldServer::Process()
 	ServerPacket *pack = 0; 
 	while((pack = tcpc.PopPacket()))
 	{
-		Log(Logs::Detail, Logs::QSServer, "Received Opcode: %4X", pack->opcode); 
+		LogNetcode("Received Opcode: {:#04x}", pack->opcode);
 		switch(pack->opcode) {
 			case 0: {
 				break;
@@ -71,14 +71,14 @@ void WorldServer::Process()
 			case ServerOP_QSPlayerLogItemDeletes: {
 				if (pack->size < sizeof(QSPlayerLogItemDelete_Struct))
 				{
-					Log(Logs::Detail, Logs::QSServer, "Received malformed ServerOP_QSPlayerLogItemDeletes");
+					LogInfoDetail("Received malformed ServerOP_QSPlayerLogItemDeletes");
 					break;
 				}
 				QSPlayerLogItemDelete_Struct *QS = (QSPlayerLogItemDelete_Struct*)pack->pBuffer;
 				uint32 Items = QS->char_count;
 				if (pack->size < sizeof(QSPlayerLogItemDelete_Struct) * Items)
 				{
-					Log(Logs::Detail, Logs::QSServer, "Received malformed ServerOP_QSPlayerLogItemDeletes");
+					LogInfoDetail("Received malformed ServerOP_QSPlayerLogItemDeletes");
 					break;
 				}
 				database.LogPlayerItemDelete(QS, Items);
@@ -159,7 +159,7 @@ void WorldServer::Process()
 					}
 					default:
 					{
-						Log(Logs::Detail, Logs::QSServer, "Received unhandled ServerOP_QueryServGeneric", Type);
+						LogInfoDetail("Received unhandled ServerOP_QueryServGeneric [{}]", Type);
 						break;
 					}
 				}

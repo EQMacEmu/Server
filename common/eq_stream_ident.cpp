@@ -44,7 +44,7 @@ EQStreamIdentifier::~EQStreamIdentifier() {
 	}
 }
 
-void EQStreamIdentifier::RegisterPatch(const EQStream::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs) {
+void EQStreamIdentifier::RegisterPatch(const EQStreamInterface::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs) {
 	auto p = new Patch;
 	p->signature = sig;
 	p->name = name;
@@ -53,7 +53,7 @@ void EQStreamIdentifier::RegisterPatch(const EQStream::Signature &sig, const cha
 	m_patches.push_back(p);
 }
 
-void EQStreamIdentifier::RegisterOldPatch(const EQStream::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs) {
+void EQStreamIdentifier::RegisterOldPatch(const EQStreamInterface::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs) {
 	OldPatch *p = new OldPatch;
 	p->signature = sig;
 	p->name = name;
@@ -78,7 +78,7 @@ void EQStreamIdentifier::Process() {
 		//first see if this stream has expired
 		if(r->expire.Check(false)) {
 			//this stream has failed to match any pattern in our timeframe.
-			Log(Logs::General, Logs::Netcode, "[IDENTIFY] Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			LogNetcode("[StreamIdentify] Unable to identify stream from [{0}]:[{1}] before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
 			safe_delete(r);
 			cur = m_streams.erase(cur);
@@ -94,23 +94,23 @@ void EQStreamIdentifier::Process() {
 		}
 		if(r->stream->GetState() != ESTABLISHED) {
 			//the stream closed before it was identified.
-			Log(Logs::General, Logs::Netcode, "[IDENTIFY] Unable to identify stream from %s:%d before it closed.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			LogNetcode("[StreamIdentify] Unable to identify stream from [{0}]:[{1}] before it closed.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			switch(r->stream->GetState())
 			{
 			case ESTABLISHED:
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Stream state was Established");
+				LogNetcode("[StreamIdentify] Stream state was Established");
 				break;
 			case CLOSING:
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Stream state was Closing");
+				LogNetcode("[StreamIdentify] Stream state was Closing");
 				break;
 			case DISCONNECTING:
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Stream state was Disconnecting");
+				LogNetcode("[StreamIdentify] Stream state was Disconnecting");
 				break;
 			case CLOSED:
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Stream state was Closed");
+				LogNetcode("[StreamIdentify] Stream state was Closed");
 				break;
 			default:
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Stream state was Unestablished or unknown");
+				LogNetcode("[StreamIdentify] Stream state was Unestablished or unknown");
 				break;
 			}
 			r->stream->ReleaseFromUse();
@@ -135,13 +135,13 @@ void EQStreamIdentifier::Process() {
 			switch(res) {
 			case EQStream::MatchNotReady:
 				//the stream has not received enough packets to compare with this signature
-//				Log.LogDebugType(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: Tried patch %s, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+				LogNetcode("[StreamIdentify] [{0}]:[{1}]: Tried patch {2}, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
 				all_ready = false;
 				break;
 			case EQStream::MatchSuccessful: {
 				//yay, a match.
 
-				Log(Logs::General, Logs::Netcode, "[IDENTIFY] Identified stream %s:%d with signature %s", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+				LogNetcode("[StreamIdentify] Identified stream [{0}]:[{1}] with signature {2}", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
 
 				// before we assign the eqstream to an interface, let the stream recognize it is in use and the session should not be reset any further
 				r->stream->SetActive(true);
@@ -155,7 +155,7 @@ void EQStreamIdentifier::Process() {
 			}
 			case EQStream::MatchFailed:
 				//do nothing...
-				Log(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: Tried patch %s, and it did not match.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+				LogNetcode("[StreamIdentify] [{0}]:[{1}]: Tried patch {2}, and it did not match.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ void EQStreamIdentifier::Process() {
 		//if we checked all patches and did not find a match.
 		if(all_ready && !found_one) {
 			//the stream cannot be identified.
-			Log(Logs::General, Logs::Netcode, "[IDENTIFY] Unable to identify stream from %s:%d, no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			LogNetcode("[IDENTIFY] Unable to identify stream from [{0}]:[{1}], no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
 		}
 
@@ -186,7 +186,7 @@ void EQStreamIdentifier::Process() {
 		//first see if this stream has expired
 		if(r != nullptr && r->expire.Check(false)) {
 			//this stream has failed to match any pattern in our timeframe.
-			Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			LogNetcodeDetail("Unable to identify stream from [{}]:[{}] before timeout.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			r->stream->ReleaseFromUse();
 			safe_delete(r);
 			oldcur = m_oldstreams.erase(oldcur);
@@ -201,23 +201,23 @@ void EQStreamIdentifier::Process() {
 		}
 		if (r != nullptr && r->stream->GetState() != ESTABLISHED) {
 			//the stream closed before it was identified.
-			Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d before it closed.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+			LogNetcodeDetail("Unable to identify stream from [{}]:[{}] before it closed.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 			switch(r->stream->GetState())
 			{
 			case ESTABLISHED:
-				Log(Logs::Detail, Logs::Netcode, "Stream state was Established");
+				LogNetcodeDetail("Stream state was Established");
 				break;
 			case CLOSING:
-				Log(Logs::Detail, Logs::Netcode, "Stream state was Closing");
+				LogNetcodeDetail("Stream state was Closing");
 				break;
 			case DISCONNECTING:
-				Log(Logs::Detail, Logs::Netcode, "Stream state was Disconnecting");
+				LogNetcodeDetail("Stream state was Disconnecting");
 				break;
 			case CLOSED:
-				Log(Logs::Detail, Logs::Netcode, "Stream state was Closed");
+				LogNetcodeDetail("Stream state was Closed");
 				break;
 			default:
-				Log(Logs::Detail, Logs::Netcode, "Stream state was Unestablished or unknown");
+				LogNetcodeDetail("Stream state was Unestablished or unknown");
 				break;
 			}
 			r->stream->ReleaseFromUse();
@@ -244,13 +244,14 @@ void EQStreamIdentifier::Process() {
 				switch (res) {
 				case EQStream::MatchNotReady:
 					//the stream has not received enough packets to compare with this signature
-	//				_log(NET__IDENT_TRACE, "%s:%d: Tried patch %s, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					LogNetcodeDetail("[{}]:[{}]: Tried patch {}, but stream is not ready for it.", long2ip(r->stream->GetRemoteIP()), ntohs(r->stream->GetRemotePort()), p->name);
 					all_ready = false;
 					break;
 				case EQStream::MatchSuccessful: {
 					//yay, a match.
 
-					Log(Logs::Detail, Logs::Netcode, "Identified stream %s:%d with signature %s", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					LogNetcodeDetail("Identified stream [{}]:[{}] with signature {}", long2ip(r->stream->GetRemoteIP()), ntohs(r->stream->GetRemotePort()), p->name);
+
 
 					//might want to do something less-specific here... some day..
 					EQStreamInterface *s = new EQStreamProxy(r->stream, p->structs, p->opcodes);
@@ -261,7 +262,7 @@ void EQStreamIdentifier::Process() {
 				}
 				case EQStream::MatchFailed:
 					//do nothing...
-					Log(Logs::Detail, Logs::Netcode, "%s:%d: Tried patch %s, and it did not match.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()), p->name.c_str());
+					LogNetcodeDetail("[{}]:[{}]: Tried patch {}, and it did not match.", long2ip(r->stream->GetRemoteIP()), ntohs(r->stream->GetRemotePort()), p->name);
 					break;
 				}
 			}
@@ -272,7 +273,7 @@ void EQStreamIdentifier::Process() {
 			//the stream cannot be identified.
 			if (r)
 			{
-				Log(Logs::Detail, Logs::Netcode, "Unable to identify stream from %s:%d, no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
+				LogNetcodeDetail("Unable to identify stream from [{}]:[{}], no match found.", long2ip(r->stream->GetRemoteIP()).c_str(), ntohs(r->stream->GetRemotePort()));
 				r->stream->ReleaseFromUse();
 			}
 		}

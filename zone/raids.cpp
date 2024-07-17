@@ -145,8 +145,8 @@ void Raid::AddGroupToRaid(Client* inviter, Client* invitee, Group* group, uint32
 			group->SetLeader(nullptr);
 		}
 
-		inviter->Message_StringID(CC_User_Default, RAID_OOR);
-		invitee->Message_StringID(CC_User_Default, CANNOT_JOIN_RAID, ooz_member.c_str());
+		inviter->Message_StringID(Chat::DefaultText, RAID_OOR);
+		invitee->Message_StringID(Chat::DefaultText, CANNOT_JOIN_RAID, ooz_member.c_str());
 
 		// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
 		auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
@@ -601,7 +601,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 	if(!caster)
 		return;
 
-	Log(Logs::Moderate, Logs::Spells, "%s is casting spell %d on raid %d", caster->GetName(), spellid, GetID());
+	Log(Logs::Detail, Logs::Spells, "%s is casting spell %d on raid %d", caster->GetName(), spellid, GetID());
 
 	range = caster->GetAOERange(spellid);
 
@@ -748,11 +748,11 @@ void Raid::BalanceHP(int32 penalty, uint32 gid, float range, Mob* caster, int32 
 
 					if (new_hp > old_hp)
 					{
-						members[gi].member->Message_StringID(CC_User_Spells, DIV_ARB_TAKE);
-						members[gi].member->Message_StringID(CC_User_Spells, YOU_HEALED, itoa(new_hp - old_hp));
+						members[gi].member->Message_StringID(Chat::Spells, DIV_ARB_TAKE);
+						members[gi].member->Message_StringID(Chat::Spells, YOU_HEALED, itoa(new_hp - old_hp));
 					}
 					else
-						members[gi].member->Message_StringID(CC_User_Spells, DIV_ARB_GIVE);
+						members[gi].member->Message_StringID(Chat::Spells, DIV_ARB_GIVE);
 
 					members[gi].member->SetHP(new_hp);
 					members[gi].member->SendHPUpdate();
@@ -872,7 +872,7 @@ void Raid::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinum
 		if (members[i].member) { // If Group Member is Client
 		//I could not get MoneyOnCorpse to work, so we use this
 		members[i].member->AddMoneyToPP(copper_split, silver_split, gold_split, platinum_split, true);
-		members[i].member->Message_StringID(CC_Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(platinum_split, gold_split, silver_split, copper_split).c_str());
+		members[i].member->Message_StringID(Chat::Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(platinum_split, gold_split, silver_split, copper_split).c_str());
 		}
 	}
 }

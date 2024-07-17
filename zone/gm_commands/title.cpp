@@ -3,7 +3,7 @@
 
 void command_title(Client *c, const Seperator *sep){
 	if (sep->arg[1][0] == 0)
-		c->Message(CC_Default, "Usage: #title [remove|text] [1 = Create row in title table] - remove or set title to 'text'");
+		c->Message(Chat::White, "Usage: #title [remove|text] [1 = Create row in title table] - remove or set title to 'text'");
 	else {
 		bool Save = (atoi(sep->arg[2]) == 1);
 
@@ -11,13 +11,13 @@ void command_title(Client *c, const Seperator *sep){
 		if (!target_mob)
 			target_mob = c;
 		if (!target_mob->IsClient()) {
-			c->Message(CC_Red, "#title only works on players.");
+			c->Message(Chat::Red, "#title only works on players.");
 			return;
 		}
 		Client *t = target_mob->CastToClient();
 
 		if (strlen(sep->arg[1]) > 31) {
-			c->Message(CC_Red, "Title must be 31 characters or less.");
+			c->Message(Chat::Red, "Title must be 31 characters or less.");
 			return;
 		}
 
@@ -39,14 +39,14 @@ void command_title(Client *c, const Seperator *sep){
 		t->Save();
 
 		if (removed) {
-			c->Message(CC_Red, "%s's title has been removed.", t->GetName(), sep->arg[1]);
+			c->Message(Chat::Red, "%s's title has been removed.", t->GetName(), sep->arg[1]);
 			if (t != c)
-				t->Message(CC_Red, "Your title has been removed.", sep->arg[1]);
+				t->Message(Chat::Red, "Your title has been removed.", sep->arg[1]);
 		}
 		else {
-			c->Message(CC_Red, "%s's title has been changed to '%s'.", t->GetName(), sep->arg[1]);
+			c->Message(Chat::Red, "%s's title has been changed to '%s'.", t->GetName(), sep->arg[1]);
 			if (t != c)
-				t->Message(CC_Red, "Your title has been changed to '%s'.", sep->arg[1]);
+				t->Message(Chat::Red, "Your title has been changed to '%s'.", sep->arg[1]);
 		}
 	}
 }

@@ -11,7 +11,7 @@ void command_level(Client *c, const Seperator *sep)
 		(!c->GetTarget()->IsNPC() && ((c->Admin() < commandLevelNPCAboveCap) && (level > RuleI(Character, MaxLevel))))) ||
 		(c->Admin() < RuleI(GM, MinStatusToLevelTarget) && level > RuleI(Character, MaxLevel)))
 	{
-		c->Message(CC_Default, "Error: #Level: Invalid Level");
+		c->Message(Chat::White, "Error: #Level: Invalid Level");
 		return;
 	}
 	else if (c->GetTarget())
@@ -21,12 +21,12 @@ void command_level(Client *c, const Seperator *sep)
 		target = true;
 	}
 	else if (c->GetTarget() && c->Admin() < RuleI(GM, MinStatusToLevelTarget) && level <= RuleI(Character, MaxLevel) && level > 0) {
-		c->Message(CC_Default, "Your status level only supports self use of this command.");
+		c->Message(Chat::White, "Your status level only supports self use of this command.");
 		c->SetLevel(level, true);
 	}
 	else
 	{
-		c->Message(CC_Default, "No valid target selected, using command on self.");
+		c->Message(Chat::White, "No valid target selected, using command on self.");
 		c->SetLevel(level, true);
 	}
 
@@ -34,7 +34,7 @@ void command_level(Client *c, const Seperator *sep)
 	{
 		Mob* tar = !target ? c : c->GetTarget();
 		if (tar->IsClient())
-			c->Message(CC_Yellow, "%s must zone before their client will see the lowered level.", tar->GetName());
+			c->Message(Chat::Yellow, "%s must zone before their client will see the lowered level.", tar->GetName());
 	}
 }
 

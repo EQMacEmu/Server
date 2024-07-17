@@ -162,6 +162,26 @@ namespace EQ
 			Looting
 		};
 
+		enum EmoteEventTypes : uint8 {
+			LeaveCombat,
+			EnterCombat,
+			OnDeath,
+			AfterDeath,
+			Hailed,
+			KilledPC,
+			KilledNPC,
+			OnSpawn,
+			OnDespawn,
+			Killed
+		};
+
+		enum EmoteTypes : uint8 {
+			Say,
+			Emote,
+			Shout,
+			Proximity
+		};
+
 		extern const std::map<int, std::string>& GetLanguageMap();
 		std::string GetLanguageName(int language_id);
 
@@ -183,6 +203,13 @@ namespace EQ
 
 		extern const std::map<uint32, std::string> &GetAppearanceTypeMap();
 		std::string GetAppearanceTypeName(uint32 animation_type);
+
+		extern const std::map<uint8, std::string> &GetEmoteEventTypeMap();
+		std::string GetEmoteEventTypeName(uint8 emote_event_type);
+
+		extern const std::map<uint8, std::string> &GetEmoteTypeMap();
+		std::string GetEmoteTypeName(uint8 emote_type);
+
 
 	}
 

@@ -5,17 +5,17 @@ void command_push(Client *c, const Seperator *sep) {
 	Mob* t;
 	if (!c->GetTarget())
 	{
-		c->Message(CC_Default, "You need a target to push.");
+		c->Message(Chat::White, "You need a target to push.");
 		return;
 	}
 	else if (!c->GetTarget()->IsNPC() && !c->GetTarget()->IsClient())
 	{
-		c->Message(CC_Default, "That's an invalid target, nerd.");
+		c->Message(Chat::White, "That's an invalid target, nerd.");
 		return;
 	}
 	else if (!sep->IsNumber(1))
 	{
-		c->Message(CC_Default, "Invalid number of arguments.\nUsage: #push [pushback] [pushup]");
+		c->Message(Chat::White, "Invalid number of arguments.\nUsage: #push [pushback] [pushup]");
 		return;
 	}
 	else
@@ -51,12 +51,12 @@ void command_push(Client *c, const Seperator *sep) {
 
 		if (success)
 		{
-			c->Message(CC_Default, "%s was pushed for %0.1f!", t->GetCleanName(), pushback);
+			c->Message(Chat::White, "%s was pushed for %0.1f!", t->GetCleanName(), pushback);
 			return;
 		}
 		else
 		{
-			c->Message(CC_Default, "Pushed failed on %s. Coord check likely failed.", t->GetCleanName());
+			c->Message(Chat::White, "Pushed failed on %s. Coord check likely failed.", t->GetCleanName());
 			return;
 		}
 	}

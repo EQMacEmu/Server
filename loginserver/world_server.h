@@ -56,77 +56,77 @@ public:
 	/**
 	* Accesses connection, it is intentional that this is not const (trust me).
 	*/
-	EmuTCPConnection *GetConnection() { return connection; }
+	EmuTCPConnection *GetConnection() { return m_connection; }
 
 	/**
 	* Sets the connection to c.
 	*/
-	void SetConnection(EmuTCPConnection *c) { connection = c; }
+	void SetConnection(EmuTCPConnection *c) { m_connection = c; }
 
 	/**
 	* Gets the runtime id of this server.
 	*/
-	unsigned int GetRuntimeID() const { return runtime_id; }
+	unsigned int GetRuntimeID() const { return m_runtime_id; }
 
 	/**
 	* Sets the runtime id of this server.
 	*/
-	void SetRuntimeID(unsigned int id) { runtime_id = id; }
+	void SetRuntimeID(unsigned int id) { m_runtime_id = id; }
 
 	/**
 	* Gets the long name of the server.
 	*/
-	std::string GetLongName() const { return long_name; }
+	std::string GetServerLongName() const { return m_long_name; }
 
 	/**
 	* Gets the short name of the server.
 	*/
-	std::string GetShortName() const { return short_name; }
+	std::string GetServerShortName() const { return m_short_name; }
 
 	/**
 	* Gets whether the server is authorized to show up on the server list or not.
 	*/
-	bool IsAuthorized() const { return is_server_authorized; }
+	bool IsAuthorized() const { return m_is_server_authorized; }
 
 	/**
 	* Gets the local ip of the server.
 	*/
-	std::string GetLocalIP() const { return local_ip; }
+	std::string GetLocalIP() const { return m_local_ip; }
 
 	/**
 	* Gets the remote ip of the server.
 	*/
-	std::string GetRemoteIP() const { return remote_ip; }
+	std::string GetRemoteIP() const { return m_remote_ip_address; }
 
 	/**
 	* Gets what kind of server this server is (legends, preferred, normal)
 	*/
-	unsigned int GetServerListID() const { return server_list_id; }
+	unsigned int GetServerListID() const { return m_server_list_type_id; }
 
 	/**
 	* Gets the status of the server.
 	*/
-	int GetStatus() const { return server_status; }
+	int GetStatus() const { return m_server_status; }
 
 	/**
 	* Gets the number of zones online on the server.
 	*/
-	unsigned int GetZonesBooted() const { return zones_booted; }
+	unsigned int GetZonesBooted() const { return m_zones_booted; }
 
 	/**
 	* Gets the number of players on the server.
 	*/
-	unsigned int GetPlayersOnline() const { return players_online; }
+	unsigned int GetPlayersOnline() const { return m_players_online; }
 
 	/**
 	* Takes the info struct we received from world and processes it.
 	*/
-	void Handle_NewLSInfo(ServerNewLSInfo_Struct* i);
+	void Handle_NewLSInfo(ServerNewLSInfo_Struct* inew_world_server_info_packet);
 
 	/**
 	* Takes the status struct we received from world and processes it.
 	*/
-	void Handle_LSStatus(ServerLSStatus_Struct *s);
+	void Handle_LSStatus(ServerLSStatus_Struct *server_login_status);
 
 	/**
 	* Informs world that there is a client incoming with the following data.
@@ -135,25 +135,26 @@ public:
 
 private:
 
-	EmuTCPConnection *connection;
-	unsigned int zones_booted;
-	unsigned int players_online;
-	int server_status;
-	unsigned int runtime_id;
-	unsigned int server_list_id;
-	unsigned int server_type;
-	std::string desc;
-	std::string long_name;
-	std::string short_name;
-	std::string account_name;
-	std::string account_password;
-	std::string remote_ip;
-	std::string local_ip;
-	std::string protocol;
-	std::string version;
-	bool is_server_authorized;
-	bool is_server_logged_in;
-	bool is_server_trusted;
+	EmuTCPConnection *m_connection;
+
+	unsigned int m_zones_booted;
+	unsigned int m_players_online;
+	int m_server_status;
+	unsigned int m_runtime_id;
+	unsigned int m_server_list_type_id;
+	unsigned int m_server_process_type;
+	std::string m_server_description;
+	std::string m_long_name;
+	std::string m_short_name;
+	std::string m_account_name;
+	std::string m_account_password;
+	std::string m_remote_ip_address;
+	std::string m_local_ip;
+	std::string m_protocol;
+	std::string m_version;
+	bool m_is_server_authorized;
+	bool m_is_server_logged_in;
+	bool m_is_server_trusted;
 };
 
 #endif

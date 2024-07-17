@@ -72,14 +72,14 @@ bool Database::Connect(const char* host, const char* user, const char* passwd, c
 	char errbuf[MYSQL_ERRMSG_SIZE];
 	if (!Open(host, user, passwd, database, port, &errnum, errbuf))
 	{
-		LogError("Failed to connect to database: Error: {} ", errbuf);
+		LogError("Failed to connect to database: Error: [{}] ", errbuf);
 		HandleMysqlError(errnum);
 
 		return false;
 	}
 	else
 	{
-		Log(Logs::General, Logs::Status, "Using database '%s' at %s:%d",database,host,port);
+		LogStatus("Using database [{}] at [{}]:[{}]",database,host,port);
 		return true;
 	}
 }
@@ -108,7 +108,7 @@ void Database::GetAccountStatus(Client *client) {
                                     client->GetAccountID());
     auto results = QueryDatabase(query);
     if (!results.Success()) {
-		LogInfo("Unable to get account status for character [{0}], error [{1}]", client->GetName().c_str(), results.ErrorMessage().c_str());
+		LogMySQLError("Unable to get account status for character [{0}], error [{1}]", client->GetName().c_str(), results.ErrorMessage().c_str());
 		return;
 	}
 
@@ -116,7 +116,7 @@ void Database::GetAccountStatus(Client *client) {
 
 	if(results.RowCount() != 1)
 	{
-		LogInfo("Error in GetAccountStatus");
+		LogMySQLError("Error in GetAccountStatus");
 		return;
 	}
 
@@ -142,12 +142,12 @@ int Database::FindAccount(const char *characterName, Client *client) {
                                     characterName);
     auto results = QueryDatabase(query);
 	if (!results.Success()) {
-		LogInfo("FindAccount query failed: [{0}]", query.c_str());
+		LogMySQLError("FindAccount query failed: [{0}]", query.c_str());
 		return -1;
 	}
 
 	if (results.RowCount() != 1) {
-		LogInfo("Bad result from query");
+		LogMySQLError("Bad result from query");
 		return -1;
 	}
 
@@ -156,7 +156,7 @@ int Database::FindAccount(const char *characterName, Client *client) {
 
 	int accountID = atoi(row[1]);
 
-	LogInfo("Account ID for [{0}] is [{1}]", characterName, accountID);
+	LogMySQLQuery("Account ID for [{0}] is [{1}]", characterName, accountID);
 
     query = StringFormat("SELECT `id`, `name`, `level`, `race`, `class` FROM `character_data` "
                         "WHERE `account_id` = %i AND `name` != '%s' AND `is_deleted` = 0",
@@ -184,7 +184,7 @@ int Database::FindCharacter(const char *characterName)
 	safe_delete_array(safeCharName);
 
 	if (results.RowCount() != 1) {
-		LogInfo("Bad result from FindCharacter query for character [{0}]",
+		LogMySQLError("Bad result from FindCharacter query for character [{0}]",
 			characterName);
 		return -1;
 	}
@@ -274,7 +274,7 @@ void Database::AddFriendOrIgnore(int charID, int type, std::string name) {
                                     charID, type, CapitaliseName(name).c_str());
     auto results = QueryDatabase(query);
 	if(results.Success())
-		LogInfo("Wrote Friend/Ignore entry for charid [{0}], type [{1}], name [{2}] to database.", charID, type, name.c_str());
+		LogMySQLQuery("Wrote Friend/Ignore entry for charid [{0}], type [{1}], name [{2}] to database.", charID, type, name.c_str());
 
 }
 
@@ -285,10 +285,10 @@ void Database::RemoveFriendOrIgnore(int charID, int type, std::string name) {
                                     charID, type, CapitaliseName(name).c_str());
     auto results = QueryDatabase(query);
 	if (!results.Success()) {
-		LogInfo("Error removing friend/ignore, query was [{0}]", query.c_str());
+		LogMySQLError("Error removing friend/ignore, query was [{0}]", query.c_str());
 	}
 	else {
-		LogInfo("Removed Friend/Ignore entry for charid [{0}], type [{1}], name [{2}] from database.", charID, type, name.c_str());
+		LogMySQLQuery("Removed Friend/Ignore entry for charid [{0}], type [{1}], name [{2}] from database.", charID, type, name.c_str());
 	}
 }
 
@@ -307,12 +307,12 @@ void Database::GetFriendsAndIgnore(int charID, std::vector<std::string> &friends
 		if(atoi(row[0]) == 0)
 		{
 			ignorees.push_back(name);
-			LogInfo("Added Ignoree from DB [{0}]", name.c_str());
+			LogMySQLQuery("Added Ignoree from DB [{0}]", name.c_str());
 			continue;
 		}
 
         friends.push_back(name);
-        LogInfo("Added Friend from DB [{0}]", name.c_str());
+        LogMySQLQuery("Added Friend from DB [{0}]", name.c_str());
 	}
 
 }

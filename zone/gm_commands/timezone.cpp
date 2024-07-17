@@ -4,8 +4,8 @@ void command_timezone(Client *c, const Seperator *sep)
 {
 	const auto arguments = sep->argnum;
 	if (arguments < 1 || sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #timezone HH [MM]");
-		c->Message(CC_Default, fmt::format("Current timezone is: {}h {}m", zone->zone_time.getEQTimeZoneHr(), zone->zone_time.getEQTimeZoneMin()).c_str());
+		c->Message(Chat::White, "Usage: #timezone HH [MM]");
+		c->Message(Chat::White, fmt::format("Current timezone is: {}h {}m", zone->zone_time.getEQTimeZoneHr(), zone->zone_time.getEQTimeZoneMin()).c_str());
 		return;
 	}
 
@@ -24,7 +24,7 @@ void command_timezone(Client *c, const Seperator *sep)
 		}
 	}
 
-	c->Message(CC_Default, fmt::format("Setting timezone to {} h {} m", hours, minutes).c_str());
+	c->Message(Chat::White, fmt::format("Setting timezone to {} h {} m", hours, minutes).c_str());
 	const int new_timezone = ((hours * 60) + minutes);
 	zone->zone_time.setEQTimeZone(new_timezone);
 	database.SetZoneTZ(zone->GetZoneID(), new_timezone);

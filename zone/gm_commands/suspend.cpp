@@ -5,7 +5,7 @@ extern WorldServer worldserver;
 void command_suspend(Client *c, const Seperator *sep)
 {
 	if ((sep->arg[1][0] == 0) || (sep->arg[2][0] == 0)) {
-		c->Message(CC_Default, "Usage: #suspend <charname> <days> (Specify 0 days to lift the suspension immediately) <message>");
+		c->Message(Chat::White, "Usage: #suspend <charname> <days> (Specify 0 days to lift the suspension immediately) <message>");
 		return;
 	}
 
@@ -32,7 +32,7 @@ void command_suspend(Client *c, const Seperator *sep)
 		}
 
 		if (message.length() == 0) {
-			c->Message(CC_Default, "Usage: #suspend <charname> <days>(Specify 0 days to lift the suspension immediately) <message>");
+			c->Message(Chat::White, "Usage: #suspend <charname> <days>(Specify 0 days to lift the suspension immediately) <message>");
 			return;
 		}
 	}
@@ -43,7 +43,7 @@ void command_suspend(Client *c, const Seperator *sep)
 	safe_delete_array(escName);
 
 	if (accountID <= 0) {
-		c->Message(CC_Red, "Character does not exist.");
+		c->Message(Chat::Red, "Character does not exist.");
 		return;
 	}
 
@@ -53,9 +53,9 @@ void command_suspend(Client *c, const Seperator *sep)
 	auto results = database.QueryDatabase(query);
 
 	if (duration)
-		c->Message(CC_Red, "Account number %i with the character %s has been temporarily suspended for %i day(s).", accountID, sep->arg[1], duration);
+		c->Message(Chat::Red, "Account number %i with the character %s has been temporarily suspended for %i day(s).", accountID, sep->arg[1], duration);
 	else
-		c->Message(CC_Red, "Account number %i with the character %s is no longer suspended.", accountID, sep->arg[1]);
+		c->Message(Chat::Red, "Account number %i with the character %s is no longer suspended.", accountID, sep->arg[1]);
 
 	auto pack = new ServerPacket(ServerOP_KickPlayer, sizeof(ServerKickPlayer_Struct));
 	ServerKickPlayer_Struct* sks = (ServerKickPlayer_Struct*)pack->pBuffer;

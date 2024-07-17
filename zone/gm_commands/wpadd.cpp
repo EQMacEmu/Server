@@ -13,7 +13,7 @@ void command_wpadd(Client *c, const Seperator *sep)
 
 		if (s2info == nullptr)	// Can't figure out where this mob's spawn came from... maybe a dynamic mob created by #spawn
 		{
-			c->Message(CC_Default, "#wpadd FAILED -- Can't determine which spawn record in the database this mob came from!");
+			c->Message(Chat::White, "#wpadd FAILED -- Can't determine which spawn record in the database this mob came from!");
 			return;
 		}
 
@@ -23,7 +23,7 @@ void command_wpadd(Client *c, const Seperator *sep)
 				pause = atoi(sep->arg[1]);
 			else
 			{
-				c->Message(CC_Default, "Usage: #wpadd [pause] [-h]");
+				c->Message(Chat::White, "Usage: #wpadd [pause] [-h]");
 				return;
 			}
 		}
@@ -36,9 +36,9 @@ void command_wpadd(Client *c, const Seperator *sep)
 			t->CastToNPC()->SetGrid(tmp_grid);
 
 		t->CastToNPC()->AssignWaypoints(t->CastToNPC()->GetGrid());
-		c->Message(CC_Default, "Waypoint added. Use #wpinfo to see waypoints for this NPC (may need to #repop first).");
+		c->Message(Chat::White, "Waypoint added. Use #wpinfo to see waypoints for this NPC (may need to #repop first).");
 	}
 	else
-		c->Message(CC_Default, "You must target an NPC to use this.");
+		c->Message(Chat::White, "You must target an NPC to use this.");
 }
 

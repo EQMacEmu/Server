@@ -15,7 +15,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	};
 
 	if (!c->GetTarget() || !c->GetTarget()->IsClient()) {
-		c->Message(CC_Default, "You must have a PC target selected for this command");
+		c->Message(Chat::White, "You must have a PC target selected for this command");
 		return;
 	}
 
@@ -30,9 +30,9 @@ void command_peekinv(Client *c, const Seperator *sep)
 	else if (strcasecmp(sep->arg[1], "world") == 0) { scopeWhere |= peekWorld; }
 
 	if (scopeWhere == 0) {
-		c->Message(CC_Default, "Usage: #peekinv [worn|inv|cursor|trib|bank|trade|world|all]");
-		c->Message(CC_Default, "  Displays a portion of the targeted user's inventory");
-		c->Message(CC_Default, "  Caution: 'all' is a lot of information!");
+		c->Message(Chat::White, "Usage: #peekinv [worn|inv|cursor|trib|bank|trade|world|all]");
+		c->Message(Chat::White, "  Displays a portion of the targeted user's inventory");
+		c->Message(Chat::White, "  Caution: 'all' is a lot of information!");
 		return;
 	}
 
@@ -44,7 +44,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	EQ::SayLinkEngine linker;
 	linker.SetLinkType(EQ::saylink::SayLinkItemInst);
 
-	c->Message(CC_Default, fmt::format("Displaying inventory for {}...", targetClient->GetName()).c_str());
+	c->Message(Chat::White, fmt::format("Displaying inventory for {}...", targetClient->GetName()).c_str());
 	
 	// worn
 	for (int16 indexMain = EQ::invslot::EQUIPMENT_BEGIN; (scopeWhere & peekWorn) && (indexMain <= EQ::invslot::EQUIPMENT_END); ++indexMain) {
@@ -77,14 +77,14 @@ void command_peekinv(Client *c, const Seperator *sep)
 	}
 	// money
 	if (scopeWhere & peekInv)
-		c->Message(CC_Default, fmt::format("Carried Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum, targetClient->GetPP().gold, targetClient->GetPP().silver, targetClient->GetPP().copper).c_str());
+		c->Message(Chat::White, fmt::format("Carried Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum, targetClient->GetPP().gold, targetClient->GetPP().silver, targetClient->GetPP().copper).c_str());
 
 	// cursor
 	if (scopeWhere & peekCursor) {
 		if (targetClient->GetInv().CursorEmpty()) {
 			linker.SetItemInst(nullptr);
 
-			c->Message(CC_Default, fmt::format("CursorSlot: {}, Item: {} ({}), Charges: {}",
+			c->Message(Chat::White, fmt::format("CursorSlot: {}, Item: {} ({}), Charges: {}",
 				EQ::invslot::slotCursor, 0, linker.GenerateLink().c_str(), 0).c_str());
 		}
 		else {
@@ -113,7 +113,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 			}
 		}
 		// money
-		c->Message(CC_Default, fmt::format("Cursor Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum_cursor, targetClient->GetPP().gold_cursor, targetClient->GetPP().silver_cursor, targetClient->GetPP().copper_cursor).c_str());
+		c->Message(Chat::White, fmt::format("Cursor Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum_cursor, targetClient->GetPP().gold_cursor, targetClient->GetPP().silver_cursor, targetClient->GetPP().copper_cursor).c_str());
 	}
 
 	// bank
@@ -136,7 +136,7 @@ void command_peekinv(Client *c, const Seperator *sep)
 	}
 	// money
 	if (scopeWhere & peekBank) 
-		c->Message(CC_Default, fmt::format("Bank Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum_bank, targetClient->GetPP().gold_bank, targetClient->GetPP().silver_bank, targetClient->GetPP().copper_bank).c_str());
+		c->Message(Chat::White, fmt::format("Bank Money: {} pp {} gp {} sp {} cp", targetClient->GetPP().platinum_bank, targetClient->GetPP().gold_bank, targetClient->GetPP().silver_bank, targetClient->GetPP().copper_bank).c_str());
 
 
 	// trade
@@ -163,10 +163,10 @@ void command_peekinv(Client *c, const Seperator *sep)
 		Object* objectTradeskill = targetClient->GetTradeskillObject();
 
 		if (objectTradeskill == nullptr) {
-			c->Message(CC_Grey, "No world tradeskill object selected...");
+			c->Message(Chat::DimGray, "No world tradeskill object selected...");
 		}
 		else {
-			c->Message(CC_Default, fmt::format("[WorldObject DBID: {} (entityid: {})]", objectTradeskill->GetDBID(), objectTradeskill->GetID()).c_str());
+			c->Message(Chat::White, fmt::format("[WorldObject DBID: {} (entityid: {})]", objectTradeskill->GetDBID(), objectTradeskill->GetID()).c_str());
 
 			for (int16 indexMain = EQ::invslot::SLOT_BEGIN; indexMain < EQ::invtype::WORLD_SIZE; ++indexMain) {
 				inst_main = objectTradeskill->GetItem(indexMain);

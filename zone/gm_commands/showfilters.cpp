@@ -6,7 +6,7 @@ void command_showfilters(Client *c, const Seperator *sep) {
 	{
 		for (int i = 0; i < 17; i++)
 		{
-			c->Message(CC_Yellow, "ServerFilter (%i) = %i", i, (int)c->GetFilter(static_cast<eqFilterType>(i)));
+			c->Message(Chat::Yellow, "ServerFilter (%i) = %i", i, (int)c->GetFilter(static_cast<eqFilterType>(i)));
 		}
 	}
 }

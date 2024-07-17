@@ -4,7 +4,7 @@
 
 void command_raidloot(Client *c, const Seperator *sep){
 	if (!sep->arg[1][0]) {
-		c->Message(CC_Default, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
+		c->Message(Chat::White, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
 		return;
 	}
 
@@ -17,7 +17,7 @@ void command_raidloot(Client *c, const Seperator *sep){
 			{
 				if (r->members[x].IsRaidLeader == 0)
 				{
-					c->Message(CC_Default, "You must be the raid leader to use this command.");
+					c->Message(Chat::White, "You must be the raid leader to use this command.");
 				}
 				else
 				{
@@ -28,32 +28,32 @@ void command_raidloot(Client *c, const Seperator *sep){
 
 		if (strcasecmp(sep->arg[1], "LEADER") == 0)
 		{
-			c->Message(CC_Yellow, "Loot type changed to: 1");
+			c->Message(Chat::Yellow, "Loot type changed to: 1");
 			r->ChangeLootType(1);
 		}
 		else if (strcasecmp(sep->arg[1], "GROUPLEADER") == 0)
 		{
-			c->Message(CC_Yellow, "Loot type changed to: 2");
+			c->Message(Chat::Yellow, "Loot type changed to: 2");
 			r->ChangeLootType(2);
 		}
 		else if (strcasecmp(sep->arg[1], "SELECTED") == 0)
 		{
-			c->Message(CC_Yellow, "Loot type changed to: 3");
+			c->Message(Chat::Yellow, "Loot type changed to: 3");
 			r->ChangeLootType(3);
 		}
 		else if (strcasecmp(sep->arg[1], "ALL") == 0)
 		{
-			c->Message(CC_Yellow, "Loot type changed to: 4");
+			c->Message(Chat::Yellow, "Loot type changed to: 4");
 			r->ChangeLootType(4);
 		}
 		else
 		{
-			c->Message(CC_Default, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
+			c->Message(Chat::White, "Usage: #raidloot [LEADER/GROUPLEADER/SELECTED/ALL]");
 		}
 	}
 	else
 	{
-		c->Message(CC_Default, "You must be in a raid to use that command.");
+		c->Message(Chat::White, "You must be in a raid to use that command.");
 	}
 }
 

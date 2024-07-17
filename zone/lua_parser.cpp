@@ -36,6 +36,7 @@
 #include "zone_config.h"
 #include "lua_parser.h"
 #include "lua_encounter.h"
+#include "../common/path_manager.h"
 
 const char *LuaEvents[_LargestEventID] = {
 	"event_say",
@@ -865,11 +866,11 @@ void LuaParser::ReloadQuests() {
 	lua_getglobal(L, "package");
 	lua_getfield(L, -1, "path");
 	std::string module_path = lua_tostring(L, -1);
-	module_path += ";./" + Config->LuaModuleDir + "?.lua;./" + Config->LuaModuleDir + "?/init.lua";
+	module_path += ";" + path.GetLuaModulesPath() + "/?.lua;" + path.GetLuaModulesPath() + "/?/init.lua";
 	// luarock paths using lua_modules as tree
 	// to path it adds foo/share/lua/5.1/?.lua and foo/share/lua/5.1/?/init.lua
-	module_path += ";./" + Config->LuaModuleDir + "share/lua/" + lua_version + "/?.lua";
-	module_path += ";./" + Config->LuaModuleDir + "share/lua/" + lua_version + "/?/init.lua";
+	module_path += ";" + path.GetLuaModulesPath() + "/share/lua/" + lua_version + "/?.lua";
+	module_path += ";" + path.GetLuaModulesPath() + "/share/lua/" + lua_version + "/?/init.lua";
 	lua_pop(L, 1);
 	lua_pushstring(L, module_path.c_str());
 	lua_setfield(L, -2, "path");
@@ -878,10 +879,10 @@ void LuaParser::ReloadQuests() {
 	lua_getglobal(L, "package");
 	lua_getfield(L, -1, "cpath");
 	module_path = lua_tostring(L, -1);
-	module_path += ";./" + Config->LuaModuleDir + "?" + libext;
+	module_path += ";" + path.GetLuaModulesPath() + "/?" + libext;
 	// luarock paths using lua_modules as tree
 	// luarocks adds foo/lib/lua/5.1/?.so for cpath
-	module_path += ";./" + Config->LuaModuleDir + "lib/lua/" + lua_version + "/?" + libext;
+	module_path += ";" + path.GetLuaModulesPath() + "/lib/lua/" + lua_version + "/?" + libext;
 	lua_pop(L, 1);
 	lua_pushstring(L, module_path.c_str());
 	lua_setfield(L, -2, "cpath");
@@ -889,17 +890,14 @@ void LuaParser::ReloadQuests() {
 
 	MapFunctions(L);
 
-	//load init
-	std::string path = Config->QuestDir;
-	path += "/";
-	path += QUEST_GLOBAL_DIRECTORY;
-	path += "/script_init.lua";
+	// load init
+	std::string filename = fmt::format("{}/{}/script_init.lua", path.GetQuestsPath(), QUEST_GLOBAL_DIRECTORY);
 
-	FILE *f = fopen(path.c_str(), "r");
+	FILE *f = fopen(filename.c_str(), "r");
 	if(f) {
 		fclose(f);
 
-		if(luaL_dofile(L, path.c_str())) {
+		if (luaL_dofile(L, filename.c_str())) {
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 		}
@@ -907,11 +905,11 @@ void LuaParser::ReloadQuests() {
 
 	//zone init - always loads after global
 	if(zone) {
-		std::string zone_script = Config->QuestDir;
-		zone_script += "/";
-		zone_script += zone->GetShortName();
-		zone_script += "/script_init_v";
-		zone_script += ".lua";
+		std::string zone_script = fmt::format(
+			"{}/{}/script_init_v.lua",
+			path.GetQuestsPath(),
+			zone->GetShortName()
+		);
 		f = fopen(zone_script.c_str(), "r");
 		if(f) {
 			fclose(f);
@@ -924,10 +922,8 @@ void LuaParser::ReloadQuests() {
 			return;
 		}
 
-		zone_script = Config->QuestDir;
-		zone_script += "/";
-		zone_script += zone->GetShortName();
-		zone_script += "/script_init.lua";
+		zone_script = fmt::format("{}/{}/script_init.lua", path.GetQuestsPath(), zone->GetShortName());
+
 		f = fopen(zone_script.c_str(), "r");
 		if(f) {
 			fclose(f);
@@ -1013,8 +1009,8 @@ bool LuaParser::HasEncounterSub(const std::string& package_name, QuestEventID ev
 {
 	auto it = lua_encounter_events_registered.find(package_name);
 	if (it != lua_encounter_events_registered.end()) {
-		for (auto riter = it->second.begin(); riter != it->second.end(); ++riter) {
-			if (riter->event_id == evt) {
+		for (auto &riter : it->second) {
+			if (riter.event_id == evt) {
 				return true;
 			}
 		}

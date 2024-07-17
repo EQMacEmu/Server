@@ -17,8 +17,8 @@ public:
 	~EQStreamIdentifier();
 
 	//registration interface.
-	void RegisterPatch(const EQStream::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs);
-	void RegisterOldPatch(const EQStream::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs);
+	void RegisterPatch(const EQStreamInterface::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs);
+	void RegisterOldPatch(const EQStreamInterface::Signature &sig, const char *name, OpcodeManager ** opcodes, const StructStrategy *structs);
 	//main processing interface
 	void Process();
 	void AddStream(std::shared_ptr<EQStream> eqs);
@@ -31,7 +31,7 @@ protected:
 	class Patch {
 	public:
 		std::string				name;
-		EQStream::Signature		signature;
+		EQStreamInterface::Signature		signature;
 		OpcodeManager **		opcodes;
 		const StructStrategy *structs;
 	};
@@ -53,7 +53,7 @@ protected:
 	class OldPatch {
 	public:
 		std::string				name;
-		EQStream::Signature		signature;
+		EQStreamInterface::Signature		signature;
 		OpcodeManager **		opcodes;
 		const StructStrategy *structs;
 	};

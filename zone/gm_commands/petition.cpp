@@ -18,7 +18,7 @@ void command_petition(Client *c, const Seperator *sep)
 		int size = sizeof(help) / sizeof(std::string);
 		for (int i = 0; i < size; i++)
 		{
-			c->Message(CC_Default, help[i].c_str());
+			c->Message(Chat::White, help[i].c_str());
 		}
 	}
 	else if (strcasecmp(sep->arg[1], "list") == 0)
@@ -28,11 +28,11 @@ void command_petition(Client *c, const Seperator *sep)
 
 		if (!results.Success() || results.RowCount() == 0)
 		{
-			c->Message(CC_Red, "There was an error in your request: No petitions found!");
+			c->Message(Chat::Red, "There was an error in your request: No petitions found!");
 			return;
 		}
 
-		c->Message(CC_Red, "ID : Character , Account , Time Sent");
+		c->Message(Chat::Red, "ID : Character , Account , Time Sent");
 		for (auto row = results.begin(); row != results.end(); ++row)
 		{
 			char *pet_time = row[3];
@@ -41,51 +41,51 @@ void command_petition(Client *c, const Seperator *sep)
 			char date[80];
 			strftime(date, 80, "%m/%d %I:%M%p", tm);
 
-			c->Message(CC_Yellow, " %s:	%s , %s , %s", row[0], row[1], row[2], date);
+			c->Message(Chat::Yellow, " %s:	%s , %s , %s", row[0], row[1], row[2], date);
 		}
 	}
 	else if (strcasecmp(sep->arg[1], "view") == 0)
 	{
 		if (sep->arg[2][0] == 0)
 		{
-			c->Message(CC_Default, "Usage: #petition view (petition number) Type #petition list for a list");
+			c->Message(Chat::White, "Usage: #petition view (petition number) Type #petition list for a list");
 			return;
 		}
 		Log(Logs::Detail, Logs::Normal, "Petition viewed by %s, petition number:", c->GetName(), atoi(sep->arg[2]));
-		c->Message(CC_Red, "ID : Character , Account , Petition Text");
+		c->Message(Chat::Red, "ID : Character , Account , Petition Text");
 		std::string query = StringFormat("SELECT petid, charname, accountname, petitiontext FROM petitions WHERE petid = %i", atoi(sep->arg[2]));
 		auto results = database.QueryDatabase(query);
 
 		if (!results.Success() || results.RowCount() == 0)
 		{
-			c->Message(CC_Red, "There was an error in your request: ID not found! Please check the Id and try again.");
+			c->Message(Chat::Red, "There was an error in your request: ID not found! Please check the Id and try again.");
 			return;
 		}
 
 		auto row = results.begin();
-		c->Message(CC_Yellow, " %s: %s , %s , %s", row[0], row[1], row[2], row[3]);
+		c->Message(Chat::Yellow, " %s: %s , %s , %s", row[0], row[1], row[2], row[3]);
 	}
 	else if (strcasecmp(sep->arg[1], "info") == 0)
 	{
 		if (sep->arg[2][0] == 0)
 		{
-			c->Message(CC_Default, "Usage: #petition info (petition number) Type #petition list for a list");
+			c->Message(Chat::White, "Usage: #petition info (petition number) Type #petition list for a list");
 			return;
 		}
 
 		Log(Logs::General, Logs::Normal, "Petition information request from %s, petition number:", c->GetName(), atoi(sep->arg[2]));
-		c->Message(CC_Red, "ID : Character , Account , Zone , Class , Race , Level , Last GM , GM Comment");
+		c->Message(Chat::Red, "ID : Character , Account , Zone , Class , Race , Level , Last GM , GM Comment");
 		std::string query = StringFormat("SELECT petid, charname, accountname, zone, charclass, charrace, charlevel, lastgm, gmtext FROM petitions WHERE petid = %i", atoi(sep->arg[2]));
 		auto results = database.QueryDatabase(query);
 
 		if (!results.Success() || results.RowCount() == 0)
 		{
-			c->Message(CC_Red, "There was an error in your request: ID not found! Please check the Id and try again.");
+			c->Message(Chat::Red, "There was an error in your request: ID not found! Please check the Id and try again.");
 			return;
 		}
 
 		auto row = results.begin();
-		c->Message(CC_Yellow, "%s: %s %s %s %s %s %s %s %s", row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
+		c->Message(Chat::Yellow, "%s: %s %s %s %s %s %s %s %s", row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]);
 	}
 	else if (strcasecmp(sep->arg[1], "update") == 0)
 	{
@@ -93,7 +93,7 @@ void command_petition(Client *c, const Seperator *sep)
 		{
 			if (sep->arg[2][0] == 0 || sep->arg[3][0] == 0)
 			{
-				c->Message(CC_Default, "Usage: #petition update (petition number) (Text) Make sure you contain the comments in quotes. Type #petition list for a list");
+				c->Message(Chat::White, "Usage: #petition update (petition number) (Text) Make sure you contain the comments in quotes. Type #petition list for a list");
 				return;
 			}
 
@@ -103,14 +103,14 @@ void command_petition(Client *c, const Seperator *sep)
 
 			if (!results.Success())
 			{
-				c->Message(CC_Red, "There was an error in your request: ID not found! Please check the Id and try again.");
+				c->Message(Chat::Red, "There was an error in your request: ID not found! Please check the Id and try again.");
 				return;
 			}
 
-			c->Message(CC_Yellow, "%s, Updated petition comment to ( %s ) for petition: %i", c->GetName(), sep->arg[3], atoi(sep->arg[2]));
+			c->Message(Chat::Yellow, "%s, Updated petition comment to ( %s ) for petition: %i", c->GetName(), sep->arg[3], atoi(sep->arg[2]));
 		}
 		else
-			c->Message(CC_Default, "Your access level is not high enough to use this command.");
+			c->Message(Chat::White, "Your access level is not high enough to use this command.");
 	}
 	else if (strcasecmp(sep->arg[1], "delete") == 0)
 	{
@@ -118,11 +118,11 @@ void command_petition(Client *c, const Seperator *sep)
 		{
 			if (sep->arg[1][0] == 0 || sep->arg[2][0] == 0 || strcasecmp(sep->arg[2], "*") == 0)
 			{
-				c->Message(CC_Default, "Usage: #petition delete (petition number) Type #petition list for a list");
+				c->Message(Chat::White, "Usage: #petition delete (petition number) Type #petition list for a list");
 				return;
 			}
 
-			c->Message(CC_Red, "Attempting to delete petition number: %i", atoi(sep->arg[2]));
+			c->Message(Chat::Red, "Attempting to delete petition number: %i", atoi(sep->arg[2]));
 			std::string query = StringFormat("DELETE FROM petitions WHERE petid = %i", atoi(sep->arg[2]));
 			auto results = database.QueryDatabase(query);
 			if (!results.Success())
@@ -132,14 +132,14 @@ void command_petition(Client *c, const Seperator *sep)
 			Log(Logs::Detail, Logs::Normal, "Delete petition request from %s, petition number:", c->GetName(), atoi(sep->arg[2]));
 		}
 		else
-			c->Message(CC_Default, "Your access level is not high enough to use this command.");
+			c->Message(Chat::White, "Your access level is not high enough to use this command.");
 	}
 	else
 	{
 		int size = sizeof(help) / sizeof(std::string);
 		for (int i = 0; i < size; i++)
 		{
-			c->Message(CC_Default, help[i].c_str());
+			c->Message(Chat::White, help[i].c_str());
 		}
 	}
 }

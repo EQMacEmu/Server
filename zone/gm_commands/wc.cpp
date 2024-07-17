@@ -3,10 +3,10 @@
 void command_wc(Client *c, const Seperator *sep){
 	if (sep->argnum < 2)
 	{
-		c->Message(CC_Default, "Usage: #wc slot material [color] [unknown06]");
+		c->Message(Chat::White, "Usage: #wc slot material [color] [unknown06]");
 	}
 	else if (c->GetTarget() == nullptr) {
-		c->Message(CC_Red, "You must have a target to do a wear change.");
+		c->Message(Chat::Red, "You must have a target to do a wear change.");
 	}
 	else
 	{

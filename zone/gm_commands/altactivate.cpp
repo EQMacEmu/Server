@@ -2,21 +2,21 @@
 
 void command_altactivate(Client *c, const Seperator *sep){
 	if (sep->arg[1][0] == '\0'){
-		c->Message(CC_Default, "Invalid argument, usage:");
-		c->Message(CC_Default, "#altactivate list - lists the AA ID numbers that are available to you");
-		c->Message(CC_Default, "#altactivate time [argument] - returns the time left until you can use the AA with the ID that matches the argument.");
-		c->Message(CC_Default, "#altactivate [argument] - activates the AA with the ID that matches the argument.");
+		c->Message(Chat::White, "Invalid argument, usage:");
+		c->Message(Chat::White, "#altactivate list - lists the AA ID numbers that are available to you");
+		c->Message(Chat::White, "#altactivate time [argument] - returns the time left until you can use the AA with the ID that matches the argument.");
+		c->Message(Chat::White, "#altactivate [argument] - activates the AA with the ID that matches the argument.");
 		return;
 	}
 	if (!strcasecmp(sep->arg[1], "help")){
-		c->Message(CC_Default, "Usage:");
-		c->Message(CC_Default, "#altactivate list - lists the AA ID numbers that are available to you");
-		c->Message(CC_Default, "#altactivate time [argument] - returns the time left until you can use the AA with the ID that matches the argument.");
-		c->Message(CC_Default, "#altactivate [argument] - activates the AA with the ID that matches the argument.");
+		c->Message(Chat::White, "Usage:");
+		c->Message(Chat::White, "#altactivate list - lists the AA ID numbers that are available to you");
+		c->Message(Chat::White, "#altactivate time [argument] - returns the time left until you can use the AA with the ID that matches the argument.");
+		c->Message(Chat::White, "#altactivate [argument] - activates the AA with the ID that matches the argument.");
 		return;
 	}
 	if (!strcasecmp(sep->arg[1], "list")){
-		c->Message(CC_Default, "You have access to the following AA Abilities:");
+		c->Message(Chat::White, "You have access to the following AA Abilities:");
 		int x, val;
 		SendAA_Struct* saa = nullptr;
 		for (x = 0; x < aaHighestID; x++){
@@ -26,7 +26,7 @@ void command_altactivate(Client *c, const Seperator *sep){
 				val = c->GetAA(x);
 				if (val){
 					saa = zone->FindAA(x, false);
-					c->Message(CC_Default, "%d: %s %d", x, saa->name, val);
+					c->Message(Chat::White, "%d: %s %d", x, saa->name, val);
 				}
 			}
 		}
@@ -36,12 +36,12 @@ void command_altactivate(Client *c, const Seperator *sep){
 		if (c->GetAA(ability)){
 			int remain = c->GetPTimers().GetRemainingTime(pTimerAAStart + ability);
 			if (remain)
-				c->Message(CC_Default, "You may use that ability in %d minutes and %d seconds.", (remain / 60), (remain % 60));
+				c->Message(Chat::White, "You may use that ability in %d minutes and %d seconds.", (remain / 60), (remain % 60));
 			else
-				c->Message(CC_Default, "You may use that ability now.");
+				c->Message(Chat::White, "You may use that ability now.");
 		}
 		else{
-			c->Message(CC_Default, "You do not have access to that ability.");
+			c->Message(Chat::White, "You do not have access to that ability.");
 		}
 	}
 	else

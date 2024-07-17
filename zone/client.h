@@ -44,6 +44,7 @@ struct ItemData;
 #include "../common/inventory_profile.h"
 #include "../common/guilds.h"
 #include "../common/item_data.h"
+#include "../common/data_verification.h"
 
 #include "aa.h"
 #include "common.h"
@@ -175,7 +176,7 @@ public:
 	bool IsDevToolsEnabled() const;
 	void SetDevToolsEnabled(bool in_dev_tools_enabled);
 
-	void SendChatLineBreak(uint16 color = CC_Default);
+	void SendChatLineBreak(uint16 color = Chat::White);
 
 	//abstract virtual function implementations required by base abstract class
 	virtual bool Death(Mob* killerMob, int32 damage, uint16 spell_id, EQ::skills::SkillType attack_skill, uint8 killedby = 0, bool bufftic = false);
@@ -663,6 +664,8 @@ public:
 	void SetTradeskillObject(Object* object) { m_tradeskill_object = object; }
 	Object* GetTradeskillObject() { return m_tradeskill_object; }
 	inline PTimerList &GetPTimers() { return(p_timers); }
+
+	bool SendGMCommand(std::string message, bool ignore_status = false);
 
 	//AA Methods
 	void ResetAA();

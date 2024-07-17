@@ -4,7 +4,7 @@ void command_setgreed(Client *c, const Seperator *sep)
 {
 	if (!sep->IsNumber(1))
 	{
-		c->Message(CC_Default, "Usage: #setgreed [greed]");
+		c->Message(Chat::White, "Usage: #setgreed [greed]");
 		return;
 	}
 
@@ -12,11 +12,11 @@ void command_setgreed(Client *c, const Seperator *sep)
 	if (c->GetTarget() && c->GetTarget()->IsNPC())
 	{
 		c->GetTarget()->CastToNPC()->shop_count = value;
-		c->Message(CC_Default, "Set %s greed to %d (%d percent)", c->GetTarget()->GetName(), value, c->GetTarget()->CastToNPC()->GetGreedPercent());
+		c->Message(Chat::White, "Set %s greed to %d (%d percent)", c->GetTarget()->GetName(), value, c->GetTarget()->CastToNPC()->GetGreedPercent());
 	}
 	else
 	{
-		c->Message(CC_Default, "Please select a NPC target to set greed.");
+		c->Message(Chat::White, "Please select a NPC target to set greed.");
 		return;
 	}
 		

@@ -80,7 +80,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 	float distance_squared = (d * d);
 
 	to_who->Message(
-		CC_Default, 
+		Chat::White, 
 		fmt::format(
 			"Describing aggro for {}", 
 			to_who->GetTargetDescription(from_who)
@@ -92,7 +92,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 	if(is_engaged) {
 		Mob *top = from_who->GetHateTop();
 		to_who->Message(
-			CC_Default, 
+			Chat::White, 
 			fmt::format(
 				"I am currently engaged with {}.",
 				(
@@ -125,7 +125,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 		);
 
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is on Faction {} ({}).",
 				to_who->GetTargetDescription(from_who),
@@ -149,7 +149,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 		if (is_engaged) {
 			uint32 hate_amount = from_who->GetHateAmount(npc);
 			to_who->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"{} is {}on my hate list{}.",
 					to_who->GetTargetDescription(npc),
@@ -166,7 +166,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 			);
 		} else if (!Will_aggro_npcs && npc->IsNPC()) {
 			to_who->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"{} is an NPC and my npc_aggro is disabled.",
 					to_who->GetTargetDescription(npc)
@@ -192,7 +192,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 		z_range > aggro_range
 		) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is out of range. X Range: {} Y Range: {} Z Range: {} Aggro Range: {}",
 				to_who->GetTargetDescription(mob),
@@ -207,7 +207,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 	if (mob->IsInvisible(this)) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is invisible to me.",
 				to_who->GetTargetDescription(mob)
@@ -225,7 +225,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 		))
 	{
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is a GM or is not connected.",
 				to_who->GetTargetDescription(mob)
@@ -237,7 +237,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 	if (mob == GetOwner()) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is my owner.",
 				to_who->GetTargetDescription(mob)
@@ -249,7 +249,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 	if(mob->IsPet() && !mob->IsCharmedPet())
 	{
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 			"{} is a summoned pet. ",
 				to_who->GetTargetDescription(mob)
@@ -262,7 +262,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 	float aggro_range_squared = (aggro_range * aggro_range);
 	if(distance_squared > aggro_range_squared) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is out of range. Distance: {:.2f} Aggro Range: {:.2f}",
 				to_who->GetTargetDescription(mob),
@@ -275,7 +275,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 	if (GetLevel() < 18 && mob->GetLevelCon(GetLevel()) == CON_GREEN && GetBodyType() != BT_Undead && !IsAggroOnPC()) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} considers Red to me.",
 				to_who->GetTargetDescription(mob)
@@ -299,7 +299,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 		if(!mob_faction_id) {
 			to_who->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"{} has no primary Faction.",
 					to_who->GetTargetDescription(mob)
@@ -307,7 +307,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 			);
 		} else if(mob_faction_id < 0) {
 			to_who->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"{} is on special Faction {}.",
 					to_who->GetTargetDescription(mob),
@@ -320,7 +320,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 			for (auto faction : faction_list) {
 				if (static_cast<int>(faction->factionID) == mob_faction_id) {
 					to_who->Message(
-						CC_Default,
+						Chat::White,
 						fmt::format(
 							"{} has {} standing with Faction {} ({}) with their Faction Level of {}",
 							to_who->GetTargetDescription(mob),
@@ -345,7 +345,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 			if (!has_entry) {
 				to_who->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"{} is on Faction {} ({}), for which I do not have an entry.",
 						to_who->GetTargetDescription(mob),
@@ -365,7 +365,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 			)
 		) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} does not have low enough faction, their Faction Level is {} ({}).",
 				to_who->GetTargetDescription(mob),
@@ -378,7 +378,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 
 	if(!CheckLosFN(mob)) {
 		to_who->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} is out of sight.",
 				to_who->GetTargetDescription(mob)
@@ -387,7 +387,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 	}
 
 	to_who->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"{} meets all conditions, I should be attacking them.",
 			to_who->GetTargetDescription(mob)
@@ -446,7 +446,7 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 	// Summoned pets are indifferent
 	if ((mob->IsClient() && mob->CastToClient()->has_zomm) || mob->iszomm || (mob->IsPet() && !mob->IsCharmedPet()))
 	{
-		Log(Logs::Moderate, Logs::Aggro, "Zomm or Pet: Skipping aggro.");
+		Log(Logs::Detail, Logs::Aggro, "Zomm or Pet: Skipping aggro.");
 		return false;
 	}
 
@@ -481,7 +481,7 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 	{
 		//make sure we can see them. last since it is very expensive
 		if (zone->SkipLoS() || CheckLosFN(mob)) {
-			Log(Logs::Moderate, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
+			Log(Logs::Detail, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
 			return true;
 		}
 	}
@@ -569,7 +569,7 @@ bool Mob::CheckDragAggro(Mob *mob) {
 	// Summoned pets are indifferent
 	if ((mob->IsClient() && mob->CastToClient()->has_zomm) || mob->iszomm || (mob->IsPet() && !mob->IsCharmedPet()))
 	{
-		Log(Logs::Moderate, Logs::Aggro, "Zomm or Pet: Skipping drag aggro.");
+		Log(Logs::Detail, Logs::Aggro, "Zomm or Pet: Skipping drag aggro.");
 		return(false);
 	}
 
@@ -583,7 +583,7 @@ bool Mob::CheckDragAggro(Mob *mob) {
 
 	//make sure we can see them. last since it is very expensive
 	if (zone->SkipLoS() || CheckLosFN(mob)) {
-		Log(Logs::Moderate, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
+		Log(Logs::Detail, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
 		return(true);
 	}
 
@@ -1404,7 +1404,7 @@ bool Mob::CheckRegion(Mob* other, bool skipwater) {
 		return true;
 
 	//Hack for kedge and powater since we have issues with watermaps.
-	if (GetZoneID() == powater || GetZoneID() == kedge) {
+	if (GetZoneID() == Zones::POWATER || GetZoneID() == Zones::KEDGE) {
 		if (zone->IsWaterZone(other->GetZ()) && zone->IsWaterZone(this->GetZ()) && skipwater)
 			return true;
 	}
@@ -1416,7 +1416,7 @@ bool Mob::CheckRegion(Mob* other, bool skipwater) {
 	ThisRegionType = zone->watermap->ReturnRegionType(position);
 	OtherRegionType = zone->watermap->ReturnRegionType(other_position);
 
-	Log(Logs::Moderate, Logs::Maps, "Caster Region: %d Other Region: %d", ThisRegionType, OtherRegionType);
+	Log(Logs::Detail, Logs::Maps, "Caster Region: %d Other Region: %d", ThisRegionType, OtherRegionType);
 
 	WaterRegionType AdjThisRegionType = ThisRegionType;
 	WaterRegionType AdjOtherRegionType = OtherRegionType;

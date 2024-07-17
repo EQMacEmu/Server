@@ -4,12 +4,12 @@ void command_appearance(Client *c, const Seperator *sep)
 {
 	const int arguments = sep->argnum;
 	if (!arguments || !sep->IsNumber(1) || !sep->IsNumber(2)) {
-		c->Message(CC_Default, "Usage: #appearance [Type] [Value]");
-		c->Message(CC_Default, "Note: Types are as follows:");
+		c->Message(Chat::White, "Usage: #appearance [Type] [Value]");
+		c->Message(Chat::White, "Note: Types are as follows:");
 
 		for (const auto &a : EQ::constants::GetAppearanceTypeMap()) {
 			c->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Appearance Type {} | {}",
 					a.first,
@@ -31,7 +31,7 @@ void command_appearance(Client *c, const Seperator *sep)
 	t->SendAppearancePacket(type, value);
 
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Appearance Sent to {} | Type: {} ({}) Value: {}",
 			c->GetTargetDescription(t, TargetDescriptionType::UCSelf),

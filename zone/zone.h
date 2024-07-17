@@ -122,7 +122,7 @@ public:
 	inline const uint16& graveyard_timer() { return pgraveyard_timer;  }
 	inline const uint32& GetMaxClients() { return pMaxClients; }
 
-	void	LoadAAs();
+	void	LoadAlternateAdvancement();
 	int		GetTotalAAs() { return totalAAs; }
 	SendAA_Struct*	GetAABySequence(uint32 seq) { return aas[seq]; }
 	SendAA_Struct*	FindAA(uint32 id, bool searchParent);
@@ -266,7 +266,7 @@ public:
 	uint32	numzonepoints;
 	float	update_range;
 
-	std::vector<NPC_Emote_Struct*> NPCEmoteList;
+	std::vector<NPC_Emote_Struct*> npc_emote_list;
 	LinkedList<KeyRing_Data_Struct*> KeyRingDataList;
 
 	void LoadTickItems();
@@ -284,23 +284,48 @@ public:
 	// random object that provides random values for the zone
 	EQ::Random random;
 
-	static void GMSayHookCallBackProcess(uint16 log_category, std::string message){
+	static void GMSayHookCallBackProcess(uint16 log_category, const char *func, std::string message) {
+		// we don't want to loop up with chat messages
+		if (message.find("OP_SpecialMesg") != std::string::npos) {
+			return;
+		}
+
 		/* Cut messages down to 2600 max to prevent client crash */
-		if (!message.empty())
+		if (!message.empty()) {
 			message = message.substr(0, 2600);
+		}
 
 		/* Replace Occurrences of % or MessageStatus will crash */
 		Strings::Replace(message, std::string("%"), std::string("."));
 
 		if (message.find("\n") != std::string::npos){
 			auto message_split = Strings::Split(message, '\n');
-			entity_list.MessageStatus(0, 80, LogSys.GetGMSayColorFromCategory(log_category), "%s", message_split[0].c_str());
+			entity_list.MessageStatus(
+				0,
+				AccountStatus::QuestTroupe,
+				LogSys.GetGMSayColorFromCategory(log_category),
+				message_split[0].c_str()
+			);
+
 			for (size_t iter = 1; iter < message_split.size(); ++iter) {
-				entity_list.MessageStatus(0, 80, LogSys.GetGMSayColorFromCategory(log_category), "--- %s", message_split[iter].c_str());
+				entity_list.MessageStatus(
+					0,
+					AccountStatus::QuestTroupe,
+					LogSys.GetGMSayColorFromCategory(log_category),
+					fmt::format(
+						"--- {}",
+						message_split[iter]
+					).c_str()
+				);
 			}
 		}
 		else{
-			entity_list.MessageStatus(0, 80, LogSys.GetGMSayColorFromCategory(log_category), "%s", message.c_str());
+			entity_list.MessageStatus(
+				0,
+				AccountStatus::QuestTroupe,
+				LogSys.GetGMSayColorFromCategory(log_category),
+				fmt::format("[{}] [{}] {}", Logs::LogCategoryName[log_category], func, message).c_str()
+			);
 		}
 	}
 

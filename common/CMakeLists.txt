@@ -11,6 +11,7 @@ SET(common_sources
 	crc32.cpp
 	database/database_dump_service.cpp
 	database.cpp
+	deity.cpp
 	dbcore.cpp
 	emu_constants.cpp
 	emu_limits.cpp
@@ -55,6 +56,7 @@ SET(common_sources
 	packet_dump.cpp
 	packet_dump_file.cpp
 	packet_functions.cpp
+	path_manager.cpp
 	process/process.cpp
 	proc_launcher.cpp
 	ptimer.cpp
@@ -389,6 +391,7 @@ SET(common_headers
 	packet_dump.h
 	packet_dump_file.h
 	packet_functions.h
+	path_manager.h
 	platform.h
 	process/process.h
 	proc_launcher.h

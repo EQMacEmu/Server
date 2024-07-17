@@ -3,9 +3,9 @@
 void command_gmdamage(Client *c, const Seperator *sep)
 {
 	if (c->GetTarget() == 0)
-		c->Message(CC_Default, "Error: #gmamage: No Target.");
+		c->Message(Chat::White, "Error: #gmamage: No Target.");
 	else if (!sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #gmdamage [dmg] [skipaggro] [spell]");
+		c->Message(Chat::White, "Usage: #gmdamage [dmg] [skipaggro] [spell]");
 	}
 	else {
 		int32 nkdmg = atoi(sep->arg[1]);
@@ -26,7 +26,7 @@ void command_gmdamage(Client *c, const Seperator *sep)
 		}
 
 		if (nkdmg > 2100000000)
-			c->Message(CC_Default, "Enter a value less then 2,100,000,000.");
+			c->Message(Chat::White, "Enter a value less then 2,100,000,000.");
 		else
 			c->GetTarget()->DamageCommand(c, nkdmg, skipaggro, spell_id, attack_skill);
 	}

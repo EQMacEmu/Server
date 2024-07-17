@@ -194,7 +194,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 						if (!roambox_distance && !IsPet() && GetHPRatio() <= 10.0f && zone->GetZoneExpansion() != ClassicEQ
 							&& zone->random.Roll(50) && DistanceSquared(CastToNPC()->GetSpawnPoint(), GetPosition()) > 40000)
 						{
-							entity_list.MessageClose_StringID(this, true, 200, MT_Spells, BEGIN_GATE, this->GetCleanName());
+							entity_list.MessageClose_StringID(this, true, 200, Chat::Spells, BEGIN_GATE, this->GetCleanName());
 							AIDoSpellCast(i, tar, mana_cost);
 							AIspells[i].time_cancast = Timer::GetCurrentTime() + 5000;
 							return true;
@@ -661,7 +661,7 @@ void Client::AI_Stop() {
 	QueuePacket(app);
 	safe_delete(app);
 
-	//this->Message_StringID(CC_Red,PLAYER_REGAIN);
+	//this->Message_StringID(Chat::Red,PLAYER_REGAIN);
 	app = new EQApplicationPacket(OP_ReturnClientControl, 0);
 	QueuePacket(app);
 	safe_delete(app);
@@ -1018,7 +1018,7 @@ void Client::AI_Process()
 								{
 									if (zone->random.Int(0, 99) < aabonuses.FlurryChance)
 									{
-										Message_StringID(MT_NPCFlurry, YOU_FLURRY);
+										Message_StringID(Chat::NPCFlurry, YOU_FLURRY);
 										Attack(GetTarget(), EQ::invslot::slotPrimary);
 
 										if (zone->random.Roll(10))							// flurry is usually only +1 swings
@@ -1682,7 +1682,7 @@ void Mob::AI_Process() {
 					else if (ai_think && GetTarget())
 					{
 						if (AIstackedmobs_timer->Check() && zone->random.Roll(33) && entity_list.StackedMobsCount(this) > 4) {
-							if (GetHPRatio() < 95.0f && zone->random.Roll(5) && (GetZoneID() == postorms || GetZoneID() == povalor || GetZoneID() == hohonora || GetZoneID() == pofire || GetZoneID() == potactics)) {
+							if (GetHPRatio() < 95.0f && zone->random.Roll(5) && (GetZoneID() == Zones::POSTORMS || GetZoneID() == Zones::POVALOR || GetZoneID() == Zones::HOHONORA || GetZoneID() == Zones::POFIRE || GetZoneID() == Zones::POTACTICS)) {
 								glm::vec3 tar_pos(GetTarget()->GetX(), GetTarget()->GetY(), GetTarget()->GetZ());
 
 								// warp on top of target
@@ -2414,29 +2414,26 @@ void NPC::AI_SetupNextWaypoint() {
 
 void Mob::AI_Event_Engaged(Mob* attacker)
 {
-	if (!IsAIControlled())
+	if (!IsAIControlled()) {
 		return;
+	}
 
-	if(GetAppearance() != eaStanding)
-	{
+	if(GetAppearance() != eaStanding) {
 		SetAppearance(eaStanding);
 	}
 
-	if (IsNPC() && !IsPet() && !CastToNPC()->IsAssisting())
-	{
-		if (!RuleB(AlKabor, AllowTickSplit) || GetSpecialAbility(ALWAYS_CALL_HELP))
-		{
+	if (IsNPC() && !IsPet() && !CastToNPC()->IsAssisting()) {
+		if (!RuleB(AlKabor, AllowTickSplit) || GetSpecialAbility(ALWAYS_CALL_HELP)) {
 			CastToNPC()->CallForHelp(attacker, true);
 		}
 	}
 
-	if (IsNPC())
-	{
-		if (AIhail_timer->Enabled())
+	if (IsNPC()) {
+		if (AIhail_timer->Enabled()) {
 			AIhail_timer->Disable();
+		}
 
-		if (CastToNPC()->GetGrid() > 0)
-		{
+		if (CastToNPC()->GetGrid() > 0) {
 			if (AIwalking_timer->Enabled()) {
 				if (AIwalking_timer->Check(false)) {
 					AIwalking_timer->Disable();
@@ -2449,18 +2446,16 @@ void Mob::AI_Event_Engaged(Mob* attacker)
 
 		CastToNPC()->TriggerAutoCastTimer();
 
-		if(attacker && !attacker->IsCorpse())
-		{
+		if(attacker && !attacker->IsCorpse()) {
 			//Because sometimes the AIYellForHelp triggers another engaged and then immediately a not engaged
 			//if the target dies before it goes off
-			if(attacker->GetHP() > 0)
-			{
-				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0)
-				{
+			if(attacker->GetHP() > 0) {
+				if(!CastToNPC()->GetCombatEvent() && GetHP() > 0) {
 					parse->EventNPC(EVENT_COMBAT, CastToNPC(), attacker, "1", 0);
-					uint16 emoteid = GetEmoteID();
-					if(emoteid != 0 && !IsPet())
-						CastToNPC()->DoNPCEmote(ENTERCOMBAT,emoteid,attacker);
+					uint32 emoteid = GetEmoteID();
+					if (emoteid != 0 && !IsPet()) {
+						CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::EnterCombat, emoteid, attacker);
+					}
 
 					CastToNPC()->SetCombatEvent(true);
 				}
@@ -2517,40 +2512,42 @@ void Mob::AI_SetLoiterTimer()
 
 // Note: Hate list may not be empty when this is called
 void Mob::AI_Event_NoLongerEngaged() {
-	if (!IsAIControlled())
+	if (!IsAIControlled()) {
 		return;
+	}
 
-	if (AIloiter_timer->Paused())
+	if (AIloiter_timer->Paused()) {
 		AIloiter_timer->Resume();
-	if (!AIloiter_timer->Enabled() || AIloiter_timer->GetRemainingTime() < 1000)
+	}
+	if (!AIloiter_timer->Enabled() || AIloiter_timer->GetRemainingTime() < 1000) {
 		AIloiter_timer->Start(1000);
+	}
 
-	if (AIwalking_timer->Paused())
+	if (AIwalking_timer->Paused()) {
 		AIwalking_timer->Resume();
+	}
 
 	// So mobs don't keep running as a ghost until AIwalking_timer fires
 	// if they were moving prior to losing all hate
-	if (IsMoving() && (!IsFearedNoFlee() || !curfp))
-	{
+	if (IsMoving() && (!IsFearedNoFlee() || !curfp)) {
 		StopNavigation();
 	}
-	if (GetCurrentSpeed() < 0.1f || IsMezzed() || IsStunned())
+	if (GetCurrentSpeed() < 0.1f || IsMezzed() || IsStunned()) {
 		StopNavigation();
+	}
 
 	ClearRampage();
 
-	if(IsNPC())
-	{
+	if(IsNPC()) {
 		CastToNPC()->SetAssisting(false);
 
-		if(CastToNPC()->GetCombatEvent() && GetHP() > 0)
-		{
-			if(entity_list.GetNPCByID(this->GetID()))
-			{
-				uint16 emoteid = CastToNPC()->GetEmoteID();
+		if(CastToNPC()->GetCombatEvent() && GetHP() > 0) {
+			if(entity_list.GetNPCByID(this->GetID())) {
+				uint32 emoteid = CastToNPC()->GetEmoteID();
 				parse->EventNPC(EVENT_COMBAT, CastToNPC(), nullptr, "0", 0);
-				if(emoteid != 0)
-					CastToNPC()->DoNPCEmote(LEAVECOMBAT,emoteid);
+				if (emoteid != 0) {
+					CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::LeaveCombat, emoteid);
+				}
 				CastToNPC()->SetCombatEvent(false);
 			}
 		}
@@ -2706,14 +2703,14 @@ void Mob::StartEnrage()
 
 	// start the timer. need to call IsEnraged frequently since we dont have callback timers :-/
 	bEnraged = true;
-	entity_list.MessageClose_StringID(this, true, 200, MT_NPCEnrage, NPC_ENRAGE_START, GetCleanName());
+	entity_list.MessageClose_StringID(this, true, 200, Chat::NPCEnrage, NPC_ENRAGE_START, GetCleanName());
 }
 
 void Mob::ProcessEnrage(){
 	if(IsEnraged()){
 		Timer *timer = GetSpecialAbilityTimer(SPECATK_ENRAGE);
 		if(timer && timer->Check()){
-			entity_list.MessageClose_StringID(this, true, 200, MT_NPCEnrage, NPC_ENRAGE_END, GetCleanName());
+			entity_list.MessageClose_StringID(this, true, 200, Chat::NPCEnrage, NPC_ENRAGE_END, GetCleanName());
 
 			int enraged_cooldown = GetSpecialAbilityParam(SPECATK_ENRAGE, 2);
 			enraged_cooldown = enraged_cooldown > 0 ? enraged_cooldown : EnragedTimer;
@@ -2738,10 +2735,10 @@ bool Mob::Flurry()
 	{
 		if (!IsPet())
 		{
-			entity_list.MessageClose_StringID(this, true, 200, MT_NPCFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
+			entity_list.MessageClose_StringID(this, true, 200, Chat::NPCFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
 		} else
 		{
-			entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
+			entity_list.MessageClose_StringID(this, true, 200, Chat::PetFlurry, NPC_FLURRY, GetCleanName(), target->GetCleanName());
 		}
 
 		if (IsNPC())
@@ -2825,9 +2822,9 @@ bool Mob::Rampage(int range, int damagePct)
 		return false;
 
 	if (!IsPet())
-		entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
+		entity_list.MessageClose_StringID(this, true, 200, Chat::NPCRampage, NPC_RAMPAGE, GetCleanName());
 	else
-		entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_RAMPAGE, GetCleanName());
+		entity_list.MessageClose_StringID(this, true, 200, Chat::PetFlurry, NPC_RAMPAGE, GetCleanName());
 
 	for (int i = 0; i < RampageArray.size(); i++)
 	{
@@ -2886,13 +2883,13 @@ void Mob::AreaRampage(int numTargets, int damagePct)
 	if (!IsPet())	// do not know every pet AA so thought it safer to add this
 	{
 		// older clients did not have 'wild rampage' string
-		entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, NPC_RAMPAGE, GetCleanName());
-		//entity_list.MessageClose_StringID(this, true, 200, MT_NPCRampage, AE_RAMPAGE, GetCleanName());
+		entity_list.MessageClose_StringID(this, true, 200, Chat::NPCRampage, NPC_RAMPAGE, GetCleanName());
+		//entity_list.MessageClose_StringID(this, true, 200, Chat::NPCRampage, AE_RAMPAGE, GetCleanName());
 	}
 	else
 	{
-		entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, NPC_RAMPAGE, GetCleanName());
-		//entity_list.MessageClose_StringID(this, true, 200, MT_PetFlurry, AE_RAMPAGE, GetCleanName());
+		entity_list.MessageClose_StringID(this, true, 200, Chat::PetFlurry, NPC_RAMPAGE, GetCleanName());
+		//entity_list.MessageClose_StringID(this, true, 200, Chat::PetFlurry, AE_RAMPAGE, GetCleanName());
 	}
 
 	index_hit = hate_list.AreaRampage(this, GetTarget(), numTargets, damagePct);
@@ -3424,7 +3421,7 @@ void NPC::AISpellsList(Client *c)
 
 	if (AIspells.size() > 0) {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} has {} AI spells.",
 				GetCleanName(),
@@ -3435,7 +3432,7 @@ void NPC::AISpellsList(Client *c)
 		int spell_slot = 1;
 		for (const auto &ai_spell : AIspells) {
 			c->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Spell {} | Name: {} ({}) Type: {} Mana Cost: {}",
 					spell_slot,
@@ -3447,7 +3444,7 @@ void NPC::AISpellsList(Client *c)
 			);
 
 			c->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Spell {} | Priority: {} | Recast Delay: {}",
 					spell_slot,
@@ -3458,7 +3455,7 @@ void NPC::AISpellsList(Client *c)
 
 			if (ai_spell.time_cancast) {
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"Spell {} | Time Can Cast : {}",
 						spell_slot,
@@ -3469,7 +3466,7 @@ void NPC::AISpellsList(Client *c)
 
 			if (ai_spell.resist_adjust) {
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"Spell {} | Resist Adjust: {}",
 						spell_slot,
@@ -3483,7 +3480,7 @@ void NPC::AISpellsList(Client *c)
 	}
 	else {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} has no AI spells.",
 				GetCleanName()

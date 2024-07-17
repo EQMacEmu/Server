@@ -4,16 +4,16 @@ void command_ai(Client *c, const Seperator *sep)
 {
 	int arguments = sep->argnum;
 	if (!arguments) {
-		c->Message(CC_Default, "Usage: #ai consider [Mob Name] - Show how an NPC considers to a mob");
-		c->Message(CC_Default, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
-		c->Message(CC_Default, "Usage: #ai guard - Save an NPC's guard spot to their current location");
-		c->Message(CC_Default, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
-		c->Message(CC_Default, "Usage: #ai spells [Spell List ID] - Set an NPC's Spell List ID");
+		c->Message(Chat::White, "Usage: #ai consider [Mob Name] - Show how an NPC considers to a mob");
+		c->Message(Chat::White, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
+		c->Message(Chat::White, "Usage: #ai guard - Save an NPC's guard spot to their current location");
+		c->Message(Chat::White, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
+		c->Message(Chat::White, "Usage: #ai spells [Spell List ID] - Set an NPC's Spell List ID");
 		return;
 	}
 
 	if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-		c->Message(CC_Default, "You must target an NPC to use this command.");
+		c->Message(Chat::White, "You must target an NPC to use this command.");
 		return;
 	}
 
@@ -32,11 +32,11 @@ void command_ai(Client *c, const Seperator *sep)
 		!is_roambox &&
 		!is_spells
 		) {
-		c->Message(CC_Default, "Usage: #ai consider [Mob Name] - Show how an NPC considers to a mob");
-		c->Message(CC_Default, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
-		c->Message(CC_Default, "Usage: #ai guard - Save an NPC's guard spot to their current location");
-		c->Message(CC_Default, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
-		c->Message(CC_Default, "Usage: #ai spells [Spell List ID] - Set an NPC's Spell List ID");
+		c->Message(Chat::White, "Usage: #ai consider [Mob Name] - Show how an NPC considers to a mob");
+		c->Message(Chat::White, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
+		c->Message(Chat::White, "Usage: #ai guard - Save an NPC's guard spot to their current location");
+		c->Message(Chat::White, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
+		c->Message(Chat::White, "Usage: #ai spells [Spell List ID] - Set an NPC's Spell List ID");
 		return;
 	}
 
@@ -47,7 +47,7 @@ void command_ai(Client *c, const Seperator *sep)
 			if (mob_to_consider) {
 				auto consider_level = static_cast<uint8>(mob_to_consider->GetReverseFactionCon(target));
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"{} ({}) considers {} ({}) as {} ({}).",
 						target->GetCleanName(),
@@ -60,10 +60,10 @@ void command_ai(Client *c, const Seperator *sep)
 				);
 			}
 			else
-				c->Message(CC_Default, fmt::format("Error: {} not found.", mob_name).c_str());
+				c->Message(Chat::White, fmt::format("Error: {} not found.", mob_name).c_str());
 		}
 		else {
-			c->Message(CC_Default, "Usage: #ai consider [Mob Name] - Show how an NPC considers a mob");
+			c->Message(Chat::White, "Usage: #ai consider [Mob Name] - Show how an NPC considers a mob");
 		}
 	}
 	else if (is_faction) {
@@ -72,7 +72,7 @@ void command_ai(Client *c, const Seperator *sep)
 			auto faction_name = database.GetFactionName(faction_id);
 			target->SetNPCFactionID(faction_id);
 			c->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"{} ({}) is now on Faction {}.",
 					target->GetCleanName(),
@@ -90,7 +90,7 @@ void command_ai(Client *c, const Seperator *sep)
 			);
 		}
 		else {
-			c->Message(CC_Default, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
+			c->Message(Chat::White, "Usage: #ai faction [Faction ID] - Set an NPC's Faction ID");
 		}
 	}
 	else if (is_guard) {
@@ -99,7 +99,7 @@ void command_ai(Client *c, const Seperator *sep)
 		target->SaveGuardSpot();
 
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} ({}) now has a guard spot of {:.2f}, {:.2f}, {:.2f} with a heading of {:.2f}.",
 				target->GetCleanName(),
@@ -147,7 +147,7 @@ void command_ai(Client *c, const Seperator *sep)
 				);
 
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"{} ({}) now has a roambox from {}, {} to {}, {} with {} and {}.",
 						target->GetCleanName(),
@@ -178,11 +178,11 @@ void command_ai(Client *c, const Seperator *sep)
 				);
 			}
 			else {
-				c->Message(CC_Default, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
+				c->Message(Chat::White, "Usage: #ai roambox [Min X] [Max X] [Min Y] [Max Y] [Delay] [Minimum Delay] - Set an NPC's roambox using X and Y coordinates");
 			}
 		}
 		else {
-			c->Message(CC_Default, "You must target an NPC with AI.");
+			c->Message(Chat::White, "You must target an NPC with AI.");
 		}
 	}
 	else if (is_spells) {
@@ -192,7 +192,7 @@ void command_ai(Client *c, const Seperator *sep)
 				target->CastToNPC()->AI_AddNPCSpells(spell_list_id);
 
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						"{} ({}) is now using Spell List {}.",
 						target->GetCleanName(),
@@ -202,7 +202,7 @@ void command_ai(Client *c, const Seperator *sep)
 				);
 			}
 			else {
-				c->Message(CC_Default, "Spell List ID must be greater than or equal to 0.");
+				c->Message(Chat::White, "Spell List ID must be greater than or equal to 0.");
 			}
 		}
 	}

@@ -14,7 +14,7 @@ void command_setxp(Client *c, const Seperator *sep){
 		int input = atoi(sep->arg[1]);
 
 		if (input > 9999999)
-			c->Message(CC_Default, "Error: Value too high.");
+			c->Message(Chat::White, "Error: Value too high.");
 		else if(input == -1)
 		{
 			uint32 newxp = currentXP - exploss;
@@ -42,6 +42,6 @@ void command_setxp(Client *c, const Seperator *sep){
 		}
 	}
 	else
-		c->Message(CC_Default, "Usage: #setxp number or percentage. If 0, will 'rez' a single death. If -1 will subtract a single death.");
+		c->Message(Chat::White, "Usage: #setxp number or percentage. If 0, will 'rez' a single death. If -1 will subtract a single death.");
 }
 

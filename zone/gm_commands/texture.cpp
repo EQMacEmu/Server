@@ -39,6 +39,6 @@ void command_texture(Client *c, const Seperator *sep){
 		}
 	}
 	else
-		c->Message(CC_Default, "Usage: #texture [texture] [helmtexture] (0-255, 255 for show equipment)");
+		c->Message(Chat::White, "Usage: #texture [texture] [helmtexture] (0-255, 255 for show equipment)");
 }
 

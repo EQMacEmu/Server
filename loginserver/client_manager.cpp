@@ -1,20 +1,3 @@
-/*	EQEMu: Everquest Server Emulator
-	Copyright (C) 2001-2010 EQEMu Development Team (http://eqemulator.net)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; version 2 of the License.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY except by those people which sell it, which
-	are required to give you total support for your newly bought product;
-	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-*/
 #include "client_manager.h"
 #include "login_server.h"
 
@@ -22,14 +5,25 @@ extern LoginServer server;
 extern bool run_server;
 
 #include "../common/eqemu_logsys.h"
-extern EQEmuLogSys Log;
+#include "../common/misc.h"
+#include "../common/path_manager.h"
 
 ClientManager::ClientManager()
 {
 	int old_port = server.config.GetVariableInt("Old", "port", 6000);
 	old_stream = new EQStreamFactory(OldStream, old_port);
 	old_ops = new RegularOpcodeManager;
-	if (!old_ops->LoadOpcodes(server.config.GetVariableString("Old", "opcodes", "login_opcodes_oldver.conf").c_str())) {
+
+	std::string opcodes_path = fmt::format(
+		"{}/{}",
+		path.GetServerPath(),
+		server.config.GetVariableString(
+			"Old",
+			"opcodes",
+			"login_opcodes_oldver.conf"
+		)
+	);
+	if (!old_ops->LoadOpcodes(opcodes_path.c_str())) {
 		LogError("ClientManager fatal error: couldn't load opcodes for Old file [{}].",
 			server.config.GetVariableString("Old", "opcodes", "login_opcodes_oldver.conf"));
 		run_server = false;
@@ -63,7 +57,7 @@ void ClientManager::Process()
 {
 	ProcessDisconnect();
 	if (old_stream) {
-		std::shared_ptr<EQOldStream> oldcur = old_stream->PopOld();
+		std::shared_ptr<EQStreamInterface> oldcur = old_stream->PopOld();
 		while (oldcur)
 		{
 			struct in_addr in;

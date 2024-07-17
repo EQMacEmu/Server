@@ -28,6 +28,7 @@
 #include "../common/crash.h"
 #include "../common/strings.h"
 #include "../common/event/timer.h"
+#include "../common/path_manager.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
@@ -41,6 +42,7 @@ EQEmuLogSys LogSys;
 TimeoutManager timeout_manager;
 Database database;
 WorldServer *worldserver = nullptr;
+PathManager path;
 
 const ucsconfig *Config;
 
@@ -62,6 +64,8 @@ int main() {
 	RegisterExecutablePlatform(ExePlatformUCS);
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
+
+	path.LoadPaths();
 
 	// Check every minute for unused channels we can delete
 	//
@@ -94,6 +98,7 @@ int main() {
 	}
 
 	LogSys.SetDatabase(&database)
+		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 

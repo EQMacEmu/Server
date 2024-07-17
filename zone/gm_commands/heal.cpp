@@ -6,7 +6,7 @@ void command_heal(Client *c, const Seperator *sep)
 	target->Heal();
 	if (c != target) {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Healed {} ({}) to full.",
 				target->GetCleanName(),
@@ -15,7 +15,7 @@ void command_heal(Client *c, const Seperator *sep)
 		);
 	}
 	else {
-		c->Message(CC_Default, "Healed yourself to full.");
+		c->Message(Chat::White, "Healed yourself to full.");
 	}
 }
 

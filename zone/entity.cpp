@@ -506,8 +506,8 @@ void EntityList::MobProcess()
 			{
 				mob_settle_timer->Start(RuleI(Zone, IdleTimer)); // idle timer from when the last player left the zone.
 				Log(Logs::General, Logs::Status, "Entity Process: Number of clients has dropped to 0. Setting idle timer.");
-				LogSys.log_settings[Logs::PacketServerClientWithDump].log_to_gmsay = 0;
-				LogSys.log_settings[Logs::PacketClientServerWithDump].log_to_gmsay = 0;
+				LogSys.log_settings[Logs::PacketServerClient].log_to_gmsay = 0;
+				LogSys.log_settings[Logs::PacketClientServer].log_to_gmsay = 0;
 			}
 			else if (numclients >= 1 && zone->idle)
 			{
@@ -729,9 +729,10 @@ void EntityList::AddNPC(NPC *npc, bool SendSpawnPacket, bool dontqueue)
 			parse->EventNPC(EVENT_SPAWN, npc, nullptr, "", 0);
 
 			if (!npc->GetDepop()) {
-				uint16 emoteid = npc->GetEmoteID();
-				if (emoteid != 0)
-					npc->DoNPCEmote(ONSPAWN, emoteid);
+				uint32 emoteid = npc->GetEmoteID();
+				if (emoteid != 0) {
+					npc->DoNPCEmote(EQ::constants::EmoteEventTypes::OnSpawn, emoteid);
+				}
 			}
 		} else {
 			auto ns = new NewSpawn_Struct;
@@ -848,14 +849,14 @@ void EntityList::CheckSpawnQueue()
 			Mob::CreateSpawnPacket(&outapp, iterator.GetData());
 			QueueClients(0, &outapp);
 			Mob* mob = GetMob(iterator.GetData()->spawn.spawnId);
-			if (mob && mob->IsNPC())
-			{
+			if (mob && mob->IsNPC()) {
 				mob->SpawnPacketSent(true);
 				parse->EventNPC(EVENT_SPAWN, mob->CastToNPC(), nullptr, "", 0);
 				if (!mob->CastToNPC()->GetDepop()) {
 					uint16 emoteid = mob->CastToNPC()->GetEmoteID();
-					if (emoteid != 0)
-						mob->CastToNPC()->DoNPCEmote(ONSPAWN, emoteid);
+					if (emoteid != 0) {
+						mob->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::OnSpawn, emoteid);
+					}
 				}
 			}
 			
@@ -950,7 +951,7 @@ void EntityList::ListDoors(Client* c)
 
 		if (!it->second)
 			continue;
-		c->Message(CC_Default, "DoorID %3d at %.2f, %.2f, %.2f. (%s)", it->second->GetDoorID(), it->second->GetPosition().x,it->second->GetPosition().y,it->second->GetPosition().z, it->second->GetDoorName());
+		c->Message(Chat::White, "DoorID %3d at %.2f, %.2f, %.2f. (%s)", it->second->GetDoorID(), it->second->GetPosition().x,it->second->GetPosition().y,it->second->GetPosition().z, it->second->GetDoorName());
 				
 		++it;
 	}
@@ -1785,9 +1786,9 @@ void EntityList::DuelMessage(Mob *winner, Mob *loser, bool flee)
 		//might want some sort of distance check in here?
 		if (cur != winner && cur != loser) {
 			if (flee)
-				cur->Message_StringID(CC_Yellow, DUEL_FLED, winner->GetName(),loser->GetName(),loser->GetName());
+				cur->Message_StringID(Chat::Yellow, DUEL_FLED, winner->GetName(),loser->GetName(),loser->GetName());
 			else
-				cur->Message_StringID(CC_Yellow, DUEL_FINISHED, winner->GetName(),loser->GetName());
+				cur->Message_StringID(Chat::Yellow, DUEL_FINISHED, winner->GetName(),loser->GetName());
 		}
 		++it;
 	}
@@ -2126,7 +2127,7 @@ void EntityList::ChannelMessageFromWorld(const char *from, const char *to,
 				continue;
 		}
 		if(chan_num == ChatChannel_Guild && guild_id > 0 && client->GetGM() && client->IsGMInGuild(guild_id) && !client->IsInGuild(guild_id))
-			client->Message(CC_Yellow,"[GM Monitor] %s tells the guild, '%s'", from, message);
+			client->Message(Chat::Yellow,"[GM Monitor] %s tells the guild, '%s'", from, message);
 		else
 			client->ChannelMessageSend(from, to, chan_num, language, lang_skill, message);
 	}
@@ -2881,19 +2882,19 @@ void EntityList::ListNPCs(Client* client, const char *arg1, const char *arg2, ui
 	std::string sName;
 
 	auto it = npc_list.begin();
-	client->Message(CC_Default, "NPCs in the zone:");
+	client->Message(Chat::White, "NPCs in the zone:");
 	if (searchtype == 0) {
 		while (it != npc_list.end()) {
 			NPC *n = it->second;
 			std::string spawn2 = n->GetSpawnedString();
-			client->Message(CC_Default, "  %5d: %s (%.0f, %0.f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
+			client->Message(Chat::White, "  %5d: %s (%.0f, %0.f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
 			x++;
 			z++;
 			++it;
 		}
 	} 
 	else if (searchtype == 1) {
-		client->Message(CC_Default, "Searching by name method. (%s)",arg1);
+		client->Message(Chat::White, "Searching by name method. (%s)",arg1);
 		std::string tmp;
 		tmp = arg1;
 		for (auto & c : tmp) c = toupper(c);
@@ -2905,18 +2906,18 @@ void EntityList::ListNPCs(Client* client, const char *arg1, const char *arg2, ui
 			{
 				NPC *n = it->second;
 				std::string spawn2 = n->GetSpawnedString();
-				client->Message(CC_Default, "  %5d: %s (%.0f, %.0f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
+				client->Message(Chat::White, "  %5d: %s (%.0f, %.0f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
 				x++;
 			}
 			++it;
 		}
 	} 
 	else if (searchtype == 2) {
-		client->Message(CC_Default, "Searching by number method. (%s %s)",arg1,arg2);
+		client->Message(Chat::White, "Searching by number method. (%s %s)",arg1,arg2);
 		while (it != npc_list.end()) {
 			z++;
 			if ((it->second->GetID() >= atoi(arg1)) && (it->second->GetID() <= atoi(arg2)) && (atoi(arg1) <= atoi(arg2))) {
-				client->Message(CC_Default, "  %5d: %s", it->second->GetID(), it->second->GetName());
+				client->Message(Chat::White, "  %5d: %s", it->second->GetID(), it->second->GetName());
 				x++;
 			}
 			++it;
@@ -2929,13 +2930,13 @@ void EntityList::ListNPCs(Client* client, const char *arg1, const char *arg2, ui
 			if(!n->IsAssisting())
 			{
 				std::string spawn2 = n->GetSpawnedString();
-				client->Message(CC_Default, "  %5d: %s (%.0f, %0.f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
+				client->Message(Chat::White, "  %5d: %s (%.0f, %0.f, %.0f) Spawned: %s", n->GetID(), n->GetName(), n->GetX(), n->GetY(), n->GetZ(), spawn2.c_str());
 				x++;
 			}
 			++it;
 		}
 	}
-	client->Message(CC_Default, "%d npcs listed. There is a total of %d npcs in this zone.", x, z);
+	client->Message(Chat::White, "%d npcs listed. There is a total of %d npcs in this zone.", x, z);
 }
 
 void EntityList::ListNPCCorpses(Client *client)
@@ -2945,7 +2946,7 @@ void EntityList::ListNPCCorpses(Client *client)
 		uint32 corpse_number = (corpse_count + 1);
 		if (corpse.second->IsNPCCorpse()) {
 			client->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Corpse {} | Name: {} ({})",
 					corpse_number,
@@ -2959,7 +2960,7 @@ void EntityList::ListNPCCorpses(Client *client)
 
 	if (corpse_count > 0) {
 		client->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				" {} NPC corpses listed.",
 				corpse_count
@@ -2975,7 +2976,7 @@ void EntityList::ListPlayerCorpses(Client *client)
 		uint32 corpse_number = (corpse_count + 1);
 		if (corpse.second->IsPlayerCorpse()) {
 			client->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"Corpse {} | Name: {} ({})",
 					corpse_number,
@@ -2989,7 +2990,7 @@ void EntityList::ListPlayerCorpses(Client *client)
 
 	if (corpse_count > 0) {
 		client->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				" {} Player corpses listed.",
 				corpse_count
@@ -4884,13 +4885,13 @@ void EntityList::GetBoatInfo(Client* client)
 		{
 			// Have to use NPCID, because the EntityID will change when the player zones.
 			uint8 passengers = GetClientCountByBoatNPCID(it->second->GetNPCTypeID());
-			client->Message(CC_Default, " Boat: %s (%d) found at %0.2f,%0.2f,%0.2f. Waypoint: %d Passengers: %d", it->second->GetName(), it->second->GetNPCTypeID(), it->second->GetX(), it->second->GetY(), it->second->GetZ(), it->second->GetCurWp()+1, passengers);
+			client->Message(Chat::White, " Boat: %s (%d) found at %0.2f,%0.2f,%0.2f. Waypoint: %d Passengers: %d", it->second->GetName(), it->second->GetNPCTypeID(), it->second->GetX(), it->second->GetY(), it->second->GetZ(), it->second->GetCurWp()+1, passengers);
 			++count;
 		}
 		++it;
 	}
 
-	client->Message(CC_Default, "%d boats found.", count);
+	client->Message(Chat::White, "%d boats found.", count);
 }
 
 uint8 EntityList::GetClientCountByBoatNPCID(uint32 boatid)
@@ -4947,7 +4948,7 @@ void EntityList::SendTraderEnd(Client* merchant)
 
 		if(c->GetTraderSession() == merchant->GetID())
 		{
-			c->Message_StringID(CC_Default, zone->random.Int(1199, 1202));
+			c->Message_StringID(Chat::White, zone->random.Int(1199, 1202));
 			c->SendMerchantEnd();
 			c->SetTraderSession(0);
 		}
@@ -5070,11 +5071,11 @@ void EntityList::SendTraderUpdateMessage(Client* merchant, const EQ::ItemData* i
 		if(c->GetTraderSession() == merchant->GetID())
 		{
 			if(message == 0)
-				c->Message(CC_Red, "The Trader has changed the price of %s.", item->Name);
+				c->Message(Chat::Red, "The Trader has changed the price of %s.", item->Name);
 			else if(message == 1)
-				c->Message(CC_Red, "The Trader has put up %s for sale.", item->Name);
+				c->Message(Chat::Red, "The Trader has put up %s for sale.", item->Name);
 			else
-				c->Message(CC_Red, "The Trader has withdrawn the %s from sale.", item->Name);
+				c->Message(Chat::Red, "The Trader has withdrawn the %s from sale.", item->Name);
 		}
 		++it;
 	}
@@ -5146,7 +5147,7 @@ void EntityList::AreaCastSpell(float minx, float miny, float maxx, float maxy, u
 				}
 				else if(regeant_itemid > 0 && slotid == INVALID_INDEX)
 				{
-					client->Message_StringID(CC_User_SpellFailure, MISSING_SPELL_COMP);
+					client->Message_StringID(Chat::SpellFailure, MISSING_SPELL_COMP);
 				}
 			}
 		}
@@ -5210,7 +5211,7 @@ void EntityList::ReportUnderworldNPCs(Client* sendto, float min_z)
 {
 	float underworld_z = zone->newzone_data.underworld;
 
-	sendto->Message(CC_Default, "Possible underworld NPCs:");
+	sendto->Message(Chat::White, "Possible underworld NPCs:");
 	uint16 count = 0;
 
 	auto it = npc_list.begin();
@@ -5222,17 +5223,17 @@ void EntityList::ReportUnderworldNPCs(Client* sendto, float min_z)
 			glm::vec3 coords(current->GetX(), current->GetY(), current->GetZ());
 			if (coords.z < min_z || coords.z < underworld_z)
 			{
-				uint32 type = CC_Yellow;
+				uint32 type = Chat::Yellow;
 				if (coords.z < underworld_z)
 				{
-					type = CC_Red;
+					type = Chat::Red;
 				}
 
 				std::string spawn2 = current->GetSpawnedString();
 				bool find_best_z = spawn2 == "Quest" || spawn2 == "Pet" || spawn2 == "Random" ? false : true;
 
 				sendto->Message(type, "%s: %0.2f,%0.2f,%0.2f NPCID: %d Spawn2ID: %s (DB Z: %0.2f Underworld Z: %0.2f)", current->GetName(), coords.x, coords.y, coords.z, current->GetNPCTypeID(), spawn2.c_str(), min_z, underworld_z);
-				if (type == CC_Red && find_best_z)
+				if (type == Chat::Red && find_best_z)
 				{
 					float best_z = 0;
 					if (zone->zonemap)
@@ -5250,7 +5251,7 @@ void EntityList::ReportUnderworldNPCs(Client* sendto, float min_z)
 		++it;
 	}
 
-	sendto->Message(CC_Default, "%d NPCs found.", count);
+	sendto->Message(Chat::White, "%d NPCs found.", count);
 	return;
 }
 

@@ -17,10 +17,10 @@ void command_npctypespawn(Client *c, const Seperator *sep){
 			entity_list.AddNPC(npc);
 		}
 		else
-			c->Message(CC_Default, "NPC Type %i not found", atoi(sep->arg[1]));
+			c->Message(Chat::White, "NPC Type %i not found", atoi(sep->arg[1]));
 	}
 	else
-		c->Message(CC_Default, "Usage: #npctypespawn npctypeid factionid");
+		c->Message(Chat::White, "Usage: #npctypespawn npctypeid factionid");
 
 }
 

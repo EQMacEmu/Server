@@ -616,6 +616,16 @@ void Lua_NPC::SetBaseHP(uint32 new_hp) {
 	self->SetBaseHP(new_hp);
 }
 
+void Lua_NPC::SetMaxDamage(uint32 new_max_damage) {
+	Lua_Safe_Call_Void();
+	self->SetMaxDamage(new_max_damage);
+}
+
+void Lua_NPC::SetMinDamage(uint32 new_min_damage) {
+	Lua_Safe_Call_Void();
+	self->SetMinDamage(new_min_damage);
+}
+
 void Lua_NPC::SetSpawnPoint(float x, float y, float z, float h) {
 	Lua_Safe_Call_Void();
 	self->SetSpawnPoint(x, y, z, h);
@@ -747,7 +757,9 @@ luabind::scope lua_register_npc() {
 		.def("SetSpawnPoint", (void(Lua_NPC::*)(float, float, float, float))& Lua_NPC::SetSpawnPoint)
 		.def("StopQuestMove", (void(Lua_NPC::*)(void))& Lua_NPC::StopQuestMove)
 		.def("StopQuestMove", (void(Lua_NPC::*)(bool))& Lua_NPC::StopQuestMove)
-		.def("SetClass", (void(Lua_NPC::*)(int))& Lua_NPC::SetClass);
+		.def("SetClass", (void(Lua_NPC::*)(int))& Lua_NPC::SetClass)
+		.def("SetMaxDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMaxDamage)
+		.def("SetMinDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMinDamage);
 }
 
 #endif

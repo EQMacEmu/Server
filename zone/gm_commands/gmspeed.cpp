@@ -11,10 +11,10 @@ void command_gmspeed(Client *c, const Seperator *sep)
 
 	if (sep->arg[1][0] != 0) {
 		database.SetGMSpeed(t->AccountID(), state ? 1 : 0);
-		c->Message(CC_Default, fmt::format("Turning GMSpeed {} for {} (zone to take effect)", state ? "On" : "Off", t->GetName()).c_str());
+		c->Message(Chat::White, fmt::format("Turning GMSpeed {} for {} (zone to take effect)", state ? "On" : "Off", t->GetName()).c_str());
 	}
 	else {
-		c->Message(CC_Default, "Usage: #gmspeed [on/off]");
+		c->Message(Chat::White, "Usage: #gmspeed [on/off]");
 	}
 }
 

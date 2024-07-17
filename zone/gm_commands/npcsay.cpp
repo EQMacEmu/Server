@@ -7,7 +7,7 @@ void command_npcsay(Client *c, const Seperator *sep){
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #npcsay message (requires NPC target");
+		c->Message(Chat::White, "Usage: #npcsay message (requires NPC target");
 	}
 }
 

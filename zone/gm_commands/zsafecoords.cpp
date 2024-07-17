@@ -3,7 +3,7 @@
 void command_zsafecoords(Client *c, const Seperator *sep){
 	// modifys and resends zhdr packet
 	if (sep->arg[3][0] == 0)
-		c->Message(CC_Default, "Usage: #zsafecoords <safe x> <safe y> <safe z>");
+		c->Message(Chat::White, "Usage: #zsafecoords <safe x> <safe y> <safe z>");
 	else {
 		zone->newzone_data.safe_x = atof(sep->arg[1]);
 		zone->newzone_data.safe_y = atof(sep->arg[2]);

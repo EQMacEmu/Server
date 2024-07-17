@@ -77,6 +77,7 @@
 #include "../common/emu_tcp_server.h"
 #include "../common/patches/patches.h"
 #include "../common/random.h"
+#include "../common/path_manager.h"
 #include "zoneserver.h"
 #include "console.h"
 #include "login_server.h"
@@ -112,6 +113,7 @@ bool holdzones = false;
 const WorldConfig *Config;
 EQEmuLogSys LogSys;
 WorldContentService content_service;
+PathManager         path;
 
 extern ConsoleList console_list;
 
@@ -200,6 +202,8 @@ int main(int argc, char** argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
+	path.LoadPaths();
+
 	if (argc > 1) {
 		WorldserverCLI::CommandHandler(argc, argv);
 	}
@@ -235,6 +239,7 @@ int main(int argc, char** argv) {
 	guild_mgr.SetDatabase(&database);
 
 	LogSys.SetDatabase(&database)
+		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
@@ -249,8 +254,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	LogInfo("Setting git version in database.");
-	database.GITInfo();
 	LogInfo("Loading variables..");
 	database.LoadVariables();
 
@@ -417,7 +420,7 @@ int main(int argc, char** argv) {
 			//structures and opcodes for that patch.
 			struct in_addr	in{};
 			in.s_addr = eqos->GetRemoteIP();
-			Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqos->GetRemotePort()));
+			LogInfo("New connection from {0}:{1}", inet_ntoa(in), ntohs(eqos->GetRemotePort()));
 			stream_identifier.AddOldStream(eqos);	//takes the stream
 			i++;
 			if (i == 5)
@@ -477,7 +480,7 @@ int main(int argc, char** argv) {
 			}
 			else
 			{
-				LogDebug("EQTime successfully saved.");
+				LogInfo("EQTime successfully saved.");
 			}
 		}
 

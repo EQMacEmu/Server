@@ -116,6 +116,46 @@ struct PetRecord {
 	uint32 equipmentset;	// default equipment for the pet
 };
 
+struct CharacterCorpseItemEntry
+{
+	uint32 item_id;
+	int16 equip_slot;
+	uint16 charges;
+	uint16 lootslot;
+};
+
+struct CharacterCorpseEntry 
+{
+	bool	locked;
+	uint32	exp;
+	uint32	gmexp;
+	float	size;
+	uint8	level;
+	uint32	race;
+	uint8	gender;
+	uint8	class_;
+	uint8	deity;
+	uint8	texture;
+	uint8	helmtexture;
+	uint32	copper;
+	uint32	silver;
+	uint32	gold;
+	uint32	plat;
+	EQ::TintProfile item_tint;
+	uint8 haircolor;
+	uint8 beardcolor;
+	uint8 eyecolor1;
+	uint8 eyecolor2;
+	uint8 hairstyle;
+	uint8 face;
+	uint8 beard;
+	uint8 killedby;
+	bool  rezzable;
+	uint32	rez_time;
+	uint32 time_of_death;
+	std::vector<CharacterCorpseItemEntry> items;
+};
+
 // Actual pet info for a client.
 struct PetInfo {
 	uint16	SpellID;
@@ -228,9 +268,8 @@ public:
 
 	/* Corpses  */
 	bool		DeleteItemOffCharacterCorpse(uint32 db_id, uint32 equip_slot, uint32 item_id);
-	uint32		GetCharacterCorpseItemCount(uint32 corpse_id);
 	bool		LoadCharacterCorpseRezData(uint32 corpse_id, uint32 *exp, uint32 *gmexp, bool *rezzable, bool *is_rezzed);
-	bool		LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct* pcs);
+	bool		LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntry &corpse);
 	Corpse*		LoadCharacterCorpse(uint32 player_corpse_id);
 	Corpse*		SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
 	Corpse*		SummonCharacterCorpse(uint32 corpse_id, uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
@@ -247,10 +286,10 @@ public:
 	uint32		SendCharacterCorpseToGraveyard(uint32 dbid, uint32 zoneid, const glm::vec4& position);
 	uint32		CreateGraveyardRecord(uint32 graveyard_zoneid, const glm::vec4& position);
 	uint32		AddGraveyardIDToZone(uint32 zone_id, uint32 graveyard_id);
-	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
-	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position);
-	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
-	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool rezzed = false);
+	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position);
+	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position);
+	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool rezzed = false);
+	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool rezzed = false);
 	uint32		GetFirstCorpseID(uint32 char_id);
 	uint32		GetCharacterCorpseCount(uint32 char_id);
 	uint32		GetCharacterCorpseID(uint32 char_id, uint8 corpse);
@@ -272,15 +311,16 @@ public:
 	bool		SeeIllusion(int32 faction_id);
 	int16		MinFactionCap(int32 faction_id);
 	int16		MaxFactionCap(int32 faction_id);
+	inline uint32 GetMaxFaction() { return max_faction; }
 
 	/* AAs */
-	bool	LoadAAActions();
-	bool	LoadAAEffects();
+	bool	LoadAlternateAdvancementActions();
+	bool	LoadAlternateAdvancementEffects();
 	SendAA_Struct*	GetAASkillVars(uint32 skill_id);
 	uint8	GetTotalAALevels(uint32 skill_id);
 	uint32	GetMacToEmuAA(uint8 eqmacid);
 	uint32	CountAAs();
-	void	LoadAAs(SendAA_Struct **load);
+	void	LoadAlternateAdvancement(SendAA_Struct **load);
 	uint32 CountAAEffects();
 
 	/* Zone related */

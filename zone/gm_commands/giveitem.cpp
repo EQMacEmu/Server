@@ -2,13 +2,13 @@
 
 void command_giveitem(Client *c, const Seperator *sep){
 	if (!sep->IsNumber(1)) {
-		c->Message(CC_Red, "Usage: #summonitem [item id] [charges], charges are optional");
+		c->Message(Chat::Red, "Usage: #summonitem [item id] [charges], charges are optional");
 	}
 	else if (c->GetTarget() == nullptr) {
-		c->Message(CC_Red, "You must target a client to give the item to.");
+		c->Message(Chat::Red, "You must target a client to give the item to.");
 	}
 	else if (!c->GetTarget()->IsClient()) {
-		c->Message(CC_Red, "You can only give items to players with this command.");
+		c->Message(Chat::Red, "You can only give items to players with this command.");
 	}
 	else {
 		Client *t = c->GetTarget()->CastToClient();
@@ -36,7 +36,7 @@ void command_giveitem(Client *c, const Seperator *sep){
 
 		//No rent GM Uber Sword
 		if (item_status > c->Admin() || (c->Admin() < 80 && itemid == 2661))
-			c->Message(CC_Red, "Error: Insufficient status to summon this item.");
+			c->Message(Chat::Red, "Error: Insufficient status to summon this item.");
 		else
 			t->SummonItem(itemid, charges, 0, true);
 	}

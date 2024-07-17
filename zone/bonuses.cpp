@@ -1097,7 +1097,7 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				}
 				else
 				{
-					Log(Logs::Moderate, Logs::Spells, "Cannot apply SE_ChangeFrenzyRad bonus on %s, Mob is immune to Pacify.", GetName());
+					Log(Logs::Detail, Logs::Spells, "Cannot apply SE_ChangeFrenzyRad bonus on %s, Mob is immune to Pacify.", GetName());
 				}
 				break;
 			}
@@ -1114,7 +1114,7 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				}
 				else
 				{
-					Log(Logs::Moderate, Logs::Spells, "Cannot apply SE_Harmony bonus on %s, Mob is immune to Pacify.", GetName());
+					Log(Logs::Detail, Logs::Spells, "Cannot apply SE_Harmony bonus on %s, Mob is immune to Pacify.", GetName());
 				}
 				break;
 			}

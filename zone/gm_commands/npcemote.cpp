@@ -7,7 +7,7 @@ void command_npcemote(Client *c, const Seperator *sep){
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #npcemote message (requires NPC target");
+		c->Message(Chat::White, "Usage: #npcemote message (requires NPC target");
 	}
 }
 

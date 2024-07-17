@@ -5,7 +5,7 @@ void command_deletegraveyard(Client *c, const Seperator *sep){
 	uint32 graveyard_id = 0;
 
 	if (!sep->arg[1][0]) {
-		c->Message(CC_Default, "Usage: #deletegraveyard [zonename]");
+		c->Message(Chat::White, "Usage: #deletegraveyard [zonename]");
 		return;
 	}
 
@@ -14,15 +14,15 @@ void command_deletegraveyard(Client *c, const Seperator *sep){
 
 	if (zoneid > 0 && graveyard_id > 0) {
 		if (database.DeleteGraveyard(zoneid, graveyard_id))
-			c->Message(CC_Default, "Successfuly deleted graveyard %u for zone %s.", graveyard_id, sep->arg[1]);
+			c->Message(Chat::White, "Successfuly deleted graveyard %u for zone %s.", graveyard_id, sep->arg[1]);
 		else
-			c->Message(CC_Default, "Unable to delete graveyard %u for zone %s.", graveyard_id, sep->arg[1]);
+			c->Message(Chat::White, "Unable to delete graveyard %u for zone %s.", graveyard_id, sep->arg[1]);
 	}
 	else {
 		if (zoneid <= 0)
-			c->Message(CC_Default, "Unable to retrieve a ZoneID for the zone: %s", sep->arg[1]);
+			c->Message(Chat::White, "Unable to retrieve a ZoneID for the zone: %s", sep->arg[1]);
 		else if (graveyard_id <= 0)
-			c->Message(CC_Default, "Unable to retrieve a valid GraveyardID for the zone: %s", sep->arg[1]);
+			c->Message(Chat::White, "Unable to retrieve a valid GraveyardID for the zone: %s", sep->arg[1]);
 	}
 
 	return;

@@ -3,7 +3,7 @@
 void command_randomfeatures(Client *c, const Seperator *sep){
 	Mob *target = c->GetTarget();
 	if (!target)
-		c->Message(CC_Default, "Error: This command requires a target");
+		c->Message(Chat::White, "Error: This command requires a target");
 	else
 	{
 		uint16 Race = target->GetRace();
@@ -164,10 +164,10 @@ void command_randomfeatures(Client *c, const Seperator *sep){
 			target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 				EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF);
 
-			c->Message(CC_Default, "NPC Features Randomized");
+			c->Message(Chat::White, "NPC Features Randomized");
 		}
 		else
-			c->Message(CC_Default, "This command requires a Playable Race as the Target");
+			c->Message(Chat::White, "This command requires a Playable Race as the Target");
 	}
 }
 

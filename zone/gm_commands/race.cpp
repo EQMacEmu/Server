@@ -10,6 +10,6 @@ void command_race(Client *c, const Seperator *sep){
 		t->SendIllusionPacket(atoi(sep->arg[1]));
 	}
 	else
-		c->Message(CC_Default, "Usage: #race [0-724] (0 for back to normal)");
+		c->Message(Chat::White, "Usage: #race [0-724] (0 for back to normal)");
 }
 

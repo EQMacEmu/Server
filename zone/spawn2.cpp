@@ -148,7 +148,7 @@ bool Spawn2::Process() {
 		//then we reset the timer and try again next time.
 		if (condition_id != SC_AlwaysEnabled
 			&& !zone->spawn_conditions.Check(condition_id, condition_min_value)) {
-			Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: spawning prevented by spawn condition %d", spawn2_id, condition_id);
+			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: spawning prevented by spawn condition %d", spawn2_id, condition_id);
 			Reset();
 			return(true);
 		}
@@ -162,7 +162,7 @@ bool Spawn2::Process() {
 		}
 
 		if (spawn_group == nullptr) {
-			Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Unable to locate spawn group %d. Disabling.", spawn2_id, spawngroup_id_);
+			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Unable to locate spawn group %d. Disabling.", spawn2_id, spawngroup_id_);
 			return false;
 		}
 
@@ -175,7 +175,7 @@ bool Spawn2::Process() {
 			if (rtime > 0)
 			{
 				// rtime will only have a value if there is a spawngroup limit. In that case, we want every NPC to use the same spawn timer.
-				Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Spawn group %d did not yield an NPC due a group limit!", spawn2_id, spawngroup_id_);
+				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d did not yield an NPC due a group limit!", spawn2_id, spawngroup_id_);
 				zone->UpdateGroupTimers(spawn_group, rtime);
 			}
 			else
@@ -188,7 +188,7 @@ bool Spawn2::Process() {
 		//try to find our NPC type.
 		const NPCType* tmp = database.LoadNPCTypesData(npcid);
 		if (tmp == nullptr) {
-			Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded an invalid NPC type %d", spawn2_id, spawngroup_id_, npcid);
+			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded an invalid NPC type %d", spawn2_id, spawngroup_id_, npcid);
 			Reset();	//try again later
 			return(true);
 		}
@@ -197,7 +197,7 @@ bool Spawn2::Process() {
 		{
 			if (!entity_list.LimitCheckName(tmp->name))
 			{
-				Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is unique and one already exists.", spawn2_id, spawngroup_id_, npcid);
+				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is unique and one already exists.", spawn2_id, spawngroup_id_, npcid);
 				timer.Start(5000);	//try again in five seconds.
 				return(true);
 			}
@@ -205,7 +205,7 @@ bool Spawn2::Process() {
 
 		if (tmp->spawn_limit > 0) {
 			if (!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) {
-				Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is over its spawn limit (%d)", spawn2_id, spawngroup_id_, npcid, tmp->spawn_limit);
+				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is over its spawn limit (%d)", spawn2_id, spawngroup_id_, npcid, tmp->spawn_limit);
 				timer.Start(5000);	//try again in five seconds.
 				return(true);
 			}
@@ -236,9 +236,9 @@ bool Spawn2::Process() {
 
 		// ignoring spawnpoint loc and using random loc for large outdoor zones; roambox NPCs are not supposed to be campable
 		// a bit hackish but works
-		bool open_outdoor_zone = (!zone->CanCastDungeon() && !zone->IsCity()) || zone->GetZoneID() == qeynos2 || zone->GetZoneID() == freporte || zone->GetZoneID() == freportw || zone->GetZoneID() == gfaydark;
+		bool open_outdoor_zone = (!zone->CanCastDungeon() && !zone->IsCity()) || zone->GetZoneID() == Zones::QEYNOS2 || zone->GetZoneID() == Zones::FREPORTE || zone->GetZoneID() == Zones::FREPORTW || zone->GetZoneID() == Zones::GFAYDARK;
 
-		if (open_outdoor_zone == zone->GetZoneID() == kael || open_outdoor_zone == zone->GetZoneID() == mischiefplane) {
+		if (open_outdoor_zone == zone->GetZoneID() == Zones::KAEL || open_outdoor_zone == zone->GetZoneID() == Zones::MISCHIEFPLANE) {
 			open_outdoor_zone = false;
 		}
 
@@ -317,7 +317,7 @@ void Spawn2::LoadGrid(int start_wp)
 	//dont set an NPC's grid until its loaded for them.
 	npcthis->SetGrid(grid_);
 	npcthis->AssignWaypoints(grid_, start_wp);
-	Log(Logs::Moderate, Logs::Spawns, "Spawn2 %d: Loading grid %d for %s; starting wp is %d", spawn2_id, grid_, npcthis->GetName(), start_wp);
+	Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Loading grid %d for %s; starting wp is %d", spawn2_id, grid_, npcthis->GetName(), start_wp);
 }
 
 uint16 Spawn2::GetGrid() {
@@ -409,7 +409,7 @@ void Spawn2::ForceDespawn()
 		cur = despawnTimer(dtimer);
 	}
 
-	Log(Logs::Moderate, Logs::Spawns, "ForceDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+	Log(Logs::Detail, Logs::Spawns, "ForceDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
 	timer.Start(cur);
 }
 
@@ -446,7 +446,7 @@ void Spawn2::ChangeDespawn(uint8 new_despawn, uint32 new_despawn_timer)
 			cur = despawnTimer(dtimer);
 		}
 
-		Log(Logs::Moderate, Logs::Spawns, "ChangeDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+		Log(Logs::Detail, Logs::Spawns, "ChangeDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
 		timer.Start(cur);
 	}
 }
@@ -1606,7 +1606,7 @@ void Zone::UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer_id)
 	uint16 spawncount = GetAvailPointCount(sg);
 	if (spawncount == 0)
 	{
-		Log(Logs::Moderate, Logs::Spawns, "Spawngroup %d: We have no available spawns (%d), no timers will be updated.", id, spawncount);
+		Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: We have no available spawns (%d), no timers will be updated.", id, spawncount);
 		return;
 	}
 
@@ -1668,7 +1668,7 @@ void Zone::UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer_id)
 	}
 
 	if (skipped_spawn2 > 0)
-		Log(Logs::Moderate, Logs::Spawns, "Spawngroup %d: Skipped spawnpoint was: %d", id, skipped_spawn2);
+		Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: Skipped spawnpoint was: %d", id, skipped_spawn2);
 }
 
 uint16 Zone::GetGroupActiveTimers(uint32 spawngroupid, uint32& remaining_time_id)

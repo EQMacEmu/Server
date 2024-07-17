@@ -4,7 +4,7 @@ void command_giveplayerfaction(Client *c, const Seperator *sep)
 {
 	if (!sep->IsNumber(1) || atoi(sep->arg[2]) == 0)
 	{
-		c->Message(CC_Default, "Usage: #giveplayerfaction [factionid] [value]");
+		c->Message(Chat::White, "Usage: #giveplayerfaction [factionid] [value]");
 		return;
 	}
 
@@ -25,6 +25,6 @@ void command_giveplayerfaction(Client *c, const Seperator *sep)
 		snprintf(name, sizeof(name), "Faction%i", factionid);
 
 	t->SetFactionLevel2(t->CharacterID(), factionid, value, 0);
-	c->Message(CC_Default, "%s was given %i points with %s.", t->GetName(), value, name);
+	c->Message(Chat::White, "%s was given %i points with %s.", t->GetName(), value, name);
 }
 

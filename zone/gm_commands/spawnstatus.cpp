@@ -9,7 +9,7 @@ void command_spawnstatus(Client *c, const Seperator *sep)
 	}
 	else if (strcmp(sep->arg[1], "help") == 0)
 	{
-		c->Message(CC_Default, "Usage: #spawnstatus <[a]ll (default) | [u]nspawned | [s]pawned | [d]isabled | [e]nabled | {Spawn2 ID}>");
+		c->Message(Chat::White, "Usage: #spawnstatus <[a]ll (default) | [u]nspawned | [s]pawned | [d]isabled | [e]nabled | {Spawn2 ID}>");
 	}
 	else {
 		zone->SpawnStatus(c, sep->arg[1][0]);

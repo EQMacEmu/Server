@@ -5,11 +5,11 @@ void command_zopp(Client *c, const Seperator *sep){
 	if (!c)
 		return;
 	else if (sep->argnum < 3 || sep->argnum > 4)
-		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+		c->Message(Chat::White, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
 	else if (strcasecmp(sep->arg[1], "trade") && strcasecmp(sep->arg[1], "t") && strcasecmp(sep->arg[1], "summon") && strcasecmp(sep->arg[1], "s"))
-		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+		c->Message(Chat::White, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
 	else if (!sep->IsNumber(2) || !sep->IsNumber(3) || (sep->argnum == 4 && !sep->IsNumber(4)))
-		c->Message(CC_Default, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
+		c->Message(Chat::White, "Usage: #zopp [trade/summon] [slot id] [item id] [*charges]");
 	else {
 		ItemPacketType packettype;
 
@@ -27,7 +27,7 @@ void command_zopp(Client *c, const Seperator *sep){
 		const EQ::ItemData* FakeItem = database.GetItem(itemid);
 
 		if (!FakeItem) {
-			c->Message(CC_Red, "Error: Item [%u] is not a valid item id.", itemid);
+			c->Message(Chat::Red, "Error: Item [%u] is not a valid item id.", itemid);
 			return;
 		}
 
@@ -37,18 +37,18 @@ void command_zopp(Client *c, const Seperator *sep){
 			item_status = static_cast<int16>(item->MinStatus);
 		}
 		if (item_status > c->Admin()) {
-			c->Message(CC_Red, "Error: Insufficient status to use this command.");
+			c->Message(Chat::Red, "Error: Insufficient status to use this command.");
 			return;
 		}
 
 		if (charges < 0 || charges > FakeItem->StackSize) {
-			c->Message(CC_Red, "Warning: The specified charge count does not meet expected criteria!");
-			c->Message(CC_Default, "Processing request..results may cause unpredictable behavior.");
+			c->Message(Chat::Red, "Warning: The specified charge count does not meet expected criteria!");
+			c->Message(Chat::White, "Processing request..results may cause unpredictable behavior.");
 		}
 
 		EQ::ItemInstance* FakeItemInst = database.CreateItem(FakeItem, charges);
 		c->SendItemPacket(slotid, FakeItemInst, packettype);
-		c->Message(CC_Default, "Sending zephyr op packet to client - [%s] %s (%u) with %i %s to slot %i.", packettype == ItemPacketTrade ? "Trade" : "Summon", FakeItem->Name, itemid, charges, abs(charges == 1) ? "charge" : "charges", slotid);
+		c->Message(Chat::White, "Sending zephyr op packet to client - [%s] %s (%u) with %i %s to slot %i.", packettype == ItemPacketTrade ? "Trade" : "Summon", FakeItem->Name, itemid, charges, abs(charges == 1) ? "charge" : "charges", slotid);
 		safe_delete(FakeItemInst);
 	}
 }

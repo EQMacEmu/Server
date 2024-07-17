@@ -113,9 +113,19 @@ bool EQStreamProxy::IsInUse() {
 	return m_stream->IsInUse();
 }
 
+EQStreamState EQStreamProxy::GetState()
+{
+	return m_stream->GetState();
+}
+
 bool EQStreamProxy::CheckState(EQStreamState state) {
 	if(m_stream)
 		return(m_stream->CheckState(state));
 
 	return false;
+}
+
+OpcodeManager *EQStreamProxy::GetOpcodeManager() const
+{
+	return (*m_opcodes);
 }

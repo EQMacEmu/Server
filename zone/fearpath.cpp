@@ -190,14 +190,14 @@ void Mob::FleeInfo(Mob* client)
 
 	if (!wontflee)
 	{
-		client->Message(CC_Green, "%s will flee at %d percent because %s", GetName(), GetFleeRatio(client), flee.c_str());
+		client->Message(Chat::Green, "%s will flee at %d percent because %s", GetName(), GetFleeRatio(client), flee.c_str());
 	}
 	else
 	{
-		client->Message(CC_Red, "%s will not flee because %s", GetName(), reason.c_str());
+		client->Message(Chat::Red, "%s will not flee because %s", GetName(), reason.c_str());
 	}
 
-	client->Message(CC_Default, "NPC ally count %d", allycount);
+	client->Message(Chat::White, "NPC ally count %d", allycount);
 }
 
 void Mob::ProcessFlee()
@@ -283,14 +283,14 @@ void Mob::CalculateNewFearpoint()
 				// size 2 route usually means FindPath() bugged out.  sometimes it returns locs outside the geometry
 				if (CheckLosFN(Node.x, Node.y, Node.z, 6.0))
 				{
-					Log(Logs::Moderate, Logs::Pathing, "Direct route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+					Log(Logs::Detail, Logs::Pathing, "Direct route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
 					m_FearWalkTarget = last_good_loc;
 					curfp = true;
 					return;
 				}
 				else
 				{
-					Log(Logs::Moderate, Logs::Pathing, "FindRoute() returned single hop route to destination without LOS: %0.1f, %0.1f, %0.1f for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+					Log(Logs::Detail, Logs::Pathing, "FindRoute() returned single hop route to destination without LOS: %0.1f, %0.1f, %0.1f for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
 				}
 				// use fallback logic if LOS fails
 			}
@@ -334,9 +334,9 @@ void Mob::CalculateNewFearpoint()
 				if (have_los || route_count > 2)
 				{
 					if (have_los)
-						Log(Logs::Moderate, Logs::Pathing, "Route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s; route size: %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_size);
+						Log(Logs::Detail, Logs::Pathing, "Route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s; route size: %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_size);
 					else
-						Log(Logs::Moderate, Logs::Pathing, "Using truncated route to fearpoint %0.1f, %0.1f, %0.1f for %s; node count: %i; route size %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_count, route_size);
+						Log(Logs::Detail, Logs::Pathing, "Using truncated route to fearpoint %0.1f, %0.1f, %0.1f for %s; node count: %i; route size %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_count, route_size);
 
 					m_FearWalkTarget = last_good_loc;
 					curfp = true;
@@ -411,7 +411,7 @@ void Mob::CalculateNewFearpoint()
 	if (curfp)
 	{
 		m_FearWalkTarget = glm::vec3(ranx, rany, ranz);
-		Log(Logs::Moderate, Logs::Pathing, "Non-pathed fearpoint %0.1f, %0.1f, %0.1f selected for %s", ranx, rany, ranz, GetName());
+		Log(Logs::Detail, Logs::Pathing, "Non-pathed fearpoint %0.1f, %0.1f, %0.1f selected for %s", ranx, rany, ranz, GetName());
 	}
 }
 

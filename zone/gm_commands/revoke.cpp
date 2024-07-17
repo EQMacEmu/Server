@@ -5,13 +5,13 @@ extern WorldServer worldserver;
 void command_revoke(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0] == 0 || sep->arg[2][0] == 0) {
-		c->Message(CC_Default, "Usage: #revoke [charname] [1/0]");
+		c->Message(Chat::White, "Usage: #revoke [charname] [1/0]");
 		return;
 	}
 
 	uint32 characterID = database.GetAccountIDByChar(sep->arg[1]);
 	if (characterID == 0) {
-		c->Message(CC_Red, "Character does not exist.");
+		c->Message(Chat::Red, "Character does not exist.");
 		return;
 	}
 
@@ -19,16 +19,16 @@ void command_revoke(Client *c, const Seperator *sep)
 	std::string query = StringFormat("UPDATE account SET revoked = %d WHERE id = %i", flag, characterID);
 	auto results = database.QueryDatabase(query);
 
-	c->Message(CC_Red, "%s account number %i with the character %s.", flag ? "Revoking" : "Unrevoking", characterID, sep->arg[1]);
+	c->Message(Chat::Red, "%s account number %i with the character %s.", flag ? "Revoking" : "Unrevoking", characterID, sep->arg[1]);
 
 	Client* revokee = entity_list.GetClientByAccID(characterID);
 	if (revokee) {
-		c->Message(CC_Default, "Found %s in this zone.", revokee->GetName());
+		c->Message(Chat::White, "Found %s in this zone.", revokee->GetName());
 		revokee->SetRevoked(flag);
 		return;
 	}
 
-	c->Message(CC_Red, "#revoke: Couldn't find %s in this zone, passing request to worldserver.", sep->arg[1]);
+	c->Message(Chat::Red, "#revoke: Couldn't find %s in this zone, passing request to worldserver.", sep->arg[1]);
 
 	auto outapp = new ServerPacket(ServerOP_Revoke, sizeof(RevokeStruct));
 	RevokeStruct* revoke = (RevokeStruct*)outapp->pBuffer;

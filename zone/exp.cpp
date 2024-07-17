@@ -205,7 +205,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		float reduction_mult = killed_mob->CastToNPC()->GetPBAoEReduction(GetLevel());
 		if (reduction_mult < 1.0)
 		{
-			Log(Logs::Moderate, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
+			Log(Logs::Detail, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
 			add_exp *= reduction_mult;
 		}
 	}
@@ -256,7 +256,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (add_exp > xp_cap)
 	{
 		add_exp = xp_cap;
-		Log(Logs::Moderate, Logs::EQMac, "Exp capped to 12.5 percent of level exp");
+		Log(Logs::Detail, Logs::EQMac, "Exp capped to 12.5 percent of level exp");
 	}
 
 	if (killed_mob->IsZomm())
@@ -267,9 +267,9 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	}
 
 	if (add_aaxp)
-		Log(Logs::Moderate, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  AARule: %0.2f  Race: %0.2f", lb_mult, hbm, mlm, con_mult, totalmod, aa_mult, race_mult);
+		Log(Logs::Detail, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  AARule: %0.2f  Race: %0.2f", lb_mult, hbm, mlm, con_mult, totalmod, aa_mult, race_mult);
 	else
-		Log(Logs::Moderate, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  Class: %0.4f", lb_mult, hbm, mlm, con_mult, totalmod, class_mult);
+		Log(Logs::Detail, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  Class: %0.4f", lb_mult, hbm, mlm, con_mult, totalmod, class_mult);
 
 	uint32 new_exp = GetEXP() + add_exp;
 	uint32 old_aaexp = GetAAXP();
@@ -283,7 +283,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		uint32 neededxp = GetEXPForLevel(GetLevel() + 1) - (GetEXP() + add_exp);
 		float pct_level_gain = static_cast<float>(add_exp) / static_cast<float>(requiredxp) * 100.0f;
 		float pct_aa_gain = static_cast<float>(add_aaxp) / static_cast<float>(RuleI(AA, ExpPerPoint)) * 100.0f;
-		Message(CC_Yellow, "[GM Debug] Final EXP awarded is %d (%0.2f%% of lvl) and %d AXP (%0.2f%% of AA). %d more EXP is needed for Level %d", 
+		Message(Chat::Yellow, "[GM Debug] Final EXP awarded is %d (%0.2f%% of lvl) and %d AXP (%0.2f%% of AA). %d more EXP is needed for Level %d", 
 			add_exp, pct_level_gain, add_aaxp, pct_aa_gain, neededxp, GetLevel()+1);
 	}
 
@@ -360,7 +360,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	//max_AAXP = GetEXPForLevel(52) - GetEXPForLevel(51);	//GetEXPForLevel() doesn't depend on class/race, just level, so it shouldn't change between Clients
 	max_AAXP = GetEXPForLevel(0, true);	//this may be redundant since we're doing this in Client::FinishConnState2()
 	if (max_AAXP == 0 || GetEXPForLevel(GetLevel()) == 0xFFFFFFFF) {
-		Message(CC_Red, "Error in Client::SetEXP. EXP not set.");
+		Message(Chat::Red, "Error in Client::SetEXP. EXP not set.");
 		return; // Must be invalid class/race
 	}
 
@@ -368,25 +368,25 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	{
 		if (isrezzexp)
 		{
-			this->Message_StringID(CC_Yellow, REZ_REGAIN);
+			this->Message_StringID(Chat::Yellow, REZ_REGAIN);
 		}
 		else
 		{
 			if(this->IsGrouped() && is_split)
-				this->Message_StringID(CC_Yellow, GAIN_GROUPXP);
+				this->Message_StringID(Chat::Yellow, GAIN_GROUPXP);
 			else if(IsRaidGrouped() && is_split)
-				Message_StringID(CC_Yellow, GAIN_RAIDEXP);
+				Message_StringID(Chat::Yellow, GAIN_RAIDEXP);
 			else
-				this->Message_StringID(CC_Yellow, GAIN_XP);
+				this->Message_StringID(Chat::Yellow, GAIN_XP);
 
 			if (m_epp.perAA > 0 && GetAAPoints() >= 30)
 			{
-				Message_StringID(CC_Yellow, AA_POINTS_CAP);
+				Message_StringID(Chat::Yellow, AA_POINTS_CAP);
 			}
 		}
 	}
 	else if((set_exp + set_aaxp) < (m_pp.exp+m_pp.expAA)){ //only loss message if you lose exp, no message if you gained/lost nothing.
-		Message(CC_Yellow, "You have lost experience.");
+		Message(Chat::Yellow, "You have lost experience.");
 	}
 
 	//check_level represents the level we should be when we have
@@ -450,12 +450,12 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		//figure out how many points were actually gained
 		/*uint32 gained = m_pp.aapoints - last_unspentAA;*/	//unused
 
-		//Message(CC_Yellow, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
+		//Message(Chat::Yellow, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
-		Message_StringID(CC_Yellow, GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point! You now have %1 ability point%2.
+		Message_StringID(Chat::Yellow, GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point! You now have %1 ability point%2.
 		if (m_pp.aapoints >= 30)
 		{
-			Message_StringID(CC_Yellow, AA_CAP_REACHED);
+			Message_StringID(Chat::Yellow, AA_CAP_REACHED);
 		}
 		
 		/* QS: PlayerLogAARate */
@@ -463,7 +463,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		{
 			QServ->QSAARate(this->CharacterID(), m_pp.aapoints, last_unspentAA);
 		}
-		//Message(CC_Yellow, "You now have %d skill points available to spend.", m_pp.aapoints);
+		//Message(Chat::Yellow, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
 	uint8 maxlevel = RuleI(Character, MaxExpLevel) + 1;
@@ -513,30 +513,30 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		{
 			if (level_count == 1)
 			{
-				Message_StringID(CC_Yellow, GAIN_LEVEL, ConvertArray(check_level, val1));
-				/* Message(CC_Yellow, "You have gained a level! Welcome to level %i!", check_level); */
+				Message_StringID(Chat::Yellow, GAIN_LEVEL, ConvertArray(check_level, val1));
+				/* Message(Chat::Yellow, "You have gained a level! Welcome to level %i!", check_level); */
 			}
 			else
-				Message(CC_Yellow, "Welcome to level %i!", check_level);
+				Message(Chat::Yellow, "Welcome to level %i!", check_level);
 
 			if (check_level == RuleI(Character, DeathItemLossLevel))
-				Message_StringID(CC_Yellow, CORPSE_ITEM_LOST);
+				Message_StringID(Chat::Yellow, CORPSE_ITEM_LOST);
 
 			if (check_level == RuleI(Character, DeathExpLossLevel))
-				Message_StringID(CC_Yellow, CORPSE_EXP_LOST);
+				Message_StringID(Chat::Yellow, CORPSE_EXP_LOST);
 
 			if (check_level == 30)
 			{
 				if (GetClass() == MONK || GetClass() == BEASTLORD)
-					Message_StringID(CC_Yellow, HANDS_MAGIC);
+					Message_StringID(Chat::Yellow, HANDS_MAGIC);
 				else if (GetClass() == WARRIOR)
-					Message_StringID(CC_Yellow, GAINED_SHIELD_LEVEL);
+					Message_StringID(Chat::Yellow, GAINED_SHIELD_LEVEL);
 			}
 		}
 		else 
 		{
-			Message_StringID(CC_Yellow, LOSE_LEVEL, ConvertArray(check_level, val1));
-			/* Message(CC_Yellow, "You lost a level! You are now level %i!", check_level); */
+			Message_StringID(Chat::Yellow, LOSE_LEVEL, ConvertArray(check_level, val1));
+			/* Message(Chat::Yellow, "You lost a level! You are now level %i!", check_level); */
 		}
 		SetLevel(check_level);
 	}
@@ -623,7 +623,7 @@ void Client::SetLevel(uint8 set_level, bool command)
 	m_pp.level = set_level;
 	if (command){
 		m_pp.exp = GetEXPForLevel(set_level);
-		Message(CC_Yellow, "Welcome to level %i!", set_level);
+		Message(Chat::Yellow, "Welcome to level %i!", set_level);
 		lu->exp = 0;
 	}
 	else {
@@ -726,17 +726,17 @@ uint32 Client::GetEXPForLevel(uint16 check_level, bool aa)
 	else if (check_level == 59)
 		mod = 3.0;
 	else if (check_level == 60)
-		mod = 3.1;
+		mod = 3.0;
 	else if (check_level == 61)
-		mod = 3.3;
+		mod = 3.225;
 	else if (check_level == 62)
-		mod = 3.5;
+		mod = 3.45;
 	else if (check_level == 63)
-		mod = 3.7;
+		mod = 3.675;
 	else if (check_level == 64)
 		mod = 3.9;
 	else
-		mod = 4.1;
+		mod = 4.125;
 
 	uint32 finalxp = uint32(base * playermod * mod);
 

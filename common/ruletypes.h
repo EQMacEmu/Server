@@ -430,6 +430,10 @@ RULE_CATEGORY(Expansion)
 RULE_INT(Expansion, CurrentExpansion, -1, "The current expansion enabled for the server [-1 = All Expansion, 0 = Classic, 1 = Kunark etc.]")
 RULE_CATEGORY_END()
 
+RULE_CATEGORY(Logging)
+RULE_BOOL(Logging, PrintFileFunctionAndLine, true, "Ex: [World Server] [net.cpp::main:309] Loading variables...")
+RULE_CATEGORY_END()
+
 #undef RULE_CATEGORY
 #undef RULE_INT
 #undef RULE_REAL

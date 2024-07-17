@@ -68,7 +68,7 @@ int32 NPC::GetActSpellDamage(uint16 spell_id, int32 value,  Mob* target) {
 
 			if (chance && zone->random.Roll(chance)) {
 				value += (value*ratio)/100;
-				entity_list.MessageClose_StringID(this, true, 100, MT_SpellCrits, OTHER_CRIT_BLAST, GetCleanName(), itoa(-value));
+				entity_list.MessageClose_StringID(this, true, 100, Chat::SpellCrit, OTHER_CRIT_BLAST, GetCleanName(), itoa(-value));
 			}
 		}
 		else {
@@ -100,9 +100,9 @@ int32 Client::TryWizardInnateCrit(uint16 spell_id, int32 damage, int32 focusDmg,
 			if (maxHit && damage < maxHit)
 				damage = maxHit;
 
-			entity_list.MessageClose_StringID(this, true, 100, MT_SpellCrits,
+			entity_list.MessageClose_StringID(this, true, 100, Chat::SpellCrit,
 				OTHER_CRIT_BLAST, GetName(), itoa(-damage));
-			Message_StringID(MT_SpellCrits, YOU_CRIT_BLAST, itoa(-damage));
+			Message_StringID(Chat::SpellCrit, YOU_CRIT_BLAST, itoa(-damage));
 		}
 		else
 			damage += focusDmg;
@@ -155,9 +155,9 @@ int32 Client::GetActSpellDamage(uint16 spell_id, int32 dmg, Mob* target)
 
 		dmg += dmg * mult / 100 + focusDmg;		// focused damage is not multiplied by crit
 
-		entity_list.MessageClose_StringID(this, false, 100, MT_SpellCrits,
+		entity_list.MessageClose_StringID(this, false, 100, Chat::SpellCrit,
 				OTHER_CRIT_BLAST, GetName(), itoa(-dmg));
-		Message_StringID(MT_SpellCrits, YOU_CRIT_BLAST, itoa(-dmg));
+		Message_StringID(Chat::SpellCrit, YOU_CRIT_BLAST, itoa(-dmg));
 	}
 	else if (GetClass() == WIZARD)
 		dmg = TryWizardInnateCrit(spell_id, dmg, focusDmg);
@@ -232,7 +232,7 @@ int32 NPC::GetActSpellHealing(uint16 spell_id, int32 value, Mob* target, bool ho
 		if(spells[spell_id].buffduration < 1) {
 			if(spellbonuses.CriticalHealChance && (zone->random.Roll(spellbonuses.CriticalHealChance))) {
 				value = value*2;
-				entity_list.MessageClose_StringID(this, true, 100, MT_SpellCrits, OTHER_CRIT_HEAL, GetCleanName(), itoa(value));
+				entity_list.MessageClose_StringID(this, true, 100, Chat::SpellCrit, OTHER_CRIT_HEAL, GetCleanName(), itoa(value));
 			}
 		}
 	 }
@@ -280,9 +280,9 @@ int32 Client::GetActSpellHealing(uint16 spell_id, int32 value, Mob* target, bool
 		value += value*target->GetHealRate(spell_id, this)/100;
 
 		if (Critical) {
-			entity_list.MessageClose_StringID(this, false, 100, MT_SpellCrits,
+			entity_list.MessageClose_StringID(this, false, 100, Chat::SpellCrit,
 					OTHER_CRIT_HEAL, GetName(), itoa(value));
-			Message_StringID(MT_SpellCrits, YOU_CRIT_HEAL, itoa(value));
+			Message_StringID(Chat::SpellCrit, YOU_CRIT_HEAL, itoa(value));
 		}
 
 		return value;
@@ -470,14 +470,14 @@ bool Client::UseDiscipline(uint8 disc_id)
 	{
 		char val1[20]={0};
 		char val2[20]={0};
-		Message_StringID(CC_User_Disciplines, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
+		Message_StringID(Chat::Disciplines, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
 		return(false);
 	}
 
 	bool active = disc_ability_timer.Enabled();
 	if(active)
 	{
-		Message(CC_User_Disciplines, "You must wait before using this discipline."); //find correct message
+		Message(Chat::Disciplines, "You must wait before using this discipline."); //find correct message
 		return(false);
 	}
 
@@ -485,7 +485,7 @@ bool Client::UseDiscipline(uint8 disc_id)
 	uint8 level_to_use = DisciplineUseLevel(disc_id);
 	if(level_to_use > GetLevel() || level_to_use == 0) 
 	{
-		Message_StringID(CC_User_Disciplines, DISC_LEVEL_USE_ERROR);
+		Message_StringID(Chat::Disciplines, DISC_LEVEL_USE_ERROR);
 		return(false);
 	}
 
@@ -921,7 +921,7 @@ bool Client::CastDiscipline(uint8 disc_id, uint8 level_to_use)
 
 	if(string > 0 && IsValidSpell(spellid) && IsDisc(spellid))
 	{
-		entity_list.MessageClose_StringID(this, true, 50, CC_User_Disciplines, string, GetName());
+		entity_list.MessageClose_StringID(this, true, 50, Chat::Disciplines, string, GetName());
 
 		if (reuse_timer < 1620 && current_level > 60)
 			current_level = 60;
@@ -986,7 +986,7 @@ void EntityList::AETaunt(Client* taunter, float range)
 			//if (taunter->CheckLosFN(them))
 			//{
 				taunter->Taunt(them, true, 100);
-				taunter->Message_StringID(CC_User_Skills, TAUNT_SUCCESS, them->GetCleanName());
+				taunter->Message_StringID(Chat::Skills, TAUNT_SUCCESS, them->GetCleanName());
 			//}
 		}
 		++it;
@@ -1121,13 +1121,13 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				{
 					Log(Logs::General, Logs::Spells, "Invalid target: Attempting to cast a beneficial AE spell/song on %s.", curmob->GetName());
 					if(!IsBardSong(spell_id) && spells[spell_id].targettype != ST_AEBard)
-						caster->Message_StringID(CC_User_SpellFailure, SPELL_NO_HOLD);
+						caster->Message_StringID(Chat::SpellFailure, SPELL_NO_HOLD);
 					continue;
 				}
 				else if (IsBardSong(spell_id) && curmob->IsPet())
 				{
 					Log(Logs::General, Logs::Spells, "Invalid target: Attempting to cast a beneficial AE song on %s who is a pet.", curmob->GetName());
-					//caster->Message_StringID(CC_User_SpellFailure, SPELL_NO_HOLD);
+					//caster->Message_StringID(Chat::SpellFailure, SPELL_NO_HOLD);
 					continue;
 				}
 			}
@@ -1141,8 +1141,8 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			int16 slotid = curmob->CastToClient()->GetInv().HasItem(19720);
 			if(slotid == INVALID_INDEX)
 			{
-				curmob->Message_StringID(CC_User_SpellFailure, NO_COMPONENT_LUCLIN);
-				Log(Logs::Moderate, Logs::Spells, "%s does not have the correct component to travel to Luclin.", curmob->GetName());
+				curmob->Message_StringID(Chat::SpellFailure, NO_COMPONENT_LUCLIN);
+				Log(Logs::Detail, Logs::Spells, "%s does not have the correct component to travel to Luclin.", curmob->GetName());
 				continue;
 			}
 			else
@@ -1161,12 +1161,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (curmob->IsNPC() && caster->IsAttackAllowed(curmob, true, spell_id))
 					++targets_hit;
-				Log(Logs::Moderate, Logs::Spells, "Targeted AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
+				Log(Logs::Detail, Logs::Spells, "Targeted AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
 			}
 		}
 		else 
 		{
-			Log(Logs::Moderate, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
+			Log(Logs::Detail, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
 			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 		}
 	}

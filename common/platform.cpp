@@ -40,6 +40,8 @@ std::string GetPlatformName()
 		return "ClientExport";
 	case EQEmuExePlatform::ExePlatformLaunch:
 		return "Launch";
+	case EQEmuExePlatform::ExePlatformTests:
+		return "Tests";
 	default:
 		return "";
 	}

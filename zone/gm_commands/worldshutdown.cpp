@@ -15,14 +15,14 @@ void command_worldshutdown(Client *c, const Seperator *sep){
 			) {
 			int time_minutes = (time / 60);
 			worldserver.SendEmoteMessage(0, AccountStatus::Player,
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"[SYSTEM] World will be shutting down in {} minutes.",
 					time_minutes
 				).c_str()
 			);
 			c->Message(
-				CC_Default,
+				Chat::White,
 				fmt::format(
 					"World will be shutting down in {} minutes, notifying every {} seconds",
 					time_minutes,
@@ -37,8 +37,8 @@ void command_worldshutdown(Client *c, const Seperator *sep){
 			safe_delete(pack);
 		}
 		else if (!strcasecmp(sep->arg[1], "now")){
-			worldserver.SendEmoteMessage(0, AccountStatus::Player, CC_Yellow, "[SYSTEM] World is shutting down now.");
-			c->Message(CC_Default, "World is shutting down now.");
+			worldserver.SendEmoteMessage(0, AccountStatus::Player, Chat::Yellow, "[SYSTEM] World is shutting down now.");
+			c->Message(Chat::White, "World is shutting down now.");
 			auto pack = new ServerPacket;
 			pack->opcode = ServerOP_ShutdownAll;
 			pack->size = 0;
@@ -46,7 +46,7 @@ void command_worldshutdown(Client *c, const Seperator *sep){
 			safe_delete(pack);
 		}
 		else if (!strcasecmp(sep->arg[1], "disable")){
-			c->Message(CC_Default, "World shutdown has been aborted.");
+			c->Message(Chat::White, "World shutdown has been aborted.");
 			auto pack = new ServerPacket(ServerOP_ShutdownAll, sizeof(WorldShutDown_Struct));
 			WorldShutDown_Struct* wsd = (WorldShutDown_Struct*)pack->pBuffer;
 			wsd->time = 0;
@@ -55,13 +55,13 @@ void command_worldshutdown(Client *c, const Seperator *sep){
 			safe_delete(pack);
 		}
 		else{
-			c->Message(CC_Default, "#worldshutdown - Shuts down the server and all zones.");
-			c->Message(CC_Default, "Usage: #worldshutdown now - Shuts down the server and all zones immediately.");
-			c->Message(CC_Default, "Usage: #worldshutdown disable - Stops the server from a previously scheduled shut down.");
-			c->Message(CC_Default, "Usage: #worldshutdown [timer] [interval] - Shuts down the server and all zones after [timer] seconds and notifies players every [interval] seconds.");
+			c->Message(Chat::White, "#worldshutdown - Shuts down the server and all zones.");
+			c->Message(Chat::White, "Usage: #worldshutdown now - Shuts down the server and all zones immediately.");
+			c->Message(Chat::White, "Usage: #worldshutdown disable - Stops the server from a previously scheduled shut down.");
+			c->Message(Chat::White, "Usage: #worldshutdown [timer] [interval] - Shuts down the server and all zones after [timer] seconds and notifies players every [interval] seconds.");
 		}
 	}
 	else
-		c->Message(CC_Default, "Error: World server disconnected");
+		c->Message(Chat::White, "Error: World server disconnected");
 }
 

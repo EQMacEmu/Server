@@ -145,6 +145,8 @@ public:
 	void SetBaseHP(uint32 new_hp);
 	void SetSpawnPoint(float x, float y, float z, float h);
 	void SetClass(int classNum);
+	void SetMaxDamage(uint32 new_max_damage);
+	void SetMinDamage(uint32 new_min_damage);
 };
 
 #endif

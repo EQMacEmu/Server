@@ -107,7 +107,7 @@ void Trade::AddEntity(uint16 trade_slot_id, uint32 stack_size) {
 	EQ::ItemInstance* inst = client->GetInv().GetItem(EQ::invslot::slotCursor);
 
 	if (!inst) {
-		client->Message(CC_Red, "Error: Could not find item on your cursor!");
+		client->Message(Chat::Red, "Error: Could not find item on your cursor!");
 		return;
 	}
 
@@ -1118,12 +1118,12 @@ void Client::BulkSendTraderInventory(uint32 char_id) {
 void Client::DisplayTraderInventory(Client* client) 
 {
 
-	if (!client || GetZoneID() != bazaar)
+	if (!client || GetZoneID() != Zones::BAZAAR)
 		return;
 
 	if (!client->IsTrader())
 	{
-		Message(CC_Default, "%s is not a trader", client->GetName());
+		Message(Chat::White, "%s is not a trader", client->GetName());
 		return;
 	}
 
@@ -1152,13 +1152,13 @@ void Client::DisplayTraderInventory(Client* client)
 					charges = GrabStackedCharges(inst->GetID());
 				}
 
-				Message(CC_Default, "Slot %d: %s(%d) price: %d", i, inst->GetItem()->Name, charges, cost);
+				Message(Chat::White, "Slot %d: %s(%d) price: %d", i, inst->GetItem()->Name, charges, cost);
 				++count;
 			}
 		}
 	}
 
-	Message(CC_Default, "%s has %d items up for sale", client->GetName(), count);
+	Message(Chat::White, "%s has %d items up for sale", client->GetName(), count);
 	safe_delete(TraderItems);
 }
 
@@ -1666,8 +1666,8 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 	Log(Logs::Detail, Logs::Bazaar, "Actual quantity that will be traded is %i for cost: %i", outtbs->Quantity, outtbs->Price);
 
 	if(outtbs->Price <= 0) {
-		Message(CC_Red, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
-		Trader->Message(CC_Red, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
+		Message(Chat::Red, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
+		Trader->Message(Chat::Red, "Internal error. Aborting trade. Please report this to the ServerOP. Error code is 1");
 		Log(Logs::General, Logs::Error, "Bazaar: Zero price transaction between %s and %s aborted."
 						"Item: %s, Charges: %i, TBS: Qty %i, Price: %i",
 						GetName(), Trader->GetName(),
@@ -1678,7 +1678,7 @@ void Client::BuyTraderItem(TraderBuy_Struct* tbs,Client* Trader,const EQApplicat
 	}
 
 	if(outtbs->Price > MAX_TRANSACTION_VALUE) {
-		Message(CC_Red, "That would exceed the single transaction limit of %u platinum.", MAX_TRANSACTION_VALUE / 1000);
+		Message(Chat::Red, "That would exceed the single transaction limit of %u platinum.", MAX_TRANSACTION_VALUE / 1000);
 		TradeRequestFailed(app);
 		safe_delete(outapp);
 		return;
@@ -1944,7 +1944,7 @@ void Client::SendBazaarResults(uint32 TraderID, uint32 Class_, uint32 Race, uint
     uint32 ID = 0;
 
     if (results.RowCount() == static_cast<unsigned long>(RuleI(Bazaar, MaxSearchResults)))
-			Message(CC_Yellow, "Your search reached the limit of %i results. Please narrow your search down by selecting more options.",
+			Message(Chat::Yellow, "Your search reached the limit of %i results. Please narrow your search down by selecting more options.",
 					RuleI(Bazaar, MaxSearchResults));
 
     if(results.RowCount() == 0) {
@@ -2220,7 +2220,7 @@ void Client::HandleTraderPriceUpdate(const EQApplicationPacket *app)
 			}
 
 			if(SameItemWithDifferingCharges)
-				Message(CC_Red, "Warning: You have more than one %s with different charges. They have all been added for sale "
+				Message(Chat::Red, "Warning: You have more than one %s with different charges. They have all been added for sale "
 						"at the same price.", item->Name);
 		}
 
@@ -2289,8 +2289,8 @@ void Client::HandleTraderPriceUpdate(const EQApplicationPacket *app)
 			QueuePacket(outapp);
 			safe_delete(outapp);
 			Trader_EndTrader();
-			Message(CC_Red, "You must remove the item from sale before you can increase the price while a customer is browsing.");
-			Message(CC_Red, "Click 'Begin Trader' to restart Trader mode with the increased price for this item.");
+			Message(Chat::Red, "You must remove the item from sale before you can increase the price while a customer is browsing.");
+			Message(Chat::Red, "Click 'Begin Trader' to restart Trader mode with the increased price for this item.");
 			safe_delete(gis);
 			return;
 		}

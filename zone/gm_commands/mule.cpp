@@ -15,16 +15,16 @@ void command_mule(Client *c, const Seperator *sep)
 
 		if(!database.SetMule(sep->arg[1], toggle))
 		{
-			c->Message(CC_Red, "%s could not be toggled. Check the spelling of their account name.", sep->arg[1]);
+			c->Message(Chat::Red, "%s could not be toggled. Check the spelling of their account name.", sep->arg[1]);
 		}
 		else
 		{
-			c->Message(CC_Green, "%s is %s a mule!", sep->arg[1], toggle == 0 ? "no longer" : "now");
+			c->Message(Chat::Green, "%s is %s a mule!", sep->arg[1], toggle == 0 ? "no longer" : "now");
 		}
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: mule [accountname] [0/1]");
+		c->Message(Chat::White, "Usage: mule [accountname] [0/1]");
 	}
 }
 

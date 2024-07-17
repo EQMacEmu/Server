@@ -424,7 +424,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			if (cle->CharID())
 				fmt::format_to(std::back_inserter(out), "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
 			if (out.size() >= 3072) {
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 				addnewline = false;
 				out.clear();
 			}
@@ -438,7 +438,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 		x++;
 	}
 	fmt::format_to(std::back_inserter(out), "{}{} CLEs in memory. {} CLEs listed. numplayers = {}.", newline, x, y, numplayers);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 }
 
 
@@ -545,7 +545,7 @@ ClientListEntry* ClientList::CheckAuth(const char* iName, const char* iPassword)
 	}
 	int16 tmpadmin;
 
-	//Log.LogDebugType(Logs::Detail, Logs::WorldServer,"Login with '%s' and '%s'", iName, iPassword);
+	LogDebug("Login with {} and {}", iName, iPassword);
 
 	uint32 accid = database.CheckLogin(iName, iPassword, &tmpadmin);
 	if (accid) {
@@ -1149,7 +1149,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 
 			fmt::format_to(std::back_inserter(out), fmt::runtime(line));
 			if (out.size() >= 3584) {
-				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 				out.clear();
 			}
 			else {
@@ -1179,7 +1179,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 		
 		//console_list.SendConsoleWho(connection, to, admin);
 	}
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 }
 
 void ClientList::ConsoleTraderCount(const char* to, WorldTCPConnection* connection)
@@ -1205,7 +1205,7 @@ void ClientList::ConsoleTraderCount(const char* to, WorldTCPConnection* connecti
 	}
 
 	fmt::format_to(std::back_inserter(out), " {} traders online\r\n", tradercount);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 }
 
 void ClientList::Add(Client* client) {
@@ -1423,7 +1423,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 			Name,
 			0,
 			AccountStatus::Player,
-			CC_NPCQuestSay,
+			Chat::NPCQuestSay,
 			fmt::format(
 				"Client Counts | PC: {} ",
 				client_count[EQ::versions::ClientVersionBit::bit_MacPC]
@@ -1436,7 +1436,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 			Name,
 			0,
 			AccountStatus::Player,
-			CC_NPCQuestSay,
+			Chat::NPCQuestSay,
 			fmt::format(
 				"Client Counts | Intel: {} ",
 				client_count[EQ::versions::ClientVersionBit::bit_MacIntel]
@@ -1449,7 +1449,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 			Name,
 			0,
 			AccountStatus::Player,
-			CC_NPCQuestSay,
+			Chat::NPCQuestSay,
 			fmt::format(
 				"Client Counts | PPC: {} ",
 				client_count[EQ::versions::ClientVersionBit::bit_MacPPC]
@@ -1457,7 +1457,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 		);
 	}
 
-	zoneserver_list.SendEmoteMessage(Name, 0, AccountStatus::Player, CC_NPCQuestSay, fmt::format(
+	zoneserver_list.SendEmoteMessage(Name, 0, AccountStatus::Player, Chat::NPCQuestSay, fmt::format(
 		"Client Counts | Total: {} , Unique IPs: {} ",
 		total_clients,
 		unique_ips.size()
@@ -1511,7 +1511,7 @@ void ClientList::ConsoleClientVersionSummary(const char* to, WorldTCPConnection*
 	}
 
 	fmt::format_to(std::back_inserter(out), " {} PC {} Intel clients online.\r\n", ClientPCCount, ClientIntelCount);
-	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 }
 
 bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int16 admin, int whomlen)

@@ -46,7 +46,7 @@
 #endif
 
 //for logsys
-#define _L "%s:%d: "
+#define _L "[{}]:[{}]: "
 #define __L , long2ip(remote_ip).c_str(), ntohs(remote_port)
 
 uint16 EQStream::MaxWindowSize=2048;
@@ -86,18 +86,18 @@ void EQStream::init(bool resetSession) {
 
 	OpMgr = nullptr;
 	if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-		Log(Logs::Detail, Logs::Netcode, _L "init Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+		LogNetcodeDetail(_L "init Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 	}
 	
 	if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-		Log(Logs::Detail, Logs::Netcode, _L "init Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+		LogNetcodeDetail(_L "init Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 	}
 }
 
 EQRawApplicationPacket *EQStream::MakeApplicationPacket(EQProtocolPacket *p)
 {
 	EQRawApplicationPacket *ap=nullptr;
-	Log(Logs::Detail, Logs::Netcode, _L "Creating new application packet, length %d" __L, p->size);
+	LogNetcodeDetail(_L "Creating new application packet, length {}" __L, p->size);
 	// _raw(NET__APP_CREATE_HEX, 0xFFFF, p);
 	ap = p->MakeAppPacket();
 	return ap;
@@ -106,7 +106,7 @@ EQRawApplicationPacket *EQStream::MakeApplicationPacket(EQProtocolPacket *p)
 EQRawApplicationPacket *EQStream::MakeApplicationPacket(const unsigned char *buf, uint32 len)
 {
 	EQRawApplicationPacket *ap=nullptr;
-	Log(Logs::Detail, Logs::Netcode, _L "Creating new application packet, length %d" __L, len);
+	LogNetcodeDetail(_L "Creating new application packet, length {}" __L, len);
 	ap = new EQRawApplicationPacket(buf, len);
 	return ap;
 }
@@ -136,7 +136,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 	}
 
 	if (!Session && p->opcode!=OP_SessionRequest && p->opcode!=OP_SessionResponse) {
-		Log(Logs::Detail, Logs::Netcode, _L "Session not initialized, packet ignored" __L);
+		LogNetcodeDetail(_L "Session not initialized, packet ignored" __L);
 		// _raw(NET__DEBUG, 0xFFFF, p);
 		return;
 	}
@@ -147,7 +147,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			while(processed < p->size) {
 				subpacket_length=*(p->pBuffer+processed);
 				EQProtocolPacket *subp=MakeProtocolPacket(p->pBuffer+processed+1,subpacket_length);
-				Log(Logs::Detail, Logs::Netcode, _L "Extracting combined packet of length %d" __L, subpacket_length);
+				LogNetcodeDetail(_L "Extracting combined packet of length [{}]" __L, subpacket_length);
 				// _raw(NET__NET_CREATE_HEX, 0xFFFF, subp);
 				subp->copyInfo(p);
 				ProcessPacket(subp);
@@ -162,12 +162,12 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			while(processed<p->size) {
 				EQRawApplicationPacket *ap=nullptr;
 				if ((subpacket_length=(unsigned char)*(p->pBuffer+processed))!=0xff) {
-					Log(Logs::Detail, Logs::Netcode, _L "Extracting combined app packet of length %d, short len" __L, subpacket_length);
+					LogNetcodeDetail(_L "Extracting combined app packet of length [{}], short len" __L, subpacket_length);
 					ap=MakeApplicationPacket(p->pBuffer+processed+1,subpacket_length);
 					processed+=subpacket_length+1;
 				} else {
 					subpacket_length=ntohs(*(uint16 *)(p->pBuffer+processed+1));
-					Log(Logs::Detail, Logs::Netcode, _L "Extracting combined app packet of length %d, short len" __L, subpacket_length);
+					LogNetcodeDetail(_L "Extracting combined app packet of length [{}], short len" __L, subpacket_length);
 					ap=MakeApplicationPacket(p->pBuffer+processed+3,subpacket_length);
 					processed+=subpacket_length+3;
 				}
@@ -182,29 +182,29 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 		case OP_Packet: {
 			if(!p->pBuffer || (p->Size() < 4))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_Packet that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_Packet that was of malformed size" __L);
 				break;
 			}
 			uint16 seq=ntohs(*(uint16 *)(p->pBuffer));
 			SeqOrder check=CompareSequence(NextInSeq,seq);
 			if (check == SeqFuture) {
-					Log(Logs::Detail, Logs::Netcode, _L "Future OP_Packet: Expecting Seq=%d, but got Seq=%d" __L, NextInSeq, seq);
-					// _raw(NET__DEBUG, seq, p);
+				LogNetcodeDetail(_L "Future OP_Packet: Expecting Seq = [{}], but got Seq = [{}]" __L, NextInSeq, seq);
+				// _raw(NET__DEBUG, seq, p);
 
-					PacketQueue[seq]=p->Copy();
-					Log(Logs::Detail, Logs::Netcode, _L "OP_Packet Queue size=%d" __L, PacketQueue.size());
+				PacketQueue[seq]=p->Copy();
+				LogNetcodeDetail(_L "OP_Packet Queue size = [{}]" __L, PacketQueue.size());
 
 				//SendOutOfOrderAck(seq);
 
 			} else if (check == SeqPast) {
-				Log(Logs::Detail, Logs::Netcode, _L "Duplicate OP_Packet: Expecting Seq=%d, but got Seq=%d" __L, NextInSeq, seq);
+				LogNetcodeDetail(_L "Duplicate OP_Packet: Expecting Seq = [{}], but got Seq = [{}]" __L, NextInSeq, seq);
 				// _raw(NET__DEBUG, seq, p);
 				SendOutOfOrderAck(seq); //we already got this packet but it was out of order
 			} else {
 				// In case we did queue one before as well.
 				EQProtocolPacket *qp=RemoveQueue(seq);
 				if (qp) {
-					Log(Logs::General, Logs::Netcode, "[NET_TRACE] OP_Packet: Removing older queued packet with sequence %d", seq);
+					LogNetcodeDetail("[NET_TRACE] OP_Packet: Removing older queued packet with sequence [{}]", seq);
 					delete qp;
 				}
 
@@ -213,7 +213,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 				// Check for an embedded OP_AppCombinded (protocol level 0x19)
 				if (*(p->pBuffer+2)==0x00 && *(p->pBuffer+3)==0x19) {
 					EQProtocolPacket *subp=MakeProtocolPacket(p->pBuffer+2,p->size-2);
-					Log(Logs::Detail, Logs::Netcode, _L "seq %d, Extracting combined packet of length %d" __L, seq, subp->size);
+					LogNetcodeDetail(_L "seq [{}], Extracting combined packet of length [{}]" __L, seq, subp->size);
 					// _raw(NET__NET_CREATE_HEX, seq, subp);
 					subp->copyInfo(p);
 					ProcessPacket(subp);
@@ -232,13 +232,13 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 		case OP_Fragment: {
 			if(!p->pBuffer || (p->Size() < 4))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_Fragment that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_Fragment that was of malformed size" __L);
 				break;
 			}
 			uint16 seq=ntohs(*(uint16 *)(p->pBuffer));
 			SeqOrder check=CompareSequence(NextInSeq,seq);
 			if (check == SeqFuture) {
-				Log(Logs::Detail, Logs::Netcode, _L "Future OP_Fragment: Expecting Seq=%d, but got Seq=%d" __L, NextInSeq, seq);
+				LogNetcodeDetail(_L "Future OP_Fragment: Expecting Seq = [{}], but got Seq = [{}]" __L, NextInSeq, seq);
 				// _raw(NET__DEBUG, seq, p);
 
 				PacketQueue[seq]=p->Copy();
@@ -247,14 +247,14 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 				//SendOutOfOrderAck(seq);
 
 			} else if (check == SeqPast) {
-				Log(Logs::Detail, Logs::Netcode, _L "Duplicate OP_Fragment: Expecting Seq=%d, but got Seq=%d" __L, NextInSeq, seq);
+				LogNetcodeDetail(_L "Duplicate OP_Fragment: Expecting Seq = [{}], but got Seq = [{}]" __L, NextInSeq, seq);
 				// _raw(NET__DEBUG, seq, p);
 				SendOutOfOrderAck(seq);
 			} else {
 				// In case we did queue one before as well.
 				EQProtocolPacket *qp=RemoveQueue(seq);
 				if (qp) {
-					Log(Logs::General, Logs::Netcode, "[NET_TRACE] OP_Fragment: Removing older queued packet with sequence %d", seq);
+					LogNetcode("[NET_TRACE] OP_Fragment: Removing older queued packet with sequence [{}]", seq);
 					delete qp;
 				}
 				SetNextAckToSend(seq);
@@ -262,18 +262,18 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 				if (oversize_buffer) {
 					memcpy(oversize_buffer+oversize_offset,p->pBuffer+2,p->size-2);
 					oversize_offset+=p->size-2;
-					Log(Logs::Detail, Logs::Netcode, _L "Fragment of oversized of length %d, seq %d: now at %d/%d" __L, p->size-2, seq, oversize_offset, oversize_length);
+					LogNetcodeDetail(_L "Fragment of oversized of length [{}], seq [{}]: now at [{}]/[{}]" __L, p->size - 2, seq, oversize_offset, oversize_length);
 					if (oversize_offset==oversize_length) {
 						if (*(p->pBuffer+2)==0x00 && *(p->pBuffer+3)==0x19) {
 							EQProtocolPacket *subp=MakeProtocolPacket(oversize_buffer,oversize_offset);
-							Log(Logs::Detail, Logs::Netcode, _L "seq %d, Extracting combined oversize packet of length %d" __L, seq, subp->size);
+							LogNetcodeDetail(_L "seq [{}], Extracting combined oversize packet of length [{}]" __L, seq, subp->size);
 							//// _raw(NET__NET_CREATE_HEX, subp);
 							subp->copyInfo(p);
 							ProcessPacket(subp);
 							delete subp;
 						} else {
 							EQRawApplicationPacket *ap=MakeApplicationPacket(oversize_buffer,oversize_offset);
-							Log(Logs::Detail, Logs::Netcode, _L "seq %d, completed combined oversize packet of length %d" __L, seq, ap->size);
+							LogNetcodeDetail(_L "seq [{}], completed combined oversize packet of length [{}]" __L, seq, ap->size);
 							if (ap) {
 								ap->copyInfo(p);
 								InboundQueuePush(ap);
@@ -288,20 +288,20 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 					oversize_buffer=new unsigned char[oversize_length];
 					memcpy(oversize_buffer,p->pBuffer+6,p->size-6);
 					oversize_offset=p->size-6;
-					Log(Logs::Detail, Logs::Netcode, _L "First fragment of oversized of seq %d: now at %d/%d" __L, seq, oversize_offset, oversize_length);
+					LogNetcodeDetail(_L "First fragment of oversized of seq [{}]: now at [{}]/[{}]" __L, seq, oversize_offset, oversize_length);
 				}
 			}
 		}
 		break;
 		case OP_KeepAlive: {
 			NonSequencedPush(new EQProtocolPacket(p->opcode,p->pBuffer,p->size));
-			Log(Logs::Detail, Logs::Netcode, _L "Received and queued reply to keep alive Opcode: %d Size: %d" __L, p->opcode, p->size);
+			LogNetcodeDetail(_L "Received and queued reply to keep alive Opcode: [{}] Size: [{}]" __L, p->opcode, p->size);
 		}
 		break;
 		case OP_Ack: {
 			if(!p->pBuffer || (p->Size() < 4))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_Ack that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_Ack that was of malformed size" __L);
 				break;
 			}
 			uint16 seq=ntohs(*(uint16 *)(p->pBuffer));
@@ -315,11 +315,11 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 		case OP_SessionRequest: {
 			if(p->Size() < sizeof(SessionRequest))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionRequest that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_SessionRequest that was of malformed size" __L);
 				break;
 			}
 			if (GetState() == ESTABLISHED) {
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionRequest in ESTABLISHED state (%d) streamactive (%i) attempt (%i)" __L, GetState(), streamactive, sessionAttempts);
+				LogNetcodeDetail( _L "Received OP_SessionRequest in ESTABLISHED state [{}] streamactive [{}] attempt [{}]" __L, (char)GetState(), streamactive, sessionAttempts);
 
 				// client seems to try a max of 30 times (initial+3 retries) then gives up, giving it a few more attempts just in case
 				// streamactive means we identified the opcode for the stream, we cannot re-establish this connection
@@ -337,7 +337,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			SessionRequest *Request=(SessionRequest *)p->pBuffer;
 			Session=ntohl(Request->Session);
 			SetMaxLen(ntohl(Request->MaxLength));
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionRequest: session %lu, maxlen %d" __L, (unsigned long)Session, MaxLen);
+			LogNetcodeDetail(_L "Received OP_SessionRequest: session [{}], maxlen [{}]" __L, (unsigned long)Session, MaxLen);
 			SetState(ESTABLISHED);
 			Key=0x11223344;
 			SendSessionResponse();
@@ -346,7 +346,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 		case OP_SessionResponse: {
 			if(p->Size() < sizeof(SessionResponse))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionResponse that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_SessionResponse that was of malformed size" __L);
 				break;
 			}
 
@@ -362,7 +362,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			compressed=(Response->Format&FLAG_COMPRESSED);
 			encoded=(Response->Format&FLAG_ENCODED);
 
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionResponse: session %lu, maxlen %d, key %lu, compressed? %s, encoded? %s" __L, (unsigned long)Session, MaxLen, (unsigned long)Key, compressed?"yes":"no", encoded?"yes":"no");
+			LogNetcodeDetail(_L "Received OP_SessionResponse: session [{}], maxlen [{}], key [{}], compressed? [{}], encoded? [{}]" __L, (unsigned long)Session, MaxLen, (unsigned long)Key, compressed ? "yes" : "no", encoded ? "yes" : "no");
 
 			// Kinda kludgy, but trie for now
 			if (StreamType==UnknownStream) {
@@ -385,17 +385,17 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 			EQStreamState state = GetState();
 			if(state == ESTABLISHED) {
 				//client initiated disconnect?
-				Log(Logs::Detail, Logs::Netcode, _L "Received unsolicited OP_SessionDisconnect. Treating like a client-initiated disconnect." __L);
+				LogNetcodeDetail(_L "Received unsolicited OP_SessionDisconnect. Treating like a client-initiated disconnect." __L);
 				_SendDisconnect();
 				SetState(CLOSED);
 			} else if(state == CLOSING) {
 				//we were waiting for this anyways, ignore pending messages, send the reply and be closed.
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionDisconnect when we have a pending close, they beat us to it. Were happy though." __L);
+				LogNetcodeDetail(_L "Received OP_SessionDisconnect when we have a pending close, they beat us to it. Were happy though." __L);
 				_SendDisconnect();
 				SetState(CLOSED);
 			} else {
 				//we are expecting this (or have already gotten it, but dont care either way)
-				Log(Logs::Detail, Logs::Netcode, _L "Received expected OP_SessionDisconnect. Moving to closed state." __L);
+				LogNetcodeDetail(_L "Received expected OP_SessionDisconnect. Moving to closed state." __L);
 				SetState(CLOSED);
 			}
 		}
@@ -403,23 +403,22 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 		case OP_OutOfOrderAck: {
 			if(!p->pBuffer || (p->Size() < 4))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_OutOfOrderAck that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_OutOfOrderAck that was of malformed size" __L);
 				break;
 			}
 			uint16 seq=ntohs(*(uint16 *)(p->pBuffer));
 			std::lock_guard<std::mutex> lock(MOutboundQueue);
 
 			if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-				Log(Logs::Detail, Logs::Netcode, _L "Pre-OOA Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+				LogNetcodeDetail(_L "Pre-OOA Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 			}
 			
 			if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-				Log(Logs::Detail, Logs::Netcode, _L "Pre-OOA Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+				LogNetcodeDetail(_L "Pre-OOA Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 			}
 			//if the packet they got out of order is between our last acked packet and the last sent packet, then its valid.
 			if (CompareSequence(SequencedBase,seq) != SeqPast && CompareSequence(NextOutSeq,seq) == SeqPast) {
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_OutOfOrderAck for sequence %d, starting retransmit at the start of our unacked buffer (seq %d, was %d)." __L,
-					seq, SequencedBase, SequencedBase+NextSequencedSend);
+				LogNetcodeDetail(_L "Received OP_OutOfOrderAck for sequence [{}], starting retransmit at the start of our unacked buffer (seq [{}], was [{}])." __L, seq, SequencedBase, SequencedBase + NextSequencedSend);
 
 				bool retransmit_acked_packets = false;
 				if(GetExecutablePlatform() == ExePlatformWorld || GetExecutablePlatform() == ExePlatformZone) {
@@ -429,7 +428,7 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 				if(!retransmit_acked_packets) {
 					uint16 sqsize = SequencedQueue.size();
 					uint16 index = seq - SequencedBase;
-					Log(Logs::Detail, Logs::Netcode, _L "OP_OutOfOrderAck marking packet acked in queue (queue index = %d, queue size = %d)." __L, index, sqsize);
+					LogNetcodeDetail(_L "OP_OutOfOrderAck marking packet acked in queue (queue index = [{}], queue size = [{}])." __L, index, sqsize);
 					if (index < sqsize) {
 						std::deque<EQProtocolPacket *>::iterator sitr;
 						sitr = SequencedQueue.begin();
@@ -444,26 +443,26 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 
 				NextSequencedSend = 0;
 			} else {
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_OutOfOrderAck for out-of-window %d. Window (%d->%d)." __L, seq, SequencedBase, NextOutSeq);
+				LogNetcodeDetail(_L "Received OP_OutOfOrderAck for out-of-window [{}]. Window ([{}]->[{}])." __L, seq, SequencedBase, NextOutSeq);
 			}
 
 			if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-				Log(Logs::Detail, Logs::Netcode, _L "Post-OOA Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+				LogNetcodeDetail(_L "Post-OOA Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 			}
 
 			if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-				Log(Logs::Detail, Logs::Netcode, _L "Post-OOA Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+				LogNetcodeDetail(_L "Post-OOA Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 			}
 		}
 		break;
 		case OP_SessionStatRequest: {
 			if(p->Size() < sizeof(SessionStats))
 			{
-				Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionStatRequest that was of malformed size" __L);
+				LogNetcodeDetail(_L "Received OP_SessionStatRequest that was of malformed size" __L);
 				break;
 			}
 			SessionStats *Stats=(SessionStats *)p->pBuffer;
-			Log(Logs::Detail, Logs::Netcode, _L "Received Stats: %lu packets received, %lu packets sent, Deltas: local %lu, (%lu <- %lu -> %lu) remote %lu" __L,
+			LogNetcodeDetail(_L "Received Stats: [{}] packets received, [{}] packets sent, Deltas: local [{}], ([{}] <- [{}] -> [{}]) remote [{}]" __L,
 				(unsigned long)ntohl(Stats->packets_received), (unsigned long)ntohl(Stats->packets_sent), (unsigned long)ntohl(Stats->last_local_delta),
 				(unsigned long)ntohl(Stats->low_delta), (unsigned long)ntohl(Stats->average_delta),
 				(unsigned long)ntohl(Stats->high_delta), (unsigned long)ntohl(Stats->last_remote_delta));
@@ -484,17 +483,17 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 					}
 					if(retransmittimeout > RETRANSMIT_TIMEOUT_MAX)
 						retransmittimeout = RETRANSMIT_TIMEOUT_MAX;
-					Log(Logs::Detail, Logs::Netcode, _L "Retransmit timeout recalculated to %dms" __L, retransmittimeout);
+					LogNetcodeDetail(_L "Retransmit timeout recalculated to [{}]ms" __L, retransmittimeout);
 				}
 			}
 		}
 		break;
 		case OP_SessionStatResponse: {
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionStatResponse. Ignoring." __L);
+			LogNetcodeDetail(_L "Received OP_SessionStatResponse. Ignoring." __L);
 		}
 		break;
 		case OP_OutOfSession: {
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_OutOfSession. Ignoring." __L);
+			LogNetcodeDetail(_L "Received OP_OutOfSession. Ignoring." __L);
 		}
 		break;
 		default:
@@ -507,8 +506,9 @@ void EQStream::ProcessPacket(EQProtocolPacket *p)
 
 void EQStream::QueuePacket(const EQApplicationPacket *p, bool ack_req)
 {
-	if(p == nullptr)
+	if (p == nullptr) {
 		return;
+	}
 
 	EQApplicationPacket *newp = p->Copy();
 
@@ -525,7 +525,7 @@ void EQStream::FastQueuePacket(EQApplicationPacket **p, bool ack_req)
 		return;
 
 	if(OpMgr == nullptr || *OpMgr == nullptr) {
-		Log(Logs::Detail, Logs::Netcode, _L "Packet enqueued into a stream with no opcode manager, dropping." __L);
+		LogNetcodeDetail(_L "Packet enqueued into a stream with no opcode manager, dropping." __L);
 		delete pack;
 		return;
 	}
@@ -554,30 +554,30 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 	{
 		if (p->GetOpcode() != OP_SpecialMesg)
 		{
-			Log(Logs::General, Logs::PacketServerClient, "[%s - 0x%04x] [Size: %u]", OpcodeManager::EmuToName(p->GetOpcode()), p->GetOpcode(), p->Size());
+			LogPacketServerClient("[{}] - [{:#06x}] Size: [{}]", OpcodeManager::EmuToName(p->GetOpcode()), p->GetOpcode(), p->Size());
 		}
 	}
 
-	if (LogSys.log_settings[Logs::PacketServerClientWithDump].is_category_enabled == 1){
+	if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1){
 		if (p->GetOpcode() != OP_SpecialMesg){
-			Log(Logs::General, Logs::PacketServerClientWithDump, "[%s - 0x%04x] [Size: %u] %s", OpcodeManager::EmuToName(p->GetOpcode()), p->GetOpcode(), p->Size(), DumpPacketToString(p).c_str());
+			LogPacketServerClient("[{}] - [{:#06x}] Size: [{}] [{}]", OpcodeManager::EmuToName(p->GetOpcode()), p->GetOpcode(), p->Size(), DumpPacketToString(p).c_str());
 		}
 	}
 
 	// Convert the EQApplicationPacket to 1 or more EQProtocolPackets
 	if (p->size>(MaxLen-8)) { // proto-op(2), seq(2), app-op(2) ... data ... crc(2)
-		Log(Logs::General, Logs::Netcode, _L "Making oversized packet, len [%d]" __L, p->Size());
+		LogNetcode(_L "Making oversized packet, len [{}]" __L, p->Size());
 
 		auto tmpbuff = new unsigned char[p->size + 3];
 		length = p->serialize(opcode, tmpbuff);
 		if (length != p->Size())
-			Log(Logs::General, Logs::Netcode, _L "Packet adjustment, len [%d] to [%d]" __L, p->Size(), length);
+			LogNetcode(_L "Packet adjustment, len [{}] to [{}]" __L, p->Size(), length);
 
 		auto out = new EQProtocolPacket(OP_Fragment, nullptr, MaxLen - 4);
 		*(uint32 *)(out->pBuffer + 2) = htonl(length);
 		used = MaxLen - 10;
 		memcpy(out->pBuffer + 6, tmpbuff, used);
-		Log(Logs::General, Logs::Netcode, _L "First fragment: used [%d]/[%d]. Payload size [%d] in the packet" __L, used, length, p->size);
+		LogNetcode(_L "First fragment: used [{}]/[{}]. Payload size [{}] in the packet" __L, used, length, p->size);
 		SequencedPush(out);
 
 		while (used<length) {
@@ -587,7 +587,7 @@ void EQStream::SendPacket(uint16 opcode, EQApplicationPacket *p)
 			out->size = chunksize + 2;
 			SequencedPush(out);
 			used += chunksize;
-			Log(Logs::General, Logs::Netcode, _L "Subsequent fragment: len [%d], used [%d]/[%d]." __L, chunksize, used, length);
+			LogNetcode(_L "Subsequent fragment: len [{}], used [{}]/[{}]." __L, chunksize, used, length);
 		}
 		delete p;
 		delete[] tmpbuff;
@@ -608,22 +608,22 @@ void EQStream::SequencedPush(EQProtocolPacket * p)
 {
 		std::lock_guard<std::mutex> lock(MOutboundQueue);
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			Log(Logs::General, Logs::Netcode, _L "Pre-Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			LogNetcode(_L "Pre-Push Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			Log(Logs::General, Logs::Netcode, _L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
+			LogNetcode(_L "Pre-Push Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 
-		Log(Logs::General, Logs::Netcode, _L "Pushing sequenced packet [%d] of length [%d]. Base Seq is [%d]." __L, NextOutSeq, p->size, SequencedBase);
+		LogNetcode(_L "Pushing sequenced packet [{}] of length [{}]. Base Seq is [{}]." __L, NextOutSeq, p->size, SequencedBase);
 		*(uint16*)(p->pBuffer) = htons(NextOutSeq);
 		SequencedQueue.push_back(p);
 		NextOutSeq++;
 
 		if (uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			Log(Logs::General, Logs::Netcode, _L "Push Invalid Sequenced queue: BS [%d] + SQ [%d] != NOS [%d]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			LogNetcode(_L "Push Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if (NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			Log(Logs::General, Logs::Netcode, _L "Push Next Send Sequence is beyond the end of the queue NSS [%d] > SQ [%d]" __L, NextSequencedSend, SequencedQueue.size());
+			LogNetcode(_L "Push Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 }
 
@@ -631,21 +631,21 @@ void EQStream::SequencedPush(EQProtocolPacket * p)
 void EQStream::NonSequencedPush(EQProtocolPacket *p)
 {
 	std::lock_guard<std::mutex> lock(MOutboundQueue);
-	Log(Logs::General, Logs::Netcode, _L "Pushing non-sequenced packet of length [%d]" __L, p->size);
+	LogNetcode(_L "Pushing non-sequenced packet of length [{}]" __L, p->size);
 	NonSequencedQueue.push(p);
 }
 
 void EQStream::SendAck(uint16 seq)
 {
-uint16 Seq=htons(seq);
-	Log(Logs::Detail, Logs::Netcode, _L "Sending ack with sequence [%d]" __L, seq);
+	uint16 Seq=htons(seq);
+	LogNetcodeDetail(_L "Sending ack with sequence [[{}]]" __L, seq);
 	SetLastAckSent(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_Ack,(unsigned char *)&Seq,sizeof(uint16)));
 }
 
 void EQStream::SendOutOfOrderAck(uint16 seq)
 {
-	Log(Logs::Detail, Logs::Netcode, _L "Sending out of order ack with sequence [%d]" __L, seq);
+	LogNetcodeDetail(_L "Sending out of order ack with sequence [[{}]]" __L, seq);
 	uint16 Seq=htons(seq);
 	NonSequencedPush(new EQProtocolPacket(OP_OutOfOrderAck,(unsigned char *)&Seq,sizeof(uint16)));
 }
@@ -685,8 +685,8 @@ void EQStream::Write(int eq_fd)
 		// if we have a timeout defined and we have not received an ack recently enough, retransmit from beginning of queue
 		if (RETRANSMIT_TIMEOUT_MULT && !SequencedQueue.empty() && NextSequencedSend &&
 			(GetState()==ESTABLISHED) && ((retransmittimer+retransmittimeout) > Timer::GetCurrentTime())) {
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout since last ack received, starting retransmit at the start of our unacked "
-				"buffer (seq %d, was %d)." __L, SequencedBase, SequencedBase+NextSequencedSend);
+			LogNetcodeDetail(_L "Timeout since last ack received, starting retransmit at the start of our unacked buffer (seq [{}], was [{}])."
+				__L, SequencedBase, SequencedBase + NextSequencedSend);
 			NextSequencedSend = 0;
 			retransmittimer = Timer::GetCurrentTime(); // don't want to endlessly retransmit the first packet
 		}
@@ -706,24 +706,24 @@ void EQStream::Write(int eq_fd)
 				// If we don't have a packet to try to combine into, use this one as the base
 				// And remove it form the queue
 				p = NonSequencedQueue.front();
-				Log(Logs::Detail, Logs::Netcode, _L "Starting combined packet with non-seq packet of len %d" __L, p->size);
+				LogNetcodeDetail(_L "Starting combined packet with non-seq packet of len [{}]" __L, p->size);
 				NonSequencedQueue.pop();
 			} else if (!p->combine(NonSequencedQueue.front())) {
 				// Tryint to combine this packet with the base didn't work (too big maybe)
 				// So just send the base packet (we'll try this packet again later)
-				Log(Logs::Detail, Logs::Netcode, _L "Combined packet full at len %d, next non-seq packet is len %d" __L, p->size, (NonSequencedQueue.front())->size);
+				LogNetcodeDetail(_L "Combined packet full at len [{}], next non-seq packet is len [{}]" __L, p->size, (NonSequencedQueue.front())->size);
 				ReadyToSend.push(p);
 				BytesWritten+=p->size;
 				p=nullptr;
 
 				if (BytesWritten > threshold) {
 					// Sent enough this round, lets stop to be fair
-					Log(Logs::Detail, Logs::Netcode, _L "Exceeded write threshold in nonseq (%d > %d)" __L, BytesWritten, threshold);
+					LogNetcodeDetail(_L "Exceeded write threshold in nonseq ([{}] > [{}])" __L, BytesWritten, threshold);
 					break;
 				}
 			} else {
 				// Combine worked, so just remove this packet and it's spot in the queue
-				Log(Logs::Detail, Logs::Netcode, _L "Combined non-seq packet of len %d, yeilding %d combined." __L, (NonSequencedQueue.front())->size, p->size);
+				LogNetcodeDetail(_L "Combined non-seq packet of len [{}], yeilding [{}] combined." __L, (NonSequencedQueue.front())->size, p->size);
 				delete NonSequencedQueue.front();
 				NonSequencedQueue.pop();
 			}
@@ -734,48 +734,48 @@ void EQStream::Write(int eq_fd)
 
 		if (sitr!=SequencedQueue.end()) {
 			if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-				Log(Logs::Detail, Logs::Netcode, _L "Pre-Send Seq NSS=%d Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, NextSequencedSend, SequencedBase, SequencedQueue.size(), NextOutSeq);
+				LogNetcodeDetail(_L "Pre-Send Seq NSS = [{}] Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, NextSequencedSend, SequencedBase, SequencedQueue.size(), NextOutSeq);
 			}
 
 			if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-				Log(Logs::Detail, Logs::Netcode, _L "Pre-Send Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+				LogNetcodeDetail(_L "Pre-Send Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 			}
 			uint16 seq_send = SequencedBase + NextSequencedSend;	//just for logging...
 			
 			if(SequencedQueue.empty()) {
-				Log(Logs::Detail, Logs::Netcode, _L "Tried to write a packet with an empty queue (%d is past next out %d)" __L, seq_send, NextOutSeq);
+				LogNetcodeDetail(_L "Tried to write a packet with an empty queue ([{}] is past next out [{}])" __L, seq_send, NextOutSeq);
 				SeqEmpty=true;
 				continue;
 			}
 
 			if(GetExecutablePlatform() == ExePlatformWorld || GetExecutablePlatform() == ExePlatformZone || GetExecutablePlatform() == ExePlatformUCS) {
 				if (!RETRANSMIT_ACKED_PACKETS && (*sitr)->acked) {
-					Log(Logs::Detail, Logs::Netcode, _L "Not retransmitting seq packet %d because already marked as acked" __L, seq_send);
+					LogNetcodeDetail(_L "Not retransmitting seq packet [{}] because already marked as acked" __L, seq_send);
 					sitr++;
 					NextSequencedSend++;
 				} else if (!p) {
 					// If we don't have a packet to try to combine into, use this one as the base
 					// Copy it first as it will still live until it is acked
 					p=(*sitr)->Copy();
-					Log(Logs::Detail, Logs::Netcode, _L "Starting combined packet with seq packet %d of len %d" __L, seq_send, p->size);
+					LogNetcodeDetail(_L "Starting combined packet with seq packet [{}] of len [{}]" __L, seq_send, p->size);
 					++sitr;
 					NextSequencedSend++;
 				} else if (!p->combine(*sitr)) {
 					// Trying to combine this packet with the base didn't work (too big maybe)
 					// So just send the base packet (we'll try this packet again later)
-					Log(Logs::Detail, Logs::Netcode, _L "Combined packet full at len %d, next seq packet %d is len %d" __L, p->size, seq_send, (*sitr)->size);
+					LogNetcodeDetail(_L "Combined packet full at len [{}], next seq packet [{}] is len [{}]" __L, p->size, seq_send, (*sitr)->size);
 					ReadyToSend.push(p);
 					BytesWritten+=p->size;
 					p=nullptr;
 
 					if (BytesWritten > threshold) {
 						// Sent enough this round, lets stop to be fair
-						Log(Logs::Detail, Logs::Netcode, _L "Exceeded write threshold in seq (%d > %d)" __L, BytesWritten, threshold);
+						LogNetcodeDetail(_L "Exceeded write threshold in seq ([{}] > [{}])" __L, BytesWritten, threshold);
 						break;
 					}
 				} else {
 					// Combine worked
-					Log(Logs::Detail, Logs::Netcode, _L "Combined seq packet %d of len %d, yielding %d combined." __L, seq_send, (*sitr)->size, p->size);
+					LogNetcodeDetail(_L "Combined seq packet [{}] of len [{}], yielding [{}] combined." __L, seq_send, (*sitr)->size, p->size);
 					++sitr;
 					NextSequencedSend++;
 				}
@@ -786,11 +786,11 @@ void EQStream::Write(int eq_fd)
 					p=(*sitr)->Copy();
 					if (p != nullptr)
 					{
-						Log(Logs::Detail, Logs::Netcode, _L "Starting combined packet with seq packet %d of len %d" __L, seq_send, p->size);
+						LogNetcodeDetail(_L "Starting combined packet with seq packet [{}] of len [{}]" __L, seq_send, p->size);
 					}
 					else
 					{
-						Log(Logs::Detail, Logs::Netcode, _L "Starting combined packet with seq packet %d" __L, seq_send);
+						LogNetcodeDetail(_L "Starting combined packet with seq packet [{}]" __L, seq_send);
 					}
 
 					++sitr;
@@ -798,29 +798,29 @@ void EQStream::Write(int eq_fd)
 				} else if (!p->combine(*sitr)) {
 					// Trying to combine this packet with the base didn't work (too big maybe)
 					// So just send the base packet (we'll try this packet again later)
-					Log(Logs::Detail, Logs::Netcode, _L "Combined packet full at len %d, next seq packet %d is len %d" __L, p->size, seq_send, (*sitr)->size);
+					LogNetcodeDetail(_L "Combined packet full at len [{}], next seq packet [{}] is len [{}]" __L, p->size, seq_send, (*sitr)->size);
 					ReadyToSend.push(p);
 					BytesWritten+=p->size;
 					p=nullptr;
 
 					if (BytesWritten > threshold) {
 						// Sent enough this round, lets stop to be fair
-						Log(Logs::Detail, Logs::Netcode, _L "Exceeded write threshold in seq (%d > %d)" __L, BytesWritten, threshold);
+						LogNetcodeDetail(_L "Exceeded write threshold in seq ([{}] > [{}])" __L, BytesWritten, threshold);
 						break;
 					}
 				} else {
 					// Combine worked
-					Log(Logs::Detail, Logs::Netcode, _L "Combined seq packet %d of len %d, yeilding %d combined." __L, seq_send, (*sitr)->size, p->size);
+					LogNetcodeDetail(_L "Combined seq packet [{}] of len [{}], yeilding [{}] combined." __L, seq_send, (*sitr)->size, p->size);
 					++sitr;
 					NextSequencedSend++;
 				}
 			}
 
 			if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-				Log(Logs::Detail, Logs::Netcode, _L "Post send Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+				LogNetcodeDetail(_L "Post send Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 			}
 			if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-				Log(Logs::Detail, Logs::Netcode, _L "Post send Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+				LogNetcodeDetail(_L "Post send Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 			}
 		} else {
 			// No more sequenced packets
@@ -830,7 +830,7 @@ void EQStream::Write(int eq_fd)
 
 	// We have a packet still, must have run out of both seq and non-seq, so send it
 	if (p) {
-		Log(Logs::Detail, Logs::Netcode, _L "Final combined packet not full, len %d" __L, p->size);
+		LogNetcodeDetail(_L "Final combined packet not full, len [{}]" __L, p->size);
 		ReadyToSend.push(p);
 		BytesWritten+=p->size;
 	}
@@ -854,7 +854,7 @@ void EQStream::Write(int eq_fd)
 	if(SeqEmpty && NonSeqEmpty) {
 		//no more data to send
 		if(CheckState(CLOSING)) {
-			Log(Logs::Detail, Logs::Netcode, _L "All outgoing data flushed, closing stream." __L );
+			LogNetcodeDetail(_L "All outgoing data flushed, closing stream." __L );
 			//we are waiting for the queues to empty, now we can do our disconnect.
 			//this packet will not actually go out until the next call to Write().
 			_SendDisconnect();
@@ -917,7 +917,7 @@ void EQStream::SendSessionResponse()
 
 	out->size=sizeof(SessionResponse);
 
-	Log(Logs::Detail, Logs::Netcode, _L "Sending OP_SessionResponse: session %lu, maxlen=%d, key=0x%x, compressed? %s, encoded? %s" __L,
+	LogNetcodeDetail(_L "Sending OP_SessionResponse: session [{}], maxlen= [{}], key = [{}], compressed? [{}], encoded? [{}]" __L,
 		(unsigned long)Session, MaxLen, Key, compressed?"yes":"no", encoded?"yes":"no");
 
 	NonSequencedPush(out);
@@ -931,7 +931,7 @@ void EQStream::SendSessionRequest()
 	Request->Session=htonl(time(nullptr));
 	Request->MaxLength=htonl(512);
 
-	Log(Logs::Detail, Logs::Netcode, _L "Sending OP_SessionRequest: session %lu, maxlen=%d" __L, (unsigned long)ntohl(Request->Session), ntohl(Request->MaxLength));
+	LogNetcodeDetail(_L "Sending OP_SessionRequest: session [{}], maxlen = [{}]" __L, (unsigned long)ntohl(Request->Session), ntohl(Request->MaxLength));
 
 	NonSequencedPush(out);
 }
@@ -944,7 +944,7 @@ void EQStream::SendKeepAlive()
 	auto out = new EQProtocolPacket(OP_KeepAlive, nullptr, 0);
 	NonSequencedPush(out);
 
-	Log(Logs::Detail, Logs::Netcode, _L "Sending OP_KeepAlive: session %lu" __L, (unsigned long)Session);
+	LogNetcodeDetail(_L "Sending OP_KeepAlive: session [{}]" __L, (unsigned long)Session);
 
 }
 
@@ -957,7 +957,7 @@ void EQStream::_SendDisconnect()
 	*(uint32 *)out->pBuffer=htonl(Session);
 	NonSequencedPush(out);
 
-	Log(Logs::Detail, Logs::Netcode, _L "Sending OP_SessionDisconnect: session %lu" __L, (unsigned long)Session);
+	LogNetcodeDetail(_L "Sending OP_SessionDisconnect: session [{}]" __L, (unsigned long)Session);
 }
 
 void EQStream::InboundQueuePush(EQRawApplicationPacket *p)
@@ -1008,7 +1008,7 @@ EQRawApplicationPacket *p=nullptr;
 		if(OpMgr != nullptr && *OpMgr != nullptr) {
 			EmuOpcode emu_op = (*OpMgr)->EQToEmu(p->opcode);
 			if(emu_op == OP_Unknown) {
-				Log(Logs::General, Logs::Netcode, "Unable to convert EQ opcode 0x%.4x to an Application opcode.", p->opcode);
+				LogNetcode("Unable to convert EQ opcode {:#04x} to an Application opcode", p->opcode);
 			}
 
 			p->SetOpcode(emu_op);
@@ -1035,7 +1035,7 @@ void EQStream::InboundQueueClear()
 {
 EQApplicationPacket *p=nullptr;
 
-	Log(Logs::Detail, Logs::Netcode, _L "Clearing inbound queue" __L);
+	LogNetcodeDetail(_L "Clearing inbound queue" __L);
 
 	std::lock_guard<std::mutex> lock(MInboundQueue);
 	if (!InboundQueue.empty()) {
@@ -1070,9 +1070,9 @@ bool EQStream::HasOutgoingData()
 
 void EQStream::OutboundQueueClear()
 {
-EQProtocolPacket *p=nullptr;
+	EQProtocolPacket *p=nullptr;
 
-	Log(Logs::Detail, Logs::Netcode, _L "Clearing outbound queue" __L);
+	LogNetcodeDetail(_L "Clearing outbound queue" __L);
 
 	std::lock_guard<std::mutex> lock(MOutboundQueue);
 	while(!NonSequencedQueue.empty()) {
@@ -1091,9 +1091,9 @@ EQProtocolPacket *p=nullptr;
 
 void EQStream::PacketQueueClear()
 {
-EQProtocolPacket *p=nullptr;
+	EQProtocolPacket *p=nullptr;
 
-	Log(Logs::Detail, Logs::Netcode, _L "Clearing future packet queue" __L);
+	LogNetcodeDetail(_L "Clearing future packet queue" __L);
 
 	if(!PacketQueue.empty()) {
 		std::map<unsigned short,EQProtocolPacket *>::iterator itr;
@@ -1130,7 +1130,7 @@ static unsigned char newbuffer[2048];
 			int value = buffer[i];
 			s += fmt::format("{:02x} ", value);
 		}*/
-		Log(Logs::Detail, Logs::Netcode, _L "Incoming packet failed checksum: %s" __L);
+		LogNetcodeDetail(_L "Incoming packet failed checksum" __L);
 		//_SendDisconnect();
 		//SetState(CLOSED);
 	}
@@ -1160,33 +1160,33 @@ void EQStream::AckPackets(uint16 seq)
 	stream_startup = false;
 	//do a bit of sanity checking.
 	if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-		Log(Logs::Detail, Logs::Netcode, _L "Pre-Ack Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
+		LogNetcodeDetail(_L "Pre-Ack Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, SequencedBase, SequencedQueue.size(), NextOutSeq);
 	}
 	if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-		Log(Logs::Detail, Logs::Netcode, _L "Pre-Ack Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+		LogNetcodeDetail(_L "Pre-Ack Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 	}
 
 	SeqOrder ord = CompareSequence(SequencedBase, seq);
 	if(ord == SeqInOrder) {
 		//they are not acking anything new...
-		Log(Logs::Detail, Logs::Netcode, _L "Received an ack with no window advancement (seq %d)." __L, seq);
+		LogNetcodeDetail(_L "Received an ack with no window advancement (seq [{}])." __L, seq);
 	} else if(ord == SeqPast) {
 		//they are nacking blocks going back before our buffer, wtf?
-		Log(Logs::Detail, Logs::Netcode, _L "Received an ack with backward window advancement (they gave %d, our window starts at %d). This is bad." __L, seq, SequencedBase);
+		LogNetcodeDetail(_L "Received an ack with backward window advancement (they gave [{}], our window starts at [{}]). This is bad." __L, seq, SequencedBase);
 	} else {
-		Log(Logs::Detail, Logs::Netcode, _L "Received an ack up through sequence %d. Our base is %d." __L, seq, SequencedBase);
+		LogNetcodeDetail(_L "Received an ack up through sequence [{}]. Our base is [{}]." __L, seq, SequencedBase);
 
 
 		//this is a good ack, we get to ack some blocks.
 		seq++;	//we stop at the block right after their ack, counting on the wrap of both numbers.
 		while(SequencedBase != seq) {
 			if(SequencedQueue.empty()) {
-				Log(Logs::Detail, Logs::Netcode, _L "OUT OF PACKETS acked packet with sequence %lu. Next send is %d before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
+				LogNetcodeDetail(_L "OUT OF PACKETS acked packet with sequence [{}]. Next send is [{}] before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
 				SequencedBase = NextOutSeq;
 				NextSequencedSend = 0;
 				break;
 			}
-			Log(Logs::Detail, Logs::Netcode, _L "Removing acked packet with sequence %lu. Next send is %d before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
+			LogNetcodeDetail(_L "Removing acked packet with sequence [{}]. Next send is [{}] before this." __L, (unsigned long)SequencedBase, NextSequencedSend);
 			//clean out the acked packet
 			delete SequencedQueue.front();
 			SequencedQueue.pop_front();
@@ -1197,10 +1197,10 @@ void EQStream::AckPackets(uint16 seq)
 			SequencedBase++;
 		}
 		if(uint16(SequencedBase + SequencedQueue.size()) != NextOutSeq) {
-			Log(Logs::Detail, Logs::Netcode, _L "Post-Ack on %d Invalid Sequenced queue: BS %d + SQ %d != NOS %d" __L, seq, SequencedBase, SequencedQueue.size(), NextOutSeq);
+			LogNetcodeDetail(_L "Post-Ack on [{}] Invalid Sequenced queue: BS [{}] + SQ [{}] != NOS [{}]" __L, seq, SequencedBase, SequencedQueue.size(), NextOutSeq);
 		}
 		if(NextSequencedSend > (SequencedBase + SequencedQueue.size())) {
-			Log(Logs::Detail, Logs::Netcode, _L "Post-Ack Next Send Sequence is beyond the end of the queue NSS %d > SQ %d" __L, NextSequencedSend, SequencedQueue.size());
+			LogNetcodeDetail(_L "Post-Ack Next Send Sequence is beyond the end of the queue NSS [{}] > SQ [{}]" __L, NextSequencedSend, SequencedQueue.size());
 		}
 	}
 }
@@ -1208,14 +1208,14 @@ void EQStream::AckPackets(uint16 seq)
 void EQStream::SetNextAckToSend(uint32 seq)
 {
 	std::lock_guard<std::mutex> lock(MAcks);
-	Log(Logs::Detail, Logs::Netcode, _L "Set Next Ack To Send to %lu" __L, (unsigned long)seq);
+	LogNetcodeDetail(_L "Set Next Ack To Send to [{}]" __L, (unsigned long)seq);
 	NextAckToSend=seq;
 }
 
 void EQStream::SetLastAckSent(uint32 seq)
 {
 	std::lock_guard<std::mutex> lock(MAcks);
-	Log(Logs::Detail, Logs::Netcode, _L "Set Last Ack Sent to %lu" __L, (unsigned long)seq);
+	LogNetcodeDetail(_L "Set Last Ack Sent to [{}]" __L, (unsigned long)seq);
 	LastAckSent=seq;
 }
 
@@ -1227,10 +1227,10 @@ void EQStream::ProcessQueue()
 
 	EQProtocolPacket *qp=nullptr;
 	while((qp=RemoveQueue(NextInSeq))!=nullptr) {
-		Log(Logs::Detail, Logs::Netcode, _L "Processing Queued Packet: Seq=%d" __L, NextInSeq);
+		LogNetcodeDetail(_L "Processing Queued Packet: Seq = [{}]" __L, NextInSeq);
 		ProcessPacket(qp);
 		delete qp;
-		Log(Logs::Detail, Logs::Netcode, _L "OP_Packet Queue size=%d" __L, PacketQueue.size());
+		LogNetcodeDetail(_L "OP_Packet Queue size = [{}]" __L, PacketQueue.size());
 	}
 }
 
@@ -1241,21 +1241,21 @@ EQProtocolPacket *qp=nullptr;
 	if ((itr=PacketQueue.find(seq))!=PacketQueue.end()) {
 		qp=itr->second;
 		PacketQueue.erase(itr);
-		Log(Logs::Detail, Logs::Netcode, _L "OP_Packet Queue size=%d" __L, PacketQueue.size());
+		LogNetcodeDetail(_L "OP_Packet Queue size = [{}]" __L, PacketQueue.size());
 	}
 	return qp;
 }
 
 void EQStream::SetStreamType(EQStreamType type)
 {
-	Log(Logs::Detail, Logs::Netcode, _L "Changing stream type from %s to %s" __L, StreamTypeString(StreamType), StreamTypeString(type));
+	LogNetcodeDetail("{}:{} Changing stream type from {} to {}", long2ip(remote_ip), ntohs(remote_port), StreamTypeString(StreamType), StreamTypeString(type));
 	StreamType=type;
 	switch (StreamType) {
 		case LoginStream:
 			app_opcode_size=1;
 			compressed=false;
 			encoded=false;
-			Log(Logs::Detail, Logs::Netcode, _L "Login stream has app opcode size %d, is not compressed or encoded." __L, app_opcode_size);
+			LogNetcodeDetail(_L "Login stream has app opcode size [{}], is not compressed or encoded." __L, app_opcode_size);
 			break;
 		case ChatOrMailStream:
 		case ChatStream:
@@ -1263,7 +1263,7 @@ void EQStream::SetStreamType(EQStreamType type)
 			app_opcode_size=1;
 			compressed=false;
 			encoded=true;
-			Log(Logs::Detail, Logs::Netcode, _L "Chat/Mail stream has app opcode size %d, is not compressed, and is encoded." __L, app_opcode_size);
+			LogNetcodeDetail(_L "Chat/Mail stream has app opcode size [{}], is not compressed, and is encoded." __L, app_opcode_size);
 			break;
 		case ZoneStream:
 		case WorldStream:
@@ -1272,7 +1272,7 @@ void EQStream::SetStreamType(EQStreamType type)
 			app_opcode_size=2;
 			compressed=true;
 			encoded=false;
-			Log(Logs::Detail, Logs::Netcode, _L "World/Zone stream has app opcode size %d, is compressed, and is not encoded." __L, app_opcode_size);
+			LogNetcodeDetail(_L "World/Zone stream has app opcode size [{}], is compressed, and is not encoded." __L, app_opcode_size);
 			break;
 	}
 }
@@ -1327,7 +1327,7 @@ EQStream::SeqOrder EQStream::CompareSequence(uint16 expected_seq , uint16 seq)
 
 void EQStream::SetState(EQStreamState state) {
 	std::lock_guard<std::mutex> lock(MState);
-	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, State, state);
+	LogNetcodeDetail(_L "Changing state from [{}] to [{}]" __L, (int)State, (int)state);
 	State=state;
 	stale_count=0;
 }
@@ -1339,19 +1339,19 @@ void EQStream::CheckTimeout(uint32 now, uint32 timeout) {
 	bool outgoing_data = HasOutgoingData();	//up here to avoid recursive locking
 
 	if (orig_state == CLOSING && !outgoing_data) {
-		Log(Logs::Detail, Logs::Netcode, _L "Out of data in closing state, disconnecting." __L);
+		LogNetcodeDetail(_L "Out of data in closing state, disconnecting." __L);
 		SetState(CLOSED);
 	} else if (LastPacket && (now-LastPacket) > timeout) {
 		switch(orig_state) {
 		case CLOSING:
 			//if we time out in the closing state, they are not acking us, just give up
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in closing state. Moving to closed state." __L);
+			LogNetcodeDetail(_L "Timeout expired in closing state. Moving to closed state." __L);
 			_SendDisconnect();
 			SetState(CLOSED);
 			break;
 		case DISCONNECTING:
 			//we timed out waiting for them to send us the disconnect reply, just give up.
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in disconnecting state. Moving to closed state." __L);
+			LogNetcodeDetail(_L "Timeout expired in disconnecting state. Moving to closed state." __L);
 			SetState(CLOSED);
 			break;
 		case CLOSED:
@@ -1362,13 +1362,13 @@ void EQStream::CheckTimeout(uint32 now, uint32 timeout) {
 				this->ReleaseFromUse();
 			}
 			else {
-				Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in closed state??" __L);
+				LogNetcodeDetail(_L "Timeout expired in closed state??" __L);
 			}
 			break;
 		case ESTABLISHED:
 			//we timed out during normal operation. Try to be nice about it.
 			//we will almost certainly time out again waiting for the disconnect reply, but oh well.
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in established state. Closing connection." __L);
+			LogNetcodeDetail(_L "Timeout expired in established state. Closing connection." __L);
 			_SendDisconnect();
 			SetState(DISCONNECTING);
 			break;
@@ -1399,10 +1399,10 @@ void EQStream::AdjustRates(uint32 average_delta)
 			std::lock_guard<std::mutex> lock(MRate);
 			RateThreshold=RATEBASE/average_delta;
 			DecayRate=DECAYBASE/average_delta;
-			Log(Logs::Detail, Logs::Netcode, _L "Adjusting data rate to thresh %d, decay %d based on avg delta %d" __L, 
+			LogNetcodeDetail(_L "Adjusting data rate to thresh [{}], decay [{}] based on avg delta [{}]" __L,
 				RateThreshold, DecayRate, average_delta);
 		} else {
-			Log(Logs::Detail, Logs::Netcode, _L "Not adjusting data rate because avg delta over max (%d > %d)" __L, 
+			LogNetcodeDetail(_L "Not adjusting data rate because avg delta over max ([{}] > [{}])" __L,
 				average_delta, AVERAGE_DELTA_MAX);
 		}
 	} else {
@@ -1410,7 +1410,7 @@ void EQStream::AdjustRates(uint32 average_delta)
 			std::lock_guard<std::mutex> lock(MRate);
 			RateThreshold=RATEBASE/average_delta;
 			DecayRate=DECAYBASE/average_delta;
-			Log(Logs::Detail, Logs::Netcode, _L "Adjusting data rate to thresh %d, decay %d based on avg delta %d" __L, 
+			LogNetcodeDetail(_L "Adjusting data rate to thresh {}, decay {} based on avg delta {}" __L,
 				RateThreshold, DecayRate, average_delta);
 		}
 	}
@@ -1421,12 +1421,12 @@ void EQStream::Close() {
 		return;
 	if(HasOutgoingData()) {
 		//there is pending data, wait for it to go out.
-		Log(Logs::Detail, Logs::Netcode, _L "Stream requested to Close(), but there is pending data, waiting for it." __L);
+		LogNetcodeDetail(_L "Stream requested to Close(), but there is pending data, waiting for it." __L);
 		SetState(CLOSING);
 	} else {
 		//otherwise, we are done, we can drop immediately.
 		_SendDisconnect();
-		Log(Logs::Detail, Logs::Netcode, _L "Stream closing immediate due to Close()" __L);
+		LogNetcodeDetail(_L "Stream closing immediate due to Close()" __L);
 		SetState(DISCONNECTING);
 	}
 }
@@ -1454,19 +1454,19 @@ EQStream::MatchState EQStream::CheckSignature(const Signature *sig) {
 		} else if(p->opcode == sig->first_eq_opcode) {
 			//opcode matches, check length..
 			if(p->size == sig->first_length) {
-				Log(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: First opcode matched 0x%x and length matched %d", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
+				LogNetcode("[StreamIdentify] [{}]:[{}]: First opcode matched {:#04x} and length matched [{}]", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
 				res = MatchSuccessful;
 			} else if(sig->first_length == 0) {
-				Log(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: First opcode matched 0x%x and length (%d) is ignored", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
+				LogNetcode("[StreamIdentify] [{}]:[{}]: First opcode matched {:#04x} and length ([{}]) is ignored", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
 				res = MatchSuccessful;
 			} else {
 				//opcode matched but length did not.
-				Log(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: First opcode matched 0x%x, but length %d did not match expected %d", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size, sig->first_length);
+				LogNetcode("[StreamIdentify] [{}]:[{}]: First opcode matched {:#04x}, but length [{}] did not match expected [{}]", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size, sig->first_length);
 				res = MatchFailed;
 			}
 		} else {
 			//first opcode did not match..
-			Log(Logs::General, Logs::Netcode, "[IDENT_TRACE] %s:%d: First opcode 0x%x did not match expected 0x%x", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), p->opcode, sig->first_eq_opcode);
+			LogNetcode("[StreamIdentify] [{}]:[{}]: First opcode {:#04x} did not match expected {:#04x}", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), p->opcode, sig->first_eq_opcode);
 			res = MatchFailed;
 		}
 	}
@@ -1687,11 +1687,11 @@ EQOldStream::EQOldStream()
 
 EQOldStream::~EQOldStream()
 {
-	Log(Logs::Detail, Logs::Netcode, "Killing EQOldStream");
+	LogNetcodeDetail("Killing EQOldStream");
 	safe_delete(no_ack_sent_timer);//delete no_ack_sent_timer;
 	safe_delete(keep_alive_timer);//delete keep_alive_timer;
 	safe_delete(datarate_timer);
-	Log(Logs::Detail, Logs::Netcode, "Killing outbound and inbound packet queue");
+	LogNetcodeDetail("Killing outbound and inbound packet queue");
 	RemoveData();
 	SetState(CLOSED);
 }
@@ -1699,7 +1699,7 @@ EQOldStream::~EQOldStream()
 void EQOldStream::ResendBefore(uint16 dwARQ)
 {
 	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
-	//Log(Logs::Detail, Logs::Netcode, _L "Resend Before Called %d B0." __L, dwARQ);
+	//LogNetcodeDetail(_L "Resend Before Called [{}] B0." __L, dwARQ);
 	std::deque<EQOldPacket*>::iterator it;
 	for (it = SendQueue.begin(); it != SendQueue.end();)
 	{
@@ -1709,19 +1709,19 @@ void EQOldStream::ResendBefore(uint16 dwARQ)
 					if (dwARQ > 60000) {
 						if ((*it)->dwARQ > 5000) {
 							(*it)->Resend = true;
-							//Log(Logs::Detail, Logs::Netcode, _L "Flagging %d for resend B2." __L, (*it)->dwARQ);
+							//LogNetcodeDetail(_L "Flagging [{}] for resend B2." __L, (*it)->dwARQ);
 						}
 					}
 					else {
 						(*it)->Resend = true;
-						//Log(Logs::Detail, Logs::Netcode, _L "Flagging %d for resend B3." __L, (*it)->dwARQ);
+						//LogNetcodeDetail(_L "Flagging [{}] for resend B3." __L, (*it)->dwARQ);
 					}
 				}
 			}
 			else {
 				if ((*it)->dwARQ <= dwARQ || (*it)->dwARQ > 60000) {
 					(*it)->Resend = true;
-					//Log(Logs::Detail, Logs::Netcode, _L "Flagging %d for resend B4." __L, (*it)->dwARQ);
+					//LogNetcodeDetail(_L "Flagging [{}] for resend B4." __L, (*it)->dwARQ);
 				}
 			}
 		}
@@ -1746,10 +1746,10 @@ void EQOldStream::ResendRequest(uint16 count_size, const uchar* bits, uint16 ars
 				// this is an ack actually
 				(*it)->Resend = false;
 				(*it)->acked = true;
-				//Log(Logs::Detail, Logs::Netcode, _L "Acking packet %d." __L, match_arsp);
+				//LogNetcodeDetail(_L "Acking packet [{}]." __L, match_arsp);
 			} else {
 				(*it)->Resend = true;
-				//Log(Logs::Detail, Logs::Netcode, _L "Flagging %d for resend." __L, match_arsp);
+				//LogNetcodeDetail(_L "Flagging [{}] for resend." __L, match_arsp);
 			}
 			j++;
 			match_arsp++;
@@ -1775,7 +1775,7 @@ void EQOldStream::IncomingARSP(uint16 dwARSP)
 	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	EQOldPacket* pack = 0;
 	
-	//Log(Logs::Detail, Logs::Netcode, _L "ARSP Received %d. ARSP0" __L, dwARSP);
+	//LogNetcodeDetail( _L "ARSP Received [{}]. ARSP0" __L, dwARSP);
 	bool acked;
 	std::deque<EQOldPacket*>::iterator it;
 	for(it = SendQueue.begin(); it != SendQueue.end();)
@@ -1799,7 +1799,7 @@ void EQOldStream::IncomingARSP(uint16 dwARSP)
 				}
 			}
 			if (acked) {
-				//Log(Logs::Detail, Logs::Netcode, _L "Acking Packet %d." __L, (*it)->dwARQ);
+				//LogNetcodeDetail(_L "Acking Packet [{}]." __L, (*it)->dwARQ);
 				safe_delete(*it);
 				it = SendQueue.erase(it);
 				dwLastARSP = dwARSP;
@@ -1901,18 +1901,18 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 	{
 		if (dwLastCACK == (unsigned int)pack->dwARQ - (unsigned int)1)
 		{
-			Log(Logs::Detail, Logs::Netcode, _L "Packet invalid seqstart? %i:%i" __L, pack->dwARQ, pack->dwSEQ);
+			LogNetcodeDetail(_L "[EQOldStream] Packet invalid seqstart? {}:{}" __L, pack->dwARQ, pack->dwSEQ);
 			return true;
 		}
 		//      cout << "resetting SACK.dwGSQ1" << endl;
 		//      SACK.dwGSQ      = 0;            //Main sequence number SHORT#2
 		dwLastCACK      = pack->dwARQ-1;//0;
-		Log(Logs::Detail, Logs::Netcode, _L "Packet seqstart %i:%i" __L, pack->dwARQ, pack->dwSEQ);
+		LogNetcodeDetail(_L "[EQOldStream] Packet seqstart [{}]:[{}]" __L, pack->dwARQ, pack->dwSEQ);
 		//      CACK.dwGSQ = 0xFFFF; changed next if to else instead
 	}
 
 	CACK.dwGSQ = pack->dwSEQ; //Get current sequence #.
-	// Log(Logs::Detail, Logs::Netcode, _L "Packet incoming arq%i:seq%i:arsp%i" __L, pack->dwARQ, pack->dwSEQ, pack->dwARSP);
+	// LogNetcodeDetail(_L "Packet incoming arq[{}]:seq[{}]:arsp[{}]" __L, pack->dwARQ, pack->dwSEQ, pack->dwARSP);
 
 	/************ Process ack responds ************/
 	// Quagmire: Moved this to above "ack request" checking in case the packet is dropped in there
@@ -1938,7 +1938,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 			if ((pack->dwARQ == dwLastCACK) || // this was last ack request
 				(dwLastCACK > 5000 && pack->dwARQ < dwLastCACK && (dwLastCACK < 60000 || (dwLastCACK > 60000 && pack->dwARQ > 5000))) || // in past
 				(dwLastCACK < 5000 && (pack->dwARQ > 60000 || pack->dwARQ < dwLastCACK))) { // in past
-				// Log(Logs::Detail, Logs::Netcode, _L "Packet discarded %i:%i" __L, pack->dwARQ, pack->dwSEQ);
+				// LogNetcodeDetail( _L "Packet discarded [{}]:[{}]" __L, pack->dwARQ, pack->dwSEQ);
 				return true;
 			}
 
@@ -1955,7 +1955,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 			{
 				if ((*iterator)->dwARQ == pack->dwARQ)
 				{
-					// Log(Logs::Detail, Logs::Netcode, _L "Packet already buffered %i" __L, pack->dwARQ);
+					// LogNetcodeDetail( _L "Packet already buffered [{}]" __L, pack->dwARQ);
 					return true; // This packet was already buffered
 				}
 				iterator++;
@@ -1963,7 +1963,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 			if (!no_ack_sent_timer->Enabled())
 				no_ack_sent_timer->Start(250);
 
-			// Log(Logs::Detail, Logs::Netcode, _L "Buffering Packet %i" __L, pack->dwARQ);
+			// LogNetcodeDetail( _L "Buffering Packet [{}]" __L, pack->dwARQ);
 			buffered_packets.push_back(pack);
 
 			return false;
@@ -1984,7 +1984,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 		}
 		str[pack->b4_size * 8 + 1] = '\0';
 	}
-	Log(Logs::Detail, Logs::Netcode, _L "Packet incoming arq%i:seq%i:arsp%i a0:%d|a1:%d|a2:%d|a3:%d|a4:%d|a5:%d|a6:%d|a7:%d|b0:%d|b1:%d|b2:%d|b3:%d|b4:%s|b5:%d|b6:%d|b7:%d" __L,
+	LogNetcodeDetail( _L "Packet incoming arq%i:seq%i:arsp%i a0:%d|a1:%d|a2:%d|a3:%d|a4:%d|a5:%d|a6:%d|a7:%d|b0:%d|b1:%d|b2:%d|b3:%d|b4:%s|b5:%d|b6:%d|b7:%d" __L,
 	pack->dwARQ, pack->dwSEQ, pack->dwARSP,
 	pack->HDR.a0_Unknown ? 1 : 0,
 	pack->HDR.a1_ARQ ? pack->dbASQ_low : 0,
@@ -2020,17 +2020,17 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 		EQStreamState state = GetState();
 		if(state == ESTABLISHED) {
 			//client initiated disconnect?
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionDisconnect. Treating like a client-initiated disconnect." __L);
+			LogNetcodeDetail(_L "[EQOldStream] Received OP_SessionDisconnect. Treating like a client-initiated disconnect." __L);
 			_SendDisconnect();
 			SetState(CLOSED);
 		} else if(state == CLOSING) {
 			//we were waiting for this anyways, ignore pending messages, send the reply and be closed.
-			Log(Logs::Detail, Logs::Netcode, _L "Received OP_SessionDisconnect when we have a pending close, they beat us to it. Were happy though." __L);
+			LogNetcodeDetail(_L "[EQOldStream] Received OP_SessionDisconnect when we have a pending close, they beat us to it. Were happy though." __L);
 			_SendDisconnect();
 			SetState(CLOSED);
 		} else {
 			//we are expecting this (or have already gotten it, but dont care either way)
-			Log(Logs::Detail, Logs::Netcode, _L "Received expected OP_SessionDisconnect. Moving to closed state." __L);
+			LogNetcodeDetail(_L "[EQOldStream] Received expected OP_SessionDisconnect. Moving to closed state." __L);
 			SetState(CLOSED);
 		}
 		return true;
@@ -2040,7 +2040,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 	/************ Get ack sequence number ************/
 	if(pack->HDR.a4_ASQ) {
 		CACK.dbASQ_high = pack->dbASQ_high;
-		//Log(Logs::Detail, Logs::Netcode, _L "Packet Flags a1:%d dbASQ_low: %d a4:%d dbASQ_high: %d" __L, pack->HDR.a1_ARQ, pack->dbASQ_low, pack->HDR.a4_ASQ, pack->dbASQ_high);
+		//LogNetcodeDetail(_L "Packet Flags a1:%d dbASQ_low: %d a4:%d dbASQ_high: %d" __L, pack->HDR.a1_ARQ, pack->dbASQ_low, pack->HDR.a4_ASQ, pack->dbASQ_high);
 	
 		if(pack->HDR.a1_ARQ)
 			CACK.dbASQ_low = pack->dbASQ_low;
@@ -2104,7 +2104,7 @@ bool EQOldStream::ProcessPacket(EQOldPacket* pack, bool from_buffer)
 
 		EQRawApplicationPacket *app=MakeApplicationPacket(pack);
 		//if(app->GetRawOpcode() != 62272 && (app->GetRawOpcode() != 0 || app->Size() > 2)) //ClientUpdate
-		//	Log(Logs::Detail, Logs::Netcode, "Received old opcode - 0x%x size: %i", app->GetRawOpcode(), app->Size());
+		//	LogNetcodeDetail("Received old opcode - 0x%x size: %i", app->GetRawOpcode(), app->Size());
 		if(app)
 			OutQueue.push_back(app);
 		return true;
@@ -2127,7 +2127,7 @@ void EQOldStream::CheckBufferedPackets()
 		// Check if we have a packet we want already buffered
 		if ((*iterator)->dwARQ == nextARQ)
 		{
-			//Log(Logs::Detail, Logs::Netcode, _L "Processing Packet fromn Buffer Seq # %d" __L, nextARQ);
+			//LogNetcodeDetail( _L "Processing Packet fromn Buffer Seq # [{}]" __L, nextARQ);
 			ProcessPacket((*iterator), true);
 			safe_delete(*iterator);
 			iterator = buffered_packets.erase(iterator);
@@ -2297,12 +2297,12 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req, bool outboun
 			/************ END FRAGMENT CHECK ************/
 
 			if (i == 0) {
-				if (LogSys.log_settings[Logs::PacketServerClientWithDump].is_category_enabled == 1) {
+				if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1) {
 					EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
 					if (app_opcode != OP_SpecialMesg &&
 						(!RuleB(EventLog, SkipCommonPacketLogging) ||
 							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))) {
-						Log(Logs::General, Logs::PacketServerClientWithDump, "[%s - 0x%04x] [Size: %u] %s", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size, DumpProtocolPacketToString(app).c_str());
+						LogPacketServerClient("[{}] - [{:#06x}] Size: [{}] {}", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size, DumpProtocolPacketToString(app).c_str());
 					}
 				}
 				if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1) {
@@ -2310,7 +2310,7 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req, bool outboun
 					if (app_opcode != OP_SpecialMesg &&
 						(!RuleB(EventLog, SkipCommonPacketLogging) ||
 							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))) {
-						Log(Logs::General, Logs::PacketServerClient, "[%s - 0x%04x] [Size: %u]", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size);
+						LogPacketServerClient("[{}] - [{:#06x}] Size: [{}]", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size);
 					}
 				}
 			}
@@ -2378,7 +2378,7 @@ void EQOldStream::QueuePacket(const EQApplicationPacket *p, bool ack_req)
 		return;
 
 	if(OpMgr == nullptr || *OpMgr == nullptr) {
-		Log(Logs::Detail, Logs::Netcode, _L "Packet enqueued into a stream with no opcode manager, dropping.");
+		LogNetcode("[EQOldStream] Packet enqueued into a stream with no opcode manager, dropping.");
 		delete p;
 		return;
 	}
@@ -2397,7 +2397,7 @@ void EQOldStream::FastQueuePacket(EQApplicationPacket **p, bool ack_req)
 		return;
 
 	if(OpMgr == nullptr || *OpMgr == nullptr) {
-		Log(Logs::Detail, Logs::Netcode, _L "Packet enqueued into a stream with no opcode manager, dropping.");
+		LogNetcodeDetail("[EQOldStream] Packet enqueued into a stream with no opcode manager, dropping.");
 		delete pack;
 		return;
 	}
@@ -2412,7 +2412,7 @@ void EQOldStream::FastQueuePacket(EQApplicationPacket **p, bool ack_req)
 	EQProtocolPacket* pack2 = new EQProtocolPacket(opcode, pack->pBuffer, pack->size);
 
 	//if(pack->emu_opcode != OP_MobUpdate && pack->emu_opcode != OP_MobHealth && pack->emu_opcode != OP_HPUpdate)
-	//	Log(Logs::Detail, Logs::Netcode, _L "Sending old opcode 0x%04x" __L, opcode);
+	//	LogNetcodeDetail( _L "Sending old opcode 0x%04x" __L, opcode);
 	MakeEQPacket(pack2, ack_req);
 	delete pack;
 	delete pack2;
@@ -2451,9 +2451,9 @@ EQApplicationPacket *EQOldStream::PopPacket()
 
 void EQOldStream::InboundQueueClear()
 {
-EQRawApplicationPacket *p=nullptr;
+	EQRawApplicationPacket *p=nullptr;
 
-Log(Logs::Detail, Logs::Netcode, _L "Clearing inbound queue" __L);
+	LogNetcode(_L "[EQOldStream] Clearing inbound queue" __L);
 
 	std::lock_guard<std::mutex> lock(MInboundOldQueue);
 	std::vector<EQRawApplicationPacket *>::iterator itr=OutQueue.begin();
@@ -2472,7 +2472,7 @@ void EQOldStream::OutboundQueueClear()
 {
 	EQOldPacket *p=nullptr;
 
-	Log(Logs::Detail, Logs::Netcode, _L "Clearing outbound & resend queue" __L);
+	LogNetcodeDetail(_L "[EQOldStream] Clearing outbound & resend queue" __L);
 
 	std::lock_guard<std::mutex> lock(MOutboundOldQueue);
 	for (auto packit = SendQueue.begin(); packit != SendQueue.end();)
@@ -2544,7 +2544,7 @@ void EQOldStream::SendPacketQueue(bool Block)
 			{
 				size = pack->ReturnPacket(&data, this);
 				sendto(listening_socket, (char*) data, size, 0, (sockaddr*) &to, sizeof(to));
-				//Log(Logs::Detail, Logs::Netcode, _L "Sending Closing Packet %d." __L, pack->dwARQ);
+				//LogNetcodeDetail(_L "Sending Closing Packet [{}]." __L, pack->dwARQ);
 				dataflow += size;
 				pack->LastSent = Timer::GetCurrentTime();
 				pack->Resend = false;
@@ -2578,7 +2578,7 @@ void EQOldStream::SendPacketQueue(bool Block)
 				// uncomment to simulate outgoing packet loss
 				//if (pack->resend_count > 25 || rand() % 100 < 20) {
 				//	if (pack->HDR.a1_ARQ)
-				//		Log(Logs::Detail, Logs::Netcode, _L "Sending Packet %d." __L, pack->dwARQ);
+				//		LogNetcodeDetail(_L "Sending Packet [{}]." __L, pack->dwARQ);
 				sendto(listening_socket, (char*)data, size, 0, (sockaddr*)&to, sizeof(to));
 				//}
 				safe_delete_array(data);
@@ -2708,30 +2708,30 @@ void EQOldStream::CheckTimeout(uint32 now, uint32 timeout) {
 
 	EQStreamState orig_state = GetState();
 	if (orig_state == CLOSING && !outgoing_data) {
-		Log(Logs::Detail, Logs::Netcode, _L "Out of data in closing state, disconnecting." __L);
+		LogNetcode(_L "[EQOldStream] Out of data in closing state, disconnecting." __L);
 		SetState(CLOSED);
 	} else if (LastPacket && (now-LastPacket) > timeout) {
 		switch(orig_state) {
 		case CLOSING:
 			//if we time out in the closing state, they are not acking us, just give up
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in closing state. Moving to closed state." __L);
+			LogNetcode(_L "[EQOldStream] Timeout expired in closing state. Moving to closed state." __L);
 			ClearPacketQueue();
 			SetState(CLOSED);
 			break;
 		case DISCONNECTING:
 			//we timed out waiting for them to send us the disconnect reply, just give up.
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in disconnecting state. Moving to closed state." __L);
+			LogNetcodeDetail(_L "[EQOldStream] Timeout expired in disconnecting state. Moving to closed state." __L);
 			ClearPacketQueue();
 			SetState(CLOSED);
 			break;
 		case CLOSED:
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in closed state??" __L);
+			LogNetcodeDetail(_L "[EQOldStream] Timeout expired in closed state??" __L);
 			ClearPacketQueue();
 			break;
 		case ESTABLISHED:
 			//we timed out during normal operation. Try to be nice about it.
 			//we will almost certainly time out again waiting for the disconnect reply, but oh well.
-			Log(Logs::Detail, Logs::Netcode, _L "Timeout expired in established state. Closing connection." __L);
+			LogNetcodeDetail(_L "[EQOldStream] Timeout expired in established state. Closing connection." __L);
 			_SendDisconnect();
 			SetState(DISCONNECTING);
 			break;
@@ -2749,13 +2749,13 @@ void EQOldStream::SetState(EQStreamState state) {
 		return;
 	}
 
-	Log(Logs::Detail, Logs::Netcode, _L "Changing state from %d to %d" __L, pm_state, state);
+	LogNetcodeDetail("[{}]:[{}]: [EQOldStream] Changing state from [{}] to [{}]", long2ip(remote_ip), ntohs(remote_port), (int)pm_state, (int)state);
 	pm_state=state;
 }
 
 void EQOldStream::SetStreamType(EQStreamType type)
 {
-	Log(Logs::Detail, Logs::Netcode, _L "Changing stream type from %s to %s" __L, StreamTypeString(StreamType), StreamTypeString(type));
+	LogNetcodeDetail("{}:{}: [EQOldStream] Changing stream type from {} to {}", long2ip(remote_ip), ntohs(remote_port), StreamTypeString(StreamType), StreamTypeString(type));
 	StreamType=type;
 }
 
@@ -2779,19 +2779,19 @@ EQStream::MatchState EQOldStream::CheckSignature(const EQStream::Signature *sig)
 		} else if(p->GetRawOpcode() == sig->first_eq_opcode) {
 			//opcode matches, check length..
 			if(p->size == sig->first_length) {
-				Log(Logs::Detail, Logs::Netcode, "[TRACE] %s:%d: First opcode matched 0x%x and length matched %d", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
+				LogNetcode("[StreamIdentify:EQOldStream] [{}]:[{}]: First opcode matched [{:#06x}] and length matched [{}]", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
 				res = EQStream::MatchState::MatchSuccessful;
 			} else if(sig->first_length == 0) {
-				Log(Logs::Detail, Logs::Netcode, "[TRACE] %s:%d: First opcode matched 0x%x and length (%d) is ignored", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
+				LogNetcode("[StreamIdentify:EQOldStream] [{}]:[{}]: First opcode matched [{:#06x}] and length [({})] is ignored", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size);
 				res = EQStream::MatchState::MatchSuccessful;
 			} else {
 				//opcode matched but length did not.
-				Log(Logs::Detail, Logs::Netcode, "[TRACE] %s:%d: First opcode matched 0x%x, but length %d did not match expected %d", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size, sig->first_length);
+				LogNetcode("[StreamIdentify:EQOldStream] [{}]:[{}]: First opcode matched [{:#06x}], but length [{}] did not match expected [{}]", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), sig->first_eq_opcode, p->size, sig->first_length);
 				res = EQStream::MatchState::MatchFailed;
 			}
 		} else {
 			//first opcode did not match..
-			Log(Logs::Detail, Logs::Netcode, "[TRACE] %s:%d: First opcode 0x%x did not match expected 0x%x", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), p->GetRawOpcode(), sig->first_eq_opcode);
+			LogNetcode("[StreamIdentify:EQOldStream] [{}]:[{}]: First opcode [{:#06x}] did not match expected [{:#06x}]", long2ip(GetRemoteIP()).c_str(), ntohs(GetRemotePort()), p->GetRawOpcode(), sig->first_eq_opcode);
 			res = EQStream::MatchState::MatchFailed;
 		}
 	}
@@ -2806,7 +2806,7 @@ void EQOldStream::_SendDisconnect()
 void EQOldStream::Close() {
 	if(HasOutgoingData()) {
 		//there is pending data, wait for it to go out.
-		Log(Logs::Detail, Logs::Netcode, _L "Stream requested to Close(), but there is pending data, waiting for it." __L);
+		LogNetcode("[{}]:[{}]: EQOldStream requested to Close(), but there is pending data, waiting for it.", long2ip(remote_ip), ntohs(remote_port));
 		std::unique_lock<std::mutex> outlock(MOutboundOldQueue);
 		MakeClosePacket();
 		outlock.unlock();
@@ -2816,7 +2816,7 @@ void EQOldStream::Close() {
 	} else {
 		//otherwise, we are done, we can drop immediately.
 		_SendDisconnect();
-		Log(Logs::Detail, Logs::Netcode, _L "EQStream closing immediate due to Close()" __L);
+		LogNetcodeDetail("{}:{}: [EQOldStream] closing immediate due to Close()", long2ip(remote_ip).c_str(), ntohs(remote_port));
 		SetState(DISCONNECTING);
 	}
 }
@@ -2824,7 +2824,7 @@ void EQOldStream::Close() {
 EQRawApplicationPacket *EQOldStream::MakeApplicationPacket(EQOldPacket *p)
 {
 	EQRawApplicationPacket *ap=nullptr;
-	Log(Logs::Detail, Logs::Netcode, _L "Creating old application packet, length %d" __L, p->dwExtraSize);
+	LogNetcodeDetail("{}:{}: [EQOldStream] Creating old application packet, length {}", long2ip(remote_ip), ntohs(remote_port), p->dwExtraSize);
 	ap = p->MakeAppPacket();
 	return ap;
 }

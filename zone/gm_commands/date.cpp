@@ -9,8 +9,8 @@ void command_date(Client *c, const Seperator *sep)
 		!sep->IsNumber(2) ||
 		!sep->IsNumber(3)
 		) {
-		c->Message(CC_Default, "Usage: #date [Year] [Month] [Day] [Hour] [Minute]");
-		c->Message(CC_Default, "Hour and Minute are optional");
+		c->Message(Chat::White, "Usage: #date [Year] [Month] [Day] [Hour] [Minute]");
+		c->Message(Chat::White, "Hour and Minute are optional");
 		return;
 	}
 
@@ -23,7 +23,7 @@ void command_date(Client *c, const Seperator *sep)
 	const uint8  hour = !sep->IsNumber(4) ? eqTime.hour : Strings::ToUnsignedInt(sep->arg[4]);
 	const uint8  minute = !sep->IsNumber(5) ? eqTime.minute : Strings::ToUnsignedInt(sep->arg[5]);
 	
-	c->Message(CC_Default, fmt::format("Setting world time to {}-{}-{} {}:{}...", year, month, day, hour, minute).c_str());
+	c->Message(Chat::White, fmt::format("Setting world time to {}-{}-{} {}:{}...", year, month, day, hour, minute).c_str());
 	zone->SetDate(year, month, day, hour, minute);
 }
 

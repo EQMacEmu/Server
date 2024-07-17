@@ -20,10 +20,10 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 				int rawskillval = t->GetRawSkill(EQ::skills::SkillType(i));
 				int skillval = t->GetSkill(EQ::skills::SkillType(i));
 				int maxskill = t->GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType(i), t->MaxSkill(EQ::skills::SkillType(i)));
-				c->Message(CC_Yellow, "Skill: %s (%d) has difficulty: %0.2f", zone->skill_difficulty[i].name, i, zone->skill_difficulty[i].difficulty);
+				c->Message(Chat::Yellow, "Skill: %s (%d) has difficulty: %0.2f", zone->skill_difficulty[i].name, i, zone->skill_difficulty[i].difficulty);
 				if(maxskill > 0)
 				{
-					c->Message(CC_Green, "%s currently has %d (raw: %d) of %d towards this skill.", t->GetName(), skillval, rawskillval, maxskill);
+					c->Message(Chat::Green, "%s currently has %d (raw: %d) of %d towards this skill.", t->GetName(), skillval, rawskillval, maxskill);
 				}
 			}
 		}
@@ -31,12 +31,12 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 		{
 			if(!sep->IsNumber(2) && !sep->IsNumber(3))
 			{
-				c->Message(CC_Red, "Please specify a valid skill and difficulty.");
+				c->Message(Chat::Red, "Please specify a valid skill and difficulty.");
 				return;
 			}
 			else if(atoi(sep->arg[2]) > 74 || atoi(sep->arg[2]) < 0 || atof(sep->arg[3]) > 15 || atof(sep->arg[3]) < 1)
 			{
-				c->Message(CC_Red, "Please specify a skill between 0 and 74 and a difficulty between 1 and 15.");
+				c->Message(Chat::Red, "Please specify a skill between 0 and 74 and a difficulty between 1 and 15.");
 				return;
 			}
 			else
@@ -47,7 +47,7 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 				auto pack = new ServerPacket(ServerOP_ReloadSkills, 0);
 				worldserver.SendPacket(pack);
 				safe_delete(pack);
-				c->Message(CC_Default, "Set skill %d to difficulty %0.2f and reloaded all zones.", skillid, difficulty);
+				c->Message(Chat::White, "Set skill %d to difficulty %0.2f and reloaded all zones.", skillid, difficulty);
 			}
 
 		}
@@ -56,7 +56,7 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 			auto pack = new ServerPacket(ServerOP_ReloadSkills, 0);
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
-			c->Message(CC_Default, "Reloaded skills in all zones.");
+			c->Message(Chat::White, "Reloaded skills in all zones.");
 		}
 		else if (strcasecmp(sep->arg[1], "values") == 0)
 		{
@@ -67,11 +67,11 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 				int maxskill = t->GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType(i), t->MaxSkill(EQ::skills::SkillType(i)));
 				if (skillval > 0)
 				{
-					uint16 type = CC_Green;
+					uint16 type = Chat::Green;
 					if (maxskill < 1 || skillval > HARD_SKILL_CAP)
-						type = CC_Red;
+						type = Chat::Red;
 					else if (skillval > maxskill)
-						type = CC_Yellow;
+						type = Chat::Yellow;
 
 					c->Message(type, "%s currently has %d (raw: %d) of %d towards %s.", t->GetName(), skillval, rawskillval, maxskill, zone->skill_difficulty[i].name);
 				}
@@ -80,10 +80,10 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #skills info - Provides information about target.");
-		c->Message(CC_Default, "#skills difficulty [skillid] [difficulty] - Sets difficulty for selected skill.");
-		c->Message(CC_Default, "#skills reload - Reloads skill difficulty in each zone.");
-		c->Message(CC_Default, "#skills values - Displays target's skill values.");
+		c->Message(Chat::White, "Usage: #skills info - Provides information about target.");
+		c->Message(Chat::White, "#skills difficulty [skillid] [difficulty] - Sets difficulty for selected skill.");
+		c->Message(Chat::White, "#skills reload - Reloads skill difficulty in each zone.");
+		c->Message(Chat::White, "#skills values - Displays target's skill values.");
 	}
 }
 

@@ -5,7 +5,7 @@ extern WorldServer worldserver;
 void command_serverlock(Client* c, const Seperator* sep)
 {
 	if (!sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #serverlock [0|1] - Lock or Unlock the World Server (0 = Unlocked, 1 = Locked)");
+		c->Message(Chat::White, "Usage: #serverlock [0|1] - Lock or Unlock the World Server (0 = Unlocked, 1 = Locked)");
 		return;
 	}
 

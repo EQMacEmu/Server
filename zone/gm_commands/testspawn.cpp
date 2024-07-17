@@ -16,7 +16,7 @@ void command_testspawn(Client *c, const Seperator *sep){
 			else if (strlen(sep->arg[2]) >= 9) // 0x0000, 2 bytes
 				*((uint32*)&(((uint8*)&ns->spawn)[atoi(sep->arg[1])])) = hextoi(sep->arg[2]);
 			else
-				c->Message(CC_Default, "Error: unexpected hex string length");
+				c->Message(Chat::White, "Error: unexpected hex string length");
 		}
 		else {
 			strcpy((char*)(&((uint8*)&ns->spawn)[atoi(sep->arg[1])]), sep->argplus[2]);
@@ -25,6 +25,6 @@ void command_testspawn(Client *c, const Seperator *sep){
 		c->FastQueuePacket(&outapp);
 	}
 	else
-		c->Message(CC_Default, "Usage: #testspawn [memloc] [value] - spawns a NPC for you only, with the specified values set in the spawn struct");
+		c->Message(Chat::White, "Usage: #testspawn [memloc] [value] - spawns a NPC for you only, with the specified values set in the spawn struct");
 }
 

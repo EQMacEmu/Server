@@ -3,7 +3,7 @@
 void command_showzonegloballoot(Client *c, const Seperator *sep)
 {
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Global loot for {} ({}).",
 			zone->GetLongName(),

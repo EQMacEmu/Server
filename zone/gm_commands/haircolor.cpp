@@ -3,9 +3,9 @@
 void command_haircolor(Client *c, const Seperator *sep){
 	Mob *target = c->GetTarget();
 	if (!sep->IsNumber(1))
-		c->Message(CC_Default, "Usage: #haircolor [number of hair color]");
+		c->Message(Chat::White, "Usage: #haircolor [number of hair color]");
 	else if (!target)
-		c->Message(CC_Default, "Error: this command requires a target");
+		c->Message(Chat::White, "Error: this command requires a target");
 	else {
 		uint16 Race = target->GetRace();
 		uint8 Gender = target->GetGender();
@@ -22,7 +22,7 @@ void command_haircolor(Client *c, const Seperator *sep){
 		target->SendIllusionPacket(Race, Gender, Texture, HelmTexture, HairColor, BeardColor,
 			EyeColor1, EyeColor2, HairStyle, LuclinFace, Beard, 0xFF);
 
-		c->Message(CC_Default, "Hair Color = %i", atoi(sep->arg[1]));
+		c->Message(Chat::White, "Hair Color = %i", atoi(sep->arg[1]));
 	}
 }
 

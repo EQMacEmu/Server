@@ -23,35 +23,10 @@
 #include "../common/eq_stream_type.h"
 #include "../common/eq_stream_factory.h"
 #include "../common/random.h"
+#include "login_types.h"
 #include <string>
 
 using namespace std;
-
-enum ClientVersion
-{
-	cv_old
-};
-
-enum MacClientVersion
-{
-	unused = 1,
-	pc = 2,
-	intel = 4,
-	ppc = 8
-};
-
-enum ClientStatus
-{
-	cs_not_sent_session_ready,
-	cs_waiting_for_login,
-	cs_logged_in
-};
-
-enum LoginMode
-{
-	lm_initial = 2,
-	lm_from_world = 3
-};
 
 /**
 * Client class, controls a single client and it's
@@ -63,7 +38,7 @@ public:
 	/**
 	* Constructor, sets our connection to c and version to v
 	*/
-	Client(std::shared_ptr<EQStreamInterface> c, ClientVersion v);
+	Client(std::shared_ptr<EQStreamInterface> c, LSClientVersion v);
 
 	/**
 	* Destructor.
@@ -123,56 +98,63 @@ public:
 	/**
 	* Gets the account id of this client.
 	*/
-	unsigned int GetAccountID() const { return account_id; }
+	unsigned int GetAccountID() const { return m_account_id; }
 
 	/**
 	* Gets the account name of this client.
 	*/
-	string GetAccountName() const { return account_name; }
+	string GetAccountName() const { return m_account_name; }
+
+	/**
+	 * Returns a description for the client for logging
+	 * @return std::string
+	 */
+	std::string GetClientDescription();
 
 	/**
 	* Gets the key generated at login for this client.
 	*/
-	string GetKey() const { return key; }
+	string GetKey() const { return m_key; }
 
 	/**
 	* Gets the server selected to be played on for this client.
 	*/
-	unsigned int GetPlayServerID() const { return play_server_id; }
+	unsigned int GetPlayServerID() const { return m_play_server_id; }
 
 	/**
 	* Gets the play sequence state for this client.
 	*/
-	unsigned int GetPlaySequence() const { return play_sequence_id; }
+	unsigned int GetPlaySequence() const { return m_play_sequence_id; }
 	/**
 	* Gets the client version for this client.
 	*/
-	unsigned int GetClientVersion() const { return version; }
+	unsigned int GetClientVersion() const { return m_client_version; }
 
 	/**
 	* Gets the connection for this client.
 	*/
-	std::shared_ptr<EQStreamInterface> GetConnection() { return connection; }
+	std::shared_ptr<EQStreamInterface> GetConnection() { return m_connection; }
 
 	/**
 	* Gets the client version for this client.
 	*/
-	unsigned int GetMacClientVersion() const { return macversion; }
+	unsigned int GetMacClientVersion() const { return m_client_mac_version; }
 
 
-	EQ::Random random;
+
 private:
-	std::shared_ptr<EQStreamInterface> connection;
-	ClientVersion version;
-	ClientStatus status;
-	MacClientVersion macversion;
+	EQ::Random                         m_random;
+	std::shared_ptr<EQStreamInterface> m_connection;
+	LSClientVersion                    m_client_version;
+	LSClientStatus                     m_client_status;
+	LSMacClientVersion                 m_client_mac_version;
 
-	string account_name;
-	unsigned int account_id;
-	bool sentsessioninfo;
-	unsigned int play_server_id;
-	unsigned int play_sequence_id;
-	string key;
+	std::string  m_account_name;
+	unsigned int m_account_id;
+	bool         m_sent_session_info;
+	unsigned int m_play_server_id;
+	unsigned int m_play_sequence_id;
+	std::string  m_key;
 };
 
 #endif

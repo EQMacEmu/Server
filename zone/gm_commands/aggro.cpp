@@ -3,7 +3,7 @@
 void command_aggro(Client *c, const Seperator *sep){
 	int arguments = sep->argnum;
 	if (!arguments || !sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #aggro [Distance] [-v] (-v is verbose Faction Information)");
+		c->Message(Chat::White, "Usage: #aggro [Distance] [-v] (-v is verbose Faction Information)");
 		return;
 	}
 
@@ -14,7 +14,7 @@ void command_aggro(Client *c, const Seperator *sep){
 			!c->GetTarget()->IsNPC()
 			)
 		) {
-		c->Message(CC_Default, "You must target an NPC to use this command.");
+		c->Message(Chat::White, "You must target an NPC to use this command.");
 		return;
 	}
 

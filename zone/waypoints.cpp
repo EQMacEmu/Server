@@ -80,28 +80,28 @@ void NPC::DisplayWaypointInfo(Client *c) {
 	//Mob is on a roambox.
 	if(sg && GetGrid() == 0 && roambox_distance)
 	{
-		c->Message(CC_Default, "Mob in spawn group %d is on a roambox.", GetSp2());
-		c->Message(CC_Default, "MinX: %0.2f MaxX: %0.2f MinY: %0.2f MaxY: %0.2f", sg->roambox[1], sg->roambox[0], sg->roambox[3], sg->roambox[2]);
-		c->Message(CC_Default, "MinDelay: %d Delay: %d", sg->min_delay, sg->delay);
-		c->Message(CC_Default, "Spawned Type/Point: %s", spawn2.c_str());
+		c->Message(Chat::White, "Mob in spawn group %d is on a roambox.", GetSp2());
+		c->Message(Chat::White, "MinX: %0.2f MaxX: %0.2f MinY: %0.2f MaxY: %0.2f", sg->roambox[1], sg->roambox[0], sg->roambox[3], sg->roambox[2]);
+		c->Message(Chat::White, "MinDelay: %d Delay: %d", sg->min_delay, sg->delay);
+		c->Message(Chat::White, "Spawned Type/Point: %s", spawn2.c_str());
 		if (roambox_movingto_x < roambox_max_x)
-			c->Message(CC_Default, "Currently moving toward: x %.2f y %.2f", roambox_movingto_x, roambox_movingto_y);
+			c->Message(Chat::White, "Currently moving toward: x %.2f y %.2f", roambox_movingto_x, roambox_movingto_y);
 		if (AIwalking_timer->Enabled()) {
 			uint32 time_remaining = AIwalking_timer->GetRemainingTime();
 			if (time_remaining > 0 && time_remaining != 0xFFFFFFFF)
-				c->Message(CC_Default, "Currently paused by WP timer %.3f sec remaining", (float)time_remaining / 1000.0f);
+				c->Message(Chat::White, "Currently paused by WP timer %.3f sec remaining", (float)time_remaining / 1000.0f);
 		}
 		if (AIloiter_timer->Enabled()) {
 			uint32 time_remaining = AIloiter_timer->GetRemainingTime();
 			if (time_remaining > 0 && time_remaining != 0xFFFFFFFF)
-				c->Message(CC_Default, "Currently loitering %.3f sec remaining", (float)time_remaining / 1000.0f);
+				c->Message(Chat::White, "Currently loitering %.3f sec remaining", (float)time_remaining / 1000.0f);
 		}
 		return;
 	}
 	//Mob either doesn't have a grid, or has a quest assigned grid. 
 	else if(GetGrid() == 0)
 	{
-		c->Message(CC_Default, "Mob with spawned type %s is not on a permanent grid.", spawn2.c_str());
+		c->Message(Chat::White, "Mob with spawned type %s is not on a permanent grid.", spawn2.c_str());
 	}
 	//Mob is on a normal grid.
 	else
@@ -113,12 +113,12 @@ void NPC::DisplayWaypointInfo(Client *c) {
 
 		if (GetGrid() == 999999) // grids generated from scripts have this grid ID
 		{
-			c->Message(CC_Default, "Mob has script generated grid, in spawn group %d, on waypoint %d/%d",
+			c->Message(Chat::White, "Mob has script generated grid, in spawn group %d, on waypoint %d/%d",
 				GetSp2(), GetCurWp() + 1, MaxWp);
 		}
 		else
 		{
-			c->Message(CC_Default, "Mob is on grid %d, in spawn group %d, on waypoint %d/%d",
+			c->Message(Chat::White, "Mob is on grid %d, in spawn group %d, on waypoint %d/%d",
 				GetGrid(),
 				GetSp2(),
 				GetCurWp() + 1, //We start from 0 internally, but in the DB and lua functions we start from 1.
@@ -158,20 +158,20 @@ void NPC::DisplayWaypointInfo(Client *c) {
 				type.append(std::to_string(patrol));
 				break;
 			}
-			c->Message(CC_Default, "Mob is on patrol type %s", type.c_str());
+			c->Message(Chat::White, "Mob is on patrol type %s", type.c_str());
 		}
-		c->Message(CC_Default, "Spawned Type/Point: %s", spawn2.c_str());
+		c->Message(Chat::White, "Spawned Type/Point: %s", spawn2.c_str());
 	}
 
 	if (AIwalking_timer->Enabled()) {
 		uint32 time_remaining = AIwalking_timer->GetRemainingTime();
 		if (time_remaining > 0 && time_remaining != 0xFFFFFFFF)
-			c->Message(CC_Default, "Currently paused by WP timer %.3f sec remaining", (float)time_remaining / 1000.0f);
+			c->Message(Chat::White, "Currently paused by WP timer %.3f sec remaining", (float)time_remaining / 1000.0f);
 	}
 	if (AIloiter_timer->Enabled()) {
 		uint32 time_remaining = AIloiter_timer->GetRemainingTime();
 		if (time_remaining > 0 && time_remaining != 0xFFFFFFFF)
-			c->Message(CC_Default, "Currently loitering %.3f sec remaining", (float)time_remaining / 1000.0f);
+			c->Message(Chat::White, "Currently loitering %.3f sec remaining", (float)time_remaining / 1000.0f);
 	}
 
 	//Waypoints won't load into memory until the Mob moves.
@@ -179,7 +179,7 @@ void NPC::DisplayWaypointInfo(Client *c) {
 	cur = Waypoints.begin();
 	end = Waypoints.end();
 	for(; cur != end; ++cur) {
-		c->Message(CC_Default,"Waypoint %d: (%.2f,%.2f,%.2f,%.2f) pause %d",
+		c->Message(Chat::White,"Waypoint %d: (%.2f,%.2f,%.2f,%.2f) pause %d",
 				cur->index+1, //We start from 0 internally, but in the DB and lua functions we start from 1.
 				cur->x,
 				cur->y,
@@ -1216,7 +1216,7 @@ void ZoneDatabase::AssignGrid(Client *client, int grid, int spawn2id) {
 		return;
 	}
 
-	client->Message(CC_Default, "Grid assign: spawn2 id = %d updated", spawn2id);
+	client->Message(Chat::White, "Grid assign: spawn2 id = %d updated", spawn2id);
 }
 
 

@@ -3,12 +3,12 @@
 void command_randtest(Client *c, const Seperator *sep) {
 	
 	if (!sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #randtest [iterations]");
+		c->Message(Chat::White, "Usage: #randtest [iterations]");
 		return;
 	}
 	int total = atoi(sep->arg[1]);
 	if (total < 1 || total > 10000000) {
-		c->Message(CC_Default, "Usage: #randtest [iterations] min value 1, max 1000000");
+		c->Message(Chat::White, "Usage: #randtest [iterations] min value 1, max 1000000");
 		return;
 	}
 	int lastval = -1;
@@ -39,8 +39,8 @@ void command_randtest(Client *c, const Seperator *sep) {
 		results[value]++;
 	}
 	for (int i = 0; i < 100; i++) {
-		c->Message(CC_Default, "Random Results [%i], %i (%.2f %s)", i, results[i], (float)results[i] / (float)total * 100.0f, "%");
+		c->Message(Chat::White, "Random Results [%i], %i (%.2f %s)", i, results[i], (float)results[i] / (float)total * 100.0f, "%");
 	}
-	c->Message(CC_Default, "Same number happened %i times in a row, %i times", maxtimes + 1, maxcount);
+	c->Message(Chat::White, "Same number happened %i times in a row, %i times", maxtimes + 1, maxcount);
 }
 

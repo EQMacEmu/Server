@@ -406,8 +406,8 @@ void PathfinderNavmesh::DebugCommand(Client *c, const Seperator *sep)
 {
 	if (sep->arg[1][0] == '\0' || !strcasecmp(sep->arg[1], "help"))
 	{
-		c->Message(CC_Yellow, "This zone is using NavMesh.");
-		c->Message(CC_Default, "#path show: Plots a path from the user to their target.");
+		c->Message(Chat::Yellow, "This zone is using NavMesh.");
+		c->Message(Chat::White, "#path show: Plots a path from the user to their target.");
 		return;
 	}
 

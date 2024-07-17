@@ -9,9 +9,9 @@ void command_haste(Client *c, const Seperator *sep){
 		c->SetExtraHaste(Haste);
 		// SetAttackTimer must be called to make this take effect, so player needs to change
 		// the primary weapon.
-		c->Message(CC_Default, "Haste set to %d%% - Need to re-equip primary weapon before it takes effect", Haste);
+		c->Message(Chat::White, "Haste set to %d%% - Need to re-equip primary weapon before it takes effect", Haste);
 	}
 	else
-		c->Message(CC_Default, "Usage: #haste [percentage]");
+		c->Message(Chat::White, "Usage: #haste [percentage]");
 }
 

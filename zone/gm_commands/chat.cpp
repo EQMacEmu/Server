@@ -4,9 +4,9 @@ extern WorldServer worldserver;
 
 void command_chat(Client *c, const Seperator *sep){
 	if (sep->arg[2][0] == 0)
-		c->Message(CC_Default, "Usage: #chat [channum] [message]");
+		c->Message(Chat::White, "Usage: #chat [channum] [message]");
 	else
 		if (!worldserver.SendChannelMessage(0, 0, (uint8)atoi(sep->arg[1]), 0, 0, 100, sep->argplus[2]))
-			c->Message(CC_Default, "Error: World server disconnected");
+			c->Message(Chat::White, "Error: World server disconnected");
 }
 

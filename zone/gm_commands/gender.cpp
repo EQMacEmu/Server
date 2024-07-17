@@ -9,6 +9,6 @@ void command_gender(Client *c, const Seperator *sep){
 		t->SendIllusionPacket(t->GetRace(), atoi(sep->arg[1]));
 	}
 	else
-		c->Message(CC_Default, "Usage: #gender [0/1/2]");
+		c->Message(Chat::White, "Usage: #gender [0/1/2]");
 }
 

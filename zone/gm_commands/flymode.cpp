@@ -19,15 +19,15 @@ void command_flymode(Client *c, const Seperator *sep)
 		flymode_id <GravityBehavior::Ground &&
 		flymode_id > GravityBehavior::Water
 		) {
-		c->Message(CC_Default, "Usage:: #flymode [Flymode ID]");
-		c->Message(CC_Default, "0 = Ground, 1 = Flying, 2 = Levitating, 3 = Water");
+		c->Message(Chat::White, "Usage:: #flymode [Flymode ID]");
+		c->Message(Chat::White, "0 = Ground, 1 = Flying, 2 = Levitating, 3 = Water");
 		return;
 	}
 
 	target->SendAppearancePacket(AppearanceType::FlyMode, flymode_id);
 	database.SetGMFlymode(account, static_cast<GravityBehavior>(flymode_id));
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Fly Mode for {} is now {} ({}).",
 			(

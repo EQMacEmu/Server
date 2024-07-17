@@ -12,7 +12,7 @@ void command_bestz(Client *c, const Seperator *sep)
 	}
 
 	if (zone->zonemap == nullptr) {
-		c->Message(CC_Default, "Map not loaded for this zone");
+		c->Message(Chat::White, "Map not loaded for this zone");
 	}
 	else {
 		glm::vec3 me;
@@ -27,16 +27,16 @@ void command_bestz(Client *c, const Seperator *sep)
 
 		if (best_z != BEST_Z_INVALID)
 		{
-			c->Message(CC_Default, "Z is %.3f at (%.3f, %.3f).", best_z, me.x, me.y);
+			c->Message(Chat::White, "Z is %.3f at (%.3f, %.3f).", best_z, me.x, me.y);
 		}
 		else
 		{
-			c->Message(CC_Default, "Found no Z.");
+			c->Message(Chat::White, "Found no Z.");
 		}
 	}
 
 	if (zone->watermap == nullptr) {
-		c->Message(CC_Default, "Water Region Map not loaded for this zone");
+		c->Message(Chat::White, "Water Region Map not loaded for this zone");
 	}
 	else {
 		WaterRegionType RegionType;
@@ -46,28 +46,28 @@ void command_bestz(Client *c, const Seperator *sep)
 			z = c->GetTarget()->GetZ();
 			auto position = glm::vec3(c->GetTarget()->GetX(), c->GetTarget()->GetY(), z);
 			RegionType = zone->watermap->ReturnRegionType(position);
-			c->Message(CC_Default,"InWater returns %d", zone->watermap->InWater(position));
-			c->Message(CC_Default,"InLava returns %d", zone->watermap->InLava(position));
+			c->Message(Chat::White,"InWater returns %d", zone->watermap->InWater(position));
+			c->Message(Chat::White,"InLava returns %d", zone->watermap->InLava(position));
 
 		}
 		else {
 			z = c->GetZ();
 			auto position = glm::vec3(c->GetX(), c->GetY(), z);
 			RegionType = zone->watermap->ReturnRegionType(position);
-			c->Message(CC_Default,"InWater returns %d", zone->watermap->InWater(position));
-			c->Message(CC_Default,"InLava returns %d", zone->watermap->InLava(position));
+			c->Message(Chat::White,"InWater returns %d", zone->watermap->InWater(position));
+			c->Message(Chat::White,"InLava returns %d", zone->watermap->InLava(position));
 
 		}
 
 		switch (RegionType) {
-		case RegionTypeNormal:	{ c->Message(CC_Default, "There is nothing special about the region you are in!"); break; }
-		case RegionTypeWater:	{ c->Message(CC_Default, "You/your target are in Water."); break; }
-		case RegionTypeLava:	{ c->Message(CC_Default, "You/your target are in Lava."); break; }
-		case RegionTypeVWater:	{ c->Message(CC_Default, "You/your target are in VWater (Icy Water?)."); break; }
-		case RegionTypePVP:	{ c->Message(CC_Default, "You/your target are in a pvp enabled area."); break; }
-		case RegionTypeSlime:	{ c->Message(CC_Default, "You/your target are in slime."); break; }
-		case RegionTypeIce:	{ c->Message(CC_Default, "You/your target are in ice."); break; }
-		default: c->Message(CC_Default, "You/your target are in an unknown region type %d.", (int)RegionType);
+		case RegionTypeNormal:	{ c->Message(Chat::White, "There is nothing special about the region you are in!"); break; }
+		case RegionTypeWater:	{ c->Message(Chat::White, "You/your target are in Water."); break; }
+		case RegionTypeLava:	{ c->Message(Chat::White, "You/your target are in Lava."); break; }
+		case RegionTypeVWater:	{ c->Message(Chat::White, "You/your target are in VWater (Icy Water?)."); break; }
+		case RegionTypePVP:	{ c->Message(Chat::White, "You/your target are in a pvp enabled area."); break; }
+		case RegionTypeSlime:	{ c->Message(Chat::White, "You/your target are in slime."); break; }
+		case RegionTypeIce:	{ c->Message(Chat::White, "You/your target are in ice."); break; }
+		default: c->Message(Chat::White, "You/your target are in an unknown region type %d.", (int)RegionType);
 		}
 	}
 

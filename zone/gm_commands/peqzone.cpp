@@ -4,12 +4,12 @@ void command_peqzone(Client *c, const Seperator *sep){
 	uint32 timeleft = c->GetPTimers().GetRemainingTime(pTimerPeqzoneReuse) / 60;
 
 	if (!c->GetPTimers().Expired(&database, pTimerPeqzoneReuse, false)) {
-		c->Message(CC_Red, "You must wait %i minute(s) before using this ability again.", timeleft);
+		c->Message(Chat::Red, "You must wait %i minute(s) before using this ability again.", timeleft);
 		return;
 	}
 
 	if (c->GetHPRatio() < 75.0f) {
-		c->Message(CC_Default, "You cannot use this command with less than 75 percent health.");
+		c->Message(Chat::White, "You cannot use this command with less than 75 percent health.");
 		return;
 	}
 
@@ -22,7 +22,7 @@ void command_peqzone(Client *c, const Seperator *sep){
 		|| c->AutoAttackEnabled()
 		|| c->GetInvul()
 		) {
-		c->Message(CC_Default, "You cannot use this command in your current state. Settle down and wait.");
+		c->Message(Chat::White, "You cannot use this command in your current state. Settle down and wait.");
 		return;
 	}
 
@@ -33,33 +33,33 @@ void command_peqzone(Client *c, const Seperator *sep){
 		zoneid = atoi(sep->arg[1]);
 		destzone = database.GetPEQZone(zoneid);
 		if (destzone == 0){
-			c->Message(CC_Red, "You cannot use this command to enter that zone!");
+			c->Message(Chat::Red, "You cannot use this command to enter that zone!");
 			return;
 		}
 		if (zoneid == zone->GetZoneID()) {
-			c->Message(CC_Red, "You cannot use this command on the zone you are in!");
+			c->Message(Chat::Red, "You cannot use this command on the zone you are in!");
 			return;
 		}
 	}
 	else if (sep->arg[1][0] == 0 || sep->IsNumber(2) || sep->IsNumber(3) || sep->IsNumber(4) || sep->IsNumber(5))
 	{
-		c->Message(CC_Default, "Usage: #peqzone [zonename]");
-		c->Message(CC_Default, "Optional Usage: #peqzone [zoneid]");
+		c->Message(Chat::White, "Usage: #peqzone [zonename]");
+		c->Message(Chat::White, "Optional Usage: #peqzone [zoneid]");
 		return;
 	}
 	else {
 		zoneid = database.GetZoneID(sep->arg[1]);
 		destzone = database.GetPEQZone(zoneid);
 		if (zoneid == 0) {
-			c->Message(CC_Default, "Unable to locate zone '%s'", sep->arg[1]);
+			c->Message(Chat::White, "Unable to locate zone '%s'", sep->arg[1]);
 			return;
 		}
 		if (destzone == 0){
-			c->Message(CC_Red, "You cannot use this command to enter that zone!");
+			c->Message(Chat::Red, "You cannot use this command to enter that zone!");
 			return;
 		}
 		if (zoneid == zone->GetZoneID()) {
-			c->Message(CC_Red, "You cannot use this command on the zone you are in!");
+			c->Message(Chat::Red, "You cannot use this command on the zone you are in!");
 			return;
 		}
 	}

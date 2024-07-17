@@ -861,7 +861,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	Nexus_Scion_Timer = nullptr;
 	Nexus_Portal_Timer = nullptr;
 	if(RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) {
-		if(GetZoneID() == nexus) {
+		if(GetZoneID() == Zones::NEXUS) {
 			Nexus_Scion_Timer = new Timer(RuleI(Zone, NexusTimer));
 			Nexus_Scion_Timer->Start();
 			Log(Logs::General, Logs::Nexus, "Setting Velious portal timer to %d", RuleI(Zone, NexusTimer));
@@ -895,7 +895,7 @@ Zone::~Zone() {
 	safe_delete_array(short_name);
 	safe_delete_array(long_name);
 	safe_delete(Weather_Timer);
-	ClearNPCEmotes(&NPCEmoteList);
+	ClearNPCEmotes(&npc_emote_list);
 	zone_point_list.Clear();
 	entity_list.Clear();
 	ClearBlockedSpells();
@@ -1004,13 +1004,13 @@ bool Zone::Init(bool iStaticZone) {
 	}
 
 	LogInfo("Loading NPC Emotes...");
-	zone->LoadNPCEmotes(&NPCEmoteList);
+	zone->LoadNPCEmotes(&npc_emote_list);
 
 	LogInfo("Loading KeyRing Data...");
 	zone->LoadKeyRingData(&KeyRingDataList);
 
 	//Load AA information
-	LoadAAs();
+	LoadAlternateAdvancement();
 
 	database.LoadGlobalLoot();
 
@@ -1079,7 +1079,7 @@ void Zone::ReloadStaticData() {
 	entity_list.RespawnAllDoors();
 
 	LogInfo("Reloading NPC Emote Data...");
-	zone->LoadNPCEmotes(&NPCEmoteList);
+	zone->LoadNPCEmotes(&npc_emote_list);
 
 	LogInfo("Reloading KeyRing Data...");
 	KeyRingDataList.Clear();
@@ -1273,7 +1273,7 @@ bool Zone::Process() {
 		}
 	}
 
-	if((RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) && (IsNexusScionZone() || GetZoneID() == nexus)) {
+	if((RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) && (IsNexusScionZone() || GetZoneID() == Zones::NEXUS)) {
 		NexusProcess();
 	}
 
@@ -1410,8 +1410,7 @@ bool Zone::HasWeather()
 
 bool Zone::IsSpecialWeatherZone()
 {
-	if(GetZoneID() == oot || GetZoneID() >= shadowhaven)
-	{
+	if(GetZoneID() == Zones::OOT || GetZoneID() >= Zones::SHADOWHAVEN) {
 		return true;
 	}
 
@@ -1764,7 +1763,7 @@ void Zone::SpawnStatus(Mob* client, char filter, uint32 spawnid)
 
 		remaining /= 1000;
 
-		client->Message(CC_Default, "  %d: %s%s - NPC Type ID: %u - X:%1.1f, Y:%1.1f, Z:%1.1f - Spawn Timer: %u hrs %u mins %i sec",
+		client->Message(Chat::White, "  %d: %s%s - NPC Type ID: %u - X:%1.1f, Y:%1.1f, Z:%1.1f - Spawn Timer: %u hrs %u mins %i sec",
 			iterator.GetData()->GetID(),
 			!iterator.GetData()->Enabled() ? "(disabled) " : "", npc ? npc->GetCleanName() : "(unspawned)",
 			iterator.GetData()->CurrentNPCID(),
@@ -1774,7 +1773,7 @@ void Zone::SpawnStatus(Mob* client, char filter, uint32 spawnid)
 		x++;
 		iterator.Advance();
 	}
-	client->Message(CC_Default, "%i spawns listed.", x);
+	client->Message(Chat::White, "%i spawns listed.", x);
 }
 
 bool Zone::RemoveSpawnEntry(uint32 spawnid)
@@ -2088,7 +2087,7 @@ void Zone::ReloadWorld(uint32 Option){
 		ClearMerchantLists();
 		GetMerchantDataForZoneLoad();
 		LoadTempMerchantData();
-		LoadNPCEmotes(&NPCEmoteList);
+		LoadNPCEmotes(&npc_emote_list);
 		LoadKeyRingData(&KeyRingDataList);
 		zone->Repop();
 		zone->LoadSkillDifficulty();
@@ -2142,7 +2141,20 @@ bool Zone::IsBoatZone()
 	// This only returns true for zones that contain actual boats or rafts. It should not be used for zones that only have 
 	// controllable boats, or intrazone rafts (Halas).
 
-	static const int16 boatzones[] = { qeynos, freporte, erudnext, butcher, oot, erudsxing, timorous, firiona, oasis, overthere, nro, iceclad };
+	static const int16 boatzones[] = { 
+		Zones::QEYNOS, 
+		Zones::FREPORTE, 
+		Zones::ERUDNEXT, 
+		Zones::BUTCHER, 
+		Zones::OOT, 
+		Zones::ERUDSXING, 
+		Zones::TIMOROUS, 
+		Zones::FIRIONA, 
+		Zones::OASIS, 
+		Zones::OVERTHERE, 
+		Zones::NRO, 
+		Zones::ICECLAD
+	};
 
 	int8 boatzonessize = sizeof(boatzones) / sizeof(boatzones[0]);
 	for (int i = 0; i < boatzonessize; i++) {
@@ -2158,75 +2170,81 @@ bool Zone::IsBindArea(float x_coord, float y_coord, float z_coord)
 {
 	// Coords pulled from a client decompile.
 
-	if(CanBindOthers())
-	{
+	if(CanBindOthers()) {
 		// NK gypsies
-		if(GetZoneID() == northkarana)
-		{
-			if(x_coord >= -260 && x_coord <= -73 &&  y_coord >= -720 && y_coord <= -550)
+		if(GetZoneID() == Zones::NORTHKARANA) {
+			if (x_coord >= -260 && x_coord <= -73 && y_coord >= -720 && y_coord <= -550) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Ruins of Kaesora
-		else if(GetZoneID() == fieldofbone)
-		{
-			if(x_coord >= -550 && x_coord <= 275 && y_coord >= -2250 && y_coord <= -1200)
+		else if(GetZoneID() == Zones::FIELDOFBONE) {
+			if(x_coord >= -550 && x_coord <= 275 && y_coord >= -2250 && y_coord <= -1200) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Docks
-		else if(GetZoneID() == firiona)
-		{
-			if(x_coord >= 1194 && x_coord <= 3492 && y_coord >= -4410 && y_coord <= -2397)
+		else if(GetZoneID() == Zones::FIRIONA) {
+			if(x_coord >= 1194 && x_coord <= 3492 && y_coord >= -4410 && y_coord <= -2397) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Empty Ruins
-		else if(GetZoneID() == frontiermtns)
-		{
-			if(x_coord >= 1180 && x_coord <= 1560 && y_coord >= -2250 && y_coord <= -2100)
+		else if(GetZoneID() == Zones::FRONTIERMTNS) {
+			if(x_coord >= 1180 && x_coord <= 1560 && y_coord >= -2250 && y_coord <= -2100) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Docks
-		else if(GetZoneID() == overthere)
-		{
-			if(x_coord >= 2011 && x_coord <= 3852 && y_coord >= 2344 && y_coord <= 3538)
+		else if(GetZoneID() == Zones::OVERTHERE) {
+			if(x_coord >= 2011 && x_coord <= 3852 && y_coord >= 2344 && y_coord <= 3538) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Dock
-		else if(GetZoneID() == iceclad)
-		{
-			if(x_coord >= 325 && x_coord <= 510 && y_coord >= 5270 && y_coord <= 5365)
+		else if(GetZoneID() == Zones::ICECLAD) {
+			if(x_coord >= 325 && x_coord <= 510 && y_coord >= 5270 && y_coord <= 5365) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
 		// Entrances
-		else if(GetZoneID() == kael)
-		{
+		else if(GetZoneID() == Zones::KAEL) {
 			if((x_coord >= -657 && x_coord <= -603 && y_coord <= 17 && y_coord >= -176) ||
-				(x_coord >= 3139 && y_coord <= -102 && y_coord >= -287))
+				(x_coord >= 3139 && y_coord <= -102 && y_coord >= -287)) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
-		else if(GetZoneID() == skyshrine)
-		{
+		else if(GetZoneID() == Zones::SKYSHRINE) {
 			if((x_coord >= -930 && x_coord <= -200 && y_coord >= -320 && y_coord <= 535 && z_coord >= -10 && z_coord <= 60) ||
-				(x_coord >= -800 && x_coord <= -200 && y_coord >= 535 && y_coord <= 1000 && z_coord >= -10 && z_coord <= 120))
+				(x_coord >= -800 && x_coord <= -200 && y_coord >= 535 && y_coord <= 1000 && z_coord >= -10 && z_coord <= 120)) {
 				return true;
-			else
+			}
+			else {
 				return false;
+			}
 		}
-		else
-		{
+		else {
 			return true;
 		}
 	}
@@ -2236,114 +2254,109 @@ bool Zone::IsBindArea(float x_coord, float y_coord, float z_coord)
 
 bool Zone::IsWaterZone(float z)
 {
-	if(GetZoneID() == kedge)
+	if (GetZoneID() == Zones::KEDGE) {
 		return true;
+	}
 
-	if (GetZoneID() == powater && z < 0.0f)
+	if (GetZoneID() == Zones::POWATER && z < 0.0f) {
 		return true;
+	}
 
 	return false;
 }
 
 void Zone::NexusProcess()
 {
-	if(zoneid == nexus)
-	{
+	if(zoneid == Zones::NEXUS) {
 		NPC* mystic = entity_list.GetNPCByNPCTypeID(152019);
 
 		uint32 time_remaining = 0;
-		if(Nexus_Portal_Timer->Enabled())
-		{
+		if(Nexus_Portal_Timer->Enabled()) {
 			time_remaining = Nexus_Portal_Timer->GetRemainingTime();
 		}
 
 		uint32 velious_time_remaining = Nexus_Scion_Timer->GetRemainingTime();
 
-		if(velious_time_remaining >= 600000 && velious_time_remaining <= 600050 && !Nexus_Portal_Timer->Enabled())
-		{
+		if(velious_time_remaining >= 600000 && velious_time_remaining <= 600050 && !Nexus_Portal_Timer->Enabled()) {
 			Nexus_Portal_Timer = new Timer(RuleI(Zone, NexusTimer));
 			Nexus_Portal_Timer->Start();
-			Log(Logs::General, Logs::Nexus, "Starting delayed portal timer. Time remaining until Velious ports: %d", velious_time_remaining);
+			LogNexus("Starting delayed portal timer. Time remaining until Velious ports: [{}]", velious_time_remaining);
 			return;
 		}
-		else if(velious_time_remaining >= 540000 && velious_time_remaining <= 540050 && velious_timer_step != 1)
-		{
-			if(mystic)
+		else if (velious_time_remaining >= 540000 && velious_time_remaining <= 540050 && velious_timer_step != 1) {
+			if (mystic) {
 				mystic->SignalNPC(20);
+			}
 			velious_timer_step = 1;
-			Log(Logs::Detail, Logs::Nexus, "velious_time_remaining %d on step %d", velious_time_remaining, velious_timer_step);
+			LogNexusDetail("Velious time remaining: [{}] on step [{}]", velious_time_remaining, velious_timer_step);
 		}
-		else if(velious_time_remaining >= 180000 && velious_time_remaining <= 180050 && velious_timer_step != 2)
-		{
-			if(mystic)
+		else if(velious_time_remaining >= 180000 && velious_time_remaining <= 180050 && velious_timer_step != 2) {
+			if (mystic) {
 				mystic->SignalNPC(21);
+			}
 			velious_timer_step = 2;
-			Log(Logs::Detail, Logs::Nexus, "velious_time_remaining %d on step %d", velious_time_remaining, velious_timer_step);
+			LogNexusDetail("Velious time remaining: [{}] on step [{}]", velious_time_remaining, velious_timer_step);
 		}
-		else if(velious_time_remaining >= 120000 && velious_time_remaining <= 120050 && velious_timer_step != 3)
-		{
-			if(mystic)
+		else if(velious_time_remaining >= 120000 && velious_time_remaining <= 120050 && velious_timer_step != 3) {
+			if (mystic) {
 				mystic->SignalNPC(22);
+			}
 			velious_timer_step = 3;
-			Log(Logs::Detail, Logs::Nexus, "velious_time_remaining %d on step %d", velious_time_remaining, velious_timer_step);
+			LogNexusDetail("Velious time remaining: [{}] on step [{}]", velious_time_remaining, velious_timer_step);
 		}
-		else if(velious_time_remaining >= 60000 && velious_time_remaining <= 60050 && velious_timer_step != 4)
-		{
-			if(mystic)
+		else if(velious_time_remaining >= 60000 && velious_time_remaining <= 60050 && velious_timer_step != 4) {
+			if (mystic) {
 				mystic->SignalNPC(23);
+			}
 			velious_timer_step = 4;
-			Log(Logs::Detail, Logs::Nexus, "velious_time_remaining %d on step %d", velious_time_remaining, velious_timer_step);
+			LogNexusDetail("Velious time remaining: [{}] on step [{}]", velious_time_remaining, velious_timer_step);
 		}
-		else if(Nexus_Scion_Timer->Check() && velious_active)
-		{
+		else if(Nexus_Scion_Timer->Check() && velious_active) {
 			Mob* velious_spire = entity_list.GetMobByNpcTypeID(152027);
 			Mob* velious_target = entity_list.GetMobByNpcTypeID(152035);
 
-			if(velious_spire && velious_target)
-			{
+			if(velious_spire && velious_target) {
 				velious_spire->CastSpell(2062,velious_target->GetID());
 			}
-			else
-			{
-				Log(Logs::General, Logs::Nexus, "velious_spire is null. Players will not be ported.");
+			else {
+				LogNexus("velious_spire is null. Players will not be ported.");
 				velious_active = false;
 				return;
 			}
 
-			Log(Logs::General, Logs::Nexus, "Velious spires in Nexus are beginning to cast the port spell. velious_active is %d", velious_active);
+			LogNexus("Velious spires in Nexus are beginning to cast the port spell. velious_active is [{}]", velious_active);
 			velious_active = false;
 		}
 
-		if(time_remaining >= 300000 && time_remaining <= 300050 && nexus_timer_step != 1)
-		{
-			if(mystic)
+		if(time_remaining >= 300000 && time_remaining <= 300050 && nexus_timer_step != 1) {
+			if (mystic) {
 				mystic->SignalNPC(27);
+			}
 			nexus_timer_step = 1;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d", time_remaining, nexus_timer_step);
+			LogNexusDetail("Time remaining [{}] on step [{}]", time_remaining, nexus_timer_step);
 		}
-		else if(time_remaining >= 180000 && time_remaining <= 180050 && nexus_timer_step != 2)
-		{
-			if(mystic)
+		else if(time_remaining >= 180000 && time_remaining <= 180050 && nexus_timer_step != 2) {
+			if (mystic) {
 				mystic->SignalNPC(24);
+			}
 			nexus_timer_step = 2;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d", time_remaining, nexus_timer_step);
+			LogNexusDetail("Time remaining [{}] on step [{}]", time_remaining, nexus_timer_step);
 		}
-		else if(time_remaining >= 120000 && time_remaining <= 120050 && nexus_timer_step != 3)
-		{
-			if(mystic)
+		else if(time_remaining >= 120000 && time_remaining <= 120050 && nexus_timer_step != 3) {
+			if (mystic) {
 				mystic->SignalNPC(25);
+			}
 			nexus_timer_step = 3;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d", time_remaining, nexus_timer_step);
+			LogNexusDetail("Time remaining [{}] on step [{}]", time_remaining, nexus_timer_step);
 		}
-		else if(time_remaining >= 60000 && time_remaining <= 60050 && nexus_timer_step != 4)
-		{
-			if(mystic)
+		else if(time_remaining >= 60000 && time_remaining <= 60050 && nexus_timer_step != 4) {
+			if (mystic) {
 				mystic->SignalNPC(26);
+			}
 			nexus_timer_step = 4;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d", time_remaining, nexus_timer_step);
+			LogNexusDetail("Time remaining [{}] on step [{}]", time_remaining, nexus_timer_step);
 		}
-		else if(Nexus_Portal_Timer->Check() && !velious_active)
-		{
+		else if(Nexus_Portal_Timer->Check() && !velious_active) {
 
 			bool failed = false;
 			Mob* antonica_spire = entity_list.GetMobByNpcTypeID(152024);
@@ -2356,129 +2369,117 @@ void Zone::NexusProcess()
 			Mob* kunark_target = entity_list.GetMobByNpcTypeID(152036);
 			Mob* odus_target = entity_list.GetMobByNpcTypeID(152037);
 
-			if(antonica_spire && antonica_target)
-			{
+			if(antonica_spire && antonica_target) {
 				antonica_spire->CastSpell(2708,antonica_target->GetID());
 			}
-			else
-			{
+			else {
 				failed = true;
 			}
 
-			if(faydwer_spire && faydwer_target)
-			{
+			if(faydwer_spire && faydwer_target) {
 				faydwer_spire->CastSpell(2706,faydwer_target->GetID());
 			}
-			else
-			{
+			else {
 				failed = true;
 			}
 
-			if(odus_spire && odus_target)
-			{
+			if(odus_spire && odus_target) {
 				odus_spire->CastSpell(2707,odus_target->GetID());
 			}
-			else
-			{
+			else {
 				failed = true;
 			}
 
-			if(kunark_spire && kunark_target)
-			{
+			if(kunark_spire && kunark_target) {
 				kunark_spire->CastSpell(2709,kunark_target->GetID());
 			}
-			else
-			{
+			else {
 				failed = true;
 			}
 
-			if(failed)
-			{
-				Log(Logs::General, Logs::Nexus, "One of the spires is null. Some or all players will not be ported.");
+			if(failed) {
+				LogNexus("One of the spires is null. Some or all players will not be ported.");
 			}
 
-			Log(Logs::General, Logs::Nexus, "General spires in Nexus are beginning to cast the port spell. velious_active is %d", velious_active);
+			LogNexus("General spires in Nexus are beginning to cast the port spell. velious_active is [{}]", velious_active);
 			velious_active = true;
 		}
 	}
-	else if(IsNexusScionZone())
-	{
+	else if(IsNexusScionZone())	{
 		NPC* mystic = nullptr;
 		Mob* spires = nullptr;
 
-		if(GetZoneID() == northkarana)
-		{
+		if(GetZoneID() == Zones::NORTHKARANA) {
 			mystic = entity_list.GetNPCByNPCTypeID(13114);
 			spires = entity_list.GetMobByNpcTypeID(13106);	
 		}
-		else if(GetZoneID() == gfaydark)
+		else if(GetZoneID() == Zones::GFAYDARK)
 		{
 			mystic = entity_list.GetNPCByNPCTypeID(54301);
 			spires = entity_list.GetMobByNpcTypeID(54344);
 		}
-		else if(GetZoneID() == tox)
-		{
+		else if(GetZoneID() == Zones::TOX) {
 			mystic = entity_list.GetNPCByNPCTypeID(38163);
 			spires = entity_list.GetMobByNpcTypeID(38149);
 		}
-		else if(GetZoneID() == dreadlands)
-		{
+		else if(GetZoneID() == Zones::DREADLANDS) {
 			mystic = entity_list.GetNPCByNPCTypeID(86153);
 			spires = entity_list.GetMobByNpcTypeID(86151);
 		}
-		else if(GetZoneID() == greatdivide)
-		{
+		else if(GetZoneID() == Zones::GREATDIVIDE) {
 			mystic = entity_list.GetNPCByNPCTypeID(118165);
 			spires = entity_list.GetMobByNpcTypeID(118314);
 		}
 	
 		uint32 time_remaining = Nexus_Scion_Timer->GetRemainingTime();
-		if(time_remaining >= 300000 && time_remaining <= 300050 && nexus_timer_step != 1)
-		{
-			if(mystic)
+		if(time_remaining >= 300000 && time_remaining <= 300050 && nexus_timer_step != 1) {
+			if (mystic) {
 				mystic->SignalNPC(1);
+			}
 			nexus_timer_step = 1;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d in zone %s", time_remaining, nexus_timer_step, GetShortName());
+			LogNexusDetail("Time remaining: [{}] on step: [{}] in zone: [{}]", time_remaining, nexus_timer_step, GetShortName());
 		}
 		else if(time_remaining >= 240000 && time_remaining <= 240050 && nexus_timer_step != 2)
 		{
-			if(mystic)
+			if (mystic) {
 				mystic->SignalNPC(2);
+			}
 			nexus_timer_step = 2;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d in zone %s", time_remaining, nexus_timer_step, GetShortName());
+			LogNexusDetail("Time remaining: [{}] on step: [{}] in zone: [{}]", time_remaining, nexus_timer_step, GetShortName());
 		}
 		else if(time_remaining >= 180000 && time_remaining <= 180050 && nexus_timer_step != 3)
 		{
-			if(mystic)
+			if (mystic) {
 				mystic->SignalNPC(3);
+			}
 			nexus_timer_step = 3;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d in zone %s", time_remaining, nexus_timer_step, GetShortName());
+			LogNexusDetail("Time remaining: [{}] on step: [{}] in zone: [{}]", time_remaining, nexus_timer_step, GetShortName());
 		}
 		else if(time_remaining >= 120000 && time_remaining <= 120050 && nexus_timer_step != 4)
 		{
-			if(mystic)
+			if (mystic) {
 				mystic->SignalNPC(4);
+			}
 			nexus_timer_step = 4;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d in zone %s", time_remaining, nexus_timer_step, GetShortName());
+			LogNexusDetail("Time remaining: [{}] on step: [{}] in zone: [{}]", time_remaining, nexus_timer_step, GetShortName());
 		}
 		else if(time_remaining >= 60000 && time_remaining <= 60050 && nexus_timer_step != 5)
 		{
-			if(mystic)
+			if (mystic) {
 				mystic->SignalNPC(5);
+			}
 			nexus_timer_step = 5;
-			Log(Logs::Detail, Logs::Nexus, "time_remaining %d on step %d in zone %s", time_remaining, nexus_timer_step, GetShortName());
+			LogNexusDetail("Time remaining: [{}] on step: [{}] in zone: [{}]", time_remaining, nexus_timer_step, GetShortName());
 		}
 		else if(Nexus_Scion_Timer->Check())
 		{
-			if(spires)
-			{
+			if(spires) {
 				//Todo: Figure out animation
 				spires->CastSpell(2935,spires->GetID());
-				Log(Logs::General, Logs::Nexus, "Spires in %s are beginning to cast the port spell to nexus.", GetShortName());
+				LogNexus("Spires in [{}] are beginning to cast the port spell to nexus.", GetShortName());
 			}
-			else
-			{
-				Log(Logs::General, Logs::Nexus, "spires is null. Players will not be ported in %s, ", GetShortName());
+			else {
+				LogNexus("Spires is null. Players will not be ported in [{}]", GetShortName());
 				return;
 			}
 		}
@@ -2487,8 +2488,12 @@ void Zone::NexusProcess()
 
 bool Zone::IsNexusScionZone()
 {
-	if(GetZoneID() == northkarana || GetZoneID() == gfaydark || GetZoneID() == tox || GetZoneID() == greatdivide || GetZoneID() == dreadlands)
-	{
+	if(GetZoneID() == Zones::NORTHKARANA || 
+		GetZoneID() == Zones::GFAYDARK || 
+		GetZoneID() == Zones::TOX || 
+		GetZoneID() == Zones::GREATDIVIDE || 
+		GetZoneID() == Zones::DREADLANDS
+	) {
 		return true;
 	}
 
@@ -2515,38 +2520,29 @@ void Zone::ApplyRandomLoc(uint32 zoneid, float& x, float& y)
 
 bool Zone::CanDoCombat(Mob* current, Mob* other, bool process)
 {
-	if (CanDoCombat())
-	{
+	if (CanDoCombat()) {
 		return true;
 	}
-	else if(GetZoneID() == bazaar) // bazaar seems to be the only no combat zone with a PVP area.
-	{
+	else if(GetZoneID() == Zones::BAZAAR) {// bazaar seems to be the only no combat zone with a PVP area.
 		// If we're doing a PVP check and one of us is a non-pet NPC disallow combat.
 		if ((current && current->IsNPC() && !current->IsPlayerOwned()) ||
-			(other && other->IsNPC() && !other->IsPlayerOwned()))
-		{
+			(other && other->IsNPC() && !other->IsPlayerOwned())) {
 			return false;
 		}
 
-		if (current && other)
-		{
-			if (zone->watermap != nullptr)
-			{
+		if (current && other) {
+			if (zone->watermap != nullptr) {
 				glm::vec3 mypos(current->GetX(), current->GetY(), current->GetZ());
 				glm::vec3 opos(other->GetX(), other->GetY(), other->GetZ());
-				if (zone->watermap->InPVP(mypos) && zone->watermap->InPVP(opos))
-				{
+				if (zone->watermap->InPVP(mypos) && zone->watermap->InPVP(opos)) {
 					return true;
 				}
 			}
 		}
-		else if (current && process)
-		{
-			if (zone->watermap != nullptr)
-			{
+		else if (current && process) {
+			if (zone->watermap != nullptr) {
 				glm::vec3 mypos(current->GetX(), current->GetY(), current->GetZ());
-				if (zone->watermap->InPVP(mypos))
-				{
+				if (zone->watermap->InPVP(mypos)) {
 					return true;
 				}
 			}

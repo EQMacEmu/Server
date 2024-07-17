@@ -5,7 +5,7 @@ void command_kill(Client *c, const Seperator *sep)
 	auto target = c->GetTarget();
 	if (!target) 
 	{
-		c->Message(CC_Default, "You must have a target to use this command.");
+		c->Message(Chat::White, "You must have a target to use this command.");
 		return;
 	}
 
@@ -13,7 +13,7 @@ void command_kill(Client *c, const Seperator *sep)
 	{
 		if (c != target)
 		{
-			c->Message(CC_Default, fmt::format("Killing {} .", target->GetCleanName()).c_str());
+			c->Message(Chat::White, fmt::format("Killing {} .", target->GetCleanName()).c_str());
 
 		}
 		target->Kill();

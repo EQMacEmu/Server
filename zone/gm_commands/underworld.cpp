@@ -13,7 +13,7 @@ void command_underworld(Client *c, const Seperator *sep)
 		auto results = database.QueryDatabase(query);
 		if (!results.Success() || results.RowCount() == 0)
 		{
-			c->Message(CC_Red, "This zone has no valid spawn2 entries.");
+			c->Message(Chat::Red, "This zone has no valid spawn2 entries.");
 			return;
 		}
 

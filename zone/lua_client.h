@@ -247,6 +247,9 @@ public:
 	void QuestReward(Lua_Mob target, luabind::adl::object reward);
 	int GetHandToHandDamage();
 	int GetHandToHandDelay();
+
+	bool SendGMCommand(std::string message);
+	bool SendGMCommand(std::string message, bool ignore_status);
 };
 
 #endif

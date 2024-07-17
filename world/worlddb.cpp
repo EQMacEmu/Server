@@ -286,7 +286,7 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		in_pp->x = in_pp->binds[0].x = 140;
 		in_pp->y = in_pp->binds[0].y = -821;
 		in_pp->z = in_pp->binds[0].z = 5;
-		in_pp->zone_id = in_pp->binds[0].zoneId = bazaar;
+		in_pp->zone_id = in_pp->binds[0].zoneId = Zones::BAZAAR;
 		return true;
 	}
 

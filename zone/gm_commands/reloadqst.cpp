@@ -11,7 +11,7 @@ void command_reloadqst(Client *c, const Seperator *sep)
 
 	std::string stop_timers_message = stop_timers ? " and stopping timers" : "";
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Clearing quest memory cache{}.",
 			stop_timers_message

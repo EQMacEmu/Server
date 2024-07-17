@@ -16,7 +16,7 @@ SET(eqlogin_headers
 	database.h
 	eq_crypto.h
 	login_server.h
-	login_structures.h
+	login_types.h
 	options.h
 	server_manager.h
 	world_server.h

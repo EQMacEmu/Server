@@ -3,7 +3,7 @@
 void command_setpass(Client *c, const Seperator *sep){
 	int arguments = sep->argnum;
 	if (arguments < 2) {
-		c->Message(CC_Default, "Usage: #setpass [Account Name] [Password]");
+		c->Message(Chat::White, "Usage: #setpass [Account Name] [Password]");
 		return;
 	}
 
@@ -15,7 +15,7 @@ void command_setpass(Client *c, const Seperator *sep){
 	auto account_id = database.GetAccountIDByName(account_name, &status);
 	if (!account_id) {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"Account {} not found.",
 				account_name
@@ -26,7 +26,7 @@ void command_setpass(Client *c, const Seperator *sep){
 
 	if (status > c->Admin()) {
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"You cannot change the password for Account {} as its status is higher than yours.",
 				account_name
@@ -36,7 +36,7 @@ void command_setpass(Client *c, const Seperator *sep){
 	}
 
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Password {} changed for Account {}.",
 			(

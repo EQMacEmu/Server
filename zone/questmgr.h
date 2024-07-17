@@ -222,6 +222,7 @@ public:
 	void ClearNPCTypeCache(int npctype_id);
 	void SendDebug(const char* message, int level);
 	void ReloadZoneStaticData();
+	std::string getdeityname(uint32 deity_id);
 
 	Client *GetInitiator() const;
 	NPC *GetNPC() const;

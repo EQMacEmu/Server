@@ -3,17 +3,17 @@
 void command_mysql(Client *c, const Seperator *sep)
 {
 	if (!sep->arg[1][0] || !sep->arg[2][0]) {
-		c->Message(CC_Default, "Usage: #mysql query \"Query here\"");
+		c->Message(Chat::White, "Usage: #mysql query \"Query here\"");
 		return;
 	}
 
 	if (strcasecmp(sep->arg[1], "help") == 0) {
-		c->Message(CC_Default, "MYSQL In-Game CLI Interface:");
-		c->Message(CC_Default, "Example: #mysql query \"Query goes here quoted\" -s -h");
-		c->Message(CC_Default, "To use 'like \"%%something%%\" replace the %% with #");
-		c->Message(CC_Default, "Example: #mysql query \"select * from table where name like \"#something#\"");
-		c->Message(CC_Default, "-s - Spaces select entries apart");
-		c->Message(CC_Default, "-h - Colors every other select result");
+		c->Message(Chat::White, "MYSQL In-Game CLI Interface:");
+		c->Message(Chat::White, "Example: #mysql query \"Query goes here quoted\" -s -h");
+		c->Message(Chat::White, "To use 'like \"%%something%%\" replace the %% with #");
+		c->Message(Chat::White, "Example: #mysql query \"select * from table where name like \"#something#\"");
+		c->Message(Chat::White, "-s - Spaces select entries apart");
+		c->Message(Chat::White, "-h - Colors every other select result");
 		return;
 	}
 
@@ -27,7 +27,7 @@ void command_mysql(Client *c, const Seperator *sep)
 			case 's': optionS = true; break;
 			case 'h': optionH = true; break;
 			default:
-				c->Message(CC_Yellow, "%s, there is no option '%c'", c->GetName(), sep->arg[argnum][1]);
+				c->Message(Chat::Yellow, "%s, there is no option '%c'", c->GetName(), sep->arg[argnum][1]);
 				return;
 			}
 			++argnum;
@@ -50,7 +50,7 @@ void command_mysql(Client *c, const Seperator *sep)
 			query.insert(pos, "%%");
 			pos = query.find('#');
 		}
-		c->Message(CC_Yellow, "---Running query: '%s'", query.c_str());
+		c->Message(Chat::Yellow, "---Running query: '%s'", query.c_str());
 
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			std::stringstream lineText;
@@ -69,7 +69,7 @@ void command_mysql(Client *c, const Seperator *sep)
 			lineVec.push_back(lineText.str());
 
 			if (optionS) //This provides spacing for the space switch
-				c->Message(CC_Default, " ");
+				c->Message(Chat::White, " ");
 			if (optionH) //This option will highlight every other row
 				highlightTextIndex = 1 - highlightTextIndex;
 

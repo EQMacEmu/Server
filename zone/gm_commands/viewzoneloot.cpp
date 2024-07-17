@@ -10,7 +10,7 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 	}
 	else if (sep->argnum == 1 && !sep->IsNumber(1)) {
 		c->Message(
-			CC_Yellow,
+			Chat::Yellow,
 			"Usage: #viewzoneloot [item id]"
 		);
 		return;
@@ -53,7 +53,7 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 				linker.SetLinkType(EQ::saylink::SayLinkLootItem);
 				linker.SetLootData(current_item);
 				c->Message(
-					CC_Default,
+					Chat::White,
 					fmt::format(
 						" {}. {} ({}) {} ",
 						loot_id,
@@ -80,7 +80,7 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 			"not dropping"
 			);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				" {} ({}) is {}. ",
 				database.CreateItemLink(search_item_id),
@@ -101,7 +101,7 @@ void command_viewzoneloot(Client* c, const Seperator* sep)
 			"items are dropping"
 			);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				" {} {}. ",
 				loot_amount,

@@ -3,7 +3,7 @@
 void command_zuwcoords(Client *c, const Seperator *sep){
 	// modifys and resends zhdr packet
 	if (sep->arg[1][0] == 0)
-		c->Message(CC_Default, "Usage: #zuwcoords <under world coords>");
+		c->Message(Chat::White, "Usage: #zuwcoords <under world coords>");
 	else {
 		zone->newzone_data.underworld = atof(sep->arg[1]);
 		//float newdata = atof(sep->arg[1]);

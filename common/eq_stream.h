@@ -337,6 +337,10 @@ class EQStream : public EQStreamInterface {
 		virtual std::string Describe() const { return("Direct EQStream"); }
 
 		virtual void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
+		virtual OpcodeManager *GetOpcodeManager() const
+		{
+			return (*OpMgr);
+		};
 
 		void CheckTimeout(uint32 now, uint32 timeout=30000);
 		bool HasOutgoingData();
@@ -346,7 +350,7 @@ class EQStream : public EQStreamInterface {
 		void Write(int eq_fd);
 
 		// whether or not the stream has been assigned (we passed our stream match)
-		void SetActive(bool val) { streamactive = val; }
+		virtual void SetActive(bool val) { streamactive = val; }
 
 		virtual bool IsInUse() { bool flag; std::lock_guard<std::mutex> lock(MInUse); flag=(active_users>0); return flag; }
 		inline void PutInUse() { std::lock_guard<std::mutex> lock(MInUse); active_users++; }
@@ -395,20 +399,7 @@ class EQStream : public EQStreamInterface {
 			return bytes_recv / (Timer::GetTimeSeconds() - create_time);
 		}
 
-		//used for dynamic stream identification
-		class Signature {
-		public:
-			//this object could get more complicated if needed...
-			uint16 ignore_eq_opcode;		//0=dont ignore
-			uint16 first_eq_opcode;
-			uint32 first_length;			//0=dont check length
-		};
-		typedef enum {
-			MatchNotReady,
-			MatchSuccessful,
-			MatchFailed
-		} MatchState;
-		MatchState CheckSignature(const Signature *sig);
+		virtual MatchState CheckSignature(const Signature *sig);
 
 };
 
@@ -566,7 +557,13 @@ class EQOldStream : public EQStreamInterface {
 		void CheckTimeout(uint32 now, uint32 timeout=10000);
 		void SetState(EQStreamState state);
 		void SetLastPacketTime(uint32 t) {LastPacket=t;}
+
 		virtual void SetOpcodeManager(OpcodeManager **opm) { OpMgr = opm; }
+		virtual OpcodeManager *GetOpcodeManager() const
+		{
+			return (*OpMgr);
+		};
+
 		void _SendDisconnect();
 		void SetTimeOut(bool time) { bTimeout = time; }
 		bool GetTimeOut() { return bTimeout; }

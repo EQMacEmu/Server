@@ -3,7 +3,7 @@
 void command_chattest(Client *c, const Seperator *sep)
 {
 	if(!sep->IsNumber(1))
-		c->Message(CC_Red, "Please specify a valid number to send as the message color. (This message is red, btw.)");
+		c->Message(Chat::Red, "Please specify a valid number to send as the message color. (This message is red, btw.)");
 	else
 	{
 		int default_ = 10;

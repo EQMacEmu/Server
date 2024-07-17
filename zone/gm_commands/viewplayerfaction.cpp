@@ -16,14 +16,14 @@ void command_viewplayerfaction(Client *c, const Seperator *sep)
 		{
 			if (!sep->IsNumber(1))
 			{
-				c->Message(CC_Red, "Invalid target.");
+				c->Message(Chat::Red, "Invalid target.");
 				return;
 			}
 		}
 	}
 	else if (!sep->IsNumber(1))
 	{
-		c->Message(CC_Default, "Usage: #viewplayerfaction [factionid 1-5999]");
+		c->Message(Chat::White, "Usage: #viewplayerfaction [factionid 1-5999]");
 		return;
 	}
 
@@ -33,7 +33,7 @@ void command_viewplayerfaction(Client *c, const Seperator *sep)
 			factionid = atoi(sep->arg[1]);
 		else
 		{
-			c->Message(CC_Default, "Usage: #viewplayerfaction [factionid 1-5999]");
+			c->Message(Chat::White, "Usage: #viewplayerfaction [factionid 1-5999]");
 			return;
 		}
 	}
@@ -60,15 +60,15 @@ void command_viewplayerfaction(Client *c, const Seperator *sep)
 	int16 modified_min_cap = min_cap + (modified - personal);
 	int16 modified_max_cap = max_cap + (modified - personal);
 	
-	c->Message(CC_Default, "%s has %d personal and %d modified faction with '%s' (%d)  personal cap: %d to %d; modified cap: %d to %d",
+	c->Message(Chat::White, "%s has %d personal and %d modified faction with '%s' (%d)  personal cap: %d to %d; modified cap: %d to %d",
 		t->GetName(), personal, modified, name, factionid, min_cap, max_cap, modified_min_cap, modified_max_cap);
 	if (illusioned != modified)
-		c->Message(CC_Default, "Illusion is active and fooling this faction.  Illusioned faction value is %d", illusioned);
+		c->Message(Chat::White, "Illusion is active and fooling this faction.  Illusioned faction value is %d", illusioned);
 
 	if (npc != nullptr)
 	{
 		modified = t->GetFactionValue(npc);
-		c->Message(CC_Default, "Effective faction for '%s' is %d and includes extra modifiers such as invis and aggro", npc->GetName(), modified);
+		c->Message(Chat::White, "Effective faction for '%s' is %d and includes extra modifiers such as invis and aggro", npc->GetName(), modified);
 	}
 }
 

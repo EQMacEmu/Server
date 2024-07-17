@@ -192,7 +192,7 @@ void WorldServer::Process() {
 						else if (scm->queued == 2) // tell queue was full
 							client->Tell_StringID(QUEUE_TELL_FULL, scm->to, scm->message);
 						else if (scm->queued == 3) // person was offline
-							client->Message_StringID(MT_TellEcho, TOLD_NOT_ONLINE, scm->to);
+							client->Message_StringID(Chat::EchoTell, TOLD_NOT_ONLINE, scm->to);
 						else // normal tell echo "You told Soanso, 'something'"
 							// tell echo doesn't use language, so it looks normal to you even if nobody can understand your tells
 							client->ChannelMessageSend(scm->from, scm->to, scm->chan_num, 0, 100, scm->message);
@@ -293,15 +293,15 @@ void WorldServer::Process() {
 				switch(ztz->response)
 				{
 				case -2: {
-					entity->CastToClient()->Message(CC_Red,"You do not own the required locations to enter this zone.");
+					entity->CastToClient()->Message(Chat::Red,"You do not own the required locations to enter this zone.");
 					break;
 				}
 				case -1: {
-					entity->CastToClient()->Message(CC_Red,"The zone is currently full, please try again later.");
+					entity->CastToClient()->Message(Chat::Red,"The zone is currently full, please try again later.");
 					break;
 				}
 				case 0:	{
-					entity->CastToClient()->Message(CC_Red,"All zone servers are taken at this time, please try again later.");
+					entity->CastToClient()->Message(Chat::Red,"All zone servers are taken at this time, please try again later.");
 					break;
 				}
 				}
@@ -333,7 +333,7 @@ void WorldServer::Process() {
 				Client* client = entity_list.GetClientByID(wars->id);
 				if (client) {
 					if(pack->size==58)//no results
-						client->Message_StringID(CC_Default,WHOALL_NO_RESULTS);
+						client->Message_StringID(Chat::White,WHOALL_NO_RESULTS);
 					else{
 						auto outapp = new EQApplicationPacket(OP_WhoAllResponse, pack->size);
 						memcpy(outapp->pBuffer, pack->pBuffer, pack->size);
@@ -433,7 +433,7 @@ void WorldServer::Process() {
 					zone->StartShutdownTimer(AUTHENTICATION_TIMEOUT * 1000);
 				}
 				else {
-					SendEmoteMessage(zst->adminname, 0, CC_Default, "Zone bootup failed: Already running '%s'", zone->GetShortName());
+					SendEmoteMessage(zst->adminname, 0, Chat::White, "Zone bootup failed: Already running '%s'", zone->GetShortName());
 				}
 				break;
 			}
@@ -471,12 +471,12 @@ void WorldServer::Process() {
 			Log(Logs::Detail, Logs::Status, "Zoning %s to %s(%u)\n", client != nullptr ? client->GetCleanName() : "Unknown", szp->zone, database.GetZoneID(szp->zone));
 			if (client != 0) {
 				if (strcasecmp(szp->adminname, szp->name) == 0)
-					client->Message(CC_Default, "Zoning to: %s", szp->zone);
+					client->Message(Chat::White, "Zoning to: %s", szp->zone);
 				//If #hideme is on, prevent being summoned by a lower GM.
 				else if (client->GetAnon() == 1 && client->Admin() > szp->adminrank)
 				{
-					client->Message(CC_Red, "%s's attempt to summon you was prevented due to lack of status.", szp->adminname);
-					SendEmoteMessage(szp->adminname, 0, CC_Red, "You cannot summon a GM with a higher status than you.", szp->name);
+					client->Message(Chat::Red, "%s's attempt to summon you was prevented due to lack of status.", szp->adminname);
+					SendEmoteMessage(szp->adminname, 0, Chat::Red, "You cannot summon a GM with a higher status than you.", szp->name);
 					break;
 				}
 				else {
@@ -585,7 +585,7 @@ void WorldServer::Process() {
 			ServerUptime_Struct* sus = (ServerUptime_Struct*) pack->pBuffer;
 			uint32 ms = Timer::GetCurrentTime();
 			std::string time_string = Strings::MillisecondsToTime(ms);
-			SendEmoteMessage(sus->adminname, 0, CC_Default, fmt::format("Zoneserver {} | Uptime: {}", sus->zoneserverid, time_string).c_str());
+			SendEmoteMessage(sus->adminname, 0, Chat::White, fmt::format("Zoneserver {} | Uptime: {}", sus->zoneserverid, time_string).c_str());
 		}
 		case ServerOP_Petition: {
 			std::cout << "Got Server Requested Petition List Refresh" << std::endl;
@@ -650,7 +650,7 @@ void WorldServer::Process() {
 			Client* c = entity_list.GetClientByName(Rezzer);
 
 			if (c)
-				c->Message_StringID(MT_WornOff, REZZ_ALREADY_PENDING);
+				c->Message_StringID(Chat::SpellWornOff, REZZ_ALREADY_PENDING);
 
 			break;
 		}
@@ -661,7 +661,7 @@ void WorldServer::Process() {
 		}
 		case ServerOP_SyncWorldTime: {
 			if(zone!=0) {
-				Log(Logs::Moderate, Logs::ZoneServer, "%s Received Message SyncWorldTime", __FUNCTION__);
+				Log(Logs::Detail, Logs::ZoneServer, "%s Received Message SyncWorldTime", __FUNCTION__);
 				eqTimeOfDay* newtime = (eqTimeOfDay*) pack->pBuffer;
 				zone->zone_time.setEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
 				auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
@@ -773,7 +773,7 @@ void WorldServer::Process() {
 					entity_list.AddGroup(group);
 
 					if(group->GetID() == 0) {
-						Inviter->Message(CC_Red, "Unable to get new group id. Cannot create group.");
+						Inviter->Message(Chat::Red, "Unable to get new group id. Cannot create group.");
 						break;
 					}
 					Inviter->CastToClient()->UpdateGroupID(group->GetID());
@@ -1524,14 +1524,14 @@ void WorldServer::Process() {
 			// Consent has completed successfully in ServerOP_Consent. Send the success message to the owner.
 			if(owner && s->message_string_id == CONSENT_GIVEN)
 			{
-				owner->Message_StringID(CC_Default, s->message_string_id, s->grantname);
+				owner->Message_StringID(Chat::White, s->message_string_id, s->grantname);
 			}
 			// Revoke consent.
 			else if(grant && s->message_string_id == CONSENT_BEEN_DENIED)
 			{
 				grant->Consent(0, s->ownername, s->grantname, false, s->corpse_id);
 				if(s->corpse_id == 0)
-					grant->Message_StringID(CC_Default, s->message_string_id, s->ownername);
+					grant->Message_StringID(Chat::White, s->message_string_id, s->ownername);
 			}
 			// Granted player is not online or doesn't exist. Consent them in the DB.
 			else if(owner)
@@ -1539,7 +1539,7 @@ void WorldServer::Process() {
 				char ownername[64];
 				strcpy(ownername, owner->GetName());
 				owner->Consent(1, ownername, s->grantname, true);
-				owner->Message_StringID(CC_Default, CONSENT_GIVEN, s->grantname);
+				owner->Message_StringID(Chat::White, CONSENT_GIVEN, s->grantname);
 			}
 			break;
 		}
@@ -1548,7 +1548,7 @@ void WorldServer::Process() {
 			Client* client = entity_list.GetClientByName(s->grantname);
 			if (client) 
 			{
-				client->Message_StringID(CC_Default, CONSENT_BEEN_DENIED, s->ownername);
+				client->Message_StringID(Chat::White, CONSENT_BEEN_DENIED, s->ownername);
 				client->Consent(0, s->ownername, s->grantname);
 			}
 		}
@@ -1705,7 +1705,7 @@ void WorldServer::Process() {
 					0,
 					0,
 					AccountStatus::GMAdmin,
-					CC_Yellow,
+					Chat::Yellow,
 					fmt::format(
 						"Content flags (and expansion) reloaded for {}.",
 						fmt::format(

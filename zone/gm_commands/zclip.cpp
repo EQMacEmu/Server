@@ -3,13 +3,13 @@
 void command_zclip(Client *c, const Seperator *sep){
 	// modifys and resends zhdr packet
 	if (sep->arg[2][0] == 0)
-		c->Message(CC_Default, "Usage: #zclip <min clip> <max clip>");
+		c->Message(Chat::White, "Usage: #zclip <min clip> <max clip>");
 	else if (atoi(sep->arg[1]) <= 0)
-		c->Message(CC_Default, "ERROR: Min clip can not be zero or less!");
+		c->Message(Chat::White, "ERROR: Min clip can not be zero or less!");
 	else if (atoi(sep->arg[2]) <= 0)
-		c->Message(CC_Default, "ERROR: Max clip can not be zero or less!");
+		c->Message(Chat::White, "ERROR: Max clip can not be zero or less!");
 	else if (atoi(sep->arg[1])>atoi(sep->arg[2]))
-		c->Message(CC_Default, "ERROR: Min clip is greater than max clip!");
+		c->Message(Chat::White, "ERROR: Min clip is greater than max clip!");
 	else {
 		zone->newzone_data.minclip = atof(sep->arg[1]);
 		zone->newzone_data.maxclip = atof(sep->arg[2]);

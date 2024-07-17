@@ -27,6 +27,7 @@
 #include "../common/crash.h"
 #include "../common/strings.h"
 #include "../common/event/timer.h"
+#include "../common/path_manager.h"
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
@@ -41,6 +42,7 @@ std::string WorldShortName;
 const queryservconfig *Config;
 WorldServer *worldserver = 0;
 EQEmuLogSys LogSys;
+PathManager           path;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 
@@ -52,6 +54,9 @@ int main() {
 	RegisterExecutablePlatform(ExePlatformQueryServ);
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler(); 
+
+	path.LoadPaths();
+
 	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
 
 	LogInfo("Starting EQMacEmu QueryServ.");
@@ -83,6 +88,7 @@ int main() {
 	}
 
 	LogSys.SetDatabase(&database)
+		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 

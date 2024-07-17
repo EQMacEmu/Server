@@ -32,7 +32,7 @@ class Database : public DBcore
 {
 public:
 
-	Database() { database = nullptr; }
+	Database() { m_database = nullptr; }
 
 	/**
 	* Constructor, tries to set our database to connect to the supplied options.
@@ -47,7 +47,7 @@ public:
 	/**
 	* @return Returns true if the database successfully connected.
 	*/
-	bool IsConnected() { return (database != nullptr); }
+	bool IsConnected() { return (m_database != nullptr); }
 
 	/**
 	* Retrieves the login data (password hash and account id) from the account name provided
@@ -99,7 +99,7 @@ public:
 	bool CheckExtraSettings(std::string type);
 protected:
 	std::string user, pass, host, port, name;
-	MYSQL *database;
+	MYSQL *m_database;
 };
 
 #endif

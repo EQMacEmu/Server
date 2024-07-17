@@ -10,6 +10,6 @@ void command_lastname(Client *c, const Seperator *sep){
 	if (strlen(sep->arg[1]) <= 70)
 		t->ChangeLastName(sep->arg[1]);
 	else
-		c->Message(CC_Default, "Usage: #lastname <lastname> where <lastname> is less than 70 chars long");
+		c->Message(Chat::White, "Usage: #lastname <lastname> where <lastname> is less than 70 chars long");
 }
 

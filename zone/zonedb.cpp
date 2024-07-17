@@ -1324,7 +1324,7 @@ bool ZoneDatabase::SaveCharacterConsent(char grantname[64], char ownername[64], 
 		std::string query = StringFormat("INSERT INTO `character_consent` (name, consenter_name, corpse_id) VALUES ('%s', '%s', %u)", escaped_gname.c_str(), escaped_oname.c_str(), corpse_id);
 		QueryDatabase(query);
 
-		Log(Logs::Moderate, Logs::Corpse, "Adding %s (%u) to %s consent list...", ownername, corpse_id, grantname);
+		Log(Logs::Detail, Logs::Corpse, "Adding %s (%u) to %s consent list...", ownername, corpse_id, grantname);
 		CharacterConsent cc;
 		cc.consenter = ownername;
 		cc.corpse_id = corpse_id;
@@ -2748,7 +2748,7 @@ uint32 ZoneDatabase::GetCharacterCorpseDecayTimer(uint32 corpse_db_id){
 	return 0;
 }
 
-uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const char* char_name, uint32 zone_id, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool is_rezzed) {
+uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const char* char_name, uint32 zone_id, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool is_rezzed) {
 	std::string query = StringFormat("UPDATE `character_corpses` SET \n"
 		"`charname` =		  '%s',\n"
 		"`zone_id` =				%u,\n"
@@ -2800,40 +2800,40 @@ uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const c
 		position.y,
 		position.z,
 		position.w,
-		dbpc->locked,
-		dbpc->exp,
-		dbpc->gmexp,
-		dbpc->size,
-		dbpc->level,
-		dbpc->race,
-		dbpc->gender,
-		dbpc->class_,
-		dbpc->deity,
-		dbpc->texture,
-		dbpc->helmtexture,
-		dbpc->copper,
-		dbpc->silver,
-		dbpc->gold,
-		dbpc->plat,
-		dbpc->haircolor,
-		dbpc->beardcolor,
-		dbpc->eyecolor1,
-		dbpc->eyecolor2,
-		dbpc->hairstyle,
-		dbpc->face,
-		dbpc->beard,
-		dbpc->item_tint.Head.Color,
-		dbpc->item_tint.Chest.Color,
-		dbpc->item_tint.Arms.Color,
-		dbpc->item_tint.Wrist.Color,
-		dbpc->item_tint.Hands.Color,
-		dbpc->item_tint.Legs.Color,
-		dbpc->item_tint.Feet.Color,
-		dbpc->item_tint.Primary.Color,
-		dbpc->item_tint.Secondary.Color,
-		dbpc->killedby,
-		dbpc->rezzable,
-		dbpc->rez_time,
+		corpse.locked,
+		corpse.exp,
+		corpse.gmexp,
+		corpse.size,
+		corpse.level,
+		corpse.race,
+		corpse.gender,
+		corpse.class_,
+		corpse.deity,
+		corpse.texture,
+		corpse.helmtexture,
+		corpse.copper,
+		corpse.silver,
+		corpse.gold,
+		corpse.plat,
+		corpse.haircolor,
+		corpse.beardcolor,
+		corpse.eyecolor1,
+		corpse.eyecolor2,
+		corpse.hairstyle,
+		corpse.face,
+		corpse.beard,
+		corpse.item_tint.Head.Color,
+		corpse.item_tint.Chest.Color,
+		corpse.item_tint.Arms.Color,
+		corpse.item_tint.Wrist.Color,
+		corpse.item_tint.Hands.Color,
+		corpse.item_tint.Legs.Color,
+		corpse.item_tint.Feet.Color,
+		corpse.item_tint.Primary.Color,
+		corpse.item_tint.Secondary.Color,
+		corpse.killedby,
+		corpse.rezzable,
+		corpse.rez_time,
 		is_rezzed,
 		db_id
 	);
@@ -2842,7 +2842,7 @@ uint32 ZoneDatabase::UpdateCharacterCorpse(uint32 db_id, uint32 char_id, const c
 	return db_id;
 }
 
-bool ZoneDatabase::UpdateCharacterCorpseBackup(uint32 db_id, uint32 char_id, const char* char_name, uint32 zone_id, PlayerCorpse_Struct* dbpc, const glm::vec4& position, bool is_rezzed) {
+bool ZoneDatabase::UpdateCharacterCorpseBackup(uint32 db_id, uint32 char_id, const char* char_name, uint32 zone_id, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool is_rezzed) {
 	std::string query = StringFormat("UPDATE `character_corpses_backup` SET \n"
 		"`charname` =		  '%s',\n"
 		"`charid` =				%d,\n"
@@ -2858,14 +2858,14 @@ bool ZoneDatabase::UpdateCharacterCorpseBackup(uint32 db_id, uint32 char_id, con
 		"WHERE `id` = %u",
 		Strings::Escape(char_name).c_str(),
 		char_id, 
-		dbpc->exp,
-		dbpc->gmexp,
-		dbpc->copper,
-		dbpc->silver,
-		dbpc->gold,
-		dbpc->plat,
-		dbpc->rezzable,
-		dbpc->rez_time,
+		corpse.exp,
+		corpse.gmexp,
+		corpse.copper,
+		corpse.silver,
+		corpse.gold,
+		corpse.plat,
+		corpse.rezzable,
+		corpse.rez_time,
 		is_rezzed,
 		db_id
 	);
@@ -2884,7 +2884,7 @@ void ZoneDatabase::MarkCorpseAsRezzed(uint32 db_id) {
 	auto results = QueryDatabase(query);
 }
 
-uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position) {
+uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position) {
 	/* Dump Basic Corpse Data */
 	std::string query = StringFormat("INSERT INTO `character_corpses` SET \n"
 		"`charname` =		  '%s',\n"
@@ -2937,47 +2937,47 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 		position.y,
 		position.z,
 		position.w,
-		dbpc->locked,
-		dbpc->exp,
-		dbpc->gmexp,
-		dbpc->size,
-		dbpc->level,
-		dbpc->race,
-		dbpc->gender,
-		dbpc->class_,
-		dbpc->deity,
-		dbpc->texture,
-		dbpc->helmtexture,
-		dbpc->copper,
-		dbpc->silver,
-		dbpc->gold,
-		dbpc->plat,
-		dbpc->haircolor,
-		dbpc->beardcolor,
-		dbpc->eyecolor1,
-		dbpc->eyecolor2,
-		dbpc->hairstyle,
-		dbpc->face,
-		dbpc->beard,
-		dbpc->item_tint.Head.Color,
-		dbpc->item_tint.Chest.Color,
-		dbpc->item_tint.Arms.Color,
-		dbpc->item_tint.Wrist.Color,
-		dbpc->item_tint.Hands.Color,
-		dbpc->item_tint.Legs.Color,
-		dbpc->item_tint.Feet.Color,
-		dbpc->item_tint.Primary.Color,
-		dbpc->item_tint.Secondary.Color,
-		dbpc->killedby,
-		dbpc->rezzable,
-		dbpc->rez_time
+		corpse.locked,
+		corpse.exp,
+		corpse.gmexp,
+		corpse.size,
+		corpse.level,
+		corpse.race,
+		corpse.gender,
+		corpse.class_,
+		corpse.deity,
+		corpse.texture,
+		corpse.helmtexture,
+		corpse.copper,
+		corpse.silver,
+		corpse.gold,
+		corpse.plat,
+		corpse.haircolor,
+		corpse.beardcolor,
+		corpse.eyecolor1,
+		corpse.eyecolor2,
+		corpse.hairstyle,
+		corpse.face,
+		corpse.beard,
+		corpse.item_tint.Head.Color,
+		corpse.item_tint.Chest.Color,
+		corpse.item_tint.Arms.Color,
+		corpse.item_tint.Wrist.Color,
+		corpse.item_tint.Hands.Color,
+		corpse.item_tint.Legs.Color,
+		corpse.item_tint.Feet.Color,
+		corpse.item_tint.Primary.Color,
+		corpse.item_tint.Secondary.Color,
+		corpse.killedby,
+		corpse.rezzable,
+		corpse.rez_time
 	);
 	auto results = QueryDatabase(query);
 	uint32 last_insert_id = results.LastInsertedID();
 
 	std::string corpse_items_query;
 	/* Dump Items from Inventory */
-	if (dbpc->itemcount == 0)
+	if (corpse.items.empty())
 	{
 		// clear out any stale items that might be left in the database for this corpse if we're saving it with 0 items
 		corpse_items_query = StringFormat("DELETE FROM `character_corpse_items` WHERE `corpse_id` = %d", last_insert_id);
@@ -2985,33 +2985,36 @@ uint32 ZoneDatabase::SaveCharacterCorpse(uint32 charid, const char* charname, ui
 	else
 	{
 		uint8 first_entry = 0;
-		for (unsigned int i = 0; i < dbpc->itemcount; i++) {
+		for (auto &item : corpse.items) {
 			if (first_entry != 1) {
 				corpse_items_query = StringFormat("REPLACE INTO `character_corpse_items` \n"
 					" (corpse_id, equip_slot, item_id, charges) \n"
 					" VALUES (%u, %u, %u, %u) \n",
 					last_insert_id,
-					dbpc->items[i].equip_slot,
-					dbpc->items[i].item_id,
-					dbpc->items[i].charges
+					item.equip_slot,
+					item.item_id,
+					item.charges
 				);
 				first_entry = 1;
 			}
 			else {
 				corpse_items_query = corpse_items_query + StringFormat(", (%u, %u, %u, %u) \n",
 					last_insert_id,
-					dbpc->items[i].equip_slot,
-					dbpc->items[i].item_id,
-					dbpc->items[i].charges
+					item.equip_slot,
+					item.item_id,
+					item.charges
 				);
 			}
 		}
 	}
-	auto sc_results = QueryDatabase(corpse_items_query);
+
+	if (!corpse_items_query.empty())
+		QueryDatabase(corpse_items_query);
+
 	return last_insert_id;
 }
 
-bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, PlayerCorpse_Struct* dbpc, const glm::vec4& position) {
+bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position) {
 	/* Dump Basic Corpse Data */
 	std::string query = StringFormat("INSERT INTO `character_corpses_backup` SET \n"
 		"`id` =						%u,\n"
@@ -3066,40 +3069,40 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 		position.y,
 		position.z,
 		position.w,
-		dbpc->locked,
-		dbpc->exp,
-		dbpc->gmexp,
-		dbpc->size,
-		dbpc->level,
-		dbpc->race,
-		dbpc->gender,
-		dbpc->class_,
-		dbpc->deity,
-		dbpc->texture,
-		dbpc->helmtexture,
-		dbpc->copper,
-		dbpc->silver,
-		dbpc->gold,
-		dbpc->plat,
-		dbpc->haircolor,
-		dbpc->beardcolor,
-		dbpc->eyecolor1,
-		dbpc->eyecolor2,
-		dbpc->hairstyle,
-		dbpc->face,
-		dbpc->beard,
-		dbpc->item_tint.Head.Color,
-		dbpc->item_tint.Chest.Color,
-		dbpc->item_tint.Arms.Color,
-		dbpc->item_tint.Wrist.Color,
-		dbpc->item_tint.Hands.Color,
-		dbpc->item_tint.Legs.Color,
-		dbpc->item_tint.Feet.Color,
-		dbpc->item_tint.Primary.Color,
-		dbpc->item_tint.Secondary.Color,
-		dbpc->killedby,
-		dbpc->rezzable,
-		dbpc->rez_time
+		corpse.locked,
+		corpse.exp,
+		corpse.gmexp,
+		corpse.size,
+		corpse.level,
+		corpse.race,
+		corpse.gender,
+		corpse.class_,
+		corpse.deity,
+		corpse.texture,
+		corpse.helmtexture,
+		corpse.copper,
+		corpse.silver,
+		corpse.gold,
+		corpse.plat,
+		corpse.haircolor,
+		corpse.beardcolor,
+		corpse.eyecolor1,
+		corpse.eyecolor2,
+		corpse.hairstyle,
+		corpse.face,
+		corpse.beard,
+		corpse.item_tint.Head.Color,
+		corpse.item_tint.Chest.Color,
+		corpse.item_tint.Arms.Color,
+		corpse.item_tint.Wrist.Color,
+		corpse.item_tint.Hands.Color,
+		corpse.item_tint.Legs.Color,
+		corpse.item_tint.Feet.Color,
+		corpse.item_tint.Primary.Color,
+		corpse.item_tint.Secondary.Color,
+		corpse.killedby,
+		corpse.rezzable,
+		corpse.rez_time
 	);
 	auto results = QueryDatabase(query); 
 	if (!results.Success()){
@@ -3109,24 +3112,24 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 
 	/* Dump Items from Inventory */
 	uint8 first_entry = 0;
-	for (unsigned int i = 0; i < dbpc->itemcount; i++) { 
+	for (auto &item : corpse.items) {
 		if (first_entry != 1){
 			query = StringFormat("REPLACE INTO `character_corpse_items_backup` \n"
 				" (corpse_id, equip_slot, item_id, charges) \n"
 				" VALUES (%u, %u, %u, %u) \n",
 				corpse_id, 
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,  
-				dbpc->items[i].charges
+				item.equip_slot,
+				item.item_id,  
+				item.charges
 			);
 			first_entry = 1;
 		}
 		else{ 
 			query = query + StringFormat(", (%u, %u, %u, %u) \n",
 				corpse_id,
-				dbpc->items[i].equip_slot,
-				dbpc->items[i].item_id,
-				dbpc->items[i].charges
+				item.equip_slot,
+				item.item_id,
+				item.charges
 			);
 		}
 	}
@@ -3170,18 +3173,6 @@ uint32 ZoneDatabase::GetCharacterCorpseID(uint32 char_id, uint8 corpse) {
 	return 0;
 }
 
-uint32 ZoneDatabase::GetCharacterCorpseItemCount(uint32 corpse_id){
-	std::string query = StringFormat("SELECT COUNT(*) FROM character_corpse_items WHERE `corpse_id` = %u",
-		corpse_id
-	);
-	auto results = QueryDatabase(query);
-	auto& row = results.begin();
-	if (results.Success() && results.RowsAffected() != 0){
-		return atoi(row[0]);
-	}
-	return 0;
-}
-
 uint32 ZoneDatabase::GetCharacterCorpseItemAt(uint32 corpse_id, uint16 slotid) {
 	Corpse* tmp = LoadCharacterCorpse(corpse_id);
 	uint32 itemid = 0;
@@ -3220,7 +3211,7 @@ bool ZoneDatabase::LoadCharacterCorpseRezData(uint32 corpse_id, uint32 *exp, uin
 	return false;
 }
 
-bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct* pcs){
+bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntry &corpse){
 	std::string query = StringFormat(
 		"SELECT           \n"
 		"is_locked,       \n"
@@ -3265,40 +3256,40 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct
 	auto results = QueryDatabase(query);
 	uint16 i = 0;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
-		pcs->locked = atoi(row[i++]);						// is_locked,
-		pcs->exp = atoul(row[i++]);							// exp,
-		pcs->gmexp = atoul(row[i++]);						// gmexp,
-		pcs->size = atof(row[i++]);							// size,
-		pcs->level = atoi(row[i++]);						// `level`,
-		pcs->race = atoi(row[i++]);							// race,
-		pcs->gender = atoi(row[i++]);						// gender,
-		pcs->class_ = atoi(row[i++]);						// class,
-		pcs->deity = atoi(row[i++]);						// deity,
-		pcs->texture = atoi(row[i++]);						// texture,
-		pcs->helmtexture = atoi(row[i++]);					// helm_texture,
-		pcs->copper = atoul(row[i++]);						// copper,
-		pcs->silver = atoul(row[i++]);						// silver,
-		pcs->gold = atoul(row[i++]);						// gold,
-		pcs->plat = atoul(row[i++]);						// platinum,
-		pcs->haircolor = atoi(row[i++]);					// hair_color,
-		pcs->beardcolor = atoi(row[i++]);					// beard_color,
-		pcs->eyecolor1 = atoi(row[i++]);					// eye_color_1,
-		pcs->eyecolor2 = atoi(row[i++]);					// eye_color_2,
-		pcs->hairstyle = atoi(row[i++]);					// hair_style,
-		pcs->face = atoi(row[i++]);							// face,
-		pcs->beard = atoi(row[i++]);						// beard,
-		pcs->item_tint.Head.Color = atoul(row[i++]);		// wc_1,
-		pcs->item_tint.Chest.Color = atoul(row[i++]);		// wc_2,
-		pcs->item_tint.Arms.Color = atoul(row[i++]);		// wc_3,
-		pcs->item_tint.Wrist.Color = atoul(row[i++]);		// wc_4,
-		pcs->item_tint.Hands.Color = atoul(row[i++]);		// wc_5,
-		pcs->item_tint.Legs.Color = atoul(row[i++]);		// wc_6,
-		pcs->item_tint.Feet.Color = atoul(row[i++]);		// wc_7,
-		pcs->item_tint.Primary.Color = atoul(row[i++]);		// wc_8,
-		pcs->item_tint.Secondary.Color = atoul(row[i++]);	// wc_9
-		pcs->killedby = atoi(row[i++]);						// killedby
-		pcs->rezzable = atoi(row[i++]);						// rezzable
-		pcs->rez_time = atoul(row[i++]);					// rez_time
+		corpse.locked = atoi(row[i++]);						// is_locked,
+		corpse.exp = atoul(row[i++]);							// exp,
+		corpse.gmexp = atoul(row[i++]);						// gmexp,
+		corpse.size = atof(row[i++]);							// size,
+		corpse.level = atoi(row[i++]);						// `level`,
+		corpse.race = atoi(row[i++]);							// race,
+		corpse.gender = atoi(row[i++]);						// gender,
+		corpse.class_ = atoi(row[i++]);						// class,
+		corpse.deity = atoi(row[i++]);						// deity,
+		corpse.texture = atoi(row[i++]);						// texture,
+		corpse.helmtexture = atoi(row[i++]);					// helm_texture,
+		corpse.copper = atoul(row[i++]);						// copper,
+		corpse.silver = atoul(row[i++]);						// silver,
+		corpse.gold = atoul(row[i++]);						// gold,
+		corpse.plat = atoul(row[i++]);						// platinum,
+		corpse.haircolor = atoi(row[i++]);					// hair_color,
+		corpse.beardcolor = atoi(row[i++]);					// beard_color,
+		corpse.eyecolor1 = atoi(row[i++]);					// eye_color_1,
+		corpse.eyecolor2 = atoi(row[i++]);					// eye_color_2,
+		corpse.hairstyle = atoi(row[i++]);					// hair_style,
+		corpse.face = atoi(row[i++]);							// face,
+		corpse.beard = atoi(row[i++]);						// beard,
+		corpse.item_tint.Head.Color = atoul(row[i++]);		// wc_1,
+		corpse.item_tint.Chest.Color = atoul(row[i++]);		// wc_2,
+		corpse.item_tint.Arms.Color = atoul(row[i++]);		// wc_3,
+		corpse.item_tint.Wrist.Color = atoul(row[i++]);		// wc_4,
+		corpse.item_tint.Hands.Color = atoul(row[i++]);		// wc_5,
+		corpse.item_tint.Legs.Color = atoul(row[i++]);		// wc_6,
+		corpse.item_tint.Feet.Color = atoul(row[i++]);		// wc_7,
+		corpse.item_tint.Primary.Color = atoul(row[i++]);		// wc_8,
+		corpse.item_tint.Secondary.Color = atoul(row[i++]);	// wc_9
+		corpse.killedby = atoi(row[i++]);						// killedby
+		corpse.rezzable = atoi(row[i++]);						// rezzable
+		corpse.rez_time = atoul(row[i++]);					// rez_time
 	}
 	query = StringFormat(
 		"SELECT                       \n"
@@ -3314,13 +3305,14 @@ bool ZoneDatabase::LoadCharacterCorpseData(uint32 corpse_id, PlayerCorpse_Struct
 	results = QueryDatabase(query);
 
 	i = 0;
-	pcs->itemcount = results.RowCount();
 	uint16 r = 0;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
-		memset(&pcs->items[i], 0, sizeof (LootItem));
-		pcs->items[i].equip_slot = atoi(row[r++]);		// equip_slot,
-		pcs->items[i].item_id = atoul(row[r++]); 		// item_id,
-		pcs->items[i].charges = atoi(row[r++]); 		// charges,
+		CharacterCorpseItemEntry item;
+		item.equip_slot = atoi(row[r++]);		// equip_slot,
+		item.item_id = atoul(row[r++]); 		// item_id,
+		item.charges = atoi(row[r++]); 		// charges,
+
+		corpse.items.emplace_back(std::move(item));
 		r = 0;
 		i++;
 	}
@@ -3784,10 +3776,10 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 		int16 use_slot = (i == EQ::invslot::CURSOR_QUEUE_BEGIN) ? EQ::invslot::slotCursor : i;
 		if (inst)
 		{
-			Log(Logs::Moderate, Logs::Inventory, "SaveCursor: Attempting to save item %s for char %d in slot %d", inst->GetItem()->Name, char_id, use_slot);
+			Log(Logs::Detail, Logs::Inventory, "SaveCursor: Attempting to save item %s for char %d in slot %d", inst->GetItem()->Name, char_id, use_slot);
 		}
 		else
-			Log(Logs::Moderate, Logs::Inventory, "SaveCursor: No inst found. This is either an error, or we've reached the end of the list.");
+			Log(Logs::Detail, Logs::Inventory, "SaveCursor: No inst found. This is either an error, or we've reached the end of the list.");
 
 		if (!SaveInventory(char_id, inst, use_slot)) 
 		{
@@ -3797,7 +3789,7 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 		{
 			client->SendItemPacket(EQ::invslot::slotCursor, inst, ItemPacketSummonItem);
 			inst->SetCursorQueue(true);
-			Log(Logs::Moderate, Logs::Inventory, "SaveCursor: Sending out ItemPacket for non-queued cursor item %s", inst->GetItem()->Name);
+			Log(Logs::Detail, Logs::Inventory, "SaveCursor: Sending out ItemPacket for non-queued cursor item %s", inst->GetItem()->Name);
 		}
 	}
 	return true;

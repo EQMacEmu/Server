@@ -18,6 +18,6 @@ void command_wp(Client *c, const Seperator *sep){
 	else if (strcasecmp("delete", sep->arg[1]) == 0)
 		database.DeleteWaypoint(c, atoi(sep->arg[2]), wp, zone->GetZoneID());
 	else
-		c->Message(CC_Default, "Usage: #wp add/delete grid_num pause wp_num [-h]");
+		c->Message(Chat::White, "Usage: #wp add/delete grid_num pause wp_num [-h]");
 }
 

@@ -98,7 +98,7 @@ void Client::ActivateAA(aaID aaid)
 
 	if (playeraction != eaStanding || IsFeigned())
 	{
-		Message_StringID(CC_User_SpellFailure, MUST_BE_STANDING_TO_CAST);
+		Message_StringID(Chat::SpellFailure, MUST_BE_STANDING_TO_CAST);
 		return;
 	}
 
@@ -143,13 +143,13 @@ void Client::ActivateAA(aaID aaid)
 			if (aaremain_hr >= 1)
 			{
 				// 1 hour or more
-				Message(CC_Default, "You can use the ability %s again in %u hour(s) %u minute(s) %u seconds.",
+				Message(Chat::White, "You can use the ability %s again in %u hour(s) %u minute(s) %u seconds.",
 					aa2->name, aaremain_hr, aaremain_min, aaremain_sec);
 			}
 			else
 			{
 				// less than an hour
-				Message(CC_Default, "You can use the ability %s again in %u minute(s) %u seconds.",
+				Message(Chat::White, "You can use the ability %s again in %u minute(s) %u seconds.",
 					aa2->name, aaremain_min, aaremain_sec);
 			}
 		}
@@ -231,7 +231,7 @@ void Client::ActivateAA(aaID aaid)
 	case aaTargetCurrent:
 		if (GetTarget() == nullptr)
 		{
-			Message(MT_DefaultText, "You must first select a target for this ability!");
+			Message(Chat::DefaultText, "You must first select a target for this ability!");
 			return;
 		}
 		target_id = GetTarget()->GetID();
@@ -239,7 +239,7 @@ void Client::ActivateAA(aaID aaid)
 	case aaTargetPet:
 		if (GetPet() == nullptr)
 		{
-			Message(CC_Default, "A pet is required for this skill.");
+			Message(Chat::White, "A pet is required for this skill.");
 			return;
 		}
 		target_id = GetPetID();
@@ -253,7 +253,7 @@ void Client::ActivateAA(aaID aaid)
 		Corpse *corpse = entity_list.GetClosestCorpse(this, nullptr);
 		if (!corpse || DistanceSquaredNoZ(GetPosition(), corpse->GetPosition()) > 10000 || !CheckLosFN(corpse, true))
 		{
-			Message_StringID(CC_Default, NO_SUITABLE_CORPSE);
+			Message_StringID(Chat::White, NO_SUITABLE_CORPSE);
 			return;
 		}
 		if (IsClient())
@@ -269,7 +269,7 @@ void Client::ActivateAA(aaID aaid)
 		{
 			strcpy(corpse_name, corpse->GetCleanName());
 		}
-		Message_StringID(CC_Default, YOU_BEGIN_TO_CONCENTRATE, corpse_name);
+		Message_StringID(Chat::White, YOU_BEGIN_TO_CONCENTRATE, corpse_name);
 	}
 
 	// start the reuse timer
@@ -291,7 +291,7 @@ void Client::ActivateAA(aaID aaid)
 		{
 			if (GetMana() < caa->mana_cost)
 			{
-				Message_StringID(CC_Red, INSUFFICIENT_MANA);
+				Message_StringID(Chat::Red, INSUFFICIENT_MANA);
 				return;
 			}
 			SetMana(GetMana() - caa->mana_cost);
@@ -305,7 +305,7 @@ void Client::ActivateAA(aaID aaid)
 
 		case aaActionMassBuff:
 			EnableAAEffect(aaEffectMassGroupBuff, caa->duration);
-			Message_StringID(MT_Disciplines, MGB_STRING); // The next group buff you cast will hit all targets in range.
+			Message_StringID(Chat::Disciplines, MGB_STRING); // The next group buff you cast will hit all targets in range.
 			break;
 
 		case aaActionWarcry:
@@ -327,7 +327,7 @@ void Client::ActivateAA(aaID aaid)
 
 		case aaActionProjectIllusion:
 			EnableAAEffect(aaEffectProjectIllusion, caa->duration);
-			Message_StringID(MT_Disciplines, PROJECT_ILLUSION); // The next illusion spell you cast that changes a player into another character model and not an object will work on the group member you have targeted.
+			Message_StringID(Chat::Disciplines, PROJECT_ILLUSION); // The next illusion spell you cast that changes a player into another character model and not an object will work on the group member you have targeted.
 			break;
 
 		case aaActionFrenziedBurnout:
@@ -349,6 +349,7 @@ void Client::ActivateAA(aaID aaid)
 
 		default:
 			Log(Logs::General, Logs::Error, "Unknown AA nonspell action type %d", caa->action);
+			break;
 		}
 	}
 
@@ -358,7 +359,7 @@ void Client::ActivateAA(aaID aaid)
 		Log(Logs::General, Logs::AA, "Casting spell %d for AA %d", spell_id, aaid);
 		if (casting_aa != 0)
 		{
-			Log(Logs::General, Logs::AA, "casting_aa is not 0. Either we are currently casting another ability, or we didn't clear the value somewhere!");
+			LogAA("casting_aa is not 0. Either we are currently casting another ability, or we didn't clear the value somewhere!");
 		}
 		casting_aa = aaid;
 
@@ -378,7 +379,7 @@ void Client::ActivateAA(aaID aaid)
 
 		if (in_range == false)
 		{
-			Message_StringID(CC_Red, TARGET_OUT_OF_RANGE);
+			Message_StringID(Chat::Red, TARGET_OUT_OF_RANGE);
 			cast_success = false;
 		}
 		else
@@ -498,7 +499,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	if (!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
 	{
 		LogError("Unknown swarm pet spell id: {}, check pets table", spell_id);
-		Message(CC_Red, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
+		Message(Chat::Red, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
 		return;
 	}
 
@@ -509,8 +510,8 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	if (npc_type_template == nullptr)
 	{
 		//log write
-		Log(Logs::General, Logs::Error, "Unknown npc type for swarm pet spell id: %d", spell_id);
-		Message(CC_Default, "Unable to find pet!");
+		LogError("Unknown npc type for swarm pet spell id: [{}]", spell_id);
+		Message(Chat::White, "Unable to find pet!");
 		return;
 	}
 	memcpy(&pet->npc_type, npc_type_template, sizeof(NPCType));
@@ -548,7 +549,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 
 		if (!corpse || DistanceSquaredNoZ(GetPosition(), corpse->GetPosition()) > 10000 || !CheckLosFN(corpse, true))
 		{
-			Message_StringID(CC_Default, NO_SUITABLE_CORPSE);
+			Message_StringID(Chat::White, NO_SUITABLE_CORPSE);
 			if (IsClient())
 			{
 				CastToClient()->ResetAATimer(aaWaketheDead, ABILITY_FAILED);
@@ -583,7 +584,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 			{
 				strcpy(corpse_name, corpse->GetCleanName());
 			}
-			entity_list.MessageClose_StringID(this, false, 100.0f, MT_Disciplines, RISES_TO_SERVE, corpse_name, GetCleanName());
+			entity_list.MessageClose_StringID(this, false, 100.0f, Chat::Disciplines, RISES_TO_SERVE, corpse_name, GetCleanName());
 		}
 
 		if (IsClient())
@@ -762,7 +763,7 @@ void Client::DisableAAEffect(aaEffectType type) {
 	switch (type)
 	{
 	case aaEffectWarcry:
-		Message_StringID(CC_User_Spells, WARCRY_FADES);
+		Message_StringID(Chat::Spells, WARCRY_FADES);
 		break;
 	}
 }
@@ -807,7 +808,7 @@ void Client::SendAAStats() {
 
 void Client::BuyAA(AA_Action* action)
 {
-	Log(Logs::Detail, Logs::AA, "Starting to buy AA %d", action->ability);
+	LogAADetail("Starting to buy AA [{}]", action->ability);
 
 	//find the AA information from the database
 	SendAA_Struct* aa2 = zone->FindAA(action->ability, true);
@@ -822,7 +823,7 @@ void Client::BuyAA(AA_Action* action)
 
 	uint32 cur_level = GetAA(aa2->id);
 	if ((aa2->id + cur_level) != action->ability) { //got invalid AA
-		Log(Logs::Detail, Logs::AA, "Unable to find or match AA %d (found %d + lvl %d)", action->ability, aa2->id, cur_level);
+		LogAADetail("Unable to find or match AA [{}] (found [{}] + lvl [{}])", action->ability, aa2->id, cur_level);
 		return;
 	}
 
@@ -840,7 +841,7 @@ void Client::BuyAA(AA_Action* action)
 	if (m_pp.aapoints >= real_cost && cur_level < aa2->max_level) {
 		SetAA(aa2->id, cur_level + 1);
 
-		Log(Logs::Detail, Logs::AA, "Set AA %d to level %d", aa2->id, cur_level + 1);
+		LogAADetail("Set AA [{}] to level [{}]", aa2->id, cur_level + 1);
 
 		m_pp.aapoints -= real_cost;
 
@@ -859,12 +860,12 @@ void Client::BuyAA(AA_Action* action)
 		char aa_type[8];
 		/* Initial purchase of an AA ability */
 		if (cur_level < 1){
-			Message(CC_Yellow, "You have gained the ability \"%s\" at a cost of %d ability %s.", aa2->name, real_cost, (real_cost>1) ? "points" : "point");
+			Message(Chat::Yellow, "You have gained the ability \"%s\" at a cost of %d ability %s.", aa2->name, real_cost, (real_cost>1) ? "points" : "point");
 			strncpy(aa_type, "Initial", 8);
 		}
 		/* Ranked purchase of an AA ability */
 		else{
-			Message(CC_Yellow, "You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level + 1, real_cost, (real_cost > 1) ? "points" : "point");
+			Message(Chat::Yellow, "You have improved %s %d at a cost of %d ability %s.", aa2->name, cur_level + 1, real_cost, (real_cost > 1) ? "points" : "point");
 			strncpy(aa_type, "Ranked", 8);
 		}
 
@@ -953,7 +954,7 @@ void Client::SendAATimers() {
 				uaaout->end = static_cast<uint32>(time(nullptr));
 				uaaout->ability = zone->EmuToEQMacAA(aa2->id);
 				QueuePacket(outapp);
-				Log(Logs::Moderate, Logs::AA, "Sending out timer TYPE %d for AA: %d (%s). Timer start: %d Timer end: %d Recast Time: %d", aa2->spell_type, uaaout->ability, aa2->name, uaaout->begin, uaaout->end, aa2->spell_refresh);
+				LogAADetail("Sending out timer TYPE [{}] for AA: [{}] ([{}]). Timer start: [{}] Timer end: [{}] Recast Time: [{}]", aa2->spell_type, uaaout->ability, aa2->name, uaaout->begin, uaaout->end, aa2->spell_refresh);
 			}
 		}
 	}
@@ -963,11 +964,11 @@ void Client::SendAATimers() {
 
 void Client::ResetSingleAATimer(aaID activate, uint32 messageid)
 {
-	Log(Logs::General, Logs::AA, "Activated ability %d failed to cast. Resetting timer.", activate);
+	LogAA("Activated ability [{}] failed to cast. Resetting timer.", (int)activate);
 
 	ZeroCastingVars();
 
-	uint16 color = messageid == TOO_DISTRACTED ? CC_User_SpellFailure : CC_Yellow;
+	uint16 color = messageid == TOO_DISTRACTED ? Chat::SpellFailure : Chat::Yellow;
 	Message_StringID(color, messageid);
 
 	int ptimerID = GetAATimerID(activate) + pTimerAAStart;
@@ -984,11 +985,11 @@ void Client::ResetSingleAATimer(aaID activate, uint32 messageid)
 
 void Client::ResetAATimer(aaID activate, uint32 messageid)
 {
-	Log(Logs::General, Logs::AA, "Activated ability %d failed to cast. Resetting timer.", activate);
+	LogAA("Activated ability [{}] failed to cast. Resetting timer.", (int)activate);
 
 	ZeroCastingVars();
 
-	uint16 color = messageid == TOO_DISTRACTED ? CC_User_SpellFailure : CC_Yellow;
+	uint16 color = messageid == TOO_DISTRACTED ? Chat::SpellFailure : Chat::Yellow;
 	Message_StringID(color, messageid);
 
 	int ptimerID = GetAATimerID(activate) + pTimerAAStart;
@@ -1074,7 +1075,7 @@ SendAA_Struct* Zone::FindAA(uint32 id, bool searchParent) {
 			if (try_id <= 0)
 				break;
 
-			Log(Logs::Detail, Logs::AA, "Could not find AA %lu, trying potential parent %lu", id, try_id);
+			LogAADetail("Could not find AA [{}], trying potential parent [{}]", id, try_id);
 			ret = aas_send[try_id];
 		}
 	}
@@ -1096,7 +1097,7 @@ uint8 Zone::EmuToEQMacAA(uint32 id)
 	return 0;
 }
 
-void Zone::LoadAAs() {
+void Zone::LoadAlternateAdvancement() {
 	LogInfo("Loading AA information...");
 	totalAAs = database.CountAAs();
 	if (totalAAs == 0) {
@@ -1106,7 +1107,7 @@ void Zone::LoadAAs() {
 	}
 	aas = new SendAA_Struct *[totalAAs];
 
-	database.LoadAAs(aas);
+	database.LoadAlternateAdvancement(aas);
 
 	int i;
 	for (i = 0; i < totalAAs; i++){
@@ -1116,17 +1117,15 @@ void Zone::LoadAAs() {
 
 	//load AA Effects into aa_effects
 	LogInfo("Loading AA Effects...");
-	if (database.LoadAAEffects())
-	{
+	if (database.LoadAlternateAdvancementEffects()) {
 		LogInfo("Loaded {} AA Effects.", aa_effects.size());
 	}
-	else
-	{
+	else {
 		LogError("Failed to load AA Effects!");
 	}
 }
 
-bool ZoneDatabase::LoadAAEffects() {
+bool ZoneDatabase::LoadAlternateAdvancementEffects() {
 	aa_effects.clear();	//start fresh
 
 	const std::string query = "SELECT aaid, slot, effectid, base1, base2 FROM aa_effects ORDER BY aaid ASC, slot ASC";
@@ -1136,7 +1135,7 @@ bool ZoneDatabase::LoadAAEffects() {
 	}
 
 	if (!results.RowCount()) { //no results
-        Log(Logs::General, Logs::Error, "Error loading AA Effects, none found in the database.");
+        LogMySQLError("Error loading AA Effects, none found in the database.");
         return false;
 	}
 
@@ -1162,13 +1161,13 @@ uint32 ZoneDatabase::GetMacToEmuAA(uint8 eqmacid) {
 
 	if (!results.Success() || results.RowCount() == 0)
 	{
-		Log(Logs::Detail, Logs::Error, "Error in GetMacToEmuAA");
+		LogErrorDetail("Error in GetMacToEmuAA");
 		return 0;
 	}
 
 	auto row = results.begin();
 
-	Log(Logs::Detail, Logs::Debug, "GetMacToEmuAA is returning: %i", atoi(row[0]));
+	LogDebugDetail("GetMacToEmuAA is returning: [{}]", atoi(row[0]));
 	return atoi(row[0]);
 }
 
@@ -1196,28 +1195,28 @@ void Client::InspectBuffs(Client* Inspector, int Rank)
 {
 	if (!Inspector || (Rank == 0)) return;
 
-	Inspector->Message_StringID(CC_Default, CURRENT_SPELL_EFFECTS, GetName());
+	Inspector->Message_StringID(Chat::White, CURRENT_SPELL_EFFECTS, GetName());
 	uint32 buff_count = GetMaxTotalSlots();
 	for (uint32 i = 0; i < buff_count; ++i)
 	{
 		if (buffs[i].spellid != SPELL_UNKNOWN)
 		{
 			if (Rank == 1)
-				Inspector->Message(CC_Default, "%s", spells[buffs[i].spellid].name);
+				Inspector->Message(Chat::White, "%s", spells[buffs[i].spellid].name);
 			else
 			{
 				if (spells[buffs[i].spellid].buffdurationformula == DF_Permanent)
-					Inspector->Message(CC_Default, "%s (Permanent)", spells[buffs[i].spellid].name);
+					Inspector->Message(Chat::White, "%s (Permanent)", spells[buffs[i].spellid].name);
 				else {
 					auto TempString = fmt::format(" {:.1f} ", static_cast<float>(buffs[i].ticsremaining) / 10.0f);
-					Inspector->Message_StringID(CC_Default, BUFF_MINUTES_REMAINING, spells[buffs[i].spellid].name, TempString.c_str());
+					Inspector->Message_StringID(Chat::White, BUFF_MINUTES_REMAINING, spells[buffs[i].spellid].name, TempString.c_str());
 				}
 			}
 		}
 	}
 }
 
-bool ZoneDatabase::LoadAAActions() {
+bool ZoneDatabase::LoadAlternateAdvancementActions() {
 	memset(AA_Actions, 0, sizeof(AA_Actions));	//I hope the compiler is smart about this size...
 
 	const std::string query = "SELECT aaid, rank, reuse_time, spell_id, target, "
@@ -1312,7 +1311,7 @@ uint32 ZoneDatabase::CountAAEffects() {
 	return atoi(row[0]);
 }
 
-void ZoneDatabase::LoadAAs(SendAA_Struct **load)
+void ZoneDatabase::LoadAlternateAdvancement(SendAA_Struct **load)
 {
 	if (!load)
 		return;
@@ -1441,7 +1440,7 @@ uint8 Client::GetAARankTitle()
 					if ((aadata->id + (cur_level - 1)) != this->aa[i]->AA) 
 					{ 
 						//got invalid AA
-						Log(Logs::Detail, Logs::AA, "Unable to find or match AA %u (found %u + lvl %u)", this->aa[i]->AA, aadata->id, cur_level);
+						LogAADetail("Unable to find or match AA [{}] (found [{}] + lvl [{}])", this->aa[i]->AA, aadata->id, cur_level);
 						continue;
 					}
 
@@ -1469,7 +1468,7 @@ uint8 Client::GetAARankTitle()
 							break;
 					}
 
-					//Message(CC_Yellow, "i = %d, name = %s, aa[i]->AA = %u, base id = %u, aa[i]->value = %u, cost = %u, type = %u - points spent: %u", i, aadata->name, aa[i]->AA, aadata->id, aa[i]->value, aadata->cost, aadata->type, points_spent);
+					//Message(Chat::Yellow, "i = %d, name = %s, aa[i]->AA = %u, base id = %u, aa[i]->value = %u, cost = %u, type = %u - points spent: %u", i, aadata->name, aa[i]->AA, aadata->id, aa[i]->value, aadata->cost, aadata->type, points_spent);
 				}
 			}
 		}

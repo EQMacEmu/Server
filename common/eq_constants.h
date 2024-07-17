@@ -1,5 +1,6 @@
 /*	EQEMu: Everquest Server Emulator
-	Copyright (C) 2001-2003 EQEMu Development Team (http://eqemulator.net)
+
+	Copyright (C) 2001-2016 EQEMu Development Team (http://eqemulator.net)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -13,17 +14,14 @@
 
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #ifndef EQ_CONSTANTS_H
 #define EQ_CONSTANTS_H
 
 #include "skills.h"
 #include "types.h"
-#include "say_link.h"
-#include "light_source.h"
-
-#include <string>
 
 #define MAX_GROUP_MEMBERS 6
 
@@ -74,185 +72,309 @@ typedef enum EmuAppearance {
 	_eaMaxAppearance
 } EmuAppearance;
 
-// msg_type's for custom usercolors
-#define MT_Say					256
-#define MT_Tell					257
-#define MT_Group				258
-#define MT_Guild				259
-#define MT_OOC					260
-#define MT_Auction				261
-#define MT_Shout				262
-#define MT_Emote				263
-#define MT_Spells				264
-#define MT_YouHitOther			265
-#define MT_OtherHitsYou			266
-#define MT_YouMissOther			267
-#define MT_OtherMissesYou		268
-#define MT_Broadcasts			269
-#define MT_Skills				270
-#define MT_Disciplines			271
-#define	MT_Unused1				272
-#define MT_DefaultText			273
-#define MT_Unused2				274
-#define MT_MerchantOffer		275
-#define MT_MerchantBuySell		276
-#define	MT_YourDeath			277
-#define MT_OtherDeath			278
-#define MT_OtherHits			279
-#define MT_OtherMisses			280
-#define	MT_Who					281
-#define MT_YellForHelp			282
-#define MT_NonMelee				283
-#define MT_WornOff				284
-#define MT_MoneySplit			285
-#define MT_LootMessages			286 // Filters under Damage Shield?
-#define MT_DiceRoll				287
-#define MT_OtherSpells			288
-#define MT_SpellFailure			289
-#define MT_Chat					290
-#define MT_Channel1				291
-#define MT_Channel2				292
-#define MT_Channel3				293
-#define MT_Channel4				294
-#define MT_Channel5				295
-#define MT_Channel6				296
-#define MT_Channel7				297
-#define MT_Channel8				298
-#define MT_Channel9				299
-#define MT_Channel10			300
-#define MT_CritMelee			301
-#define MT_SpellCrits			302
-#define MT_TooFarAway			303
-#define MT_NPCRampage			304
-#define MT_NPCFlurry			305
-#define MT_NPCEnrage			306
-#define MT_SayEcho				307
-#define MT_TellEcho				308
-#define MT_GroupEcho			309
-#define MT_GuildEcho			310
-#define MT_OOCEcho				311
-#define MT_AuctionEcho			312
-#define MT_ShoutECho			313
-#define MT_EmoteEcho			314
-#define MT_Chat1Echo			315
-#define MT_Chat2Echo			316
-#define MT_Chat3Echo			317
-#define MT_Chat4Echo			318
-#define MT_Chat5Echo			319
-#define MT_Chat6Echo			320
-#define MT_Chat7Echo			321
-#define MT_Chat8Echo			322
-#define MT_Chat9Echo			323
-#define MT_Chat10Echo			324
-#define MT_DoTDamage			325
-#define MT_ItemLink				326
-#define MT_RaidSay				327
-#define MT_MyPet				328
-#define MT_DS					329 //White text (should be non-melee) unknown filter
-#define MT_Leadership			330
-#define MT_PetFlurry			331
-#define MT_PetCrit				332
-#define MT_FocusEffect			333
-#define MT_Experience			334
-#define MT_System				335
-#define MT_PetSpell				336
-#define MT_PetResponse			337
-#define MT_ItemSpeech			338
-#define MT_StrikeThrough		339
-#define MT_Stun					340
+namespace Chat {
+	const uint16 White       = 0;
+	const uint16 DimGray     = 1;
+	const uint16 Default     = 1;
+	const uint16 Green       = 2;
+	const uint16 BrightBlue  = 3;
+	const uint16 LightBlue   = 4;
+	const uint16 Magenta     = 5;
+	const uint16 Gray        = 6;
+	const uint16 LightGray   = 7;
+	const uint16 NPCQuestSay = 10;
+	const uint16 DarkGray    = 12;
+	const uint16 Red         = 13;
+	const uint16 Lime        = 14;
+	const uint16 Yellow      = 15;
+	const uint16 Blue        = 16;
+	const uint16 LightNavy   = 17;
+	const uint16 Cyan        = 18;
+	const uint16 Black       = 20;
 
-//Unused numbers are either White, Grey, or LightGrey. After 20, all are LightGrey until 256.
-enum ChatColor
-{
-	CC_Default					= 0, // Normal
-	CC_Grey						= 1, 
-	CC_Green					= 2, // Auction/OOC
-	CC_Blue						= 4, // Skills/Spells/Emote
-	CC_Purple					= 5, // Item Tags
-	CC_LightGrey				= 6, 
-	CC_Say						= 7,
-	CC_NPCQuestSay				= 10,
-	CC_DarkGray					= 12,
-	CC_Red						= 13, // Shout/Fizzles
-	CC_LightGreen				= 14, // Guild
-	CC_Yellow					= 15, // Spell Worn Off/Broadcast
-	CC_LightBlue				= 16, 
-	CC_LightNavy				= 17,
-	CC_Cyan						= 18, // Group/Raid
-	CC_Black					= 20,
-	CC_User_Say					= 256,
-	CC_User_Tell				= 257,
-	CC_User_Group				= 258,
-	CC_User_Guild				= 259,
-	CC_User_OOC					= 260,
-	CC_User_Auction				= 261,
-	CC_User_Shout				= 262,
-	CC_User_Emote				= 263,
-	CC_User_Spells				= 264,
-	CC_User_YouHitOther			= 265,
-	CC_User_OtherHitYou			= 266,
-	CC_User_YouMissOther		= 267,
-	CC_User_OtherMissYou		= 268,
-	CC_User_Duels				= 269,
-	CC_User_Skills				= 270,
-	CC_User_Disciplines			= 271,
-	CC_User_Default				= 273,
-	CC_User_MerchantOffer		= 275,
-	CC_User_MerchantExchange	= 276,
-	CC_User_YourDeath			= 277,
-	CC_User_OtherDeath			= 278,
-	CC_User_OtherHitOther		= 279,
-	CC_User_OtherMissOther		= 280,
-	CC_User_Who					= 281,
-	CC_User_Yell				= 282,
-	CC_User_NonMelee			= 283,
-	CC_User_SpellWornOff		= 284,
-	CC_User_MoneySplit			= 285,
-	CC_User_Loot				= 286,
-	CC_User_Random				= 287,
-	CC_User_OtherSpells			= 288,
-	CC_User_SpellFailure		= 289,
-	CC_User_ChatChannel			= 290,
-	CC_User_Chat1				= 291,
-	CC_User_Chat2				= 292,
-	CC_User_Chat3				= 293,
-	CC_User_Chat4				= 294,
-	CC_User_Chat5				= 295,
-	CC_User_Chat6				= 296,
-	CC_User_Chat7				= 297,
-	CC_User_Chat8				= 298,
-	CC_User_Chat9				= 299,
-	CC_User_Chat10				= 300,
-	CC_User_MeleeCrit			= 301,
-	CC_User_SpellCrit			= 302,
-	CC_User_TooFarAway			= 303,
-	CC_User_NPCRampage			= 304,
-	CC_User_NPCFurry			= 305,
-	CC_User_NPCEnrage			= 306,
-	CC_User_EchoSay				= 307,
-	CC_User_EchoTell			= 308,
-	CC_User_EchoGroup			= 309,
-	CC_User_EchoGuild			= 310,
-	CC_User_EchoOOC				= 311,
-	CC_User_EchoAuction			= 312,
-	CC_User_EchoShout			= 313,
-	CC_User_EchoEmote			= 314,
-	CC_User_EchoChat1			= 315,
-	CC_User_EchoChat2			= 316,
-	CC_User_EchoChat3			= 317,
-	CC_User_EchoChat4			= 318,
-	CC_User_EchoChat5			= 319,
-	CC_User_EchoChat6			= 320,
-	CC_User_EchoChat7			= 321,
-	CC_User_EchoChat8			= 322,
-	CC_User_EchoChat9			= 323,
-	CC_User_EchoChat10			= 324,
-	CC_User_UnusedAtThisTime	= 325, //Yellow
-	CC_User_ItemTags			= 326,
-	CC_User_RaidSay				= 327,
-	CC_User_MyPet				= 328,
-	CC_User_DamageShield		= 329,
+	/**
+	 * User colors
+	 */
+	const uint16 Say              = 256;
+	const uint16 Tell             = 257;
+	const uint16 Group            = 258;
+	const uint16 Guild            = 259;
+	const uint16 OOC              = 260;
+	const uint16 Auction          = 261;
+	const uint16 Shout            = 262;
+	const uint16 Emote            = 263;
+	const uint16 Spells           = 264;
+	const uint16 YouHitOther      = 265;
+	const uint16 OtherHitYou      = 266;
+	const uint16 YouMissOther     = 267;
+	const uint16 OtherMissYou     = 268;
+	const uint16 Broadcasts       = 269;
+	const uint16 Skills           = 270;
+	const uint16 Disciplines      = 271;
+	const uint16 Unused1          = 272;
+	const uint16 DefaultText      = 273;
+	const uint16 Unused2          = 274;
+	const uint16 MerchantOffer    = 275;
+	const uint16 MerchantExchange = 276;
+	const uint16 YourDeath        = 277;
+	const uint16 OtherDeath       = 278;
+	const uint16 OtherHitOther    = 279;
+	const uint16 OtherMissOther   = 280;
+	const uint16 Who              = 281;
+	const uint16 YellForHelp      = 282;
+	const uint16 NonMelee         = 283;
+	const uint16 SpellWornOff     = 284;
+	const uint16 MoneySplit       = 285;
+	const uint16 Loot             = 286;
+	const uint16 DiceRoll         = 287;
+	const uint16 OtherSpells      = 288;
+	const uint16 SpellFailure     = 289;
+	const uint16 ChatChannel      = 290;
+	const uint16 Chat1            = 291;
+	const uint16 Chat2            = 292;
+	const uint16 Chat3            = 293;
+	const uint16 Chat4            = 294;
+	const uint16 Chat5            = 295;
+	const uint16 Chat6            = 296;
+	const uint16 Chat7            = 297;
+	const uint16 Chat8            = 298;
+	const uint16 Chat9            = 299;
+	const uint16 Chat10           = 300;
+	const uint16 MeleeCrit        = 301;
+	const uint16 SpellCrit        = 302;
+	const uint16 TooFarAway       = 303;
+	const uint16 NPCRampage       = 304;
+	const uint16 NPCFlurry        = 305;
+	const uint16 NPCEnrage        = 306;
+	const uint16 EchoSay          = 307;
+	const uint16 EchoTell         = 308;
+	const uint16 EchoGroup        = 309;
+	const uint16 EchoGuild        = 310;
+	const uint16 EchoOOC          = 311;
+	const uint16 EchoAuction      = 312;
+	const uint16 EchoShout        = 313;
+	const uint16 EchoEmote        = 314;
+	const uint16 EchoChat1        = 315;
+	const uint16 EchoChat2        = 316;
+	const uint16 EchoChat3        = 317;
+	const uint16 EchoChat4        = 318;
+	const uint16 EchoChat5        = 319;
+	const uint16 EchoChat6        = 320;
+	const uint16 EchoChat7        = 321;
+	const uint16 EchoChat8        = 322;
+	const uint16 EchoChat9        = 323;
+	const uint16 EchoChat10       = 324;
+	const uint16 DotDamage        = 325;
+	const uint16 ItemLink         = 326;
+	const uint16 RaidSay          = 327;
+	const uint16 MyPet            = 328;
+	const uint16 DamageShield     = 329;
+	const uint16 LeaderShip       = 330;
+	const uint16 PetFlurry        = 331;
+	const uint16 PetCritical      = 332;
+	const uint16 FocusEffect      = 333;
+	const uint16 Experience       = 334;
+	const uint16 System           = 335;
+	const uint16 PetSpell         = 336;
+	const uint16 PetResponse      = 337;
+	const uint16 ItemSpeech       = 338;
+	const uint16 StrikeThrough    = 339;
+	const uint16 Stun             = 340;
 };
+
+namespace Zones {
+	constexpr uint16 QEYNOS        = 1; // South Qeynos
+	constexpr uint16 QEYNOS2       = 2; // North Qeynos
+	constexpr uint16 QRG           = 3; // The Surefall Glade
+	constexpr uint16 QEYTOQRG      = 4; // The Qeynos Hills
+	constexpr uint16 HIGHPASS      = 5; // Highpass Hold
+	constexpr uint16 HIGHKEEP      = 6; // High Keep
+	constexpr uint16 FREPORTN      = 8; // North Freeport
+	constexpr uint16 FREPORTW      = 9; // West Freeport
+	constexpr uint16 FREPORTE      = 10; // East Freeport
+	constexpr uint16 RUNNYEYE      = 11; // The Liberated Citadel of Runnyeye
+	constexpr uint16 QEY2HH1       = 12; // The Western Plains of Karana
+	constexpr uint16 NORTHKARANA   = 13; // The Northern Plains of Karana
+	constexpr uint16 SOUTHKARANA   = 14; // The Southern Plains of Karana
+	constexpr uint16 EASTKARANA    = 15; // Eastern Plains of Karana
+	constexpr uint16 BEHOLDER      = 16; // Gorge of King Xorbb
+	constexpr uint16 BLACKBURROW   = 17; // Blackburrow
+	constexpr uint16 PAW           = 18; // The Lair of the Splitpaw
+	constexpr uint16 RIVERVALE     = 19; // Rivervale
+	constexpr uint16 KITHICOR      = 20; // Kithicor Forest
+	constexpr uint16 COMMONS       = 21; // West Commonlands
+	constexpr uint16 ECOMMONS      = 22; // East Commonlands
+	constexpr uint16 ERUDNINT      = 23; // The Erudin Palace
+	constexpr uint16 ERUDNEXT      = 24; // Erudin
+	constexpr uint16 NEKTULOS      = 25; // The Nektulos Forest
+	constexpr uint16 CSHOME        = 26; // Sunset Home
+	constexpr uint16 LAVASTORM     = 27; // The Lavastorm Mountains
+	constexpr uint16 NEKTROPOS     = 28; // Nektropos
+	constexpr uint16 HALAS         = 29; // Halas
+	constexpr uint16 EVERFROST     = 30; // Everfrost Peaks
+	constexpr uint16 SOLDUNGA      = 31; // Solusek's Eye
+	constexpr uint16 SOLDUNGB      = 32; // Nagafen's Lair
+	constexpr uint16 MISTY         = 33; // Misty Thicket
+	constexpr uint16 NRO           = 34; // Northern Desert of Ro
+	constexpr uint16 SRO           = 35; // Southern Desert of Ro
+	constexpr uint16 BEFALLEN      = 36; // Befallen
+	constexpr uint16 OASIS         = 37; // Oasis of Marr
+	constexpr uint16 TOX           = 38; // Toxxulia Forest
+	constexpr uint16 HOLE          = 39; // The Hole
+	constexpr uint16 NERIAKA       = 40; // Neriak - Foreign Quarter
+	constexpr uint16 NERIAKB       = 41; // Neriak - Commons
+	constexpr uint16 NERIAKC       = 42; // Neriak - 3rd Gate
+	constexpr uint16 NERIAKD       = 43; // Neriak Palace
+	constexpr uint16 NAJENA        = 44; // Najena
+	constexpr uint16 QCAT          = 45; // The Qeynos Aqueduct System
+	constexpr uint16 INNOTHULE     = 46; // Innothule Swamp
+	constexpr uint16 FEERROTT      = 47; // The Feerrott
+	constexpr uint16 CAZICTHULE    = 48; // Accursed Temple of CazicThule
+	constexpr uint16 OGGOK         = 49; // Oggok
+	constexpr uint16 RATHEMTN      = 50; // The Rathe Mountains
+	constexpr uint16 LAKERATHE     = 51; // Lake Rathetear
+	constexpr uint16 GROBB         = 52; // Grobb
+	constexpr uint16 AVIAK         = 53; // Aviak Village
+	constexpr uint16 GFAYDARK      = 54; // The Greater Faydark
+	constexpr uint16 AKANON        = 55; // Ak'Anon
+	constexpr uint16 STEAMFONT     = 56; // Steamfont Mountains
+	constexpr uint16 LFAYDARK      = 57; // The Lesser Faydark
+	constexpr uint16 CRUSHBONE     = 58; // Crushbone
+	constexpr uint16 MISTMOORE     = 59; // The Castle of Mistmoore
+	constexpr uint16 KALADIMA      = 60; // South Kaladim
+	constexpr uint16 FELWITHEA     = 61; // Northern Felwithe
+	constexpr uint16 FELWITHEB     = 62; // Southern Felwithe
+	constexpr uint16 UNREST        = 63; // The Estate of Unrest
+	constexpr uint16 KEDGE         = 64; // Kedge Keep
+	constexpr uint16 GUKTOP        = 65; // The City of Guk
+	constexpr uint16 GUKBOTTOM     = 66; // The Ruins of Old Guk
+	constexpr uint16 KALADIMB      = 67; // North Kaladim
+	constexpr uint16 BUTCHER       = 68; // Butcherblock Mountains
+	constexpr uint16 OOT           = 69; // Ocean of Tears
+	constexpr uint16 CAULDRON      = 70; // Dagnor's Cauldron
+	constexpr uint16 AIRPLANE      = 71; // The Plane of Sky
+	constexpr uint16 FEARPLANE     = 72; // The Plane of Fear
+	constexpr uint16 PERMAFROST    = 73; // The Permafrost Caverns
+	constexpr uint16 KERRARIDGE    = 74; // Kerra Isle
+	constexpr uint16 PAINEEL       = 75; // Paineel
+	constexpr uint16 HATEPLANE     = 76; // Plane of Hate
+	constexpr uint16 ARENA         = 77; // The Arena
+	constexpr uint16 FIELDOFBONE   = 78; // The Field of Bone
+	constexpr uint16 WARSLIKSWOOD  = 79; // The Warsliks Woods
+	constexpr uint16 SOLTEMPLE     = 80; // The Temple of Solusek Ro
+	constexpr uint16 DROGA         = 81; // The Temple of Droga
+	constexpr uint16 CABWEST       = 82; // Cabilis West
+	constexpr uint16 SWAMPOFNOHOPE = 83; // The Swamp of No Hope
+	constexpr uint16 FIRIONA       = 84; // Firiona Vie
+	constexpr uint16 LAKEOFILLOMEN = 85; // Lake of Ill Omen
+	constexpr uint16 DREADLANDS    = 86; // The Dreadlands
+	constexpr uint16 BURNINGWOOD   = 87; // The Burning Wood
+	constexpr uint16 KAESORA       = 88; // Kaesora
+	constexpr uint16 SEBILIS       = 89; // The Ruins of Sebilis
+	constexpr uint16 CITYMIST      = 90; // The City of Mist
+	constexpr uint16 SKYFIRE       = 91; // The Skyfire Mountains
+	constexpr uint16 FRONTIERMTNS  = 92; // Frontier Mountains
+	constexpr uint16 OVERTHERE     = 93; // The Overthere
+	constexpr uint16 EMERALDJUNGLE = 94; // The Emerald Jungle
+	constexpr uint16 TRAKANON      = 95; // Trakanon's Teeth
+	constexpr uint16 TIMOROUS      = 96; // Timorous Deep
+	constexpr uint16 KURN          = 97; // Kurn's Tower
+	constexpr uint16 ERUDSXING     = 98; // Erud's Crossing
+	constexpr uint16 STONEBRUNT    = 100; // The Stonebrunt Mountains
+	constexpr uint16 WARRENS       = 101; // The Warrens
+	constexpr uint16 KARNOR        = 102; // Karnor's Castle
+	constexpr uint16 CHARDOK       = 103; // Chardok
+	constexpr uint16 DALNIR        = 104; // The Crypt of Dalnir
+	constexpr uint16 CHARASIS      = 105; // The Howling Stones
+	constexpr uint16 CABEAST       = 106; // Cabilis East
+	constexpr uint16 NURGA         = 107; // The Mines of Nurga
+	constexpr uint16 VEESHAN       = 108; // Veeshan's Peak
+	constexpr uint16 VEKSAR        = 109; // Veksar
+	constexpr uint16 ICECLAD       = 110; // The Iceclad Ocean
+	constexpr uint16 FROZENSHADOW  = 111; // The Tower of Frozen Shadow
+	constexpr uint16 VELKETOR      = 112; // Velketor's Labyrinth
+	constexpr uint16 KAEL          = 113; // Kael Drakkel
+	constexpr uint16 SKYSHRINE     = 114; // Skyshrine
+	constexpr uint16 THURGADINA    = 115; // The City of Thurgadin
+	constexpr uint16 EASTWASTES    = 116; // Eastern Wastes
+	constexpr uint16 COBALTSCAR    = 117; // Cobaltscar
+	constexpr uint16 GREATDIVIDE   = 118; // The Great Divide
+	constexpr uint16 WAKENING      = 119; // The Wakening Land
+	constexpr uint16 WESTWASTES    = 120; // The Western Wastes
+	constexpr uint16 CRYSTAL       = 121; // The Crystal Caverns
+	constexpr uint16 NECROPOLIS    = 123; // Dragon Necropolis
+	constexpr uint16 TEMPLEVEESHAN = 124; // The Temple of Veeshan
+	constexpr uint16 SIRENS        = 125; // Siren's Grotto
+	constexpr uint16 MISCHIEFPLANE = 126; // The Plane of Mischief
+	constexpr uint16 GROWTHPLANE   = 127; // The Plane of Growth
+	constexpr uint16 SLEEPER       = 128; // The Sleeper's Tomb
+	constexpr uint16 THURGADINB    = 129; // Icewell Keep
+	constexpr uint16 ERUDSXING2    = 130; // Marauders Mire
+	constexpr uint16 SHADOWHAVEN   = 150; // Shadow Haven
+	constexpr uint16 BAZAAR        = 151; // The Bazaar
+	constexpr uint16 NEXUS         = 152; // Nexus
+	constexpr uint16 ECHO_         = 153; // The Echo Caverns
+	constexpr uint16 ACRYLIA       = 154; // The Acrylia Caverns
+	constexpr uint16 SHARVAHL      = 155; // The City of Shar Vahl
+	constexpr uint16 PALUDAL       = 156; // The Paludal Caverns
+	constexpr uint16 FUNGUSGROVE   = 157; // The Fungus Grove
+	constexpr uint16 VEXTHAL       = 158; // Vex Thal
+	constexpr uint16 SSERU         = 159; // Sanctus Seru
+	constexpr uint16 KATTA         = 160; // Katta Castellum
+	constexpr uint16 NETHERBIAN    = 161; // Netherbian Lair
+	constexpr uint16 SSRATEMPLE    = 162; // Ssraeshza Temple
+	constexpr uint16 GRIEGSEND     = 163; // Grieg's End
+	constexpr uint16 THEDEEP       = 164; // The Deep
+	constexpr uint16 SHADEWEAVER   = 165; // Shadeweaver's Thicket
+	constexpr uint16 HOLLOWSHADE   = 166; // Hollowshade Moor
+	constexpr uint16 GRIMLING      = 167; // Grimling Forest
+	constexpr uint16 MSERU         = 168; // Marus Seru
+	constexpr uint16 LETALIS       = 169; // Mons Letalis
+	constexpr uint16 TWILIGHT      = 170; // The Twilight Sea
+	constexpr uint16 THEGREY       = 171; // The Grey
+	constexpr uint16 TENEBROUS     = 172; // The Tenebrous Mountains
+	constexpr uint16 MAIDEN        = 173; // The Maiden's Eye
+	constexpr uint16 DAWNSHROUD    = 174; // The Dawnshroud Peaks
+	constexpr uint16 SCARLET       = 175; // The Scarlet Desert
+	constexpr uint16 UMBRAL        = 176; // The Umbral Plains
+	constexpr uint16 AKHEVA        = 179; // The Akheva Ruins
+	constexpr uint16 ARENA2        = 180; // The Arena Two
+	constexpr uint16 JAGGEDPINE    = 181; // The Jaggedpine Forest
+	constexpr uint16 NEDARIA       = 182; // Nedaria's Landing
+	constexpr uint16 TUTORIAL      = 183; // EverQuest Tutorial
+	constexpr uint16 LOAD          = 184; // Loading Zone
+	constexpr uint16 LOAD2         = 185; // New Loading Zone
+	constexpr uint16 HATEPLANEB    = 186; // The Plane of Hate
+	constexpr uint16 SHADOWREST    = 187; // Shadowrest
+	constexpr uint16 TUTORIALA     = 188; // The Mines of Gloomingdeep
+	constexpr uint16 TUTORIALB     = 189; // The Mines of Gloomingdeep
+	constexpr uint16 CLZ           = 190; // Loading
+	constexpr uint16 CODECAY       = 200; // The Crypt of Decay
+	constexpr uint16 POJUSTICE     = 201; // The Plane of Justice
+	constexpr uint16 POKNOWLEDGE   = 202; // The Plane of Knowledge
+	constexpr uint16 POTRANQUILITY = 203; // The Plane of Tranquility
+	constexpr uint16 PONIGHTMARE   = 204; // The Plane of Nightmares
+	constexpr uint16 PODISEASE     = 205; // The Plane of Disease
+	constexpr uint16 POINNOVATION  = 206; // The Plane of Innovation
+	constexpr uint16 POTORMENT     = 207; // Torment, the Plane of Pain
+	constexpr uint16 POVALOR       = 208; // The Plane of Valor
+	constexpr uint16 BOTHUNDER     = 209; // Bastion of Thunder
+	constexpr uint16 POSTORMS      = 210; // The Plane of Storms
+	constexpr uint16 HOHONORA      = 211; // The Halls of Honor
+	constexpr uint16 SOLROTOWER    = 212; // The Tower of Solusek Ro
+	constexpr uint16 POWAR         = 213; // Plane of War
+	constexpr uint16 POTACTICS     = 214; // Drunder, the Fortress of Zek
+	constexpr uint16 POAIR         = 215; // The Plane of Air
+	constexpr uint16 POWATER       = 216; // The Plane of Water
+	constexpr uint16 POFIRE        = 217; // The Plane of Fire
+	constexpr uint16 POEARTHA      = 218; // The Plane of Earth
+	constexpr uint16 POTIMEA       = 219; // The Plane of Time
+	constexpr uint16 HOHONORB      = 220; // The Temple of Marr
+	constexpr uint16 NIGHTMAREB    = 221; // The Lair of Terris Thule
+	constexpr uint16 POEARTHB      = 222; // The Plane of Earth
+	constexpr uint16 POTIMEB       = 223; // The Plane of Time
+}
+
 
 //ZoneChange_Struct->success values
 enum ZoningMessage : int8
@@ -492,196 +614,6 @@ namespace EQ
 	} // namespace legacy
 
 }
-
-
-enum Zones
-{
-	qeynos=1,
-	qeynos2=2,
-	qrg=3,
-	qeytoqrg=4,
-	highpass=5,
-	highkeep=6,
-	freportn=8,
-	freportw=9,
-	freporte=10,
-	runnyeye=11,
-	qey2hh1=12,
-	northkarana=13,
-	southkarana=14,
-	eastkarana=15,
-	beholder=16,
-	blackburrow=17,
-	paw=18,
-	rivervale=19,
-	kithicor=20,
-	commons=21,
-	ecommons=22,
-	erudnint=23,
-	erudnext=24,
-	nektulos=25,
-	cshome=26,
-	lavastorm=27,
-	nektropos=28,
-	halas=29,
-	everfrost=30,
-	soldunga=31,
-	soldungb=32,
-	misty=33,
-	nro=34,
-	sro=35,
-	befallen=36,
-	oasis=37,
-	tox=38,
-	hole=39,
-	neriaka=40,
-	neriakb=41,
-	neriakc=42,
-	neriakd=43,
-	najena=44,
-	qcat=45,
-	innothule=46,
-	feerrott=47,
-	cazicthule=48,
-	oggok=49,
-	rathemtn=50,
-	lakerathe=51,
-	grobb=52,
-	aviak=53,
-	gfaydark=54,
-	akanon=55,
-	steamfont=56,
-	lfaydark=57,
-	crushbone=58,
-	mistmoore=59,
-	kaladima=60,
-	felwithea=61,
-	felwitheb=62,
-	unrest=63,
-	kedge=64,
-	guktop=65,
-	gukbottom=66,
-	kaladimb=67,
-	butcher=68,
-	oot=69,
-	cauldron=70,
-	airplane=71,
-	fearplane=72,
-	permafrost=73,
-	kerraridge=74,
-	paineel=75,
-	hateplane=76,
-	arena=77,
-	fieldofbone=78,
-	warslikswood=79,
-	soltemple=80,
-	droga=81,
-	cabwest=82,
-	swampofnohope=83,
-	firiona=84,
-	lakeofillomen=85,
-	dreadlands=86,
-	burningwood=87,
-	kaesora=88,
-	sebilis=89,
-	citymist=90,
-	skyfire=91,
-	frontiermtns=92,
-	overthere=93,
-	emeraldjungle=94,
-	trakanon=95,
-	timorous=96,
-	kurn=97,
-	erudsxing=98,
-	stonebrunt=100,
-	warrens=101,
-	karnor=102,
-	chardok=103,
-	dalnir=104,
-	charasis=105,
-	cabeast=106,
-	nurga=107,
-	veeshan=108,
-	veksar=109,
-	iceclad=110,
-	frozenshadow=111,
-	velketor=112,
-	kael=113,
-	skyshrine=114,
-	thurgadina=115,
-	eastwastes=116,
-	cobaltscar=117,
-	greatdivide=118,
-	wakening=119,
-	westwastes=120,
-	crystal=121,
-	necropolis=123,
-	templeveeshan=124,
-	sirens=125,
-	mischiefplane=126,
-	growthplane=127,
-	sleeper=128,
-	thurgadinb=129,
-	erudsxing2=130,
-	shadowhaven=150,
-	bazaar=151,
-	nexus=152,
-	echo=153,
-	acrylia=154,
-	sharvahl=155,
-	paludal=156,
-	fungusgrove=157,
-	vexthal=158,
-	sseru=159,
-	katta=160,
-	netherbian=161,
-	ssratemple=162,
-	griegsend=163,
-	thedeep=164,
-	shadeweaver=165,
-	hollowshade=166,
-	grimling=167,
-	mseru=168,
-	letalis=169,
-	twilight=170,
-	thegrey=171,
-	tenebrous=172,
-	maiden=173,
-	dawnshroud=174,
-	scarlet=175,
-	umbral=176,
-	akheva=179,
-	arena2=180,
-	jaggedpine=181,
-	tutorial = 183,
-	load=184,
-	load2=185,
-	clz=190,
-	codecay=200,
-	pojustice=201,
-	poknowledge=202,
-	potranquility=203,
-	ponightmare=204,
-	podisease=205,
-	poinnovation=206,
-	potorment=207,
-	povalor=208,
-	bothunder=209,
-	postorms=210,
-	hohonora=211,
-	solrotower=212,
-	powar=213,
-	potactics=214,
-	poair=215,
-	powater=216,
-	pofire=217,
-	poeartha=218,
-	potimea=219,
-	hohonorb=220,
-	nightmareb=221,
-	poearthb=222,
-	potimeb=223,
-};
 
 //These are NPCIDs in the database. All of these boats send a BoardBoat opcode when boarded.
 enum Boats

@@ -9,7 +9,7 @@ void command_unmemspell(Client *c, const Seperator *sep){
 		t = c->GetTarget()->CastToClient();
 
 	if (!sep->arg[1][0]) {
-		c->Message(CC_Default, "FORMAT: #unmemspell <spellid>");
+		c->Message(Chat::White, "FORMAT: #unmemspell <spellid>");
 		return;
 	}
 
@@ -21,18 +21,18 @@ void command_unmemspell(Client *c, const Seperator *sep){
 		if (mem_slot >= 0) {
 			t->UnmemSpell(mem_slot);
 
-			t->Message(CC_Default, "Unmemming spell: %s (%i) from gembar.", spells[spell_id].name, spell_id);
+			t->Message(Chat::White, "Unmemming spell: %s (%i) from gembar.", spells[spell_id].name, spell_id);
 
 			if (t != c)
-				c->Message(CC_Default, "Unmemming spell: %s (%i) for %s.", spells[spell_id].name, spell_id, t->GetName());
+				c->Message(Chat::White, "Unmemming spell: %s (%i) for %s.", spells[spell_id].name, spell_id, t->GetName());
 
 			Log(Logs::Detail, Logs::Normal, "Unmem spell: %s (%i) request for %s from %s.", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
 		}
 		else {
-			t->Message(CC_Red, "Unable to unmemspell spell: %s (%i) from your gembar. This spell is not memmed.", spells[spell_id].name, spell_id);
+			t->Message(Chat::Red, "Unable to unmemspell spell: %s (%i) from your gembar. This spell is not memmed.", spells[spell_id].name, spell_id);
 
 			if (t != c)
-				c->Message(CC_Red, "Unable to unmemspell spell: %s (%i) for %s due to spell not memmed.", spells[spell_id].name, spell_id, t->GetName());
+				c->Message(Chat::Red, "Unable to unmemspell spell: %s (%i) for %s due to spell not memmed.", spells[spell_id].name, spell_id, t->GetName());
 		}
 	}
 }

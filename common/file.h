@@ -21,10 +21,18 @@
 #ifndef EQEMU_FILE_H
 #define EQEMU_FILE_H
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 class File {
 public:
 	static bool Exists(const std::string &name);
 	static void Makedir(const std::string &directory_name);
+	static std::string FindEqemuConfigPath();
+	static std::string GetCwd();
 };
+
+bool Exists(const std::string &name);
 
 #endif //EQEMU_FILE_H

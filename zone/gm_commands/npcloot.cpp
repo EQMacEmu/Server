@@ -3,7 +3,7 @@
 
 void command_npcloot(Client *c, const Seperator *sep){
 	if (c->GetTarget() == 0)
-		c->Message(CC_Default, "Error: No target");
+		c->Message(Chat::White, "Error: No target");
 	// #npcloot show
 	else if (strcasecmp(sep->arg[1], "show") == 0)
 	{
@@ -14,7 +14,7 @@ void command_npcloot(Client *c, const Seperator *sep){
 	}
 	// These 2 types are *BAD* for the next few commands
 	else if (c->GetTarget()->IsClient() || c->GetTarget()->IsCorpse())
-		c->Message(CC_Default, "Error: Invalid target type, try a NPC =).");
+		c->Message(Chat::White, "Error: Invalid target type, try a NPC =).");
 	// #npcloot add
 	else if (strcasecmp(sep->arg[1], "add") == 0)
 	{
@@ -41,15 +41,15 @@ void command_npcloot(Client *c, const Seperator *sep){
 					else
 						c->GetTarget()->CastToNPC()->AddItem(item, 1, !quest, quest);
 				}
-				c->Message(CC_Default, "Added item(%i) to %s's loot.", item, c->GetTarget()->GetCleanName());
+				c->Message(Chat::White, "Added item(%i) to %s's loot.", item, c->GetTarget()->GetCleanName());
 			}
 			else
-				c->Message(CC_Default, "Error: #npcloot add: Item(%i) does not exist!", item);
+				c->Message(Chat::White, "Error: #npcloot add: Item(%i) does not exist!", item);
 		}
 		else if (!sep->IsNumber(2))
-			c->Message(CC_Default, "Error: #npcloot add: Itemid must be a number.");
+			c->Message(Chat::White, "Error: #npcloot add: Itemid must be a number.");
 		else
-			c->Message(CC_Default, "Error: #npcloot add: This is not a valid target.");
+			c->Message(Chat::White, "Error: #npcloot add: This is not a valid target.");
 	}
 	// #npcloot remove
 	else if (strcasecmp(sep->arg[1], "remove") == 0)
@@ -59,7 +59,7 @@ void command_npcloot(Client *c, const Seperator *sep){
 		{
 			c->GetTarget()->CastToNPC()->ClearLootItems();
 			c->GetTarget()->CastToNPC()->RemoveLootCash();
-			c->Message(CC_Default, "Removed all loot from %s.", c->GetTarget()->GetCleanName());
+			c->Message(Chat::White, "Removed all loot from %s.", c->GetTarget()->GetCleanName());
 		}
 		//#npcloot remove itemid
 		else
@@ -73,13 +73,13 @@ void command_npcloot(Client *c, const Seperator *sep){
 				{
 					LootItem* sitem = npc->GetItemByID(item);
 					npc->RemoveItem(sitem);
-					c->Message(CC_Default, "Removed item(%i) from %s's loot.", item, npc->GetCleanName());
+					c->Message(Chat::White, "Removed item(%i) from %s's loot.", item, npc->GetCleanName());
 				}
 			}
 			else if (!sep->IsNumber(2))
-				c->Message(CC_Default, "Error: #npcloot remove: Item must be a number.");
+				c->Message(Chat::White, "Error: #npcloot remove: Item must be a number.");
 			else
-				c->Message(CC_Default, "Error: #npcloot remove: This is not a valid target.");
+				c->Message(Chat::White, "Error: #npcloot remove: This is not a valid target.");
 		}
 	}
 	// #npcloot money
@@ -90,15 +90,15 @@ void command_npcloot(Client *c, const Seperator *sep){
 			if ((atoi(sep->arg[2]) < 34465 && atoi(sep->arg[2]) >= 0) && (atoi(sep->arg[3]) < 34465 && atoi(sep->arg[3]) >= 0) && (atoi(sep->arg[4]) < 34465 && atoi(sep->arg[4]) >= 0) && (atoi(sep->arg[5]) < 34465 && atoi(sep->arg[5]) >= 0))
 			{
 				c->GetTarget()->CastToNPC()->AddLootCash(atoi(sep->arg[5]), atoi(sep->arg[4]), atoi(sep->arg[3]), atoi(sep->arg[2]));
-				c->Message(CC_Default, "Set %i Platinum, %i Gold, %i Silver, and %i Copper as %s's money.", atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), atoi(sep->arg[5]), c->GetTarget()->GetName());
+				c->Message(Chat::White, "Set %i Platinum, %i Gold, %i Silver, and %i Copper as %s's money.", atoi(sep->arg[2]), atoi(sep->arg[3]), atoi(sep->arg[4]), atoi(sep->arg[5]), c->GetTarget()->GetName());
 			}
 			else
-				c->Message(CC_Default, "Error: #npcloot money: Values must be between 0-34465.");
+				c->Message(Chat::White, "Error: #npcloot money: Values must be between 0-34465.");
 		}
 		else
-			c->Message(CC_Default, "Usage: #npcloot money platinum gold silver copper");
+			c->Message(Chat::White, "Usage: #npcloot money platinum gold silver copper");
 	}
 	else
-		c->Message(CC_Default, "Usage: #npcloot [show/money/add/remove] [itemid/all/money: pp gp sp cp] [quantity] [quest]");
+		c->Message(Chat::White, "Usage: #npcloot [show/money/add/remove] [itemid/all/money: pp gp sp cp] [quantity] [quest]");
 }
 

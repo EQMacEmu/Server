@@ -8,7 +8,7 @@ void command_guildcreate(Client *c, const Seperator *sep){
 	}
 	else
 	{
-		c->Message(CC_Default, "Guild name must be more than 4 characters and less than 16.");
+		c->Message(Chat::White, "Guild name must be more than 4 characters and less than 16.");
 	}
 }
 

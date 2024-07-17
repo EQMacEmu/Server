@@ -379,7 +379,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	reface_timer = new Timer(15000);
 	reface_timer->Disable();
 	qGlobals = nullptr;
-	SetEmoteID(npc_type_data->emoteid);
+	SetEmoteID(static_cast<uint32>(npc_type_data->emoteid));
 	if (npc_type_data->walkspeed > 0.0f)
 		SetWalkSpeed(npc_type_data->walkspeed);
 	SetCombatHPRegen(npc_type_data->combat_hp_regen);
@@ -646,9 +646,10 @@ void NPC::UpdateEquipmentLight()
 }
 
 void NPC::Depop(bool StartSpawnTimer) {
-	uint16 emoteid = this->GetEmoteID();
-	if(emoteid != 0)
-		this->DoNPCEmote(ONDESPAWN,emoteid);
+	uint32 emoteid = this->GetEmoteID();
+	if (emoteid != 0) {
+		this->DoNPCEmote(EQ::constants::EmoteEventTypes::OnDespawn, emoteid);
+	}
 	p_depop = true;
 	if (StartSpawnTimer) {
 		if (respawn2 != 0) {
@@ -943,18 +944,18 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 
 		if (client) {
 			// Notify client of spawn data
-			client->Message(CC_Default, "New spawn:");
-			client->Message(CC_Default, "Name: %s", npc->name);
-			client->Message(CC_Default, "Race: %u", npc->race);
-			client->Message(CC_Default, "Level: %u", npc->level);
-			client->Message(CC_Default, "Material: %u", npc->texture);
-			client->Message(CC_Default, "Current/Max HP: %i", npc->max_hp);
-			client->Message(CC_Default, "Gender: %u", npc->gender);
-			client->Message(CC_Default, "Class: %u", npc->class_);
-			client->Message(CC_Default, "Weapon Item Number: %u/%u", npc->d_melee_texture1, npc->d_melee_texture2);
-			client->Message(CC_Default, "MerchantID: %u", npc->MerchantType);
-			client->Message(CC_Default, "Bodytype: %u", npc->bodytype);
-			client->Message(CC_Default, "EntityID: %u", npc->GetID());
+			client->Message(Chat::White, "New spawn:");
+			client->Message(Chat::White, "Name: %s", npc->name);
+			client->Message(Chat::White, "Race: %u", npc->race);
+			client->Message(Chat::White, "Level: %u", npc->level);
+			client->Message(Chat::White, "Material: %u", npc->texture);
+			client->Message(Chat::White, "Current/Max HP: %i", npc->max_hp);
+			client->Message(Chat::White, "Gender: %u", npc->gender);
+			client->Message(Chat::White, "Class: %u", npc->class_);
+			client->Message(Chat::White, "Weapon Item Number: %u/%u", npc->d_melee_texture1, npc->d_melee_texture2);
+			client->Message(Chat::White, "MerchantID: %u", npc->MerchantType);
+			client->Message(Chat::White, "Bodytype: %u", npc->bodytype);
+			client->Message(Chat::White, "EntityID: %u", npc->GetID());
 		}
 
 		return npc;
@@ -1221,7 +1222,7 @@ uint32 ZoneDatabase::AddNPCTypes(const char* zone, Client *client, NPC* spawn, u
     npc_type_id = results.LastInsertedID();
 
 	if(client)
-        client->Message(CC_Default, "%s npc_type ID %i created successfully!", numberlessName, npc_type_id);
+        client->Message(Chat::White, "%s npc_type ID %i created successfully!", numberlessName, npc_type_id);
 
 	return 1;
 }
@@ -1281,7 +1282,7 @@ void NPC::PickPocket(Client* thief)
 	{
 		if(olevel > 45) 
 		{
-			thief->Message_StringID(CC_User_Skills, STEAL_OUTSIDE_LEVEL);
+			thief->Message_StringID(Chat::Skills, STEAL_OUTSIDE_LEVEL);
 			thief->SendPickPocketResponse(this, 0, PickPocketFailed, 0, nullptr, true);
 			return;
 		}
@@ -1395,7 +1396,7 @@ void NPC::PickPocket(Client* thief)
 		}
 		else
 		{
-			thief->Message(CC_Default, "This target's pockets are empty.");
+			thief->Message(Chat::White, "This target's pockets are empty.");
 			thief->SendPickPocketResponse(this, 0, PickPocketFailed);
 		}
 	}
@@ -1827,43 +1828,36 @@ void NPC::SignalNPC(int _signal_id, const char* data)
 	signal_strq.push_back(data ? data : "");
 }
 
-NPC_Emote_Struct* NPC::GetNPCEmote(uint16 emoteid, uint8 event_) 
+NPC_Emote_Struct* NPC::GetNPCEmote(uint32 emoteid, uint8 event_)
 {
 	std::vector<NPC_Emote_Struct*> Emotes;
-	for (auto &i : zone->NPCEmoteList)
-	{
+	for (auto &i : zone->npc_emote_list) {
 		NPC_Emote_Struct* nes = i;
-		if (emoteid == nes->emoteid && event_ == nes->event_) 
-		{
+		if (emoteid == nes->emoteid && event_ == nes->event_) {
 			Emotes.push_back(i);
 		}
 	}
 
-	if (Emotes.size() == 0)
-	{
+	if (Emotes.size() == 0)	{
 		return nullptr;
 	}
-	else if (Emotes.size() == 1)
-	{
+	else if (Emotes.size() == 1)	{
 		return Emotes[0];
 	}
-	else
-	{
+	else {
 		int index = zone->random.Roll0(Emotes.size());
 		return Emotes[index];
 	}
 }
 
-void NPC::DoNPCEmote(uint8 event_, uint16 emoteid, Mob* target)
+void NPC::DoNPCEmote(uint8 event_, uint32 emoteid, Mob* target)
 {
-	if(this == nullptr || emoteid == 0)
-	{
+	if(this == nullptr || emoteid == 0) {
 		return;
 	}
 
 	NPC_Emote_Struct* nes = GetNPCEmote(emoteid,event_);
-	if(nes == nullptr)
-	{
+	if(nes == nullptr) {
 		return;
 	}
 
@@ -1872,44 +1866,43 @@ void NPC::DoNPCEmote(uint8 event_, uint16 emoteid, Mob* target)
 	Strings::FindReplace(processed, "$mracep", GetRaceIDNamePlural(GetRace()));
 	Strings::FindReplace(processed, "$mrace", GetRaceIDName(GetRace()));
 	Strings::FindReplace(processed, "$mclass", GetClassIDName(GetClass()));
-	if (target)
-	{
+	if (target) {
 		Strings::FindReplace(processed, "$name", target->GetCleanName());
 		Strings::FindReplace(processed, "$racep", GetRaceIDNamePlural(target->GetRace()));
 		Strings::FindReplace(processed, "$race", GetRaceIDName(target->GetRace()));
 		Strings::FindReplace(processed, "$class", GetClassIDName(target->GetClass()));
 	}
-	else
-	{
+	else {
 		Strings::FindReplace(processed, "$name", "foe");
 		Strings::FindReplace(processed, "$racep", "races");
 		Strings::FindReplace(processed, "$race", "race");
 		Strings::FindReplace(processed, "$class", "class");
 	}
 
-	if(emoteid == nes->emoteid)
-	{
-		if (event_ == HAILED && target)
-		{
+	if(emoteid == nes->emoteid) {
+		if (event_ == EQ::constants::EmoteEventTypes::Hailed && target) {
 			DoQuestPause(target);
 		}
 
-		if(nes->type == 1)
+		if (nes->type == 1) {
 			this->Emote("%s", processed.c_str());
-		else if(nes->type == 2)
+		}
+		else if (nes->type == 2) {
 			this->Shout("%s", processed.c_str());
-		else if(nes->type == 3)
+		}
+		else if (nes->type == 3) {
 			entity_list.MessageClose_StringID(this, true, 200, 10, GENERIC_STRING, processed.c_str());
-		else
+		}
+		else {
 			this->Say("%s", processed.c_str());
+		}
 	}
 
 	// emoteid 1 ENTERCOMBAT event is special and we do the faction emote if the NPC proximity aggros or assist aggros on a client. (i.e. not 
 	// directly aggroed with an attack from outside aggro range)  After mid-Luclin, the only NPCs to do the secdonary faction emotes were 
 	// NPCs that did the "Time to die $name." + "my comrades will avenge my death." emotes.  Prior to that a lot of NPCs did them including
 	// lizardmen, gnolls, goblins, kobolds etc.
-	if (emoteid == 1 && event_ == 1 && target && target->IsClient() && GetHateAmount(target, false) == 20 && GetDamageAmount(target) == 0)
-	{
+	if (emoteid == 1 && event_ == 1 && target && target->IsClient() && GetHateAmount(target, false) == 20 && GetDamageAmount(target) == 0) {
 		DoFactionEmote();
 	}
 }
@@ -2506,7 +2499,7 @@ float NPC::ApplyPushVector(bool noglance)
 				hitDistance, newLoc.x, newLoc.y, newLoc.z, hitLocation.x, hitLocation.y, hitLocation.z, magnitude);
 		}*/
 	}
-	if ((wall_normal1_x || wall_normal1_y) && (wall_normal2_x || wall_normal2_y) && GetZoneID() != powater)
+	if ((wall_normal1_x || wall_normal1_y) && (wall_normal2_x || wall_normal2_y) && GetZoneID() != Zones::POWATER)
 	{
 		// NPC is touching two walls
 		float angle = wall_normal1_x * wall_normal2_x + wall_normal1_y * wall_normal2_y;
@@ -2542,27 +2535,28 @@ bool NPC::IsBoat()
 void NPC::ShowQuickStats(Client* c)
 {
 	//This is just #npcstats, but accessible using #showstats 1
-	c->Message(CC_Default, "NPC Stats:");
-	c->Message(CC_Default, "Name: %s  NpcID: %u EntityID: %i", GetName(), GetNPCTypeID(), GetID());
-	c->Message(CC_Default, "Race: %i  Level: %i  Class: %i  Material: %i", GetRace(), GetLevel(), GetClass(), GetTexture());
-	c->Message(CC_Default, "Current HP: %i  Max HP: %i Per: %0.2f", GetHP(), GetMaxHP(), GetHPRatio());
-	c->Message(CC_Default, "Gender: %i  Size: %f  Bodytype: %d", GetGender(), GetSize(), GetBodyType());
-	c->Message(CC_Default, "Runspeed: %f  Walkspeed: %f FlyMode: %d", GetRunspeed(), GetWalkspeed(), GetFlyMode());
-	c->Message(CC_Default, "Spawn Group: %i  Grid: %i", GetSp2(), GetGrid());
-	c->Message(CC_Default, "EmoteID: %i", GetEmoteID());
+	c->Message(Chat::White, "NPC Stats:");
+	c->Message(Chat::White, "Name: %s  NpcID: %u EntityID: %i", GetName(), GetNPCTypeID(), GetID());
+	c->Message(Chat::White, "Race: %i  Level: %i  Class: %i  Material: %i", GetRace(), GetLevel(), GetClass(), GetTexture());
+	c->Message(Chat::White, "Current HP: %i  Max HP: %i Per: %0.2f", GetHP(), GetMaxHP(), GetHPRatio());
+	c->Message(Chat::White, "Min Damage: %i Max Damage: %i", GetMinDMG(), GetMaxDMG());
+	c->Message(Chat::White, "Gender: %i  Size: %f  Bodytype: %d", GetGender(), GetSize(), GetBodyType());
+	c->Message(Chat::White, "Runspeed: %f  Walkspeed: %f FlyMode: %d", GetRunspeed(), GetWalkspeed(), GetFlyMode());
+	c->Message(Chat::White, "Spawn Group: %i  Grid: %i", GetSp2(), GetGrid());
+	c->Message(Chat::White, "EmoteID: %i", GetEmoteID());
 	DisplayAttackTimer(c);
 	QueryLoot(c);
 	if (IsCasting())
-		c->Message(CC_Default, "NPC is currently casting spell: %s (id %u); remaining cast time: %0.3f seconds", 
+		c->Message(Chat::White, "NPC is currently casting spell: %s (id %u); remaining cast time: %0.3f seconds", 
 			spells[casting_spell_id].name, casting_spell_id, static_cast<float>(spellend_timer.GetRemainingTime()) / 1000.0f);
 	if (IsWalled())
 	{
-		c->Message(CC_Default, "NPC is walled.  Wall 1 normal: %0.3f, %0.3f", wall_normal1_x, wall_normal1_y);
+		c->Message(Chat::White, "NPC is walled.  Wall 1 normal: %0.3f, %0.3f", wall_normal1_x, wall_normal1_y);
 		if (wall_normal2_x || wall_normal2_y)
-			c->Message(CC_Default, "NPC is walled.  Wall 2 normal: %0.3f, %0.3f", wall_normal2_x, wall_normal2_y);
+			c->Message(Chat::White, "NPC is walled.  Wall 2 normal: %0.3f, %0.3f", wall_normal2_x, wall_normal2_y);
 	}
 	if (corner_x || corner_y)
-		c->Message(CC_Default, "NPC is cornered.  Corner loc: %0.3f, %0.3f", corner_x, corner_y);
+		c->Message(Chat::White, "NPC is cornered.  Corner loc: %0.3f, %0.3f", corner_x, corner_y);
 }
 
 void NPC::ClearPathing()

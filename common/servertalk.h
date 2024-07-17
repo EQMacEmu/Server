@@ -79,8 +79,9 @@
 #define ServerOP_IsOwnerOnline		0x0042
 #define ServerOP_CheckGroupLeader	0x0043
 #define ServerOP_RaidGroupJoin		0x0044
+
 #define ServerOP_DepopAllPlayersCorpses	0x0061
-#define ServerOP_ReloadTitles		0x0062
+
 #define ServerOP_QGlobalUpdate		0x0063
 #define ServerOP_QGlobalDelete		0x0064
 #define ServerOP_DepopPlayerCorpse	0x0065
@@ -119,7 +120,7 @@
 #define ServerOP_ClientVersionSummary 0x0215
 #define ServerOP_Soulmark			0x0216
 #define ServerOP_AddSoulmark		0x0217
-#define ServerOP_ReloadSkills		0x0218
+
 #define ServerOP_Weather			0x0219
 #define ServerOP_LSInfo				0x1000
 #define ServerOP_LSStatus			0x1001
@@ -161,16 +162,20 @@
 
 #define ServerOP_UCSMessage		0x4000
 #define ServerOP_UCSMailMessage 0x4001
-#define ServerOP_ReloadRules	0x4002
-#define ServerOP_ReloadRulesWorld	0x4003
+
 #define ServerOP_QueryServGeneric	0x4005
 #define ServerOP_CZSignalClient 0x4006
 #define ServerOP_CZSignalClientByName 0x4007
 #define ServerOP_CZMessagePlayer 0x4008
+#define ServerOP_UpdateSchedulerEvents 0x4012
+
+#define ServerOP_ReloadContentFlags 0x4013
+#define ServerOP_ReloadSkills		0x0218
 #define ServerOP_ReloadWorld 0x4009
 #define ServerOP_ReloadLogs 0x4010
-#define ServerOP_UpdateSchedulerEvents 0x4012
-#define ServerOP_ReloadContentFlags 0x4013
+#define ServerOP_ReloadRules	0x4002
+#define ServerOP_ReloadRulesWorld	0x4003
+#define ServerOP_ReloadTitles		0x0062
 
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013
@@ -193,6 +198,16 @@
 /* Query Serv Generic Packet Flag/Type Enumeration */
 
 #define ServerOP_Speech			0x4513
+
+enum {
+	UserToWorldStatusWorldUnavail    = 0,
+	UserToWorldStatusSuccess         = 1,
+	UserToWorldStatusSuspended       = -1,
+	UserToWorldStatusBanned          = -2,
+	UserToWorldStatusWorldAtCapacity = -3,
+	UserToWorldStatusAlreadyOnline   = -4,
+	UserToWorldStatusIPLimitExceeded = -5
+};
 
 /************ PACKET RELATED STRUCT ************/
 class ServerPacket

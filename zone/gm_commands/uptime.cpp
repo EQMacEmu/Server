@@ -4,7 +4,7 @@ extern WorldServer worldserver;
 
 void command_uptime(Client *c, const Seperator *sep){
 	if (!worldserver.Connected())
-		c->Message(CC_Default, "Error: World server disconnected");
+		c->Message(Chat::White, "Error: World server disconnected");
 	else
 	{
 		auto pack = new ServerPacket(ServerOP_Uptime, sizeof(ServerUptime_Struct));

@@ -4,7 +4,7 @@ void command_time(Client *c, const Seperator *sep)
 {
 	const auto arguments = sep->argnum;
 	if (arguments < 1 || !sep->IsNumber(1)) {
-		c->Message(CC_Default, "To set the Time: #time HH [MM]");
+		c->Message(Chat::White, "To set the Time: #time HH [MM]");
 
 		TimeOfDay_Struct eqTime;
 		zone->zone_time.getEQTimeOfDay(time(0), &eqTime);
@@ -16,7 +16,7 @@ void command_time(Client *c, const Seperator *sep)
 			(eqTime.hour >= 12 && eqTime.hour < 24) ? "PM" : "AM"
 		);
 
-		c->Message(CC_Default, fmt::format("It is now {}.", time_string).c_str());
+		c->Message(Chat::White, fmt::format("It is now {}.", time_string).c_str());
 
 		return;
 	}
@@ -37,7 +37,7 @@ void command_time(Client *c, const Seperator *sep)
 		}
 	}
 		
-	c->Message(CC_Default, fmt::format("Setting world time to {}:{} ...", hours, minutes).c_str());
+	c->Message(Chat::White, fmt::format("Setting world time to {}:{} ...", hours, minutes).c_str());
 		
 	zone->SetTime(hours, minutes);
 	

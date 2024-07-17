@@ -14,7 +14,7 @@ void command_dbspawn2(Client *c, const Seperator *sep){
 		database.CreateSpawn2(c, atoi(sep->arg[1]), zone->GetShortName(), c->GetPosition(), atoi(sep->arg[2]), atoi(sep->arg[3]), cond, cond_min);
 	}
 	else {
-		c->Message(CC_Default, "Usage: #dbspawn2 spawngroup respawn variance [condition_id] [condition_min]");
+		c->Message(Chat::White, "Usage: #dbspawn2 spawngroup respawn variance [condition_id] [condition_min]");
 	}
 }
 

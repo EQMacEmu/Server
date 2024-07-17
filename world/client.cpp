@@ -17,6 +17,7 @@
 #include "../common/emu_versions.h"
 #include "../common/random.h"
 #include "../common/data_verification.h"
+#include "../common/opcodemgr.h"
 
 #include "client.h"
 #include "worlddb.h"
@@ -193,7 +194,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 
 	if (strlen(password) <= 1) {
 		// TODO: Find out how to tell the client wrong username/password
-		Log(Logs::Detail, Logs::WorldServer,"Login without a password");
+		LogInfo("Login without a password");
 		return false;
 	}
 
@@ -745,7 +746,13 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 	EmuOpcode opcode = app->GetOpcode();
 
-	Log(Logs::Detail, Logs::PacketClientServer,"Recevied EQApplicationPacket [OpCode 0x%04x]", opcode);
+	LogPacketClientServer(
+		"[{}] [{:#06x}] Size [{}] {}",
+		OpcodeManager::EmuToName(app->GetOpcode()),
+		eqs->GetOpcodeManager()->EmuToEQ(app->GetOpcode()),
+		app->Size(),
+		(LogSys.IsLogEnabled(Logs::Detail, Logs::PacketClientServer) ? DumpPacketToString(app) : "")
+	);
 
 	if (!eqs->CheckState(ESTABLISHED)) {
 		Log(Logs::Detail, Logs::WorldServer,"Client disconnected (net inactive on send)");
@@ -830,7 +837,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		}
 		default:
 		{
-			Log(Logs::Detail, Logs::PacketClientServer,"Received unknown EQApplicationPacket %04X", opcode);
+			LogNetcode("Received unknown EQApplicationPacket");
 			return true;
 		}
 	}
@@ -1054,7 +1061,7 @@ void Client::ZoneUnavail() {
 }
 
 void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req) {
-	Log(Logs::Detail, Logs::PacketServerClient, "Sending EQApplicationPacket [OpCode 0x%04x]",app->GetOpcode());
+	LogNetcode("Sending EQApplicationPacket OpCode {:#04x}", app->GetOpcode());
 
 	//ack_req = true;	// It's broke right now, dont delete this line till fix it. =P
 	eqs->QueuePacket(app, ack_req);

@@ -82,7 +82,7 @@ private:
 	WorldServer* GetServerByAddress(unsigned int address);
 
 	EmuTCPServer* tcps;
-	std::list<WorldServer*> world_servers;
+	std::list<WorldServer*> m_world_servers;
 };
 
 #endif

@@ -5,10 +5,10 @@ void command_reloadlevelmods(Client *c, const Seperator *sep){
 	{
 		if (RuleB(Zone, LevelBasedEXPMods)){
 			zone->LoadLevelEXPMods();
-			c->Message(CC_Yellow, "Level based EXP Mods have been reloaded zonewide");
+			c->Message(Chat::Yellow, "Level based EXP Mods have been reloaded zonewide");
 		}
 		else{
-			c->Message(CC_Yellow, "Level based EXP Mods are disabled in rules!");
+			c->Message(Chat::Yellow, "Level based EXP Mods are disabled in rules!");
 		}
 	}
 }

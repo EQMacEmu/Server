@@ -12,7 +12,7 @@ void command_fleeinfo(Client *c, const Seperator *sep)
 	}
 	else
 	{
-		c->Message(CC_Default, "Please target a NPC to use this command on.");
+		c->Message(Chat::White, "Please target a NPC to use this command on.");
 	}
 
 }

@@ -7,7 +7,7 @@ void command_scribespells(Client *c, const Seperator *sep) {
 	}
 
 	if (sep->argnum < 1 || !sep->IsNumber(1)) {
-		c->Message(CC_Default, "FORMAT: #scribespells <max level> <min level>");
+		c->Message(Chat::White, "FORMAT: #scribespells <max level> <min level>");
 		return;
 	}
 
@@ -31,12 +31,12 @@ void command_scribespells(Client *c, const Seperator *sep) {
 	}
 
 	if (max_level < 1 || min_level < 1) {
-		c->Message(CC_Default, "ERROR: Level must be greater than or equal to 1.");
+		c->Message(Chat::White, "ERROR: Level must be greater than or equal to 1.");
 		return;
 	}
 
 	if (min_level > max_level) {
-		c->Message(CC_Default, "ERROR: Minimum Level must be less than or equal to Maximum Level.");
+		c->Message(Chat::White, "ERROR: Minimum Level must be less than or equal to Maximum Level.");
 		return;
 	}
 
@@ -52,7 +52,7 @@ void command_scribespells(Client *c, const Seperator *sep) {
 			"No new spells"
 			);
 		c->Message(
-			CC_Default,
+			Chat::White,
 			fmt::format(
 				"{} scribed for {}.",
 				spell_message,

@@ -6,6 +6,6 @@ void command_gassign(Client *c, const Seperator *sep){
 		database.AssignGrid(c, atoi(sep->arg[1]), spawn2id);
 	}
 	else
-		c->Message(CC_Default, "Usage: #gassign [num] - must have an npc target!");
+		c->Message(Chat::White, "Usage: #gassign [num] - must have an npc target!");
 }
 

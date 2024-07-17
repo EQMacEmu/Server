@@ -352,7 +352,7 @@ void ConsoleList::SendConsoleWho(WorldTCPConnection* connection, const char* to,
 		else
 			fmt::format_to(std::back_inserter(out), "  Console: AccID: {} AccName: {} ", iterator.GetData()->AccountID(), iterator.GetData()->AccountName());
 		if (out.size() >= 3584) {
-			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, CC_NPCQuestSay, out.data());
+			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 			out.clear();
 		}
 		else {
@@ -425,7 +425,7 @@ void Console::ProcessCommand(const char* command) {
 			}
 			strcpy(paccountname, command);
 			state = CONSOLE_STATE_PASSWORD;
-			SendMessage(CC_Default, "Password: ");
+			SendMessage(Chat::White, "Password: ");
 			tcpc->SetEcho(false);
 			break;
 		}
@@ -782,8 +782,8 @@ void Console::ProcessCommand(const char* command) {
 					zoneserver_list.WorldShutDown(0, 0);
 				}
 				else if(strcasecmp(sep.arg[1], "disable") == 0) {
-        			SendEmoteMessage(0, 0, AccountStatus::Player,CC_Yellow, "[SYSTEM] World shutdown has been aborted.");
-					zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player,CC_Yellow, "[SYSTEM] World shutdown has been aborted.");
+        			SendEmoteMessage(0, 0, AccountStatus::Player,Chat::Yellow, "[SYSTEM] World shutdown has been aborted.");
+					zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::Player,Chat::Yellow, "[SYSTEM] World shutdown has been aborted.");
         			zoneserver_list.shutdowntimer->Disable();
 			        zoneserver_list.reminder->Disable();
 				}
@@ -895,6 +895,6 @@ void Console::ProcessCommand(const char* command) {
 
 void Console::SendPrompt() {
 	if (tcpc->GetEcho())
-		SendMessage(CC_Default, "%s> ", paccountname);
+		SendMessage(Chat::White, "%s> ", paccountname);
 }
 

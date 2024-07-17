@@ -32,7 +32,11 @@ public:
 	virtual std::string Describe() const;
 	virtual const EQ::versions::ClientVersion ClientVersion() const;
 	virtual bool IsInUse();
+
+	virtual EQStreamState GetState();
 	virtual void SetOpcodeManager(OpcodeManager **opm);
+	virtual OpcodeManager *GetOpcodeManager() const;
+
 	virtual const uint32 GetBytesSent() const;
 	virtual const uint32 GetBytesRecieved() const;
 	virtual const uint32 GetBytesSentPerSecond() const;

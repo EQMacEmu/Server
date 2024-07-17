@@ -6,19 +6,19 @@ void command_size(Client *c, const Seperator *sep){
 	{
 		// ChangeSize just sends the AT_Size apperance packet, which doesn't support float.
 		// All attempts to workaround this using the illusion packet have failed. 
-		c->Message(CC_Default, "Usage: #size [0 - 255] This command does not support decimals.");
+		c->Message(Chat::White, "Usage: #size [0 - 255] This command does not support decimals.");
 	}
 	else 
 	{
 		float newsize = atof(sep->arg[1]);
 		if (newsize > 255)
 		{
-			c->Message(CC_Default, "Error: #size: Size can not be greater than 255.");
+			c->Message(Chat::White, "Error: #size: Size can not be greater than 255.");
 			return;
 		}
 		else if (newsize < 0)
 		{
-			c->Message(CC_Default, "Error: #size: Size can not be less than 0.");
+			c->Message(Chat::White, "Error: #size: Size can not be less than 0.");
 			return;
 		}
 		else if (!target)
@@ -28,7 +28,7 @@ void command_size(Client *c, const Seperator *sep){
 		else 
 		{
 			target->ChangeSize(newsize);
-			c->Message(CC_Default, "%s is now size %0.1f", target->GetName(), atof(sep->arg[1]));
+			c->Message(Chat::White, "%s is now size %0.1f", target->GetName(), atof(sep->arg[1]));
 		}
 	}
 }

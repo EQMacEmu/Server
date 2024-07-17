@@ -4,9 +4,9 @@ extern WorldServer worldserver;
 
 void command_zoneshutdown(Client *c, const Seperator *sep){
 	if (!worldserver.Connected())
-		c->Message(CC_Default, "Error: World server disconnected");
+		c->Message(Chat::White, "Error: World server disconnected");
 	else if (sep->arg[1][0] == 0)
-		c->Message(CC_Default, "Usage: #zoneshutdown zoneshortname");
+		c->Message(Chat::White, "Usage: #zoneshutdown zoneshortname");
 	else {
 		auto pack = new ServerPacket(ServerOP_ZoneShutdown, sizeof(ServerZoneStateChange_struct));
 		ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *)pack->pBuffer;

@@ -4,7 +4,7 @@ void command_invul(Client *c, const Seperator *sep)
 {
 	int arguments = sep->argnum;
 	if (!arguments) {
-		c->Message(CC_Default, "Usage: #invul [On|Off]");
+		c->Message(Chat::White, "Usage: #invul [On|Off]");
 		return;
 	}
 
@@ -18,7 +18,7 @@ void command_invul(Client *c, const Seperator *sep)
 	uint32 account = target->AccountID();
 	database.SetGMInvul(account, invul_flag);
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"{} {} now {}.",
 			c == target ? "You" : target->GetCleanName(),

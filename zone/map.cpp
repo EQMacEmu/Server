@@ -4,6 +4,8 @@
 #include "map.h"
 #include "raycast_mesh.h"
 #include "zone.h"
+#include "../common/file.h"
+#include "../common/path_manager.h"
 
 #include <algorithm>
 #include <map>
@@ -380,11 +382,8 @@ bool Map::DoCollisionCheck(glm::vec3 myloc, glm::vec3 oloc, glm::vec3& outnorm, 
 }
 
 Map *Map::LoadMapFile(std::string file) {
-	std::string filename = Config->MapDir;
-	filename += "/";
 	std::transform(file.begin(), file.end(), file.begin(), ::tolower);
-	filename += file;
-	filename += ".map";
+	std::string filename = fmt::format("{}/{}.map", path.GetMapsPath(), file);
 
 	auto m = new Map();
 	if (m->Load(filename)) {
@@ -497,7 +496,7 @@ bool Map::LoadV1(FILE *f) {
 
 bool Map::NoHazardsAccurate(glm::vec3 From, glm::vec3 To, float size, int max_steps, float interval)
 {
-	if (zone->GetZoneID() == kedge || From == To || (zone->GetZoneID() == powater && (From.z < 0.0f || To.z < 0.0f)))
+	if (zone->GetZoneID() == Zones::KEDGE || From == To || (zone->GetZoneID() == Zones::POWATER && (From.z < 0.0f || To.z < 0.0f)))
 		return true;
 
 	if (zone->HasWaterMap() && (zone->watermap->InLiquid(From) || zone->watermap->InLiquid(To)))

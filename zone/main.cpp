@@ -60,7 +60,6 @@
 #include "quest_parser_collection.h"
 #include "lua_parser.h"
 #include "questmgr.h"
-#include "zone_event_scheduler.h"
 
 #include <iostream>
 #include <string>
@@ -88,19 +87,26 @@
 volatile bool RunLoops = true;
 extern volatile bool is_zone_loaded;
 
-TimeoutManager timeout_manager;
-EntityList entity_list;
+#include "zone_event_scheduler.h"
+#include "../common/file.h"
+#include "../common/path_manager.h"
+
+EntityList  entity_list;
 WorldServer worldserver;
-uint32 numclients = 0;
-char errorname[32];
-extern Zone* zone;
-EQStreamFactory eqsf(ZoneStream);
-TitleManager title_manager;
-QueryServ *QServ = 0;
+uint32      numclients = 0;
+char        errorname[32];
+extern Zone *zone;
+
+TimeoutManager        timeout_manager;
+EQStreamFactory       eqsf(ZoneStream);
+TitleManager          title_manager;
+QueryServ             *QServ = 0;
 QuestParserCollection *parse = 0;
-EQEmuLogSys LogSys;
-ZoneEventScheduler event_scheduler;
-WorldContentService content_service;
+EQEmuLogSys           LogSys;
+ZoneEventScheduler    event_scheduler;
+WorldContentService   content_service;
+PathManager           path;
+
 const SPDat_Spell_Struct* spells;
 int32 SPDAT_RECORDS = -1;
 const ZoneConfig *Config;
@@ -116,6 +122,9 @@ int main(int argc, char** argv) {
 	RegisterExecutablePlatform(ExePlatformZone); 
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler(); 
+
+	path.LoadPaths();
+
 	QServ = new QueryServ;
 
 	LogInfo("Loading server configuration..");
@@ -206,6 +215,7 @@ int main(int argc, char** argv) {
 	}
 
 	LogSys.SetDatabase(&database)
+		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->SetGMSayHandler(&Zone::GMSayHookCallBackProcess)
 		->StartFileLogs();
@@ -291,7 +301,7 @@ int main(int argc, char** argv) {
 	title_manager.LoadTitles();
 	
 	LogInfo("Loading AA actions");
-	database.LoadAAActions();
+	database.LoadAlternateAdvancementActions();
 	
 	LogInfo("Loading commands");
 	int retval=command_init();
@@ -361,7 +371,7 @@ int main(int argc, char** argv) {
 	RegisterAllPatches(stream_identifier);
 
 #ifndef WIN32
-	Log(Logs::Detail, Logs::None,  "Main thread running with thread id %d", pthread_self());
+	LogInfoDetail("Main thread running with thread id [{}]", pthread_self());
 #endif
 
 	Timer quest_timers(100);
@@ -403,7 +413,7 @@ int main(int argc, char** argv) {
 				//structures and opcodes for that patch.
 				struct in_addr	in;
 				in.s_addr = eqss->GetRemoteIP();
-				Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqss->GetRemotePort()));
+				LogInfo("New connection from [{0}]:[{1}]", inet_ntoa(in), ntohs(eqss->GetRemotePort()));
 				stream_identifier.AddStream(eqss);	//takes the stream
 			}
 
@@ -414,7 +424,7 @@ int main(int argc, char** argv) {
 				//structures and opcodes for that patch.
 				struct in_addr	in;
 				in.s_addr = eqoss->GetRemoteIP();
-				Log(Logs::Detail, Logs::WorldServer, "New connection from %s:%d", inet_ntoa(in), ntohs(eqoss->GetRemotePort()));
+				LogInfo("New connection from [{0}]:[{1}]", inet_ntoa(in), ntohs(eqoss->GetRemotePort()));
 				stream_identifier.AddOldStream(eqoss);	//takes the stream
 			}
 
@@ -426,7 +436,7 @@ int main(int argc, char** argv) {
 				//now that we know what patch they are running, start up their client object
 				struct in_addr	in;
 				in.s_addr = eqsi->GetRemoteIP();
-				Log(Logs::Detail, Logs::WorldServer, "New client from %s:%d", inet_ntoa(in), ntohs(eqsi->GetRemotePort()));
+				LogInfo("New client from [{0}]:[{1}]", inet_ntoa(in), ntohs(eqsi->GetRemotePort()));
 				auto client = new Client(eqsi);
 				entity_list.AddClient(client);
 			}

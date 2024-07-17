@@ -26,7 +26,10 @@
 #include "position.h"
 #include "water_map.h"
 #include "aa.h"
+#include "../common/light_source.h"
 #include "../common/emu_constants.h"
+
+#include <any>
 #include <set>
 #include <vector>
 #include <memory>
@@ -342,6 +345,7 @@ public:
 	virtual inline uint16 GetBaseRace() const { return base_race; }
 	virtual inline uint8 GetBaseGender() const { return base_gender; }
 	virtual inline uint16 GetDeity() const { return deity; }
+	virtual uint32 GetDeityBit() { return Deity::GetBitmask(deity); }
 	inline uint16 GetRace() const { return race; }
 	virtual uint32 GetRaceStringID();
 	virtual uint32 GetClassStringID();
@@ -557,6 +561,8 @@ public:
 	//Util
 	static uint32 RandomTimer(int min, int max);
 	static uint8 GetDefaultGender(uint16 in_race, uint8 in_gender = 0xFF);
+	static bool IsPlayerClass(uint16 in_class);
+	static bool IsPlayerRace(uint16 in_race);
 	uint16 GetSkillByItemType(int ItemType);
 	uint8 GetItemTypeBySkill(EQ::skills::SkillType skill);
 	virtual void MakePet(uint16 spell_id, const char* pettype, const char *petname = nullptr);
@@ -930,8 +936,8 @@ public:
 	void TarGlobal(const char *varname, const char *value, const char *duration, int npcid, int charid, int zoneid);
 	void DelGlobal(const char *varname);
 
-	inline void SetEmoteID(uint16 emote) { emoteid = emote; }
-	inline uint16 GetEmoteID() { return emoteid; }
+	inline void SetEmoteID(uint32 emote) { emoteid = emote; }
+	inline uint32 GetEmoteID() { return emoteid; }
 	inline void SetCombatHPRegen(uint32 regen) { combat_hp_regen = regen; }
 	inline uint16 GetCombatHPRegen() { return combat_hp_regen; }
 	inline void SetCombatManaRegen(uint32 regen) { combat_mana_regen = regen; }
@@ -1287,7 +1293,7 @@ protected:
 	bool m_targetable;
 	int QGVarDuration(const char *fmt);
 	void InsertQuestGlobal(int charid, int npcid, int zoneid, const char *name, const char *value, int expdate);
-	uint16 emoteid;
+	uint32 emoteid;
 	uint32 combat_hp_regen;
 	uint32 combat_mana_regen;
 

@@ -8,6 +8,6 @@ void command_guildlist(Client *c, const Seperator *sep){
 		tmp->ApprovedMembers(c);
 	}
 	else
-		c->Message(CC_Default, "Could not find reference id.");
+		c->Message(Chat::White, "Could not find reference id.");
 }
 

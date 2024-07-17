@@ -148,13 +148,13 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 
 			// the group member other than the character doing the /split only gets this message "(splitter) shares the money with the group"
 			if (share && member_client != splitter) {
-				member_client->Message_StringID(CC_Green, SHARE_MONEY, splitter->GetCleanName());
+				member_client->Message_StringID(Chat::Green, SHARE_MONEY, splitter->GetCleanName());
 			}
 
 			// Check if there are any coins to add to the player's purse.
 			if (receive_copper || receive_silver || receive_gold || receive_platinum) {
 				member_client->AddMoneyToPP(receive_copper, receive_silver, receive_gold, receive_platinum, true);
-				member_client->Message_StringID(CC_Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(receive_platinum, receive_gold, receive_silver, receive_copper).c_str());
+				member_client->Message_StringID(Chat::Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(receive_platinum, receive_gold, receive_silver, receive_copper).c_str());
 			}
 
 			if (RuleB(QueryServ, PlayerLogMoneyTransactions))
@@ -180,7 +180,7 @@ bool Group::AddMember(Mob* newmember, const char *NewMemberName, uint32 Characte
 	if (GroupCount() >= MAX_GROUP_MEMBERS) //Sanity check for merging groups together.
 	{
 		if (newmember)
-			newmember->Message_StringID(CC_Default, GROUP_IS_FULL);
+			newmember->Message_StringID(Chat::White, GROUP_IS_FULL);
 		return false;
 	}
 
@@ -582,7 +582,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int re
 	if(!caster)
 		return;
 
-	Log(Logs::Moderate, Logs::Spells, "%s is casting spell %d on group %d", caster->GetName(), spell_id, GetID());
+	Log(Logs::Detail, Logs::Spells, "%s is casting spell %d on group %d", caster->GetName(), spell_id, GetID());
 
 	castspell = true;
 	range = caster->GetAOERange(spell_id);
@@ -1043,11 +1043,11 @@ void Group::BalanceHP(int32 penalty, float range, Mob* caster, int32 limit)
 
 				if (new_hp > old_hp)
 				{
-					members[gi]->Message_StringID(CC_User_Spells, DIV_ARB_TAKE);
-					members[gi]->Message_StringID(CC_User_Spells, YOU_HEALED, itoa(new_hp - old_hp));
+					members[gi]->Message_StringID(Chat::Spells, DIV_ARB_TAKE);
+					members[gi]->Message_StringID(Chat::Spells, YOU_HEALED, itoa(new_hp - old_hp));
 				}
 				else
-					members[gi]->Message_StringID(CC_User_Spells, DIV_ARB_GIVE);
+					members[gi]->Message_StringID(Chat::Spells, DIV_ARB_GIVE);
 
 				members[gi]->SetHP(new_hp);
 				members[gi]->SendHPUpdate();

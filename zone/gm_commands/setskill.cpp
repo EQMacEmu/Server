@@ -2,19 +2,19 @@
 
 void command_setskill(Client *c, const Seperator *sep){
 	if (c->GetTarget() == nullptr) {
-		c->Message(CC_Default, "Error: #setskill: No target.");
+		c->Message(Chat::White, "Error: #setskill: No target.");
 	}
 	else if (!c->GetTarget()->IsClient()) {
-		c->Message(CC_Default, "Error: #setskill: Target must be a client.");
+		c->Message(Chat::White, "Error: #setskill: Target must be a client.");
 	}
 	else if (
 		!sep->IsNumber(1) || atoi(sep->arg[1]) < 0 || atoi(sep->arg[1]) > EQ::skills::HIGHEST_SKILL ||
 		!sep->IsNumber(2) || atoi(sep->arg[2]) < 0
 		)
 	{
-		c->Message(CC_Default, "Usage: #setskill skill x ");
-		c->Message(CC_Default, "       skill = 0 to %d", EQ::skills::HIGHEST_SKILL);
-		c->Message(CC_Default, "       x = 0 to %d", HARD_SKILL_CAP);
+		c->Message(Chat::White, "Usage: #setskill skill x ");
+		c->Message(Chat::White, "       skill = 0 to %d", EQ::skills::HIGHEST_SKILL);
+		c->Message(Chat::White, "       x = 0 to %d", HARD_SKILL_CAP);
 	}
 	else {
 		Log(Logs::General, Logs::Normal, "Set skill request from %s, target:%s skill_id:%i value:%i", c->GetName(), c->GetTarget()->GetName(), atoi(sep->arg[1]), atoi(sep->arg[2]) );
@@ -29,7 +29,7 @@ void command_setskill(Client *c, const Seperator *sep){
 			}
 			else
 			{
-				c->Message(CC_Default, "Error: #setskill: No target.");
+				c->Message(Chat::White, "Error: #setskill: No target.");
 			}
 		}
 	}

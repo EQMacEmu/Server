@@ -3,7 +3,7 @@
 void command_grid(Client* c, const Seperator* sep) {
 	if (strcasecmp("max", sep->arg[1]) == 0)
 	{
-		c->Message(CC_Default, "Highest grid ID in this zone: %d", database.GetHighestGrid(zone->GetZoneID()));
+		c->Message(Chat::White, "Highest grid ID in this zone: %d", database.GetHighestGrid(zone->GetZoneID()));
 	}
 	else if (strcasecmp("add", sep->arg[1]) == 0)
 	{
@@ -73,8 +73,8 @@ void command_grid(Client* c, const Seperator* sep) {
 	}
 	else
 	{
-		c->Message(CC_Default, "Usage: #grid add/delete grid_num wandertype pausetype");
-		c->Message(CC_Default, "Usage: #grid max - displays the highest grid ID used in this zone (for add)");
+		c->Message(Chat::White, "Usage: #grid add/delete grid_num wandertype pausetype");
+		c->Message(Chat::White, "Usage: #grid max - displays the highest grid ID used in this zone (for add)");
 	}
 }
 

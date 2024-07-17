@@ -10,7 +10,7 @@ void command_shownpcgloballoot(Client *c, const Seperator *sep)
 	auto target = c->GetTarget()->CastToNPC();
 
 	c->Message(
-		CC_Default,
+		Chat::White,
 		fmt::format(
 			"Global loot for {} ({}).",
 			target->GetCleanName(),

@@ -25,6 +25,7 @@
 #include "eqemu_config.h"
 #include "data_verification.h"
 #include "repositories/criteria/content_filter_criteria.h"
+#include "path_manager.h"
 
 namespace ItemField
 {
@@ -431,8 +432,8 @@ bool SharedDatabase::LoadItems(const std::string &prefix)
 		auto Config = EQEmuConfig::get();
 		EQ::IPCMutex mutex("items");
 		mutex.Lock();
-		std::string file_name = Config->SharedMemDir + prefix + std::string("items");
-		LogInfo("[Shared Memory] Attempting to load file [{0}]", file_name);
+		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("items"));
+		LogInfo("Attempting to load file [{0}]", file_name);
 		items_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		items_hash = std::unique_ptr<EQ::FixedMemoryHashSet<EQ::ItemData>>(new EQ::FixedMemoryHashSet<EQ::ItemData>(reinterpret_cast<uint8*>(items_mmf->Get()), items_mmf->Size()));
 		mutex.Unlock();
@@ -824,8 +825,8 @@ bool SharedDatabase::LoadNPCFactionLists(const std::string &prefix)
 		auto Config = EQEmuConfig::get();
 		EQ::IPCMutex mutex("faction");
 		mutex.Lock();
-		std::string file_name = Config->SharedMemDir + prefix + std::string("faction");
-		LogInfo("[Shared Memory] Attempting to load file [{0}]", file_name);
+		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("faction"));
+		LogInfo("Attempting to load file [{0}]", file_name);
 		faction_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		faction_hash = std::unique_ptr<EQ::FixedMemoryHashSet<NPCFactionList>>(new EQ::FixedMemoryHashSet<NPCFactionList>(reinterpret_cast<uint8*>(faction_mmf->Get()), faction_mmf->Size()));
 		mutex.Unlock();
@@ -1042,8 +1043,8 @@ bool SharedDatabase::LoadSkillCaps(const std::string &prefix)
 		auto Config = EQEmuConfig::get();
 		EQ::IPCMutex mutex("skill_caps");
 		mutex.Lock();
-		std::string file_name = Config->SharedMemDir + prefix + std::string("skill_caps");
-		LogInfo("[Shared Memory] Attempting to load file [{0}]", file_name);
+		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("skill_caps"));
+		LogInfo("Attempting to load file [{0}]", file_name);
 		skill_caps_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		mutex.Unlock();
 	} catch(std::exception &ex) {
@@ -1202,9 +1203,9 @@ bool SharedDatabase::LoadSpells(const std::string &prefix, int32 *records, const
 		EQ::IPCMutex mutex("spells");
 		mutex.Lock();
 	
-		std::string file_name = Config->SharedMemDir + prefix + std::string("spells");
+		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("spells"));
 		spells_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
-		LogInfo("[Shared Memory] Attempting to load file [{0}]", file_name);
+		LogInfo("Attempting to load file [{0}]", file_name);
 		*records = *reinterpret_cast<uint32*>(spells_mmf->Get());
 		*sp = reinterpret_cast<const SPDat_Spell_Struct*>((char*)spells_mmf->Get() + 4);
 		mutex.Unlock();

@@ -12,7 +12,7 @@ void command_summonitem(Client *c, const Seperator *sep)
 		itemid = link_body.item_id;
 	}
 	else if (!sep->IsNumber(1)) {
-		c->Message(CC_Default, "Usage: #summonitem [item id] [charges], charges are optional");
+		c->Message(Chat::White, "Usage: #summonitem [item id] [charges], charges are optional");
 		return;
 	}
 	else {
@@ -40,7 +40,7 @@ void command_summonitem(Client *c, const Seperator *sep)
 
 		//No rent GM Uber Sword
 		if (item_status > c->Admin() || (c->Admin() < 80 && itemid == 2661))
-			c->Message(CC_Red, "Error: Insufficient status to summon this item.");
+			c->Message(Chat::Red, "Error: Insufficient status to summon this item.");
 		else
 			c->SummonItem(itemid, charges, 0, true);
 	}

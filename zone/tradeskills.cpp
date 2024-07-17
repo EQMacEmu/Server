@@ -68,7 +68,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 
 	if (in_combine->container_slot == EQ::legacy::SLOT_TRADESKILL) {
 		if(!worldo) {
-			user->Message(CC_Red, "Error: Server is not aware of the tradeskill container you are attempting to use");
+			user->Message(Chat::Red, "Error: Server is not aware of the tradeskill container you are attempting to use");
 			auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 			user->QueuePacket(outapp);
 			safe_delete(outapp);
@@ -90,7 +90,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	}
 
 	if (!inst || !inst->IsType(EQ::item::ItemClassBag)) {
-		user->Message(CC_Red, "Error: Server does not recognize specified tradeskill container");
+		user->Message(Chat::Red, "Error: Server does not recognize specified tradeskill container");
 		auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
@@ -101,7 +101,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 
 	DBTradeskillRecipe_Struct spec;
 	if (!database.GetTradeRecipe(container, c_type, some_id, user->CharacterID(), &spec)) {
-		user->Message_StringID(MT_Emote,TRADESKILL_NOCOMBINE);
+		user->Message_StringID(Chat::Emote,TRADESKILL_NOCOMBINE);
 		auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
@@ -111,7 +111,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	// Character does not have the required skill.
 	if(spec.skill_needed > 0 && user->GetSkill(spec.tradeskill) < spec.skill_needed ) {
 		// Notify client.
-		user->Message(CC_Blue, "You are not skilled enough.");
+		user->Message(Chat::LightBlue, "You are not skilled enough.");
 		auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
@@ -121,23 +121,23 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	//changing from a switch to string of if's since we don't need to iterate through all of the skills in the SkillType enum
 	if (spec.tradeskill == EQ::skills::SkillAlchemy) {
 		if (user_pp.class_ != SHAMAN) {
-			user->Message(CC_Red, "This tradeskill can only be performed by a shaman.");
+			user->Message(Chat::Red, "This tradeskill can only be performed by a shaman.");
 			return;
 		}
 		else if (user_pp.level < MIN_LEVEL_ALCHEMY) {
-			user->Message(CC_Red, "You cannot perform alchemy until you reach level %i.", MIN_LEVEL_ALCHEMY);
+			user->Message(Chat::Red, "You cannot perform alchemy until you reach level %i.", MIN_LEVEL_ALCHEMY);
 			return;
 		}
 	}
 	else if (spec.tradeskill == EQ::skills::SkillTinkering) {
 		if (user_pp.race != GNOME && spec.trivial > 0) {
-			user->Message(CC_Red, "Only gnomes can tinker.");
+			user->Message(Chat::Red, "Only gnomes can tinker.");
 			return;
 		}
 	}
 	else if (spec.tradeskill == EQ::skills::SkillMakePoison) {
 		if (user_pp.class_ != ROGUE) {
-			user->Message(CC_Red, "Only rogues can mix poisons.");
+			user->Message(Chat::Red, "Only rogues can mix poisons.");
 			return;
 		}
 	}
@@ -279,7 +279,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		spec->tradeskill, user_skill, spec->trivial, aa_chance, chance, spec->nofail ? "(no fail combine)" : "", roll);
 
 	if (isTrivialCombine) {
-		Message_StringID(CC_Blue, TRADESKILL_TRIVIAL);
+		Message_StringID(Chat::LightBlue, TRADESKILL_TRIVIAL);
 	}
 
 	const EQ::ItemData* item = nullptr;
@@ -290,7 +290,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			CheckIncreaseTradeskill(true, spec->tradeskill);
 		}
 
-		Message_StringID(CC_Blue, TRADESKILL_SUCCEED, spec->name.c_str());
+		Message_StringID(Chat::LightBlue, TRADESKILL_SUCCEED, spec->name.c_str());
 
 		Log(Logs::Detail, Logs::Tradeskills, "Combine success");
 
@@ -314,7 +314,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 				PushItemOnCursorWithoutQueue(returneditem);
 
 				if (this->GetGroup()) {
-					entity_list.MessageGroup(this, true, MT_Skills, "%s has successfully fashioned %s!", GetName(), item->Name);
+					entity_list.MessageGroup(this, true, Chat::Skills, "%s has successfully fashioned %s!", GetName(), item->Name);
 				}
 
 				safe_delete(returneditem);
@@ -332,12 +332,12 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			CheckIncreaseTradeskill(false, spec->tradeskill);
 		}
 
-		Message_StringID(CC_Blue,TRADESKILL_FAILED);
+		Message_StringID(Chat::LightBlue,TRADESKILL_FAILED);
 
 		Log(Logs::Detail, Logs::Tradeskills, "Combine failed");
 			if (this->GetGroup())
 		{
-			entity_list.MessageGroup(this,true,MT_Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its");
+			entity_list.MessageGroup(this,true, Chat::Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its");
 
 		}
 

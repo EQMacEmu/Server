@@ -7,7 +7,7 @@ void command_reloadallrules(Client *c, const Seperator *sep){
 	{
 		auto pack = new ServerPacket(ServerOP_ReloadRules, 0);
 		worldserver.SendPacket(pack);
-		c->Message(CC_Red, "Successfully sent the packet to world to reload rules globally. (including world)");
+		c->Message(Chat::Red, "Successfully sent the packet to world to reload rules globally. (including world)");
 		safe_delete(pack);
 
 	}
