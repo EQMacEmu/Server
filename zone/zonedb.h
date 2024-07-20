@@ -116,17 +116,11 @@ struct PetRecord {
 	uint32 equipmentset;	// default equipment for the pet
 };
 
-struct CharacterCorpseItemEntry
-{
-	uint32 item_id;
-	int16 equip_slot;
-	uint16 charges;
-	uint16 lootslot;
-};
-
 struct CharacterCorpseEntry 
 {
+	uint32	crc;
 	bool	locked;
+	uint32	itemcount;
 	uint32	exp;
 	uint32	gmexp;
 	float	size;
@@ -153,7 +147,7 @@ struct CharacterCorpseEntry
 	bool  rezzable;
 	uint32	rez_time;
 	uint32 time_of_death;
-	std::vector<CharacterCorpseItemEntry> items;
+	LootItem items[0];
 };
 
 // Actual pet info for a client.
@@ -268,8 +262,9 @@ public:
 
 	/* Corpses  */
 	bool		DeleteItemOffCharacterCorpse(uint32 db_id, uint32 equip_slot, uint32 item_id);
+	uint32		GetCharacterCorpseItemCount(uint32 corpse_id);
 	bool		LoadCharacterCorpseRezData(uint32 corpse_id, uint32 *exp, uint32 *gmexp, bool *rezzable, bool *is_rezzed);
-	bool		LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntry &corpse);
+	bool		LoadCharacterCorpseData(uint32 corpse_id, CharacterCorpseEntry* corpse);
 	Corpse*		LoadCharacterCorpse(uint32 player_corpse_id);
 	Corpse*		SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
 	Corpse*		SummonCharacterCorpse(uint32 corpse_id, uint32 char_id, uint32 dest_zoneid, const glm::vec4& position);
@@ -286,10 +281,10 @@ public:
 	uint32		SendCharacterCorpseToGraveyard(uint32 dbid, uint32 zoneid, const glm::vec4& position);
 	uint32		CreateGraveyardRecord(uint32 graveyard_zoneid, const glm::vec4& position);
 	uint32		AddGraveyardIDToZone(uint32 zone_id, uint32 graveyard_id);
-	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position);
-	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position);
-	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool rezzed = false);
-	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, const CharacterCorpseEntry &corpse, const glm::vec4& position, bool rezzed = false);
+	uint32		SaveCharacterCorpse(uint32 charid, const char* charname, uint32 zoneid, CharacterCorpseEntry* corpse, const glm::vec4& position);
+	bool		SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, const char* charname, uint32 zoneid, CharacterCorpseEntry* corpse, const glm::vec4& position);
+	uint32		UpdateCharacterCorpse(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, CharacterCorpseEntry* corpse, const glm::vec4& position, bool rezzed = false);
+	bool		UpdateCharacterCorpseBackup(uint32 dbid, uint32 charid, const char* charname, uint32 zoneid, CharacterCorpseEntry* corpse, const glm::vec4& position, bool rezzed = false);
 	uint32		GetFirstCorpseID(uint32 char_id);
 	uint32		GetCharacterCorpseCount(uint32 char_id);
 	uint32		GetCharacterCorpseID(uint32 char_id, uint8 corpse);
