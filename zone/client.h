@@ -632,8 +632,10 @@ public:
 	void UnscribeSpell(int slot, bool update_client = true, bool defer_save = false);
 
 	void UnscribeSpellAll(bool update_client = true);
-	bool SpellGlobalCheck(uint16 Spell_ID, uint32 Char_ID);
+	bool SpellGlobalCheck(uint16 spell_id, uint32 char_id);
+	bool SpellBucketCheck(uint16 spell_id, uint32 char_id);
 	uint32 GetCharMaxLevelFromQGlobal();
+	uint32 GetCharMaxLevelFromBucket();
 
 	inline bool IsSitting() const {return (playeraction == eaSitting);}
 	inline bool IsBecomeNPC() const { return npcflag; }

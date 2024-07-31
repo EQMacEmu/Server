@@ -183,7 +183,8 @@ void NPC::AddLootDropTable(uint32 lootdrop_id, uint8 drop_limit, uint8 min_drop)
 	}
 
 	float roll_t = 0.0f;
-	float roll_t_min = 0.0f;
+	float no_loot_prob = 1.0f;
+	bool  roll_table_chance_bypass = false;
 	bool active_item_list = false;
 
 	for (const auto &e : le) {
@@ -191,134 +192,35 @@ void NPC::AddLootDropTable(uint32 lootdrop_id, uint8 drop_limit, uint8 min_drop)
 
 		if (db_item) {
 			roll_t += e.chance;
+			if (e.chance >= 100) {
+				roll_table_chance_bypass = true;
+			}
+			else {
+				no_loot_prob *= (100 - e.chance) / 100.0f;
+			}
+
 			active_item_list = true;
 		}
 	}
-
-	roll_t_min = roll_t;
-	roll_t = EQ::ClampLower(roll_t, 100.0f);
 
 	if (!active_item_list) {
 		return;
 	}
 
-	for (int i = 0; i < min_drop; ++i) {
-		float roll = (float)zone->random.Real(0.0, roll_t_min);
-		for (const auto &e : le) {
-			LogLootDetail(
-				"(Second Pass) NPC [{}] Lootdrop [{}] Item [{}] ({}_ Chance [{}] Multiplier [{}]",
-				GetCleanName(),
-				lootdrop_id,
-				database.GetItem(e.item_id) ? database.GetItem(e.item_id)->Name : "Unknown",
-				e.item_id,
-				e.chance,
-				e.multiplier
-			);
-			auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
-			int8 charges = e.item_charges;
-			const EQ::ItemData *db_item = database.GetItem(e.item_id);
-			if (database.ItemQuantityType(e.item_id) == EQ::item::Quantity_Charges) {
-				if (charges <= 2) {
-					charges = db_item->MaxCharges;
-				}
-			}
-			if (db_item) {
-				if (roll < e.chance) {
-					bool equipitem = e.equip_item > 0 ? true : false;
-					bool force_equip = e.equip_item == 2 ? true : false;
-					loot_drop_entry = e;
-					loot_drop_entry.item_charges = charges;
-					AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
+	// This will pick one item per iteration until mindrop.
+	// Don't let the compare against chance fool you.
+	// The roll isn't 0-100, its 0-total and it picks the item, we're just
+	// looping to find the lucky item, descremening otherwise. This is ok,
+	// items with chance 60 are 6 times more likely than items chance 10.
+	int drops = 0;
 
-					int multiplier = (int)e.multiplier;
-					multiplier = EQ::ClampLower(multiplier, 1);
-
-					for (int k = 1; k < multiplier; ++k) {
-						float c_roll = (float)zone->random.Real(0.0, 100.0);
-						if (c_roll <= e.chance) {
-							bool equipitem = e.equip_item > 0 ? true : false;
-							bool force_equip = e.equip_item == 2;
-							AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
-						}
-					}
-					break;
-				}
-				else {
-					roll -= e.chance;
-				}
-			}
-		}
-
-	}
-
-
-	// drop limit handling has two loops to ensure that the table drop %s are indicative of what is seen in-game
-	if ((drop_limit - min_drop) == 1) {
-		auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
-		float roll = (float)zone->random.Real(0.0, roll_t);
-		for (const auto &e : le) {
-			LogLootDetail(
-				"(Third Pass) NPC [{}] Lootdrop [{}] Item [{}] ({}_ Chance [{}] Multiplier [{}]",
-				GetCleanName(),
-				lootdrop_id,
-				database.GetItem(e.item_id) ? database.GetItem(e.item_id)->Name : "Unknown",
-				e.item_id,
-				e.chance,
-				e.multiplier
-			);
-			int8 charges = e.item_charges;
-			const EQ::ItemData* db_item = database.GetItem(e.item_id);
-			if (database.ItemQuantityType(e.item_id) == EQ::item::Quantity_Charges) {
-				if (charges <= 2) {
-					charges = db_item->MaxCharges;
-				}
-			}
-			if (db_item) {
-				if (roll < e.chance) {
-					bool equipitem = e.equip_item > 0 ? true : false;
-					bool force_equip = e.equip_item == 2 ? true : false;
-					loot_drop_entry = e;
-					loot_drop_entry.item_charges = charges;
-					AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
-
-					int multiplier = (int)e.multiplier;
-					multiplier = EQ::ClampLower(multiplier, 1);
-
-					for (int k = 1; k < multiplier; ++k) {
-						float c_roll = (float)zone->random.Real(0.0, 100.0);
-						if (c_roll <= e.chance) {
-							bool equipitem = e.equip_item > 0 ? true : false;
-							bool force_equip = e.equip_item == 2;
-							AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
-						}
-					}
-					break;
-				}
-				else {
-					roll -= e.chance;
-				}
-			}
-		}
-	}
-	else if (drop_limit > min_drop)
-	{
-		// If droplimit is 2 or more higher than mindrop, then we run this other loop.
-		// This can't be used on droplimit=mindrop+1 without actual drop rates being lower than what the table %s
-		// would indicate; however the above solution doesn't work well for droplimits greater than 1 above mindrop.
-		// This will not be as precise as the above loop but the deviation is greatly reduced as droplimit increases.
-		auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
-		int dropCount = min_drop;
-		int roll = zone->random.Int(0, le.size());
-		int loops = 0;
-
-		while (loops < le.size()) {
-			if (dropCount >= drop_limit) {
-				break;
-			}
-			
-			for (auto const &e : le) {
+	// translate above for loop using l and le
+	for (int i = 0; i < drop_limit; ++i) {
+		if (drops < min_drop || roll_table_chance_bypass || (float)zone->random.Real(0.0, 1.0) >= no_loot_prob) {
+			float roll = (float)zone->random.Real(0.0, roll_t);
+			for (const auto& e : le) {
 				LogLootDetail(
-					"(Fourth Pass) NPC [{}] Lootdrop [{}] Item [{}] ({}_ Chance [{}] Multiplier [{}]",
+					"(Second Pass) NPC [{}] Lootdrop [{}] Item [{}] ({}_ Chance [{}] Multiplier [{}]",
 					GetCleanName(),
 					lootdrop_id,
 					database.GetItem(e.item_id) ? database.GetItem(e.item_id)->Name : "Unknown",
@@ -326,43 +228,45 @@ void NPC::AddLootDropTable(uint32 lootdrop_id, uint8 drop_limit, uint8 min_drop)
 					e.chance,
 					e.multiplier
 				);
+				auto loot_drop_entry = LootdropEntriesRepository::NewNpcEntity();
 				int8 charges = e.item_charges;
-				const EQ::ItemData *db_item = database.GetItem(e.item_id);
+				const EQ::ItemData* db_item = database.GetItem(e.item_id);
 				if (database.ItemQuantityType(e.item_id) == EQ::item::Quantity_Charges) {
 					if (charges <= 2) {
 						charges = db_item->MaxCharges;
 					}
 				}
+
 				if (db_item) {
-					if (zone->random.Real(0.0, 100.0) <= e.chance) {
+					if (roll < e.chance) {
 						bool equipitem = e.equip_item > 0 ? true : false;
 						bool force_equip = e.equip_item == 2 ? true : false;
 						loot_drop_entry = e;
 						loot_drop_entry.item_charges = charges;
 						AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
-						
-						int multiplier = (int)e.multiplier;
-						multiplier = EQ::ClampLower(multiplier, 1);
+						drops++;
+
+						uint8 multiplier = e.multiplier;
+						multiplier = EQ::ClampLower(multiplier, static_cast<uint8>(1));
 
 						for (int k = 1; k < multiplier; ++k) {
-							float c_roll = (float)zone->random.Real(0.0, 100.0);
+							float c_roll = static_cast<float>(zone->random.Real(0.0, 100.0));
 							if (c_roll <= e.chance) {
 								bool equipitem = e.equip_item > 0 ? true : false;
 								bool force_equip = e.equip_item == 2;
 								AddLootDrop(db_item, loot_drop_entry, equipitem, false, false, false, force_equip);
 							}
 						}
-						dropCount = dropCount + 1;
+						break;
+					}
+					else {
+						roll -= e.chance;
 					}
 				}
-				roll++;
-				if (roll > le.size()) {
-					roll = 0;
-				}
-				loops++;
 			}
 		}
 	}
+
 	UpdateEquipmentLight();
 }
 
@@ -455,8 +359,13 @@ void NPC::AddLootDrop(
 	uint8 equipment_slot = UINT8_MAX;
 	const EQ::ItemData *compitem = nullptr;
 
-	if (equipment[EQ::invslot::slotPrimary] > 0)
+	if (equipment[EQ::invslot::slotPrimary] > 0) {
 		compitem = database.GetItem(equipment[EQ::invslot::slotPrimary]);
+	}
+
+	if (item2->ID == 11543 && IsPet()) { // Sony hardcoded pets to not equip A Weighted Axe
+		equipit = false;
+	}
 
 	bool mainhandIs1h = compitem && compitem->IsType1HWeapon();
 	bool itemIs2h = item2->IsType2HWeapon();

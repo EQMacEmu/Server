@@ -6033,7 +6033,9 @@ std::vector<int> Client::GetMemmedSpells() {
 
 std::vector<int> Client::GetScribeableSpells(uint8 min_level, uint8 max_level) {
 	bool SpellGlobalRule = RuleB(Spells, EnableSpellGlobals);
+	bool SpellBucketRule = RuleB(Spells, EnableSpellBuckets);
 	bool SpellGlobalCheckResult = false;
+	bool SpellBucketCheckResult = false;
 	std::vector<int> scribeable_spells;
 	for (int spell_id = 0; spell_id < SPDAT_RECORDS; ++spell_id) {
 		bool scribeable = false;
@@ -6055,6 +6057,12 @@ std::vector<int> Client::GetScribeableSpells(uint8 min_level, uint8 max_level) {
 		if (SpellGlobalRule) {
 			SpellGlobalCheckResult = SpellGlobalCheck(spell_id, CharacterID());
 			if (SpellGlobalCheckResult) {
+				scribeable = true;
+			}
+		}
+		else if (SpellBucketRule) {
+			SpellBucketCheckResult = SpellBucketCheck(spell_id, CharacterID());
+			if (SpellBucketCheckResult) {
 				scribeable = true;
 			}
 		}

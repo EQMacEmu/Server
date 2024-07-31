@@ -4401,6 +4401,50 @@ bool Client::SpellGlobalCheck(uint16 spell_ID, uint32 char_ID) {
     return false;
 }
 
+bool Client::SpellBucketCheck(uint16 spell_id, uint32 char_id) {
+	std::string spell_bucket_name;
+	int spell_bucket_value;
+	int bucket_value;
+	std::string query = StringFormat("SELECT key, value FROM spell_buckets WHERE spellid = %i", spell_id);
+	auto results = database.QueryDatabase(query);
+	if (!results.Success())
+		return false;
+
+	if (results.RowCount() != 1)
+		return true;
+
+	auto row = results.begin();
+	spell_bucket_name = row[0];
+	spell_bucket_value = atoi(row[1]);
+	if (spell_bucket_name.empty())
+		return true;
+
+	query = StringFormat("SELECT value FROM data_buckets WHERE key = '%i-%s'", char_id, spell_bucket_name.c_str());
+	results = database.QueryDatabase(query);
+	if (!results.Success()) {
+		Log(Logs::General, Logs::Error, "Spell bucket %s for spell ID %i for char ID %i failed.", spell_bucket_name.c_str(), spell_id, char_id);
+		return false;
+	}
+
+	if (results.RowCount() != 1) {
+		Log(Logs::General, Logs::Error, "Spell bucket %s does not exist for spell ID %i for char ID %i.", spell_bucket_name.c_str(), spell_id, char_id);
+		return false;
+	}
+
+	row = results.begin();
+
+	bucket_value = atoi(row[0]);
+
+	if (bucket_value == spell_bucket_value)
+		return true; // If the values match from both tables, allow the spell to be scribed
+	else if (bucket_value > spell_bucket_value)
+		return true; // Check if the data bucket value is greater than the required spell bucket value
+
+	// If no matching result found in spell buckets, don't scribe this spell
+	Log(Logs::General, Logs::Error, "Spell bucket %s for spell ID %i for char ID %i did not match value %i.", spell_bucket_name.c_str(), spell_id, char_id, spell_bucket_value);
+	return false;
+}
+
 int16 Mob::GetBuffSlotFromType(uint16 type) {
 	uint32 buff_count = GetMaxTotalSlots();
 	for (int i = 0; i < buff_count; i++) {
