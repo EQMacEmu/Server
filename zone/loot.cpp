@@ -591,7 +591,7 @@ void NPC::AddLootDrop(
 		}
 
 		uint16 equipment_material = 0;
-		if (equipment_slot != UINT8_MAX && wearchange) {
+		if (equipment_slot != EQ::textures::materialInvalid && wearchange) {
 			// Don't equip a ranged item if we already have primary or secondary.
 			if (equipment_slot == EQ::textures::textureRange && (equipment[EQ::invslot::slotPrimary] || equipment[EQ::invslot::slotSecondary])) {
 				send_wearchange = false;
