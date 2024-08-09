@@ -86,14 +86,14 @@ struct CharacterEntry {
 class Client {
 
 public:
-	Client(std::shared_ptr<EQStreamInterface> eqs);
+	Client(std::shared_ptr<EQStream> eqs);
 	~Client();
 
-	std::shared_ptr<EQStreamInterface> ClientStream;
+	std::shared_ptr<EQStream> ClientStream;
 	void AddCharacter(int CharID, const char *CharacterName, int Level, int Race, int Class);
 	void ClearCharacters() { Characters.clear(); }
 	void SendChatlist();
-	inline void QueuePacket(const EQApplicationPacket *p, bool ack_req=true) { ClientStream->QueuePacket(p, ack_req); }
+	inline void QueuePacket(const EQApplicationPacket* p, bool ack_req = true) { if (ClientStream && ClientStream->CheckActive()) ClientStream->QueuePacket(p, ack_req); }
 	std::string GetName() { if(Characters.size()) return Characters[0].Name; else return ""; }
 	int GetLevel() { if (Characters.size()) return Characters[0].Level; else return 0; }
 	int GetRace() { if (Characters.size()) return Characters[0].Race; else return 999; }

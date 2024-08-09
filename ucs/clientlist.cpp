@@ -218,9 +218,11 @@ Clientlist::Clientlist(int ChatPort) {
 	}
 }
 
-Client::Client(std::shared_ptr<EQStreamInterface> eqs) {
+Client::Client(std::shared_ptr<EQStream> eqs) {
 
 	ClientStream = eqs;
+	if (ClientStream != nullptr)
+		ClientStream->PutInUse();
 
 	Announce = false;
 
@@ -336,7 +338,7 @@ void Clientlist::CheckForStaleConnections(Client *c) {
 
 void Clientlist::Process()
 {
-	std::shared_ptr<EQStreamInterface> eqs;
+	std::shared_ptr<EQStream> eqs;
 
 	// Pop sets PutInUse() for the stream.
 	while ((eqs = chatsf->Pop())) {
@@ -370,12 +372,16 @@ void Clientlist::Process()
 			++it;
 			continue;
 		}
-		if ((*it)->ClientStream->CheckState(CLOSED)) {
+		if ((*it)->ClientStream->CheckClosed()) {
 			//(*it)->ClientStream->ReleaseFromUse();
 			(*it)->ClientStream = nullptr;
 			(*it)->SetStale();
 			++it;
 			continue;
+		}
+		else {
+			// this keeps stream open while we are using it.
+			(*it)->ClientStream->PutInUse();
 		}
 
 		EQApplicationPacket *app = nullptr;
