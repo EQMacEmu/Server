@@ -30,7 +30,6 @@
 #include "database.h"
 #include "chatchannel.h"
 
-#include "../common/eqemu_config.h"
 #include "../common/eq_stream_factory.h"
 #include "../common/emu_tcp_connection.h"
 #include "../common/emu_tcp_server.h"
@@ -218,10 +217,10 @@ Clientlist::Clientlist(int ChatPort) {
 	}
 }
 
-Client::Client(std::shared_ptr<EQStream> eqs) {
+Client::Client(EQStream *eqs) {
 
 	ClientStream = eqs;
-	if (ClientStream != nullptr)
+	if(ClientStream != nullptr)
 		ClientStream->PutInUse();
 
 	Announce = false;
@@ -338,7 +337,7 @@ void Clientlist::CheckForStaleConnections(Client *c) {
 
 void Clientlist::Process()
 {
-	std::shared_ptr<EQStream> eqs;
+	EQStream *eqs;
 
 	// Pop sets PutInUse() for the stream.
 	while ((eqs = chatsf->Pop())) {

@@ -27,7 +27,7 @@ extern EQCrypto eq_crypto;
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
 
-Client::Client(std::shared_ptr<EQStreamInterface> c, LSClientVersion v)
+Client::Client(EQStreamInterface *c, LSClientVersion v)
 {
 	m_connection = c;
 	m_client_version = v;

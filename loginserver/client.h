@@ -38,7 +38,7 @@ public:
 	/**
 	* Constructor, sets our connection to c and version to v
 	*/
-	Client(std::shared_ptr<EQStreamInterface> c, LSClientVersion v);
+	Client(EQStreamInterface *c, LSClientVersion v);
 
 	/**
 	* Destructor.
@@ -133,7 +133,7 @@ public:
 	/**
 	* Gets the connection for this client.
 	*/
-	std::shared_ptr<EQStreamInterface> GetConnection() { return m_connection; }
+	EQStreamInterface *GetConnection() { return m_connection; }
 
 	/**
 	* Gets the client version for this client.
@@ -144,7 +144,7 @@ public:
 
 private:
 	EQ::Random                         m_random;
-	std::shared_ptr<EQStreamInterface> m_connection;
+	EQStreamInterface *m_connection;
 	LSClientVersion                    m_client_version;
 	LSClientStatus                     m_client_status;
 	LSMacClientVersion                 m_client_mac_version;
