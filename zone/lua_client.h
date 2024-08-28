@@ -250,6 +250,9 @@ public:
 
 	bool SendGMCommand(std::string message);
 	bool SendGMCommand(std::string message, bool ignore_status);
+
+	void SetClientMaxLevel(uint8 max_level);
+	uint8 GetClientMaxLevel();
 };
 
 #endif

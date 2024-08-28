@@ -19,9 +19,9 @@ void command_movechar(Client *c, const Seperator *sep){
 					if(zone_id == 0)
 						c->Message(Chat::White, "Character Move Failed!");
 					else
-						c->Message(Chat::White, "%s has been moved to %s.", (char*)sep->arg[1], database.GetZoneName(zone_id));
+						c->Message(Chat::White, "%s has been moved to %s.", (char*)sep->arg[1], ZoneName(zone_id));
 				}
-				else if (!database.MoveCharacterToZone((char*)sep->arg[1], (char*)sep->arg[2]))
+				else if (!database.MoveCharacterToZone((char*)sep->arg[1], ZoneID(sep->arg[2])))
 					c->Message(Chat::White, "Character Move Failed!");
 				else
 					c->Message(Chat::White, "%s has been moved to %s.", (char*)sep->arg[1], (char*)sep->arg[2]);

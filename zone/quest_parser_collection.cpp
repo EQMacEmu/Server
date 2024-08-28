@@ -81,10 +81,9 @@ void QuestParserCollection::ReloadQuests(bool reset_timers) {
 	_spell_quest_status.clear();
 	_item_quest_status.clear();
 	_encounter_quest_status.clear();
-	auto iter = _load_precedence.begin();
-	while(iter != _load_precedence.end()) {
-		(*iter)->ReloadQuests();
-		++iter;
+
+	for (const auto& e : _load_precedence) {
+		e->ReloadQuests();
 	}
 }
 

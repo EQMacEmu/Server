@@ -48,7 +48,7 @@ void command_peqzone(Client *c, const Seperator *sep){
 		return;
 	}
 	else {
-		zoneid = database.GetZoneID(sep->arg[1]);
+		zoneid = ZoneID(sep->arg[1]);
 		destzone = database.GetPEQZone(zoneid);
 		if (zoneid == 0) {
 			c->Message(Chat::White, "Unable to locate zone '%s'", sep->arg[1]);

@@ -1034,7 +1034,7 @@ bool SharedDatabase::LoadSkillCaps(const std::string &prefix)
 {
 	skill_caps_mmf.reset(nullptr);
 
-	uint32 class_count = PLAYER_CLASS_COUNT;
+	uint32 class_count = Class::PLAYER_CLASS_COUNT;
 	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
 	uint32 level_count = HARD_LEVEL_CAP + 1;
 	uint32 size = (class_count * skill_count * level_count * sizeof(uint16));
@@ -1057,7 +1057,7 @@ bool SharedDatabase::LoadSkillCaps(const std::string &prefix)
 
 void SharedDatabase::LoadSkillCaps(void *data)
 {
-	uint32 class_count = PLAYER_CLASS_COUNT;
+	uint32 class_count = Class::PLAYER_CLASS_COUNT;
 	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
 	uint32 level_count = HARD_LEVEL_CAP + 1;
 	uint16 *skill_caps_table = reinterpret_cast<uint16*>(data);
@@ -1097,7 +1097,7 @@ uint16 SharedDatabase::GetSkillCap(uint8 Class_, EQ::skills::SkillType Skill, ui
 		SkillMaxLevel = RuleI(Character, MaxLevel);
 	}
 
-	uint32 class_count = PLAYER_CLASS_COUNT;
+	uint32 class_count = Class::PLAYER_CLASS_COUNT;
 	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
 	uint32 level_count = HARD_LEVEL_CAP + 1;
 	if(Class_ > class_count || static_cast<uint32>(Skill) > skill_count || Level > level_count) {
@@ -1127,7 +1127,7 @@ uint8 SharedDatabase::GetTrainLevel(uint8 Class_, EQ::skills::SkillType Skill, u
 		SkillMaxLevel = RuleI(Character, MaxLevel);
 	}
 
-	uint32 class_count = PLAYER_CLASS_COUNT;
+	uint32 class_count = Class::PLAYER_CLASS_COUNT;
 	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
 	uint32 level_count = HARD_LEVEL_CAP + 1;
 	if(Class_ > class_count || static_cast<uint32>(Skill) > skill_count || Level > level_count) {
@@ -1313,7 +1313,7 @@ void SharedDatabase::LoadSpells(void *data, int max_spells)
 		sp[tempid].EnvironmentType = atoi(row[102]);
 		sp[tempid].TimeOfDay = atoi(row[103]);
 
-		for (y = 0; y < PLAYER_CLASS_COUNT; y++)
+		for (y = 0; y < Class::PLAYER_CLASS_COUNT; y++)
 			sp[tempid].classes[y] = atoi(row[104 + y]);
 
 		sp[tempid].CastingAnim = atoi(row[119]);
@@ -1386,7 +1386,7 @@ void SharedDatabase::LoadSpells(void *data, int max_spells)
 		sp[tempid].contains_se_currentmana = false;
 
 		int r, min = 255;
-		for (r = 0; r < PLAYER_CLASS_COUNT; r++)
+		for (r = 0; r < Class::PLAYER_CLASS_COUNT; r++)
 			if (sp[tempid].classes[r] < min)
 				min = sp[tempid].classes[r];
 
@@ -1396,7 +1396,7 @@ void SharedDatabase::LoadSpells(void *data, int max_spells)
 		if (min < 127)
 			sp[tempid].min_castinglevel = min;
 
-		if (sp[tempid].classes[BARD - 1] < 255)
+		if (sp[tempid].classes[Class::Bard - 1] < 255)
 			sp[tempid].bardsong = true;
 
 		if (sp[tempid].RecourseLink != 0 && sp[tempid].RecourseLink != 1 && sp[tempid].RecourseLink != 0xFFFFFFFF)

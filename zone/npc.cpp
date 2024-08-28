@@ -71,7 +71,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 		npc_type_data->gender,
 		npc_type_data->race,
 		npc_type_data->class_,
-		(bodyType)npc_type_data->bodytype,
+		npc_type_data->bodytype,
 		npc_type_data->deity,
 		npc_type_data->level,
 		npc_type_data->npc_id,
@@ -137,7 +137,9 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	}
 
 	NPCTypedata = npc_type_data;
+	NPCTypedata_ours = false;
 	respawn2 = in_respawn;
+
 	swarm_timer.Disable();
 
 	taunting = false;
@@ -207,8 +209,8 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	SetMana(GetMaxMana());
 
 	MerchantType = npc_type_data->merchanttype;
-	merchant_open = GetClass() == MERCHANT;
-	if (MerchantType > 0 && GetClass() == MERCHANT)
+	merchant_open = GetClass() == Class::Merchant;
+	if (MerchantType > 0 && GetClass() == Class::Merchant)
 	{
 		zone->ResetMerchantQuantity(MerchantType);
 	}
@@ -319,7 +321,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	skills[EQ::skills::SkillRiposte] = 0;
 	skills[EQ::skills::SkillParry] = 0;
 
-	if (class_ == WARRIOR || class_ == WARRIORGM || GetSpecialAbility(USE_WARRIOR_SKILLS))
+	if (class_ == Class::Warrior || class_ == Class::WarriorGM || GetSpecialAbility(USE_WARRIOR_SKILLS))
 	{
 		skills[EQ::skills::SkillBash] = bashSkill;
 		skills[EQ::skills::SkillKick] = kickSkill;
@@ -329,34 +331,40 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 
 	switch (class_)
 	{
-		case PALADIN: case PALADINGM:
-		case SHADOWKNIGHT: case SHADOWKNIGHTGM:
+		case Class::Paladin: 
+		case Class::PaladinGM:
+		case Class::ShadowKnight: 
+		case Class::ShadowKnightGM:
 		{
 			skills[EQ::skills::SkillBash] = bashSkill;
 			skills[EQ::skills::SkillRiposte] = riposteSkill;
 			skills[EQ::skills::SkillParry] = parrySkill;
 			break;
 		}
-		case RANGER: case RANGERGM:
+		case Class::Ranger: 
+		case Class::RangerGM:
 		{
 			skills[EQ::skills::SkillKick] = kickSkill;
 			skills[EQ::skills::SkillRiposte] = riposteSkill;
 			skills[EQ::skills::SkillParry] = parrySkill;
 			break;
 		}
-		case CLERIC: case CLERICGM:
+		case Class::Cleric: 
+		case Class::ClericGM:
 		{
 			skills[EQ::skills::SkillBash] = bashSkill;
 			break;
 		}
-		case ROGUE: case ROGUEGM:
+		case Class::Rogue: 
+		case Class::RogueGM:
 		{
 			skills[EQ::skills::SkillBackstab] = level > 9 ? skillLevel : 0;
 			skills[EQ::skills::SkillRiposte] = riposteSkill;
 			skills[EQ::skills::SkillParry] = parrySkill;
 			break;
 		}
-		case MONK: case MONKGM:
+		case Class::Monk: 
+		case Class::MonkGM:
 		{
 			skills[EQ::skills::SkillBlock] = level > 11 ? skillLevel : 0;
 			skills[EQ::skills::SkillDodge] = level > 10 ? std::min(level * 5, 230) : 0;
@@ -368,7 +376,8 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 			skills[EQ::skills::SkillFlyingKick] = level > 29 ? skillLevel : 0;
 			break;
 		}
-		case BARD: case BARDGM:
+		case Class::Bard: 
+		case Class::BardGM:
 		{
 			skills[EQ::skills::SkillRiposte] = riposteSkill;
 			skills[EQ::skills::SkillParry] = parrySkill;
@@ -423,7 +432,6 @@ NPC::~NPC()
 		safe_delete(proximity);
 	}
 
-	{
 	LootItems::iterator cur,end;
 	cur = m_loot_items.begin();
 	end = m_loot_items.end();
@@ -431,8 +439,8 @@ NPC::~NPC()
 		LootItem* item = *cur;
 		safe_delete(item);
 	}
+
 	m_loot_items.clear();
-	}
 
 	{
 	std::list<struct NPCFaction*>::iterator cur,end;
@@ -446,8 +454,9 @@ NPC::~NPC()
 	}
 
 	safe_delete(reface_timer);
-	if (GetSwarmInfo())
-		safe_delete(NPCTypedata);	// created in Mob::CreateTemporaryPet
+	if (NPCTypedata_ours) {
+		safe_delete(NPCTypedata);
+	}
 	safe_delete(swarmInfoPtr);
 	safe_delete(qGlobals);
 	UninitializeBuffSlots();
@@ -728,7 +737,7 @@ bool NPC::DatabaseCastAccepted(int spell_id) {
 	return false;
 }
 
-void NPC::SpawnGridNodeNPC(const glm::vec4& position, int32 grid_number, int32 zoffset)
+void NPC::SpawnGridNodeNPC(const glm::vec4& position, int32 grid_id, int32 grid_number, int32 zoffset)
 {
 	auto npc_type = new NPCType;
 	memset(npc_type, 0, sizeof(NPCType));
@@ -743,9 +752,9 @@ void NPC::SpawnGridNodeNPC(const glm::vec4& position, int32 grid_number, int32 z
 
 	npc_type->cur_hp = 4000000;
 	npc_type->max_hp = 4000000;
-	npc_type->race = 151;
-	npc_type->gender = 2;
-	npc_type->class_ = 9;
+	npc_type->race = Race::Tribunal;
+	npc_type->gender = Gender::Neuter;
+	npc_type->class_ = Class::Rogue;
 	npc_type->deity = 1;
 	npc_type->level = 75;
 	npc_type->npc_id = 0;
@@ -772,9 +781,56 @@ void NPC::SpawnGridNodeNPC(const glm::vec4& position, int32 grid_number, int32 z
 	auto npc = new NPC(npc_type, nullptr, node_position, GravityBehavior::Flying);
 	
 	npc->name[strlen(npc->name) - 3] = (char)NULL;
+	npc->GiveNPCTypeData();
+	npc->SetEntityVariable("grid_id", itoa(grid_id));
+	entity_list.AddNPC(npc);
+}
+
+void NPC::SpawnZonePointNodeNPC(std::string name, const glm::vec4& position)
+{
+	auto npc_type = new NPCType;
+	memset(npc_type, 0, sizeof(NPCType));
+
+	char node_name[64];
+	strn0cpy(node_name, name.c_str(), 64);
+
+	strcpy(npc_type->name, entity_list.MakeNameUnique(node_name));
+
+	npc_type->cur_hp = 4000000;
+	npc_type->max_hp = 4000000;
+	npc_type->race = Race::Tribunal;
+	npc_type->gender = Gender::Neuter;
+	npc_type->class_ = Class::Rogue;
+	npc_type->deity = 1;
+	npc_type->level = 200;
+	npc_type->npc_id = 0;
+	npc_type->loottable_id = 0;
+	npc_type->texture = 1;
+	npc_type->light = 1;
+	npc_type->size = 5;
+	npc_type->runspeed = 0;
+	npc_type->merchanttype = 1;
+	npc_type->bodytype = 1;
+	npc_type->STR = 150;
+	npc_type->STA = 150;
+	npc_type->DEX = 150;
+	npc_type->AGI = 150;
+	npc_type->INT = 150;
+	npc_type->WIS = 150;
+	npc_type->CHA = 150;
+
+	strcpy(npc_type->special_abilities, "19,1^20,1^24,1^35,1");
+
+	auto node_position = glm::vec4(position.x, position.y, position.z, position.w);
+	auto npc = new NPC(npc_type, nullptr, node_position, GravityBehavior::Flying);
+
+	npc->name[strlen(npc->name) - 3] = (char)NULL;
+
+	npc->GiveNPCTypeData();
 
 	entity_list.AddNPC(npc);
 }
+
 
 NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* client) {
 	if(spawncommand == 0 || spawncommand[0] == 0) {
@@ -814,7 +870,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 			int tmplevel = atoi(sep.arg[2]);
 			switch(atoi(sep.arg[5]))
 			{
-			case WARRIOR:
+			case Class::Warrior:
 				if (tmplevel < 20)
 					multiplier = 22;
 				else if (tmplevel < 30)
@@ -829,14 +885,14 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 					multiplier = 30;
 				break;
 
-			case DRUID:
-			case CLERIC:
-			case SHAMAN:
+			case Class::Druid:
+			case Class::Cleric:
+			case Class::Shaman:
 				multiplier = 15;
 				break;
 
-			case PALADIN:
-			case SHADOWKNIGHT:
+			case Class::Paladin:
+			case Class::ShadowKnight:
 				if (tmplevel < 35)
 					multiplier = 21;
 				else if (tmplevel < 45)
@@ -851,10 +907,10 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 					multiplier = 26;
 				break;
 
-			case MONK:
-			case BARD:
-			case ROGUE:
-			//case BEASTLORD:
+			case Class::Monk:
+			case Class::Bard:
+			case Class::Rogue:
+			//case Class::Beastlord:
 				if (tmplevel < 51)
 					multiplier = 18;
 				else if (tmplevel < 58)
@@ -863,17 +919,17 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 					multiplier = 20;
 				break;
 
-			case RANGER:
+			case Class::Ranger:
 				if (tmplevel < 58)
 					multiplier = 20;
 				else
 					multiplier = 21;
 				break;
 
-			case MAGICIAN:
-			case WIZARD:
-			case NECROMANCER:
-			case ENCHANTER:
+			case Class::Magician:
+			case Class::Wizard:
+			case Class::Necromancer:
+			case Class::Enchanter:
 				multiplier = 12;
 				break;
 
@@ -939,6 +995,7 @@ NPC* NPC::SpawnNPC(const char* spawncommand, const glm::vec4& position, Client* 
 			npc_type->size = 6.0f;
 
 		auto npc = new NPC(npc_type, nullptr, position, GravityBehavior::Water);
+		npc->GiveNPCTypeData();
 
 		entity_list.AddNPC(npc);
 
@@ -1271,7 +1328,7 @@ uint32 NPC::GetMaxDamage(uint8 tlevel)
 
 void NPC::PickPocket(Client* thief) 
 {
-	if(bodytype != BT_Humanoid || IsPet() || (thief->hidden || thief->invisible))
+	if(bodytype != BodyType::Humanoid || IsPet() || (thief->hidden || thief->invisible))
 	{
 		thief->SendPickPocketResponse(this, 0, PickPocketFailed, 0, nullptr, true);
 		return;
@@ -1910,7 +1967,7 @@ void NPC::DoNPCEmote(uint8 event_, uint32 emoteid, Mob* target)
 void NPC::DoFactionEmote()
 {
 	Mob* target = GetTarget();
-	if (!target || !target->IsClient() || !GetPrimaryFaction() || IsPet() || GetClass() == MERCHANT || GetClass() == BANKER)
+	if (!target || !target->IsClient() || !GetPrimaryFaction() || IsPet() || GetClass() == Class::Merchant || GetClass() == Class::Banker)
 		return;
 
 	FactionMods fmods;
@@ -2150,7 +2207,7 @@ float NPC::ApplyPushVector(bool noglance)
 	float magnitude = sqrtf(push_vector.x * push_vector.x + push_vector.y * push_vector.y);
 	glm::vec2 pushUnitV(push_vector.x / magnitude, push_vector.y / magnitude);
 	float sizeCushion = GetSize() / 2.0f;
-	if (GetRace() == 304) // use larger cushion on quarm.  Adjusted to match quarm videos of how far he goes into wall.
+	if (GetRace() == Race::Quarm) // use larger cushion on quarm.  Adjusted to match quarm videos of how far he goes into wall.
 		sizeCushion /= 2.0f;
 	else if (sizeCushion > 2.5f)
 		sizeCushion = 2.5f;
@@ -2528,7 +2585,7 @@ float NPC::ApplyPushVector(bool noglance)
 
 bool NPC::IsBoat()
 {
-	return (GetBaseRace() == SHIP || GetBaseRace() == LAUNCH || GetBaseRace() == CONTROLLED_BOAT || GetBaseRace() == GHOST_SHIP);
+	return (GetBaseRace() == Race::Ship || GetBaseRace() == Race::Launch || GetBaseRace() == Race::Boat || GetBaseRace() == Race::GhostShip);
 }
 
 
@@ -2536,27 +2593,139 @@ void NPC::ShowQuickStats(Client* c)
 {
 	//This is just #npcstats, but accessible using #showstats 1
 	c->Message(Chat::White, "NPC Stats:");
-	c->Message(Chat::White, "Name: %s  NpcID: %u EntityID: %i", GetName(), GetNPCTypeID(), GetID());
-	c->Message(Chat::White, "Race: %i  Level: %i  Class: %i  Material: %i", GetRace(), GetLevel(), GetClass(), GetTexture());
-	c->Message(Chat::White, "Current HP: %i  Max HP: %i Per: %0.2f", GetHP(), GetMaxHP(), GetHPRatio());
-	c->Message(Chat::White, "Min Damage: %i Max Damage: %i", GetMinDMG(), GetMaxDMG());
-	c->Message(Chat::White, "Gender: %i  Size: %f  Bodytype: %d", GetGender(), GetSize(), GetBodyType());
-	c->Message(Chat::White, "Runspeed: %f  Walkspeed: %f FlyMode: %d", GetRunspeed(), GetWalkspeed(), GetFlyMode());
-	c->Message(Chat::White, "Spawn Group: %i  Grid: %i", GetSp2(), GetGrid());
-	c->Message(Chat::White, "EmoteID: %i", GetEmoteID());
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"NPC | [ID: {}] [Name: {}] [EntityID: {}]", 
+			GetNPCTypeID(), 
+			GetName(),  
+			GetID()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"[Level: {}] [Race: {} ({})] [Class: {} ({})] [Gender: {} ({})]",
+			GetLevel(),
+			GetRaceIDName(GetRace()),
+			GetRace(),
+			GetClassIDName(GetClass()),
+			GetClass(),
+			GetGenderName(GetGender()),
+			GetGender()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"[Current HP: {}]  [Max HP: {}] [Per: {:.2f}]",
+			GetHP(),
+			GetMaxHP(),
+			GetHPRatio()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"[Min Damage: {}] [Max Damage: {}]", 
+			GetMinDMG(), 
+			GetMaxDMG()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"[Material: {}] [Size: {:.2f}] [Bodytype: {} ({})]", 
+			GetTexture(),  
+			GetSize(), 
+			BodyType::GetName(GetBodyType()), 
+			GetBodyType()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"[Runspeed: {:.2f}] [Walkspeed: {:.2f}] [FlyMode: {}]", 
+			GetRunspeed(), 
+			GetWalkspeed(), 
+			static_cast<int>(GetFlyMode())
+		).c_str()
+	);
+
+	uint32 spawngroupid = 0;
+	if (respawn2 != 0) {
+		spawngroupid = respawn2->SpawnGroupID();
+	}
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"Spawn| [Group: {}] [Point: {}] [Grid: {}]", 
+			spawngroupid, 
+			GetSpawnPointID(), 
+			GetGrid()
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"[EmoteID: {}]", 
+			GetEmoteID()
+		).c_str()
+	);
+
 	DisplayAttackTimer(c);
 	QueryLoot(c);
-	if (IsCasting())
-		c->Message(Chat::White, "NPC is currently casting spell: %s (id %u); remaining cast time: %0.3f seconds", 
-			spells[casting_spell_id].name, casting_spell_id, static_cast<float>(spellend_timer.GetRemainingTime()) / 1000.0f);
-	if (IsWalled())
-	{
-		c->Message(Chat::White, "NPC is walled.  Wall 1 normal: %0.3f, %0.3f", wall_normal1_x, wall_normal1_y);
-		if (wall_normal2_x || wall_normal2_y)
-			c->Message(Chat::White, "NPC is walled.  Wall 2 normal: %0.3f, %0.3f", wall_normal2_x, wall_normal2_y);
+
+	if (IsCasting()) {
+		c->Message(
+			Chat::White, 
+			fmt::format(
+				"NPC is currently casting spell: {} (id {}); remaining cast time: {:.3f} seconds",
+				spells[casting_spell_id].name, 
+				casting_spell_id, 
+				static_cast<float>(spellend_timer.GetRemainingTime()) / 1000.0f
+			).c_str()
+		);
 	}
-	if (corner_x || corner_y)
-		c->Message(Chat::White, "NPC is cornered.  Corner loc: %0.3f, %0.3f", corner_x, corner_y);
+
+	if (IsWalled()) {
+		c->Message(
+			Chat::White, 
+			fmt::format(
+				"NPC is walled.  Wall 1 normal: {:.3f}, {:.3f}", 
+				wall_normal1_x, 
+				wall_normal1_y
+			).c_str()
+		
+		);
+
+		if (wall_normal2_x || wall_normal2_y) {
+			c->Message(
+				Chat::White, 
+				fmt::format(
+					"NPC is walled.  Wall 2 normal: {:.3f}, {:.3f}", 
+					wall_normal2_x, 
+					wall_normal2_y
+				).c_str()
+			);
+		}
+	}
+	if (corner_x || corner_y) {
+		c->Message(
+			Chat::White, 
+			fmt::format(
+				"NPC is cornered.  Corner loc: {:.3f}, {:.3f}", 
+				corner_x, 
+				corner_y
+			).c_str()
+		);
+	}
 }
 
 void NPC::ClearPathing()
@@ -2708,4 +2877,9 @@ void NPC::SetSkill(EQ::skills::SkillType skill_num, uint16 value)
 		return;
 	
 	skills[skill_num] = value;
+}
+
+void NPC::ReloadSpells() {
+	AI_AddNPCSpells(GetNPCSpellsID());
+	AI_AddNPCSpellsEffects(GetNPCSpellsEffectsID());
 }

@@ -8,9 +8,9 @@ void command_zone(Client *c, const Seperator *sep)
 		return;
 	}
 
-	const char* zone_identifier = sep->arg[1];
+	std::string zone_identifier = sep->arg[1];
 
-	if (Strings::IsNumber(zone_identifier) && !strcmp(zone_identifier, "0")) {
+	if (Strings::IsNumber(zone_identifier) && zone_identifier == "0") {
 		c->Message(Chat::White, "Sending you to the safe coordinates of this zone.");
 
 		c->MovePC(
@@ -27,9 +27,9 @@ void command_zone(Client *c, const Seperator *sep)
 	auto zone_id = (
 		sep->IsNumber(1) ?
 		std::stoul(zone_identifier) :
-		database.GetZoneID(zone_identifier)
+		ZoneID(zone_identifier)
 		);
-	auto zone_short_name = database.GetZoneName(zone_id);
+	auto zone_short_name =ZoneName(zone_id);
 	if (!zone_id || !zone_short_name) {
 		c->Message(
 			Chat::White,
@@ -52,12 +52,14 @@ void command_zone(Client *c, const Seperator *sep)
 	auto z = sep->IsNumber(4) ? std::stof(sep->arg[4]) : 0.0f;
 	auto zone_mode = sep->IsNumber(2) ? ZoneSolicited : ZoneToSafeCoords;
 
+	auto zd = GetZone(zone_id);
+
 	c->MovePC(
 		zone_id,
 		x,
 		y,
 		z,
-		0.0f,
+		zd ? zd->safe_heading : 0.0f,
 		0,
 		zone_mode
 	);

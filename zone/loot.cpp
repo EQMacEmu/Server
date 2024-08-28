@@ -10,6 +10,7 @@
 #include "global_loot_manager.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/repositories/global_loot_repository.h"
+#include "../common/zone_store.h"
 
 #include <iostream>
 #include <stdlib.h>

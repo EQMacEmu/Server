@@ -27,6 +27,7 @@
 
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
 
 #include "queryserv.h"
@@ -120,7 +121,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 
 	//changing from a switch to string of if's since we don't need to iterate through all of the skills in the SkillType enum
 	if (spec.tradeskill == EQ::skills::SkillAlchemy) {
-		if (user_pp.class_ != SHAMAN) {
+		if (user_pp.class_ != Class::Shaman) {
 			user->Message(Chat::Red, "This tradeskill can only be performed by a shaman.");
 			return;
 		}
@@ -136,7 +137,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 		}
 	}
 	else if (spec.tradeskill == EQ::skills::SkillMakePoison) {
-		if (user_pp.class_ != ROGUE) {
+		if (user_pp.class_ != Class::Rogue) {
 			user->Message(Chat::Red, "Only rogues can mix poisons.");
 			return;
 		}
@@ -337,7 +338,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		Log(Logs::Detail, Logs::Tradeskills, "Combine failed");
 			if (this->GetGroup())
 		{
-			entity_list.MessageGroup(this,true, Chat::Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == 0 ? "his" : this->GetGender() == 1 ? "her" : "its");
+			entity_list.MessageGroup(this,true, Chat::Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == Gender::Male ? "his" : this->GetGender() == Gender::Female ? "her" : "its");
 
 		}
 

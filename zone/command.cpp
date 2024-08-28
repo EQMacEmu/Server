@@ -231,7 +231,7 @@ int command_init(void)
 		command_add("numauths", "TODO: describe this command.", AccountStatus::Max, command_numauths) ||
 
 		command_add("oocmute", "[1/0] - Mutes OOC chat.", AccountStatus::GMStaff, command_oocmute) ||
-		command_add("opcode", "opcode management.", AccountStatus::GMCoder, command_opcode) ||
+		command_add("opcode", "Reloads all opcodes from server patch files", AccountStatus::GMMgmt, command_reload) ||
 		command_add("optest", "solar's private test command.", AccountStatus::GMCoder, command_optest) ||
 
 		command_add("path", "view and edit pathing.", AccountStatus::GMImpossible, command_path) ||
@@ -255,19 +255,10 @@ int command_init(void)
 		command_add("randtest", "Perform a sampling of random number generation", AccountStatus::GMImpossible, command_randtest) ||
 		command_add("randomfeatures", "Temporarily randomizes the Facial Features of your target.", AccountStatus::GMCoder, command_randomfeatures) ||
 		command_add("refreshgroup", "Refreshes Group.", AccountStatus::EQSupport, command_refreshgroup) ||
-		command_add("reloadallrules", "Executes a reload of all rules.", AccountStatus::GMCoder, command_reloadallrules) ||
-		command_add("reloadcontentflags", "Executes a reload of all expansion and content flags", AccountStatus::QuestTroupe, command_reloadcontentflags) ||
-		command_add("reloademote", "Reloads NPC Emotes.", AccountStatus::GMCoder, command_reloademote) ||
-		command_add("reloadlevelmods", "Reload your level mods", AccountStatus::Max, command_reloadlevelmods) ||
-		command_add("reloadmerchants", "Reloads NPC merchant list.", AccountStatus::Max, command_reloadmerchants) ||
-		command_add("reloadqst", "Clear quest cache (any argument causes it to also stop all timers).", AccountStatus::QuestMaster, command_reloadqst) ||
-		command_add("reloadrulesworld", "Executes a reload of all rules in world specifically.", AccountStatus::GMCoder, command_reloadworldrules) ||
-		command_add("reloadstatic", "Reload Static Zone Data.", AccountStatus::GMCoder, command_reloadstatic) ||
-		command_add("reloadtitles", "Reload player titles from the database.", AccountStatus::GMCoder, command_reloadtitles) ||
-		command_add("reloadtraps", "Repops all traps in the current zone.", AccountStatus::QuestTroupe, command_reloadtraps) ||
-		command_add("reloadworld", "[0|1] - Clear quest cache and reload all rules (0 - no repop, 1 - repop).", AccountStatus::GMImpossible, command_reloadworld) ||
-		command_add("reloadzps", "Reload zone points from database", AccountStatus::GMLeadAdmin, command_reloadzps) ||
-		command_add("repop", "[delay] - Repop the zone with optional delay.", AccountStatus::GMLeadAdmin, command_repop) ||
+		command_add("reload", "Reloads different types of server data globally, use no argument for help menu.", AccountStatus::GMMgmt, command_reload) || 
+		command_add("rq", "Reloads quests (alias of #reload quests).", AccountStatus::GMMgmt, command_reload) ||
+		command_add("rl", "Reloads logs (alias of #reload logs).", AccountStatus::GMMgmt, command_reload) ||
+		command_add("repop", "[Force] - Repop the zone with optional force repop.", AccountStatus::GMLeadAdmin, command_repop) ||
 		command_add("repopclose", "[distance in units] Repops only NPC's nearby for fast development purposes", AccountStatus::GMAdmin, command_repopclose) ||
 		command_add("resetaa", "Resets a Player's AA in their profile and refunds spent AA's to unspent, disconnects player.", AccountStatus::GMImpossible, command_resetaa) ||
 		command_add("resetboat", "Sets player's boat to 0 in their profile.", AccountStatus::GMStaff, command_resetboat) ||
@@ -306,6 +297,7 @@ int command_init(void)
 		command_add("showstats", "[quick stats]- Show details about you or your target. Quick stats shows only key stats.", AccountStatus::Guide, command_showstats) ||
 		command_add("showtraderitems", "Displays the list of items a trader has up for sale.", AccountStatus::QuestTroupe, command_showtraderitems) ||
 		command_add("showzonegloballoot", "Show GlobalLoot entires on this zone", 50, command_showzonegloballoot) ||
+		command_add("showzonepoints", "Show zone points for current zone", 50, command_showzonepoints) ||
 		command_add("shutdown", "Shut this zone process down.", AccountStatus::GMImpossible, command_shutdown) ||
 		command_add("size", "[size] - Change size of you or your target.", AccountStatus::GMAdmin, command_size) ||
 		command_add("skills", "List skill difficulty.", AccountStatus::GMAdmin, command_skilldifficulty) ||
@@ -554,15 +546,6 @@ int command_add(std::string command_name, std::string description, uint8 admin, 
 		return -1;
 	}
 
-	for (const auto &c : commandlist) {
-		if (c.second->function != function) {
-			continue;
-		}
-
-		LogError("command_add() - Command [{}] equates to an alias of [{}] - check command.cpp", command_name, c.first);
-		return -1;
-	}
-
 	auto c = new CommandRecord;
 	c->admin = admin;
 	c->description = description;
@@ -635,7 +618,7 @@ void command_help(Client *c, const Seperator *sep)
 
 	for (const auto &cur : commandlist) {
 		if (!search_criteria.empty()) {
-			if (cur.first.find(search_criteria) == std::string::npos) {
+			if (!Strings::Contains(cur.first, search_criteria) && !Strings::Contains(cur.second->description, search_criteria)) {
 				continue;
 			}
 		}
@@ -1093,7 +1076,6 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/nukeitem.cpp"
 #include "gm_commands/numauths.cpp"
 #include "gm_commands/oocmute.cpp"
-#include "gm_commands/opcode.cpp"
 #include "gm_commands/optest.cpp"
 #include "gm_commands/path.cpp"
 #include "gm_commands/peekinv.cpp"
@@ -1114,18 +1096,7 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/randomfeatures.cpp"
 #include "gm_commands/randtest.cpp"
 #include "gm_commands/refreshgroup.cpp"
-#include "gm_commands/reloadallrules.cpp"
-#include "gm_commands/reloadcontentflags.cpp"
-#include "gm_commands/reloademote.cpp"
-#include "gm_commands/reloadlevelmods.cpp"
-#include "gm_commands/reloadmerchants.cpp"
-#include "gm_commands/reloadqst.cpp"
-#include "gm_commands/reloadstatic.cpp"
-#include "gm_commands/reloadtitles.cpp"
-#include "gm_commands/reloadtraps.cpp"
-#include "gm_commands/reloadworld.cpp"
-#include "gm_commands/reloadworldrules.cpp"
-#include "gm_commands/reloadzps.cpp"
+#include "gm_commands/reload.cpp"
 #include "gm_commands/repop.cpp"
 #include "gm_commands/repopclose.cpp"
 #include "gm_commands/resetaa.cpp"
@@ -1164,6 +1135,7 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/showstats.cpp"
 #include "gm_commands/showtraderitems.cpp"
 #include "gm_commands/showzonegloballoot.cpp"
+#include "gm_commands/showzonepoints.cpp"
 #include "gm_commands/shutdown.cpp"
 #include "gm_commands/size.cpp"
 #include "gm_commands/skilldifficulty.cpp"

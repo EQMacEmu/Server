@@ -19,7 +19,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 		if (sep->arg[2][0] != '\0') {
 			zoneid = atoi(sep->arg[2]);
 			if (zoneid < 1) {
-				zoneid = database.GetZoneID(sep->arg[2]);
+				zoneid = ZoneID(sep->arg[2]);
 			}
 		}
 		if (zoneid < 1) {
@@ -44,7 +44,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 			return;
 		}
 
-        c->Message(Chat::Yellow, "Success! Zone %s now requires a flag, named %s", database.GetZoneName(zoneid), flag_name);
+        c->Message(Chat::Yellow, "Success! Zone %s now requires a flag, named %s", ZoneName(zoneid), flag_name);
         return;
 	}
 
@@ -53,7 +53,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 		if (sep->arg[2][0] != '\0') {
 			zoneid = atoi(sep->arg[2]);
 			if (zoneid < 1) {
-				zoneid = database.GetZoneID(sep->arg[2]);
+				zoneid = ZoneID(sep->arg[2]);
 			}
 		}
 
@@ -71,7 +71,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 			return;
 		}
 
-		c->Message(Chat::Yellow, "Success! Zone %s no longer requires a flag.", database.GetZoneName(zoneid));
+		c->Message(Chat::Yellow, "Success! Zone %s no longer requires a flag.", ZoneName(zoneid));
 		return;
 	}
 
@@ -94,7 +94,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 		if (sep->arg[2][0] != '\0') {
 			zoneid = atoi(sep->arg[2]);
 			if (zoneid < 1) {
-				zoneid = database.GetZoneID(sep->arg[2]);
+				zoneid = ZoneID(sep->arg[2]);
 			}
 		}
 		if (zoneid < 1) {
@@ -117,7 +117,7 @@ void command_flagedit(Client *c, const Seperator *sep)
 		if (sep->arg[2][0] != '\0') {
 			zoneid = atoi(sep->arg[2]);
 			if (zoneid < 1) {
-				zoneid = database.GetZoneID(sep->arg[2]);
+				zoneid = ZoneID(sep->arg[2]);
 			}
 		}
 		if (zoneid < 1) {

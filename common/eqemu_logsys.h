@@ -118,6 +118,8 @@ namespace Logs{
 		PacketServerClient,
 		PacketClientServer,
 		PacketServerToServer,
+		HotReload,
+		ZonePoints,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -193,7 +195,9 @@ namespace Logs{
 		"FixZ",
 		"Packet S->C",
 		"Packet C->S",
-		"Packet S->S"
+		"Packet S->S",
+		"HotReload",
+		"Zone Points"
 	};
 }
 

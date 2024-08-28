@@ -128,7 +128,7 @@ bool Mob::IsStackBlocked(uint16 new_buff_spell_id)
 
 	// intentional bug reproduced here, it's checking the class of the target of the buff, not the caster of it
 	// bard songs were supposed to stack with everything that's not a bard song, but this was botched
-	if (new_buff_spelldata->classes[BARD - 1] != 255 && this->GetClass() == BARD)
+	if (new_buff_spelldata->classes[Class::Bard - 1] != 255 && this->GetClass() == Class::Bard)
 		return 0;
 
 	for (int buffslot = 0; buffslot < this->GetMaxBuffSlots(); buffslot++)
@@ -219,7 +219,7 @@ void Mob::ProcessBuffOverwriteEffects(uint16 spell_id)
 				{
 					if (!spells[old_buff->spellid].goodEffect)
 						continue;
-					if (spells[old_buff->spellid].classes[BARD - 1] != 255)
+					if (spells[old_buff->spellid].classes[Class::Bard - 1] != 255)
 						continue;
 					if (GetSpellEffectIndex(old_buff->spellid, SE_Illusion) != -1)
 						continue;
@@ -283,7 +283,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 			{
 				SPDat_Spell_Struct *old_buff_spelldata = (SPDat_Spell_Struct *)&spells[buffs[i].spellid];
 
-				if (old_buff_spelldata->classes[BARD - 1] != 255 && old_buff_spelldata->goodEffect && GetSpellEffectIndex(old_buff_spelldata->id, SE_MovementSpeed) != -1)
+				if (old_buff_spelldata->classes[Class::Bard - 1] != 255 && old_buff_spelldata->goodEffect && GetSpellEffectIndex(old_buff_spelldata->id, SE_MovementSpeed) != -1)
 				{
 					// dispel Selo's to make this work
 					if (remove_replaced)  // only 0 for Mob AI considering spells to cast
@@ -329,7 +329,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 				if (IsInvisSpell(buffs[i].spellid))
 				{
 					// bard song invis can overwrite each other
-					if ((spells[spell_id].classes[BARD - 1] != 255 && spells[buffs[i].spellid].classes[BARD - 1] != 255) || spell_id == buffs[i].spellid)
+					if ((spells[spell_id].classes[Class::Bard - 1] != 255 && spells[buffs[i].spellid].classes[Class::Bard - 1] != 255) || spell_id == buffs[i].spellid)
 					{
 						continue;
 					}
@@ -363,7 +363,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 		}
 	}
 
-	if (new_spelldata->classes[BARD - 1] != 255 && caster->GetClass() == BARD)  // Bard casting bard song
+	if (new_spelldata->classes[Class::Bard - 1] != 255 && caster->GetClass() == Class::Bard)  // Bard casting bard song
 	{
 		for (int cur_slotnum2 = 0; cur_slotnum2 < this->GetMaxBuffSlots(); cur_slotnum2++)
 		{
@@ -373,7 +373,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 			{
 				SPDat_Spell_Struct *old_buff_spelldata2 = (SPDat_Spell_Struct *)&spells[old_buff2->spellid];
 				if (old_buff_spelldata2
-					&& old_buff_spelldata2->classes[BARD - 1] == 255 // existing buff is not bard song
+					&& old_buff_spelldata2->classes[Class::Bard - 1] == 255 // existing buff is not bard song
 					&& !old_buff_spelldata2->goodEffect // existing buff is detrimental
 					&& new_spelldata->goodEffect // new buff is beneficial bard song
 					&& GetSpellEffectIndex(new_spelldata->id, SE_MovementSpeed) != -1 // Selo`s Accelerando, Selo`s Song of Travel, Selo`s Accelerating Chorus
@@ -568,7 +568,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 			goto STACK_OK_OVERWRITE_BUFF_IF_NEEDED;
 		}
 	}
-	if (caster->GetClass() == BARD && old_spelldata->classes[BARD - 1] == 255) // Bard caster and old buff is not a bard song
+	if (caster->GetClass() == Class::Bard && old_spelldata->classes[Class::Bard - 1] == 255) // Bard caster and old buff is not a bard song
 	{
 		if (new_spelldata->goodEffect
 			&& GetSpellEffectIndex(new_spelldata->id, SE_MovementSpeed) != -1
@@ -581,7 +581,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 		}
 
 		// generally, bard songs stack with anything that's not a bard song
-		if (new_spelldata->classes[BARD - 1] != 255 && caster->GetClass() == BARD) // Bard casting bard song
+		if (new_spelldata->classes[Class::Bard - 1] != 255 && caster->GetClass() == Class::Bard) // Bard casting bard song
 			goto STACK_OK;                            // Bard song can stack with non bard song
 	}
 
@@ -594,10 +594,10 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 			{
 				if (GetSpellEffectIndex(old_spelldata->id, SE_MovementSpeed) != -1)
 				{
-					old_spell_bard_level = old_spelldata->classes[BARD - 1];
+					old_spell_bard_level = old_spelldata->classes[Class::Bard - 1];
 					if (old_spell_bard_level)
 					{
-						if (old_spell_bard_level != 255 && new_spelldata->classes[BARD - 1] == 255)
+						if (old_spell_bard_level != 255 && new_spelldata->classes[Class::Bard - 1] == 255)
 							goto BLOCKED_BUFF;                // regular SoW type spell can't overwrite bard Selos
 					}
 				}
@@ -623,7 +623,7 @@ int Mob::FindAffectSlot(Mob *caster, uint16 spell_id, int *result_slotnum, int r
 
 		// this is so KEI can stack with mana song
 		if ((old_buff_effectid == SE_CurrentMana || old_buff_effectid == SE_CurrentHP || old_buff_effectid == SE_HealOverTime)
-			&& old_spelldata->classes[BARD - 1] != 255 && new_spelldata->classes[BARD - 1] == 255 // old buff is a bard song and new buff is not a bard song
+			&& old_spelldata->classes[Class::Bard - 1] != 255 && new_spelldata->classes[Class::Bard - 1] == 255 // old buff is a bard song and new buff is not a bard song
 			|| old_buff_effectid != new_buff_effectid // or effects don't conflict
 			|| BuffStacking::IsSPAIgnoredByStacking(new_buff_effectid))
 		{

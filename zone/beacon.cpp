@@ -50,14 +50,57 @@ extern FastMath g_Math;
 
 // solar: if lifetime is 0 this is a permanent beacon.. not sure if that'll be
 // useful for anything
-Beacon::Beacon(Mob *at_mob, int lifetime)
-:Mob
-(
-	nullptr, nullptr, 0, 0, 0, INVISIBLE_MAN, 0, BT_NoTarget, 0, 0, 
-	0, 0, 0, at_mob->GetPosition(), 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, EQ::TintProfile(), 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+Beacon::Beacon(Mob* at_mob, int lifetime) : Mob(
+	nullptr, // in_name
+	nullptr, // in_lastname
+	0, // in_cur_hp
+	0, // in_max_hp
+	Gender::Male, // in_gender
+	Race::InvisibleMan, // in_race
+	Class::None, // in_class
+	BodyType::NoTarget, // in_bodytype
+	Deity::Unknown, //in_deity
+	0, // in_level
+	0, // in_npctype_id
+	0.0f, // in_size
+	0.0f, // in_runspeed
+	at_mob->GetPosition(), // position
+	0, // in_light
+	0, // in_texture
+	0, // in_helmtexture
+	0, // in_ac
+	0, // in_atk
+	0, // in_str
+	0, // in_sta
+	0, // in_dex
+	0, // in_agi
+	0, // in_int
+	0, // in_wis
+	0, // in_cha
+	0, // in_haircolor
+	0, // in_beardcolor
+	0, // in_eyecolor1
+	0, // in_eyecolor2
+	0, // in_hairstyle,
+	0, // in_luclinface
+	0, // in_beard
+	EQ::TintProfile(), // in_armor_tint
+	0, // in_aa_title
+	0, // in_see_invis
+	0, // in_see_invis_undead
+	0, // in_see_sneak
+	0, // in_see_improved_hide
+	0, // in_hp_regen
+	0, // in_mana_regen
+	0, // in_qglobal
+	0, // in_max_level
+	0, // in_scalerate
+	0, // in_armtexture
+	0, // in_bracertexture
+	0, // in_handtexture
+	0, // in_legtexture
+	0, // in_feettexture
+	0 // in_chesttexture
 ),
 		remove_timer(lifetime),
 		spell_timer(0)
@@ -80,8 +123,7 @@ Beacon::Beacon(Mob *at_mob, int lifetime)
 	frame_prev = time_start;
 	distance_traveled = 0.0;
 	origin = at_mob->GetPosition();
-	if(lifetime)
-	{
+	if(lifetime) {
 		remove_timer.Start();
 	}
 #ifdef SOLAR
@@ -307,7 +349,7 @@ bool Beacon::Process()
 						{
 							// move this section to delay based.
 							uint32 Assassinate_Dmg = 0;
-							if (caster->GetClass() == ROGUE && (caster->BehindMob(target, GetX(), GetY())))
+							if (caster->GetClass() == Class::Rogue && (caster->BehindMob(target, GetX(), GetY())))
 								Assassinate_Dmg = caster->CastToClient()->TryAssassinate(target, EQ::skills::SkillThrowing);
 							if (Assassinate_Dmg)
 							{
@@ -320,9 +362,9 @@ bool Beacon::Process()
 							}
 						}
 
-						if (weapon_dmg > 0 && skillinuse == EQ::skills::SkillArchery && caster->GetClass() == RANGER)
+						if (weapon_dmg > 0 && skillinuse == EQ::skills::SkillArchery && caster->GetClass() == Class::Ranger)
 						{
-							if (target->IsNPC() && target->GetBodyType() == BT_Humanoid	&& caster->GetAABonuses().HeadShot[1]
+							if (target->IsNPC() && target->GetBodyType() == BodyType::Humanoid	&& caster->GetAABonuses().HeadShot[1]
 								&& target->GetLevel() <= caster->GetAABonuses().HSLevel 
 								&& zone->random.Roll(static_cast<double>(caster->GetDEX()) / 3500.0)
 							)

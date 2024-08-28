@@ -167,7 +167,7 @@ int32 Client::CalcHPRegen()
 {
 	bool is_sitting = IsSitting() || (GetHorseId() != 0 && !auto_attack && !ClientMoving());
 	bool has_racial_regen_bonus = GetPlayerRaceBit(GetBaseRace()) & RuleI(Character, BaseHPRegenBonusRaces);
-	bool is_feigned = GetClass() == MONK && IsFeigned();	// only monks get this bonus
+	bool is_feigned = GetClass() == Class::Monk && IsFeigned();	// only monks get this bonus
 
 	// naked regen
 	int32 hp_regen_amount = LevelRegen(GetLevel(), is_sitting, IsRested(), is_feigned, Famished(), has_racial_regen_bonus);
@@ -241,11 +241,11 @@ int32 Client::CalcMaxHP(bool unbuffed) {
 	{
 		int levels_over_60 = GetLevel() - 60;
 		pd_level = pd_level > levels_over_60 ? levels_over_60 : pd_level;
-		if (GetClass() == WARRIOR)
+		if (GetClass() == Class::Warrior)
 		{
 			nd += 1.5 * pd_level;
 		}
-		else if (GetClass() == PALADIN || GetClass() == SHADOWKNIGHT)
+		else if (GetClass() == Class::Paladin || GetClass() == Class::ShadowKnight)
 		{
 			nd += 1.25 * pd_level;
 		}
@@ -279,7 +279,7 @@ uint32 Mob::GetClassLevelFactor(){
 	uint8 mlevel=GetLevel();
 	switch(GetClass())
 	{
-		case WARRIOR:{
+		case Class::Warrior:{
 			if (mlevel < 20)
 				multiplier = 220;
 			else if (mlevel < 30)
@@ -298,17 +298,17 @@ uint32 Mob::GetClassLevelFactor(){
 				multiplier = 311;
 			break;
 		}
-		case DRUID:
-		case CLERIC:
-		case SHAMAN:{
+		case Class::Druid:
+		case Class::Cleric:
+		case Class::Shaman:{
 			if (mlevel < 70)
 				multiplier = 150;
 			else
 				multiplier = 157;
 			break;
 		}
-		case PALADIN:
-		case SHADOWKNIGHT:{
+		case Class::Paladin:
+		case Class::ShadowKnight:{
 			if (mlevel < 35)
 				multiplier = 210;
 			else if (mlevel < 45)
@@ -325,10 +325,10 @@ uint32 Mob::GetClassLevelFactor(){
 				multiplier = 270;
 			break;
 		}
-		case MONK:
-		case BARD:
-		case ROGUE:
-		case BEASTLORD:{
+		case Class::Monk:
+		case Class::Bard:
+		case Class::Rogue:
+		case Class::Beastlord:{
 			if (mlevel < 51)
 				multiplier = 180;
 			else if (mlevel < 58)
@@ -339,7 +339,7 @@ uint32 Mob::GetClassLevelFactor(){
 				multiplier = 210;
 			break;
 		}
-		case RANGER:{
+		case Class::Ranger:{
 			if (mlevel < 58)
 				multiplier = 200;
 			else if (mlevel < 70)
@@ -348,10 +348,10 @@ uint32 Mob::GetClassLevelFactor(){
 				multiplier = 220;
 			break;
 		}
-		case MAGICIAN:
-		case WIZARD:
-		case NECROMANCER:
-		case ENCHANTER:{
+		case Class::Magician:
+		case Class::Wizard:
+		case Class::Necromancer:
+		case Class::Enchanter:{
 			if (mlevel < 70)
 				multiplier = 120;
 			else
@@ -799,7 +799,7 @@ int32 Client::CalcMaxMana()
 	{
 		case 'I':
 		case 'W': {
-			if ((GetClass() == RANGER || GetClass() == PALADIN || GetClass() == BEASTLORD) && GetLevel() < 9)
+			if ((GetClass() == Class::Ranger || GetClass() == Class::Paladin || GetClass() == Class::Beastlord) && GetLevel() < 9)
 				max_mana = 0;
 			else
 				max_mana = (CalcBaseMana() + itembonuses.Mana + spellbonuses.Mana);
@@ -933,7 +933,7 @@ int32 Client::CalcManaRegen(bool meditate)
 			regen = 2; // passive sitting regen when not famished
 
 			// bards cannot meditate even though they have the skill
-			if (GetClass() != BARD && HasSkill(EQ::skills::SkillMeditate))
+			if (GetClass() != Class::Bard && HasSkill(EQ::skills::SkillMeditate))
 			{
 				// matches client logic for an edge case
 				// happens with skill level 0 or 1 but normally training the skill at level 4/8/12 will put it higher anyway
@@ -1054,7 +1054,7 @@ int32 Client::CalcAlcoholPhysicalEffect()
 int32 Client::CalcSTR() {
 	int32 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect() - CalculateFatiguePenalty();
 
-	if (CalcAlcoholPhysicalEffect() == 0 && GetClass() == WARRIOR && IsBerserk())
+	if (CalcAlcoholPhysicalEffect() == 0 && GetClass() == Class::Warrior && IsBerserk())
 	{
 		val += GetLevel() / 10 + 9;
 	}
@@ -1292,7 +1292,7 @@ int32	Client::CalcMR(bool ignoreCap, bool includeSpells)
 		calc += spellbonuses.MR;
 	}
 
-	if(GetClass() == WARRIOR)
+	if(GetClass() == Class::Warrior)
 		calc += GetLevel() / 2;
 
 	if(calc < 1)
@@ -1364,7 +1364,7 @@ int32	Client::CalcFR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == RANGER) 
+	if(c == Class::Ranger) 
 	{
 		calc += 4;
 
@@ -1372,7 +1372,7 @@ int32	Client::CalcFR(bool ignoreCap, bool includeSpells)
 		if(l > 49)
 			calc += l - 49;
 	}
-	else if(c == MONK) 
+	else if(c == Class::Monk) 
 	{
 		calc += 8;
 
@@ -1456,7 +1456,7 @@ int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == PALADIN) 
+	if(c == Class::Paladin) 
 	{
 		calc += 8;
 
@@ -1465,7 +1465,7 @@ int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
 			calc += l - 49;
 
 	} 
-	else if(c == SHADOWKNIGHT) 
+	else if(c == Class::ShadowKnight) 
 	{
 		calc += 4;
 
@@ -1473,7 +1473,7 @@ int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
 		if(l > 49)
 			calc += l - 49;
 	} 
-	else if(c == BEASTLORD) 
+	else if(c == Class::Beastlord) 
 	{
 		calc += 4;
 
@@ -1481,7 +1481,7 @@ int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
 		if(l > 49)
 			calc += l - 49;
 	} 
-	else if(c == MONK) 
+	else if(c == Class::Monk) 
 	{
 		int l = GetLevel();
 		if(l > 50)
@@ -1563,7 +1563,7 @@ int32	Client::CalcPR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == ROGUE) 
+	if(c == Class::Rogue) 
 	{
 		calc += 8;
 
@@ -1572,7 +1572,7 @@ int32	Client::CalcPR(bool ignoreCap, bool includeSpells)
 			calc += l - 49;
 
 	} 
-	else if(c == SHADOWKNIGHT) 
+	else if(c == Class::ShadowKnight) 
 	{
 		calc += 4;
 
@@ -1580,7 +1580,7 @@ int32	Client::CalcPR(bool ignoreCap, bool includeSpells)
 		if(l > 49)
 			calc += l - 49;
 	}
-	else if(c == MONK) 
+	else if(c == Class::Monk) 
 	{
 		int l = GetLevel();
 		if(l > 50)
@@ -1662,7 +1662,7 @@ int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == RANGER) 
+	if(c == Class::Ranger) 
 	{
 		calc += 4;
 
@@ -1670,7 +1670,7 @@ int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
 		if(l > 49)
 			calc += l - 49;
 	} 
-	else if(c == BEASTLORD) 
+	else if(c == Class::Beastlord) 
 	{
 		calc += 4;
 
@@ -1699,7 +1699,7 @@ int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
 
 uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 {
-	if (GetClass() != BARD)	// instrument mods don't work for non bards
+	if (GetClass() != Class::Bard)	// instrument mods don't work for non bards
 		return 10;
 
 	if (!IsBardSong(spell_id)) // instrument mods don't work on spells that aren't bard songs.  there are 7 or so spells that have a bard casting skill assigned but they aren't bard songs.

@@ -2305,14 +2305,6 @@ void EQOldStream::MakeEQPacket(EQProtocolPacket* app, bool ack_req, bool outboun
 						LogPacketServerClient("[{}] - [{:#06x}] Size: [{}] {}", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size, DumpProtocolPacketToString(app).c_str());
 					}
 				}
-				if (LogSys.log_settings[Logs::PacketServerClient].is_category_enabled == 1) {
-					EmuOpcode app_opcode = (*OpMgr)->EQToEmu(app->opcode);
-					if (app_opcode != OP_SpecialMesg &&
-						(!RuleB(EventLog, SkipCommonPacketLogging) ||
-							(RuleB(EventLog, SkipCommonPacketLogging) && app_opcode != OP_MobHealth && app_opcode != OP_MobUpdate && app_opcode != OP_ClientUpdate))) {
-						LogPacketServerClient("[{}] - [{:#06x}] Size: [{}]", OpcodeManager::EmuToName(app_opcode), app->opcode, app->size);
-					}
-				}
 			}
 
 			if(app->size && app->pBuffer)

@@ -22,6 +22,7 @@
 #include "../common/strings.h"
 
 #include "client.h"
+#include "data_bucket.h"
 #include "groups.h"
 #include "mob.h"
 #include "raids.h"
@@ -42,24 +43,33 @@ float Mob::GetBaseEXP()
 	float exp = EXP_FORMULA;
 
 	float zemmod = 75.0f;
-	if(zone->newzone_data.zone_exp_multiplier >= 0)
-	{
+	if(zone->newzone_data.zone_exp_multiplier >= 0) {
 		zemmod = zone->newzone_data.zone_exp_multiplier * 100;
 	}
+
+	float hotzonexp = 0.0f;
+	if (zone->IsHotzone()) {
+		hotzonexp = RuleR(Zone, HotZoneBonus) * 100;
+	}
+
 	// very low levels get an artifical ZEM.  It's either 100 or 114, not sure.  Also not sure how many levels this applies.  If you find out, fix this
-	if (GetLevel() < 6 && zemmod < 100.0f)
+	if (GetLevel() < 6 && zemmod < 100.0f) {
 		zemmod = 100.0f;
+	}
 
 	float server_bonus = 1.0f;
 
 	// AK had a permanent 20% XP increase.
-	if (RuleB(AlKabor, ServerExpBonus))
+	if (RuleB(AlKabor, ServerExpBonus)) {
 		server_bonus += 0.20f;
-	float npc_pct = 1.0f;
-	if (IsNPC())
-		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
+	}
 
-	float basexp = exp * zemmod * server_bonus * npc_pct;
+	float npc_pct = 1.0f;
+	if (IsNPC()) {
+		npc_pct = static_cast<float>(CastToNPC()->GetExpPercent()) / 100.0f;
+	}
+
+	float basexp = exp * (zemmod + hotzonexp) * server_bonus * npc_pct;
 	float logged_xp = basexp;
 
 	Log(Logs::General, Logs::EQMac, "Starting base exp is mob_level(%i)^2 * ZEM(%.0f) * server_bonus(%.2f) * npc_pct(%.2f) = %.0f exp", 
@@ -121,8 +131,8 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	float aa_mult = RuleR(Character, AAExpMultiplier);	// should be 1.0 for non-custom
 	float aa_lvl_mod = 1.0f;	// level_exp_mods table
 	float class_mult = 1.0f;	// since we don't factor class into exp required for level like Sony did, we have to add exp on kills.  does not apply to AAs
-	if (GetClass() == WARRIOR) class_mult = 10.0f / 9.0f;
-	if (GetClass() == ROGUE) class_mult = 10.0f / 9.05f;
+	if (GetClass() == Class::Warrior) class_mult = 10.0f / 9.0f;
+	if (GetClass() == Class::Rogue) class_mult = 10.0f / 9.05f;
 
 	// This logic replicates the Spetember 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
@@ -235,13 +245,13 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		// Race modifiers apply to AA exp if AA exp is split
 		if (RuleB(AlKabor, RaceEffectsAASplit) && m_epp.perAA > 0 && m_epp.perAA < 100)
 		{
-			if (GetRace() == HALFLING)
+			if (GetRace() == Race::Halfling)
 				race_mult = 1.05f;
-			else if (GetRace() == BARBARIAN)
+			else if (GetRace() == Race::Barbarian)
 				race_mult = 0.95f;
-			else if (GetRace() == OGRE)
+			else if (GetRace() == Race::Ogre)
 				race_mult = 0.85f;
-			else if (GetRace() == TROLL || GetRace() == IKSAR)
+			else if (GetRace() == Race::Troll || GetRace() == Race::Iksar)
 				race_mult = 0.8f;
 		}
 
@@ -364,23 +374,37 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		return; // Must be invalid class/race
 	}
 
-	if ((set_exp + set_aaxp) > (m_pp.exp+m_pp.expAA)) 
-	{
-		if (isrezzexp)
-		{
+	if ((set_exp + set_aaxp) > (m_pp.exp+m_pp.expAA)) {
+		if (isrezzexp) {
 			this->Message_StringID(Chat::Yellow, REZ_REGAIN);
 		}
-		else
-		{
-			if(this->IsGrouped() && is_split)
-				this->Message_StringID(Chat::Yellow, GAIN_GROUPXP);
-			else if(IsRaidGrouped() && is_split)
-				Message_StringID(Chat::Yellow, GAIN_RAIDEXP);
-			else
-				this->Message_StringID(Chat::Yellow, GAIN_XP);
+		else {
+			if (this->IsGrouped() && is_split) {
+				if (zone->IsHotzone()) {
+					Message(Chat::Yellow, "You gain party experience (with a bonus)!!");
+				}
+				else {
+					this->Message_StringID(Chat::Yellow, GAIN_GROUPXP);
+				}
+			}
+			else if (IsRaidGrouped() && is_split) {
+				if (zone->IsHotzone()) {
+					Message(Chat::Yellow, "You gained raid experience (with a bonus)!!");
+				}
+				else {
+					Message_StringID(Chat::Yellow, GAIN_RAIDEXP);
+				}
+			}
+			else {
+				if (zone->IsHotzone()) {
+					this->Message(Chat::Yellow, "You gain experience (with a bonus)!!");
+				}
+				else {
+					this->Message_StringID(Chat::Yellow, GAIN_XP);
+				}
+			}
 
-			if (m_epp.perAA > 0 && GetAAPoints() >= 30)
-			{
+			if (m_epp.perAA > 0 && GetAAPoints() >= 30) {
 				Message_StringID(Chat::Yellow, AA_POINTS_CAP);
 			}
 		}
@@ -396,22 +420,18 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	bool level_increase = true;
 	int8 level_count = 0;
 
-	while (set_exp >= GetEXPForLevel(check_level)) 
-	{
+	while (set_exp >= GetEXPForLevel(check_level)) {
 		check_level++;
-		if (check_level > 127)
-		{	//hard level cap
+		if (check_level > 127) { //hard level cap
 			check_level = 127;
 			break;
 		}
 		level_count++;
 	}
 	//see if we lost any levels
-	while (set_exp < GetEXPForLevel(check_level-1))
-	{
+	while (set_exp < GetEXPForLevel(check_level-1)) {
 		check_level--;
-		if (check_level < 2)
-		{	//hard level minimum
+		if (check_level < 2) { //hard level minimum
 			check_level = 2;
 			break;
 		}
@@ -453,62 +473,42 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		//Message(Chat::Yellow, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
 		Message_StringID(Chat::Yellow, GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point! You now have %1 ability point%2.
-		if (m_pp.aapoints >= 30)
-		{
+		if (m_pp.aapoints >= 30) {
 			Message_StringID(Chat::Yellow, AA_CAP_REACHED);
 		}
 		
 		/* QS: PlayerLogAARate */
-		if (RuleB(QueryServ, PlayerLogAARate))
-		{
+		if (RuleB(QueryServ, PlayerLogAARate)) {
 			QServ->QSAARate(this->CharacterID(), m_pp.aapoints, last_unspentAA);
 		}
 		//Message(Chat::Yellow, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
-	uint8 maxlevel = RuleI(Character, MaxExpLevel) + 1;
+	uint8 max_level = RuleI(Character, MaxExpLevel) + 1;
 
-	if(maxlevel <= 1)
-		maxlevel = RuleI(Character, MaxLevel) + 1;
+	if (max_level <= 1) {
+		max_level = RuleI(Character, MaxLevel) + 1;
+	}
 
-	if(check_level > maxlevel) {
-		check_level = maxlevel;
+	auto client_max_level = GetClientMaxLevel();
+	if (client_max_level) {
+		max_level = client_max_level + 1;
+	}
+
+	if(check_level > max_level) {
+		check_level = max_level;
 
 		if(RuleB(Character, KeepLevelOverMax)) {
 			set_exp = GetEXPForLevel(GetLevel()+1);
 		}
 		else {
-			set_exp = GetEXPForLevel(maxlevel);
-		}
-	}
-
-	if(RuleB(Character, PerCharacterQglobalMaxLevel)){
-		uint32 MaxLevel = GetCharMaxLevelFromQGlobal();
-		if(MaxLevel){
-			if(GetLevel() >= MaxLevel){
-				uint32 expneeded = GetEXPForLevel(MaxLevel);
-				if(set_exp > expneeded) {
-					set_exp = expneeded;
-				}
-			}
-		}
-	}
-
-	if (RuleB(Character, PerCharacterBucketMaxLevel)) {
-		uint32 MaxLevel = GetCharMaxLevelFromBucket();
-		if (MaxLevel) {
-			if (GetLevel() >= MaxLevel) {
-				uint32 expneeded = GetEXPForLevel(MaxLevel);
-				if (set_exp > expneeded) {
-					set_exp = expneeded;
-				}
-			}
+			set_exp = GetEXPForLevel(max_level);
 		}
 	}
 
 	//If were at max level then stop gaining experience if we make it to the cap
-	if (GetLevel() == maxlevel - 1) {
-		uint32 expneeded = GetEXPForLevel(maxlevel);
+	if (GetLevel() == max_level - 1) {
+		uint32 expneeded = GetEXPForLevel(max_level);
 		if (set_exp > expneeded) {
 			set_exp = expneeded;
 		}
@@ -518,35 +518,35 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	m_pp.exp = set_exp;
 	m_pp.expAA = set_aaxp;
 
-	if ((GetLevel() != check_level) && !(check_level >= maxlevel))
-	{
+	if ((GetLevel() != check_level) && !(check_level >= max_level)) {
 		char val1[20] = { 0 };
-		if (level_increase)
-		{
-			if (level_count == 1)
-			{
+		if (level_increase)	{
+			if (level_count == 1) {
 				Message_StringID(Chat::Yellow, GAIN_LEVEL, ConvertArray(check_level, val1));
 				/* Message(Chat::Yellow, "You have gained a level! Welcome to level %i!", check_level); */
 			}
-			else
+			else {
 				Message(Chat::Yellow, "Welcome to level %i!", check_level);
+			}
 
-			if (check_level == RuleI(Character, DeathItemLossLevel))
+			if (check_level == RuleI(Character, DeathItemLossLevel)) {
 				Message_StringID(Chat::Yellow, CORPSE_ITEM_LOST);
+			}
 
-			if (check_level == RuleI(Character, DeathExpLossLevel))
+			if (check_level == RuleI(Character, DeathExpLossLevel)) {
 				Message_StringID(Chat::Yellow, CORPSE_EXP_LOST);
+			}
 
-			if (check_level == 30)
-			{
-				if (GetClass() == MONK || GetClass() == BEASTLORD)
+			if (check_level == 30) {
+				if (GetClass() == Class::Monk || GetClass() == Class::Beastlord) {
 					Message_StringID(Chat::Yellow, HANDS_MAGIC);
-				else if (GetClass() == WARRIOR)
+				}
+				else if (GetClass() == Class::Warrior) {
 					Message_StringID(Chat::Yellow, GAINED_SHIELD_LEVEL);
+				}
 			}
 		}
-		else 
-		{
+		else {
 			Message_StringID(Chat::Yellow, LOSE_LEVEL, ConvertArray(check_level, val1));
 			/* Message(Chat::Yellow, "You lost a level! You are now level %i!", check_level); */
 		}
@@ -555,8 +555,10 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 
 	if (GetLevel() < 51) {
 		m_epp.perAA = 0;	// turn off aa exp if they drop below 51
-	} else
+	}
+	else {
 		SendAAStats();	//otherwise, send them an AA update
+	}
 
 	//send the expdata in any case so the xp bar isn't stuck after leveling
 	uint32 tmpxp1 = GetEXPForLevel(GetLevel()+1);
@@ -1072,44 +1074,52 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 	}
 }
 
-uint32 Client::GetCharMaxLevelFromQGlobal() {
-	QGlobalCache *char_c = nullptr;
-	char_c = this->GetQGlobals();
+uint8 Client::GetCharMaxLevelFromQGlobal() {
+	auto char_cache = GetQGlobals();
 
-	std::list<QGlobal> globalMap;
-	uint32 ntype = 0;
+	std::list<QGlobal> global_map;
 
-	if(char_c) {
-		QGlobalCache::Combine(globalMap, char_c->GetBucket(), ntype, this->CharacterID(), zone->GetZoneID());
+	if (char_cache) {
+		QGlobalCache::Combine(global_map, char_cache->GetBucket(), 0, CharacterID(), zone->GetZoneID());
 	}
 
-	auto iter = globalMap.begin();
-	uint32 gcount = 0;
-	while(iter != globalMap.end()) {
-		if((*iter).name.compare("CharMaxLevel") == 0){
-			return atoi((*iter).value.c_str());
+	for (const auto& global : global_map) {
+		if (global.name == "CharMaxLevel") {
+			if (Strings::IsNumber(global.value)) {
+				return static_cast<uint8>(std::stoul(global.value));
+			}
 		} 
-		++iter;
-		++gcount;
 	}
 
-	return false;
+	return 0;
 }
 
-uint32 Client::GetCharMaxLevelFromBucket() {
-	uint32 char_id = this->CharacterID();
-	std::string query = StringFormat("SELECT value FROM data_buckets WHERE key = '%i-CharMaxLevel'", char_id);
-	auto results = database.QueryDatabase(query);
-	if (!results.Success()) {
-		Log(Logs::General, Logs::Error, "Data bucket for CharMaxLevel for char ID %i failed.", char_id);
-		return false;
+uint8 Client::GetCharMaxLevelFromBucket() {
+	auto new_bucket_name = fmt::format(
+		"{}-CharMaxLevel",
+		GetBucketKey()
+	);
+
+	auto bucket_value = DataBucket::GetData(new_bucket_name);
+	if (!bucket_value.empty()) {
+		if (Strings::IsNumber(bucket_value)) {
+			return static_cast<uint8>(std::stoul(bucket_value));
+		}
 	}
 
-	if (results.RowCount() > 0) {
-		auto row = results.begin();
-		return atoi(row[0]);
+	auto old_bucket_name = fmt::format(
+		"{}-CharMaxLevel",
+		CharacterID()
+	);
+
+	bucket_value = DataBucket::GetData(old_bucket_name);
+	if (!bucket_value.empty()) {
+		if (Strings::IsNumber(bucket_value)) {
+			return static_cast<uint8>(std::stoul(bucket_value));
+		}
 	}
-	return false;
+
+	return 0;
 }
 
 bool Client::IsInExpRange(Mob* defender)

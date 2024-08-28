@@ -91,6 +91,8 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 	log_settings[Logs::QuestErrors].log_to_console      = static_cast<uint8>(Logs::General);
 	log_settings[Logs::Loot].log_to_gmsay               = static_cast<uint8>(Logs::General);
 	log_settings[Logs::Scheduler].log_to_console        = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_gmsay          = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_console        = static_cast<uint8>(Logs::General);
 
 	/**
 	 * RFC 5424

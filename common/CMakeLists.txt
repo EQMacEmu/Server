@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 SET(common_sources
 	base_packet.cpp
+	bodytypes.cpp
 	classes.cpp
 	cli/eqemu_command_handler.cpp
 	condition.cpp
@@ -81,6 +82,7 @@ SET(common_sources
 	worldconn.cpp
 	xml_parser.cpp
 	platform.cpp
+	zone_store.cpp
 	json/jsoncpp.cpp
 	patches/patches.cpp
 	patches/mac.cpp
@@ -426,6 +428,7 @@ SET(common_headers
 	worldconn.h
 	xml_parser.h
 	zone_numbers.h
+	zone_store.h
 	platform.h
 	json/json.h
 	json/json-forwards.h

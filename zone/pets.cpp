@@ -20,6 +20,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/types.h"
+#include "../common/zone_store.h"
 
 #include "entity.h"
 #include "client.h"
@@ -184,12 +185,12 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 					focusType = FocusPetType::ALL;
 				} else {
 					// make sure we can use the focus item as the class .. client should never let us fail this but for sanity!
-					if (GetClass() == MAGICIAN) {
+					if (GetClass() == Class::Magician) {
 						Log(Logs::General, Logs::Pets, "Looking up mage");
 						Log(Logs::General, Logs::Pets, "Looking up if spell: %d is allowed ot be focused", spell_id);
 						focusType = Pet::GetPetItemPetTypeFromSpellId(spell_id);
 						Log(Logs::General, Logs::Pets, "FocusType fround %i", focusType);
-					} else if (GetClass() == NECROMANCER) {
+					} else if (GetClass() == Class::Necromancer) {
 						Log(Logs::General, Logs::Pets, "We are a necro");
 						focusType = FocusPetType::NECRO;
 					}
@@ -265,15 +266,15 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 			atk = 25;
 			switch (GetClass())
 			{
-			case MAGICIAN:
+			case Class::Magician:
 				minDmg = 4;
 				maxDmg = 11;
 				break;
-			case NECROMANCER:
+			case Class::Necromancer:
 				minDmg = 2;
 				maxDmg = 8;
 				break;
-			case BEASTLORD:
+			case Class::Beastlord:
 				minDmg = 1;
 				maxDmg = 9;
 				break;
@@ -327,32 +328,33 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 	{
 		switch(GetBaseRace())
 		{
-		case VAHSHIR:
-			npc_type->race = TIGER;
+		case Race::VahShir:
+			npc_type->race = Race::Tiger;
 			npc_type->size *= 0.8f;
 			break;
-		case TROLL:
-			npc_type->race = ALLIGATOR;
+		case Race::Troll:
+			npc_type->race = Race::Alligator;
 			npc_type->size *= 2.5f;
 			break;
-		case OGRE:
-			npc_type->race = BEAR;
+		case Race::Ogre:
+			npc_type->race = Race::Bear;
 			npc_type->texture = 3;
-			npc_type->gender = 2;
+			npc_type->gender = Gender::Neuter;
 			break;
-		case BARBARIAN:
-			npc_type->race = WOLF;
+		case Race::Barbarian:
+			npc_type->race = Race::Wolf;
 			npc_type->texture = 2;
 			break;
-		case IKSAR:
-			npc_type->race = WOLF;
+		case Race::Iksar:
+			npc_type->race = Race::Wolf;
 			npc_type->texture = 0;
-			npc_type->gender = 1;
+			npc_type->gender = Gender::Female;
 			npc_type->luclinface = 0;
 			break;
 		default:
 			npc_type->race = WOLF;
 			npc_type->texture = 0;
+			break;
 		}
 	}
 
@@ -381,8 +383,9 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 		}
 
 		// since we don't have any monsters, just make it look like an earth pet for now
-		if (monsterid == 0)
+		if (monsterid == 0) {
 			monsterid = 579;
+		}
 
 		Log(Logs::General, Logs::Pets, "Monster Summon appearance NPCID is %d", monsterid);
 
@@ -390,20 +393,20 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 		const NPCType* monster = database.LoadNPCTypesData(monsterid);
 		if(monster) {
 			npc_type->race = monster->race;
-			if (monster->size < 1)
-			{
+			if (monster->size < 1) {
 				npc_type->size = 6;
 			}
-			else
-			{
+			else {
 				npc_type->size = monster->size;
 			}
 			npc_type->texture = monster->texture;
 			npc_type->gender = monster->gender;
 			npc_type->luclinface = monster->luclinface;
 			npc_type->helmtexture = monster->helmtexture;
-		} else
+		}
+		else {
 			Log(Logs::General, Logs::Error, "Error loading NPC data for monster summoning pet (NPC ID %d)", monsterid);
+		}
 
 	}
 
@@ -462,16 +465,16 @@ Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 po
 	skills[EQ::skills::SkillDoubleAttack] = 0;
 	skills[EQ::skills::SkillDualWield] = 0;
 
-	if (class_ == WARRIOR || class_ == PALADIN || class_ == SHADOWKNIGHT)
+	if (class_ == Class::Warrior || class_ == Class::Paladin || class_ == Class::ShadowKnight)
 		skills[EQ::skills::SkillBash] = level > 5 ? skillLevel : 0;
 
-	if (class_ == WARRIOR || class_ == RANGER)
+	if (class_ == Class::Warrior || class_ == Class::Ranger)
 		skills[EQ::skills::SkillKick] = level > 15 ? skillLevel : 0;
 
-	if (class_ == ROGUE)
+	if (class_ == Class::Rogue)
 		skills[EQ::skills::SkillBackstab] = level > 9 ? skillLevel : 0;
 
-	if (class_ == MONK)
+	if (class_ == Class::Monk)
 	{
 		skills[EQ::skills::SkillRoundKick] = level > 4 ? skillLevel : 0;
 		skills[EQ::skills::SkillTigerClaw] = level > 9 ? skillLevel : 0;
@@ -485,12 +488,12 @@ Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 po
 	if (level >= 60)
 		skillLevel += 25;
 
-	if (class_ == WARRIOR || class_ == PALADIN || class_ == SHADOWKNIGHT || class_ == ROGUE || class_ == RANGER || class_ == BARD)
+	if (class_ == Class::Warrior || class_ == Class::Paladin || class_ == Class::ShadowKnight || class_ == Class::Rogue || class_ == Class::Ranger || class_ == Class::Bard)
 	{
 		skills[EQ::skills::SkillParry] = level > 6 ? skillLevel : 0;
 		skills[EQ::skills::SkillRiposte] = level > 11 ? skillLevel : 0;
 	}
-	else if (class_ == MONK)
+	else if (class_ == Class::Monk)
 	{
 		skills[EQ::skills::SkillParry] = 0;
 		skills[EQ::skills::SkillRiposte] = level > 11 ? skillLevel : 0;

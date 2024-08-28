@@ -22,6 +22,7 @@
 #include "../common/misc_functions.h"
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "entity.h"
 #include "forage.h"

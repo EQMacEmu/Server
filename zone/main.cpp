@@ -44,6 +44,7 @@
 #include "../common/spdat.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/event/timer.h"
+#include "../common/zone_store.h"
 #include "../common/content/world_content_service.h"
 #include "../common/repositories/content_flags_repository.h"
 
@@ -93,6 +94,7 @@ extern volatile bool is_zone_loaded;
 
 EntityList  entity_list;
 WorldServer worldserver;
+ZoneStore zone_store;
 uint32      numclients = 0;
 char        errorname[32];
 extern Zone *zone;
@@ -261,7 +263,7 @@ int main(int argc, char** argv) {
 	}
 
 	LogInfo("Loading zone names");
-	database.LoadZoneNames();
+	zone_store.LoadZones(database);
 
 	LogInfo("Loading items");
 	if(!database.LoadItems(hotfix_name)) {
@@ -361,9 +363,9 @@ int main(int argc, char** argv) {
 #endif
 	if (!strlen(zone_name) || !strcmp(zone_name,".")) {
 		LogInfo("Entering sleep mode");
-	} else if (!Zone::Bootup(database.GetZoneID(zone_name), true)) {
+	} else if (!Zone::Bootup(ZoneID(zone_name), true)) {
 		LogError("Zone Bootup failed :: Zone::Bootup");
-		zone = 0;
+		zone = nullptr;
 	}
 
 	//register all the patches we have avaliable with the stream identifier.

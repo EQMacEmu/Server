@@ -4,6 +4,7 @@
 #include "../common/item_instance.h"
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "client.h"
 #include "corpse.h"
@@ -96,7 +97,7 @@ bool ZoneDatabase::SaveZoneCFG(uint32 zoneid, NewZone_Struct* zd) {
 	return true;
 }
 
-bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit) {
+bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool &is_hotzone, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit) {
 
 	*map_filename = new char[100];
 	zone_data->zone_id = zoneid;
@@ -108,7 +109,7 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
         "fog_red4, fog_green4, fog_blue4, fog_minclip4, fog_maxclip4, " // 5
         "fog_density, sky, zone_exp_multiplier, safe_x, safe_y, safe_z, underworld, " // 7
         "minclip, maxclip, time_type, canbind, cancombat, canlevitate, " // 6
-        "castoutdoor, ruleset, suspendbuffs, map_file_name, short_name, " // 5
+        "castoutdoor, hotzone, ruleset, suspendbuffs, map_file_name, short_name, " // 5
         "rain_chance1, rain_chance2, rain_chance3, rain_chance4, " // 4
         "rain_duration1, rain_duration2, rain_duration3, rain_duration4, " // 4
         "snow_chance1, snow_chance2, snow_chance3, snow_chance4, " // 4
@@ -168,37 +169,38 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
     can_combat = atoi(row[32]) == 0? false: true;
     can_levitate = atoi(row[33]) == 0? false: true;
     can_castoutdoor = atoi(row[34]) == 0? false: true;
+	is_hotzone = atoi(row[35]) == 0 ? false : true;
 
-    ruleset = atoi(row[35]);
-    zone_data->SuspendBuffs = atoi(row[36]);
+    ruleset = atoi(row[36]);
+    zone_data->SuspendBuffs = atoi(row[37]);
 
-    char *file = row[37];
+    char *file = row[38];
     if(file)
         strcpy(*map_filename, file);
     else
-        strcpy(*map_filename, row[38]);
+        strcpy(*map_filename, row[39]);
 
     for(index = 0; index < 4; index++)
-        zone_data->rain_chance[index]=atoi(row[39 + index]);
+        zone_data->rain_chance[index]=atoi(row[40 + index]);
 
 	for(index = 0; index < 4; index++)
-        zone_data->rain_duration[index]=atoi(row[43 + index]);
+        zone_data->rain_duration[index]=atoi(row[44 + index]);
 
 	for(index = 0; index < 4; index++)
-        zone_data->snow_chance[index]=atoi(row[47 + index]);
+        zone_data->snow_chance[index]=atoi(row[48 + index]);
 
 	for(index = 0; index < 4; index++)
-        zone_data->snow_duration[index]=atoi(row[51 + index]);
+        zone_data->snow_duration[index]=atoi(row[52 + index]);
 
-	zone_data->skylock = atoi(row[55]);
-	skip_los = atoi(row[56]) == 0? false: true;
-	zone_data->normal_music_day = atoi(row[57]);
+	zone_data->skylock = atoi(row[56]);
+	skip_los = atoi(row[57]) == 0? false: true;
+	zone_data->normal_music_day = atoi(row[58]);
 	
 	// These never change in packet
 	zone_data->water_music = 4;
 	zone_data->normal_music_night = 0;
 
-	uint8 zone_expansion = atoi(row[58]);
+	uint8 zone_expansion = atoi(row[59]);
 	if(zone_expansion == 1)
 		zone_data->expansion = KunarkEQ;
 
@@ -214,12 +216,12 @@ bool ZoneDatabase::GetZoneCFG(uint32 zoneid, NewZone_Struct *zone_data, bool &ca
 	else
 		zone_data->expansion = ClassicEQ;
 
-	drag_aggro = atoi(row[59]) == 0 ? false : true;
-	zone_data->never_idle = atoi(row[60]) == 0 ? false : true;
-	can_castdungeon = atoi(row[61]) == 0 ? false : true;
-	pull_limit = atoi(row[62]);
-	zone_data->graveyard_time = atoi(row[63]);
-	zone_data->max_z = atof(row[64]);
+	drag_aggro = atoi(row[60]) == 0 ? false : true;
+	zone_data->never_idle = atoi(row[61]) == 0 ? false : true;
+	can_castdungeon = atoi(row[62]) == 0 ? false : true;
+	pull_limit = atoi(row[63]);
+	zone_data->graveyard_time = atoi(row[64]);
+	zone_data->max_z = atof(row[65]);
 
 	return true;
 }

@@ -258,7 +258,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 
 						if ((AIspells[i].priority == 0 || zone->random.Roll(40 + roll_mod))
 							&& ((mana_cost == 0 || spells[AIspells[i].spellid].buffduration == 0)		// 0 mana spell probably a raid boss spell; these always cast
-							&& (GetClass() != CLERIC || mana_cost == 0 || GetHPRatio() > 50.0f)			// clerics don't nuke if they're < 50%
+							&& (GetClass() != Class::Cleric || mana_cost == 0 || GetHPRatio() > 50.0f)			// clerics don't nuke if they're < 50%
 							|| tar->CanBuffStack(AIspells[i].spellid, GetLevel(), true) >= 0))
 						{
 							if (spells[AIspells[i].spellid].targettype != ST_AECaster && !spells[AIspells[i].spellid].npc_no_los)
@@ -281,7 +281,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 					{
 						if (zone->random.Roll(10) || AIspells[i].priority == 0)
 						{
-							if (GetClass() == CLERIC && zone->random.Roll(66))	// cleric NPCs have very short spell lists which is causing the AI to make them cast dispels too frequently without this
+							if (GetClass() == Class::Cleric && zone->random.Roll(66))	// cleric NPCs have very short spell lists which is causing the AI to make them cast dispels too frequently without this
 								return false;
 
 							if (spells[AIspells[i].spellid].targettype != ST_AECaster && !spells[AIspells[i].spellid].npc_no_los)
@@ -1009,7 +1009,7 @@ void Client::AI_Process()
 							Attack(GetTarget(), EQ::invslot::slotPrimary);
 
 							// Triple attack: Warriors and Monks level 60+ do this.  13.5% looks weird but multiple 8+ hour logs suggest it's about that
-							if ((GetClass() == WARRIOR || GetClass() == MONK) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
+							if ((GetClass() == Class::Warrior || GetClass() == Class::Monk) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
 							{
 								Attack(GetTarget(), EQ::invslot::slotPrimary);
 
@@ -1204,7 +1204,7 @@ void Mob::DoMainHandRound(Mob* victim, int damagePct)
 		Attack(victim, EQ::invslot::slotPrimary, damagePct);
 
 		// Triple attack: Warriors and Monks level 60+ do this.  13.5% looks weird but multiple 8+ hour logs suggest it's about that
-		if ((GetClass() == WARRIOR || GetClass() == MONK) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
+		if ((GetClass() == Class::Warrior || GetClass() == Class::Monk) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
 		{
 			Attack(victim, EQ::invslot::slotPrimary, damagePct);
 		}
@@ -1288,7 +1288,7 @@ void Mob::AI_Process() {
 
 	}
 
-	if (IsCasting() && GetClass() != BARD)
+	if (IsCasting() && GetClass() != Class::Bard)
 		return;
 
 	bool facing_set = false;
@@ -1428,7 +1428,7 @@ void Mob::AI_Process() {
 
 		// if NPC warrior, look for injured allies to /shield
 		// note that if you change the number of times that the AI loop runs per second, you'll need to change this roll number with it
-		if (IsNPC() && GetClass() == WARRIOR && GetLevel() > 29 && !GetShieldTarget() && !IsStunned() && !IsMezzed() && !IsFeared()
+		if (IsNPC() && GetClass() == Class::Warrior && GetLevel() > 29 && !GetShieldTarget() && !IsStunned() && !IsMezzed() && !IsFeared()
 			&& shield_cooldown < Timer::GetCurrentTime() && IsEngaged() && zone->random.Roll(0.0001))
 		{
 			std::list<Mob*> npcList;
@@ -1675,7 +1675,7 @@ void Mob::AI_Process() {
 
 					// Now pursue
 					if (AI_EngagedCastCheck()) {
-						if (IsCasting() && GetClass() != BARD) {
+						if (IsCasting() && GetClass() != Class::Bard) {
 							FaceTarget(GetTarget());
 						}
 					}
@@ -1809,7 +1809,7 @@ void Mob::AI_Process() {
 		}
 		if (AI_IdleCastCheck())
 		{
-			if (IsCasting() && GetClass() != BARD) {
+			if (IsCasting() && GetClass() != Class::Bard) {
 				StopNavigation();
 			}
 		}
@@ -3396,8 +3396,13 @@ void NPC::AddSpellToNPCList(int16 iPriority, int16 iSpellID, uint16 iType,
 	AIspells.push_back(t);
 
 	// If we're going from an empty list, we need to start the timer
-	if (AIspells.size() == 1)
+	if (AIspells.size() == 1) {
 		AIautocastspell_timer->Start(100, false);
+	}
+
+	if (iPriority == 0 && iType & (SpellType_Nuke | SpellType_Lifetap | SpellType_DOT | SpellType_Dispel | SpellType_Mez | SpellType_Slow | SpellType_Debuff | SpellType_Charm | SpellType_Root)) {
+		hasZeroPrioritySpells = true;
+	}
 }
 
 void NPC::RemoveSpellFromNPCList(int16 spell_id)

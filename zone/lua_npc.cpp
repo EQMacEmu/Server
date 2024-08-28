@@ -636,6 +636,11 @@ void Lua_NPC::SetClass(int classNum) {
 	self->SetClass(classNum);
 }
 
+void Lua_NPC::ReloadSpells()
+{
+	Lua_Safe_Call_Void();
+	self->ReloadSpells();
+}
 
 luabind::scope lua_register_npc() {
 	return luabind::class_<Lua_NPC, Lua_Mob>("NPC")
@@ -759,7 +764,8 @@ luabind::scope lua_register_npc() {
 		.def("StopQuestMove", (void(Lua_NPC::*)(bool))& Lua_NPC::StopQuestMove)
 		.def("SetClass", (void(Lua_NPC::*)(int))& Lua_NPC::SetClass)
 		.def("SetMaxDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMaxDamage)
-		.def("SetMinDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMinDamage);
+		.def("SetMinDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMinDamage)
+		.def("ReloadSpells", (void(Lua_NPC::*)(void))& Lua_NPC::ReloadSpells);
 }
 
 #endif

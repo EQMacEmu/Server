@@ -114,9 +114,8 @@ void Mob::CheckFlee()
 		return;
 	}
 
-	float other_ratio = hate_top->GetHPRatio();
-	if(other_ratio <= 20) {
-		//our hate top is almost dead too... stay and fight
+	if(hate_top->GetHP() < GetHP()) {
+		// don't flee if target has less hp than us
 		return;
 	}
 
@@ -164,10 +163,10 @@ void Mob::FleeInfo(Mob* client)
 		wontflee = true;
 		reason = "NPC is immune to fleeing.";
 	}
-	else if (other_ratio < 20)
+	else if (client->GetHP() < GetHP())
 	{
 		wontflee = true;
-		reason = "Player has low health.";
+		reason = "Player has less health.";
 	}
 	else if (GetSpecialAbility(ALWAYS_FLEE))
 	{

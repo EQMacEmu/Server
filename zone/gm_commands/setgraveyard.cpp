@@ -13,7 +13,7 @@ void command_setgraveyard(Client *c, const Seperator *sep){
 		return;
 	}
 
-	zoneid = database.GetZoneID(sep->arg[1]);
+	zoneid = ZoneID(sep->arg[1]);
 
 	if (zoneid > 0) {
 		graveyard_id = database.CreateGraveyardRecord(zoneid, t->GetPosition());

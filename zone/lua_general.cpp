@@ -1132,6 +1132,24 @@ void lua_reloadzonestaticdata() {
 	quest_manager.ReloadZoneStaticData();
 }
 
+bool lua_is_hotzone()
+{
+	if (!zone) {
+		return false;
+	}
+
+	return zone->IsHotzone();
+}
+
+void lua_set_hotzone(bool is_hotzone)
+{
+	if (!zone) {
+		return;
+	}
+
+	zone->SetIsHotzone(is_hotzone);
+}
+
 /**
  * Expansions
  */
@@ -1268,7 +1286,7 @@ void lua_create_npc(luabind::adl::object table, float x, float y, float z, float
 	LuaCreateNPCParse(runspeed, float, 1.3f);
 	LuaCreateNPCParse(gender, uint8, 0);
 	LuaCreateNPCParse(race, uint16, 1);
-	LuaCreateNPCParse(class_, uint8, WARRIOR);
+	LuaCreateNPCParse(class_, uint8, Class::Warrior);
 	LuaCreateNPCParse(bodytype, uint8, 0);
 	LuaCreateNPCParse(deity, uint8, 0);
 	LuaCreateNPCParse(level, uint8, 1);
@@ -1541,6 +1559,8 @@ luabind::scope lua_register_general() {
 		luabind::def("get_body_type_name", &lua_get_body_type_name),
 		luabind::def("get_consider_level_name", &lua_get_consider_level_name),
 		luabind::def("get_deity_name", &lua_get_deity_name),
+		luabind::def("is_hotzone", (bool(*)(void))& lua_is_hotzone),
+		luabind::def("set_hotzone", (void(*)(bool))& lua_set_hotzone),
 			/**
  * Expansions
  */

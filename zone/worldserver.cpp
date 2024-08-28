@@ -35,8 +35,10 @@
 #include "../common/misc_functions.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
+#include "../common/patches/patches.h"
 
 #include "client.h"
+#include "command.h"
 #include "corpse.h"
 #include "entity.h"
 #include "guild_mgr.h"
@@ -48,6 +50,7 @@
 #include "worldserver.h"
 #include "zone.h"
 #include "zone_config.h"
+#include "zone_reload.h"
 
 extern EntityList entity_list;
 extern Zone* zone;
@@ -468,7 +471,7 @@ void WorldServer::Process() {
 		case ServerOP_ZonePlayer: {
 			ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(szp->name);
-			Log(Logs::Detail, Logs::Status, "Zoning %s to %s(%u)\n", client != nullptr ? client->GetCleanName() : "Unknown", szp->zone, database.GetZoneID(szp->zone));
+			Log(Logs::Detail, Logs::Status, "Zoning %s to %s(%u)\n", client != nullptr ? client->GetCleanName() : "Unknown", szp->zone, ZoneID(szp->zone));
 			if (client != 0) {
 				if (strcasecmp(szp->adminname, szp->name) == 0)
 					client->Message(Chat::White, "Zoning to: %s", szp->zone);
@@ -482,7 +485,7 @@ void WorldServer::Process() {
 				else {
 					SendEmoteMessage(szp->adminname, 0, 0, "Summoning %s to %s %1.1f, %1.1f, %1.1f", szp->name, szp->zone, szp->x_pos, szp->y_pos, szp->z_pos);
 				}
-				client->MovePC(database.GetZoneID(szp->zone), szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
+				client->MovePC(ZoneID(szp->zone), szp->x_pos, szp->y_pos, szp->z_pos, client->GetHeading(), szp->ignorerestrictions, GMSummon);
 			}
 			break;
 		}
@@ -602,10 +605,8 @@ void WorldServer::Process() {
 				// The Rezz request has arrived in the zone the player to be rezzed is currently in,
 				// so we send the request to their client which will bring up the confirmation box.
 				Client* client = entity_list.GetClientByName(srs->rez.your_name);
-				if (client)
-				{
-					if(client->IsRezzPending())
-					{
+				if (client && client->CharacterID() == srs->corpse_character_id) {
+					if(client->IsRezzPending()) {
 						auto Response = new ServerPacket(ServerOP_RezzPlayerReject,
 										 strlen(srs->rez.rezzer_name) + 1);
 
@@ -618,14 +619,14 @@ void WorldServer::Process() {
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
 					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
-							Log(Logs::Detail, Logs::Spells, "OP_RezzRequest in zone %s for %s, spellid:%i",
-							zone->GetShortName(), client->GetName(), srs->rez.spellid);
-							auto outapp = new EQApplicationPacket(OP_RezzRequest,
+					Log(Logs::Detail, Logs::Spells, "OP_RezzRequest in zone %s for %s, spellid:%i",
+					zone->GetShortName(), client->GetName(), srs->rez.spellid);
+					auto outapp = new EQApplicationPacket(OP_RezzRequest,
 											      sizeof(Resurrect_Struct));
-							memcpy(outapp->pBuffer, &srs->rez, sizeof(Resurrect_Struct));
-							client->QueuePacket(outapp);
-							safe_delete(outapp);
-							break;
+					memcpy(outapp->pBuffer, &srs->rez, sizeof(Resurrect_Struct));
+					client->QueuePacket(outapp);
+					safe_delete(outapp);
+					break;
 				}
 			}
 			if (srs->rezzopcode == OP_RezzComplete){
@@ -709,19 +710,12 @@ void WorldServer::Process() {
 				SendEmoteMessage(rev->adminname, 0, 0, "%s: %srevoking %s", zone->GetShortName(), rev->toggle?"":"un", client->GetName());
 				client->SetRevoked(rev->toggle);
 			}
-#if EQDEBUG >= 6
-			else
-				SendEmoteMessage(rev->adminname, 0, 0, "%s: Can't find %s", zone->GetShortName(), rev->name);
-#endif
 			break;
 		}
 		case ServerOP_GroupIDReply: {
 			ServerGroupIDReply_Struct* ids = (ServerGroupIDReply_Struct*) pack->pBuffer;
 			cur_groupid = ids->start;
 			last_groupid = ids->end;
-#ifdef _EQDEBUG
-			Log(Logs::General, Logs::Groups, "Got new group id set: %lu -> %lu\n", (unsigned long)cur_groupid, (unsigned long)last_groupid);
-#endif
 			break;
 		}
 		case ServerOP_GroupLeave: {
@@ -910,7 +904,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-	
 		case ServerOP_RaidGroupJoin: {
 			ServerRaidGroupJoin_Struct* gj = (ServerRaidGroupJoin_Struct*)pack->pBuffer;
 			if (zone) {
@@ -925,7 +918,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_ForceGroupUpdate: {
 			ServerForceGroupUpdate_Struct* fgu = (ServerForceGroupUpdate_Struct*)pack->pBuffer;
 			if(zone){
@@ -936,7 +928,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_ChangeGroupLeader: {
 			ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
 			if(zone){
@@ -947,13 +938,11 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_CheckGroupLeader: {
 			ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
 			entity_list.SendGroupLeader(fgu->gid, fgu->leader_name, fgu->oldleader_name, fgu->leaderset);
 			break;
 		}
-
 		case ServerOP_IsOwnerOnline: {
 			ServerIsOwnerOnline_Struct* online = (ServerIsOwnerOnline_Struct*) pack->pBuffer;
 			if(zone)
@@ -969,7 +958,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_OOZGroupMessage: {
 			ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer;
 			if(zone){
@@ -1010,7 +998,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1040,7 +1027,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidRemoveLD: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1168,7 +1154,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidChangeGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1184,7 +1169,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_UpdateGroup:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1200,7 +1184,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidGroupLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1215,7 +1198,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidLeader:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1236,7 +1218,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidAddLooter: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
@@ -1272,7 +1253,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RemoveRaidLooter: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
@@ -1308,7 +1288,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_DetailsChange:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1324,7 +1303,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidTypeChange: {
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if (zone) {
@@ -1353,7 +1331,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidGroupDisband:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1374,7 +1351,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidGroupAdd:{
 			ServerRaidGroupAction_Struct* rga = (ServerRaidGroupAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1405,7 +1381,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidGroupRemove:{
 			ServerRaidGeneralAction_Struct* rga = (ServerRaidGeneralAction_Struct*)pack->pBuffer;
 			if(zone){
@@ -1424,7 +1399,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidGroupSay:{
 			ServerRaidMessage_Struct* rmsg = (ServerRaidMessage_Struct*)pack->pBuffer;
 			if(zone){
@@ -1449,7 +1423,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_RaidSay:{
 			ServerRaidMessage_Struct* rmsg = (ServerRaidMessage_Struct*)pack->pBuffer;
 			if(zone)
@@ -1473,7 +1446,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_SpawnPlayerCorpse: {
 			SpawnPlayerCorpse_Struct* s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
 			Corpse* NewCorpse = database.LoadCharacterCorpse(s->player_corpse_id);
@@ -1573,7 +1545,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_DepopAllPlayersCorpses:
 		{
 			ServerDepopAllPlayersCorpses_Struct *sdapcs = (ServerDepopAllPlayersCorpses_Struct *)pack->pBuffer;
@@ -1584,7 +1555,6 @@ void WorldServer::Process() {
 			break;
 
 		}
-
 		case ServerOP_DepopPlayerCorpse:
 		{
 			ServerDepopPlayerCorpse_Struct *sdpcs = (ServerDepopPlayerCorpse_Struct *)pack->pBuffer;
@@ -1595,13 +1565,6 @@ void WorldServer::Process() {
 			break;
 
 		}
-
-		case ServerOP_ReloadTitles:
-		{
-			title_manager.LoadTitles();
-			break;
-		}
-
 		case ServerOP_SpawnStatusChange:
 		{
 			if(zone)
@@ -1635,7 +1598,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_QGlobalUpdate:
 		{
 			if(pack->size != sizeof(ServerQGlobalUpdate_Struct))
@@ -1661,7 +1623,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_QGlobalDelete:
 		{
 			if(pack->size != sizeof(ServerQGlobalDelete_Struct))
@@ -1686,41 +1647,6 @@ void WorldServer::Process() {
 				m_zone_scheduler->LoadScheduledEvents();
 			}
 
-			break;
-		}
-
-		case ServerOP_ReloadRules: {
-			worldserver.SendEmoteMessage(
-				0, 0, 0, 15,
-				"Rules reloaded for Zone: '%s'",
-				zone->GetLongName()
-			);
-			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
-			break;
-		}
-
-		case ServerOP_ReloadContentFlags: {
-			if (zone) {
-				worldserver.SendEmoteMessage(
-					0,
-					0,
-					AccountStatus::GMAdmin,
-					Chat::Yellow,
-					fmt::format(
-						"Content flags (and expansion) reloaded for {}.",
-						fmt::format(
-							"{} ({})",
-							zone->GetLongName(),
-							zone->GetZoneID()
-						)
-					).c_str()
-				);
-			}
-			content_service.SetExpansionContext()->ReloadContentFlags();
-			break;
-		}
-		case ServerOP_ReloadLogs: {
-			LogSys.LoadLogDatabaseSettings();
 			break;
 		}
 		case ServerOP_QueryServGeneric:
@@ -1783,15 +1709,178 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadWorld:
+		case ServerOP_HotReloadQuests:
 		{
-			ReloadWorld_Struct* RW = (ReloadWorld_Struct*) pack->pBuffer;
-			if(zone){
-				zone->ReloadWorld(RW->Option);
+			if (!zone) {
+				break;
+			}
+
+			auto* hot_reload_quests = (HotReloadQuestsStruct*)pack->pBuffer;
+
+			LogHotReloadDetail(
+				"Receiving request [HotReloadQuests] | request_zone [{}] current_zone [{}]",
+				hot_reload_quests->zone_short_name,
+				zone->GetShortName()
+			);
+
+			std::string request_zone_short_name = hot_reload_quests->zone_short_name;
+			std::string local_zone_short_name = zone->GetShortName();
+
+			if (request_zone_short_name == local_zone_short_name || request_zone_short_name == "all") {
+				zone->SetQuestHotReloadQueued(true);
+			}
+
+			break;
+		}
+		case ServerOP_ReloadOpcodes:
+		{
+			zone->SendReloadMessage("Opcodes");
+			ReloadAllPatches();
+			break;
+		}
+		case ServerOP_ReloadAAData: {
+			zone->SendReloadMessage("Alternate Advancement Data");
+			zone->LoadAlternateAdvancement();
+			break;
+		}
+		case ServerOP_ReloadBlockedSpells:
+		{
+			zone->SendReloadMessage("Blocked Spells");
+			zone->LoadZoneBlockedSpells();
+			break;
+		}
+		case ServerOP_ReloadCommands:
+		{
+			zone->SendReloadMessage("Commands");
+			command_init();
+			break;
+		}
+		case ServerOP_ReloadContentFlags: {
+			zone->SendReloadMessage("Content Flags");
+			content_service.SetExpansionContext()->ReloadContentFlags();
+			break;
+		}
+		case ServerOP_ReloadDoors:
+		{
+			zone->SendReloadMessage("Doors");
+			entity_list.RemoveAllDoors();
+			zone->LoadZoneDoors();
+			entity_list.RespawnAllDoors();
+			break;
+		}
+		case ServerOP_ReloadGroundSpawns:
+		{
+			zone->SendReloadMessage("Ground Spawns");
+			zone->LoadGroundSpawns();
+			break;
+		}
+		case ServerOP_ReloadLevelEXPMods: {
+			zone->SendReloadMessage("Level Based Experience Modifiers");
+			zone->LoadLevelEXPMods();
+			break;
+		}
+		case ServerOP_ReloadLogs: {
+			zone->SendReloadMessage("Log Settings");
+			LogSys.LoadLogDatabaseSettings();
+			break;
+		}
+		case ServerOP_ReloadLoot:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Loot");
+				zone->ReloadLootTables();
 			}
 			break;
 		}
-
+		case ServerOP_ReloadKeyRings:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Key Rings");
+				zone->key_ring_data_list.Clear();
+				zone->LoadKeyRingData(&zone->key_ring_data_list);
+			}
+			break;
+		}
+		case ServerOP_ReloadMerchants: {
+			zone->SendReloadMessage("Merchants");
+			entity_list.ReloadMerchants();
+			break;
+		}
+		case ServerOP_ReloadNPCEmotes:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("NPC Emotes");
+				zone->LoadNPCEmotes(&zone->npc_emote_list);
+			}
+			break;
+		}
+		case ServerOP_ReloadNPCSpells:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("NPC Spells");
+				database.ClearNPCSpells();
+				for (auto& e : entity_list.GetNPCList()) {
+					e.second->ReloadSpells();
+				}
+			}
+			break;
+		}
+		case ServerOP_ReloadObjects:
+		{
+			zone->SendReloadMessage("Objects");
+			entity_list.RemoveAllObjects();
+			zone->LoadZoneObjects();
+			break;
+		}
+		case ServerOP_ReloadRules: {
+			zone->SendReloadMessage("Rules");
+			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
+			break;
+		}
+		case ServerOP_ReloadStaticZoneData: {
+			zone->SendReloadMessage("Static Zone Data");
+			zone->ReloadStaticData();
+			break;
+		}
+		case ServerOP_ReloadTitles:
+		{
+			zone->SendReloadMessage("Titles");
+			title_manager.LoadTitles();
+			break;
+		}
+		case ServerOP_ReloadTraps:
+		{
+			zone->SendReloadMessage("Traps");
+			entity_list.UpdateAllTraps(true, true);
+			break;
+		}
+		case ServerOP_ReloadVariables:
+		{
+			zone->SendReloadMessage("Variables");
+			database.LoadVariables();
+			break;
+		}
+		case ServerOP_ReloadWorld:
+		{
+			auto* reload_world = (ReloadWorld_Struct*)pack->pBuffer;
+			if (zone) {
+				zone->ReloadWorld(reload_world->global_repop);
+			}
+			break;
+		}
+		case ServerOP_ReloadZonePoints:
+		{
+			zone->SendReloadMessage("Zone Points");
+			database.LoadStaticZonePoints(&zone->zone_point_list, zone->GetShortName());
+			break;
+		}
+		case ServerOP_ReloadZoneData:
+		{
+			zone->SendReloadMessage("Zone Data");
+			zone_store.LoadZones(database);
+			zone->LoadZoneCFG(zone->GetShortName());
+			break;
+		}
 		case ServerOP_Soulmark:
 		{
 			ServerRequestSoulMark_Struct* SM = (ServerRequestSoulMark_Struct*) pack->pBuffer;
@@ -1805,7 +1894,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		case ServerOP_ChangeSharedMem:
 		{
 			std::string hotfix_name = std::string((char*)pack->pBuffer);
@@ -1858,7 +1946,6 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-
 		default: {
 			std::cout << " Unknown ZSopcode:" << (int)pack->opcode;
 			std::cout << " size:" << pack->size << std::endl;
@@ -1947,7 +2034,7 @@ bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to
 	return ret;
 }
 
-bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 dbid, uint16 opcode)
+bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 dbid, uint32 char_id, uint16 opcode)
 {
 	Log(Logs::Detail, Logs::Spells, "WorldServer::RezzPlayer rezzexp is %i (0 is normal for RezzComplete", rezzexp);
 	auto pack = new ServerPacket(ServerOP_RezzPlayer, sizeof(RezzPlayer_Struct));
@@ -1956,6 +2043,7 @@ bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 
 	sem->rez = *(Resurrect_Struct*) rpack->pBuffer;
 	sem->exp = rezzexp;
 	sem->dbid = dbid;
+	sem->corpse_character_id = char_id;
 	bool ret = SendPacket(pack);
 	if (ret) {
 		Log(Logs::Detail, Logs::Spells, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);

@@ -282,7 +282,7 @@ public:
 	void DoKnockback(Lua_Mob caster, uint32 pushback, uint32 pushup);
 	bool IsRunning();
 	void SetRunning(bool running);
-	void SetBodyType(int new_body, bool overwrite_orig);
+	void SetBodyType(uint8 new_body, bool overwrite_orig);
 	void SetAllowBeneficial(bool value);
 	bool GetAllowBeneficial();
 	bool IsBeneficialAllowed(Lua_Mob target);

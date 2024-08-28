@@ -3,14 +3,12 @@
 extern WorldServer worldserver;
 
 void command_zonestatus(Client *c, const Seperator *sep){
-	if (!worldserver.Connected())
-		c->Message(Chat::White, "Error: World server disconnected");
-	else {
-		auto pack = new ServerPacket(ServerOP_ZoneStatus, strlen(c->GetName()) + 2);
-		memset(pack->pBuffer, (uint8)c->Admin(), 1);
-		strcpy((char *)&pack->pBuffer[1], c->GetName());
-		worldserver.SendPacket(pack);
-		delete pack;
-	}
-}
+	auto pack = new ServerPacket(ServerOP_ZoneStatus, sizeof(ServerZoneStatus_Struct));
 
+	auto z = (ServerZoneStatus_Struct*)pack->pBuffer;
+	z->admin = c->Admin();
+	strn0cpy(z->name, c->GetName(), sizeof(z->name));
+
+	worldserver.SendPacket(pack);
+	delete pack;
+}

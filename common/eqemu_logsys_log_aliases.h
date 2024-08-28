@@ -631,6 +631,26 @@
         OutF(LogSys, Logs::Detail, Logs::FixZ, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\
 } while (0)
 
+#define LogHotReload(message, ...) do {\
+    if (LogSys.IsLogEnabled(Logs::General, Logs::HotReload))\
+        OutF(LogSys, Logs::General, Logs::HotReload, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\
+} while (0)
+
+#define LogHotReloadDetail(message, ...) do {\
+    if (LogSys.IsLogEnabled(Logs::Detail, Logs::HotReload))\
+        OutF(LogSys, Logs::Detail, Logs::HotReload, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\
+} while (0)
+
+#define LogZonePoints(message, ...) do {\
+    if (LogSys.IsLogEnabled(Logs::General, Logs::ZonePoints))\
+        OutF(LogSys, Logs::General, Logs::ZonePoints, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\
+} while (0)
+
+#define LogZonePointsDetail(message, ...) do {\
+    if (LogSys.IsLogEnabled(Logs::Detail, Logs::ZonePoints))\
+        OutF(LogSys, Logs::Detail, Logs::ZonePoints, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\
+} while (0)
+
 #define Log(debug_level, log_category, message, ...) do {\
     if (LogSys.IsLogEnabled(debug_level, log_category))\
         LogSys.Out(debug_level, log_category, __FILE__, __func__, __LINE__, message, ##__VA_ARGS__);\

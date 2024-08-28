@@ -10,8 +10,13 @@
 #include <vector>
 #include <algorithm>
 
-#include "masterentity.h"
+#include "../common/path_manager.h"
 #include "../common/spdat.h"
+#include "masterentity.h"
+#include "questmgr.h"
+#include "zone.h"
+#include "zone_config.h"
+
 #include "lua_bit.h"
 #include "lua_entity.h"
 #include "lua_item.h"
@@ -31,12 +36,9 @@
 #include "lua_spawn.h"
 #include "lua_packet.h"
 #include "lua_general.h"
-#include "questmgr.h"
-#include "zone.h"
-#include "zone_config.h"
 #include "lua_parser.h"
 #include "lua_encounter.h"
-#include "../common/path_manager.h"
+
 
 const char *LuaEvents[_LargestEventID] = {
 	"event_say",
@@ -292,6 +294,7 @@ int LuaParser::_EventNPC(std::string package_name, QuestEventID evt, NPC* npc, M
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 			quest_manager.EndQuest();
+			lua_pop(L, npop);
 			return 0;
 		}
 		quest_manager.EndQuest();
@@ -385,7 +388,7 @@ int LuaParser::_EventPlayer(std::string package_name, QuestEventID evt, Client *
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 			quest_manager.EndQuest();
-			lua_gc(L, LUA_GCCOLLECT, 0); // collect garbage
+			lua_pop(L, npop);
 			return 0;
 		}
 		quest_manager.EndQuest();
@@ -447,6 +450,7 @@ int LuaParser::_EventItem(std::string package_name, QuestEventID evt, Client *cl
 		} else {
 			lua_getfield(L, LUA_REGISTRYINDEX, package_name.c_str());
 			lua_getfield(L, -1, sub_name);
+			npop = 2;
 		}
 
 		lua_createtable(L, 0, 0);
@@ -470,6 +474,7 @@ int LuaParser::_EventItem(std::string package_name, QuestEventID evt, Client *cl
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 			quest_manager.EndQuest();
+			lua_pop(L, npop);
 			return 0;
 		}
 		quest_manager.EndQuest();
@@ -552,6 +557,7 @@ int LuaParser::_EventSpell(std::string package_name, QuestEventID evt, NPC* npc,
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 			quest_manager.EndQuest();
+			lua_pop(L, npop);
 			lua_gc(L, LUA_GCCOLLECT, 0); // collect garbage
 			return 0;
 		}
@@ -620,6 +626,7 @@ int LuaParser::_EventEncounter(std::string package_name, QuestEventID evt, std::
 			std::string error = lua_tostring(L, -1);
 			AddError(error);
 			quest_manager.EndQuest();
+			lua_pop(L, 2);
 			return 0;
 		}
 		quest_manager.EndQuest();
@@ -794,6 +801,7 @@ void LuaParser::ReloadQuests() {
 	for (auto encounter : lua_encounters) {
 		encounter.second->Depop();
 	}
+
 	lua_encounters.clear();
 	// so the Depop function above depends on the Process being called again so ...
 	// And there is situations where it wouldn't be :P
@@ -805,6 +813,8 @@ void LuaParser::ReloadQuests() {
 
 	L = luaL_newstate();
 	luaL_openlibs(L);
+
+	auto top = lua_gettop(L);
 
 	if(luaopen_bit(L) != 1) {
 		std::string error = lua_tostring(L, -1);
@@ -904,36 +914,26 @@ void LuaParser::ReloadQuests() {
 	}
 
 	//zone init - always loads after global
-	if(zone) {
-		std::string zone_script = fmt::format(
-			"{}/{}/script_init_v.lua",
-			path.GetQuestsPath(),
-			zone->GetShortName()
-		);
-		f = fopen(zone_script.c_str(), "r");
-		if(f) {
-			fclose(f);
-
-			if(luaL_dofile(L, zone_script.c_str())) {
-				std::string error = lua_tostring(L, -1);
-				AddError(error);
-			}
-
-			return;
-		}
-
-		zone_script = fmt::format("{}/{}/script_init.lua", path.GetQuestsPath(), zone->GetShortName());
+	if (zone) {
+		std::string zone_script = fmt::format("{}/{}/script_init.lua", path.GetQuestsPath(), zone->GetShortName());
 
 		f = fopen(zone_script.c_str(), "r");
-		if(f) {
+		if (f) {
 			fclose(f);
-
-			if(luaL_dofile(L, zone_script.c_str())) {
+			
+			if (luaL_dofile(L, zone_script.c_str())) {
 				std::string error = lua_tostring(L, -1);
 				AddError(error);
 			}
 		}
 	}
+
+	auto end = lua_gettop(L);
+	int n = end - top;
+	if (n > 0) {
+		lua_pop(L, n);
+	}
+
 }
 
 /*
@@ -952,6 +952,7 @@ void LuaParser::LoadScript(std::string filename, std::string package_name) {
 		return;
 	}
 
+	auto top = lua_gettop(L);
 	if(luaL_loadfile(L, filename.c_str())) {
 		std::string error = lua_tostring(L, -1);
 		AddError(error);
@@ -981,8 +982,15 @@ void LuaParser::LoadScript(std::string filename, std::string package_name) {
 		lua_pop(L, 1);
 		return;
 	}
+	else {
+		loaded_[package_name] = true;
+	}
 
-	loaded_[package_name] = true;
+	auto end = lua_gettop(L);
+	int n = end - top;
+	if (n > 0) {
+		lua_pop(L, n);
+	}
 }
 
 bool LuaParser::HasFunction(std::string subname, std::string package_name) {

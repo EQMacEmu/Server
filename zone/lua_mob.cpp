@@ -1391,9 +1391,9 @@ void Lua_Mob::SetRunning(bool running) {
 	self->SetRunning(running);
 }
 
-void Lua_Mob::SetBodyType(int new_body, bool overwrite_orig) {
+void Lua_Mob::SetBodyType(uint8 new_body, bool overwrite_orig) {
 	Lua_Safe_Call_Void();
-	self->SetBodyType(static_cast<bodyType>(new_body), overwrite_orig);
+	self->SetBodyType(new_body, overwrite_orig);
 }
 
 void Lua_Mob::SetAllowBeneficial(bool value) {
@@ -1865,7 +1865,7 @@ luabind::scope lua_register_mob() {
 		.def("IsBlind", (bool(Lua_Mob::*)(void))&Lua_Mob::IsBlind)
 		.def("IsRunning", (bool(Lua_Mob::*)(void))&Lua_Mob::IsRunning)
 		.def("SetRunning", (void(Lua_Mob::*)(bool))&Lua_Mob::SetRunning)
-		.def("SetBodyType", (void(Lua_Mob::*)(int,bool))&Lua_Mob::SetBodyType)
+		.def("SetBodyType", (void(Lua_Mob::*)(uint8,bool))&Lua_Mob::SetBodyType)
 		.def("SetAllowBeneficial", (void(Lua_Mob::*)(bool))&Lua_Mob::SetAllowBeneficial)
 		.def("GetAllowBeneficial", (bool(Lua_Mob::*)(void))&Lua_Mob::GetAllowBeneficial)
 		.def("IsBeneficialAllowed", (bool(Lua_Mob::*)(Lua_Mob))&Lua_Mob::IsBeneficialAllowed)

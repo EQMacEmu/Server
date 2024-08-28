@@ -1025,7 +1025,7 @@ void Mob::CalcSpellBonuses(StatBonuses* newbon)
 	if (IsNPC())
 		CastToNPC()->ApplyAISpellEffects(newbon);
 
-	if (GetClass() == BARD) newbon->ManaRegen = 0; // Bards do not get mana regen from spells.
+	if (GetClass() == Class::Bard) newbon->ManaRegen = 0; // Bards do not get mana regen from spells.
 
 	if (newbon->Mana > 500)
 		newbon->Mana = 500;
@@ -2101,7 +2101,7 @@ void NPC::CalcItemBonuses(StatBonuses *newbon)
 					ApplySpellsBonuses(cur->Worn.Effect, cur->Worn.Level > 0 ? cur->Worn.Level : GetLevel(), newbon, 0, true);
 				}
 
-				if (GetClass() == BARD)
+				if (GetClass() == Class::Bard)
 				{
 					switch (cur->BardType)
 					{

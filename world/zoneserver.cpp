@@ -35,6 +35,8 @@
 #include "ucs.h"
 #include "queryserv.h"
 #include "../common/content/world_content_service.h"
+#include "../common/zone_store.h"
+#include "../common/patches/patches.h"
 
 extern ClientList client_list;
 extern ZSList zoneserver_list;
@@ -76,11 +78,11 @@ bool ZoneServer::SetZone(uint32 iZoneID, bool iStaticZone) {
 	is_booting_up = false;
 	ucs_connected = UCSLink.Connected();
 
-	const char* zn = MakeLowerString(database.GetZoneName(iZoneID));
+	const char* zonename = MakeLowerString(ZoneName(iZoneID));
 	char*	longname;
-
+	
 	if (iZoneID)
-		Log(Logs::Detail, Logs::WorldServer,"Setting to '%s' (%d)%s",(zn) ? zn : "",iZoneID,
+		Log(Logs::Detail, Logs::WorldServer,"Setting to '%s' (%d)%s",(zonename) ? zonename : "",iZoneID,
 			iStaticZone ? " (Static)" : "");
 
 	zone_server_zone_id = iZoneID;
@@ -94,9 +96,9 @@ bool ZoneServer::SetZone(uint32 iZoneID, bool iStaticZone) {
 
 	is_static_zone = iStaticZone;
 
-	if (zn)
+	if (zonename)
 	{
-		strn0cpy(zone_name, zn, sizeof(zone_name));
+		strn0cpy(zone_name, zonename, sizeof(zone_name));
 		if( database.GetZoneLongName( (char*)zone_name, &longname, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr ) )
 		{
 			strn0cpy(long_name, longname, sizeof(long_name));
@@ -228,66 +230,66 @@ bool ZoneServer::Process() {
 		}
 		switch(pack->opcode) {
 			case 0:
-				break;
-			case ServerOP_KeepAlive: {
-				// ignore this
-				break;
-			}
+			case ServerOP_KeepAlive:
 			case ServerOP_ZAAuth: {
 				break;
 			}
 			case ServerOP_LSZoneBoot:{
 				if(pack->size==sizeof(ZoneBoot_Struct)){
-					ZoneBoot_Struct* zbs= (ZoneBoot_Struct*)pack->pBuffer;
+					auto zbs= (ZoneBoot_Struct*)pack->pBuffer;
 					SetCompile(zbs->compile_time);
 				}
 				break;
 			}
 			case ServerOP_GroupInvite: {
-				if(pack->size != sizeof(GroupInvite_Struct))
+				if (pack->size != sizeof(GroupInvite_Struct)) {
 					break;
+				}
 
-				GroupInvite_Struct* gis = (GroupInvite_Struct*) pack->pBuffer;
-
+				auto gis = (GroupInvite_Struct*) pack->pBuffer;
 				client_list.SendPacket(gis->invitee_name, pack);
 				break;
 			}
 			case ServerOP_GroupFollow: {
-				if(pack->size != sizeof(ServerGroupFollow_Struct))
+				if (pack->size != sizeof(ServerGroupFollow_Struct)) {
 					break;
+				}
 
-				ServerGroupFollow_Struct *sgfs = (ServerGroupFollow_Struct *) pack->pBuffer;
-
+				auto sgfs = (ServerGroupFollow_Struct *) pack->pBuffer;
 				client_list.SendPacket(sgfs->gf.name1, pack);
 				break;
 			}
 			case ServerOP_GroupFollowAck: {
-				if(pack->size != sizeof(ServerGroupFollowAck_Struct))
+				if (pack->size != sizeof(ServerGroupFollowAck_Struct)) {
 					break;
+				}
 
-				ServerGroupFollowAck_Struct *sgfas = (ServerGroupFollowAck_Struct *) pack->pBuffer;
-
+				auto sgfas = (ServerGroupFollowAck_Struct *) pack->pBuffer;
 				client_list.SendPacket(sgfas->Name, pack);
 				break;
 			}
 			case ServerOP_GroupCancelInvite: {
-				if(pack->size != sizeof(GroupCancel_Struct))
+				if (pack->size != sizeof(GroupCancel_Struct)) {
 					break;
+				}
 
-				GroupCancel_Struct *gcs = (GroupCancel_Struct *) pack->pBuffer;
-
+				auto gcs = (GroupCancel_Struct *) pack->pBuffer;
 				client_list.SendPacket(gcs->name1, pack);
 				break;
 			}
 			case ServerOP_GroupSetID: {
-				if(pack->size != sizeof(GroupSetID_Struct))
+				if (pack->size != sizeof(GroupSetID_Struct)) {
 					break;
-				GroupSetID_Struct *gsi = (GroupSetID_Struct *) pack->pBuffer;
+				}
+
+				auto gsi = (GroupSetID_Struct *) pack->pBuffer;
 				// set groupid in CLE
 				uint32 char_id = gsi->char_id;
 				ClientListEntry *client_cle = client_list.FindCLEByCharacterID(gsi->char_id);
-				if (client_cle) 
+				if (client_cle) {
 					client_cle->SetGroupID(gsi->group_id);
+				}
+
 				break;
 			}
 			case ServerOP_GroupIDReq: {
@@ -295,54 +297,54 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_GroupLeave: {
-				if(pack->size != sizeof(ServerGroupLeave_Struct))
+				if (pack->size != sizeof(ServerGroupLeave_Struct)) {
 					break;
+				}
+
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_GroupJoin: {
-				if(pack->size != sizeof(ServerGroupJoin_Struct))
+				if (pack->size != sizeof(ServerGroupJoin_Struct)) {
 					break;
+				}
+
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_RaidGroupJoin: {
-				if (pack->size != sizeof(ServerRaidGroupJoin_Struct))
+				if (pack->size != sizeof(ServerRaidGroupJoin_Struct)) {
 					break;
+				}
+
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_ForceGroupUpdate: {
-				if(pack->size != sizeof(ServerForceGroupUpdate_Struct))
+				if (pack->size != sizeof(ServerForceGroupUpdate_Struct)) {
 					break;
+				}
+
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_OOZGroupMessage: {
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 
 				// check for characters zoning and queue messages
-				ServerGroupChannelMessage_Struct* gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer; 
-				if (gcm->groupid != 0)
-				{
+				auto gcm = (ServerGroupChannelMessage_Struct*)pack->pBuffer; 
+				if (gcm->groupid != 0) {
 					char membername[MAX_GROUP_MEMBERS][64]; // group member names
 					bool groupLoaded = false; // only query the database if there are clients zoning
 
 					// iterate client_list looking for clients that are zoning
 					std::vector<ClientListEntry *> vec;
 					client_list.GetClients("", vec);
-					for (auto it = vec.begin(); it != vec.end(); ++it)
-					{
+					for (auto it = vec.begin(); it != vec.end(); ++it) {
 						ClientListEntry *cle = *it;
-						if (cle && cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
-						{
+						if (cle && cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
 							// this client is zoning, it may be a member of the group this message was intended for
-							if (!groupLoaded)
-							{
+							if (!groupLoaded) {
 								// only try to load group member names once
 								groupLoaded = true;
 								memset(membername, 0, sizeof(membername));
@@ -351,17 +353,14 @@ bool ZoneServer::Process() {
 							
 							// check if this CLE is a member of the group by iterating the member list
 							bool queueMessage = false;
-							for (int memberIndex = 0; memberIndex < MAX_GROUP_MEMBERS; memberIndex++)
-							{
-								if (membername[memberIndex] && *membername[memberIndex] && !strcmp(membername[memberIndex], cle->name()))
-								{
+							for (int memberIndex = 0; memberIndex < MAX_GROUP_MEMBERS; memberIndex++) {
+								if (membername[memberIndex] && *membername[memberIndex] && !strcmp(membername[memberIndex], cle->name())) {
 									queueMessage = true;
 									break;
 								}
 							}
 							
-							if (queueMessage)
-							{
+							if (queueMessage) {
 								// queue group chat message
 								size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(gcm->message) + 1;
 								ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
@@ -381,134 +380,130 @@ bool ZoneServer::Process() {
 
 				break;
 			}
-
 			case ServerOP_DisbandGroup: {
-				if(pack->size != sizeof(ServerDisbandGroup_Struct))
+				if (pack->size != sizeof(ServerDisbandGroup_Struct)) {
 					break;
-				ServerDisbandGroup_Struct *sdbg = (ServerDisbandGroup_Struct *) pack->pBuffer;
-				if (sdbg->groupid > 0)
+				}
+
+				auto sdbg = (ServerDisbandGroup_Struct *) pack->pBuffer;
+				if (sdbg->groupid > 0) {
 					client_list.ClearGroup(sdbg->groupid); // clear groupid from all matching CLE's
+				}
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_ChangeGroupLeader: {
-				if(pack->size != sizeof(ServerGroupLeader_Struct))
+				if (pack->size != sizeof(ServerGroupLeader_Struct)) {
 					break;
+				}
+
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 				break;
 			}
-
 			case ServerOP_CheckGroupLeader: {
-				if (pack->size != sizeof(ServerGroupLeader_Struct))
+				if (pack->size != sizeof(ServerGroupLeader_Struct)) {
 					break;
+				}
 
-				ServerGroupLeader_Struct *sgls = (ServerGroupLeader_Struct *)pack->pBuffer;
+				auto sgls = (ServerGroupLeader_Struct *)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCharacter(sgls->leader_name);
 
-				if (cle)
-				{
+				if (cle) {
 					zoneserver_list.SendPacket(pack); //bounce it to all zones
 				}
-				else
-				{
+				else {
 					Log(Logs::General, Logs::WorldServer, "Character %s is not found, group ownership will not be transferred.", sgls->leader_name);
 				}
 
 				break;
 			}
-
 			case ServerOP_RaidAdd:{
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidRemove: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
 			case ServerOP_RaidRemoveLD: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidDisband: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidChangeGroup: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_UpdateGroup: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidGroupDisband: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidGroupAdd: {
-				if(pack->size != sizeof(ServerRaidGroupAction_Struct))
+				if (pack->size != sizeof(ServerRaidGroupAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidGroupRemove: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidGroupSay:
 			case ServerOP_RaidSay: {
 				zoneserver_list.SendPacket(pack); // broadcast to zones
 
 				// check for characters zoning and queue messages
-				ServerRaidMessage_Struct* srm = (ServerRaidMessage_Struct*)pack->pBuffer;
-				if (srm->rid != 0)
-				{
+				auto srm = (ServerRaidMessage_Struct*)pack->pBuffer;
+				if (srm->rid != 0) {
 					std::vector<ClientListEntry *> vec;
 					client_list.GetClients("", vec);
-					for (auto it = vec.begin(); it != vec.end(); ++it)
-					{
+					for (auto it = vec.begin(); it != vec.end(); ++it) {
 						ClientListEntry *cle = *it;
-						if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
-						{
+						if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
 							uint32 raidid, groupid;
-							if (database.GetRaidGroupID(cle->name(), &raidid, &groupid))
-							{
-								if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid))
-								{
+							if (database.GetRaidGroupID(cle->name(), &raidid, &groupid)) {
+								if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid)) {
 									// queue chat message
 									size_t struct_size = sizeof(ServerChannelMessage_Struct) + strlen(srm->message) + 1;
 									ServerChannelMessage_Struct *scm = (ServerChannelMessage_Struct *) new uchar[struct_size];
@@ -529,83 +524,85 @@ bool ZoneServer::Process() {
 
 				break;
 			}
-
 			case ServerOP_RaidGroupLeader: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidLeader: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidTypeChange: {
-				if (pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RaidAddLooter: {
-				if (pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_RemoveRaidLooter: {
-				if (pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_DetailsChange: {
-				if(pack->size != sizeof(ServerRaidGeneralAction_Struct))
+				if (pack->size != sizeof(ServerRaidGeneralAction_Struct)) {
 					break;
+				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
 			case ServerOP_SpawnCondition: {
-				if(pack->size != sizeof(ServerSpawnCondition_Struct))
+				if (pack->size != sizeof(ServerSpawnCondition_Struct)) {
 					break;
+				}
+
 				//bounce the packet to the correct zone server, if its up
-				ServerSpawnCondition_Struct* ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
+				auto ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
 				zoneserver_list.SendPacket(ssc->zoneID, pack);
 				break;
 			}
 			case ServerOP_SpawnEvent: {
-				if(pack->size != sizeof(ServerSpawnEvent_Struct))
+				if (pack->size != sizeof(ServerSpawnEvent_Struct)) {
 					break;
+				}
+
 				//bounce the packet to the correct zone server, if its up
-				ServerSpawnEvent_Struct* sse = (ServerSpawnEvent_Struct*)pack->pBuffer;
+				auto sse = (ServerSpawnEvent_Struct*)pack->pBuffer;
 				zoneserver_list.SendPacket(sse->zoneID, pack);
 				break;
 			}
 			case ServerOP_ChannelMessage: {
-				if (pack->size < sizeof(ServerChannelMessage_Struct))
+				if (pack->size < sizeof(ServerChannelMessage_Struct)) {
 					break;
-				ServerChannelMessage_Struct* scm = (ServerChannelMessage_Struct*) pack->pBuffer;
-				if(scm->chan_num == 20)
-				{
+				}
+				auto scm = (ServerChannelMessage_Struct*) pack->pBuffer;
+				if(scm->chan_num == 20) {
 					UCSLink.SendMessage(scm->from, scm->message);
 					break;
 				}
 				// tells get a reply echo
-				if (scm->chan_num == ChatChannel_Tell || scm->chan_num == ChatChannel_TellEcho)
-				{
+				if (scm->chan_num == ChatChannel_Tell || scm->chan_num == ChatChannel_TellEcho) {
 					// deliver to console user
 					if (scm->deliverto[0] == '*') {
 						Console* con = 0;
@@ -659,11 +656,13 @@ bool ZoneServer::Process() {
 						}
 					}
 					else if (cle->Server() == 0) {
-						if (scm->chan_num == ChatChannel_Tell)
+						if (scm->chan_num == ChatChannel_Tell) {
 							zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, Chat::White, fmt::format(" {} is not contactable at this time'", scm->to).c_str());
+						}
 					}
-					else
+					else {
 						cle->Server()->SendPacket(pack);
+					}
 				}
 				else {
 					if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
@@ -671,16 +670,13 @@ bool ZoneServer::Process() {
 					}
 					zoneserver_list.SendPacket(pack); // broadcast to zones
 
-					if (scm->chan_num == ChatChannel_Guild || scm->chan_num == ChatChannel_GMSAY || scm->chan_num == ChatChannel_Broadcast)
-					{
+					if (scm->chan_num == ChatChannel_Guild || scm->chan_num == ChatChannel_GMSAY || scm->chan_num == ChatChannel_Broadcast) {
 						// check for characters zoning and see if they would be eligible for this message, and if so, queue message
 						std::vector<ClientListEntry *> vec;
 						client_list.GetClients("", vec);
-						for (auto it = vec.begin(); it != vec.end(); ++it)
-						{
+						for (auto it = vec.begin(); it != vec.end(); ++it) {
 							ClientListEntry *cle = *it;
-							if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull())
-							{
+							if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
 								// is this client one of the targets of this message?
 								if
 								( 
@@ -709,19 +705,18 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_EmoteMessage: {
-				ServerEmoteMessage_Struct* sem = (ServerEmoteMessage_Struct*) pack->pBuffer;
+				auto sem = (ServerEmoteMessage_Struct*) pack->pBuffer;
 				zoneserver_list.SendEmoteMessageRaw(sem->to, sem->guilddbid, sem->minstatus, sem->type, sem->message);
 				break;
 			}
-
 			case ServerOP_RezzPlayerAccept: {
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
 			case ServerOP_RezzPlayer: {
 
-				RezzPlayer_Struct* sRezz = (RezzPlayer_Struct*) pack->pBuffer;
-				if (zoneserver_list.SendPacket(pack)){
+				auto sRezz = (RezzPlayer_Struct*) pack->pBuffer;
+				if (zoneserver_list.SendPacket(pack)) {
 					Log(Logs::Detail, Logs::WorldServer,"Sent Rez packet for %s",sRezz->rez.your_name);
 				}
 				else {
@@ -729,38 +724,42 @@ bool ZoneServer::Process() {
 				}
 				break;
 			}
-			case ServerOP_RezzPlayerReject:
-			{
+			case ServerOP_RezzPlayerReject:	{
 				char *Recipient = (char *)pack->pBuffer;
 				client_list.SendPacket(Recipient, pack);
 				break;
 			}
-
 			case ServerOP_MultiLineMsg: {
-				ServerMultiLineMsg_Struct* mlm = (ServerMultiLineMsg_Struct*) pack->pBuffer;
+				auto mlm = (ServerMultiLineMsg_Struct*) pack->pBuffer;
 				client_list.SendPacket(mlm->to, pack);
 				break;
 			}
 			case ServerOP_SetZone: {
-				if(pack->size != sizeof(SetZone_Struct))
+				if (pack->size != sizeof(SetZone_Struct)) {
 					break;
-
-				SetZone_Struct* szs = (SetZone_Struct*) pack->pBuffer;
-				if (szs->zoneid != 0) {
-					if(database.GetZoneName(szs->zoneid))
-						SetZone(szs->zoneid, szs->staticzone);
-					else
-						SetZone(0);
 				}
-				else
+
+				auto szs = (SetZone_Struct*) pack->pBuffer;
+				if (szs->zoneid != 0) {
+					if (ZoneName(szs->zoneid)) {
+						SetZone(szs->zoneid, szs->staticzone);
+					}
+					else {
+						SetZone(0);
+					}
+				}
+				else {
 					SetZone(0);
+				}
 
 				break;
 			}
 			case ServerOP_SetConnectInfo: {
-				if (pack->size != sizeof(ServerConnectInfo))
-						break;
-				ServerConnectInfo* sci = (ServerConnectInfo*) pack->pBuffer;
+				if (pack->size != sizeof(ServerConnectInfo)) {
+					break;
+				}
+
+				auto sci = (ServerConnectInfo*) pack->pBuffer;
 
 				if (!sci->port) {
 					client_port = zoneserver_list.GetAvailableZonePort();
@@ -792,12 +791,14 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_SetLaunchName: {
-				if(pack->size != sizeof(LaunchName_Struct))
+				if (pack->size != sizeof(LaunchName_Struct)) {
 					break;
+				}
+
 				const LaunchName_Struct* ln = (const LaunchName_Struct*)pack->pBuffer;
 				launcher_name = ln->launcher_name;
 				launched_name = ln->zone_name;
-				database.ZoneConnected(database.GetZoneID(ln->zone_name), ln->zone_name);
+				database.ZoneConnected(ZoneID(ln->zone_name), ln->zone_name);
 				Log(Logs::Detail, Logs::WorldServer, "Zone started with name %s by launcher %s", launched_name.c_str(), launcher_name.c_str());
 				break;
 			}
@@ -808,7 +809,7 @@ bool ZoneServer::Process() {
 					CatchSignal(2);
 				}
 				else{
-					WorldShutDown_Struct* wsd=(WorldShutDown_Struct*)pack->pBuffer;
+					auto wsd=(WorldShutDown_Struct*)pack->pBuffer;
 					if(wsd->time==0 && wsd->interval==0 && zoneserver_list.shutdowntimer->Enabled()){
 						zoneserver_list.shutdowntimer->Disable();
 						zoneserver_list.reminder->Disable();
@@ -822,50 +823,58 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_ZoneShutdown: {
-				ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *) pack->pBuffer;
+				auto s = (ServerZoneStateChange_struct *) pack->pBuffer;
 				ZoneServer* zs = 0;
-				if (s->ZoneServerID != 0)
+				if (s->ZoneServerID != 0) {
 					zs = zoneserver_list.FindByID(s->ZoneServerID);
-				else if (s->zoneid != 0)
-					zs = zoneserver_list.FindByName(database.GetZoneName(s->zoneid));
-				else
+				}
+				else if (s->zoneid != 0) {
+					zs = zoneserver_list.FindByName(ZoneName(s->zoneid));
+				}
+				else {
 					zoneserver_list.SendEmoteMessage(s->adminname, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: neither ID nor name specified");
+				}
 
-				if (zs == 0)
+				if (zs == 0) {
 					zoneserver_list.SendEmoteMessage(s->adminname, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: zoneserver not found");
-				else
+				}
+				else {
 					zs->SendPacket(pack);
+				}
+
 				break;
 			}
 			case ServerOP_ZoneBootup: {
-				ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *) pack->pBuffer;
+				auto s = (ServerZoneStateChange_struct *) pack->pBuffer;
 				uint32 ZoneServerID = s->ZoneServerID;
-				if (ZoneServerID == 0)
-				{
+				if (ZoneServerID == 0) {
 					ZoneServerID = zoneserver_list.GetAvailableZoneID();
-					if (ZoneServerID == 0)
-					{
+					if (ZoneServerID == 0) {
 						break;
 					}
 				}
-				zoneserver_list.SOPZoneBootup(s->adminname, ZoneServerID, database.GetZoneName(s->zoneid), s->makestatic);
+				zoneserver_list.SOPZoneBootup(s->adminname, ZoneServerID, ZoneName(s->zoneid), s->makestatic);
 				break;
 			}
 			case ServerOP_ZoneStatus: {
-				if (pack->size >= 1)
-					zoneserver_list.SendZoneStatus((char *) &pack->pBuffer[1], (uint8) pack->pBuffer[0], this);
+				if (pack->size >= 1) {
+					auto z = (ServerZoneStatus_Struct*)pack->pBuffer;
+					zoneserver_list.SendZoneStatus(z->name, z->admin, this);
+				}
 				break;
 
 			}
 			case ServerOP_AcceptWorldEntrance: {
-				if(pack->size != sizeof(WorldToZone_Struct))
+				if (pack->size != sizeof(WorldToZone_Struct)) {
 					break;
+				}
 
-				WorldToZone_Struct* wtz = (WorldToZone_Struct*) pack->pBuffer;
+				auto wtz = (WorldToZone_Struct*) pack->pBuffer;
 				Client* client = 0;
 				client = client_list.FindByAccountID(wtz->account_id);
-				if(client != 0)
+				if (client != 0) {
 					client->Clearance(wtz->response);
+				}
 				break;
 			}
 			case ServerOP_ZoneToZoneRequest: {
@@ -882,12 +891,15 @@ bool ZoneServer::Process() {
 				//
 
 
-				if(pack->size != sizeof(ZoneToZone_Struct))
+				if (pack->size != sizeof(ZoneToZone_Struct)) {
 					break;
-				ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
+				}
+
+				auto ztz = (ZoneToZone_Struct*) pack->pBuffer;
 				ClientListEntry* client = nullptr;
-				if(WorldConfig::get()->UpdateStats)
+				if (WorldConfig::get()->UpdateStats) {
 					client = client_list.FindCharacter(ztz->name);
+				}
 
 				Log(Logs::Detail, Logs::WorldServer,"ZoneToZone request for %s current zone %d req zone %d",
 					ztz->name, ztz->current_zone_id, ztz->requested_zone_id);
@@ -964,7 +976,7 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_ClientListKA: {
-				ServerClientListKeepAlive_Struct* sclka = (ServerClientListKeepAlive_Struct*) pack->pBuffer;
+				auto sclka = (ServerClientListKeepAlive_Struct*) pack->pBuffer;
 				if (pack->size < 4 || pack->size != 4 + (4 * sclka->numupdates)) {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_ClientListKA. Got: %d, Expected: %d",pack->size, (4 + (4 * sclka->numupdates)));
 					break;
@@ -973,7 +985,7 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_Who: {
-				ServerWhoAll_Struct* whoall = (ServerWhoAll_Struct*) pack->pBuffer;
+				auto whoall = (ServerWhoAll_Struct*) pack->pBuffer;
 				auto whom = new Who_All_Struct;
 				memset(whom,0,sizeof(Who_All_Struct));
 				whom->gmlookup = whoall->gmlookup;
@@ -988,48 +1000,23 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_RequestOnlineGuildMembers: {
-				ServerRequestOnlineGuildMembers_Struct *srogms = (ServerRequestOnlineGuildMembers_Struct*) pack->pBuffer;
+				auto srogms = (ServerRequestOnlineGuildMembers_Struct*) pack->pBuffer;
 				Log(Logs::Detail, Logs::Guilds, "ServerOP_RequestOnlineGuildMembers Recieved. FromID=%i GuildID=%i", srogms->FromID, srogms->GuildID);
 				client_list.SendOnlineGuildMembers(srogms->FromID, srogms->GuildID);
 				break;
 			}
 			case ServerOP_ClientVersionSummary: {
-				ServerRequestClientVersionSummary_Struct *srcvss = (ServerRequestClientVersionSummary_Struct*) pack->pBuffer;
+				auto srcvss = (ServerRequestClientVersionSummary_Struct*) pack->pBuffer;
 				client_list.SendClientVersionSummary(srcvss->Name);
 				break;
 			}
-			case ServerOP_ReloadLogs: {
-				zoneserver_list.SendPacket(pack);
-				LogSys.LoadLogDatabaseSettings();
-				break;
-			}
-			case ServerOP_ReloadRules: {
-				zoneserver_list.SendPacket(pack);
-				RuleManager::Instance()->LoadRules(&database, "default");
-				break;
-			}
-			case ServerOP_ReloadContentFlags: {
-				zoneserver_list.SendPacket(pack);
-				content_service.SetExpansionContext()->ReloadContentFlags();
-				break;
-			}
-			case ServerOP_ReloadRulesWorld:
-			{
-				RuleManager::Instance()->LoadRules(&database, "default");
-				break;
-			}
 			case ServerOP_FriendsWho: {
-				ServerFriendsWho_Struct* FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
+				auto FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
 				client_list.SendFriendsWho(FriendsWho, this);
 				break;
 			}
-			case ServerOP_ZonePlayer: {
-				//ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
 			case ServerOP_KickPlayer: {
-				ServerKickPlayer_Struct* skp = (ServerKickPlayer_Struct*)pack->pBuffer;
+				auto skp = (ServerKickPlayer_Struct*)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCLEByAccountID(skp->AccountID);
 				if (cle) {
 					cle->SetOnline(CLE_Status_Offline);
@@ -1038,40 +1025,34 @@ bool ZoneServer::Process() {
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-			case ServerOP_KillPlayer: {
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
-
-			case ServerOP_GuildRankUpdate:
-			{
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
 			case ServerOP_IsOwnerOnline: {
-				if(pack->size != sizeof(ServerIsOwnerOnline_Struct))
+				if (pack->size != sizeof(ServerIsOwnerOnline_Struct)) {
 					break;
-				ServerIsOwnerOnline_Struct* online = (ServerIsOwnerOnline_Struct*) pack->pBuffer;
+				}
+
+				auto online = (ServerIsOwnerOnline_Struct*) pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCLEByAccountID(online->accountid);
-				if(cle)
+				if (cle) {
 					online->online = 1;
-				else
+				}
+				else {
 					online->online = 0;
+				}
 				zoneserver_list.FindByZoneID(online->zoneid)->SendPacket(pack);
 				break;
 			}
 			//these opcodes get processed by the guild manager.
-			case ServerOP_RefreshGuild:
 			case ServerOP_DeleteGuild:
-			case ServerOP_GuildCharRefresh:{
+			case ServerOP_GuildCharRefresh:
+			case ServerOP_RefreshGuild:	{
 				guild_mgr.ProcessZonePacket(pack);
 				break;
 			}
-
 			case ServerOP_FlagUpdate: {
 				ClientListEntry* cle = client_list.FindCLEByAccountID(*((uint32*) pack->pBuffer));
-				if (cle)
-					cle->SetAdmin(*((int16*) &pack->pBuffer[4]));
+				if (cle) {
+					cle->SetAdmin(*((int16*)&pack->pBuffer[4]));
+				}
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
@@ -1080,15 +1061,18 @@ bool ZoneServer::Process() {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_GMGoto. Got: %d, Expected: %d",pack->size,sizeof(ServerGMGoto_Struct));
 					break;
 				}
-				ServerGMGoto_Struct* gmg = (ServerGMGoto_Struct*) pack->pBuffer;
+				auto gmg = (ServerGMGoto_Struct*) pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCharacter(gmg->gotoname);
 				if (cle != 0) {
-					if (cle->Server() == 0)
+					if (cle->Server() == 0) {
 						this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, Chat::Red, fmt::format("Error: Cannot identify {}'s zoneserver.", gmg->gotoname).c_str());
-					else if (cle->Anon() == 1 && cle->Admin() > gmg->admin) // no snooping for anon GMs
+					}
+					else if (cle->Anon() == 1 && cle->Admin() > gmg->admin) {// no snooping for anon GMs
 						this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, Chat::Red, fmt::format("Error: {} not found", gmg->gotoname).c_str());
-					else
+					}
+					else {
 						cle->Server()->SendPacket(pack);
+					}
 				}
 				else {
 					this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, Chat::Red, fmt::format("Error: {} not found", gmg->gotoname).c_str());
@@ -1101,10 +1085,13 @@ bool ZoneServer::Process() {
 					break;
 				}
 				auto l = (ServerLock_Struct*) pack->pBuffer;
-				if (l->is_locked)
+				if (l->is_locked) {
 					WorldConfig::LockWorld();
-				else
+				}
+				else {
 					WorldConfig::UnlockWorld();
+				}
+
 				if (loginserverlist.Connected()) {
 					loginserverlist.SendStatus();
 					SendEmoteMessage(l->character_name, 0, AccountStatus::Player, Chat::Yellow, fmt::format("World {}.", l->is_locked ? "locked" : "unlocked").c_str());
@@ -1119,7 +1106,7 @@ bool ZoneServer::Process() {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_Motd. Got: %d, Expected: %d",pack->size,sizeof(ServerMotd_Struct));
 					break;
 				}
-				ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
+				auto smotd = (ServerMotd_Struct*) pack->pBuffer;
 				database.SetVariable("MOTD",smotd->motd);
 				zoneserver_list.SendPacket(pack);
 				break;
@@ -1129,7 +1116,7 @@ bool ZoneServer::Process() {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_Uptime. Got: %d, Expected: %d",pack->size,sizeof(ServerUptime_Struct));
 					break;
 				}
-				ServerUptime_Struct* sus = (ServerUptime_Struct*) pack->pBuffer;
+				auto sus = (ServerUptime_Struct*) pack->pBuffer;
 				if (sus->zoneserverid == 0) {
 					ZSList::ShowUpTime(this, sus->adminname);
 				}
@@ -1153,7 +1140,7 @@ bool ZoneServer::Process() {
 				outpack->size = sizeof(eqTimeOfDay);
 				outpack->pBuffer = new uchar[outpack->size];
 				memset(outpack->pBuffer, 0, outpack->size);
-				eqTimeOfDay* tod = (eqTimeOfDay*) outpack->pBuffer;
+				auto tod = (eqTimeOfDay*) outpack->pBuffer;
 				tod->start_eqtime=zoneserver_list.worldclock.getStartEQTime();
 				tod->start_realtime=zoneserver_list.worldclock.getStartRealTime();
 				SendPacket(outpack);
@@ -1174,11 +1161,14 @@ bool ZoneServer::Process() {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_IPLookup. Got: %d, Expected (at least): %d",pack->size,sizeof(ServerGenericWorldQuery_Struct));
 					break;
 				}
-				ServerGenericWorldQuery_Struct* sgwq = (ServerGenericWorldQuery_Struct*) pack->pBuffer;
-				if (pack->size == sizeof(ServerGenericWorldQuery_Struct))
+
+				auto sgwq = (ServerGenericWorldQuery_Struct*) pack->pBuffer;
+				if (pack->size == sizeof(ServerGenericWorldQuery_Struct)) {
 					client_list.SendCLEList(sgwq->admin, sgwq->from, this);
-				else
+				}
+				else {
 					client_list.SendCLEList(sgwq->admin, sgwq->from, this, sgwq->query);
+				}
 				break;
 			}
 			case ServerOP_LockZone: {
@@ -1186,45 +1176,43 @@ bool ZoneServer::Process() {
 					Log(Logs::Detail, Logs::WorldServer,"Wrong size on ServerOP_LockZone. Got: %d, Expected: %d",pack->size,sizeof(ServerLockZone_Struct));
 					break;
 				}
-				ServerLockZone_Struct* lock_zone = (ServerLockZone_Struct*) pack->pBuffer;
+				auto lock_zone = (ServerLockZone_Struct*) pack->pBuffer;
 				switch (lock_zone->op) {
-					case ServerLockType::List:
+					case ServerLockType::List: {
 						zoneserver_list.ListLockedZones(lock_zone->adminname, this);
 						break;
-					case ServerLockType::Lock:
-						if (zoneserver_list.SetLockedZone(lock_zone->zoneID, true))
-							zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone locked: {} ", database.GetZoneName(lock_zone->zoneID)).c_str());
-						else
+					}
+					case ServerLockType::Lock: {
+						if (zoneserver_list.SetLockedZone(lock_zone->zoneID, true)) {
+							zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone locked: {} ", ZoneName(lock_zone->zoneID)).c_str());
+						}
+						else {
 							this->SendEmoteMessageRaw(lock_zone->adminname, 0, AccountStatus::Player, Chat::White, "Failed to change lock");
+						}
 						break;
-					case ServerLockType::Unlock:
-						if (zoneserver_list.SetLockedZone(lock_zone->zoneID, false))
-							zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone unlocked: {} ", database.GetZoneName(lock_zone->zoneID)).c_str());
-						else
+					}
+					case ServerLockType::Unlock: {
+						if (zoneserver_list.SetLockedZone(lock_zone->zoneID, false)) {
+							zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone unlocked: {} ", ZoneName(lock_zone->zoneID)).c_str());
+						}
+						else {
 							this->SendEmoteMessageRaw(lock_zone->adminname, 0, AccountStatus::Player, Chat::White, "Failed to change lock");
+						}
 						break;
+					}
 				}
 				break;
 			}
-			case ServerOP_ItemStatus: {
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
-			case ServerOP_OOCMute: {
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
 			case ServerOP_Revoke: {
-				RevokeStruct* rev = (RevokeStruct*)pack->pBuffer;
+				auto rev = (RevokeStruct*)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCharacter(rev->name);
-				if (cle != 0 && cle->Server() != 0)
-				{
+				if (cle != 0 && cle->Server() != 0) {
 					cle->Server()->SendPacket(pack);
 				}
 				break;
 			}
 			case ServerOP_SpawnPlayerCorpse: {
-				SpawnPlayerCorpse_Struct* s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
+				auto s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
 				ZoneServer* zs = zoneserver_list.FindByZoneID(s->zone_id);
 				if(zs) {
 					if (zs->SendPacket(pack)) {
@@ -1240,20 +1228,16 @@ bool ZoneServer::Process() {
 			{
 				bool success = false;
 				ZoneServer* zs;
-				ServerOP_Consent_Struct* s = (ServerOP_Consent_Struct*)pack->pBuffer;
+				auto s = (ServerOP_Consent_Struct*)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCharacter(s->grantname);
-				if (cle)
-				{
+				if (cle) {
 					zs = zoneserver_list.FindByZoneID(cle->zone());
-					if (zs)
-					{
+					if (zs) {
 						//Sends packet to player granted consent. This causes zone to call Consent() and sends the granted player a success message.
-						if (zs->SendPacket(pack))
-						{
+						if (zs->SendPacket(pack)) {
 							success = true;
 							ClientListEntry* cle_reply = client_list.FindCharacter(s->ownername);
-							if (cle_reply)
-							{
+							if (cle_reply) {
 								auto reply = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
 								ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)reply->pBuffer;
 								strcpy(scs->grantname, s->grantname);
@@ -1263,11 +1247,11 @@ bool ZoneServer::Process() {
 								scs->message_string_id = 1427; //CONSENT_GIVEN
 								scs->corpse_id = s->corpse_id;
 								zs = zoneserver_list.FindByZoneID(cle_reply->zone());
-								if (zs)
-								{
+								if (zs) {
 									// Sends packet to owner so they get the success message. If this fails, consent will still occur the owner just won't get a message.
-									if(zs->SendPacket(reply))
+									if (zs->SendPacket(reply)) {
 										Log(Logs::Detail, Logs::WorldServer, "Sent consent packet from player %s to player %s in zone %u.", s->ownername, s->grantname, cle->zone());
+									}
 								}
 								safe_delete(reply);
 							}
@@ -1275,11 +1259,10 @@ bool ZoneServer::Process() {
 					}
 				}
 
-				if (!success)
-				{
+				if (!success) {
 					// Sends packet back to owner so they can save the consent to the DB. (Granted player is not online or doesn't exist.)
 					auto reply = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
-					ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)reply->pBuffer;
+					auto scs = (ServerOP_Consent_Struct*)reply->pBuffer;
 					strcpy(scs->grantname, s->grantname);
 					strcpy(scs->ownername, s->ownername);
 					scs->permission = s->permission;
@@ -1287,53 +1270,47 @@ bool ZoneServer::Process() {
 					scs->message_string_id = 101; //TARGET_NOT_FOUND
 					scs->corpse_id = s->corpse_id;
 					zs = zoneserver_list.FindByZoneID(s->zone_id);
-					if (zs)
-					{
-						if (!zs->SendPacket(reply))
+					if (zs) {
+						if (!zs->SendPacket(reply)) {
 							Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
+						}
 					}
-					else
-					{
+					else {
 						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to locate zone record for zone id %u in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
 					}
 					safe_delete(reply);
 				}
 				break;
 			}
-			case ServerOP_Consent_Response: 
-			{
+			case ServerOP_Consent_Response: {
 				// This just relays the packet back to the owner's zone. 
-				ServerOP_Consent_Struct* s = (ServerOP_Consent_Struct*)pack->pBuffer;
+				auto s = (ServerOP_Consent_Struct*)pack->pBuffer;
 				ZoneServer* zs = zoneserver_list.FindByZoneID(s->zone_id);
-				if(zs) 
-				{
-					if(!zs->SendPacket(pack))
+				if(zs)  {
+					if (!zs->SendPacket(pack)) {
 						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent_Response: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
+					}
 				}
 				else {
 					Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent_Response: Unable to locate zone record for zone id %u in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
 				}
 				break;
 			}
-			case ServerOP_ConsentDeny:
-			{
-				if (pack->size != sizeof(ServerOP_ConsentDeny_Struct))
-				{
+			case ServerOP_ConsentDeny: {
+				if (pack->size != sizeof(ServerOP_ConsentDeny_Struct)) {
 					break;
 				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-			case ServerOP_ConsentDenyByID:
-			{
-				if (pack->size != sizeof(ServerOP_ConsentDenyByID_Struct))
-				{
+			case ServerOP_ConsentDenyByID: {
+				if (pack->size != sizeof(ServerOP_ConsentDenyByID_Struct)) {
 					Log(Logs::General, Logs::Error, "ServerOP_ConsentDenyByID wrong struct size. Got: %d", pack->size);
 					break;
 				}
 
-				ServerOP_ConsentDenyByID_Struct* s = (ServerOP_ConsentDenyByID_Struct*)pack->pBuffer;
+				auto s = (ServerOP_ConsentDenyByID_Struct*)pack->pBuffer;
 
 				LinkedList<ConsentDenied_Struct*> purged_consent;
 				database.ClearAllConsented(s->ownername, s->corpse_id, &purged_consent);
@@ -1341,16 +1318,14 @@ bool ZoneServer::Process() {
 				//Creates a packet telling each player their consent has expired, and if they're online also updates their consent_list.
 				LinkedListIterator<ConsentDenied_Struct*> iterator(purged_consent);
 				iterator.Reset();
-				while (iterator.MoreElements())
-				{
+				while (iterator.MoreElements()) {
 					ConsentDenied_Struct* cd = iterator.GetData();
 					ClientListEntry* cle = client_list.FindCharacter(cd->gname);
-					if (cle)
-					{
+					if (cle) {
 						char gname[64];
 						strncpy(gname, cle->name(), 64);
 						ServerPacket *scs_pack = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
-						ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)scs_pack->pBuffer;
+						auto scs = (ServerOP_Consent_Struct*)scs_pack->pBuffer;
 						strcpy(scs->grantname, gname);
 						strcpy(scs->ownername, cd->oname);
 						scs->permission = 0;
@@ -1359,16 +1334,16 @@ bool ZoneServer::Process() {
 
 						Log(Logs::Detail, Logs::WorldServer, "Created ServerOP_Consent_Response packet. Owner: %s Granted: %s CorpseID: %d", scs->ownername, scs->grantname, scs->corpse_id);
 						ZoneServer* zs = zoneserver_list.FindByZoneID(cle->zone());
-						if (zs)
-						{
+						if (zs) {
 							scs->zone_id = zs->GetZoneID();
 							zs->SendPacket(scs_pack);
 						}
 
 						safe_delete(scs_pack);
 					}
-					else
+					else {
 						Log(Logs::Detail, Logs::WorldServer, "Granted player %s not found to send denied consent message.", cd->gname);
+					}
 
 					iterator.Advance();
 				}
@@ -1376,44 +1351,27 @@ bool ZoneServer::Process() {
 				purged_consent.Clear();
 				break;
 			}
-
-			case ServerOP_QGlobalUpdate:
-			{
-				if(pack->size != sizeof(ServerQGlobalUpdate_Struct))
-				{
+			case ServerOP_QGlobalUpdate: {
+				if(pack->size != sizeof(ServerQGlobalUpdate_Struct)) {
 					break;
 				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
-			case ServerOP_QGlobalDelete:
-			{
-				if(pack->size != sizeof(ServerQGlobalDelete_Struct))
-				{
+			case ServerOP_QGlobalDelete: {
+				if(pack->size != sizeof(ServerQGlobalDelete_Struct)) {
 					break;
 				}
 
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
-			case ServerOP_LSAccountUpdate:
-			{
+			case ServerOP_LSAccountUpdate: {
 				Log(Logs::Detail, Logs::WorldServer, "Received ServerOP_LSAccountUpdate packet from zone");
 				loginserverlist.SendAccountUpdate(pack);
 				break;
 			}
-
-			case ServerOP_UCSMailMessage:
-			{
-				UCSLink.SendPacket(pack);
-				break;
-			}
-			case ServerOP_QSSendQuery:
-			case ServerOP_QueryServGeneric:
-			case ServerOP_Speech:
 			case ServerOP_QSPlayerAARateHourly:
 			case ServerOP_QSPlayerAAPurchase:
 			case ServerOP_QSPlayerTSEvents:
@@ -1421,64 +1379,106 @@ bool ZoneServer::Process() {
 			case ServerOP_QSPlayerLogItemDeletes:
 			case ServerOP_QSPlayerLogItemMoves:
 			case ServerOP_QSPlayerLogMerchantTransactions:
-			{
-				QSLink.SendPacket(pack);
-				break;
-			}
 			case ServerOP_QSPlayerLootRecords:
-			{
+			case ServerOP_QSSendQuery:
+			case ServerOP_QueryServGeneric:
+			case ServerOP_Speech:
+			case ServerOP_UCSMailMessage: {
 				QSLink.SendPacket(pack);
 				break;
 			}
-			case ServerOP_CZSignalClientByName:
-			case ServerOP_CZMessagePlayer: 
-			case ServerOP_CZSignalClient:
-			case ServerOP_DepopAllPlayersCorpses:
-			case ServerOP_DepopPlayerCorpse:
-			case ServerOP_ReloadTitles:
-			case ServerOP_SpawnStatusChange:
-			case ServerOP_ReloadWorld:
-			case ServerOP_UpdateSpawn:
-			{
+			case ServerOP_ReloadOpcodes: {
+				ReloadAllPatches();
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-			case ServerOP_CZSignalNPC:
+			case ServerOP_CZMessagePlayer:
+			case ServerOP_CZSignalClient:
+			case ServerOP_CZSignalClientByName:
+			case ServerOP_DepopAllPlayersCorpses:
+			case ServerOP_DepopPlayerCorpse:
+			case ServerOP_GuildRankUpdate:
+			case ServerOP_ItemStatus:
+			case ServerOP_KillPlayer:
+			case ServerOP_OOCMute:
+			case ServerOP_ReloadAAData:
+			case ServerOP_ReloadBlockedSpells:
+			case ServerOP_ReloadCommands:
+			case ServerOP_ReloadDoors:
+			case ServerOP_ReloadGroundSpawns:
+			case ServerOP_ReloadLevelEXPMods:
+			case ServerOP_ReloadLoot:
+			case ServerOP_ReloadKeyRings:
+			case ServerOP_ReloadMerchants:
+			case ServerOP_ReloadNPCEmotes:
+			case ServerOP_ReloadNPCSpells:
+			case ServerOP_ReloadObjects:
+			case ServerOP_ReloadSkills:
+			case ServerOP_ReloadStaticZoneData:
+			case ServerOP_ReloadTitles:
+			case ServerOP_ReloadTraps:
+			case ServerOP_ReloadWorld:
+			case ServerOP_ReloadZonePoints:
+			case ServerOP_ReloadZoneData:
+			case ServerOP_SpawnStatusChange:
+			case ServerOP_UpdateSpawn:
+			case ServerOP_Weather:
+			case ServerOP_ZonePlayer: {
+				zoneserver_list.SendPacket(pack);
+				break;
+			}
+			case ServerOP_ReloadLogs: {
+				zoneserver_list.SendPacket(pack);
+				LogSys.LoadLogDatabaseSettings();
+				break;
+			}
+			case ServerOP_ReloadRules: {
+				zoneserver_list.SendPacket(pack);
+				RuleManager::Instance()->LoadRules(&database, "default");
+				break;
+			}
+			case ServerOP_ReloadContentFlags: {
+				zoneserver_list.SendPacket(pack);
+				content_service.SetExpansionContext()->ReloadContentFlags();
+				break;
+			}
+			case ServerOP_ReloadVariables:
 			{
-				CZNPCSignal_Struct* s = (CZNPCSignal_Struct*)pack->pBuffer;
+				database.LoadVariables();
+				break;
+			}
+			case ServerOP_CZSignalNPC: {
+				auto s = (CZNPCSignal_Struct*)pack->pBuffer;
 				uint32 zone_id = s->npctype_id / 1000u;						// NPC IDs have the zone IDs in them.  who cares about pets
 				ZoneServer* zs = zoneserver_list.FindByZoneID(zone_id);
-				if (zs)
+				if (zs) {
 					zs->SendPacket(pack);
+				}
 				break;
 			}
-			case ServerOP_CZSetEntityVariableByNPCTypeID:
-			{
-				CZSetEntVarByNPCTypeID_Struct* s = (CZSetEntVarByNPCTypeID_Struct*)pack->pBuffer;
+			case ServerOP_CZSetEntityVariableByNPCTypeID: {
+				auto s = (CZSetEntVarByNPCTypeID_Struct*)pack->pBuffer;
 				uint32 zone_id = s->npctype_id / 1000u;
 				ZoneServer* zs = zoneserver_list.FindByZoneID(zone_id);
-				if (zs)
+				if (zs) {
 					zs->SendPacket(pack);
+				}
 				break;
 			}
-			case ServerOP_Soulmark:
-			{
-				ServerRequestSoulMark_Struct *sss = (ServerRequestSoulMark_Struct*)pack->pBuffer;
+			case ServerOP_Soulmark: {
+				auto sss = (ServerRequestSoulMark_Struct*)pack->pBuffer;
 				ClientListEntry *cle = client_list.FindCharacter(sss->name);
-				if (!cle || cle && !cle->Server())
-				{
+				if (!cle || cle && !cle->Server()) {
 					break;
 				}
 
 				std::vector<SoulMarkEntry_Struct> vec;
 				database.LoadSoulMarksForClient(database.GetCharacterID(sss->entry.interrogatename), vec);
 
-				if(!vec.empty())
-				{
+				if(!vec.empty()) {
 					std::vector<SoulMarkEntry_Struct>::iterator it = vec.begin();
 					int i = 0;
-					while(it != vec.end() && i < 12)
-					{
+					while(it != vec.end() && i < 12) {
 						sss->entry.entries[i] = (*it);
 						i++;
 						it++;
@@ -1504,28 +1504,18 @@ bool ZoneServer::Process() {
 				zoneserver_list.SendPacket(pack);
 				break;
 			}
-
-			case ServerOP_RequestTellQueue:
-			{
-				ServerRequestTellQueue_Struct* rtq = (ServerRequestTellQueue_Struct*) pack->pBuffer;
+			case ServerOP_RequestTellQueue:	{
+				auto rtq = (ServerRequestTellQueue_Struct*) pack->pBuffer;
 				ClientListEntry *cle = client_list.FindCharacter(rtq->name);
-				if (!cle || cle->TellQueueEmpty())
+				if (!cle || cle->TellQueueEmpty()) {
 					break;
+				}
 
 				cle->ProcessTellQueue();
 				break;
 			}
-			case ServerOP_ReloadSkills: {
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
-			case ServerOP_Weather: {
-				zoneserver_list.SendPacket(pack);
-				break;
-			}
-			case ServerOP_BootDownZones:
-			{
-				ServerDownZoneBoot_struct* s = (ServerDownZoneBoot_struct *)pack->pBuffer;
+			case ServerOP_BootDownZones: {
+				auto s = (ServerDownZoneBoot_struct *)pack->pBuffer;
 				std::string query = StringFormat("SELECT zone FROM launcher_zones WHERE enabled = 1");
 				auto results = database.QueryDatabase(query);
 				if (!results.Success()) {
@@ -1533,15 +1523,12 @@ bool ZoneServer::Process() {
 					break;
 				}
 
-				for (auto row = results.begin(); row != results.end(); ++row) 
-				{
+				for (auto row = results.begin(); row != results.end(); ++row) {
 					std::string zone_name = row[0];
 					ZoneServer* zs = zoneserver_list.FindByName(zone_name.c_str());
-					if (zs == nullptr)
-					{
+					if (zs == nullptr) {
 						uint32 zoneserverid = zoneserver_list.GetAvailableZoneID();
-						if (zoneserverid == 0)
-						{
+						if (zoneserverid == 0) {
 							break;
 						}
 
@@ -1551,8 +1538,7 @@ bool ZoneServer::Process() {
 
 				break;
 			}
-			default:
-			{
+			default: {
 				Log(Logs::Detail, Logs::WorldServer, "Unknown ServerOPcode from zone 0x%04x, size %d", pack->opcode, pack->size);
 				DumpPacket(pack->pBuffer, pack->size);
 				break;
@@ -1569,8 +1555,10 @@ bool ZoneServer::Process() {
 }
 
 void ZoneServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
-	if (!message)
+	if (!message) {
 		return;
+	}
+
 	va_list argptr;
 	char buffer[1024];
 
@@ -1581,8 +1569,10 @@ void ZoneServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_
 }
 
 void ZoneServer::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message) {
-	if (!message)
+	if (!message) {
 		return;
+	}
+
 	auto pack = new ServerPacket;
 
 	pack->opcode = ServerOP_EmoteMessage;

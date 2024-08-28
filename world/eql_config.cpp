@@ -21,6 +21,7 @@
 #include "launcher_link.h"
 #include "launcher_list.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 #include <cstdlib>
 #include <cstring>
 
@@ -156,8 +157,9 @@ void EQLConfig::StartZone(Const_char *zone_ref) {
 
 bool EQLConfig::BootStaticZone(Const_char *short_name, uint16 port) {
 	//make sure the short name is valid.
-	if(database.GetZoneID(short_name) == 0)
+	if (ZoneID(short_name) == 0) {
 		return false;
+	}
 
 	//database update
 	char namebuf[128];
@@ -191,8 +193,9 @@ bool EQLConfig::BootStaticZone(Const_char *short_name, uint16 port) {
 
 bool EQLConfig::ChangeStaticZone(Const_char *short_name, uint16 port) {
 	//make sure the short name is valid.
-	if(database.GetZoneID(short_name) == 0)
+	if (ZoneID(short_name) == 0) {
 		return false;
+	}
 
 	//check internal state
 	std::map<std::string, LauncherZone>::iterator res;

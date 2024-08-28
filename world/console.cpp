@@ -38,6 +38,7 @@
 #include "../common/rulesys.h"
 #include "../common/ruletypes.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 #include "world_config.h"
 #include "zoneserver.h"
 #include "zonelist.h"
@@ -507,6 +508,7 @@ void Console::ProcessCommand(const char* command) {
 					SendMessage(1, "  LSReconnect");
 					SendMessage(1, "  signalcharbyname charname ID");
 					SendMessage(1, "  reloadworld");
+					SendMessage(1, "  reloadzonequests");
 				}
 			}
 			else if (strcasecmp(sep.arg[0], "ping") == 0) {
@@ -632,13 +634,14 @@ void Console::ProcessCommand(const char* command) {
 				}
 			}
 			else if (strcasecmp(sep.arg[0], "movechar") == 0) {
+				
 				if(sep.arg[1][0]==0 || sep.arg[2][0] == 0)
 					SendMessage(1, "Usage: movechar [charactername] [zonename]");
 				else {
-					if (!database.GetZoneID(sep.arg[2]))
+					if (!ZoneID(sep.arg[2]))
 						SendMessage(1, "Error: Zone '%s' not found", sep.arg[2]);
 					else if (!database.CheckUsedName((char*) sep.arg[1])) {
-						if (!database.MoveCharacterToZone((char*) sep.arg[1], (char*) sep.arg[2]))
+						if (!database.MoveCharacterToZone((char*) sep.arg[1], ZoneID(sep.arg[2])))
 							SendMessage(1, "Character Move Failed!");
 						else
 							SendMessage(1, "Character has been moved.");
@@ -743,13 +746,13 @@ void Console::ProcessCommand(const char* command) {
 					if (sep.arg[1][0] >= '0' && sep.arg[1][0] <= '9')
 						s->ZoneServerID = atoi(sep.arg[1]);
 					else
-						s->zoneid = database.GetZoneID(sep.arg[1]);
+						s->zoneid = ZoneID(sep.arg[1]);
 
 					ZoneServer* zs = 0;
 					if (s->ZoneServerID != 0)
 						zs = zoneserver_list.FindByID(s->ZoneServerID);
 					else if (s->zoneid != 0)
-						zs = zoneserver_list.FindByName(database.GetZoneName(s->zoneid));
+						zs = zoneserver_list.FindByName(ZoneName(s->zoneid));
 					else
 						SendMessage(1, "Error: ZoneShutdown: neither ID nor name specified");
 
@@ -838,10 +841,10 @@ void Console::ProcessCommand(const char* command) {
 					zoneserver_list.ListLockedZones(0, this);
 				}
 				else if (strcasecmp(sep.arg[1], "lock") == 0 && admin >= 101) {
-					uint16 tmp = database.GetZoneID(sep.arg[2]);
+					uint16 tmp = ZoneID(sep.arg[2]);
 					if (tmp) {
 						if (zoneserver_list.SetLockedZone(tmp, true))
-							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone locked: %s", database.GetZoneName(tmp));
+							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone locked: %s", ZoneName(tmp));
 						else
 							SendMessage(1, "Failed to change lock");
 					}
@@ -849,10 +852,10 @@ void Console::ProcessCommand(const char* command) {
 						SendMessage(1, "Usage: #zonelock lock [zonename]");
 				}
 				else if (strcasecmp(sep.arg[1], "unlock") == 0 && admin >= 101) {
-					uint16 tmp = database.GetZoneID(sep.arg[2]);
+					uint16 tmp = ZoneID(sep.arg[2]);
 					if (tmp) {
 						if (zoneserver_list.SetLockedZone(tmp, false))
-							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone unlocked: %s", database.GetZoneName(tmp));
+							zoneserver_list.SendEmoteMessage(0, 0, 80, 15, "Zone unlocked: %s", ZoneName(tmp));
 						else
 							SendMessage(1, "Failed to change lock");
 					}
@@ -873,7 +876,18 @@ void Console::ProcessCommand(const char* command) {
 				SendEmoteMessage(0,0,0,15,"Reloading World...");
 				auto pack = new ServerPacket(ServerOP_ReloadWorld, sizeof(ReloadWorld_Struct));
 				ReloadWorld_Struct* RW = (ReloadWorld_Struct*) pack->pBuffer;
-				RW->Option = 1;
+				RW->global_repop = ReloadWorld::Repop;
+				zoneserver_list.SendPacket(pack);
+				safe_delete(pack);
+			}
+			else if (strcasecmp(sep.arg[0], "reloadzonequests") == 0 && admin > 101) {
+				std::string zone_short_name = sep.arg[0];
+				SendEmoteMessage(0, 0, 0, 15, fmt::format("Reloading Zone [{}]...", zone_short_name));
+
+				auto pack = new ServerPacket(ServerOP_HotReloadQuests, sizeof(HotReloadQuestsStruct));
+				auto *hot_reload_quests = (HotReloadQuestsStruct*)pack->pBuffer;
+				strn0cpy(hot_reload_quests->zone_short_name, (char*)zone_short_name.c_str(), 200);
+
 				zoneserver_list.SendPacket(pack);
 				safe_delete(pack);
 			}

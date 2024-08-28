@@ -80,15 +80,14 @@
 #define ServerOP_CheckGroupLeader	0x0043
 #define ServerOP_RaidGroupJoin		0x0044
 
-#define ServerOP_DepopAllPlayersCorpses	0x0061
-
-#define ServerOP_QGlobalUpdate		0x0063
-#define ServerOP_QGlobalDelete		0x0064
-#define ServerOP_DepopPlayerCorpse	0x0065
-#define ServerOP_RequestTellQueue	0x0066 // client asks for it's tell queues
-#define ServerOP_ChangeSharedMem	0x0067
-#define ServerOP_ConsentDeny		0x0068
-#define ServerOP_ConsentDenyByID	0x0069
+#define ServerOP_DepopAllPlayersCorpses	0x0060
+#define ServerOP_QGlobalUpdate		0x0061
+#define ServerOP_QGlobalDelete		0x0062
+#define ServerOP_DepopPlayerCorpse	0x0063
+#define ServerOP_RequestTellQueue	0x0064 // client asks for it's tell queues
+#define ServerOP_ChangeSharedMem	0x0065
+#define ServerOP_ConsentDeny		0x0066
+#define ServerOP_ConsentDenyByID	0x0067
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -160,22 +159,39 @@
 #define ServerOP_DoZoneCommand		0x3003
 #define ServerOP_BootDownZones		0x3004
 
-#define ServerOP_UCSMessage		0x4000
-#define ServerOP_UCSMailMessage 0x4001
+#define ServerOP_CZMessagePlayer 0x4000
+#define ServerOP_CZSignalClient 0x4001
+#define ServerOP_CZSignalClientByName 0x4002
+#define ServerOP_HotReloadQuests 0x4003
+#define ServerOP_QueryServGeneric	0x4004
+#define ServerOP_UCSMessage		0x4005
+#define ServerOP_UCSMailMessage 0x4006
+#define ServerOP_UpdateSchedulerEvents 0x4007
 
-#define ServerOP_QueryServGeneric	0x4005
-#define ServerOP_CZSignalClient 0x4006
-#define ServerOP_CZSignalClientByName 0x4007
-#define ServerOP_CZMessagePlayer 0x4008
-#define ServerOP_UpdateSchedulerEvents 0x4012
-
-#define ServerOP_ReloadContentFlags 0x4013
-#define ServerOP_ReloadSkills		0x0218
-#define ServerOP_ReloadWorld 0x4009
-#define ServerOP_ReloadLogs 0x4010
-#define ServerOP_ReloadRules	0x4002
-#define ServerOP_ReloadRulesWorld	0x4003
-#define ServerOP_ReloadTitles		0x0062
+#define ServerOP_ReloadAAData 0x4100
+#define ServerOP_ReloadBlockedSpells 0x4101
+#define ServerOP_ReloadCommands 0x4102
+#define ServerOP_ReloadContentFlags 0x4103
+#define ServerOP_ReloadDoors 0x4104
+#define ServerOP_ReloadGroundSpawns 0x4105
+#define ServerOP_ReloadLevelEXPMods 0x4106
+#define ServerOP_ReloadLogs 0x4107
+#define ServerOP_ReloadMerchants 0x4108
+#define ServerOP_ReloadNPCEmotes 0x4109
+#define ServerOP_ReloadObjects 0x4110
+#define ServerOP_ReloadOpcodes 0x4111
+#define ServerOP_ReloadRules 0x4112
+#define ServerOP_ReloadSkills 0x4113
+#define ServerOP_ReloadStaticZoneData 0x4114
+#define ServerOP_ReloadTitles 0x4115
+#define ServerOP_ReloadTraps 0x4116
+#define ServerOP_ReloadVariables 0x4117
+#define ServerOP_ReloadWorld 0x4118
+#define ServerOP_ReloadZonePoints 0x4119
+#define ServerOP_ReloadZoneData 0x4120
+#define ServerOP_ReloadLoot 0x4121
+#define ServerOP_ReloadNPCSpells 0x4122
+#define ServerOP_ReloadKeyRings 0x4123
 
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013
@@ -427,6 +443,7 @@ struct RezzPlayer_Struct {
 	uint32	dbid;
 	uint32	exp;
 	uint16	rezzopcode;
+	uint32	corpse_character_id;
 	//char	packet[160];
 	Resurrect_Struct rez;
 };
@@ -1139,11 +1156,15 @@ struct CZSetEntVarByNPCTypeID_Struct {
 };
 
 struct ReloadWorld_Struct{
-	uint32 Option;
+	uint8 global_repop;
+};
+
+struct HotReloadQuestsStruct {
+	char zone_short_name[200];
 };
 
 struct ServerRequestTellQueue_Struct {
-	char	name[64];
+	char name[64];
 };
 
 struct ServerRequestSoulMark_Struct {
@@ -1167,6 +1188,11 @@ struct ServerWeather_Struct {
 
 struct ServerFlagUpdate_Struct {
 	uint32 account_id;
+	int16 admin;
+};
+
+struct ServerZoneStatus_Struct {
+	char  name[64];
 	int16 admin;
 };
 
