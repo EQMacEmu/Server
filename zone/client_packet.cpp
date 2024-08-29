@@ -3099,6 +3099,8 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 
 	CorpseSummonOnPositionUpdate();
 
+	CheckVirtualZoneLines();
+
 #if false // just for debugging
 	static auto lastpos = glm::vec4();
 	float dist_moved = Distance(m_Position, lastpos);
