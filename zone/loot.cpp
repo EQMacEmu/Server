@@ -1216,7 +1216,7 @@ void NPC::QueryLoot(Client* to)
 			to->Message(
 				Chat::White,
 				fmt::format(
-					"Item {} | Name: {} ({}){}",
+					"Item {} | Name: {} ({}){} [{}]",
 					item_number,
 					linker.GenerateLink().c_str(),
 					current_item->item_id,
@@ -1227,7 +1227,8 @@ void NPC::QueryLoot(Client* to)
 							current_item->charges
 						) :
 						""
-						)
+						),
+					Mac::invslot::GetInvPossessionsSlotName(current_item->equip_slot)
 				).c_str()
 			);
 			item_count++;
