@@ -189,16 +189,19 @@ bool Spawn2::Process() {
 		//try to find our NPC type.
 		const NPCType* tmp = database.LoadNPCTypesData(npcid);
 		if (tmp == nullptr) {
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded an invalid NPC type %d", spawn2_id, spawngroup_id_, npcid);
+			LogSpawns("Spawn2 [{}]: Spawn group [{}] yeilded an invalid NPC type [{}]", spawn2_id, spawngroup_id_, npcid);
 			Reset();	//try again later
 			return(true);
 		}
 
-		if (tmp->unique_spawn_by_name)
-		{
-			if (!entity_list.LimitCheckName(tmp->name))
-			{
-				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is unique and one already exists.", spawn2_id, spawngroup_id_, npcid);
+		if (tmp->npc_id == 0) {
+			LogError("NPC type did not load for npc_id [{}]", npcid);
+			return true;
+		}
+
+		if (tmp->unique_spawn_by_name) {
+			if (!entity_list.LimitCheckName(tmp->name)) {
+				LogSpawns("Spawn2 [{}]: Spawn group [{}] yeilded NPC type [{}], which is unique and one already exists", spawn2_id, spawngroup_id_, npcid);
 				timer.Start(5000);	//try again in five seconds.
 				return(true);
 			}
@@ -206,30 +209,26 @@ bool Spawn2::Process() {
 
 		if (tmp->spawn_limit > 0) {
 			if (!entity_list.LimitCheckType(npcid, tmp->spawn_limit)) {
-				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d yielded NPC type %d, which is over its spawn limit (%d)", spawn2_id, spawngroup_id_, npcid, tmp->spawn_limit);
+				LogSpawns("Spawn2 [{}]: Spawn group [{}] yeilded NPC type [{}], which is over its spawn limit ([{}])", spawn2_id, spawngroup_id_, npcid, tmp->spawn_limit);
 				timer.Start(5000);	//try again in five seconds.
 				return(true);
 			}
 		}
 
 		bool ignore_despawn = false;
-		if (npcthis)
-		{
+		if (npcthis) {
 			ignore_despawn = npcthis->IgnoreDespawn();
 		}
 
-		if (ignore_despawn)
-		{
+		if (ignore_despawn) {
 			return true;
 		}
 
-		if (spawn_group->despawn != 0 && condition_id == 0 && !ignore_despawn)
-		{
+		if (spawn_group->despawn != 0 && condition_id == 0 && !ignore_despawn) {
 			zone->Despawn(spawn2_id);
 		}
 
-		if (IsDespawned)
-		{
+		if (IsDespawned) {
 			return true;
 		}
 
@@ -284,7 +283,7 @@ bool Spawn2::Process() {
 		if (npc->DropsGlobalLoot()) {
 			npc->CheckGlobalLootTables();
 		}
-		npc->SetSp2(spawngroup_id_);
+		npc->SetSpawnGroupId(spawngroup_id_);
 		npc->SaveGuardPointAnim(anim);
 		npc->SetAppearance((EmuAppearance)anim);
 		entity_list.AddNPC(npc);

@@ -2736,7 +2736,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 					is_spell_target_out_of_range = false;
 				}
 				if ((IsClient() && spelltar->IsNPC() && spells[spell_id].max[i] != 0 && is_spell_target_out_of_range) ||
-					spelltar->GetSpecialAbility(IMMUNE_PACIFY)) 
+					spelltar->GetSpecialAbility(SpecialAbility::PacifyImmunity))
 				{
 					spelltar->PacifyImmune = true;
 					Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT);
@@ -3453,7 +3453,7 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 
 	if(IsMezSpell(spell_id))
 	{
-		if(GetSpecialAbility(UNMEZABLE)) {
+		if(GetSpecialAbility(SpecialAbility::MesmerizeImmunity)) {
 			Log(Logs::Detail, Logs::Spells, "We are immune to Mez spells.");
 			caster->Message_StringID(Chat::SpellFailure, CANNOT_MEZ);
 			ResistSpell(caster, spell_id, isProc);
@@ -3474,8 +3474,8 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 	}
 
 	// slow and haste spells
-	if((GetSpecialAbility(UNSLOWABLE) && !GetSpecialAbility(REVERSE_SLOW) && IsSlowSpell(spell_id)) ||
-		(GetSpecialAbility(NO_HASTE) && IsHasteSpell(spell_id)))
+	if((GetSpecialAbility(SpecialAbility::SlowImmunity) && !GetSpecialAbility(SpecialAbility::ReverseSlow) && IsSlowSpell(spell_id)) ||
+		(GetSpecialAbility(SpecialAbility::HasteImmunity) && IsHasteSpell(spell_id)))
 	{
 		Log(Logs::Detail, Logs::Spells, "We are immune to changes to attack speed spells.");
 		caster->Message_StringID(Chat::SpellFailure, IMMUNE_ATKSPEED);
@@ -3488,7 +3488,7 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 		effect_index = GetSpellEffectIndex(spell_id, SE_Fear);
 
 		// level 52 hardcap immunity for fear spells. Unlike Mez, Charm, Pacify, and Stun this should be enforced on NPC vs NPC action
-		if (GetSpecialAbility(UNFEARABLE) || (IsNPC() && GetLevel() > 52))
+		if (GetSpecialAbility(SpecialAbility::FearImmunity) || (IsNPC() && GetLevel() > 52))
 		{
 			Log(Logs::Detail, Logs::Spells, "We are immune to Fear spells.");
 			caster->Message_StringID(Chat::SpellFailure, IMMUNE_FEAR);
@@ -3521,7 +3521,7 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 
 	if(IsCharmSpell(spell_id))
 	{
-		if(GetSpecialAbility(UNCHARMABLE))
+		if(GetSpecialAbility(SpecialAbility::CharmImmunity))
 		{
 			Log(Logs::Detail, Logs::Spells, "We are immune to Charm spells.");
 			caster->Message_StringID(Chat::SpellFailure, CANNOT_CHARM);
@@ -3558,7 +3558,7 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 		IsEffectInSpell(spell_id, SE_MovementSpeed)
 	)
 	{
-		if(GetSpecialAbility(UNSNAREABLE)) {
+		if(GetSpecialAbility(SpecialAbility::SnareImmunity)) {
 			Log(Logs::Detail, Logs::Spells, "We are immune to Snare spells.");
 			caster->Message_StringID(Chat::SpellFailure, IMMUNE_MOVEMENT);
 			ResistSpell(caster, spell_id, isProc);
@@ -3600,7 +3600,7 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		return 0;
 	}
 
-	if(GetSpecialAbility(IMMUNE_MAGIC)) {
+	if(GetSpecialAbility(SpecialAbility::MagicImmunity)) {
 		Log(Logs::Detail, Logs::Spells, "We are immune to magic, so we fully resist the spell %d", spell_id);
 		return(0);
 	}
@@ -3634,7 +3634,7 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		return 100;
 	}
 
-	if (GetSpecialAbility(IMMUNE_CASTING_FROM_RANGE)) {
+	if (GetSpecialAbility(SpecialAbility::CastingFromRangeImmunity)) {
 		if (!caster->CombatRange(this)) {
 			return(0);
 		}

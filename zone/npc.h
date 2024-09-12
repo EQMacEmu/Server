@@ -235,11 +235,11 @@ public:
 
 	virtual int32 CalcMaxMana();
 	void SetGrid(int32 grid_){ grid=grid_; }
-	void SetSp2(uint32 sg2){ spawn_group=sg2; }
+	void SetSpawnGroupId(uint32 sg2){ spawn_group_id =sg2; }
 	void SetSaveWaypoint(uint16 wp_){ save_wp=wp_; }
 
 	int32 GetGrid() const { return grid; }
-	uint32 GetSp2() const { return spawn_group; }
+	uint32 GetSpawnGroupId() const { return spawn_group_id; }
 	uint32 GetSpawnPointID() const;
 
 	void ClearPathing();
@@ -375,7 +375,8 @@ public:
 	void	SetIgnoreDistance(float distance) { ignore_distance = distance; }
 	float	GetIgnoreDistance() { return ignore_distance; }
 
-	void	ModifyNPCStat(const char *identifier, const char *newValue);
+	float	GetNPCStat(std::string stat);
+	void	ModifyNPCStat(std::string stat, std::string value);
 	virtual void SetLevel(uint8 in_level, bool command = false);
 	inline void SetClass(uint8 classNum) { if (classNum <= Class::PLAYER_CLASS_COUNT && classNum > 0) class_ = static_cast<uint8>(classNum); }; // for custom scripts
 
@@ -468,7 +469,7 @@ protected:
 	std::list<struct NPCFaction*> faction_list;
 
 	int32	grid;
-	uint32	spawn_group;
+	uint32	spawn_group_id;
 	void	InitializeGrid(int start_wp);
 
 	// loot

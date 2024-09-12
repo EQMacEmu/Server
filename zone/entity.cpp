@@ -1344,7 +1344,7 @@ uint16 EntityList::GetFreeID()
 // if no language skill is specified, sent with 100 skill
 void EntityList::ChannelMessage(Mob *from, uint8 chan_num, uint8 language, const char *message, ...)
 {
-	ChannelMessage(from, chan_num, language, 100, message);
+	ChannelMessage(from, chan_num, language, Language::MaxValue, message);
 }
 
 void EntityList::ChannelMessage(Mob *from, uint8 chan_num, uint8 language,
@@ -3203,7 +3203,7 @@ void EntityList::ClearFeignAggro(Mob *targ)
 	auto it = npc_list.begin();
 	while (it != npc_list.end()) {
 		if (it->second->CheckAggro(targ)) {
-			if (it->second->GetSpecialAbility(IMMUNE_FEIGN_DEATH)) {
+			if (it->second->GetSpecialAbility(SpecialAbility::FeignDeathImmunity)) {
 				++it;
 				continue;
 			}
@@ -3236,7 +3236,7 @@ void EntityList::ClearFeignAggro(Mob *targ)
 				if (it->second->GetLevel() < 35 || zone->random.Roll(35))
 				{
 					it->second->RemoveFromHateList(targ);
-					if (it->second->GetSpecialAbility(SPECATK_RAMPAGE))
+					if (it->second->GetSpecialAbility(SpecialAbility::Rampage))
 						it->second->RemoveFromRampageList(targ, true);
 				}
 				else 
@@ -3322,7 +3322,7 @@ void EntityList::AddHealAggro(Mob *target, Mob *caster, uint16 hate)
 		cur = it->second;
 
 		if (cur->IsPet() || !cur->CheckAggro(target) || cur->IsFeared() 
-			|| (target->IsClient() && target->CastToClient()->IsFeigned() && !cur->GetSpecialAbility(IMMUNE_FEIGN_DEATH))
+			|| (target->IsClient() && target->CastToClient()->IsFeigned() && !cur->GetSpecialAbility(SpecialAbility::FeignDeathImmunity))
 		)
 		{
 			++it;
@@ -3720,7 +3720,7 @@ void EntityList::LimitAddNPC(NPC *npc)
 	SpawnLimitRecord r;
 
 	uint16 eid = npc->GetID();
-	r.spawngroup_id = npc->GetSp2();
+	r.spawngroup_id = npc->GetSpawnGroupId();
 	r.npc_type = npc->GetNPCTypeID();
 
 	npc_limit_list[eid] = r;

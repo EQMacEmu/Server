@@ -675,7 +675,7 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 			}
 
 			const EQ::ItemData* item = inst->GetItem();
-			if (npc->GetSpecialAbility(BAD_FACTION_BLOCK_HANDIN) && item && quest_npc == true && !GetGM())
+			if (npc->GetSpecialAbility(SpecialAbility::BadFactionBlockHandin) && item && quest_npc == true && !GetGM())
 			{
 				int primaryfaction = npc->GetPrimaryFaction();
 				int factionlvl = GetFactionLevel(CharacterID(), GetRace(), GetClass(), GetDeity(), primaryfaction, tradingWith);

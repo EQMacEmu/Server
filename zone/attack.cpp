@@ -474,7 +474,7 @@ int Client::GetBaseDamage(Mob *defender, int slot)
 		else
 			dmg = weapon->Damage;
 
-		if (weapon->ElemDmgAmt && !defender->GetSpecialAbility(IMMUNE_MAGIC))
+		if (weapon->ElemDmgAmt && !defender->GetSpecialAbility(SpecialAbility::MagicImmunity))
 		{
 			int eledmg = 0;
 
@@ -669,7 +669,7 @@ int Mob::CalcEleWeaponResist(int weaponDamage, int resistType, Mob *target)
 // slot argument should be one of the following: SlotPrimary, SlotSecondary, SlotRange, SlotAmmo, SlotFeet, SlotHands
 bool Mob::IsImmuneToMelee(Mob* attacker, int slot)
 {
-	if (!attacker || GetInvul() || GetSpecialAbility(IMMUNE_MELEE))
+	if (!attacker || GetInvul() || GetSpecialAbility(SpecialAbility::MeleeImmunity))
 		return true;
 
 	if (slot != EQ::invslot::slotSecondary && slot != EQ::invslot::slotRange && slot != EQ::invslot::slotAmmo && slot != EQ::invslot::slotFeet && slot != EQ::invslot::slotHands)
@@ -706,9 +706,9 @@ bool Mob::IsImmuneToMelee(Mob* attacker, int slot)
 	)
 		magicWeapon = true;
 		
-	if (!magicWeapon && GetSpecialAbility(IMMUNE_MELEE_NONMAGICAL))
+	if (!magicWeapon && GetSpecialAbility(SpecialAbility::MeleeImmunityExceptMagical))
 	{
-		if (attacker->IsNPC() && !attacker->GetSpecialAbility(SPECATK_MAGICAL) && attacker->GetLevel() < MAGIC_ATTACK_LEVEL)
+		if (attacker->IsNPC() && !attacker->GetSpecialAbility(SpecialAbility::MagicalAttack) && attacker->GetLevel() < MAGIC_ATTACK_LEVEL)
 		{
 			return true;
 		}
@@ -730,10 +730,10 @@ bool Mob::IsImmuneToMelee(Mob* attacker, int slot)
 	}
 
 	// don't think there are weapons that are pure elemental damage, but handling them anyway
-	if (weapon && !weapon->Damage && weapon->ElemDmgAmt && GetSpecialAbility(IMMUNE_MAGIC))
+	if (weapon && !weapon->Damage && weapon->ElemDmgAmt && GetSpecialAbility(SpecialAbility::MagicImmunity))
 		return true;
 
-	if (GetSpecialAbility(IMMUNE_MELEE_EXCEPT_BANE))
+	if (GetSpecialAbility(SpecialAbility::MeleeImmunityExceptBane))
 	{
 		if (attacker->IsClient())
 		{
@@ -751,7 +751,7 @@ bool Mob::IsImmuneToMelee(Mob* attacker, int slot)
 		}
 		else
 		{
-			if (!attacker->GetSpecialAbility(SPECATK_BANE)				
+			if (!attacker->GetSpecialAbility(SpecialAbility::BaneAttack)
 				&& (!weapon || (weapon->BaneDmgBody != GetBodyType() && weapon->BaneDmgRace != GetRace()))
 			)
 				return true;
@@ -1221,7 +1221,7 @@ void Mob::AggroPet(Mob* attacker)
 	 */
 	if(attacker) {
 		Mob *pet = GetPet();
-		if (pet && !pet->IsFamiliar() && !pet->GetSpecialAbility(IMMUNE_AGGRO) && attacker && attacker != this && !attacker->IsCorpse() && !attacker->IsUnTargetable())
+		if (pet && !pet->IsFamiliar() && !pet->GetSpecialAbility(SpecialAbility::AggroImmunity) && attacker && attacker != this && !attacker->IsCorpse() && !attacker->IsUnTargetable())
 		{
 			if (pet->hate_list.IsOnHateList(attacker))
 				return;
@@ -1800,7 +1800,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 
 		if (oos)
 		{
-			if (oos->IsClient() && GetSpecialAbility(PC_DEATHBLOW_CORPSE) && !ismerchant)
+			if (oos->IsClient() && GetSpecialAbility(SpecialAbility::PCDeathblowCorpse) && !ismerchant)
 			{
 				skip_corpse_checks = true;
 				Log(Logs::Detail, Logs::Death, "Deathblow dealt by %s, skipping all corpse checks for %s...", oos->GetName(), GetName());
@@ -2333,17 +2333,17 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 	if(IsClient() && !IsAIControlled())
 		return;
 
-	if(IsFamiliar() || GetSpecialAbility(IMMUNE_AGGRO))
+	if(IsFamiliar() || GetSpecialAbility(SpecialAbility::AggroImmunity))
 		return;
 
 	if (other == myowner)
 		return;
 
-	if(other->GetSpecialAbility(IMMUNE_AGGRO_ON))
+	if(other->GetSpecialAbility(SpecialAbility::BeingAggroImmunity))
 		return;
 
-	if(GetSpecialAbility(NPC_TUNNELVISION)) {
-		int tv_mod = GetSpecialAbilityParam(NPC_TUNNELVISION, 0);
+	if(GetSpecialAbility(SpecialAbility::TunnelVision)) {
+		int tv_mod = GetSpecialAbilityParam(SpecialAbility::TunnelVision, 0);
 
 		Mob *top = GetTarget();
 		if(top && top != other) {
@@ -2379,7 +2379,7 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 	// then add pet owner if there's one
 	if (owner)
 	{
-		if(!owner->GetSpecialAbility(IMMUNE_AGGRO))
+		if(!owner->GetSpecialAbility(SpecialAbility::AggroImmunity))
 		{
 			hate_list.Add(owner, 0, 0, false, !iBuffTic);
 			if (!iBuffTic && owner->IsClient())
@@ -2389,14 +2389,14 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 
 	if (addpet && mypet) 
 	{ // I have a pet, add other to it
-		if (!mypet->IsFamiliar() && !mypet->GetSpecialAbility(IMMUNE_AGGRO) && damage < GetMaxHP())
+		if (!mypet->IsFamiliar() && !mypet->GetSpecialAbility(SpecialAbility::AggroImmunity) && damage < GetMaxHP())
 		{
 			mypet->hate_list.Add(other, 0, 0, bFrenzy);
 		}
 	} 
 	else if (myowner) 
 	{ // I am a pet, add other to owner if it's NPC/LD
-		if (myowner->IsAIControlled() && !myowner->GetSpecialAbility(IMMUNE_AGGRO))
+		if (myowner->IsAIControlled() && !myowner->GetSpecialAbility(SpecialAbility::AggroImmunity))
 			myowner->hate_list.Add(other, 0, 0, bFrenzy);
 	}
 
@@ -3806,7 +3806,7 @@ bool Mob::TryFinishingBlow(Mob *defender, EQ::skills::SkillType skillinuse, uint
 void Mob::DoRiposte(Mob* defender) {
 	Log(Logs::Detail, Logs::Combat, "Preforming a riposte");
 
-	if (!defender || GetSpecialAbility(IMMUNE_RIPOSTE))
+	if (!defender || GetSpecialAbility(SpecialAbility::RiposteImmunity))
 		return;
 
 	if (defender->IsClient())

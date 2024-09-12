@@ -2,22 +2,29 @@
 
 void command_repop(Client *c, const Seperator *sep)
 {
-	int arguments = sep->argnum;
-	if (!arguments) {
-		c->Message(Chat::White, "Zone depopped, repopping now.");
-		return;
+	bool is_force = false;
+	if (sep->arg[1] && !strcasecmp(sep->arg[1], "force")) {
+		is_force = true;
 	}
 
-	bool is_force = !strcasecmp(sep->arg[1], "force");
-
-	if (is_force) {
-		zone->ClearSpawnTimers();
-		c->Message(Chat::White, "Zone depopped, forcefully repopping now.");
+	if (!is_force && c->GetTarget() && c->GetTarget()->IsNPC()) {
+		c->GetTarget()->CastToNPC()->ForceRepop();
+		c->Message(
+			Chat::White, 
+			fmt::format(
+				"Repopping {}", 
+				c->GetTarget()->GetName()).c_str()
+		);
 	}
 	else {
-		c->Message(Chat::White, "Zone depopped, repopping now.");
+		if (is_force) {
+			zone->ClearSpawnTimers();
+			c->Message(Chat::White, "Zone depopped, forcefully repopping now.");
+		}
+		else {
+			c->Message(Chat::White, "Zone depopped, repopping now.");
+		}
+
+		zone->Repop();
 	}
-
-	zone->Repop();
 }
-

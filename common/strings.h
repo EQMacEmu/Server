@@ -83,6 +83,9 @@ public:
 	static bool ToBool(std::string bool_string);
 	static inline bool EqualFold(const std::string &string_one, const std::string &string_two) { return strcasecmp(string_one.c_str(), string_two.c_str()) == 0; }
 	static std::string Random(size_t length);
+	static bool BeginsWith(const std::string& subject, const std::string& search);
+	static bool EndsWith(const std::string& subject, const std::string& search);
+	static std::string ZoneTime(const uint8 hours, const uint8 minutes);
 
 	template <typename T>
 	static std::string ImplodePair(const std::string &glue, const std::pair<char, char> &encapsulation, const std::vector<T> &src)

@@ -13,6 +13,9 @@
 #ifndef RULE_BOOL
 #define RULE_BOOL(cat, rule, default_value, notes)
 #endif
+#ifndef RULE_STRING
+#define RULE_STRING(cat, rule, default_value, notes)
+#endif
 #ifndef RULE_CATEGORY_END
 #define RULE_CATEGORY_END()
 #endif
@@ -120,6 +123,7 @@ RULE_INT(World, MuleToonLimit, 8, "The number of characters a mule account can c
 RULE_BOOL( World, DontBootDynamics, false, "If true, dynamic zones will not boot when a player tries to enter them.")
 RULE_BOOL(World, EnableDevTools, true, "Enable or Disable the Developer Tools globally (Most of the time you want this enabled)")
 RULE_BOOL(World, UseOldShadowKnightClassExport, true, "Disable to have Shadowknight show as Shadow Knight (live-like)")
+RULE_STRING(World, MOTD, "", "Server MOTD sent on login, change from empty to have this be used instead of variables table 'motd' value")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Zone )
@@ -447,4 +451,5 @@ RULE_CATEGORY_END()
 #undef RULE_INT
 #undef RULE_REAL
 #undef RULE_BOOL
+#undef RULE_STRING
 #undef RULE_CATEGORY_END

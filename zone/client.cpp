@@ -829,15 +829,15 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 	// Garble the message based on drunkness, except for OOC and GM
 	if (m_pp.intoxication > 0 && !(RuleB(Chat, ServerWideOOC) && chan_num == ChatChannel_OOC) && !GetGM()) {
 		GarbleMessage(message, (int)(m_pp.intoxication / 3));
-		language = 0; // No need for language when drunk
-		lang_skill = 100;
+		language   = Language::CommonTongue; // No need for language when drunk
+		lang_skill = Language::MaxValue;
 	}
 
 	// some channels don't use languages
 	if (chan_num == ChatChannel_OOC || chan_num == ChatChannel_GMSAY || chan_num == ChatChannel_Broadcast || chan_num == ChatChannel_Petition)
 	{
-		language = 0;
-		lang_skill = 100;
+		language   = Language::CommonTongue;
+		lang_skill = Language::MaxValue;
 	}
 
 	switch(chan_num)
@@ -1053,7 +1053,7 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 				NPC *tar = GetTarget()->CastToNPC();
 				if(DistanceSquaredNoZ(m_Position, GetTarget()->GetPosition()) <= RuleI(Range, EventSay) && (sneaking || !IsInvisible(tar)))
 				{
-					CheckEmoteHail(GetTarget(), message);
+					CheckEmoteHail(tar, message);
 					parse->EventNPC(EVENT_SAY, tar->CastToNPC(), this, message, language);
 				}
 			}
@@ -1095,8 +1095,8 @@ void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num
 	else
 		cm->targetname[0] = 0;
 
-	language = language < MAX_PP_LANGUAGE ? language: 0;
-	lang_skill = lang_skill <= 100 ? lang_skill : 100;
+	language = language < MAX_PP_LANGUAGE ? language: Language::CommonTongue;
+	lang_skill = lang_skill <= Language::MaxValue ? lang_skill : Language::MaxValue;
 
 	cm->language = language;
 	cm->skill_in_language = lang_skill;
@@ -1104,7 +1104,7 @@ void Client::ChannelMessageSend(const char* from, const char* to, uint8 chan_num
 	strcpy(&cm->message[0], message);
 	QueuePacket(&app);
 
-	if ((chan_num == ChatChannel_Group) && (m_pp.languages[language] < 100)) {	// group message in unmastered language, check for skill up
+	if ((chan_num == ChatChannel_Group) && (m_pp.languages[language] < Language::MaxValue)) {	// group message in unmastered language, check for skill up
 		if ((m_pp.languages[language] <= lang_skill) && (from != this->GetName()))
 			CheckLanguageSkillIncrease(language, lang_skill);
 	}
@@ -1232,8 +1232,8 @@ void Client::IncreaseLanguageSkill(int skill_id, int value) {
 
 	m_pp.languages[skill_id] += value;
 
-	if (m_pp.languages[skill_id] > 100) //Lang skill above max
-		m_pp.languages[skill_id] = 100;
+	if (m_pp.languages[skill_id] > Language::MaxValue) //Lang skill above max
+		m_pp.languages[skill_id] = Language::MaxValue;
 
 	database.SaveCharacterLanguage(this->CharacterID(), skill_id, m_pp.languages[skill_id]);
 
@@ -1892,7 +1892,7 @@ bool Client::CheckIncreaseSkill(EQ::skills::SkillType skillid, Mob *against_who,
 	if(against_who)
 	{
 		uint16 who_level = against_who->GetLevel();
-		if(against_who->GetSpecialAbility(IMMUNE_AGGRO) || against_who->IsClient() ||
+		if(against_who->GetSpecialAbility(SpecialAbility::AggroImmunity) || against_who->IsClient() ||
 			(!skipcon && GetLevelCon(who_level) == CON_GREEN) ||
 			(skipcon && GetLevelCon(who_level + 2) == CON_GREEN)) // Green cons two levels away from light blue.
 		{
@@ -3837,27 +3837,22 @@ void Client::SuspendMinion()
 	}
 }
 
-void Client::CheckEmoteHail(Mob *target, const char* message)
+void Client::CheckEmoteHail(NPC *n, const char* message)
 {
-	if(
-		(message[0] != 'H'	&&
-		message[0] != 'h')	||
-		message[1] != 'a'	||
-		message[2] != 'i'	||
-		message[3] != 'l'){
+	if (
+		!Strings::BeginsWith(message, "hail") &&
+		!Strings::BeginsWith(message, "Hail")
+		) {
 		return;
 	}
 
-	if(!target || !target->IsNPC()) {
+	if(!n || !n->GetOwnerID()) {
 		return;
 	}
 
-	if(target->GetOwnerID() != 0) {
-		return;
-	}
-	uint32 emoteid = target->GetEmoteID();
-	if (emoteid != 0) {
-		target->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::Hailed, emoteid, this);
+	const auto emote_id = n->GetEmoteID();
+	if (emote_id) {
+		n->DoNPCEmote(EQ::constants::EmoteEventTypes::Hailed, emote_id);
 	}
 }
 
@@ -4350,7 +4345,7 @@ FACTION_VALUE Client::GetFactionLevel(uint32 char_id, uint32 p_race, uint32 p_cl
 	FactionMods fmods;
 
 	// few optimizations
-	if (IsFeigned() && tnpc && !tnpc->GetSpecialAbility(IMMUNE_FEIGN_DEATH))
+	if (IsFeigned() && tnpc && !tnpc->GetSpecialAbility(SpecialAbility::FeignDeathImmunity))
 		return FACTION_INDIFFERENTLY;
 	if (!zone->CanDoCombat())
 		return FACTION_INDIFFERENTLY;

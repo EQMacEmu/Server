@@ -558,7 +558,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					max_level = 999;
 
 				// Ignore if spell is beneficial (ex. Harvest)
-				if (IsDetrimentalSpell(spell.id) && (GetSpecialAbility(UNSTUNABLE) || GetLevel() > max_level))
+				if (IsDetrimentalSpell(spell.id) && (GetSpecialAbility(SpecialAbility::StunImmunity) || GetLevel() > max_level))
 				{
 					caster->Message_StringID(Chat::SpellFailure, IMMUNE_STUN);
 				}
@@ -883,7 +883,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Cancel Magic: %d", effect_value);
 #endif
-				if(GetSpecialAbility(UNDISPELLABLE)){
+				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
 					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
@@ -917,7 +917,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
-				if(GetSpecialAbility(UNDISPELLABLE)){
+				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
 					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
@@ -942,7 +942,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Dispel Beneficial: %d", effect_value);
 #endif
-				if(GetSpecialAbility(UNDISPELLABLE)){
+				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
 					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
@@ -1324,7 +1324,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					max_level = RuleI(Spells, BaseImmunityLevel); // Default max is 55 level limit
 
 				// NPCs ignore level limits in their spells
-				if(GetSpecialAbility(UNSTUNABLE) ||
+				if(GetSpecialAbility(SpecialAbility::StunImmunity) ||
 					(GetLevel() > max_level && caster && caster->IsClient() && IsNPC()))
 				{
 					caster->Message_StringID(Chat::SpellFailure, IMMUNE_STUN);

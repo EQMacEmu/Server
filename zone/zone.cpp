@@ -1474,14 +1474,17 @@ bool Zone::Depop(bool StartSpawnTimer) {
 	entity_list.UpdateAllTraps(false);
 
 	/* Refresh npctable (cache), getting current info from database. */
-	while (npctable.size()) {
+	while (!npctable.empty()) {
 		itr = npctable.begin();
 		delete itr->second;
+		itr->second = nullptr;
 		npctable.erase(itr);
 	}
 
 	// clear spell cache
 	database.ClearNPCSpells();
+
+	zone->spawn_group_list.ReloadSpawnGroups();
 
 	return true;
 }
@@ -1830,32 +1833,6 @@ void Zone::SpawnStatus(Mob* client, char filter, uint32 spawnid)
 		iterator.Advance();
 	}
 	client->Message(Chat::White, "%i spawns listed.", x);
-}
-
-bool Zone::RemoveSpawnEntry(uint32 spawnid)
-{
-	LinkedListIterator<Spawn2*> iterator(spawn2_list);
-
-
-	iterator.Reset();
-	while(iterator.MoreElements())
-	{
-		if(iterator.GetData()->GetID() == spawnid)
-		{
-			iterator.RemoveCurrent();
-			return true;
-		}
-		else
-		iterator.Advance();
-	}
-return false;
-}
-
-bool Zone::RemoveSpawnGroup(uint32 in_id) {
-	if(spawn_group_list.RemoveSpawnGroup(in_id))
-		return true;
-	else
-		return false;
 }
 
 void Zone::weatherSend(uint32 timer)

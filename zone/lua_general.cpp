@@ -618,8 +618,8 @@ void lua_create_door(const char *model, float x, float y, float z, float h, int 
 	quest_manager.CreateDoor(model, x, y, z, h, open_type, size);
 }
 
-void lua_modify_npc_stat(const char *id, const char *value) {
-	quest_manager.ModifyNPCStat(id, value);
+void lua_modify_npc_stat(std::string stat, std::string value) {
+	quest_manager.ModifyNPCStat(stat, value);
 }
 
 int lua_collect_items(uint32 item_id, bool remove) {
@@ -689,6 +689,14 @@ bool lua_delete_data(std::string bucket_key) {
 	return DataBucket::DeleteData(bucket_key);
 }
 
+std::string lua_get_char_name_by_id(uint32 char_id) {
+	return database.GetCharNameByID(char_id);
+}
+
+std::string lua_get_npc_name_by_id(uint32 npc_id) {
+	return quest_manager.getnpcnamebyid(npc_id);
+}
+
 void lua_set_rule(std::string rule_name, std::string rule_value) {
 	RuleManager::Instance()->SetRule(rule_name.c_str(), rule_value.c_str());
 }
@@ -701,6 +709,14 @@ std::string lua_get_rule(std::string rule_name) {
 
 const char *lua_get_guild_name_by_id(uint32 guild_id) {
 	return quest_manager.getguildnamebyid(guild_id);
+}
+
+int lua_get_guild_id_by_char_id(uint32 char_id) {
+	return database.GetGuildIDByCharID(char_id);
+}
+
+int lua_get_group_id_by_char_id(uint32 char_id) {
+	return database.GetGroupIDByCharID(char_id);
 }
 
 void lua_fly_mode(int flymode) {
@@ -1381,6 +1397,10 @@ bool get_ruleb(int rule) {
 	return RuleManager::Instance()->GetBoolRule((RuleManager::BoolType)rule);
 }
 
+std::string get_rules(int rule) {
+	return RuleManager::Instance()->GetStringRule((RuleManager::StringType)rule);
+}
+
 luabind::scope lua_register_general() {
 	return luabind::namespace_("eq")
 	[
@@ -1504,8 +1524,12 @@ luabind::scope lua_register_general() {
 		luabind::def("set_data", (void(*)(std::string, std::string, std::string)) &lua_set_data),
 		luabind::def("delete_data", (bool(*)(std::string)) &lua_delete_data),
 		luabind::def("set_rule", (void(*)(std::string, std::string))& lua_set_rule),
-		luabind::def("get_rule", (std::string(*)(std::string))& lua_get_rule), 
+		luabind::def("get_rule", (std::string(*)(std::string))& lua_get_rule),
+		luabind::def("get_char_name_by_id", &lua_get_char_name_by_id),
+		luabind::def("get_npc_name_by_id", &lua_get_npc_name_by_id),
 		luabind::def("get_guild_name_by_id", &lua_get_guild_name_by_id),
+		luabind::def("get_guild_id_by_char_id", &lua_get_guild_id_by_char_id),
+		luabind::def("get_group_id_by_char_id", &lua_get_group_id_by_char_id),
 		luabind::def("fly_mode", &lua_fly_mode),
 		luabind::def("faction_value", &lua_faction_value),
 		luabind::def("check_title", &lua_check_title),
@@ -1783,7 +1807,13 @@ luabind::scope lua_register_rules_const() {
 #define RULE_BOOL(cat, rule, default_value, notes) \
 		luabind::value(#rule, RuleManager::Bool__##rule),
 #include "../common/ruletypes.h"
-			luabind::value("_BoolRuleCount", RuleManager::_BoolRuleCount)
+			luabind::value("_BoolRuleCount", RuleManager::_BoolRuleCount),
+#undef RULE_BOOL
+#define RULE_STRING(cat, rule, default_value, notes) \
+		luabind::value(#rule, RuleManager::String__##rule),
+#include "../common/ruletypes.h"
+			luabind::value("_StringRuleCount", RuleManager::_StringRuleCount)
+#undef RULE_STRING
 		];
 }
 
@@ -1805,6 +1835,13 @@ luabind::scope lua_register_ruleb() {
 	return luabind::namespace_("RuleB")
 		[
 			luabind::def("Get", &get_ruleb)
+		];
+}
+
+luabind::scope lua_register_rules() {
+	return luabind::namespace_("RuleS")
+		[
+			luabind::def("Get", &get_rules)
 		];
 }
 
