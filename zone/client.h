@@ -514,8 +514,8 @@ public:
 	void MovePC(float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);
 	bool CheckLoreConflict(const EQ::ItemData* item);
 	void ChangeLastName(const char* in_lastname);
-	void SacrificeConfirm(Client* caster);
-	void Sacrifice(Client* caster);
+	void SacrificeConfirm(Mob* caster);
+	void Sacrifice(Mob* caster);
 	void GoToDeath();
 	void SetZoning(bool in) { zoning = in; }
 
@@ -838,7 +838,7 @@ public:
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
 	bool	PendingSacrifice;
-	std::string	SacrificeCaster;
+	uint16	SacrificeCaster;
 	PendingTranslocate_Struct PendingTranslocateData;
 	void	SendOPTranslocateConfirm(Mob *Caster, uint16 SpellID);
 
