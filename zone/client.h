@@ -848,7 +848,7 @@ public:
 
 	int GetAggroCount();
 
-	void CheckEmoteHail(Mob *target, const char* message);
+	void CheckEmoteHail(NPC* n, const char* message);
 
 	void SummonAndRezzAllCorpses();
 	void SummonAllCorpses(const glm::vec4& position);

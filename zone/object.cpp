@@ -80,9 +80,9 @@ Object::Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,
 	last_user = 0;
 	m_max_x=max_x;
 	m_max_y=max_y;
-	m_z=z;
 	m_min_x=min_x;
 	m_min_y=min_y;
+	m_z = z;
 	m_id	= 0;
 	m_inst	= (inst) ? inst->Clone() : nullptr;
 	m_type	= OT_DROPPEDITEM;
@@ -474,7 +474,7 @@ void Object::RandomSpawn(bool send_packet) {
 	m_data.x = zone->random.Real(m_min_x, m_max_x);
 	m_data.y = zone->random.Real(m_min_y, m_max_y);
 	m_data.z = m_z;
-	if(zone->HasMap() && (m_min_x != m_max_x || m_min_y != m_max_y)) {
+	if (zone->HasMap() && (m_min_x != m_max_x || m_min_y != m_max_y)) {
 		// The client finds the z point below the ground spawn to
 		// determine where to display the ground spawn's graphical
 		// model. If the z is more than about 20 points above the
@@ -483,7 +483,7 @@ void Object::RandomSpawn(bool send_packet) {
 		// client's visual representation.
 		glm::vec3 new_loc(m_data.x, m_data.y, m_data.z);
 		const float best_z = zone->zonemap->FindGround(new_loc, nullptr);
-		if(best_z != BEST_Z_INVALID) {
+		if (best_z != BEST_Z_INVALID) {
 			m_data.z = best_z;
 		}
 	}
@@ -1049,34 +1049,78 @@ void Object::SetHeading(float heading)
 	safe_delete(app2);
 }
 
-void Object::SetEntityVariable(const char *id, const char *m_var)
+bool Object::ClearEntityVariables()
 {
-	std::string n_m_var = m_var;
-	o_EntityVariables[id] = n_m_var;
-}
-
-const char* Object::GetEntityVariable(const char *id)
-{
-	if(!id)
-		return nullptr;
-
-	auto iter = o_EntityVariables.find(id);
-	if(iter != o_EntityVariables.end())
-	{
-		return iter->second.c_str();
-	}
-	return nullptr;
-}
-
-bool Object::EntityVariableExists(const char * id)
-{
-	if(!id)
+	if (o_EntityVariables.empty()) {
 		return false;
+	}
 
-	auto iter = o_EntityVariables.find(id);
-	if(iter != o_EntityVariables.end())
-	{
+	o_EntityVariables.clear();
+	return true;
+}
+
+bool Object::DeleteEntityVariable(std::string variable_name)
+{
+	if (o_EntityVariables.empty() || variable_name.empty()) {
+		return false;
+	}
+
+	auto v = o_EntityVariables.find(variable_name);
+	if (v == o_EntityVariables.end()) {
+		return false;
+	}
+
+	o_EntityVariables.erase(v);
+	return true;
+}
+
+void Object::SetEntityVariable(std::string variable_name, std::string variable_value)
+{
+	if (variable_name.empty()) {
+		return;
+	}
+
+	o_EntityVariables[variable_name] = variable_value;
+}
+
+std::string Object::GetEntityVariable(std::string variable_name)
+{
+	if (o_EntityVariables.empty() || variable_name.empty()) {
+		return std::string();
+	}
+
+	const auto& v = o_EntityVariables.find(variable_name);
+	if (v != o_EntityVariables.end()) {
+		return v->second;
+	}
+
+	return std::string();
+}
+
+std::vector<std::string> Object::GetEntityVariables()
+{
+	std::vector<std::string> l;
+	if (o_EntityVariables.empty()) {
+		return l;
+	}
+
+	for (const auto& v : o_EntityVariables) {
+		l.push_back(v.first);
+	}
+
+	return l;
+}
+
+bool Object::EntityVariableExists(std::string variable_name)
+{
+	if (o_EntityVariables.empty() || variable_name.empty()) {
+		return false;
+	}
+
+	const auto& v = o_EntityVariables.find(variable_name);
+	if (v != o_EntityVariables.end()) {
 		return true;
 	}
+
 	return false;
 }

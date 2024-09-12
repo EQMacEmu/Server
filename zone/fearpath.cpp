@@ -35,7 +35,7 @@ extern Zone* zone;
 
 int Mob::GetFleeRatio(Mob* other)
 {
-	int specialFleeRatio = GetSpecialAbility(FLEE_PERCENT);
+	int specialFleeRatio = GetSpecialAbility(SpecialAbility::FleePercent);
 	if (specialFleeRatio > 0)
 	{
 		return specialFleeRatio;
@@ -92,7 +92,7 @@ void Mob::CheckFlee()
 	}
 
 	//dont bother if we are immune to fleeing
-	if(GetSpecialAbility(IMMUNE_FLEEING))
+	if(GetSpecialAbility(SpecialAbility::FleeingImmunity))
 		return;
 	
 	//see if were possibly hurt enough
@@ -103,7 +103,7 @@ void Mob::CheckFlee()
 		return;
 
 	// hp cap so 1 million hp NPCs don't flee with 200,000 hp left
-	if (!GetSpecialAbility(FLEE_PERCENT) && GetHP() > 15000)
+	if (!GetSpecialAbility(SpecialAbility::FleePercent) && GetHP() > 15000)
 		return;
 
 	//we might be hurt enough, check con now..
@@ -120,8 +120,8 @@ void Mob::CheckFlee()
 	}
 
 	if (RuleB(Combat, FleeIfNotAlone) ||
-		GetSpecialAbility(ALWAYS_FLEE) ||
-		(GetSpecialAbility(ALWAYS_FLEE_LOW_CON) && hate_top->GetLevelCon(GetLevel()) == CON_GREEN) ||
+		GetSpecialAbility(SpecialAbility::AlwaysFlee) ||
+		(GetSpecialAbility(SpecialAbility::AlwaysFleeLowCon) && hate_top->GetLevelCon(GetLevel()) == CON_GREEN) ||
 		(!RuleB(Combat, FleeIfNotAlone) && entity_list.FleeAllyCount(hate_top, this) == 0)
 		)
 	{
@@ -158,7 +158,7 @@ void Mob::FleeInfo(Mob* client)
 		wontflee = true;
 		reason = "NPC is already fleeing!";
 	}
-	else if (GetSpecialAbility(IMMUNE_FLEEING))
+	else if (GetSpecialAbility(SpecialAbility::FleeingImmunity))
 	{
 		wontflee = true;
 		reason = "NPC is immune to fleeing.";
@@ -168,11 +168,11 @@ void Mob::FleeInfo(Mob* client)
 		wontflee = true;
 		reason = "Player has less health.";
 	}
-	else if (GetSpecialAbility(ALWAYS_FLEE))
+	else if (GetSpecialAbility(SpecialAbility::AlwaysFlee))
 	{
 		flee = "NPC has ALWAYS_FLEE set.";
 	}
-	else if (GetSpecialAbility(ALWAYS_FLEE_LOW_CON) && client->GetLevelCon(GetLevel()) == CON_GREEN)
+	else if (GetSpecialAbility(SpecialAbility::AlwaysFleeLowCon) && client->GetLevelCon(GetLevel()) == CON_GREEN)
 	{
 		flee = "NPC has ALWAYS_FLEE_LOW_CON and is green to the player.";
 	}
@@ -207,7 +207,7 @@ void Mob::ProcessFlee()
 	//Stop fleeing if effect is applied after they start to run.
 	//When ImmuneToFlee effect fades it will turn fear back on and check if it can still flee.
 	// Stop flee if we've become a pet after we began fleeing.
-	if (flee_mode && (GetSpecialAbility(IMMUNE_FLEEING) || IsCharmedPet()) && !IsFearedNoFlee() && !IsBlind())
+	if (flee_mode && (GetSpecialAbility(SpecialAbility::FleeingImmunity) || IsCharmedPet()) && !IsFearedNoFlee() && !IsBlind())
 	{
 		curfp = false;
 		return;

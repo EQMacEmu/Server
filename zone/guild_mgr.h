@@ -52,7 +52,8 @@ public:
 	//called by worldserver when it receives a message from world.
 	void ProcessWorldPacket(ServerPacket *pack);
 
-	void ListGuilds(Client *c) const;
+	void ListGuilds(Client* c, std::string search_criteria = std::string()) const;
+	void ListGuilds(Client* c, uint32 guild_id = 0) const;
 	void DescribeGuild(Client *c, uint32 guild_id) const;
 
 	uint8 *MakeGuildMembers(uint32 guild_id, const char *prefix_name, uint32 &length);	//make a guild member list packet, returns ownership of the buffer.

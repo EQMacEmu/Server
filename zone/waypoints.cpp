@@ -74,13 +74,13 @@ void NPC::AI_SetRoambox(float iMaxX, float iMinX, float iMaxY, float iMinY, uint
 
 void NPC::DisplayWaypointInfo(Client *c) {
 
-	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(GetSp2());
+	SpawnGroup* sg = zone->spawn_group_list.GetSpawnGroup(GetSpawnGroupId());
 	std::string spawn2 = GetSpawnedString();
 
 	//Mob is on a roambox.
 	if(sg && GetGrid() == 0 && roambox_distance)
 	{
-		c->Message(Chat::White, "Mob in spawn group %d is on a roambox.", GetSp2());
+		c->Message(Chat::White, "Mob in spawn group %d is on a roambox.", GetSpawnGroupId());
 		c->Message(Chat::White, "MinX: %0.2f MaxX: %0.2f MinY: %0.2f MaxY: %0.2f", sg->roambox[1], sg->roambox[0], sg->roambox[3], sg->roambox[2]);
 		c->Message(Chat::White, "MinDelay: %d Delay: %d", sg->min_delay, sg->delay);
 		c->Message(Chat::White, "Spawned Type/Point: %s", spawn2.c_str());
@@ -114,13 +114,13 @@ void NPC::DisplayWaypointInfo(Client *c) {
 		if (GetGrid() == 999999) // grids generated from scripts have this grid ID
 		{
 			c->Message(Chat::White, "Mob has script generated grid, in spawn group %d, on waypoint %d/%d",
-				GetSp2(), GetCurWp() + 1, MaxWp);
+				GetSpawnGroupId(), GetCurWp() + 1, MaxWp);
 		}
 		else
 		{
 			c->Message(Chat::White, "Mob is on grid %d, in spawn group %d, on waypoint %d/%d",
 				GetGrid(),
-				GetSp2(),
+				GetSpawnGroupId(),
 				GetCurWp() + 1, //We start from 0 internally, but in the DB and lua functions we start from 1.
 				MaxWp);
 			std::string type = "unknown";

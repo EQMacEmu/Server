@@ -105,15 +105,24 @@ namespace EQ {
 
 		void Reseed()
 		{
-			// We could do the seed_seq thing here too if we need better seeding
-			// but that is mostly overkill for us, so just seed once
 			std::random_device rd;
-			m_gen.seed(rd());
+			std::seed_seq seed{ rd(), rd(), rd(), rd(), rd() };
+			m_gen.seed(seed);
 		}
 
 		Random()
 		{
 			Reseed();
+		}
+
+		// advance the state of the generator as if we generated some numbers and threw them away.
+		void Discard(int z)
+		{
+			if (z == 0)
+			{
+				z = m_gen.state_size;
+			}
+			m_gen.discard(z);
 		}
 
 	private:

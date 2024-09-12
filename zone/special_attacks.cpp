@@ -52,7 +52,7 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 	if (skill == EQ::skills::SkillThrowing || skill == EQ::skills::SkillArchery)
 		rangedAttack = true;
 
-	if (minDamage == DMG_INVUL || defender->GetSpecialAbility(IMMUNE_MELEE))
+	if (minDamage == DMG_INVUL || defender->GetSpecialAbility(SpecialAbility::MeleeImmunity))
 		damage = DMG_INVUL;
 
 	if (damage > 0)
@@ -100,7 +100,7 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 {
 	// bash and kick stuns. (and silentfisted dragonpunch)  Stuns hit even through runes
-	if (!defender || defender->GetSpecialAbility(UNSTUNABLE) || defender->DivineAura() || defender->GetInvul()
+	if (!defender || defender->GetSpecialAbility(SpecialAbility::StunImmunity) || defender->DivineAura() || defender->GetInvul()
 		|| (skill != EQ::skills::SkillBash && skill != EQ::skills::SkillKick && skill != EQ::skills::SkillDragonPunch))
 	{
 		return;
@@ -956,7 +956,7 @@ void NPC::RangedAttack(Mob* other)
 		return;
 	}
 
-	if (!HasBowAndArrowEquipped() && !GetSpecialAbility(SPECATK_RANGED_ATK)) {
+	if (!HasBowAndArrowEquipped() && !GetSpecialAbility(SpecialAbility::RangedAttack)) {
 		return;
 	}
 
@@ -964,7 +964,7 @@ void NPC::RangedAttack(Mob* other)
 		return;
 	}
 
-	bool require_ammo = GetSpecialAbility(SPECATK_RANGED_ATK) >= 2;
+	bool require_ammo = GetSpecialAbility(SpecialAbility::RangedAttack) >= 2;
 	const EQ::ItemData* weapon = nullptr;
 	const EQ::ItemData* ammo = nullptr;
 	EQ::skills::SkillType skillInUse = EQ::skills::SkillArchery;
@@ -1007,11 +1007,11 @@ void NPC::RangedAttack(Mob* other)
 	float max_range = 250.0f; // needs to be longer than 200(most spells)
 	int16 damage_mod = 0;
 
-	if (GetSpecialAbility(SPECATK_RANGED_ATK)) {
+	if (GetSpecialAbility(SpecialAbility::RangedAttack)) {
 		//if we have SPECATK_RANGED_ATK set then we range attack without weapon or ammo
-		int sa_min_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 2); //Min Range of NPC attack
-		int sa_max_range = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 1); //Max Range of NPC attack
-		damage_mod = GetSpecialAbilityParam(SPECATK_RANGED_ATK, 3);
+		int sa_min_range = GetSpecialAbilityParam(SpecialAbility::RangedAttack, 2); //Min Range of NPC attack
+		int sa_max_range = GetSpecialAbilityParam(SpecialAbility::RangedAttack, 1); //Max Range of NPC attack
+		damage_mod = GetSpecialAbilityParam(SpecialAbility::RangedAttack, 3);
 
 		if (sa_max_range) {
 			max_range = static_cast<float>(sa_max_range);
@@ -1092,7 +1092,7 @@ void NPC::RangedAttack(Mob* other)
 
 	CommonBreakInvisible();
 
-	if (ammo && GetSpecialAbility(SPECATK_RANGED_ATK) == 3)	{
+	if (ammo && GetSpecialAbility(SpecialAbility::RangedAttack) == 3)	{
 		LootItem* sitem = GetItem(EQ::invslot::slotAmmo);
 		RemoveItem(sitem, 1);
 	}
@@ -1588,7 +1588,7 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 	int levelDifference = GetLevel() - who->GetLevel();
 
 	//Support for how taunt worked pre 2000 on LIVE - Can not taunt NPC over your level.
-	if (((RuleB(Combat, TauntOverLevel) == false) && (levelDifference < 0)) || who->GetSpecialAbility(IMMUNE_TAUNT)){
+	if (((RuleB(Combat, TauntOverLevel) == false) && (levelDifference < 0)) || who->GetSpecialAbility(SpecialAbility::TauntImmunity)){
 		//Message_StringID(Chat::SpellFailure,FAILED_TAUNT);
 		return;
 	}
@@ -1721,7 +1721,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 				return;
 			}
 
-			if (instillTarget->IsNPC() && instillTarget->CastToNPC()->GetSpecialAbility(IMMUNE_AGGRO) || !IsAttackAllowed(instillTarget))
+			if (instillTarget->IsNPC() && instillTarget->CastToNPC()->GetSpecialAbility(SpecialAbility::AggroImmunity) || !IsAttackAllowed(instillTarget))
 				return;
 
 			// base damage is 2, this function scales it up some based on skill level
@@ -1774,7 +1774,7 @@ bool Mob::CanDoSpecialAttack(Mob *other) {
 		return false;
 	}
 
-	if(other->GetInvul() || other->GetSpecialAbility(IMMUNE_MELEE))
+	if(other->GetInvul() || other->GetSpecialAbility(SpecialAbility::MeleeImmunity))
 		return false;
 
 	return true;

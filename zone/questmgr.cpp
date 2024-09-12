@@ -334,7 +334,7 @@ Mob* QuestManager::spawn_from_spawn2(uint32 spawn2_id)
 	if (npc->DropsGlobalLoot()) {
 		npc->CheckGlobalLootTables();
 	}
-	npc->SetSp2(found_spawn->SpawnGroupID());
+	npc->SetSpawnGroupId(found_spawn->SpawnGroupID());
 	entity_list.AddNPC(npc);
 	entity_list.LimitAddNPC(npc);
 
@@ -935,6 +935,36 @@ std::string QuestManager::getbodytypename(uint8 body_type_id) {
 
 std::string QuestManager::getconsiderlevelname(uint8 consider_level) {
 	return EQ::constants::GetConsiderLevelName(consider_level);
+}
+
+std::string QuestManager::getnpcnamebyid(uint32 npc_id) {
+	std::string res;
+	if (npc_id > 0) {
+		res = database.GetNPCNameByID(npc_id);
+	}
+	return res;
+}
+
+std::string QuestManager::getcharnamebyid(uint32 char_id) {
+	std::string res;
+	if (char_id > 0) {
+		res = database.GetCharNameByID(char_id);
+	}
+	return res;
+}
+
+int QuestManager::getguildidbycharid(uint32 char_id) {
+	if (char_id > 0) {
+		return database.GetGuildIDByCharID(char_id);
+	}
+	return 0;
+}
+
+int QuestManager::getgroupidbycharid(uint32 char_id) {
+	if (char_id > 0) {
+		return database.GetGroupIDByCharID(char_id);
+	}
+	return 0;
 }
 
 void QuestManager::safemove() {
@@ -2011,14 +2041,11 @@ uint16 QuestManager::CreateGroundObjectFromModel(const char *model, const glm::v
 	return entid;
 }
 
-void QuestManager::ModifyNPCStat(const char *identifier, const char *newValue)
+void QuestManager::ModifyNPCStat(std::string stat, std::string value)
 {
 	QuestManagerCurrentQuestVars();
-	if(owner){
-		if(owner->IsNPC())
-		{
-			owner->CastToNPC()->ModifyNPCStat(identifier, newValue);
-		}
+	if (owner && owner->IsNPC()) {
+		owner->CastToNPC()->ModifyNPCStat(stat, value);
 	}
 }
 

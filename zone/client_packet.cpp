@@ -687,6 +687,10 @@ void Client::CompleteConnect()
 	if (GetGM() && IsDevToolsEnabled()) {
 		ShowDevToolsMenu();
 	}
+
+	// this was put in to appease concerns about the RNG being affected by the time of day or day of week the server was started on, resulting in bad loot
+	// this adds some external entropy to the process of generating random numbers by discarding some numbers in the sequence when a client connects
+	zone->random.Discard(Timer::GetCurrentTime() % 300);
 }
 
 
@@ -1037,7 +1041,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/**
 	 * DevTools Load Settings
 	 */
-	if (Admin() > 200) {
+	if (Admin() > EQ::DevTools::GM_ACCOUNT_STATUS_LEVEL) {
 		std::string dev_tools_window_key = StringFormat("%i-dev-tools-disabled", AccountID());
 		if (DataBucket::GetData(dev_tools_window_key) == "true") {
 			dev_tools_enabled = false;
@@ -2765,10 +2769,10 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 
 void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 {
-	ChannelMessage_Struct* cm = (ChannelMessage_Struct*)app->pBuffer;
+	auto* cm = (ChannelMessage_Struct*) app->pBuffer;
 
 	if (app->size < sizeof(ChannelMessage_Struct)) {
-		std::cout << "Wrong size " << app->size << ", should be " << sizeof(ChannelMessage_Struct) << "+ on 0x" << std::hex << std::setfill('0') << std::setw(4) << app->GetOpcode() << std::dec << std::endl;
+		LogDebug("Size mismatch in OP_ChannelMessage expected [{}] got [{}]", sizeof(ChannelMessage_Struct), app->size);
 		return;
 	}
 
@@ -2778,12 +2782,11 @@ void Client::Handle_OP_ChannelMessage(const EQApplicationPacket *app)
 	if (app->size > 2184) // size is 136 + strlen(message) + 1 but the client adds an extra 4 bytes to the length when it sends the packet.
 		cm->message[2047] = 0; // the client also does this but only for this message field
 
-	uint8 skill_in_language = 100;
-	if (cm->language < MAX_PP_LANGUAGE)
-	{
-		skill_in_language = m_pp.languages[cm->language];
+	uint8 language_skill = Language::MaxValue;
+	if (EQ::ValueWithin(cm->language, Language::CommonTongue, Language::Unknown26)) {
+		language_skill = m_pp.languages[cm->language];
 	}
-	ChannelMessageReceived(cm->chan_num, cm->language, skill_in_language, cm->message, cm->targetname);
+	ChannelMessageReceived(cm->chan_num, cm->language, language_skill, cm->message, cm->targetname);
 	return;
 }
 
@@ -3214,7 +3217,7 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 	// If we're feigned show NPC as indifferent
 	if (tmob->IsNPC())
 	{
-		if (IsFeigned() && !tmob->GetSpecialAbility(IMMUNE_FEIGN_DEATH))
+		if (IsFeigned() && !tmob->GetSpecialAbility(SpecialAbility::FeignDeathImmunity))
 			con->faction = FACTION_INDIFFERENTLY;
 	}
 
@@ -3222,7 +3225,7 @@ void Client::Handle_OP_Consider(const EQApplicationPacket *app)
 	{
 		if (tmob->IsNPC())
 		{
-			if (tmob->CastToNPC()->IsOnHatelist(this) && (!IsFeigned() || tmob->GetSpecialAbility(IMMUNE_FEIGN_DEATH)))
+			if (tmob->CastToNPC()->IsOnHatelist(this) && (!IsFeigned() || tmob->GetSpecialAbility(SpecialAbility::FeignDeathImmunity)))
 				con->faction = FACTION_THREATENINGLY;
 		}
 	}
@@ -5672,7 +5675,7 @@ void Client::Handle_OP_ItemLinkResponse(const EQApplicationPacket *app)
 				Message(Chat::LightGray, "You say, '%s'", response.c_str());
 			}
 
-			ChannelMessageReceived(ChatChannel_Say, 0, 100, response.c_str());
+			ChannelMessageReceived(ChatChannel_Say, Language::CommonTongue, Language::MaxValue, response.c_str());
 
 			return;
 		}
@@ -6238,7 +6241,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (!mypet->IsCharmedPet() && GetAA(aaFeignedMinion)) 
 		{
 			// using one of these otherwise never used timers so we don't have to make a new member just for this.  hopefully this is not confusing
-			Timer* timer = GetSpecialAbilityTimer(IMMUNE_FEIGN_DEATH);
+			Timer* timer = GetSpecialAbilityTimer(SpecialAbility::FeignDeathImmunity);
 			if (timer && timer->Enabled() && !timer->Check())
 			{
 				Message(Chat::LightBlue, "You must wait longer before your pet can feign death.");
@@ -6269,7 +6272,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->SetPetOrder(SPO_Sit);
 			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Lying);
 
-			StartSpecialAbilityTimer(IMMUNE_FEIGN_DEATH, FeignDeathReuseTime*1000);
+			StartSpecialAbilityTimer(SpecialAbility::FeignDeathImmunity, FeignDeathReuseTime*1000);
 
 			if (zone->random.Roll(chance))
 				entity_list.RemoveFromNPCTargets(mypet);

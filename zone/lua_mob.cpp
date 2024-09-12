@@ -1091,19 +1091,44 @@ void Lua_Mob::SetOOCRegen(int regen) {
 	self->SetOOCRegen(regen);
 }
 
-const char* Lua_Mob::GetEntityVariable(const char *name) {
-	Lua_Safe_Call_String();
-	return self->GetEntityVariable(name);
-}
-
-void Lua_Mob::SetEntityVariable(const char *name, const char *value) {
-	Lua_Safe_Call_Void();
-	self->SetEntityVariable(name, value);
-}
-
-bool Lua_Mob::EntityVariableExists(const char *name) {
+bool Lua_Mob::ClearEntityVariables() {
 	Lua_Safe_Call_Bool();
-	return self->EntityVariableExists(name);
+	return self->ClearEntityVariables();
+}
+
+bool Lua_Mob::DeleteEntityVariable(std::string variable_name) {
+	Lua_Safe_Call_Bool();
+	return self->DeleteEntityVariable(variable_name);
+}
+
+std::string Lua_Mob::GetEntityVariable(std::string variable_name) {
+	Lua_Safe_Call_String();
+	return self->GetEntityVariable(variable_name);
+}
+
+luabind::object Lua_Mob::GetEntityVariables(lua_State* L) {
+	auto t = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto l = self->GetEntityVariables();
+		auto i = 0;
+		for (const auto& v : l) {
+			t[i] = v;
+			i++;
+		}
+	}
+
+	return t;
+}
+
+void Lua_Mob::SetEntityVariable(std::string variable_name, std::string variable_value) {
+	Lua_Safe_Call_Void();
+	self->SetEntityVariable(variable_name, variable_value);
+}
+
+bool Lua_Mob::EntityVariableExists(std::string variable_name) {
+	Lua_Safe_Call_Bool();
+	return self->EntityVariableExists(variable_name);
 }
 
 void Lua_Mob::Signal(uint32 id) {
@@ -1830,9 +1855,12 @@ luabind::scope lua_register_mob() {
 		.def("GetAA", (int(Lua_Mob::*)(int))&Lua_Mob::GetAA)
 		.def("DivineAura", (bool(Lua_Mob::*)(void))&Lua_Mob::DivineAura)
 		.def("SetOOCRegen", (void(Lua_Mob::*)(int))&Lua_Mob::SetOOCRegen)
-		.def("GetEntityVariable", (const char*(Lua_Mob::*)(const char*))&Lua_Mob::GetEntityVariable)
-		.def("SetEntityVariable", (void(Lua_Mob::*)(const char*,const char*))&Lua_Mob::SetEntityVariable)
-		.def("EntityVariableExists", (bool(Lua_Mob::*)(const char*))&Lua_Mob::EntityVariableExists)
+		.def("ClearEntityVariables", (bool(Lua_Mob::*)(void))& Lua_Mob::ClearEntityVariables)
+		.def("DeleteEntityVariable", (bool(Lua_Mob::*)(std::string))& Lua_Mob::DeleteEntityVariable)
+		.def("GetEntityVariable", &Lua_Mob::GetEntityVariable)
+		.def("GetEntityVariables", &Lua_Mob::GetEntityVariables)
+		.def("SetEntityVariable", &Lua_Mob::SetEntityVariable)
+		.def("EntityVariableExists", &Lua_Mob::EntityVariableExists)
 		.def("Signal", (void(Lua_Mob::*)(uint32))&Lua_Mob::Signal)
 		.def("CombatRange", (bool(Lua_Mob::*)(Lua_Mob))&Lua_Mob::CombatRange)
 		.def("DoSpecialAttackDamage", (void(Lua_Mob::*)(Lua_Mob,int,int))&Lua_Mob::DoSpecialAttackDamage)
@@ -1913,42 +1941,42 @@ luabind::scope lua_register_special_abilities() {
 	return luabind::class_<SpecialAbilities>("SpecialAbility")
 		.enum_("constants")
 		[
-				luabind::value("summon", static_cast<int>(SPECATK_SUMMON)),
-				luabind::value("enrage", static_cast<int>(SPECATK_ENRAGE)),
-				luabind::value("rampage", static_cast<int>(SPECATK_RAMPAGE)),
-				luabind::value("area_rampage", static_cast<int>(SPECATK_AREA_RAMPAGE)),
-				luabind::value("flurry", static_cast<int>(SPECATK_FLURRY)),
-				luabind::value("triple_attack", static_cast<int>(SPECATK_TRIPLE)),
-				luabind::value("innate_dual_wield", static_cast<int>(INNATE_DUAL_WIELD)),
-				luabind::value("do_not_equip", static_cast<int>(DO_NOT_EQUIP)),
-				luabind::value("bane_attack", static_cast<int>(SPECATK_BANE)),
-				luabind::value("magical_attack", static_cast<int>(SPECATK_MAGICAL)),
-				luabind::value("ranged_attack", static_cast<int>(SPECATK_RANGED_ATK)),
-				luabind::value("unslowable", static_cast<int>(UNSLOWABLE)),
-				luabind::value("unmezable", static_cast<int>(UNMEZABLE)),
-				luabind::value("uncharmable", static_cast<int>(UNCHARMABLE)),
-				luabind::value("unstunable", static_cast<int>(UNSTUNABLE)),
-				luabind::value("unsnareable", static_cast<int>(UNSNAREABLE)),
-				luabind::value("unfearable", static_cast<int>(UNFEARABLE)),
-				luabind::value("undispellable", static_cast<int>(UNDISPELLABLE)),
-				luabind::value("immune_melee", static_cast<int>(IMMUNE_MELEE)),
-				luabind::value("immune_magic", static_cast<int>(IMMUNE_MAGIC)),
-				luabind::value("immune_fleeing", static_cast<int>(IMMUNE_FLEEING)),
-				luabind::value("immune_melee_except_bane", static_cast<int>(IMMUNE_MELEE_EXCEPT_BANE)),
-				luabind::value("immune_melee_except_magical", static_cast<int>(IMMUNE_MELEE_NONMAGICAL)),
-				luabind::value("immune_aggro", static_cast<int>(IMMUNE_AGGRO)),
-				luabind::value("immune_aggro_on", static_cast<int>(IMMUNE_AGGRO_ON)),
-				luabind::value("immune_casting_from_range", static_cast<int>(IMMUNE_CASTING_FROM_RANGE)),
-				luabind::value("immune_feign_death", static_cast<int>(IMMUNE_FEIGN_DEATH)),
-				luabind::value("immune_taunt", static_cast<int>(IMMUNE_TAUNT)),
-				luabind::value("tunnelvision", static_cast<int>(NPC_TUNNELVISION)),
-				luabind::value("dont_buff_friends", static_cast<int>(NPC_NO_BUFFHEAL_FRIENDS)),
-				luabind::value("immune_pacify", static_cast<int>(IMMUNE_PACIFY)),
-				luabind::value("leash", static_cast<int>(LEASH)),
-				luabind::value("tether", static_cast<int>(TETHER)),
-				luabind::value("no_harm_from_client", static_cast<int>(NO_HARM_FROM_CLIENT)),
-				luabind::value("always_flee", static_cast<int>(ALWAYS_FLEE)),
-				luabind::value("flee_percent", static_cast<int>(FLEE_PERCENT))
+				luabind::value("summon", static_cast<int>(SpecialAbility::Summon)),
+				luabind::value("enrage", static_cast<int>(SpecialAbility::Enrage)),
+				luabind::value("rampage", static_cast<int>(SpecialAbility::Rampage)),
+				luabind::value("area_rampage", static_cast<int>(SpecialAbility::AreaRampage)),
+				luabind::value("flurry", static_cast<int>(SpecialAbility::Flurry)),
+				luabind::value("triple_attack", static_cast<int>(SpecialAbility::TripleAttack)),
+				luabind::value("innate_dual_wield", static_cast<int>(SpecialAbility::DualWield)),
+				luabind::value("do_not_equip", static_cast<int>(SpecialAbility::DisallowEquip)),
+				luabind::value("bane_attack", static_cast<int>(SpecialAbility::BaneAttack)),
+				luabind::value("magical_attack", static_cast<int>(SpecialAbility::MagicalAttack)),
+				luabind::value("ranged_attack", static_cast<int>(SpecialAbility::RangedAttack)),
+				luabind::value("unslowable", static_cast<int>(SpecialAbility::SlowImmunity)),
+				luabind::value("unmezable", static_cast<int>(SpecialAbility::MesmerizeImmunity)),
+				luabind::value("uncharmable", static_cast<int>(SpecialAbility::CharmImmunity)),
+				luabind::value("unstunable", static_cast<int>(SpecialAbility::StunImmunity)),
+				luabind::value("unsnareable", static_cast<int>(SpecialAbility::SnareImmunity)),
+				luabind::value("unfearable", static_cast<int>(SpecialAbility::FearImmunity)),
+				luabind::value("undispellable", static_cast<int>(SpecialAbility::DispellImmunity)),
+				luabind::value("immune_melee", static_cast<int>(SpecialAbility::MeleeImmunity)),
+				luabind::value("immune_magic", static_cast<int>(SpecialAbility::MagicImmunity)),
+				luabind::value("immune_fleeing", static_cast<int>(SpecialAbility::FleeingImmunity)),
+				luabind::value("immune_melee_except_bane", static_cast<int>(SpecialAbility::MeleeImmunityExceptBane)),
+				luabind::value("immune_melee_except_magical", static_cast<int>(SpecialAbility::MeleeImmunityExceptMagical)),
+				luabind::value("immune_aggro", static_cast<int>(SpecialAbility::AggroImmunity)),
+				luabind::value("immune_aggro_on", static_cast<int>(SpecialAbility::BeingAggroImmunity)),
+				luabind::value("immune_casting_from_range", static_cast<int>(SpecialAbility::CastingFromRangeImmunity)),
+				luabind::value("immune_feign_death", static_cast<int>(SpecialAbility::FeignDeathImmunity)),
+				luabind::value("immune_taunt", static_cast<int>(SpecialAbility::TauntImmunity)),
+				luabind::value("tunnelvision", static_cast<int>(SpecialAbility::TunnelVision)),
+				luabind::value("dont_buff_friends", static_cast<int>(SpecialAbility::NoBuffHealFriends)),
+				luabind::value("immune_pacify", static_cast<int>(SpecialAbility::PacifyImmunity)),
+				luabind::value("leash", static_cast<int>(SpecialAbility::Leash)),
+				luabind::value("tether", static_cast<int>(SpecialAbility::Tether)),
+				luabind::value("no_harm_from_client", static_cast<int>(SpecialAbility::HarmFromClientImmunity)),
+				luabind::value("always_flee", static_cast<int>(SpecialAbility::AlwaysFlee)),
+				luabind::value("flee_percent", static_cast<int>(SpecialAbility::FleePercent))
 		];
 }
 

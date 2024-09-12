@@ -287,10 +287,8 @@ Mob::Mob(const char* in_name,
 	pRunAnimSpeed = 0;
 
 	ZeroCastingVars();
-	bardsong_timer.Disable();
+	_StopSong();
 	spellrecovery_timer.Disable();
-	bardsong = 0;
-	bardsong_target_id = 0;
 	target = 0;
 
 	memset(&itembonuses, 0, sizeof(StatBonuses));
@@ -1349,7 +1347,7 @@ void Mob::ShowStats(Client* client)
 			if(n->respawn2 != 0)
 				spawngroupid = n->respawn2->SpawnGroupID();
 			client->Message(Chat::White, "  NPCID: %u  SpawnGroupID: %u Grid: %i FactionID: %i PreCharmFactionID: %i PrimaryFaction: %i", GetNPCTypeID(),spawngroupid, n->GetGrid(), n->GetNPCFactionID(), n->GetPreCharmNPCFactionID(), GetPrimaryFaction());
-			client->Message(Chat::White, "  HP Regen: %i Mana Regen: %i Magic Atk: %i Immune to Melee: %i", n->GetHPRegen(), n->GetManaRegen(), GetLevel() >= MAGIC_ATTACK_LEVEL ? 1 : GetSpecialAbility(SPECATK_MAGICAL), GetSpecialAbility(IMMUNE_MELEE_NONMAGICAL));
+			client->Message(Chat::White, "  HP Regen: %i Mana Regen: %i Magic Atk: %i Immune to Melee: %i", n->GetHPRegen(), n->GetManaRegen(), GetLevel() >= MAGIC_ATTACK_LEVEL ? 1 : GetSpecialAbility(SpecialAbility::MagicalAttack), GetSpecialAbility(SpecialAbility::MeleeImmunityExceptMagical));
 			client->Message(Chat::White, "  Accuracy: %i BonusAvoidance: %i LootTable: %u SpellsID: %u", n->GetAccuracyRating(), bonusAvoidance, n->GetLoottableID(), n->GetNPCSpellsID());
 			n->DisplayAttackTimer(client);
 			client->Message(Chat::White, "  EmoteID: %i SeeInvis/Hide: %i SeeInvUndead: %i SeeSneak: %i SeeImpHide: %i", n->GetEmoteID(), n->SeeInvisible(), n->SeeInvisibleUndead(), n->SeeSneak(), n->SeeImprovedHide());
@@ -1919,10 +1917,10 @@ bool Mob::IsDualWielding()
 	}
 	else if (IsNPC())
 	{
-		if (!CastToNPC()->GetEquipment(EQ::textures::weaponSecondary) && !GetSpecialAbility(INNATE_DUAL_WIELD))
+		if (!CastToNPC()->GetEquipment(EQ::textures::weaponSecondary) && !GetSpecialAbility(SpecialAbility::DualWield))
 			return false;
 
-		if (GetSpecialAbility(INNATE_DUAL_WIELD) && !IsSummonedClientPet())
+		if (GetSpecialAbility(SpecialAbility::DualWield) && !IsSummonedClientPet())
 			return true;
 
 		const EQ::ItemData* mh = database.GetItem(CastToNPC()->GetEquipment(EQ::textures::weaponPrimary));
@@ -1936,7 +1934,7 @@ bool Mob::IsDualWielding()
 			if (oh->ItemType == EQ::item::ItemType1HBlunt || oh->ItemType == EQ::item::ItemType1HSlash || oh->ItemType == EQ::item::ItemType1HPiercing || oh->ItemType == EQ::item::ItemTypeMartial)
 				return true;
 		}
-		else if (GetSpecialAbility(INNATE_DUAL_WIELD))
+		else if (GetSpecialAbility(SpecialAbility::DualWield))
 			return true;
 	}
 	return false;
@@ -2078,14 +2076,14 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 		return false;
 	}
 
-	int summon_level = GetSpecialAbility(SPECATK_SUMMON);
+	int summon_level = GetSpecialAbility(SpecialAbility::Summon);
 	if(summon_level != 1 && summon_level != 2) {
 		//unsupported summon level or OFF
 		return false;
 	} 
 
 	// validate hp
-	int hp_ratio = GetSpecialAbilityParam(SPECATK_SUMMON, 1);
+	int hp_ratio = GetSpecialAbilityParam(SpecialAbility::Summon, 1);
 	hp_ratio = hp_ratio > 0 ? hp_ratio : 97;
 	if(GetHPRatio() > static_cast<float>(hp_ratio)) {
 		return false;
@@ -2097,7 +2095,7 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 	}
 
 	// now validate the timer
-	Timer *timer = GetSpecialAbilityTimer(SPECATK_SUMMON);
+	Timer *timer = GetSpecialAbilityTimer(SpecialAbility::Summon);
 	if (!timer) {
 		// dont currently have a timer going, so we are going to summon
 		return true;
@@ -2123,7 +2121,7 @@ bool Mob::HateSummon(Mob* summoned) {
 	if (IsCharmedPet())
 		return false;
 
-	int summon_level = GetSpecialAbility(SPECATK_SUMMON);
+	int summon_level = GetSpecialAbility(SpecialAbility::Summon);
 	if (summon_level != 1 && summon_level != 2)
 	{
 		//unsupported summon level or OFF
@@ -2131,22 +2129,22 @@ bool Mob::HateSummon(Mob* summoned) {
 	}
 
 	// validate hp
-	int hp_ratio = GetSpecialAbilityParam(SPECATK_SUMMON, 1);
+	int hp_ratio = GetSpecialAbilityParam(SpecialAbility::Summon, 1);
 	hp_ratio = hp_ratio > 0 ? hp_ratio : 97;
 	if(GetHPRatio() > static_cast<float>(hp_ratio)) {
 		return false;
 	}
 
 	// now validate the timer
-	int summon_timer_duration = GetSpecialAbilityParam(SPECATK_SUMMON, 0);
+	int summon_timer_duration = GetSpecialAbilityParam(SpecialAbility::Summon, 0);
 	int defaultTime = 11000;
 	if (GetLevel() > 65)
 		defaultTime = 6000;
 	summon_timer_duration = summon_timer_duration > 0 ? summon_timer_duration : defaultTime;
-	Timer *timer = GetSpecialAbilityTimer(SPECATK_SUMMON);
+	Timer *timer = GetSpecialAbilityTimer(SpecialAbility::Summon);
 	if (!timer)
 	{
-		StartSpecialAbilityTimer(SPECATK_SUMMON, summon_timer_duration);
+		StartSpecialAbilityTimer(SpecialAbility::Summon, summon_timer_duration);
 	} else {
 		if(!timer->Check())
 			return false;
@@ -2683,7 +2681,7 @@ bool Mob::ExecWeaponProc(const EQ::ItemInstance *inst, uint16 spell_id, Mob *on)
 		return false;
 	}
 
-	if (IsClient() && on->GetSpecialAbility(NO_HARM_FROM_CLIENT))
+	if (IsClient() && on->GetSpecialAbility(SpecialAbility::HarmFromClientImmunity))
 		return false;
 
 	if(!IsValidSpell(spell_id)) { // Check for a valid spell otherwise it will crash through the function
@@ -2862,30 +2860,80 @@ int Mob::GetSnaredAmount()
 	return worst_snare;
 }
 
-void Mob::SetEntityVariable(const char *id, const char *m_var)
+bool Mob::ClearEntityVariables()
 {
-	std::string n_m_var = m_var;
-	m_EntityVariables[id] = n_m_var;
-}
-
-const char* Mob::GetEntityVariable(const char *id)
-{
-	auto iter = m_EntityVariables.find(id);
-	if(iter != m_EntityVariables.end())
-	{
-		return iter->second.c_str();
+	if (m_EntityVariables.empty()) {
+		return false;
 	}
-	return nullptr;
+
+	m_EntityVariables.clear();
+	return true;
 }
 
-bool Mob::EntityVariableExists(const char *id)
+bool Mob::DeleteEntityVariable(std::string variable_name)
 {
-	auto iter = m_EntityVariables.find(id);
-	if(iter != m_EntityVariables.end())
-	{
+	if (m_EntityVariables.empty() || variable_name.empty()) {
+		return false;
+	}
+
+	auto v = m_EntityVariables.find(variable_name);
+	if (v == m_EntityVariables.end()) {
+		return false;
+	}
+
+	m_EntityVariables.erase(v);
+	return true;
+}
+
+std::string Mob::GetEntityVariable(std::string variable_name)
+{
+	if (m_EntityVariables.empty() || variable_name.empty()) {
+		return std::string();
+	}
+
+	const auto& v = m_EntityVariables.find(variable_name);
+	if (v != m_EntityVariables.end()) {
+		return v->second;
+	}
+
+	return std::string();
+}
+
+std::vector<std::string> Mob::GetEntityVariables()
+{
+	std::vector<std::string> l;
+	if (m_EntityVariables.empty()) {
+		return l;
+	}
+
+	for (const auto& v : m_EntityVariables) {
+		l.push_back(v.first);
+	}
+
+	return l;
+}
+
+bool Mob::EntityVariableExists(std::string variable_name)
+{
+	if (m_EntityVariables.empty() || variable_name.empty()) {
+		return false;
+	}
+
+	const auto& v = m_EntityVariables.find(variable_name);
+	if (v != m_EntityVariables.end()) {
 		return true;
 	}
+
 	return false;
+}
+
+void Mob::SetEntityVariable(std::string variable_name, std::string variable_value)
+{
+	if (variable_name.empty()) {
+		return;
+	}
+
+	m_EntityVariables[variable_name] = variable_value;
 }
 
 void Mob::SetFlyMode(GravityBehavior flymode)
@@ -3769,7 +3817,7 @@ bool Mob::HasSpellEffect(int effectid)
 }
 
 int Mob::GetSpecialAbility(int ability) {
-	if(ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if(ability >= SpecialAbility::Max || ability < 0) {
 		return 0;
 	}
 
@@ -3777,7 +3825,7 @@ int Mob::GetSpecialAbility(int ability) {
 }
 
 int Mob::GetSpecialAbilityParam(int ability, int param) {
-	if(param >= MAX_SPECIAL_ATTACK_PARAMS || param < 0 || ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if(param >= SpecialAbility::MaxParameters || param < 0 || ability >= SpecialAbility::Max || ability < 0) {
 		return 0;
 	}
 
@@ -3785,17 +3833,17 @@ int Mob::GetSpecialAbilityParam(int ability, int param) {
 }
 
 void Mob::SetSpecialAbility(int ability, int level) {
-	if(ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if(ability >= SpecialAbility::Max || ability < 0) {
 		return;
 	}
 
 	SpecialAbilities[ability].level = level;
-	if (ability == CORPSE_CAMPER)
+	if (ability == SpecialAbility::CorpseCamper)
 		AI_SetLoiterTimer();
 }
 
 void Mob::SetSpecialAbilityParam(int ability, int param, int value) {
-	if(param >= MAX_SPECIAL_ATTACK_PARAMS || param < 0 || ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if(param >= SpecialAbility::MaxParameters || param < 0 || ability >= SpecialAbility::Max || ability < 0) {
 		return;
 	}
 
@@ -3803,7 +3851,7 @@ void Mob::SetSpecialAbilityParam(int ability, int param, int value) {
 }
 
 void Mob::StartSpecialAbilityTimer(int ability, uint32 time) {
-	if (ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if (ability >= SpecialAbility::Max || ability < 0) {
 		return;
 	}
 
@@ -3816,7 +3864,7 @@ void Mob::StartSpecialAbilityTimer(int ability, uint32 time) {
 }
 
 void Mob::StopSpecialAbilityTimer(int ability) {
-	if (ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if (ability >= SpecialAbility::Max || ability < 0) {
 		return;
 	}
 
@@ -3824,7 +3872,7 @@ void Mob::StopSpecialAbilityTimer(int ability) {
 }
 
 Timer *Mob::GetSpecialAbilityTimer(int ability) {
-	if (ability >= MAX_SPECIAL_ATTACK || ability < 0) {
+	if (ability >= SpecialAbility::Max || ability < 0) {
 		return nullptr;
 	}
 
@@ -3832,10 +3880,10 @@ Timer *Mob::GetSpecialAbilityTimer(int ability) {
 }
 
 void Mob::ClearSpecialAbilities() {
-	for(int a = 0; a < MAX_SPECIAL_ATTACK; ++a) {
+	for(int a = 0; a < SpecialAbility::Max; ++a) {
 		SpecialAbilities[a].level = 0;
 		safe_delete(SpecialAbilities[a].timer);
-		for(int p = 0; p < MAX_SPECIAL_ATTACK_PARAMS; ++p) {
+		for(int p = 0; p < SpecialAbility::MaxParameters; ++p) {
 			SpecialAbilities[a].params[p] = 0;
 		}
 	}
@@ -3859,7 +3907,7 @@ void Mob::ModifySpecialAbility(const std::string &abil_str)
 		SetSpecialAbility(ability, value);
 
 		for (size_t i = 2, p = 0; i < sub_sp.size(); ++i, ++p) {
-			if (p >= MAX_SPECIAL_ATTACK_PARAMS) {
+			if (p >= SpecialAbility::MaxParameters) {
 				break;
 			}
 

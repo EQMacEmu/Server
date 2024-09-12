@@ -601,7 +601,7 @@ bool EntityList::AICheckClientAggro(NPC* aggressor)
 	if (!aggressor)
 		return false;
 
-	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro = aggressor->GetSpecialAbility(SpecialAbility::ProximityAggro);
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
@@ -616,7 +616,7 @@ bool EntityList::AICheckClientAggro(NPC* aggressor)
 	{
 		Client *client = it->second;
 
-		if ((client->IsFeigned() && !aggressor->GetSpecialAbility(IMMUNE_FEIGN_DEATH)) || !client->InZone())
+		if ((client->IsFeigned() && !aggressor->GetSpecialAbility(SpecialAbility::FeignDeathImmunity)) || !client->InZone())
 			continue;
 
 		if (!aggressor->CheckAggro(client) && aggressor->CheckWillAggro(client))
@@ -638,7 +638,7 @@ bool EntityList::AICheckNPCAggro(NPC* aggressor)
 	if (!aggressor)
 		return false;
 
-	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro = aggressor->GetSpecialAbility(SpecialAbility::ProximityAggro);
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
@@ -678,7 +678,7 @@ bool EntityList::AICheckPetAggro(NPC* aggressor)
 	if (!zone->HasCharmedNPC || aggressor->IsPet())
 		return false;
 
-	bool proxAggro = aggressor->GetSpecialAbility(PROX_AGGRO);
+	bool proxAggro = aggressor->GetSpecialAbility(SpecialAbility::ProximityAggro);
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
@@ -826,7 +826,7 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 		if (!npc)
 			continue;
 
-		if(npc->CheckAggro(attacker) || npc->GetSpecialAbility(IMMUNE_AGGRO))
+		if(npc->CheckAggro(attacker) || npc->GetSpecialAbility(SpecialAbility::AggroImmunity))
 			continue;
 
 		// prevent assists if kiter has pull limit and this NPC had been deaggroed sometime within 30 seconds ago (so almost certainly from his train)
@@ -924,7 +924,7 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack, int16 spellid)
 	if(target->IsZomm())
 		return true;
 
-	if (target->GetSpecialAbility(NO_HARM_FROM_CLIENT) && (IsClient() || (IsPet() && GetOwner()->IsClient())))
+	if (target->GetSpecialAbility(SpecialAbility::HarmFromClientImmunity) && (IsClient() || (IsPet() && GetOwner()->IsClient())))
 		return false;
 
 	// Pets cant attack mezed mobs
@@ -1715,7 +1715,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 	}
 
 	// spells on 'belly caster' NPCs do no hate if outside of melee range unless spell has no resist check
-	if (spells[spell_id].resisttype != RESIST_NONE && target->GetSpecialAbility(IMMUNE_CASTING_FROM_RANGE) && !CombatRange(target))
+	if (spells[spell_id].resisttype != RESIST_NONE && target->GetSpecialAbility(SpecialAbility::CastingFromRangeImmunity) && !CombatRange(target))
 		return 0;
 
 	return combinedHate;

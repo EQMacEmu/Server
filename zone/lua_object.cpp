@@ -168,19 +168,44 @@ void Lua_Object::Close() {
 	self->Close();
 }
 
-const char *Lua_Object::GetEntityVariable(const char *name) {
+bool Lua_Object::ClearEntityVariables() {
+	Lua_Safe_Call_Bool();
+	return self->ClearEntityVariables();
+}
+
+bool Lua_Object::DeleteEntityVariable(std::string variable_name) {
+	Lua_Safe_Call_Bool();
+	return self->DeleteEntityVariable(variable_name);
+}
+
+std::string Lua_Object::GetEntityVariable(std::string variable_name) {
 	Lua_Safe_Call_String();
-	return self->GetEntityVariable(name);
+	return self->GetEntityVariable(variable_name);
 }
 
-void Lua_Object::SetEntityVariable(const char *name, const char *value) {
+luabind::object Lua_Object::GetEntityVariables(lua_State* L) {
+	auto t = luabind::newtable(L);
+	if (d_) {
+		auto self = reinterpret_cast<NativeType*>(d_);
+		auto l = self->GetEntityVariables();
+		auto i = 0;
+		for (const auto& v : l) {
+			t[i] = v;
+			i++;
+		}
+	}
+
+	return t;
+}
+
+void Lua_Object::SetEntityVariable(std::string variable_name, std::string variable_value) {
 	Lua_Safe_Call_Void();
-	self->SetEntityVariable(name, value);
+	self->SetEntityVariable(variable_name, variable_value);
 }
 
-bool Lua_Object::EntityVariableExists(const char *name) {
+bool Lua_Object::EntityVariableExists(std::string variable_name) {
 	Lua_Safe_Call_Int();
-	return self->EntityVariableExists(name);
+	return self->EntityVariableExists(variable_name);
 }
 
 luabind::scope lua_register_object() {
@@ -188,41 +213,44 @@ luabind::scope lua_register_object() {
 		.def(luabind::constructor<>())
 		.property("null", &Lua_Object::Null)
 		.property("valid", &Lua_Object::Valid)
-		.def("Depop", (void(Lua_Object::*)(void))&Lua_Object::Depop)
+		.def("Depop", (void(Lua_Object::*)(void)) & Lua_Object::Depop)
 		.def("DepopWithTimer", (void(Lua_Object::*)(void)) & Lua_Object::DepopWithTimer)
-		.def("Repop", (void(Lua_Object::*)(void))&Lua_Object::Repop)
-		.def("SetModelName", (void(Lua_Object::*)(const char*))&Lua_Object::SetModelName)
-		.def("GetModelName", (const char*(Lua_Object::*)(void))&Lua_Object::GetModelName)
-		.def("GetX", (float(Lua_Object::*)(void))&Lua_Object::GetX)
-		.def("GetY", (float(Lua_Object::*)(void))&Lua_Object::GetY)
-		.def("GetZ", (float(Lua_Object::*)(void))&Lua_Object::GetZ)
-		.def("GetHeading", (float(Lua_Object::*)(void))&Lua_Object::GetHeading)
-		.def("SetX", (void(Lua_Object::*)(float))&Lua_Object::SetX)
-		.def("SetY", (void(Lua_Object::*)(float))&Lua_Object::SetY)
-		.def("SetZ", (void(Lua_Object::*)(float))&Lua_Object::SetZ)
-		.def("SetHeading", (void(Lua_Object::*)(float))&Lua_Object::SetHeading)
-		.def("SetLocation", (void(Lua_Object::*)(float,float,float))&Lua_Object::SetLocation)
-		.def("SetItemID", (void(Lua_Object::*)(uint32))&Lua_Object::SetItemID)
-		.def("GetItemID", (int16(Lua_Object::*)(void))&Lua_Object::GetItemID)
-		.def("SetIcon", (void(Lua_Object::*)(uint32))&Lua_Object::SetIcon)
-		.def("GetIcon", (uint32(Lua_Object::*)(void))&Lua_Object::GetIcon)
-		.def("SetType", (void(Lua_Object::*)(uint32))&Lua_Object::SetType)
-		.def("GetType", (uint32(Lua_Object::*)(void))&Lua_Object::GetType)
-		.def("GetDBID", (uint32(Lua_Object::*)(void))&Lua_Object::GetDBID)
-		.def("ClearUser", (void(Lua_Object::*)(void))&Lua_Object::ClearUser)
-		.def("SetID", (void(Lua_Object::*)(int))&Lua_Object::SetID)
-		.def("GetID", (int(Lua_Object::*)(void))&Lua_Object::GetID)
-		.def("Save", (bool(Lua_Object::*)(void))&Lua_Object::Save)
-		.def("VarSave", (uint32(Lua_Object::*)(void))&Lua_Object::VarSave)
-		.def("DeleteItem", (void(Lua_Object::*)(int))&Lua_Object::DeleteItem)
-		.def("StartDecay", (void(Lua_Object::*)(void))&Lua_Object::StartDecay)
-		.def("Delete", (void(Lua_Object::*)(void))&Lua_Object::Delete)
-		.def("Delete", (void(Lua_Object::*)(bool))&Lua_Object::Delete)
-		.def("IsGroundSpawn", (bool(Lua_Object::*)(void))&Lua_Object::IsGroundSpawn)
-		.def("Close", (void(Lua_Object::*)(void))&Lua_Object::Close)
-		.def("GetEntityVariable", (const char*(Lua_Object::*)(const char*))&Lua_Object::GetEntityVariable)
-		.def("SetEntityVariable", (void(Lua_Object::*)(const char*,const char*))&Lua_Object::SetEntityVariable)
-		.def("EntityVariableExists", (bool(Lua_Object::*)(const char*))&Lua_Object::EntityVariableExists);
+		.def("Repop", (void(Lua_Object::*)(void)) & Lua_Object::Repop)
+		.def("SetModelName", (void(Lua_Object::*)(const char*)) & Lua_Object::SetModelName)
+		.def("GetModelName", (const char* (Lua_Object::*)(void)) & Lua_Object::GetModelName)
+		.def("GetX", (float(Lua_Object::*)(void)) & Lua_Object::GetX)
+		.def("GetY", (float(Lua_Object::*)(void)) & Lua_Object::GetY)
+		.def("GetZ", (float(Lua_Object::*)(void)) & Lua_Object::GetZ)
+		.def("GetHeading", (float(Lua_Object::*)(void)) & Lua_Object::GetHeading)
+		.def("SetX", (void(Lua_Object::*)(float)) & Lua_Object::SetX)
+		.def("SetY", (void(Lua_Object::*)(float)) & Lua_Object::SetY)
+		.def("SetZ", (void(Lua_Object::*)(float)) & Lua_Object::SetZ)
+		.def("SetHeading", (void(Lua_Object::*)(float)) & Lua_Object::SetHeading)
+		.def("SetLocation", (void(Lua_Object::*)(float, float, float)) & Lua_Object::SetLocation)
+		.def("SetItemID", (void(Lua_Object::*)(uint32)) & Lua_Object::SetItemID)
+		.def("GetItemID", (int16(Lua_Object::*)(void)) & Lua_Object::GetItemID)
+		.def("SetIcon", (void(Lua_Object::*)(uint32)) & Lua_Object::SetIcon)
+		.def("GetIcon", (uint32(Lua_Object::*)(void)) & Lua_Object::GetIcon)
+		.def("SetType", (void(Lua_Object::*)(uint32)) & Lua_Object::SetType)
+		.def("GetType", (uint32(Lua_Object::*)(void)) & Lua_Object::GetType)
+		.def("GetDBID", (uint32(Lua_Object::*)(void)) & Lua_Object::GetDBID)
+		.def("ClearUser", (void(Lua_Object::*)(void)) & Lua_Object::ClearUser)
+		.def("SetID", (void(Lua_Object::*)(int)) & Lua_Object::SetID)
+		.def("GetID", (int(Lua_Object::*)(void)) & Lua_Object::GetID)
+		.def("Save", (bool(Lua_Object::*)(void)) & Lua_Object::Save)
+		.def("VarSave", (uint32(Lua_Object::*)(void)) & Lua_Object::VarSave)
+		.def("DeleteItem", (void(Lua_Object::*)(int)) & Lua_Object::DeleteItem)
+		.def("StartDecay", (void(Lua_Object::*)(void)) & Lua_Object::StartDecay)
+		.def("Delete", (void(Lua_Object::*)(void)) & Lua_Object::Delete)
+		.def("Delete", (void(Lua_Object::*)(bool)) & Lua_Object::Delete)
+		.def("IsGroundSpawn", (bool(Lua_Object::*)(void)) & Lua_Object::IsGroundSpawn)
+		.def("Close", (void(Lua_Object::*)(void)) & Lua_Object::Close)
+		.def("ClearEntityVariables", (bool(Lua_Object::*)(void)) & Lua_Object::ClearEntityVariables)
+		.def("DeleteEntityVariable", (bool(Lua_Object::*)(std::string)) & Lua_Object::DeleteEntityVariable)
+		.def("GetEntityVariable", (std::string(Lua_Object::*)(std::string)) & Lua_Object::GetEntityVariable)
+		.def("GetEntityVariables", (luabind::object(Lua_Object::*)(lua_State*)) & Lua_Object::GetEntityVariables)
+		.def("SetEntityVariable", (void(Lua_Object::*)(std::string, std::string)) & Lua_Object::SetEntityVariable)
+		.def("EntityVariableExists", (bool(Lua_Object::*)(std::string)) & Lua_Object::EntityVariableExists);
 }
 
 #endif

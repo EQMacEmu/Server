@@ -375,6 +375,44 @@ namespace Zones {
 	constexpr uint16 POTIMEB       = 223; // The Plane of Time
 }
 
+namespace Language {
+	constexpr uint8 CommonTongue = 0;
+	constexpr uint8 Barbarian = 1;
+	constexpr uint8 Erudian = 2;
+	constexpr uint8 Elvish = 3;
+	constexpr uint8 DarkElvish = 4;
+	constexpr uint8 Dwarvish = 5;
+	constexpr uint8 Troll = 6;
+	constexpr uint8 Ogre = 7;
+	constexpr uint8 Gnomish = 8;
+	constexpr uint8 Halfling = 9;
+	constexpr uint8 ThievesCant = 10;
+	constexpr uint8 OldErudian = 11;
+	constexpr uint8 ElderElvish = 12;
+	constexpr uint8 Froglok = 13;
+	constexpr uint8 Goblin = 14;
+	constexpr uint8 Gnoll = 15;
+	constexpr uint8 CombineTongue = 16;
+	constexpr uint8 ElderTeirDal = 17;
+	constexpr uint8 Lizardman = 18;
+	constexpr uint8 Orcish = 19;
+	constexpr uint8 Faerie = 20;
+	constexpr uint8 Dragon = 21;
+	constexpr uint8 ElderDragon = 22;
+	constexpr uint8 DarkSpeech = 23;
+	constexpr uint8 VahShir = 24;
+	constexpr uint8 Unknown25 = 25;
+	constexpr uint8 Unknown26 = 26;
+
+	constexpr uint8 MaxValue = 100;
+}
+
+enum Anonymity : uint8
+{
+	NotAnonymous,
+	Anonymous,
+	Roleplaying
+};
 
 //ZoneChange_Struct->success values
 enum ZoningMessage : int8

@@ -56,7 +56,7 @@ typedef enum {	//focus types
 #define HIGHEST_FOCUS	focusSpellHateMod //Should always be last focusType in enum
 
 // This is actually FlyMode, from MQ2
-enum GravityBehavior {
+enum GravityBehavior : int8 {
 	Ground,
 	Flying,
 	Levitating,

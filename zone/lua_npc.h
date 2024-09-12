@@ -111,7 +111,7 @@ public:
 	int GetSwarmOwner();
 	int GetSwarmTarget();
 	void SetSwarmTarget(int target);
-	void ModifyNPCStat(const char *stat, const char *value);
+	void ModifyNPCStat(std::string stat, std::string value);
 	void AddAISpell(int priority, int spell_id, int type, int mana_cost, int recast_delay, int resist_adjust);
 	void RemoveAISpell(int spell_id);
 	void SetCastRateDetrimental(int rate);
@@ -148,6 +148,7 @@ public:
 	void SetMaxDamage(uint32 new_max_damage);
 	void SetMinDamage(uint32 new_min_damage);
 	void ReloadSpells();
+	float GetNPCStat(std::string stat);
 };
 
 #endif

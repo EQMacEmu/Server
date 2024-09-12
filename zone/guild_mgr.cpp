@@ -184,54 +184,151 @@ uint8 *ZoneGuildManager::MakeGuildMembers(uint32 guild_id, const char *prefix_na
 	return(retbuffer);
 }
 
-void ZoneGuildManager::ListGuilds(Client *c) const {
-	c->Message(Chat::White, "Listing guilds on the server:");
-	char leadername[64];
-	std::map<uint32, GuildInfo *>::const_iterator cur, end;
-	cur = m_guilds.begin();
-	end = m_guilds.end();
-	int r = 0;
-	for(; cur != end; ++cur) {
-		leadername[0] = '\0';
-		database.GetCharName(cur->second->leader_char_id, leadername);
-		if (leadername[0] == '\0')
-			c->Message(Chat::White, "  Guild #%i <%s>", cur->first, cur->second->name.c_str());
-		else
-			c->Message(Chat::White, "  Guild #%i <%s> Leader: %s", cur->first, cur->second->name.c_str(), leadername);
-		r++;
+void ZoneGuildManager::ListGuilds(Client* c, uint32 guild_id) const {
+	if (m_guilds.size()) {
+		const auto& g = m_guilds.find(guild_id);
+		if (g == m_guilds.end()) {
+			c->Message(
+				Chat::White,
+				fmt::format(
+					"Guild ID {} does not exist or is invalid.",
+					guild_id
+				).c_str()
+			);
+			return;
+		}
+
+		const auto leader_name = database.GetCharNameByID(g->second->leader_char_id);
+		c->Message(
+			Chat::White,
+			fmt::format(
+				"Guild {} | {}Name: {}",
+				g->first,
+				(
+					!leader_name.empty() ?
+					fmt::format(
+						"Leader: {} ({}) ",
+						leader_name,
+						g->second->leader_char_id
+					) :
+					""
+					),
+				g->second->name
+			).c_str()
+		);
 	}
-	c->Message(Chat::White, "%i guilds listed.", r);
+	else {
+		c->Message(Chat::White, "There are no Guilds to list.");
+	}
 }
 
+void ZoneGuildManager::ListGuilds(Client* c, std::string search_criteria) const {
+	if (m_guilds.size()) {
+		if (search_criteria.empty()) {
+			c->Message(
+				Chat::White,
+				fmt::format(
+					"Listing {} Guild{}.",
+					m_guilds.size(),
+					m_guilds.size() != 1 ? "s" : ""
+				).c_str()
+			);
+		}
+
+		auto found_count = 0;
+
+		for (const auto& guild : m_guilds) {
+			if (
+				!search_criteria.empty() &&
+				!Strings::Contains(
+					Strings::ToLower(guild.second->name),
+					Strings::ToLower(search_criteria)
+				)
+				) {
+				continue;
+			}
+
+			const auto leader_name = database.GetCharNameByID(guild.second->leader_char_id);
+			c->Message(
+				Chat::White,
+				fmt::format(
+					"Guild {} | {}Name: {}",
+					guild.first,
+					(
+						!leader_name.empty() ?
+						fmt::format(
+							"Leader: {} ({}) ",
+							leader_name,
+							guild.second->leader_char_id
+						) :
+						""
+						),
+					guild.second->name
+				).c_str()
+			);
+
+			found_count++;
+		}
+
+		c->Message(
+			Chat::White,
+			fmt::format(
+				"Found {} Guild{}{}.",
+				found_count,
+				found_count != 1 ? "s" : "",
+				(
+					!search_criteria.empty() ?
+					fmt::format(
+						" matching '{}'",
+						search_criteria
+					) :
+					""
+					)
+			).c_str()
+		);
+	}
+	else {
+		c->Message(Chat::White, "There are no Guilds to list.");
+	}
+}
 
 void ZoneGuildManager::DescribeGuild(Client *c, uint32 guild_id) const {
 	std::map<uint32, GuildInfo *>::const_iterator res;
 	res = m_guilds.find(guild_id);
-	if(res == m_guilds.end()) {
-		c->Message(Chat::White, "Guild %d not found.", guild_id);
+	if (res == m_guilds.end()) {
+		c->Message(
+			Chat::White,
+			fmt::format(
+				"Guild ID {} could not be found.",
+				guild_id
+			).c_str()
+		);
 		return;
 	}
 
 	const GuildInfo *info = res->second;
 
-	c->Message(Chat::White, "Guild info DB# %i <%s>", guild_id, info->name.c_str());
-
-	char leadername[64];
-	database.GetCharName(info->leader_char_id, leadername);
-	c->Message(Chat::White, "Guild Leader: %s", leadername);
+	c->Message(
+		Chat::White, 
+		fmt::format(
+			"Guild ID: {} Guild Name: <{}>", 
+			guild_id, 
+			info->name
+		).c_str()
+	);
+	
+	auto leader_name = database.GetCharNameByID(info->leader_char_id);
+	c->Message(Chat::White, fmt::format("Guild Leader: {}", leader_name).c_str());
 
 	char permbuffer[256];
-	uint8 i;
-	for (i = 0; i <= GUILD_MAX_RANK; i++) {
+	for (uint8 guild_rank = 0; guild_rank <= GUILD_MAX_RANK; guild_rank++) {
 		char *permptr = permbuffer;
-		uint8 r;
-		for(r = 0; r < _MaxGuildAction; r++)
-			permptr += sprintf(permptr, "  %s: %c", GuildActionNames[r], info->ranks[i].permissions[r]?'Y':'N');
+		for(uint8 guild_action = 0; guild_action < _MaxGuildAction; guild_action++)
+			permptr += sprintf(permptr, "  %s: %c", GuildActionNames[guild_action], info->ranks[guild_rank].permissions[guild_action]?'Y':'N');
 
-		c->Message(Chat::White, "Rank %i: %s", i, info->ranks[i].name.c_str());
-		c->Message(Chat::White, "Permissions: %s", permbuffer);
+		c->Message(Chat::White, fmt::format("Rank {}: {}", guild_rank, info->ranks[guild_rank].name).c_str());
+		c->Message(Chat::White, fmt::format("Permissions: {}", permbuffer).c_str());
 	}
-
 }
 
 //in theory, we could get a pile of unused entries in this array, but only if

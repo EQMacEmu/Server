@@ -148,9 +148,6 @@ public:
 
 	Timer GetInitgridsTimer();
 
-	bool RemoveSpawnEntry(uint32 spawnid);
-	bool RemoveSpawnGroup(uint32 in_id);
-
 	bool	Process();
 	void	Despawn(uint32 spawngroupID);
 

@@ -1125,7 +1125,7 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				if (IsNPC())
 				{
 					// Unsure how this mechanic worked. Should there be a roll? Perhaps on the resist check. ie instead of resisting slow, it reverses it?
-					if(GetSpecialAbility(REVERSE_SLOW) && effect_value < 100)
+					if(GetSpecialAbility(SpecialAbility::ReverseSlow) && effect_value < 100)
 					{
 						effect_value += 100;
 					}

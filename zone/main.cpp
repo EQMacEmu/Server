@@ -472,6 +472,13 @@ int main(int argc, char** argv) {
 				event_scheduler.Process(zone, &content_service);
 
 				if (zone) {
+					// this was put in to appease concerns about the RNG being affected by the time of day or day of week the server was started on, resulting in bad loot
+					// The idea is that as the zone processing runs, it takes variable amounts of time based on external factors like player behavior and causes this discard
+					// code to execute less or more often based on those factors.
+					// By discarding some numbers from the RNG sequence, we hope to add some amount of unpredictability and offset the 'bad loot seed' from startup.
+					if (Timer::GetCurrentTime() % 3 == 0) {
+						zone->random.Discard(Timer::GetCurrentTime() % 5 + 1); // arbitrary value but discarding more causes more slowdowns as it 'refills'
+					}
 					if (!zone->Process()) {
 						Zone::Shutdown();
 					}
