@@ -543,7 +543,7 @@ void NPC::CalculateNewWaypoint()
 	if (cur_wp >= 0 && cur_wp < Waypoints.size() && cur_wp != old_wp)
 		UpdateWaypoint(cur_wp);
 
-	if(IsNPC() && GetClass() == MERCHANT && CastToNPC()->IsMerchantOpen())
+	if(IsNPC() && GetClass() == Class::Merchant && CastToNPC()->IsMerchantOpen())
 		entity_list.SendMerchantEnd(this);
 }
 
@@ -1220,33 +1220,65 @@ void ZoneDatabase::AssignGrid(Client *client, int grid, int spawn2id) {
 }
 
 
-/******************
-* ModifyGrid - Either adds an empty grid, or removes a grid and all its waypoints, for a particular zone.
-*	remove:		TRUE if we are deleting the specified grid, FALSE if we are adding it
-*	id:		The ID# of the grid to add or delete
-*	type,type2:	The type and type2 values for the grid being created (ignored if grid is being deleted)
-*	zoneid:		The ID number of the zone the grid is being created/deleted in
-*/
-void ZoneDatabase::ModifyGrid(Client *client, bool remove, uint32 id, uint8 type, uint8 type2, uint16 zoneid) {
-
-	if (!remove)
-	{
-        std::string query = StringFormat("INSERT INTO grid(id, zoneid, type, type2) "
-                                            "VALUES (%i, %i, %i, %i)", id, zoneid, type, type2);
-        auto results = QueryDatabase(query);
-        if (!results.Success()) {
-            return;
-        }
+void ZoneDatabase::ModifyGrid(
+	Client* c,
+	bool remove,
+	uint32 grid_id,
+	uint8 type,
+	uint8 type2,
+	uint32 zone_id
+)
+{
+	if (!remove) {
+		GridRepository::InsertOne(
+			*this,
+			GridRepository::Grid{
+				.id = static_cast<int32_t>(grid_id),
+				.zoneid = static_cast<int32_t>(zone_id),
+				.type = type,
+				.type2 = type2
+			}
+		);
 
 		return;
 	}
 
-	std::string query = StringFormat("DELETE FROM grid where id=%i and zoneid=%i", id, zoneid);
-    auto results = QueryDatabase(query);
+	GridRepository::DeleteWhere(
+		*this,
+		fmt::format(
+			"`id` = {} AND `zoneid` = {}",
+			grid_id,
+			zone_id
+		)
+	);
 
-    query = StringFormat("DELETE FROM grid_entries WHERE zoneid = %i AND gridid = %i", zoneid, id);
-    results = QueryDatabase(query);
+	GridEntriesRepository::DeleteWhere(
+		*this,
+		fmt::format(
+			"`gridid` = {} AND `zoneid` = {}",
+			grid_id,
+			zone_id
+		)
+	);
+}
 
+
+bool ZoneDatabase::GridExistsInZone(uint32 zone_id, uint32 grid_id)
+{
+	const auto& l = GridRepository::GetWhere(
+		*this,
+		fmt::format(
+			"`id` = {} AND `zoneid` = {}",
+			grid_id,
+			zone_id
+		)
+	);
+
+	if (l.empty()) {
+		return false;
+	}
+
+	return true;
 }
 
 /**************************************

@@ -26,6 +26,7 @@
 #include "../common/servertalk.h"
 #include "../common/strings.h"
 #include "../common/random.h"
+#include "../common/zone_store.h"
 
 extern uint32			numzones;
 extern bool holdzones;
@@ -105,7 +106,7 @@ void ZSList::Process() {
 				if(!zs->IsStaticZone())
 					RebootZone(inet_ntoa(in),zs->GetCPort(),zs->GetCAddress(),zs->GetID());
 				else
-					RebootZone(inet_ntoa(in),zs->GetCPort(),zs->GetCAddress(),zs->GetID(),database.GetZoneID(zs->GetZoneName()));
+					RebootZone(inet_ntoa(in),zs->GetCPort(),zs->GetCAddress(),zs->GetID(),ZoneID(zs->GetZoneName()));
 			}
 
 			iterator = zone_server_list.erase(iterator);
@@ -215,7 +216,7 @@ void ZSList::ListLockedZones(const char* to, WorldTCPConnection* connection) {
 	int x = 0;
 	for (auto &zone : pLockedZones) {
 		if (zone) {
-			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::White, database.GetZoneName(zone, true));
+			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::White, ZoneName(zone, true));
 			x++;
 		}
 	}
@@ -225,41 +226,33 @@ void ZSList::ListLockedZones(const char* to, WorldTCPConnection* connection) {
 void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* connection) 
 {
 	char locked[4];
-	if (WorldConfig::get()->Locked == true)
-	{
+	if (WorldConfig::get()->Locked == true)	{
 		strcpy(locked, "Yes");
 	}
-	else 
-	{
+	else  {
 		strcpy(locked, "No");
 	}
 
 	std::vector<char> out;
 
-	if (connection->IsConsole())
-	{
+	if (connection->IsConsole()) {
 		fmt::format_to(std::back_inserter(out), "World Locked: {}\r\n", locked);
 	}
-	else
-	{
+	else {
 		fmt::format_to(std::back_inserter(out), "World Locked: {}^", locked);
 	}
 
-	if (connection->IsConsole())
-	{
+	if (connection->IsConsole()) {
 		fmt::format_to(std::back_inserter(out), "UCS Server: {}\r\n", UCSLink.Connected() ? "Connected" : "Unavailable");
 	}
-	else
-	{
+	else {
 		fmt::format_to(std::back_inserter(out), "UCS Server: {}^", UCSLink.Connected() ? "Connected" : "Unavailable");
 	}
 
-	if (connection->IsConsole())
-	{
+	if (connection->IsConsole()) {
 		fmt::format_to(std::back_inserter(out), "Zoneservers online:\r\n");
 	}
-	else
-	{
+	else {
 		fmt::format_to(std::back_inserter(out), "Zoneservers online:^");
 	}
 
@@ -275,36 +268,29 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 		struct in_addr in;
 		in.s_addr = zone_server_data->GetIP();
 
-		if (!zone_server_data->IsStaticZone())
-		{
+		if (!zone_server_data->IsStaticZone()) {
 			is_static_string = "D";
-			if (zone_server_data->GetZoneID() != 0) 
-			{
+			if (zone_server_data->GetZoneID() != 0) {
 				++booted_zones;
 			}
-			else if (zone_server_data->GetZoneID() == 0 && !zone_server_data->IsBootingUp()) 
-			{
+			else if (zone_server_data->GetZoneID() == 0 && !zone_server_data->IsBootingUp()) {
 				++avail_zones;
 			}
 		}
-		else
-		{
+		else {
 			is_static_string = "S";
 			++static_zones;
 		}
 
-		if (zone_server_data->GetZoneID())
-		{
+		if (zone_server_data->GetZoneID()) {
 			std::ostringstream stream;
 			stream << "" << zone_server_data->GetZoneName() << " (" << zone_server_data->GetZoneID() << ")";
 			zone_data_string = stream.str();
 		}
-		else if (zone_server_data->IsBootingUp())
-		{
+		else if (zone_server_data->IsBootingUp()) {
 			zone_data_string = "BOOTING";
 		}
-		else
-		{
+		else {
 			zone_data_string = "AVAILABLE";
 		}
 
@@ -326,24 +312,23 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 			connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 			out.clear();
 		}
-		else 
-		{
-			if (connection->IsConsole())
+		else  {
+			if (connection->IsConsole()) {
 				fmt::format_to(std::back_inserter(out), "\r\n");
-			else
+			}
+			else {
 				fmt::format_to(std::back_inserter(out), "^");
+			}
 		}
 
 		++servers_online;
 		iterator++;
 	}
 
-	if (connection->IsConsole())
-	{
+	if (connection->IsConsole()) {
 		fmt::format_to(std::back_inserter(out), "{} {} servers online.\r\n", buffer.c_str(), servers_online);
 	}
-	else 
-	{
+	else {
 		fmt::format_to(std::back_inserter(out), "{} {} servers online.^", buffer.c_str(), servers_online);
 	}
 
@@ -538,7 +523,7 @@ void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const cha
 	ZoneServer* zs = 0;
 	ZoneServer* zs2 = 0;
 	uint32 zoneid;
-	if (!(zoneid = database.GetZoneID(zonename)))
+	if (!(zoneid = ZoneID(zonename)))
 		SendEmoteMessage(adminname, 0, AccountStatus::Player, Chat::White, fmt::format("Error: SOP_ZoneBootup: zone '{}' not found in 'zone' table.", zonename).c_str());
 	else {
 		if (ZoneServerID != 0)

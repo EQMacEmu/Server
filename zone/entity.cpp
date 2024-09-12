@@ -2680,7 +2680,7 @@ void EntityList::SendIllusionedPlayers(Client *client)
 	auto it = client_list.begin();
 	while (it != client_list.end()) {
 		illusion = it->second;
-		if (!illusion->GMHideMe(client) && (illusion->GetRace() == MINOR_ILLUSION || illusion->GetRace() == TREEFORM))
+		if (!illusion->GMHideMe(client) && (illusion->GetRace() == Race::MinorIllusion || illusion->GetRace() == Race::Tree))
 		{
 			illusion->SendIllusionPacket(
 				illusion->GetRace(),
@@ -2996,6 +2996,20 @@ void EntityList::ListPlayerCorpses(Client *client)
 				corpse_count
 			).c_str()
 		);
+	}
+}
+
+void EntityList::DespawnGridNodes(int32 grid_id) {
+	for (auto m : mob_list) {
+		Mob* mob = m.second;
+		if (
+			mob->IsNPC() &&
+			mob->GetRace() == Race::Tribunal &&
+			mob->EntityVariableExists("grid_id") &&
+			Strings::ToInt(mob->GetEntityVariable("grid_id")) == grid_id)
+		{
+			mob->Depop();
+		}
 	}
 }
 
@@ -3848,7 +3862,7 @@ bool EntityList::GetZommPet(Mob *owner, NPC* &pet)
 	while (it != npc_list.end()) {
 		NPC* n = it->second;
 		if (n->GetSwarmInfo()) {
-			if (n->GetSwarmInfo()->owner_id == owner->GetID() && n->GetRace() == EYE_OF_ZOMM) {
+			if (n->GetSwarmInfo()->owner_id == owner->GetID() && n->GetRace() == Race::EyeOfZomm) {
 				pet = it->second;
 				return true;
 			}
@@ -4129,7 +4143,7 @@ uint16 EntityList::CreateDoor(const char *model, const glm::vec4& position, uint
 
 	auto door = new Doors(model, position, opentype, size);
 	RemoveAllDoors();
-	zone->LoadZoneDoors(zone->GetShortName());
+	zone->LoadZoneDoors();
 	entity_list.AddDoor(door);
 	entity_list.RespawnAllDoors();
 
@@ -4645,7 +4659,7 @@ NPC *EntityList::GetClosestBanker(Mob *sender, uint32 &distance)
 
 	auto it = npc_list.begin();
 	while (it != npc_list.end()) {
-		if (it->second->GetClass() == BANKER) {
+		if (it->second->GetClass() == Class::Banker) {
 			uint32 nd = ((it->second->GetY() - sender->GetY()) * (it->second->GetY() - sender->GetY())) +
 				((it->second->GetX() - sender->GetX()) * (it->second->GetX() - sender->GetX()));
 			if (nd < distance){
@@ -4658,7 +4672,7 @@ NPC *EntityList::GetClosestBanker(Mob *sender, uint32 &distance)
 	return nc;
 }
 
-Mob *EntityList::GetClosestMobByBodyType(Mob *sender, bodyType BodyType)
+Mob *EntityList::GetClosestMobByBodyType(Mob *sender, uint8 BodyType)
 {
 
 	if (!sender)
@@ -5271,4 +5285,14 @@ uint16 EntityList::GetTopHateCount(Mob* targ)
 		++it;
 	}
 	return num;
+}
+
+void EntityList::ReloadMerchants() {
+	for (auto it = npc_list.begin(); it != npc_list.end(); ++it) {
+		NPC* cur = it->second;
+		if (cur->MerchantType != 0) {
+			zone->ClearMerchantLists();
+			zone->LoadNewMerchantData(cur->MerchantType);
+		}
+	}
 }

@@ -18,8 +18,9 @@
 
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
-
+#include "../common/zone_store.h"
 #include "../common/strings.h"
+
 #include "quest_parser_collection.h"
 #include "worldserver.h"
 #include "zonedb.h"

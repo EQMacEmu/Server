@@ -273,7 +273,7 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 		return;
 	}
 
-	if (GetLevel() < 18 && mob->GetLevelCon(GetLevel()) == CON_GREEN && GetBodyType() != BT_Undead && !IsAggroOnPC()) {
+	if (GetLevel() < 18 && mob->GetLevelCon(GetLevel()) == CON_GREEN && GetBodyType() != BodyType::Undead && !IsAggroOnPC()) {
 		to_who->Message(
 			Chat::White,
 			fmt::format(
@@ -470,7 +470,7 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 	if
 	(
 		((GetLevel() >= 18)
-		|| (GetBodyType() == BT_Undead)
+		|| (GetBodyType() == BodyType::Undead)
 		|| (CastToNPC()->IsAggroOnPC())
 		|| (mob->IsClient() && mob->CastToClient()->IsSitting())
 		|| (oos->GetLevelCon(GetLevel()) != CON_GREEN))
@@ -852,7 +852,7 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 		if (
 			npc != sender
 			&& npc != attacker
-			&& npc->GetClass() != MERCHANT
+			&& npc->GetClass() != Class::Merchant
 			&& npc->GetPrimaryFaction() != 0
 			&& DistanceSquared(npc->GetPosition(), sender->GetPosition()) <= r
 			&& ((!npc->IsPet()) || (npc->IsPet() && npc->GetOwner() && !npc->GetOwner()->IsClient() && npc->GetOwner() == sender)) // If we're a pet we don't react to any calls for help if our owner is a client or if our owner was not the one calling for help.
@@ -1453,7 +1453,7 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize, Mob* oth
 	glm::vec3 myloc(GetX(), GetY(), GetZ());
 	glm::vec3 oloc(posX, posY, posZ);
 
-	if (IsClient() && (GetRace() == DWARF || GetRace() == GNOME || GetRace() == HALFLING))
+	if (IsClient() && (GetRace() == Race::Dwarf || GetRace() == Race::Gnome || GetRace() == Race::Halfling))
 		myloc.z += 1.0f;
 
 	if(zone->zonemap == nullptr) {
@@ -1672,7 +1672,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 	}
 
 	// bard spell hate is capped very low.  this was from Live server experiments
-	if (GetClass() == BARD)
+	if (GetClass() == Class::Bard)
 	{
 		if (damage + nonDamageHate > 40)
 		{

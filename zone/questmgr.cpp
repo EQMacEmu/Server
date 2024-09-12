@@ -22,6 +22,7 @@
 #include "../common/skills.h"
 #include "../common/spdat.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "entity.h"
 #include "event_codes.h"
@@ -403,7 +404,7 @@ void QuestManager::Zone(const char *zone_name) {
 		ZoneToZone_Struct* ztz = (ZoneToZone_Struct*) pack->pBuffer;
 		ztz->response = 0;
 		ztz->current_zone_id = zone->GetZoneID();
-		ztz->requested_zone_id = database.GetZoneID(zone_name);
+		ztz->requested_zone_id = ZoneID(zone_name);
 		ztz->admin = initiator->Admin();
 		strcpy(ztz->name, initiator->GetName());
 		ztz->guild_id = initiator->GuildID();
@@ -928,8 +929,8 @@ std::string QuestManager::getlanguagename(int language_id) {
 	return EQ::constants::GetLanguageName(language_id);
 }
 
-std::string QuestManager::getbodytypename(uint32 bodytype_id) {
-	return EQ::constants::GetBodyTypeName(static_cast<bodyType>(bodytype_id));
+std::string QuestManager::getbodytypename(uint8 body_type_id) {
+	return BodyType::GetName(body_type_id);
 }
 
 std::string QuestManager::getconsiderlevelname(uint8 consider_level) {
@@ -1935,19 +1936,11 @@ void QuestManager::npcfeature(char *feature, int setting)
 }
 
 void QuestManager::clearspawntimers() {
-	if(!zone)
-        return;
-
-	//TODO: Dec 19, 2008, replace with code updated for current spawn timers.
-    LinkedListIterator<Spawn2*> iterator(zone->spawn2_list);
-	iterator.Reset();
-	while (iterator.MoreElements()) {
-		std::string query = StringFormat("DELETE FROM respawn_times "
-                                        "WHERE id = %lu",
-                                        (unsigned long)iterator.GetData()->GetID());
-        auto results = database.QueryDatabase(query);
-		iterator.Advance();
+	if (!zone) {
+		return;
 	}
+
+	zone->ClearSpawnTimers();
 }
 
 void QuestManager::ze(int type, const char *str) {
@@ -2119,7 +2112,7 @@ void QuestManager::UpdateSpawnTimer(uint32 id, uint32 newTime)
 void QuestManager::MerchantSetItem(uint32 NPCid, uint32 itemid, uint32 quantity) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
 
-	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
+	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != Class::Merchant))
 		return;	// don't do anything if NPCid isn't a merchant
 
 	const EQ::ItemData* item = nullptr;
@@ -2132,7 +2125,7 @@ void QuestManager::MerchantSetItem(uint32 NPCid, uint32 itemid, uint32 quantity)
 uint32 QuestManager::MerchantCountItem(uint32 NPCid, uint32 itemid) {
 	Mob* merchant = entity_list.GetMobByNpcTypeID(NPCid);
 
-	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != MERCHANT))
+	if (merchant == 0 || !merchant->IsNPC() || (merchant->GetClass() != Class::Merchant))
 		return 0;	// if it isn't a merchant, it doesn't have any items
 
 	const EQ::ItemData* item = nullptr;
@@ -2312,7 +2305,7 @@ uint16 QuestManager::CreateDoor(const char* model, float x, float y, float z, fl
 }
 
 int32 QuestManager::GetZoneID(const char *zone) {
-	return static_cast<int32>(database.GetZoneID(zone));
+	return static_cast<int32>(ZoneID(zone));
 }
 
 const char* QuestManager::GetZoneLongName(const char *zone) {

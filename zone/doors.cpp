@@ -19,6 +19,7 @@
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "client.h"
 #include "doors.h"
@@ -301,7 +302,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 		uint32 keyneeded = GetKeyItem();
 		uint32 playerkey = key;
 		uint8 keepoffkeyring = GetNoKeyring();
-		uint32 zoneid = database.GetZoneID(destination_zone_name);
+		uint32 zoneid = ZoneID(destination_zone_name);
 		float temp_x = m_destination.x;
 		float temp_y = m_destination.y;
 

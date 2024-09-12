@@ -147,6 +147,7 @@ public:
 	void SetClass(int classNum);
 	void SetMaxDamage(uint32 new_max_damage);
 	void SetMinDamage(uint32 new_min_damage);
+	void ReloadSpells();
 };
 
 #endif

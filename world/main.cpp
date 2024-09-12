@@ -94,7 +94,9 @@
 #include "../common/content/world_content_service.h"
 #include "world_event_scheduler.h"
 #include "../zone/data_bucket.h"
+#include "../common/zone_store.h"
 
+ZoneStore zone_store;
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
 EmuTCPServer tcps;
@@ -267,7 +269,7 @@ int main(int argc, char** argv) {
 	LogInfo("Purging expiring data buckets...");
 	database.PurgeAllDeletedDataBuckets();
 	LogInfo("Loading zones..");
-	database.LoadZoneNames();
+	zone_store.LoadZones(database);
 	LogInfo("Clearing groups..");
 	database.ClearGroup();
 	LogInfo("Clearing raids..");

@@ -566,7 +566,7 @@ struct SPDat_Spell_Struct
 /* 101 */	int8 zonetype; // 01=Outdoors, 02=dungeons, ff=Any
 /* 102 */	int8 EnvironmentType;
 /* 103 */	int8 TimeOfDay;
-/* 104 */	uint8 classes[PLAYER_CLASS_COUNT]; // Classes, and their min levels
+/* 104 */	uint8 classes[Class::PLAYER_CLASS_COUNT]; // Classes, and their min levels
 /* 119 */	uint8 CastingAnim;
 /* 120 */	uint8 TargetAnim;
 /* 121 */	uint32 TravelType;

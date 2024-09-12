@@ -39,6 +39,7 @@
 #include "../common/skills.h"
 #include "../common/spdat.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 #include "event_codes.h"
 #include "guild_mgr.h"
 #include "map.h"
@@ -130,7 +131,7 @@ bool Client::Process() {
 		if(dead && dead_timer.Check()) 
 		{
 			m_pp.zone_id = m_pp.binds[0].zoneId;
-			database.MoveCharacterToZone(GetName(), database.GetZoneName(m_pp.zone_id));
+			database.MoveCharacterToZone(GetName(), m_pp.zone_id);
 
 			glm::vec4 bindpts(m_pp.binds[0].x, m_pp.binds[0].y, m_pp.binds[0].z, m_pp.binds[0].heading);
 			m_Position = bindpts;
@@ -280,7 +281,7 @@ bool Client::Process() {
 		*/
 		if(auto_attack) {
 			if(!IsAIControlled() && !dead && !IsSitting()
-				&& !(spellend_timer.Enabled() && casting_spell_id && GetClass() != BARD)
+				&& !(spellend_timer.Enabled() && casting_spell_id && GetClass() != Class::Bard)
 				&& !IsStunned() && !IsFeared() && !IsMezzed() && GetAppearance() != eaDead && !IsMeleeDisabled()
 				)
 				may_use_attacks = true;
@@ -350,7 +351,7 @@ bool Client::Process() {
 					Attack(auto_attack_target, EQ::invslot::slotPrimary);
 
 					// Triple attack: Warriors and Monks level 60+ do this.  13.5% looks weird but multiple 8+ hour logs suggest it's about that
-					if ((GetClass() == WARRIOR || GetClass() == MONK) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
+					if ((GetClass() == Class::Warrior || GetClass() == Class::Monk) && GetLevel() >= 60 && zone->random.Int(0, 999) < 135)
 					{
 						Attack(auto_attack_target, EQ::invslot::slotPrimary);
 
@@ -418,7 +419,7 @@ bool Client::Process() {
 			}
 		}
 
-		if (GetClass() == WARRIOR)
+		if (GetClass() == Class::Warrior)
 		{
 			if (!HasDied() && !IsBerserk() && GetHPRatio() < RuleI(Combat, BerserkerFrenzyStart))
 			{
@@ -458,7 +459,7 @@ bool Client::Process() {
 			}
 		}
 
-		if (GetClass() == WARRIOR && GetShieldTarget())
+		if (GetClass() == Class::Warrior && GetShieldTarget())
 		{
 			if (GetShieldTarget()->IsCorpse() || GetShieldTarget()->GetHP() < 1 || GetShieldTarget()->CastToClient()->IsDead()
 				|| shield_timer.Check() || DistanceSquared(GetPosition(), GetShieldTarget()->GetPosition()) > (16.0f*16.0f)
@@ -1622,13 +1623,13 @@ void Client::OPGMTraining(const EQApplicationPacket *app)
 
 	Mob* pTrainer = entity_list.GetMob(gmtrain->npcid);
 
-	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < WARRIORGM) {
+	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < Class::WarriorGM) {
 		safe_delete(outapp);
 		return;
 	}
 
 	//you can only use your own trainer, client enforces this, but why trust it
-	int trains_class = pTrainer->GetClass() - (WARRIORGM - WARRIOR);
+	int trains_class = pTrainer->GetClass() - (Class::WarriorGM - Class::Warrior);
 	if(GetClass() != trains_class) {
 		safe_delete(outapp);
 		return;
@@ -1681,11 +1682,11 @@ void Client::OPGMEndTraining(const EQApplicationPacket *app)
 	GMTrainEnd_Struct *p = (GMTrainEnd_Struct *)app->pBuffer;
 	Mob* pTrainer = entity_list.GetMob(p->npcid);
 
-	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < WARRIORGM)
+	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < Class::WarriorGM)
 		return;
 
 	//you can only use your own trainer, client enforces this, but why trust it
-	int trains_class = pTrainer->GetClass() - (WARRIORGM - WARRIOR);
+	int trains_class = pTrainer->GetClass() - (Class::WarriorGM - Class::Warrior);
 	if(GetClass() != trains_class)
 		return;
 
@@ -1715,11 +1716,11 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 	GMSkillChange_Struct* gmskill = (GMSkillChange_Struct*) app->pBuffer;
 
 	Mob* pTrainer = entity_list.GetMob(gmskill->npcid);
-	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < WARRIORGM)
+	if(!pTrainer || !pTrainer->IsNPC() || pTrainer->GetClass() < Class::WarriorGM)
 		return;
 
 	//you can only use your own trainer, client enforces this, but why trust it
-	int trains_class = pTrainer->GetClass() - (WARRIORGM - WARRIOR);
+	int trains_class = pTrainer->GetClass() - (Class::WarriorGM - Class::Warrior);
 	if(GetClass() != trains_class)
 		return;
 
@@ -1966,7 +1967,7 @@ void Client::ProcessHungerThirst()
 	// timer
 	// 46000 ms base - 96600/103500/115000ms with AA
 	// 92000 ms(double) for monk class - 193200/207000/230000ms with AA
-	uint32 timer = GetClass() == MONK ? 92000 : 46000;
+	uint32 timer = GetClass() == Class::Monk ? 92000 : 46000;
 	uint32 metabolismLevel = GetAA(aaInnateMetabolism);
 	if(metabolismLevel)
 	{

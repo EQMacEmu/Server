@@ -26,6 +26,7 @@
 #include <vector>
 #include "char_create_data.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
+#include "../common/zone_store.h"
 
 WorldDatabase database;
 extern std::vector<RaceClassAllocation> character_create_allocations;
@@ -116,7 +117,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 				/* If a bind_id is specified, make them start there */
 				if (atoi(row_d[1]) != 0) {
 					pp.binds[4].zoneId = (uint32)atoi(row_d[1]);
-					GetSafePoints(pp.binds[4].zoneId, &pp.binds[4].x, &pp.binds[4].y, &pp.binds[4].z, &pp.binds[4].heading);
+					GetSafePoints(ZoneName(pp.binds[4].zoneId), &pp.binds[4].x, &pp.binds[4].y, &pp.binds[4].z, &pp.binds[4].heading);
 				}
 				/* Otherwise, use the zone and coordinates given */
 				else {
@@ -125,7 +126,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 					float y = atof(row_d[3]);
 					float z = atof(row_d[4]);
 					float heading = atof(row_d[5]);
-					if (x == 0 && y == 0 && z == 0 && heading == 0){ GetSafePoints(pp.binds[4].zoneId, &x, &y, &z, &heading); }
+					if (x == 0 && y == 0 && z == 0 && heading == 0){ GetSafePoints(ZoneName(pp.binds[4].zoneId), &x, &y, &z, &heading); }
 					pp.binds[4].x = x; 
 					pp.binds[4].y = y; 
 					pp.binds[4].z = z; 
@@ -328,10 +329,10 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	}
 
 	if(in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0 && in_pp->heading == 0)
-		database.GetSafePoints(in_pp->zone_id, &in_pp->x, &in_pp->y, &in_pp->z, &in_pp->heading);
+		database.GetSafePoints(ZoneName(in_pp->zone_id), &in_pp->x, &in_pp->y, &in_pp->z, &in_pp->heading);
 
 	if(in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0 && in_pp->binds[0].heading == 0)
-		database.GetSafePoints(in_pp->binds[0].zoneId, &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z, &in_pp->binds[0].heading);
+		database.GetSafePoints(ZoneName(in_pp->binds[0].zoneId), &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z, &in_pp->binds[0].heading);
 
 	return true;
 }

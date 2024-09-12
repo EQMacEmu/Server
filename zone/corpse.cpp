@@ -154,12 +154,12 @@ Corpse::Corpse(NPC* in_npc, LootItems* in_itemlist, uint32 in_npctypeid, const N
 	in_npc->GetGender(),		// uint8		in_gender,
 	in_npc->GetRace(),			// uint16		in_race,
 	in_npc->GetClass(),			// uint8		in_class,
-	BT_Humanoid,				// bodyType	in_bodytype,
+	BodyType::Humanoid,			// uint8		in_bodytype,
 	in_npc->GetDeity(),			// uint8		in_deity,
 	in_npc->GetLevel(),			// uint8		in_level,
 	in_npc->GetNPCTypeID(),		// uint32		in_npctype_id,
 	in_npc->GetSize(),			// float		in_size,
-	0,							// float		in_runspeed,
+	0.0f,						// float		in_runspeed,
 	in_npc->GetPosition(),		// float		in_position
 	in_npc->GetInnateLightType(),	// uint8		in_light,
 	in_npc->GetTexture(),		// uint8		in_texture,
@@ -261,7 +261,7 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 	client->GetGender(),			  // uint8		in_gender,
 	client->GetRace(),				  // uint16		in_race,
 	client->GetClass(),				  // uint8		in_class,
-	BT_Humanoid,					  // bodyType	in_bodytype,
+	BodyType::Humanoid,				  // uint8		in_bodytype,
 	client->GetDeity(),				  // uint8		in_deity,
 	client->GetLevel(),				  // uint8		in_level,
 	0,								  // uint32		in_npctype_id,
@@ -526,7 +526,7 @@ Corpse::Corpse(uint32 in_dbid, uint32 in_charid, const char* in_charname, LootIt
 	in_gender,				// uint8		in_gender,
 	in_race,				// uint16		in_race,
 	in_class,				// uint8		in_class,
-	BT_Humanoid,			// bodyType	in_bodytype,
+	BodyType::Humanoid,		// unit8		in_bodytype,
 	in_deity,				// uint8		in_deity,
 	in_level,				// uint8		in_level,
 	0,						// uint32		in_npctype_id,
@@ -950,7 +950,7 @@ bool Corpse::Process() {
 			spc->zone_id = zone->graveyard_zoneid();
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
-			Log(Logs::General, Logs::Corpse, "Moved %s player corpse to the designated graveyard in zone %s.", this->GetName(), database.GetZoneName(zone->graveyard_zoneid()));
+			Log(Logs::General, Logs::Corpse, "Moved %s player corpse to the designated graveyard in zone %s.", this->GetName(), ZoneName(zone->graveyard_zoneid()));
 			corpse_db_id = 0;
 		}
 

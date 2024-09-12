@@ -106,9 +106,8 @@ public:
 	/* Character Creation */
 	bool	SaveCharacterCreate(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp);
 
-	bool	MoveCharacterToZone(const char* charname, const char* zonename);
-	bool	MoveCharacterToZone(const char* charname, const char* zonename,uint32 zoneid);
-	bool	MoveCharacterToZone(uint32 iCharID, const char* iZonename);
+	bool	MoveCharacterToZone(const char* charname, uint32 zone_id);
+	bool	MoveCharacterToZone(uint32 character_id, uint32 zone_id);
 	uint16	MoveCharacterToBind(uint32 iCharID);
 	bool	UpdateName(const char* oldname, const char* newname);
 	bool	SetHackerFlag(const char* accountname, const char* charactername, const char* hacked);
@@ -202,18 +201,14 @@ public:
 	/*
 	* General Queries
 	*/
-	bool	LoadZoneNames();
 	bool	GetZoneLongName(const char* short_name, char** long_name, char* file_name = 0, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, uint32* graveyard_id = 0, uint16* graveyard_time = 0, uint32* maxclients = 0);
 	bool	GetZoneGraveyard(const uint32 graveyard_id, uint32* graveyard_zoneid = 0, float* graveyard_x = 0, float* graveyard_y = 0, float* graveyard_z = 0, float* graveyard_heading = 0);
 	uint32	GetZoneGraveyardID(uint32 zone_id);
 	uint16	GetGraveyardTime(uint16 zone_id);
-	uint32	GetZoneID(const char* zonename);
 	uint8	GetPEQZone(uint32 zoneID);
 	uint8	GetMinStatus(uint32 zone_id);
-	const char*	GetZoneName(uint32 zoneID, bool ErrorUnknown = false);
 	uint8	GetServerType();
 	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr, uint8* expansion = 0);
-	bool	GetSafePoints(uint32 zoneID, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr) { return GetSafePoints(GetZoneName(zoneID), safe_x, safe_y, safe_z, safe_heading, minstatus, minlevel, flag_needed); }
 	uint8	GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16 in_level);
 	uint8	GetRaceSkill(uint8 skillid, uint8 in_race);
 	void	ClearMerchantTemp();
@@ -227,7 +222,6 @@ public:
 	void	PurgeAllDeletedDataBuckets();
 
 private:
-	std::map<uint32,std::string>	zonename_array;
 
 	Mutex Mvarcache;
 	VarCache_Struct varcache;

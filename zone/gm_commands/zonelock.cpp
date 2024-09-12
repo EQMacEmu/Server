@@ -11,7 +11,7 @@ void command_zonelock(Client *c, const Seperator *sep){
 		worldserver.SendPacket(pack);
 	}
 	else if (strcasecmp(sep->arg[1], "lock") == 0 && c->Admin() >= commandLockZones) {
-		uint16 tmp = database.GetZoneID(sep->arg[2]);
+		uint16 tmp = ZoneID(sep->arg[2]);
 		if (tmp) {
 			lock_zone->op = ServerLockType::Lock;
 			lock_zone->zoneID = tmp;
@@ -21,7 +21,7 @@ void command_zonelock(Client *c, const Seperator *sep){
 			c->Message(Chat::White, "Usage: #zonelock lock [zonename]");
 	}
 	else if (strcasecmp(sep->arg[1], "unlock") == 0 && c->Admin() >= commandLockZones) {
-		uint16 tmp = database.GetZoneID(sep->arg[2]);
+		uint16 tmp = ZoneID(sep->arg[2]);
 		if (tmp) {
 			lock_zone->op = ServerLockType::Unlock;
 			lock_zone->zoneID = tmp;

@@ -23,7 +23,7 @@ void command_scribespell(Client *c, const Seperator *sep){
 
 		Log(Logs::General, Logs::Normal, "Scribe spell: %s (%i) request for %s from %s.", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
 
-		if (spells[spell_id].classes[WARRIOR] != 0 && spells[spell_id].skill != 52 && spells[spell_id].classes[t->GetPP().class_ - 1] > 0) {
+		if (spells[spell_id].classes[Class::Warrior] != 0 && spells[spell_id].skill != 52 && spells[spell_id].classes[t->GetPP().class_ - 1] > 0) {
 			book_slot = t->GetNextAvailableSpellBookSlot();
 
 			if (book_slot >= 0 && t->FindSpellBookSlotBySpellID(spell_id) < 0)

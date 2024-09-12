@@ -199,6 +199,7 @@ public:
 	void RemoveAllCorpsesByCharID(uint32 charid);
 	void RemoveCorpseByDBID(uint32 dbid);
 	int RezzAllCorpsesByCharID(uint32 charid);
+	void DespawnGridNodes(int32 grid_id);
 	bool IsMobInZone(Mob *who);
 	bool CanAddHateForMob(Mob *p);
 	void	SendGuildMOTD(uint32 guild_id);
@@ -221,6 +222,7 @@ public:
 	void	AddArea(int id, int type, float min_x, float max_x, float min_y, float max_y, float min_z, float max_z);
 	void	RemoveArea(int id);
 	void	ClearAreas();
+	void	ReloadMerchants();
 	void	ProcessProximitySay(const char *Message, Client *c, uint8 language = 0);
 	Doors *FindDoor(uint8 door_id);
 	Doors	*FindNearestDoor(Client* c);
@@ -404,7 +406,7 @@ public:
 
 	Corpse* GetClosestCorpse(Mob* sender, const char *Name);
 	NPC*	GetClosestBanker(Mob* sender, uint32 &distance);
-	Mob*	GetClosestMobByBodyType(Mob* sender, bodyType BodyType);
+	Mob*	GetClosestMobByBodyType(Mob* sender, uint8 BodyType);
 	Mob*	GetClosestClient(Mob* sender, uint32 &distance);
 	Mob*	GetClosestPlayer(Mob* sender);
 	void	ForceGroupUpdate(uint32 gid);

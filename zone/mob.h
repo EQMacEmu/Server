@@ -92,7 +92,7 @@ public:
 		uint8		in_gender,
 		uint16		in_race,
 		uint8		in_class,
-		bodyType	in_bodytype,
+		uint8		in_bodytype,
 		uint8		in_deity,
 		uint8		in_level,
 		uint32		in_npctype_id,
@@ -166,7 +166,7 @@ public:
 	virtual void DoBackstab(Mob* defender = nullptr) {}
 	int DoMonkSpecialAttack(Mob* other, uint8 skill_used, bool fromWus = false);
 	int DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int base, int minDamage = 0, int hate = 0, DoAnimation animation_type = DoAnimation::None);
-	virtual bool AvoidDamage(Mob* attacker, int32 &damage, bool noRiposte = false, bool isRangedAttack = false);
+	virtual bool AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack = false);
 	virtual bool AvoidanceCheck(Mob* attacker, EQ::skills::SkillType skillinuse);
 	virtual void TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBase = 0, int32 damageBonus = 0);
 	virtual bool TryFinishingBlow(Mob *defender, EQ::skills::SkillType skillinuse, uint32 dmgBonus = 0);
@@ -724,9 +724,9 @@ public:
 	void SetCorpseID(uint16 in_corpseid) { corpseid = in_corpseid; };
 	inline uint16 GetCorpseID() const { return corpseid; }
 
-	inline const bodyType GetBodyType() const { return bodytype; }
-	inline const bodyType GetOrigBodyType() const { return orig_bodytype; }
-	void SetBodyType(bodyType new_body, bool overwrite_orig);
+	inline const uint8 GetBodyType() const { return bodytype; }
+	inline const uint8 GetOrigBodyType() const { return orig_bodytype; }
+	void SetBodyType(uint8 new_body, bool overwrite_orig);
 
 	uint8 invisible, see_invis;
 	bool invulnerable, invisible_undead, invisible_animals, sneaking, hidden, improved_hidden;
@@ -1073,8 +1073,8 @@ protected:
 	uint8 base_gender;
 	uint16 base_race;
 	uint8 class_;
-	bodyType bodytype;
-	bodyType orig_bodytype;
+	uint8 bodytype;
+	uint8 orig_bodytype;
 	uint16 deity;
 	uint8 level;
 	uint8 orig_level;

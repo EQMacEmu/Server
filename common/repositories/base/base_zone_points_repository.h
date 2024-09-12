@@ -36,6 +36,9 @@ public:
 		int8_t      max_expansion;
 		std::string content_flags;
 		std::string content_flags_disabled;
+		int8_t      is_virtual;
+		int32_t     height;
+		int32_t     width;
 	};
 
 	static std::string PrimaryKey()
@@ -63,6 +66,9 @@ public:
 			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"is_virtual",
+			"height",
+			"width",
 		};
 	}
 
@@ -86,6 +92,9 @@ public:
 			"max_expansion",
 			"content_flags",
 			"content_flags_disabled",
+			"is_virtual",
+			"height",
+			"width",
 		};
 	}
 
@@ -143,6 +152,9 @@ public:
 		e.max_expansion          = -1;
 		e.content_flags          = "";
 		e.content_flags_disabled = "";
+		e.is_virtual             = 0;
+		e.height                 = 0;
+		e.width                  = 0;
 
 		return e;
 	}
@@ -196,6 +208,9 @@ public:
 			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.is_virtual             = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
+			e.height                 = row[18] ? static_cast<int32_t>(atoi(row[18])) : 0;
+			e.width                  = row[19] ? static_cast<int32_t>(atoi(row[19])) : 0;
 
 			return e;
 		}
@@ -245,6 +260,9 @@ public:
 		v.push_back(columns[14] + " = " + std::to_string(e.max_expansion));
 		v.push_back(columns[15] + " = '" + Strings::Escape(e.content_flags) + "'");
 		v.push_back(columns[16] + " = '" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(columns[17] + " = " + std::to_string(e.is_virtual));
+		v.push_back(columns[18] + " = " + std::to_string(e.height));
+		v.push_back(columns[19] + " = " + std::to_string(e.width));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -283,6 +301,9 @@ public:
 		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(std::to_string(e.is_virtual));
+		v.push_back(std::to_string(e.height));
+		v.push_back(std::to_string(e.width));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -329,6 +350,9 @@ public:
 			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+			v.push_back(std::to_string(e.is_virtual));
+			v.push_back(std::to_string(e.height));
+			v.push_back(std::to_string(e.width));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -379,6 +403,9 @@ public:
 			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.is_virtual             = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
+			e.height                 = row[18] ? static_cast<int32_t>(atoi(row[18])) : 0;
+			e.width                  = row[19] ? static_cast<int32_t>(atoi(row[19])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -420,6 +447,9 @@ public:
 			e.max_expansion          = row[14] ? static_cast<int8_t>(atoi(row[14])) : -1;
 			e.content_flags          = row[15] ? row[15] : "";
 			e.content_flags_disabled = row[16] ? row[16] : "";
+			e.is_virtual             = row[17] ? static_cast<int8_t>(atoi(row[17])) : 0;
+			e.height                 = row[18] ? static_cast<int32_t>(atoi(row[18])) : 0;
+			e.width                  = row[19] ? static_cast<int32_t>(atoi(row[19])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -511,6 +541,9 @@ public:
 		v.push_back(std::to_string(e.max_expansion));
 		v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 		v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+		v.push_back(std::to_string(e.is_virtual));
+		v.push_back(std::to_string(e.height));
+		v.push_back(std::to_string(e.width));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -550,6 +583,9 @@ public:
 			v.push_back(std::to_string(e.max_expansion));
 			v.push_back("'" + Strings::Escape(e.content_flags) + "'");
 			v.push_back("'" + Strings::Escape(e.content_flags_disabled) + "'");
+			v.push_back(std::to_string(e.is_virtual));
+			v.push_back(std::to_string(e.height));
+			v.push_back(std::to_string(e.width));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}

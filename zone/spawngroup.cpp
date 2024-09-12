@@ -19,6 +19,7 @@
 #include "../common/global_define.h"
 #include "../common/strings.h"
 #include "../common/types.h"
+#include "../common/zone_store.h"
 
 #include "entity.h"
 #include "spawngroup.h"
@@ -233,18 +234,18 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
 
     for (auto row = results.begin(); row != results.end(); ++row) {
         auto new_spawn_group = std::make_unique<SpawnGroup>(
-			atoi(row[0]), 
+			Strings::ToInt(row[0]),
 			row[1],
-			atoi(row[2]),
-			atof(row[3]),
-			atof(row[4]),
-			atof(row[5]),
-			atof(row[6]),
-			atof(row[7]),
-			atoi(row[8]),
-			atoi(row[9]),
-			atoi(row[10]),
-			atoi(row[11])
+			Strings::ToInt(row[2]),
+			Strings::ToFloat(row[3]),
+			Strings::ToFloat(row[4]),
+			Strings::ToFloat(row[5]),
+			Strings::ToFloat(row[6]),
+			Strings::ToInt(row[7]),
+			Strings::ToInt(row[8]),
+			Strings::ToInt(row[9]),
+			Strings::ToInt(row[10]),
+			Strings::ToInt(row[11])
 		);
 
         spawn_group_list->AddSpawnGroup(new_spawn_group);
@@ -283,14 +284,14 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
 
     for (auto row = results.begin(); row != results.end(); ++row) {
         auto newSpawnEntry = std::make_unique<SpawnEntry>( 
-			atoi(row[1]),
-			atoi(row[2]),
-			row[3]?atoi(row[3]):0,
-			atoi(row[4]),
-			atoi(row[5])
+			Strings::ToInt(row[1]),
+			Strings::ToInt(row[2]),
+			(row[3] ? Strings::ToInt(row[3]) : 0),
+			Strings::ToInt(row[4]),
+			Strings::ToInt(row[5])
 		);
 
-		SpawnGroup *spawn_group = spawn_group_list->GetSpawnGroup(atoi(row[0]));
+		SpawnGroup *spawn_group = spawn_group_list->GetSpawnGroup(Strings::ToInt(row[0]));
 
 		if (!spawn_group) {
             continue;
@@ -305,40 +306,111 @@ bool ZoneDatabase::LoadSpawnGroups(const char* zone_name, SpawnGroupList* spawn_
 bool ZoneDatabase::LoadSpawnGroupsByID(int spawngroupid, SpawnGroupList* spawn_group_list) {
 
 
-	std::string query = StringFormat("SELECT DISTINCT(spawngroup.id), spawngroup.name, spawngroup.spawn_limit, "
-                                    "spawngroup.max_x, spawngroup.min_x, "
-                                    "spawngroup.max_y, spawngroup.min_y, spawngroup.delay, "
-                                    "spawngroup.despawn, spawngroup.despawn_timer, spawngroup.mindelay, spawngroup.wp_spawns "
-                                    "FROM spawngroup WHERE spawngroup.ID = '%i'", spawngroupid);
+	std::string query = fmt::format(
+		SQL(
+			SELECT DISTINCT
+			(spawngroup.id), 
+			spawngroup.name, 
+			spawngroup.spawn_limit,
+			spawngroup.max_x, 
+			spawngroup.min_x,
+            spawngroup.max_y, 
+			spawngroup.min_y, 
+			spawngroup.delay,
+			spawngroup.despawn, 
+			spawngroup.despawn_timer, 
+			spawngroup.mindelay, 
+			spawngroup.wp_spawns
+				FROM 
+					spawngroup 
+				WHERE 
+					spawngroup.ID = '{}'
+			),
+			spawngroupid
+	);
+
     auto results = QueryDatabase(query);
     if (!results.Success()) {
-        Log(Logs::General, Logs::Error, "Error2 in PopulateZoneLists query %s", query.c_str());
 		return false;
     }
 
     for (auto row = results.begin(); row != results.end(); ++row) {
-        auto newSpawnGroup = std::make_unique<SpawnGroup>(atoi(row[0]), row[1], atoi(row[2]), atof(row[3]), atof(row[4]), atof(row[5]), atof(row[6]), atof(row[7]), atoi(row[8]), atoi(row[9]), atoi(row[10]), atoi(row[11]));
+
+		LogSpawnsDetail(
+			"Loading spawn_group spawn_group_id [{}] name [{}] spawn_limit [{}]",
+			row[0],
+			row[1],
+			row[2]
+		);
+
+        auto newSpawnGroup = std::make_unique<SpawnGroup>(
+			Strings::ToInt(row[0]), 
+			row[1], 
+			Strings::ToInt(row[2]), 
+			Strings::ToFloat(row[3]), 
+			Strings::ToFloat(row[4]), 
+			Strings::ToFloat(row[5]), 
+			Strings::ToFloat(row[6]), 
+			Strings::ToInt(row[7]), 
+			Strings::ToInt(row[8]), 
+			Strings::ToInt(row[9]), 
+			Strings::ToInt(row[10]), 
+			Strings::ToInt(row[11])
+		);
+
         spawn_group_list->AddSpawnGroup(newSpawnGroup);
     }
 
-	query = StringFormat("SELECT DISTINCT(spawnentry.spawngroupID), spawnentry.npcid, "
-                        "spawnentry.chance, spawngroup.spawn_limit, spawnentry.mintime, spawnentry.maxtime FROM spawnentry, spawngroup "
-                        "WHERE spawnentry.spawngroupID = '%i' AND spawngroup.spawn_limit = '0' "
-                        "ORDER BY chance", spawngroupid);
+	query = fmt::format(
+		SQL(
+			SELECT DISTINCT
+			(spawnentry.spawngroupID), 
+			spawnentry.npcid,
+			spawnentry.chance, 
+			spawngroup.spawn_limit, 
+			spawnentry.mintime, 
+			spawnentry.maxtime 
+				FROM 
+					spawnentry, 
+					spawngroup
+				WHERE 
+					spawnentry.spawngroupID = '{}' 
+					AND 
+					spawngroup.spawn_limit = '0'
+					ORDER BY chance), 
+					spawngroupid
+	);
+
     results = QueryDatabase(query);
 	if (!results.Success()) {
-        Log(Logs::General, Logs::Error, "Error3 in PopulateZoneLists query '%s'", query.c_str());
 		return false;
 	}
 
     for(auto row = results.begin(); row != results.end(); ++row) {
-        auto newSpawnEntry = std::make_unique<SpawnEntry>( atoi(row[1]), atoi(row[2]), row[3]?atoi(row[3]):0, atoi(row[4]), atoi(row[5]));
-        SpawnGroup *sg = spawn_group_list->GetSpawnGroup(atoi(row[0]));
-        if (!sg) {
+        auto newSpawnEntry = std::make_unique<SpawnEntry>(
+			Strings::ToInt(row[1]), 
+			Strings::ToInt(row[2]), 
+			(row[3] ? Strings::ToInt(row[3]) : 0), 
+			Strings::ToInt(row[4]), 
+			Strings::ToInt(row[5])
+		);
+
+		LogSpawnsDetail(
+			"Loading spawn_entry spawn_group_id [{}] npc_id [{}] chance [{}] spawn_limit [{}] min_time [{}] max_time [{}] ",
+			row[0],
+			row[1],
+			row[2],
+			row[3],
+			row[4],
+			row[5]
+		);
+
+        SpawnGroup *spawn_group = spawn_group_list->GetSpawnGroup(atoi(row[0]));
+        if (!spawn_group) {
             continue;
         }
 
-        sg->AddSpawnEntry(newSpawnEntry);
+		spawn_group->AddSpawnEntry(newSpawnEntry);
     }
 
 	return true;

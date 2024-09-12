@@ -48,15 +48,15 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 		hate = base;
 	}
 
-	bool noRiposte = false;
+	bool rangedAttack = false;
 	if (skill == EQ::skills::SkillThrowing || skill == EQ::skills::SkillArchery)
-		noRiposte = true;
+		rangedAttack = true;
 
 	if (minDamage == DMG_INVUL || defender->GetSpecialAbility(IMMUNE_MELEE))
 		damage = DMG_INVUL;
 
 	if (damage > 0)
-		defender->AvoidDamage(this, damage, noRiposte);
+		defender->AvoidDamage(this, damage, rangedAttack);
 
 	if (damage > 0 && !defender->AvoidanceCheck(this, skill))
 		damage = DMG_MISS;
@@ -107,7 +107,7 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 	}
 	
 	// both PC and NPC warrior kicks stun starting at 55
-	if (skill == EQ::skills::SkillKick && ((GetClass() != WARRIOR && GetClass() != WARRIORGM) || GetLevel() < 55))
+	if (skill == EQ::skills::SkillKick && ((GetClass() != Class::Warrior && GetClass() != Class::WarriorGM) || GetLevel() < 55))
 		return;
 
 	if (skill == EQ::skills::SkillDragonPunch && (!IsClient() || !CastToClient()->HasInstantDisc(skill)))
@@ -220,7 +220,7 @@ void Mob::DoBash(Mob* defender)
 	int hate = base;
 	bool shieldBash = false;
 
-	if (is_trained && IsClient() && (GetClass() == WARRIOR || GetClass() == SHADOWKNIGHT || GetClass() == PALADIN || GetClass() == CLERIC)) {
+	if (is_trained && IsClient() && (GetClass() == Class::Warrior || GetClass() == Class::ShadowKnight || GetClass() == Class::Paladin || GetClass() == Class::Cleric)) {
 		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBash, GetTarget(), zone->skill_difficulty[EQ::skills::SkillBash].difficulty);
 
 		EQ::ItemInstance* item = nullptr;
@@ -462,13 +462,13 @@ void Client::OPCombatAbility(const EQApplicationPacket *app)
 	}
 
 	// not sure what the '100' indicates..if ->m_atk is not used as 'slot' reference, then change SlotRange above back to '11'
-	if (ca_atk->m_atk != 100 && GetClass() != MONK)
+	if (ca_atk->m_atk != 100 && GetClass() != Class::Monk)
 		return;
 
 	int reuseTime = 10;
 
 	// Slam or possibly shield bash
-	if (ca_atk->m_skill == EQ::skills::SkillBash && (GetRace() == OGRE || GetRace() == TROLL || GetRace() == BARBARIAN))
+	if (ca_atk->m_skill == EQ::skills::SkillBash && (GetRace() == Race::Ogre || GetRace() == Race::Troll || GetRace() == Race::Barbarian))
 	{
 		DoBash();
 		reuseTime = BashReuseTime;
@@ -477,10 +477,10 @@ void Client::OPCombatAbility(const EQApplicationPacket *app)
 	{
 		switch (GetClass())
 		{
-			case WARRIOR:
-			case PALADIN:
-			case SHADOWKNIGHT:
-			case CLERIC:
+			case Class::Warrior:
+			case Class::Paladin:
+			case Class::ShadowKnight:
+			case Class::Cleric:
 			{
 				if (ca_atk->m_skill == EQ::skills::SkillBash)
 				{
@@ -490,22 +490,22 @@ void Client::OPCombatAbility(const EQApplicationPacket *app)
 						reuseTime = BashReuseTime;
 					}
 				}
-				if (GetClass() != WARRIOR) break;
+				if (GetClass() != Class::Warrior) break;
 			}
-			case RANGER:
-			case BEASTLORD:
+			case Class::Ranger:
+			case Class::Beastlord:
 				if (ca_atk->m_skill == EQ::skills::SkillKick)
 				{
 					DoKick();
 					reuseTime = KickReuseTime;
 				}
 				break;
-			case MONK:
+			case Class::Monk:
 			{
 				reuseTime = DoMonkSpecialAttack(GetTarget(), ca_atk->m_skill);
 				break;
 			}
-			case ROGUE:
+			case Class::Rogue:
 			{
 				if (ca_atk->m_skill == EQ::skills::SkillBackstab)
 				{
@@ -862,9 +862,9 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 		// There were a few known edge cases of archery hitting cornered mobs.  Hardcoding these here
 		// Our NPC Z offsets are way off from Sony's, so can't do this purely algorithmically
 		// There seems to have been something other than Z offsets involved because the blob case makes no sense as the angle was rather shallow
-		if (other->GetRace() == GOO && height_diff > 8.0f)	// blobs (for Vex Thal bosses)
+		if (other->GetRace() == Race::Goo && height_diff > 8.0f)	// blobs (for Vex Thal bosses)
 			z_angle = 0.0f;
-		else if (other->GetRace() == MITHANIEL_MARR && Distance(GetPosition(), other->GetPosition()) < 45.0f)	// Mith Marr on pedastal (he doesn't end up on top of it server-side)
+		else if (other->GetRace() == Race::MithanielMarr && Distance(GetPosition(), other->GetPosition()) < 45.0f)	// Mith Marr on pedastal (he doesn't end up on top of it server-side)
 			z_angle = 0.0f;
 
 		if (z_angle > 0.85f || z_angle < -0.85f)
@@ -1190,7 +1190,7 @@ void Mob::DoThrowingAttackDmg(Mob* other)
 	}
 	else
 	{
-		other->AvoidDamage(this, damage, true); //noRiposte=true - Can not riposte throw attacks.
+		other->AvoidDamage(this, damage, true);
 	}
 
 	if (damage > 0 && !other->AvoidanceCheck(this, EQ::skills::SkillThrowing))
@@ -1379,13 +1379,13 @@ void NPC::DoClassAttacks(Mob *target)
 		int knightreuse = 1; //lets give it a small cooldown actually.
 		switch(GetClass())
 		{
-			case SHADOWKNIGHT: case SHADOWKNIGHTGM:
+			case Class::ShadowKnight: case Class::ShadowKnightGM:
 			{
 				CastSpell(SPELL_HARM_TOUCH, target->GetID());
 				knightreuse = HarmTouchReuseTimeNPC;
 				break;
 			}
-			case PALADIN: case PALADINGM:
+			case Class::Paladin: case Class::PaladinGM:
 			{
 				if(GetHPRatio() < 20)
 				{
@@ -1407,7 +1407,7 @@ void NPC::DoClassAttacks(Mob *target)
 		// most times it's 6 seconds between 'taunting attacker master', sometimes 12, somtimes 18, etc
 		// mage pets seem to taunt ~66%.  Enchanter pets ~40%
 		int tauntChance = 66;
-		if (this->GetOwner()->GetClass() == ENCHANTER || this->GetOwner()->GetClass() == SHAMAN)
+		if (this->GetOwner()->GetClass() == Class::Enchanter || this->GetOwner()->GetClass() == Class::Shaman)
 			tauntChance = 40;
 
 		if (zone->random.Roll(tauntChance))
@@ -1498,16 +1498,16 @@ void Client::DoClassAttacks(Mob *ca_target, uint16 skill, bool IsRiposte)
 	if (skill == -1)
 	{
 		switch(GetClass()){
-		case WARRIOR:
-		case RANGER:
-		case BEASTLORD:
+		case Class::Warrior:
+		case Class::Ranger:
+		case Class::Beastlord:
 			skill_to_use = EQ::skills::SkillKick;
 			break;
-		case SHADOWKNIGHT:
-		case PALADIN:
+		case Class::ShadowKnight:
+		case Class::Paladin:
 			skill_to_use = EQ::skills::SkillBash;
 			break;
-		case MONK:
+		case Class::Monk:
 			if(GetLevel() >= 30)
 			{
 				skill_to_use = EQ::skills::SkillFlyingKick;
@@ -1533,7 +1533,7 @@ void Client::DoClassAttacks(Mob *ca_target, uint16 skill, bool IsRiposte)
 				skill_to_use = EQ::skills::SkillKick;
 			}
 			break;
-		case ROGUE:
+		case Class::Rogue:
 			skill_to_use = EQ::skills::SkillBackstab;
 			break;
 		}
@@ -1747,7 +1747,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 
 int Client::TryAssassinate(Mob* defender, EQ::skills::SkillType skillInUse)
 {
-	if (defender && (defender->GetBodyType() == BT_Humanoid) && !defender->IsClient() &&
+	if (defender && (defender->GetBodyType() == BodyType::Humanoid) && !defender->IsClient() &&
 		(skillInUse == EQ::skills::SkillBackstab || skillInUse == EQ::skills::SkillThrowing))
 	{
 		if (GetLevel() >= 60 && defender->GetLevel() <= 46)

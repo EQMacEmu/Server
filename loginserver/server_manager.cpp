@@ -229,7 +229,7 @@ void ServerManager::SendOldUserToWorldRequest(const char* server_id, unsigned in
 	bool found = false;
 	while (iter != m_world_servers.end())
 	{
-		if ((*iter)->GetRemoteIP() == server_id)
+		if ((*iter)->GetRemoteIP() == server_id || (*iter)->GetLocalIP() == server_id)
 		{
 			auto outapp = new ServerPacket(ServerOP_UsertoWorldReq, sizeof(UsertoWorldRequest_Struct));
 			auto *r = (UsertoWorldRequest_Struct*)outapp->pBuffer;

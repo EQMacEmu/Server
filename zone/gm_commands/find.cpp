@@ -1,4 +1,5 @@
 #include "../client.h"
+#include "find/body_type.cpp"
 #include "find/character.cpp"
 #include "find/class.cpp"
 #include "find/deity.cpp"
@@ -25,6 +26,7 @@ void command_find(Client *c, const Seperator *sep)
 	};
 
 	std::vector<Cmd> commands = {
+		Cmd{.cmd = "body_type", .u = "body_type [Search Criteria]", .fn = FindBodyType, .a = {"#findbodytype"}},
 		Cmd{.cmd = "character", .u = "character [Search Criteria]", .fn = FindCharacter, .a = {"#findcharacter"}},
 		Cmd{.cmd = "class", .u = "class [Search Criteria]", .fn = FindClass, .a = {"#findclass"}},
 		Cmd{.cmd = "deity", .u = "deity [Search Criteria]", .fn = FindDeity, .a = {"#finddeity"}},

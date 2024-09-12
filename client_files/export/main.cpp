@@ -28,9 +28,11 @@
 #include "../../common/strings.h"
 #include "../../common/content/world_content_service.h"
 #include "../../common/path_manager.h"
+#include "../../common/zone_store.h"
 
 EQEmuLogSys LogSys;
 WorldContentService content_service;
+ZoneStore zone_store;
 PathManager path;
 
 void ExportSpells(SharedDatabase *db);

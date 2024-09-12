@@ -91,6 +91,7 @@ SET(zone_sources
 	zone_config.cpp
 	zonedb.cpp
 	zone_event_scheduler.cpp
+	zone_reload.cpp
 	zoning.cpp
 )
 
@@ -171,6 +172,7 @@ SET(zone_headers
 	zone_config.h
 	zonedb.h
 	zonedump.h
+	zone_reload.h
 )
 
 IF(EQEMU_DEPOP_INVALIDATES_CACHE)

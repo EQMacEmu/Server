@@ -28,6 +28,7 @@
 #include "../common/eqemu_exception.h"
 #include "../common/strings.h"
 #include "../common/path_manager.h"
+#include "../common/zone_store.h"
 #include "items.h"
 #include "npc_faction.h"
 #include "skill_caps.h"
@@ -36,6 +37,7 @@
 
 EQEmuLogSys LogSys;
 WorldContentService content_service;
+ZoneStore zone_store;
 PathManager path;
 
 int main(int argc, char **argv) {

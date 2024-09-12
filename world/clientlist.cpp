@@ -30,7 +30,7 @@
 #include "../common/packet_dump.h"
 #include "wguild_mgr.h"
 #include "../zone/string_ids.h"
-
+#include "../common/zone_store.h"
 #include <set>
 
 extern ConsoleList		console_list;
@@ -422,7 +422,7 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 			if (cle->LSID())
 				fmt::format_to(std::back_inserter(out), "{}  LSID: {}  LSName: {}  WorldAdmin: {}", newline, cle->LSID(), cle->LSName(), cle->WorldAdmin());
 			if (cle->CharID())
-				fmt::format_to(std::back_inserter(out), "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), database.GetZoneName(cle->zone()), cle->zone());
+				fmt::format_to(std::back_inserter(out), "{}  CharID: {}  CharName: {}  Zone: {} ({})", newline, cle->CharID(), cle->name(), ZoneName(cle->zone()), cle->zone());
 			if (out.size() >= 3072) {
 				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 				addnewline = false;
@@ -669,7 +669,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 		}
 
 		// This is the packet header data.
-		uint16 plid = fromid;
+		uint32 plid = fromid;
 		uint16 playerineqstring = WHOALL_PLAYERS;
 		const char line2[] = "---------------------------";
 		uint8 unknown35 = 0x0A;
@@ -1051,7 +1051,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 	while(iterator.MoreElements()) 
 	{
 		cle = iterator.GetData();
-		const char* tmpZone = database.GetZoneName(cle->zone());
+		const char* tmpZone =ZoneName(cle->zone());
 		if (
 			(cle->Online() >= CLE_Status_Zoning)
 				&& (whom == 0 || (
@@ -1371,7 +1371,7 @@ void ClientList::GetClients(const char *zone_name, std::vector<ClientListEntry *
 			iterator.Advance();
 		}
 	} else {
-		uint32 zoneid = database.GetZoneID(zone_name);
+		uint32 zoneid = ZoneID(zone_name);
 		while(iterator.MoreElements()) {
 			ClientListEntry* tmp = iterator.GetData();
 			if(tmp->zone() == zoneid)
@@ -1517,7 +1517,7 @@ void ClientList::ConsoleClientVersionSummary(const char* to, WorldTCPConnection*
 bool ClientList::WhoAllFilter(ClientListEntry* client, Who_All_Struct* whom, int16 admin, int whomlen)
 {
 	uint8 gmwholist = RuleI(GM, GMWhoList);
-	const char* tmpZone = database.GetZoneName(client->zone());
+	const char* tmpZone = ZoneName(client->zone());
 	bool not_anon = client->Anon() == 0 || (admin >= client->Admin() && admin >= gmwholist);
 	bool guild_not_anon = client->Anon() != 1 || (admin >= client->Admin() && admin >= gmwholist);
 	if (

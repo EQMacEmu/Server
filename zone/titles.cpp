@@ -126,7 +126,7 @@ bool TitleManager::IsClientEligibleForTitle(Client *c, std::vector<TitleEntry>::
 		if((Title->Status >= 0) && (c->Admin() < Title->Status))
 			return false;
 
-		if((Title->Gender >= 0) && (c->GetBaseGender() != Title->Gender))
+		if((Title->Gender >= Gender::Male) && (c->GetBaseGender() != Title->Gender))
 			return false;
 
 		if((Title->Class >= 0) && (c->GetBaseClass() != Title->Class))

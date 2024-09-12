@@ -18,6 +18,7 @@
 
 #include "../common/global_define.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "client.h"
 #include "entity.h"
@@ -79,6 +80,7 @@ Object::Object(const EQ::ItemInstance* inst, char* name,float max_x,float min_x,
 	last_user = 0;
 	m_max_x=max_x;
 	m_max_y=max_y;
+	m_z=z;
 	m_min_x=min_x;
 	m_min_y=min_y;
 	m_id	= 0;
@@ -471,6 +473,20 @@ void Object::RandomSpawn(bool send_packet) {
 
 	m_data.x = zone->random.Real(m_min_x, m_max_x);
 	m_data.y = zone->random.Real(m_min_y, m_max_y);
+	m_data.z = m_z;
+	if(zone->HasMap() && (m_min_x != m_max_x || m_min_y != m_max_y)) {
+		// The client finds the z point below the ground spawn to
+		// determine where to display the ground spawn's graphical
+		// model. If the z is more than about 20 points above the
+		// ground, the client will not be able to pick up the
+		// ground spawn, so we find the best z point to match the
+		// client's visual representation.
+		glm::vec3 new_loc(m_data.x, m_data.y, m_data.z);
+		const float best_z = zone->zonemap->FindGround(new_loc, nullptr);
+		if(best_z != BEST_Z_INVALID) {
+			m_data.z = best_z;
+		}
+	}
 
 	if(send_packet) {
 		EQApplicationPacket app;

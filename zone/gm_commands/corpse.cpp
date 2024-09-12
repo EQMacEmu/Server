@@ -201,7 +201,7 @@ void command_corpse(Client *c, const Seperator *sep)
 			for (auto row = results.begin(); row != results.end(); ++row)
 			{
 
-				c->Message(Chat::Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[2], row[3], row[4], row[5]);
+				c->Message(Chat::Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], ZoneName(atoi(row[1])), row[2], row[3], row[4], row[5]);
 			}
 		}
 	}
@@ -264,7 +264,7 @@ void command_corpse(Client *c, const Seperator *sep)
 				auto ic_results = database.QueryDatabase(ic_query);
 				auto ic_row = ic_results.begin();
 
-				c->Message(Chat::Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], database.GetZoneName(atoi(row[1])), row[2], row[3], row[4], ic_row[0]);
+				c->Message(Chat::Yellow, " %s:	%s, %s, %s, %s, (%s)", row[0], ZoneName(atoi(row[1])), row[2], row[3], row[4], ic_row[0]);
 			}
 		}
 	}

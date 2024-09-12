@@ -18,6 +18,7 @@
 
 #include "../common/global_define.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "client.h"
 #include "entity.h"
@@ -505,7 +506,7 @@ bool ZoneDatabase::PopulateZoneSpawnListClose(uint32 zoneid, LinkedList<Spawn2*>
 		}
 	}
 
-	const char *zone_name = database.GetZoneName(zoneid);
+	const char *zone_name = ZoneName(zoneid);
 	std::string query = StringFormat(
 		"SELECT "
 		"id, "
@@ -608,7 +609,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 		}
 	}
 
-	const char *zone_name = database.GetZoneName(zoneid);
+	const char *zone_name = ZoneName(zoneid);
 	std::string query = fmt::format(
 		"SELECT "
 		"id, "
@@ -672,7 +673,7 @@ bool ZoneDatabase::PopulateZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spa
 
 bool ZoneDatabase::PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*> &spawn2_list) 
 {
-	const char *zone_name = database.GetZoneName(zoneid);
+	const char *zone_name = ZoneName(zoneid);
 	uint32 next_id = RANDOM_SPAWNID + (zoneid * 1000);
 
 	std::string query2 = fmt::format(
@@ -1303,7 +1304,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		auto pack = new ServerPacket(ServerOP_SpawnCondition, sizeof(ServerSpawnCondition_Struct));
 		ServerSpawnCondition_Struct* ssc = (ServerSpawnCondition_Struct*)pack->pBuffer;
 
-		ssc->zoneID = database.GetZoneID(zone_short);
+		ssc->zoneID = ZoneID(zone_short);
 		ssc->condition_id = condition_id;
 		ssc->value = new_value;
 
@@ -1434,7 +1435,7 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 	auto pack = new ServerPacket(ServerOP_SpawnEvent, sizeof(ServerSpawnEvent_Struct));
 	ServerSpawnEvent_Struct* sse = (ServerSpawnEvent_Struct*)pack->pBuffer;
 
-	sse->zoneID = database.GetZoneID(zone_short_name.c_str());
+	sse->zoneID = ZoneID(zone_short_name.c_str());
 	sse->event_id = event_id;
 
 	worldserver.SendPacket(pack);

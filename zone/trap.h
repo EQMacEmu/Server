@@ -76,7 +76,6 @@ public:
 	std::string message;
 protected:
 	NPC *hiddenTrigger;
-	bool ownHiddenTrigger;
 };
 
 #endif

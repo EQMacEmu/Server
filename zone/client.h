@@ -45,6 +45,7 @@ struct ItemData;
 #include "../common/guilds.h"
 #include "../common/item_data.h"
 #include "../common/data_verification.h"
+#include "../common/zone_store.h"
 
 #include "aa.h"
 #include "common.h"
@@ -377,6 +378,8 @@ public:
 	inline float ProximityZ() const { return m_Proximity.z; }
 	inline void ClearAllProximities() { entity_list.ProcessMove(this, glm::vec3(FLT_MAX, FLT_MAX, FLT_MAX)); m_Proximity = glm::vec3(FLT_MAX,FLT_MAX,FLT_MAX); }
 
+	void CheckVirtualZoneLines();
+
 	/*
 			Begin client modifiers
 	*/
@@ -551,6 +554,8 @@ public:
 	void	SendPlayerGuild();
 	void	RefreshGuildInfo();
 
+	uint8 GetClientMaxLevel() const { return client_max_level; }
+	void SetClientMaxLevel(uint8 max_level) { client_max_level = max_level; }
 
 	void	SendManaUpdatePacket();
 	void	SendManaUpdate();
@@ -634,8 +639,8 @@ public:
 	void UnscribeSpellAll(bool update_client = true);
 	bool SpellGlobalCheck(uint16 spell_id, uint32 char_id);
 	bool SpellBucketCheck(uint16 spell_id, uint32 char_id);
-	uint32 GetCharMaxLevelFromQGlobal();
-	uint32 GetCharMaxLevelFromBucket();
+	uint8 GetCharMaxLevelFromQGlobal();
+	uint8 GetCharMaxLevelFromBucket();
 
 	inline bool IsSitting() const {return (playeraction == eaSitting);}
 	inline bool IsBecomeNPC() const { return npcflag; }
@@ -909,6 +914,8 @@ public:
 
 	bool InterrogateInventory(Client* requester, bool log, bool silent, bool allowtrip, bool& error, bool autolog = true);
 
+	uint8 client_max_level;
+
 	bool IsLFG() { return LFG; }
 
 	void SendSoulMarks(SoulMarkList_Struct* SMS);
@@ -1033,6 +1040,7 @@ public:
 	void CorpseSummonOnPositionUpdate();
 
 	void ShowDevToolsMenu();
+	void SendReloadCommandMessages();
 
 protected:
 	friend class Mob;

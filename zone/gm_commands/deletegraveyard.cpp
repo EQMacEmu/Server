@@ -9,7 +9,7 @@ void command_deletegraveyard(Client *c, const Seperator *sep){
 		return;
 	}
 
-	zoneid = database.GetZoneID(sep->arg[1]);
+	zoneid = ZoneID(sep->arg[1]);
 	graveyard_id = database.GetZoneGraveyardID(zoneid);
 
 	if (zoneid > 0 && graveyard_id > 0) {

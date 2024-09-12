@@ -18,6 +18,7 @@
 
 #include "../common/servertalk.h"
 #include "../common/strings.h"
+#include "../common/zone_store.h"
 
 #include "client.h"
 #include "entity.h"

@@ -72,8 +72,7 @@ Trap::Trap() :
 	disarmed = false;
 	respawn_time = 0;
 	respawn_var = 0;
-	hiddenTrigger = nullptr;
-	ownHiddenTrigger = false;
+	SetHiddenTrigger(nullptr);
 	chance = 0;
 	triggered_number = 0;
 	times_triggered = 0;
@@ -470,9 +469,9 @@ void Trap::CreateHiddenTrigger()
 	make_npc->cur_hp = 100000;
 	strcpy(make_npc->name, "a_trap");
 	make_npc->runspeed = 0.0f;
-	make_npc->bodytype = BT_Special;
-	make_npc->race = 127;
-	make_npc->gender = 0;
+	make_npc->bodytype = BodyType::Special;
+	make_npc->race = Race::InvisibleMan;
+	make_npc->gender = Gender::Male;
 	make_npc->loottable_id = 0;
 	make_npc->npc_spells_id = 0;
 	make_npc->d_melee_texture1 = 0;
@@ -480,10 +479,10 @@ void Trap::CreateHiddenTrigger()
 	make_npc->level = level;
 	strcpy(make_npc->special_abilities, "19,1^20,1^24,1^25,1");
 	NPC* npca = new NPC(make_npc, nullptr, glm::vec4(m_Position, 0.0f), GravityBehavior::Water);
+	npca->GiveNPCTypeData();
 	entity_list.AddNPC(npca);
 
-	hiddenTrigger = npca;
-	ownHiddenTrigger = true;
+	SetHiddenTrigger(npca);
 }
 
 bool ZoneDatabase::SetTrapData(Trap* trap, bool repopnow) {
