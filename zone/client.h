@@ -71,6 +71,7 @@ struct ItemData;
 #define CLIENT_LD_TIMEOUT	30000 // length of time client stays in zone after LDing
 #define TARGETING_RANGE		200	// range for /target
 #define ASSIST_RANGE		250 // range for /assist
+#define MAX_SPECIALIZED_SKILL 50
 
 extern Zone* zone;
 
@@ -526,7 +527,7 @@ public:
 	int32 GetModCharacterFactionLevel(int32 faction_id, bool skip_illusions = false);
 	void MerchantRejectMessage(Mob *merchant, int primaryfaction);
 	int32 UpdatePersonalFaction(int32 char_id, int32 npc_value, int32 faction_id, int32 temp, bool skip_gm = true, bool show_msg = true);
-	void SetFactionLevel(uint32 char_id, uint32 npc_id, bool quest = false);
+	void SetFactionLevel(uint32 char_id, uint32 npc_faction_id, bool quest = false);
 	void SetFactionLevel2(uint32 char_id, int32 faction_id, int32 value, uint8 temp);
 	int32 GetRawItemAC();
 
@@ -604,10 +605,11 @@ public:
 	void	SendStats(Client* client);
 	void	SendQuickStats(Client* client);
 
-	uint16 MaxSkill(EQ::skills::SkillType skillid, uint16 class_, uint16 level) const;
-	inline uint16 MaxSkill(EQ::skills::SkillType skillid) const { return MaxSkill(skillid, GetClass(), GetLevel()); }
-	uint16	GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType skillid, uint16 maxSkill);
-	uint8 SkillTrainLevel(EQ::skills::SkillType skillid, uint16 class_);
+	uint16 MaxSkill(EQ::skills::SkillType skill_id, uint8 class_id, uint8 level) const;
+	inline uint16 MaxSkill(EQ::skills::SkillType skill_id) const { return MaxSkill(skill_id, GetClass(), GetLevel()); }
+	uint16	GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType skill_id, uint16 maxSkill);
+	uint8 GetSkillTrainLevel(EQ::skills::SkillType skill_id, uint16 class_id);
+	void MaxSkills();
 
 	bool TradeskillExecute(DBTradeskillRecipe_Struct *spec);
 	void CheckIncreaseTradeskill(bool isSuccessfulCombine, EQ::skills::SkillType tradeskill);
@@ -838,7 +840,7 @@ public:
 	bool	PendingTranslocate;
 	time_t	TranslocateTime;
 	bool	PendingSacrifice;
-	uint16	SacrificeCaster;
+	uint16 sacrifice_caster_id;
 	PendingTranslocate_Struct PendingTranslocateData;
 	void	SendOPTranslocateConfirm(Mob *Caster, uint16 SpellID);
 

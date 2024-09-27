@@ -36,6 +36,7 @@
 #include "../common/rulesys.h"
 #include "../common/strings.h"
 #include "../common/data_verification.h"
+#include "../common/profanity_manager.h"
 #include "data_bucket.h"
 #include "position.h"
 #include "worldserver.h"
@@ -50,7 +51,8 @@
 #include "../common/crc32.h"
 #include "../common/packet_dump_file.h"
 #include "queryserv.h"
-
+#include "../common/zone_store.h"
+#include "../common/skill_caps.h"
 #include "../common/repositories/character_spells_repository.h"
 
 extern QueryServ* QServ;
@@ -234,7 +236,7 @@ Client::Client(EQStreamInterface* ieqs) : Mob(
 	memset(&m_epp, 0, sizeof(m_epp));
 	PendingTranslocate = false;
 	PendingSacrifice = false;
-	SacrificeCaster = 0;
+	sacrifice_caster_id = 0;
 	BoatID = 0;
 
 	if (!RuleB(Character, PerCharacterQglobalMaxLevel) && !RuleB(Character, PerCharacterBucketMaxLevel)) {
@@ -841,6 +843,11 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		lang_skill = Language::MaxValue;
 	}
 
+	// Censor the message
+	if (EQ::ProfanityManager::IsCensorshipActive() && (chan_num != 8)) {
+		EQ::ProfanityManager::RedactMessage(message);
+	}
+
 	switch(chan_num)
 	{
 	case ChatChannel_Guild: { /* Guild Chat */
@@ -1032,6 +1039,10 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 				}
 			}
 			break;
+		}
+
+		if (EQ::ProfanityManager::IsCensorshipActive()) {
+			EQ::ProfanityManager::RedactMessage(message);
 		}
 
 		Mob* sender = this;
@@ -1977,19 +1988,14 @@ void Client::CheckLanguageSkillIncrease(uint8 langid, uint8 TeacherSkill) {
 	}
 }
 
-bool Client::HasSkill(EQ::skills::SkillType skill_id) const {
-	/*if(skill_id == SkillMeditate)
-	{
-		if(SkillTrainLvl(skill_id, GetClass()) >= GetLevel())
-			return true;
-	}
-	else*/
-		return((GetSkill(skill_id) > 0) && CanHaveSkill(skill_id));
+bool Client::HasSkill(EQ::skills::SkillType skill_id) const
+{
+	return GetSkill(skill_id) > 0 && CanHaveSkill(skill_id);
 }
 
 bool Client::CanHaveSkill(EQ::skills::SkillType skill_id) const 
 {
-	bool value = database.GetSkillCap(GetClass(), skill_id, RuleI(Character, MaxLevel)) > 0;
+	bool value = skill_caps.GetSkillCap(GetClass(), skill_id, RuleI(Character, MaxLevel)).cap > 0;
 
 	// Racial skills.
 	if (!value)
@@ -2035,39 +2041,38 @@ bool Client::CanHaveSkill(EQ::skills::SkillType skill_id) const
 	return value;
 }
 
-uint16 Client::MaxSkill(EQ::skills::SkillType skillid, uint16 class_, uint16 level) const 
+uint16 Client::MaxSkill(EQ::skills::SkillType skill_id, uint8 class_id, uint8 level) const 
 {
-	uint16 value = database.GetSkillCap(class_, skillid, level);
+	uint16 value = skill_caps.GetSkillCap(class_id, skill_id, level).cap;
 
 	// Racial skills/Minimum values.
 	if (value < 50)
 	{
-		if (skillid == EQ::skills::SkillHide)
-		{
+		if (skill_id == EQ::skills::SkillHide) {
 			if (GetBaseRace() == DARK_ELF || GetBaseRace() == HALFLING || GetBaseRace() == WOOD_ELF)
 				return 50;
 		}
-		else if (skillid == EQ::skills::SkillSneak)
+		else if (skill_id == EQ::skills::SkillSneak)
 		{
 			if (GetBaseRace() == VAHSHIR || GetBaseRace() == HALFLING)
 				return 50;
 		}
-		else if (skillid == EQ::skills::SkillForage)
+		else if (skill_id == EQ::skills::SkillForage)
 		{
 			if (GetBaseRace() == WOOD_ELF || GetBaseRace() == IKSAR)
 				return 50;
 		}
-		else if (skillid == EQ::skills::SkillSenseHeading)
+		else if (skill_id == EQ::skills::SkillSenseHeading)
 		{
 			if (GetBaseRace() == DWARF)
 				return 50;
 		}
-		else if (skillid == EQ::skills::SkillTinkering)
+		else if (skill_id == EQ::skills::SkillTinkering)
 		{
 			if (GetBaseRace() == GNOME)
 				return 50;
 		}
-		else if (skillid == EQ::skills::SkillSafeFall)
+		else if (skill_id == EQ::skills::SkillSafeFall)
 		{
 			if (GetBaseRace() == VAHSHIR)
 				return 50;
@@ -2075,7 +2080,7 @@ uint16 Client::MaxSkill(EQ::skills::SkillType skillid, uint16 class_, uint16 lev
 	}
 	else if(value < 100)
 	{
-		if (skillid == EQ::skills::SkillSwimming)
+		if (skill_id == EQ::skills::SkillSwimming)
 		{
 			if (GetBaseRace() == IKSAR)
 				return 100;
@@ -2085,8 +2090,8 @@ uint16 Client::MaxSkill(EQ::skills::SkillType skillid, uint16 class_, uint16 lev
 	return value;
 }
 
-uint8 Client::SkillTrainLevel(EQ::skills::SkillType skillid, uint16 class_) {
-	return(database.GetTrainLevel(class_, skillid, RuleI(Character, MaxLevel)));
+uint8 Client::GetSkillTrainLevel(EQ::skills::SkillType skill_id, uint16 class_id) {
+	return skill_caps.GetSkillTrainLevel(class_, skill_id, RuleI(Character, MaxLevel));
 }
 
 uint16 Client::GetMaxSkillAfterSpecializationRules(EQ::skills::SkillType skillid, uint16 maxSkill)
@@ -3013,7 +3018,7 @@ void Client::SacrificeConfirm(Mob *caster) {
 	safe_delete(outapp);
 	// We store the Caster's id, because when the packet comes back, it only has the victim's entityID in it,
 	// not the caster.
-	SacrificeCaster = caster->GetID();
+	sacrifice_caster_id = caster->GetID();
 	PendingSacrifice = true;
 }
 
@@ -3073,9 +3078,10 @@ void Client::Sacrifice(Mob *caster)
 
 			Save();
 			GoToDeath();
-			if (caster->IsClient()) {
+			if (caster && caster->IsClient()) {
 				caster->CastToClient()->SummonItem(RuleI(Spells, SacrificeItemID));
-			} else if (caster->IsNPC()) {
+			}
+			else if (caster && caster->IsNPC()) {
 				caster->CastToNPC()->AddItem(RuleI(Spells, SacrificeItemID), 1, false);
 			}
 		}
@@ -4402,83 +4408,82 @@ int16 Client::GetFactionValue(Mob* tnpc)
 	int16 tmpFactionValue;
 	FactionMods fmods;
 
-	if (IsFeigned() || IsInvisible(tnpc))
+	if (IsFeigned() || IsInvisible(tnpc)) {
 		return 0;
+	}
 
 	// pets con amiably to owner and indiff to rest
-	if (tnpc && tnpc->GetOwnerID() != 0)
-	{
-		if (tnpc->GetOwner() && tnpc->GetOwner()->IsClient() && CharacterID() == tnpc->GetOwner()->CastToClient()->CharacterID())
+	if (tnpc && tnpc->GetOwnerID() != 0) {
+		if (tnpc->GetOwner() && tnpc->GetOwner()->IsClient() && CharacterID() == tnpc->GetOwner()->CastToClient()->CharacterID()) {
 			return 100;
-		else
+		}
+		else {
 			return 0;
+		}
 	}
 
 	//First get the NPC's Primary faction
-	int32 pFaction = tnpc->GetPrimaryFaction();
-	if (pFaction > 0)
-	{
+	int32 primary_faction = tnpc->GetPrimaryFaction();
+	if (primary_faction > 0) {
 		//Get the faction data from the database
-		if (database.GetFactionData(&fmods, GetClass(), GetRace(), GetDeity(), pFaction, GetTexture(), GetGender(), GetBaseRace()))
-		{
+		if (database.GetFactionData(&fmods, GetClass(), GetRace(), GetDeity(), primary_faction, GetTexture(), GetGender(), GetBaseRace())) {
 			//Get the players current faction with pFaction
-			tmpFactionValue = GetCharacterFactionLevel(pFaction);
+			tmpFactionValue = GetCharacterFactionLevel(primary_faction);
 			//Tack on any bonuses from Alliance type spell effects
-			tmpFactionValue += GetFactionBonus(pFaction);
-			tmpFactionValue += GetItemFactionBonus(pFaction);
+			tmpFactionValue += GetFactionBonus(primary_faction);
+			tmpFactionValue += GetItemFactionBonus(primary_faction);
 			//Add base mods, GetFactionData() above also accounts for illusions.
 			tmpFactionValue += fmods.base + fmods.class_mod + fmods.race_mod + fmods.deity_mod;
 		}
 	}
-	else
-	{
+	else {
 		return 0;
 	}
 
 	// merchant fix
-	if (tnpc && tnpc->IsNPC() && tnpc->CastToNPC()->MerchantType && tmpFactionValue <= -501)
+	if (tnpc && tnpc->IsNPC() && tnpc->CastToNPC()->MerchantType && tmpFactionValue <= -501) {
 		return -500;
+	}
 
 	// We're engaged with the NPC and their base is dubious or higher, return threatenly
-	if (tnpc != 0 && tmpFactionValue >= -500 && tnpc->CastToNPC()->CheckAggro(this))
+	if (tnpc != 0 && tmpFactionValue >= -500 && tnpc->CastToNPC()->CheckAggro(this)) {
 		return -501;
+	}
 
 	return tmpFactionValue;
 }
 
 //Sets the characters faction standing with the specified NPC.
-void Client::SetFactionLevel(uint32 char_id, uint32 npc_id, bool quest)
+void Client::SetFactionLevel(uint32 char_id, uint32 npc_faction_id, bool is_quest)
 {
-	int32 faction_id[MAX_NPC_FACTIONS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	int32 npc_value[MAX_NPC_FACTIONS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	uint8 temp[MAX_NPC_FACTIONS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	auto l = zone->GetNPCFactionEntries(npc_faction_id);
 
-	// Get the npc faction list
-	if (!database.GetNPCFactionList(npc_id, faction_id, npc_value, temp))
+	if (l.empty()) {
 		return;
-	for (int i = 0; i < MAX_NPC_FACTIONS; i++)
-	{
-		if (faction_id[i] <= 0)
-			continue;
+	}
 
-		if (quest)
-		{
-			//The ole switcheroo
-			if (npc_value[i] > 0)
-				npc_value[i] = -abs(npc_value[i]);
-			else if (npc_value[i] < 0)
-				npc_value[i] = abs(npc_value[i]);
+	for (auto& e : l) {
+		if (e.faction_id <= 0 || e.value == 0) {
+			continue;
 		}
 
-		SetFactionLevel2(char_id, faction_id[i], npc_value[i], temp[i]);
+		if (is_quest) {
+			if (e.value > 0) {
+				e.value = -std::abs(e.value);
+			}
+			else if (e.value < 0) {
+				e.value = std::abs(e.value);
+			}
+		}
+
+		SetFactionLevel2(char_id, e.faction_id, e.value, e.temp);
 	}
 }
 
 // This is the primary method used by Lua and #giveplayerfaction. SetFactionLevel() which hands out faction on a NPC death also resolves to this method.
 void Client::SetFactionLevel2(uint32 char_id, int32 faction_id, int32 value, uint8 temp)
 {
-	if(faction_id > 0 && value != 0) 
-	{
+	if(faction_id > 0 && value != 0) {
 		UpdatePersonalFaction(char_id, value, faction_id, temp, false);
 	}
 }
@@ -4486,14 +4491,19 @@ void Client::SetFactionLevel2(uint32 char_id, int32 faction_id, int32 value, uin
 // Gets the client personal faction value
 int32 Client::GetCharacterFactionLevel(int32 faction_id)
 {
+	if (faction_id <= 0) {
+		return 0;
+	}
+
 	int32 faction = 0;
 	faction_map::iterator res;
 	res = factionvalues.find(faction_id);
-	if (res == factionvalues.end())
+	if (res == factionvalues.end()) {
 		return 0;
+	}
 	faction = res->second;
 
-	Log(Logs::Detail, Logs::Faction, "%s has %d personal faction with %d", GetName(), faction, faction_id);
+	LogFactionDetail("{} has {} personal faction with {}", GetName(), faction, faction_id);
 	return faction;
 }
 
@@ -4507,64 +4517,56 @@ int32 Client::UpdatePersonalFaction(int32 char_id, int32 npc_value, int32 factio
 	int32 current_value = GetCharacterFactionLevel(faction_id);
 	int32 unadjusted_value = current_value;
 
-	if (GetGM() && skip_gm)
+	if (GetGM() && skip_gm) {
 		return 0;
+	}
 
-	if (hit != 0)
-	{	
+	if (hit != 0) {	
 		int16 min_personal_faction = database.MinFactionCap(faction_id);
 		int16 max_personal_faction = database.MaxFactionCap(faction_id);
 		int32 personal_faction = GetCharacterFactionLevel(faction_id);
 
-		if (hit < 0)
-		{
-			if (personal_faction <= min_personal_faction)
-			{
+		if (hit < 0) {
+			if (personal_faction <= min_personal_faction) {
 				msg = FACTION_WORST;
 				hit = 0;
 			}
-			else
-			{
+			else {
 				msg = FACTION_WORSE;
-				if (personal_faction + hit < min_personal_faction)
-				{
+				if (personal_faction + hit < min_personal_faction) {
 					hit = min_personal_faction - personal_faction;
 				}
 			}
 		}
-		else // hit > 0
-		{
-			if (personal_faction >= max_personal_faction)
-			{
+		else { // hit > 0
+			if (personal_faction >= max_personal_faction) {
 				msg = FACTION_BEST;
 				hit = 0;
 			}
-			else
-			{
+			else {
 				msg = FACTION_BETTER;
-				if (personal_faction + hit > max_personal_faction)
-				{
+				if (personal_faction + hit > max_personal_faction) {
 					hit = max_personal_faction - personal_faction;
 				}
 			}
 		}
 
-		if (hit)
-		{
+		if (hit) {
 			current_value += hit;
 			database.SetCharacterFactionLevel(char_id, faction_id, current_value, temp, factionvalues);
-			Log(Logs::General, Logs::Faction, "Adding %d to faction %d for %s. New personal value is %d, old personal value was %d.", hit, faction_id, GetName(), current_value, unadjusted_value);
+			LogFaction("Adding {} to faction {} for {}. New personal value is {}, old personal value was {}.", hit, faction_id, GetName(), current_value, unadjusted_value);
 		}
-		else
-			Log(Logs::General, Logs::Faction, "Faction %d will not be updated for %s. Personal faction is capped at %d.", faction_id, GetName(), personal_faction);
+		else {
+			LogFaction("Faction {} will not be updated for {}. Personal faction is capped at {}.", faction_id, GetName(), personal_faction);
+		}
 	}
 
-	if (show_msg && npc_value && temp != 1 && temp != 2)
-	{
+	if (show_msg && npc_value && temp != 1 && temp != 2) {
 		char name[50];
 		// default to Faction# if we couldn't get the name from the ID
-		if (database.GetFactionName(faction_id, name, sizeof(name)) == false)
+		if (database.GetFactionName(faction_id, name, sizeof(name)) == false) {
 			snprintf(name, sizeof(name), "Faction%i", faction_id);
+		}
 
 		Message_StringID(Chat::White, msg, name);
 	}
@@ -4577,8 +4579,9 @@ int32 Client::GetModCharacterFactionLevel(int32 faction_id, bool skip_illusions)
 {
 	int32 Modded = GetCharacterFactionLevel(faction_id);
 	FactionMods fm;
-	if (database.GetFactionData(&fm, GetClass(), GetRace(), GetDeity(), faction_id, GetTexture(), GetGender(), GetBaseRace(), skip_illusions))
+	if (database.GetFactionData(&fm, GetClass(), GetRace(), GetDeity(), faction_id, GetTexture(), GetGender(), GetBaseRace(), skip_illusions)) {
 		Modded += fm.base + fm.class_mod + fm.race_mod + fm.deity_mod;
+	}
 
 	return Modded;
 }
@@ -4599,21 +4602,17 @@ void Client::MerchantRejectMessage(Mob *merchant, int primaryfaction)
 	}
 	// If no primary faction or biggest influence is your faction hit
 	// Hack to get Shadowhaven messages correct :I
-	if (GetZoneID() != Zones::SHADOWHAVEN && (primaryfaction <= 0 || lowestvalue == tmpFactionValue)) 
-	{
+	if (GetZoneID() != Zones::SHADOWHAVEN && (primaryfaction <= 0 || lowestvalue == tmpFactionValue)) {
 		merchant->Say_StringID(zone->random.Int(WONT_SELL_DEEDS1, WONT_SELL_DEEDS6));
 	} 
 	//class biggest
-	else if (lowestvalue == fmod.class_mod) 
-	{
+	else if (lowestvalue == fmod.class_mod) {
 		merchant->Say_StringID(0, zone->random.Int(WONT_SELL_CLASS1, WONT_SELL_CLASS4), itoa(GetClassStringID()));
 	}
 	// race biggest/default
-	else
-	{ 
+	else { 
 		// Non-standard race (ex. illusioned to wolf)
-		if (GetRace() > Race::Gnome && GetRace() != Race::Iksar && GetRace() != Race::VahShir)
-		{
+		if (GetRace() > Race::Gnome && GetRace() != Race::Iksar && GetRace() != Race::VahShir) {
 			messageid = zone->random.Int(1, 3); // these aren't sequential StringIDs :(
 			switch (messageid) {
 			case 1:
@@ -4631,8 +4630,7 @@ void Client::MerchantRejectMessage(Mob *merchant, int primaryfaction)
 			}
 			merchant->Say_StringID(messageid);
 		} 
-		else 
-		{ // normal player races
+		else { // normal player races
 			messageid = zone->random.Int(1, 5);
 			switch (messageid) {
 			case 1:
@@ -6252,6 +6250,7 @@ void Client::ShowDevToolsMenu()
 	menu_reload_two += " | " + Saylink::Silent("#reload content_flags", "Content Flags");
 
 	menu_reload_three += Saylink::Silent("#reload doors", "Doors");
+	menu_reload_three += " | " + Saylink::Silent("#reload factions", "Factions");
 	menu_reload_three += " | " + Saylink::Silent("#reload ground_spawns", "Ground Spawns");
 
 	menu_reload_four += Saylink::Silent("#reload logs", "Level Based Experience Modifiers");
@@ -6268,6 +6267,7 @@ void Client::ShowDevToolsMenu()
 	menu_reload_six += " | " + Saylink::Silent("#reload quest", "Quests");
 
 	menu_reload_seven += Saylink::Silent("#reload rules", "Rules");
+	menu_reload_seven += " | " + Saylink::Silent("#reload skill_caps", "Skill Caps");
 	menu_reload_seven += " | " + Saylink::Silent("#reload static", "Static Zone Data");
 
 	menu_reload_eight += Saylink::Silent("#reload titles", "Titles");
@@ -6493,6 +6493,15 @@ void Client::SendReloadCommandMessages() {
 		).c_str()
 	);
 
+	auto factions_link = Saylink::Silent("#reload factions");
+	Message(
+		Chat::White,
+		fmt::format(
+			"Usage: {} - Reloads Factions globally",
+			factions_link
+		).c_str()
+	);
+
 	auto ground_spawns_link = Saylink::Silent("#reload ground_spawns");
 	Message(
 		Chat::White,
@@ -6586,7 +6595,6 @@ void Client::SendReloadCommandMessages() {
 	auto quest_link_one = Saylink::Silent("#reload quest");
 	auto quest_link_two = Saylink::Silent("#reload quest", "0");
 	auto quest_link_three = Saylink::Silent("#reload quest 1", "1");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6598,7 +6606,6 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	auto rules_link = Saylink::Silent("#reload rules");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6607,8 +6614,16 @@ void Client::SendReloadCommandMessages() {
 		).c_str()
 	);
 
-	auto static_link = Saylink::Silent("#reload static");
+	auto skill_caps_link = Saylink::Silent("#reload skill_caps");
+	Message(
+		Chat::White,
+		fmt::format(
+			"Usage: {} - Reloads Skill Caps globally",
+			skill_caps_link
+		).c_str()
+	);
 
+	auto static_link = Saylink::Silent("#reload static");
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6618,7 +6633,6 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	auto titles_link = Saylink::Silent("#reload titles");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6630,7 +6644,6 @@ void Client::SendReloadCommandMessages() {
 	auto traps_link_one = Saylink::Silent("#reload traps");
 	auto traps_link_two = Saylink::Silent("#reload traps", "0");
 	auto traps_link_three = Saylink::Silent("#reload traps 1", "1");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6642,7 +6655,6 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	auto variables_link = Saylink::Silent("#reload variables");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6655,7 +6667,6 @@ void Client::SendReloadCommandMessages() {
 	auto world_link_two = Saylink::Silent("#reload world", "0");
 	auto world_link_three = Saylink::Silent("#reload world 1", "1");
 	auto world_link_four = Saylink::Silent("#reload world 2", "2");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6668,7 +6679,6 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	auto zone_link = Saylink::Silent("#reload zone");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6678,7 +6688,6 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	auto zone_points_link = Saylink::Silent("#reload zone_points");
-
 	Message(
 		Chat::White,
 		fmt::format(
@@ -6688,4 +6697,19 @@ void Client::SendReloadCommandMessages() {
 	);
 
 	SendChatLineBreak();
+}
+
+void Client::MaxSkills()
+{
+	for (const auto& s : EQ::skills::GetSkillTypeMap()) {
+		auto current_skill_value = (
+			EQ::skills::IsSpecializedSkill(s.first) ?
+			MAX_SPECIALIZED_SKILL :
+			skill_caps.GetSkillCap(GetClass(), s.first, GetLevel()).cap
+			);
+
+		if (GetSkill(s.first) < current_skill_value) {
+			SetSkill(s.first, current_skill_value);
+		}
+	}
 }

@@ -318,24 +318,24 @@ void NPC::DescribeAggro(Client *to_who, Mob *mob, bool verbose) {
 			auto faction_name = database.GetFactionName(mob_faction_id);
 			bool has_entry = false;
 			for (auto faction : faction_list) {
-				if (static_cast<int>(faction->factionID) == mob_faction_id) {
+				if (static_cast<int>(faction.faction_id) == mob_faction_id) {
 					to_who->Message(
 						Chat::White,
 						fmt::format(
 							"{} has {} standing with Faction {} ({}) with their Faction Level of {}",
 							to_who->GetTargetDescription(mob),
 							(
-								faction->npc_value != 0 ?
+								faction.npc_value != 0 ?
 								(
-									faction->npc_value > 0 ?
+									faction.npc_value > 0 ?
 									"positive" :
 									"negative"
 									) :
 								"neutral"
 								),
 							faction_name,
-							faction->factionID,
-							faction->npc_value
+							faction.faction_id,
+							faction.npc_value
 						).c_str()
 					);
 					has_entry = true;
@@ -872,10 +872,11 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 				bool useprimfaction = false;
 				if(npc->GetPrimaryFaction() == sender->CastToNPC()->GetPrimaryFaction())
 				{
-					const NPCFactionList *cf = database.GetNPCFactionEntry(npc->GetNPCFactionID());
-					if(cf){
-						if(cf->assistprimaryfaction != 0)
+					const auto f = zone->GetNPCFaction(npc->GetNPCFactionID());
+					if(f){
+						if (!f->ignore_primary_assist) {
 							useprimfaction = true;
+						}
 					}
 				}
 
@@ -1474,6 +1475,7 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize, Mob* oth
 int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 {
 	int nonDamageHate = 0;
+	bool setStandardHate = false;
 	int instantHate = 0;
 	int slevel = GetLevel();
 	int damage = 0;
@@ -1515,7 +1517,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id);
 				if (val < 0)
-					nonDamageHate += standardSpellHate;
+					setStandardHate = true;
 				break;
 			}
 			case SE_AttackSpeed:
@@ -1524,7 +1526,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id);
 				if (val < 100)
-					nonDamageHate += standardSpellHate;
+					setStandardHate = true;
 				break;
 			}
 			case SE_Stun:
@@ -1533,14 +1535,14 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			case SE_Charm:
 			case SE_Fear:
 			{
-				nonDamageHate += standardSpellHate;
+				setStandardHate = true;
 				break;
 			}
 			case SE_ArmorClass:
 			{
 				int val = CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id);
 				if (val < 0)
-					nonDamageHate += standardSpellHate;
+					setStandardHate = true;
 				break;
 			}
 			case SE_DiseaseCounter: // disease counter hate was removed most likely in early May 2002
@@ -1549,13 +1551,13 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 					if (IsSlowSpell(spell_id)) {
 						break;
 					}
-					nonDamageHate += standardSpellHate;
+					setStandardHate = true;
 				}
 				break;
 			}
 			case SE_PoisonCounter:
 			{
-				nonDamageHate += standardSpellHate;
+				setStandardHate = true;
 				break;
 			}
 			case SE_Root:
@@ -1603,7 +1605,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			case SE_Silence:
 			case SE_Destroy:
 			{
-				nonDamageHate += standardSpellHate;
+				setStandardHate = true;
 				break;
 			}
 			case SE_Harmony:
@@ -1655,6 +1657,9 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 		}
 	}
 
+	if (setStandardHate)
+		nonDamageHate += standardSpellHate;
+
 	if (spells[spell_id].HateAdded > 0)
 		nonDamageHate = spells[spell_id].HateAdded;		// tash and terror lines.  this overrides the spell hate
 
@@ -1674,23 +1679,13 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 	// bard spell hate is capped very low.  this was from Live server experiments
 	if (GetClass() == Class::Bard)
 	{
-		if (damage + nonDamageHate > 40)
+		if (damage > 0)
 		{
 			nonDamageHate = 0;
 		}
-		else if (nonDamageHate > 40)
+		else if (nonDamageHate > 40 && (!target || target->GetLevel() >= 20))
 		{
-			if (target)
-			{
-				if (target->GetLevel() >= 20)
-				{
-					nonDamageHate = 40;
-				}
-			}
-			else if (slevel >= 20)
-			{
-				nonDamageHate = 40;
-			}
+			nonDamageHate = 40;
 		}
 	}
 
@@ -1763,7 +1758,7 @@ int32 Mob::CheckHealAggroAmount(uint16 spell_id, Mob* target, uint32 heal_possib
 			}
 			case SE_Rune:
 			{
-				AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[0], spells[spell_id].base[0], spells[spell_id].max[o], slevel, spell_id) * 2;
+				AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id) * 2;
 				break;
 			}
 			case SE_HealOverTime:

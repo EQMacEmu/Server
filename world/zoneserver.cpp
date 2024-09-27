@@ -37,6 +37,7 @@
 #include "../common/content/world_content_service.h"
 #include "../common/zone_store.h"
 #include "../common/patches/patches.h"
+#include "../common/skill_caps.h"
 
 extern ClientList client_list;
 extern ZSList zoneserver_list;
@@ -1147,6 +1148,10 @@ bool ZoneServer::Process() {
 				safe_delete(outpack);
 				break;
 			}
+			case ServerOP_RefreshCensorship: {
+				zoneserver_list.SendPacket(pack);
+				break;
+			}
 			case ServerOP_SetWorldTime: {
 				Log(Logs::Detail, Logs::WorldServer,"Received SetWorldTime");
 				eqTimeOfDay* newtime = (eqTimeOfDay*) pack->pBuffer;
@@ -1405,6 +1410,7 @@ bool ZoneServer::Process() {
 			case ServerOP_ReloadBlockedSpells:
 			case ServerOP_ReloadCommands:
 			case ServerOP_ReloadDoors:
+			case ServerOP_ReloadFactions:
 			case ServerOP_ReloadGroundSpawns:
 			case ServerOP_ReloadLevelEXPMods:
 			case ServerOP_ReloadLoot:
@@ -1445,6 +1451,11 @@ bool ZoneServer::Process() {
 			case ServerOP_ReloadVariables:
 			{
 				database.LoadVariables();
+				break;
+			}
+			case ServerOP_ReloadSkillCaps: {
+				zoneserver_list.SendPacket(pack);
+				skill_caps.ReloadSkillCaps();
 				break;
 			}
 			case ServerOP_CZSignalNPC: {
@@ -1494,11 +1505,6 @@ bool ZoneServer::Process() {
 				Log(Logs::General, Logs::WorldServer, "Loading items...");
 				if(!database.LoadItems(hotfix_name)) {
 					Log(Logs::General, Logs::WorldServer, "Error: Could not load item data. But ignoring");
-				}
-
-				Log(Logs::General, Logs::WorldServer, "Loading skill caps...");
-				if(!database.LoadSkillCaps(hotfix_name)) {
-					Log(Logs::General, Logs::WorldServer, "Error: Could not load skill cap data. But ignoring");
 				}
 
 				zoneserver_list.SendPacket(pack);

@@ -28,6 +28,9 @@
 #include "../common/strings.h"
 #include "../common/event/timer.h"
 #include "../common/path_manager.h"
+#include "../common/zone_store.h"
+#include "../common/timer.h"
+#include "../common/content/world_content_service.h"
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
@@ -36,13 +39,15 @@
 
 volatile bool RunLoops = true;
 
-TimeoutManager timeout_manager;
-Database database;
-std::string WorldShortName;
+TimeoutManager        timeout_manager;
+QSDatabase            database;
+std::string           WorldShortName;
 const queryservconfig *Config;
-WorldServer *worldserver = 0;
-EQEmuLogSys LogSys;
+WorldServer           *worldserver = 0;
+EQEmuLogSys           LogSys;
 PathManager           path;
+ZoneStore             zone_store;
+WorldContentService   content_service;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 

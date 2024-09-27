@@ -140,6 +140,7 @@
 #define ServerOP_SetWorldTime		0x200B
 #define ServerOP_GetWorldTime		0x200C
 #define ServerOP_SyncWorldTime		0x200E
+#define ServerOP_RefreshCensorship	0x200F
 
 #define ServerOP_LSZoneInfo			0x3001
 #define ServerOP_LSZoneStart		0x3002
@@ -192,6 +193,8 @@
 #define ServerOP_ReloadLoot 0x4121
 #define ServerOP_ReloadNPCSpells 0x4122
 #define ServerOP_ReloadKeyRings 0x4123
+#define ServerOP_ReloadFactions 0x4124
+#define ServerOP_ReloadSkillCaps 0x4125
 
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013

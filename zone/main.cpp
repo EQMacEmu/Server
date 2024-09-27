@@ -34,6 +34,7 @@
 #include "../common/eq_stream_ident.h"
 #include "../common/patches/patches.h"
 #include "../common/rulesys.h"
+#include "../common/profanity_manager.h"
 #include "../common/misc_functions.h"
 #include "../common/strings.h"
 #include "../common/platform.h"
@@ -47,6 +48,7 @@
 #include "../common/zone_store.h"
 #include "../common/content/world_content_service.h"
 #include "../common/repositories/content_flags_repository.h"
+#include "../common/skill_caps.h"
 
 #include "zonedb.h"
 #include "zone_config.h"
@@ -108,6 +110,7 @@ EQEmuLogSys           LogSys;
 ZoneEventScheduler    event_scheduler;
 WorldContentService   content_service;
 PathManager           path;
+SkillCaps             skill_caps;
 
 const SPDat_Spell_Struct* spells;
 int32 SPDAT_RECORDS = -1;
@@ -271,18 +274,6 @@ int main(int argc, char** argv) {
 		LogError("Failed. But ignoring error and going on...");
 	}
 
-	LogInfo("Loading npc faction lists");
-	if(!database.LoadNPCFactionLists(hotfix_name)) {
-		LogError("Loading npcs faction lists FAILED!");
-		return 1;
-	}
-
-	LogInfo("Loading skill caps");
-	if(!database.LoadSkillCaps(std::string(hotfix_name))) {
-		LogError("Loading skill caps FAILED!");
-		return 1;
-	}
-
 	LogInfo("Loading spells");
 	if(!database.LoadSpells(hotfix_name, &SPDAT_RECORDS, &spells)) {
 		LogError("Loading spells FAILED!");
@@ -305,6 +296,11 @@ int main(int argc, char** argv) {
 	LogInfo("Loading AA actions");
 	database.LoadAlternateAdvancementActions();
 	
+	LogInfo("Loading profanity list");
+	if (!EQ::ProfanityManager::LoadProfanityList(&database)) {
+		LogInfo("Loading profanity list FAILED!");
+	}
+
 	LogInfo("Loading commands");
 	int retval=command_init();
 	if (retval < 0) {
@@ -334,6 +330,8 @@ int main(int argc, char** argv) {
 	content_service.SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();
+
+	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
 
 	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
 

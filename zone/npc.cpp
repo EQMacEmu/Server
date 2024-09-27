@@ -31,6 +31,7 @@
 #include "../common/linked_list.h" 
 #include "../common/servertalk.h"
 #include "../common/fastmath.h"
+#include "../common/skill_caps.h"
 
 #include "aa.h"
 #include "client.h"
@@ -61,6 +62,7 @@ extern Zone* zone;
 extern volatile bool is_zone_loaded;
 extern EntityList entity_list;
 extern FastMath g_Math;
+extern SkillCaps skill_caps;
 
 NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& position, GravityBehavior iflymode, bool IsCorpse)
 	: Mob(
@@ -287,7 +289,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	//give NPCs skill values...
 	int r;
 	for (r = 0; r <= EQ::skills::HIGHEST_SKILL; r++) {
-		skills[r] = database.GetSkillCap(GetClass(), (EQ::skills::SkillType)r, level);
+		skills[r] = skill_caps.GetSkillCap(GetClass(), (EQ::skills::SkillType)r, level).cap;
 	}
 
 	// NPCs get skills at levels earlier than Clients.  NPCs also ignore class skill availabilty restrictions and skill caps
@@ -438,7 +440,7 @@ NPC::~NPC()
 	AI_Stop();
 	quest_manager.stopalltimers(this);
 
-	if(proximity != nullptr) {
+	if(proximity) {
 		entity_list.RemoveProximity(GetID());
 		safe_delete(proximity);
 	}
@@ -452,17 +454,8 @@ NPC::~NPC()
 	}
 
 	m_loot_items.clear();
-
-	{
-	std::list<struct NPCFaction*>::iterator cur,end;
-	cur = faction_list.begin();
-	end = faction_list.end();
-	for(; cur != end; ++cur) {
-		struct NPCFaction* fac = *cur;
-		safe_delete(fac);
-	}
 	faction_list.clear();
-	}
+
 
 	safe_delete(reface_timer);
 	if (NPCTypedata_ours) {
@@ -2330,26 +2323,27 @@ FACTION_VALUE NPC::GetReverseFactionCon(Mob* iOther) {
 
 //Look through our faction list and return a faction con based
 //on the npc_value for the other person's primary faction in our list.
-FACTION_VALUE NPC::CheckNPCFactionAlly(int32 other_faction) {
-	std::list<struct NPCFaction*>::iterator cur,end;
-	cur = faction_list.begin();
-	end = faction_list.end();
-	for(; cur != end; ++cur) {
-		struct NPCFaction* fac = *cur;
-		if ((int32)fac->factionID == other_faction) {
-			if (fac->npc_value > 0)
+FACTION_VALUE NPC::CheckNPCFactionAlly(int32 other_faction)
+{
+	for (const auto& e : faction_list) {
+		if (e.faction_id == other_faction) {
+			if (e.npc_value > 0) {
 				return FACTION_ALLY;
-			else if (fac->npc_value < 0)
+			}
+			else if (e.npc_value < 0) {
 				return FACTION_SCOWLS;
-			else
+			}
+			else {
 				return FACTION_INDIFFERENTLY;
+			}
 		}
 	}
 	return FACTION_INDIFFERENTLY;
 }
 
-bool NPC::IsFactionListAlly(uint32 other_faction) {
-	return(CheckNPCFactionAlly(other_faction) == FACTION_ALLY);
+bool NPC::IsFactionListAlly(uint32 other_faction) 
+{
+	return CheckNPCFactionAlly(other_faction) == FACTION_ALLY;
 }
 
 uint32 NPC::GetSpawnKillCount()

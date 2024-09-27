@@ -33,6 +33,9 @@
 #include "../common/repositories/lootdrop_repository.h"
 #include "../common/repositories/lootdrop_entries_repository.h"
 #include "../common/repositories/zone_points_repository.h"
+#include "../common/repositories/npc_faction_repository.h"
+#include "../common/repositories/npc_faction_entries_repository.h"
+#include "../common/repositories/skill_caps_repository.h"
 #include "qglobals.h"
 #include "spawn2.h"
 #include "spawngroup.h"
@@ -366,6 +369,13 @@ public:
 	LootdropRepository::Lootdrop GetLootdrop(const uint32 lootdrop_id) const;
 	std::vector<LootdropEntriesRepository::LootdropEntries> GetLootdropEntries(const uint32 lootdrop_id) const;
 
+	void LoadNPCFaction(const uint32 npc_faction_id);
+	void LoadNPCFactions(const std::vector<uint32>& npc_faction_ids);
+	void ClearNPCFactions();
+	void ReloadNPCFactions();
+	NpcFactionRepository::NpcFaction* GetNPCFaction(const uint32 npc_faction_id);
+	std::vector<NpcFactionEntriesRepository::NpcFactionEntries> GetNPCFactionEntries(const uint32 npc_faction_id) const;
+
 private:
 	uint32	zoneid;
 	char*	short_name;
@@ -425,7 +435,11 @@ private:
 	std::vector<LoottableEntriesRepository::LoottableEntries> m_loottable_entries = {};
 	std::vector<LootdropRepository::Lootdrop>                 m_lootdrops = {};
 	std::vector<LootdropEntriesRepository::LootdropEntries>   m_lootdrop_entries = {};
+
+	// Factions
+	std::vector<NpcFactionRepository::NpcFaction>                 m_npc_factions = { };
+	std::vector<NpcFactionEntriesRepository::NpcFactionEntries>   m_npc_faction_entries = { };
+
 };
 
 #endif
-

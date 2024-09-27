@@ -1582,59 +1582,62 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 	if (IsPet() && who->GetLevel() >= 50)
 		return;
 
-	if(!always_succeed && IsClient())
-		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillTaunt, who, zone->skill_difficulty[EQ::skills::SkillTaunt].difficulty);
-
 	int levelDifference = GetLevel() - who->GetLevel();
 
-	//Support for how taunt worked pre 2000 on LIVE - Can not taunt NPC over your level.
-	if (((RuleB(Combat, TauntOverLevel) == false) && (levelDifference < 0)) || who->GetSpecialAbility(SpecialAbility::TauntImmunity)){
+	// Support for how taunt worked pre March 2001 - Can not taunt whites yellows or reds
+	if (((RuleB(Combat, TauntOverLevel) == false) && (levelDifference <= 0)) || who->GetSpecialAbility(SpecialAbility::TauntImmunity)){
 		//Message_StringID(Chat::SpellFailure,FAILED_TAUNT);
 		return;
 	}
 
-	int tauntChance = 50;
+	int tauntChance = 0;
 
 	if (always_succeed)
 	{
 		tauntChance = 100;
 	}
-	else
+	else if (GetSkill(EQ::skills::SkillTaunt) > 0)
 	{
-		/* This is not how Sony did it.  This is a guess that fits the very limited data available.
-		 * Low level players with maxed taunt for their level taunted about 50% on white cons.
-		 * A 65 ranger with 150 taunt skill (max) taunted about 50% on level 60 and under NPCs.
-		 * A 65 warrior with maxed taunt (230) was taunting around 50% on SSeru NPCs.		*/
-
-		/* Rashere in 2006: "your taunt skill was irrelevant if you were above level 60 and taunting
-		 * something that was also above level 60."
-		 * Also: "The chance to taunt an NPC higher level than yourself dropped off at double the rate
-		 * if you were above level 60 than if you were below level 60 making it very hard to taunt creature
-		 * higher level than yourself if you were above level 60."
+		/* Taunt worked in two ways: a skill check for targets under level 60 and a non-skill chance
+		 * for targets 60 and above if the player was also 60 and above.
+		 * Before November 2000, mobs above level 50 were untauntable.  After that patch players could
+		 * taunt mobs above 50 but still not equal to and above their level.
+		 * After March 2001, Sony allowed level 60+ mobs to be tauntable, but they added this in a way
+		 * that did not check the player's skill, which was seemingly an implementation oversight.
+		 * 2001 logs show lower level players taunting mobs above their level, so that March patch
+		 * seems to have allowed mobs above the player's level to be taunted at all levels, not just at 60.
+		 * Old player tests and logs show about a 60% chance to succeed for level 60+ players taunting
+		 * on white or lower targets, including greens.
 		 * 
-		 * See http://www.elitegamerslounge.com/home/soearchive/viewtopic.php?t=81156 */
+		 * See http://www.elitegamerslounge.com/home/soearchive/viewtopic.php?t=81156 
+		 * https://web.archive.org/web/20050101085413/http://www.thesteelwarrior.org/forum/archive/index.php/t-8608.html
+		 * https://web.archive.org/web/20041217221816/http://www.thesteelwarrior.org/forum/archive/index.php/t-1439.html
+		 * https://web.archive.org/web/20060903140908/http://eqforums.station.sony.com/eq/board/message?board.id=warriorbalance&message.id=12360&page=1
+		 */
+		
 		if (GetLevel() >= 60 && levelDifference < 0)
 		{
-			if (levelDifference < -5)
-				tauntChance = 0;
-			else if (levelDifference == -5)
-				tauntChance = 10;
-			else
-				tauntChance = 50 + levelDifference * 10;
+			// This is likely accurate
+			tauntChance = 60 + levelDifference * 10;
 		}
 		else
 		{
-			// this will make the skill difference between the tank classes actually affect success rates
-			// but only for NPCs near the player's level.  Mid to low blues will start to taunt at 50%
-			// even with lower skill
-			tauntChance = 50 * GetSkill(EQ::skills::SkillTaunt) / (who->GetLevel() * 5 + 5);
+			// This is not how Sony did it and is basically made-up.  Logs don't show sub level 60 player
+			// taunt successes because most NPCs were made not to talk during Luclin and most old logs are PoP era,
+			// so there is virtually no data to base this on and we must pull something out of our butts here
+			tauntChance = 60 * GetSkill(EQ::skills::SkillTaunt) / (who->GetLevel() * 5 + 5);
 			tauntChance += levelDifference * 5;
 
-			if (tauntChance > 50)
-				tauntChance = 50;
-			else if (tauntChance < 10)
+			if (tauntChance > 60)
+				tauntChance = 60;
+			else if (tauntChance < 10 && who->GetLevel() < 66)
 				tauntChance = 10;
 		}
+
+		if (IsClient())
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillTaunt, who, zone->skill_difficulty[EQ::skills::SkillTaunt].difficulty);
+
+		Log(Logs::Detail, Logs::Aggro, "Attempting to Taunt with a chance of %i", tauntChance);
 	}
 
 	if (!who->IsOnHatelist(this))
@@ -1642,7 +1645,7 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 		who->CastToNPC()->AddToHateList(this, 20);
 	}
 
-	if (zone->random.Roll(tauntChance))
+	if (tauntChance > 0 && zone->random.Roll(tauntChance))
 	{
 		Mob *topHaterNoBonus = who->GetHateMost(false);
 		Mob *topHater = who->GetHateMost(true);

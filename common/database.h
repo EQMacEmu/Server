@@ -215,7 +215,6 @@ public:
 	uint8	GetMinStatus(uint32 zone_id);
 	uint8	GetServerType();
 	bool	GetSafePoints(const char* short_name, float* safe_x = 0, float* safe_y = 0, float* safe_z = 0, float* safe_heading = 0, int16* minstatus = 0, uint8* minlevel = 0, char *flag_needed = nullptr, uint8* expansion = 0);
-	uint8	GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16 in_level);
 	uint8	GetRaceSkill(uint8 skillid, uint8 in_race);
 	void	ClearMerchantTemp();
 	void	ClearSayLink();

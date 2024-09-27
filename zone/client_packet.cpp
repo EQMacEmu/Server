@@ -51,6 +51,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/zone_numbers.h"
+#include "../common/skill_caps.h"
 #include "data_bucket.h"
 #include "event_codes.h"
 #include "guild_mgr.h"
@@ -77,6 +78,7 @@ extern volatile bool is_zone_loaded;
 extern WorldServer worldserver;
 extern PetitionList petition_list;
 extern EntityList entity_list;
+
 typedef void (Client::*ClientPacketProc)(const EQApplicationPacket *app);
 
 //Use a map for connecting opcodes since it doesn't get used a lot and is sparse
@@ -1635,7 +1637,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 				pps->skills[s] = 254;
 				//If we never get the skill, value is 255. If we qualify for it AND do not need to train it it's 0, 
 				//if we get it but don't yet qualify or it needs to be trained it's 254.
-				uint16 t_level = SkillTrainLevel(currentskill, GetClass());
+				uint16 t_level = GetSkillTrainLevel(currentskill, GetClass());
 				if (t_level <= GetLevel())
 				{
 					if (t_level == 1)
@@ -7017,11 +7019,11 @@ void Client::Handle_OP_Sacrifice(const EQApplicationPacket *app)
 	}
 
 	if (ss->Confirm) {
-		Mob *Caster = entity_list.GetMob(SacrificeCaster);
+		Mob *Caster = entity_list.GetMob(sacrifice_caster_id);
 		if (Caster) Sacrifice(Caster);
 	}
 	PendingSacrifice = false;
-	SacrificeCaster = 0;
+	sacrifice_caster_id = 0;
 }
 
 void Client::Handle_OP_SafeFallSuccess(const EQApplicationPacket *app)	// bit of a misnomer, sent whenever safe fall is used (success of fail)

@@ -1551,56 +1551,6 @@ uint8 Database::GetRaceSkill(uint8 skillid, uint8 in_race)
 	return atoi(row[0]);
 }
 
-uint8 Database::GetSkillCap(uint8 skillid, uint8 in_race, uint8 in_class, uint16 in_level)
-{
-	uint8 skill_level = 0, skill_formula = 0;
-	uint16 base_cap = 0, skill_cap = 0, skill_cap2 = 0, skill_cap3 = 0;
-	
-
-	//Fetch the data from DB.
-	std::string query = StringFormat("SELECT level, formula, pre50cap, post50cap, post60cap from skillcaps where skill = %i && class = %i", skillid, in_class);
-	auto results = QueryDatabase(query);
-
-	if (results.Success() && results.RowsAffected() != 0)
-	{
-		auto row = results.begin();
-		skill_level = atoi(row[0]);
-		skill_formula = atoi(row[1]);
-		skill_cap = atoi(row[2]);
-		if (atoi(row[3]) > skill_cap)
-			skill_cap2 = (atoi(row[3])-skill_cap)/10; //Split the post-50 skill cap into difference between pre-50 cap and post-50 cap / 10 to determine amount of points per level.
-		skill_cap3 = atoi(row[4]);
-	}
-
-	int race_skill = GetRaceSkill(skillid,in_race);
-
-	if (race_skill > 0 && (race_skill > skill_cap || skill_cap == 0 || in_level < skill_level))
-		return race_skill;
-
-	if (skill_cap == 0) //Can't train this skill at all.
-		return 255; //Untrainable
-
-	if (in_level < skill_level)
-		return 254; //Untrained
-
-	//Determine pre-51 level-based cap
-	if (skill_formula > 0)
-		base_cap = in_level*skill_formula+skill_formula;
-	if (base_cap > skill_cap || skill_formula == 0)
-		base_cap = skill_cap;
-
-	//If post 50, add post 50 cap to base cap.
-	if (in_level > 50 && skill_cap2 > 0)
-		base_cap += skill_cap2*(in_level-50);
-
-	//No cap should ever go above its post50cap
-	if (skill_cap3 > 0 && base_cap > skill_cap3)
-		base_cap = skill_cap3;
-
-	//Base cap is now the max value at the person's level, return it!
-	return base_cap;
-}
-
 uint32 Database::GetCharacterInfo(const char* iName, uint32* oAccID, uint32* oZoneID, float* oX, float* oY, float* oZ) { 
 	std::string query = StringFormat("SELECT `id`, `account_id`, `zone_id`, `x`, `y`, `z` FROM `character_data` WHERE `name` = '%s'", iName);
 	auto results = QueryDatabase(query);

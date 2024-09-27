@@ -30,7 +30,7 @@ public:
 	void	LSUpdate(ZoneServer* zoneserver);
 	void	LSZoneChange(ZoneToZone_Struct* ztz);
 	bool	CheckAuth(uint32 iLSID, const char* key);
-	bool	CheckAuth(const char* iName, MD5& iMD5Password);
+	bool	CheckAuth(const char* iName, const MD5& iMD5Password);
 	bool	CheckAuth(uint32 id, const char* key, uint32 ip);
 	void	SetOnline(ZoneServer* iZS, int8 iOnline);
 	void	SetOnline(int8 iOnline = CLE_Status_Online);

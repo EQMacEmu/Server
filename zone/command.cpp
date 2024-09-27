@@ -202,6 +202,7 @@ int command_init(void)
 		command_add("petition", "Handles everything petition related. Use with no args or with 'help' for how to use.", AccountStatus::ApprenticeGuide, command_petition) ||
 		command_add("pf", "Display additional mob coordinate and wandering data.", AccountStatus::GMStaff, command_pf) ||
 		command_add("playsound", "[number] - Plays a sound in the client.  Valid range 0-3999", AccountStatus::ApprenticeGuide, command_playsound) ||
+		command_add("profanity", "Manage censored language.", AccountStatus::GMLeadAdmin, command_profanity) ||
 		command_add("push", "[pushback] [pushup] - Pushes the target the specified amount.", AccountStatus::GMImpossible, command_push) ||
 
 		command_add("qtest", "QueryServ testing command.", AccountStatus::GMTester, command_qtest) ||
@@ -898,6 +899,7 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/petition.cpp"
 #include "gm_commands/pf.cpp"
 #include "gm_commands/playsound.cpp"
+#include "gm_commands/profanity.cpp"
 #include "gm_commands/push.cpp"
 #include "gm_commands/qtest.cpp"
 #include "gm_commands/raidloot.cpp"

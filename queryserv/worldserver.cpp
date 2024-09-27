@@ -36,7 +36,7 @@
 
 extern WorldServer worldserver;
 extern const queryservconfig *Config;
-extern Database database;
+extern QSDatabase database;
 
 WorldServer::WorldServer() : WorldConnection(EmuTCPConnection::packetModeQueryServ, Config->SharedKey.c_str())
 {

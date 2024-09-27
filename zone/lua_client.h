@@ -247,7 +247,8 @@ public:
 	void QuestReward(Lua_Mob target, luabind::adl::object reward);
 	int GetHandToHandDamage();
 	int GetHandToHandDelay();
-
+	uint8 GetSkillTrainLevel(int skill_id);
+	void MaxSkills();
 	bool SendGMCommand(std::string message);
 	bool SendGMCommand(std::string message, bool ignore_status);
 

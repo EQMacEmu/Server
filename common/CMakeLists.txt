@@ -60,6 +60,7 @@ SET(common_sources
 	path_manager.cpp
 	process/process.cpp
 	proc_launcher.cpp
+	profanity_manager.cpp
 	ptimer.cpp
 	races.cpp
 	rdtsc.cpp
@@ -69,6 +70,7 @@ SET(common_sources
 	sha1.cpp
 	shareddb.cpp
 	skills.cpp
+	skill_caps.cpp
 	spdat.cpp
 	strings.cpp
 	struct_strategy.cpp
@@ -358,7 +360,6 @@ SET(common_headers
 	eq_stream_proxy.h
 	eq_stream_type.h
 	eqtime.h
-	errmsg.h
 	extprofile.h
 	faction.h
 	fastmath.h
@@ -396,6 +397,7 @@ SET(common_headers
 	platform.h
 	process/process.h
 	proc_launcher.h
+	profanity_manager.h
 	profiler.h
 	ptimer.h
 	queue.h
@@ -411,6 +413,7 @@ SET(common_headers
 	sha1.h
 	shareddb.h
 	skills.h
+	skill_caps.h
 	spdat.h
     	strings.h
 	struct_strategy.h

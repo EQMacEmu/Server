@@ -1409,6 +1409,7 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		);
 	}
 
+	std::vector<uint32> npc_faction_ids;
 	std::vector<uint32> loottable_ids;
 
     // Otherwise, get NPCs from database.
@@ -1507,6 +1508,18 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		t->eyecolor2 = n.luclin_eyecolor2;
 		t->beardcolor = n.luclin_beardcolor;
 		t->beard = n.luclin_beard;
+
+		if (t->npc_faction_id > 0) {
+			if (
+				std::find(
+					npc_faction_ids.begin(),
+					npc_faction_ids.end(),
+					t->npc_faction_id
+				) == npc_faction_ids.end()
+				) {
+				npc_faction_ids.emplace_back(t->npc_faction_id);
+			}
+		}
 
 		uint32 armor_tint_id = n.armortint_id;
 
@@ -1608,6 +1621,10 @@ const NPCType* ZoneDatabase::LoadNPCTypesData(uint32 id, bool bulk_load)
 		zone->npctable[t->npc_id] = t;
 		npc = t;
 
+	}
+
+	if (!npc_faction_ids.empty()) {
+		zone->LoadNPCFactions(npc_faction_ids);
 	}
 
 	zone->LoadLootTables(loottable_ids);
@@ -2439,30 +2456,6 @@ std::string ZoneDatabase::GetFactionName(int32 faction_id)
 }
 
 //o--------------------------------------------------------------
-//| Name: GetNPCFactionList; Dec. 16, 2001
-//o--------------------------------------------------------------
-//| Purpose: Gets a list of faction_id's and values bound to the npc_id. Returns false on failure.
-//o--------------------------------------------------------------
-bool ZoneDatabase::GetNPCFactionList(uint32 npcfaction_id, int32* faction_id, int32* value, uint8* temp, int32* primary_faction) {
-	if (npcfaction_id <= 0) {
-		if (primary_faction)
-			*primary_faction = npcfaction_id;
-		return true;
-	}
-	const NPCFactionList* nfl = GetNPCFactionEntry(npcfaction_id);
-	if (!nfl)
-		return false;
-	if (primary_faction)
-		*primary_faction = nfl->primaryfaction;
-	for (int i=0; i<MAX_NPC_FACTIONS; i++) {
-		faction_id[i] = nfl->factionid[i];
-		value[i] = nfl->factionvalue[i];
-		temp[i] = nfl->factiontemp[i];
-	}
-	return true;
-}
-
-//o--------------------------------------------------------------
 //| Name: SetCharacterFactionLevel; Dec. 20, 2001
 //o--------------------------------------------------------------
 //| Purpose: Update characters faction level with specified faction_id to specified value. Returns false on failure.
@@ -2541,45 +2534,38 @@ bool ZoneDatabase::LoadFactionData()
 	return true;
 }
 
-bool ZoneDatabase::GetFactionIdsForNPC(uint32 nfl_id, std::list<struct NPCFaction*> *faction_list, int32* primary_faction) {
-	if (nfl_id <= 0) {
-		std::list<struct NPCFaction*>::iterator cur,end;
-		cur = faction_list->begin();
-		end = faction_list->end();
-		for(; cur != end; ++cur) {
-			struct NPCFaction* tmp = *cur;
-			safe_delete(tmp);
+bool ZoneDatabase::GetFactionIDsForNPC(
+	uint32 npc_faction_id,
+	std::list<NpcFactionEntriesRepository::NpcFactionEntries>* faction_list,
+	int32* primary_faction
+)
+{
+	if (npc_faction_id <= 0) {
+		faction_list->clear();
+
+		if (primary_faction) {
+			*primary_faction = npc_faction_id;
 		}
 
-		faction_list->clear();
-		if (primary_faction)
-			*primary_faction = nfl_id;
 		return true;
 	}
-	const NPCFactionList* nfl = GetNPCFactionEntry(nfl_id);
-	if (!nfl)
-		return false;
-	if (primary_faction)
-		*primary_faction = nfl->primaryfaction;
 
-	std::list<struct NPCFaction*>::iterator cur,end;
-	cur = faction_list->begin();
-	end = faction_list->end();
-	for(; cur != end; ++cur) {
-		struct NPCFaction* tmp = *cur;
-		safe_delete(tmp);
+	const auto& npcf = zone->GetNPCFaction(npc_faction_id);
+	if (!npcf) {
+		LogError("No NPC faction entry for [{}]", npc_faction_id);
+		return false;
 	}
+
+	const auto& l = zone->GetNPCFactionEntries(npc_faction_id);
+
+	if (primary_faction) {
+		*primary_faction = npcf->primaryfaction;
+	}
+
 	faction_list->clear();
-	for (int i=0; i<MAX_NPC_FACTIONS; i++) {
-		struct NPCFaction *pFac;
-		if (nfl->factionid[i]) {
-			pFac = new struct NPCFaction;
-			pFac->factionID = nfl->factionid[i];
-			pFac->value_mod = nfl->factionvalue[i];
-			pFac->npc_value = nfl->factionnpcvalue[i];
-			pFac->temp = nfl->factiontemp[i];
-			faction_list->push_back(pFac);
-		}
+
+	for (const auto& e: l) {
+		faction_list->emplace_back(e);
 	}
 	return true;
 }
@@ -2592,59 +2578,51 @@ bool ZoneDatabase::SameFactions(uint32 npcfaction_id1, uint32 npcfaction_id2)
 	if (npcfaction_id1 == npcfaction_id2)
 		return true;
 
-	const NPCFactionList* nfl1 = GetNPCFactionEntry(npcfaction_id1);
-	const NPCFactionList* nfl2 = GetNPCFactionEntry(npcfaction_id2);
+	const auto nfl1 = zone->GetNPCFaction(npcfaction_id1);
+	const auto nfl2 = zone->GetNPCFaction(npcfaction_id2);
 
-	if (!nfl1 || !nfl2)
-	{
+	if (!nfl1 || !nfl2) {
 		return false;
 	}
 
-	if (nfl1->primaryfaction != nfl2->primaryfaction)
-	{
+	if (nfl1->primaryfaction != nfl2->primaryfaction) {
 		return false;
 	}
 
-	for (int i = 0; i<MAX_NPC_FACTIONS; i++) 
-	{
-		uint32 faction = nfl1->factionid[i];
+	const auto& l1 = zone->GetNPCFactionEntries(npcfaction_id1);
+	const auto& l2 = zone->GetNPCFactionEntries(npcfaction_id2);
+
+
+	for (const auto& e1 : l1) {
+		uint32 faction = nfl1->id;
 		// Skip primary faction, since it will cause NPCs to assist, but may not have a faction hit (templeveeshan mobs as an example.)
-		if (faction != nfl1->primaryfaction)
-		{
+		if (faction != nfl1->primaryfaction){
 			bool found = false;
-			for (int x = 0; x < MAX_NPC_FACTIONS; x++)
-			{
-				if (faction == nfl2->factionid[x])
-				{
+			for (const auto& e2 : l2) {
+				if (faction == nfl2->id) {
 					found = true;
 					break;
 				}
 			}
 
-			if (!found)
-			{
+			if (!found)	{
 				return false;
 			}
 		}
 	}
 
-	for (int i = 0; i<MAX_NPC_FACTIONS; i++)
-	{
-		uint32 faction = nfl2->factionid[i];
-		if (faction != nfl2->primaryfaction)
-		{
+	for (const auto& e2 : l2) {
+		uint32 faction = nfl2->id;
+		if (faction != nfl2->primaryfaction) {
 			bool found = false;
-			for (int x = 0; x < MAX_NPC_FACTIONS; x++)
-			{
-				if (faction == nfl1->factionid[x])
-				{
+			for (const auto& e1 : l1) {
+				if (faction == nfl1->id) {
 					found = true;
 					break;
 				}
 			}
 
-			if (!found)
-			{
+			if (!found)	{
 				return false;
 			}
 		}

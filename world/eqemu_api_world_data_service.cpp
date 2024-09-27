@@ -122,6 +122,7 @@ std::vector<Reload> reload_types = {
 	Reload{.command = "objects", .opcode = ServerOP_ReloadObjects, .desc = "Objects"},
 	Reload{.command = "opcodes", .opcode = ServerOP_ReloadOpcodes, .desc = "Opcodes"},
 	Reload{.command = "rules", .opcode = ServerOP_ReloadRules, .desc = "Rules"},
+	Reload{.command = "skill_caps", .opcode = ServerOP_ReloadSkillCaps, .desc = "Skill Caps"},
 	Reload{.command = "static", .opcode = ServerOP_ReloadStaticZoneData, .desc = "Static Zone Data"},
 	Reload{.command = "titles", .opcode = ServerOP_ReloadTitles, .desc = "Titles"},
 	Reload{.command = "traps", .opcode = ServerOP_ReloadTraps, .desc = "Traps"},

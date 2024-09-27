@@ -87,18 +87,6 @@ public:
 		uint32 GetSharedItemsCount() { return m_shared_items_count; }
 		uint32 GetItemsCount();
 
-		//faction lists
-		void GetFactionListInfo(uint32 &list_count, uint32 &max_lists);
-		const NPCFactionList* GetNPCFactionEntry(uint32 id);
-		void LoadNPCFactionLists(void *data, uint32 size, uint32 list_count, uint32 max_lists);
-		bool LoadNPCFactionLists(const std::string &prefix);
-
-		//skills
-		void LoadSkillCaps(void *data);
-		bool LoadSkillCaps(const std::string &prefix);
-		uint16 GetSkillCap(uint8 Class_, EQ::skills::SkillType Skill, uint8 Level);
-		uint8 GetTrainLevel(uint8 Class_, EQ::skills::SkillType Skill, uint8 Level);
-
 		//spells
 		int GetMaxSpellID();
 		bool LoadSpells(const std::string &prefix, int32 *records, const SPDat_Spell_Struct **sp);

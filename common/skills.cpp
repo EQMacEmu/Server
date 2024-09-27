@@ -17,6 +17,7 @@
 */
 
 #include "skills.h"
+#include "classes.h"
 
 #include <string.h>
 

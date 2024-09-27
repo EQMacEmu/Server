@@ -139,6 +139,7 @@ void command_path(Client *c, const Seperator *sep);
 void command_pf(Client *c, const Seperator *sep);
 void command_petition(Client *c, const Seperator *sep);
 void command_playsound(Client *c, const Seperator *sep);
+void command_profanity(Client* c, const Seperator* sep);
 void command_push(Client *c, const Seperator *sep);
 void command_qtest(Client *c, const Seperator *sep);
 void command_raidloot(Client *c, const Seperator *sep);

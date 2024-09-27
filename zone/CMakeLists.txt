@@ -91,6 +91,7 @@ SET(zone_sources
 	zone_config.cpp
 	zonedb.cpp
 	zone_event_scheduler.cpp
+	zone_npc_factions.cpp
 	zone_reload.cpp
 	zoning.cpp
 )
@@ -107,7 +108,6 @@ SET(zone_headers
 	doors.h
 	encounter.h
 	entity.h
-	errmsg.h
 	event_codes.h
 	forage.h
 	global_loot_manager.h

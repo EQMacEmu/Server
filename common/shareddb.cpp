@@ -433,10 +433,10 @@ bool SharedDatabase::LoadItems(const std::string &prefix)
 		EQ::IPCMutex mutex("items");
 		mutex.Lock();
 		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("items"));
-		LogInfo("Attempting to load file [{0}]", file_name);
 		items_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		items_hash = std::unique_ptr<EQ::FixedMemoryHashSet<EQ::ItemData>>(new EQ::FixedMemoryHashSet<EQ::ItemData>(reinterpret_cast<uint8*>(items_mmf->Get()), items_mmf->Size()));
 		mutex.Unlock();
+
 	} catch(std::exception& ex) {
 		LogError("Error Loading Items: {0}", ex.what());
 		return false;
@@ -733,111 +733,6 @@ std::string SharedDatabase::GetBook(const char *txtfile)
     return txtout;
 }
 
-void SharedDatabase::GetFactionListInfo(uint32 &list_count, uint32 &max_lists) 
-{
-	list_count = 0;
-	max_lists = 0;
-
-	const std::string query = "SELECT COUNT(*), MAX(id) FROM npc_faction";
-	auto results = QueryDatabase(query);
-	if (!results.Success()) {
-        return;
-	}
-
-	if (results.RowCount() == 0)
-        return;
-
-    auto row = results.begin();
-
-    list_count = static_cast<uint32>(atoul(row[0]));
-    max_lists = static_cast<uint32>(atoul(row[1] ? row[1] : "0"));
-}
-
-const NPCFactionList* SharedDatabase::GetNPCFactionEntry(uint32 id)
-{
-	if(!faction_hash) {
-		return nullptr;
-	}
-
-	if(faction_hash->exists(id)) {
-		return &(faction_hash->at(id));
-	}
-
-	return nullptr;
-}
-
-void SharedDatabase::LoadNPCFactionLists(void *data, uint32 size, uint32 list_count, uint32 max_lists)
-{
-	EQ::FixedMemoryHashSet<NPCFactionList> hash(reinterpret_cast<uint8*>(data), size, list_count, max_lists);
-	NPCFactionList faction;
-
-	const std::string query = "SELECT npc_faction.id, npc_faction.primaryfaction, npc_faction.ignore_primary_assist, "
-                            "npc_faction_entries.faction_id, npc_faction_entries.value, npc_faction_entries.npc_value, "
-                            "npc_faction_entries.temp FROM npc_faction LEFT JOIN npc_faction_entries "
-                            "ON npc_faction.id = npc_faction_entries.npc_faction_id ORDER BY npc_faction_entries.npc_faction_id, npc_faction_entries.sort_order;";
-    auto results = QueryDatabase(query);
-    if (!results.Success()) {
-		return;
-    }
-
-    uint32 current_id = 0;
-    uint32 current_entry = 0;
-
-    for(auto row = results.begin(); row != results.end(); ++row) {
-        uint32 id = static_cast<uint32>(atoul(row[0]));
-        if(id != current_id) {
-            if(current_id != 0) {
-                hash.insert(current_id, faction);
-            }
-
-            memset(&faction, 0, sizeof(faction));
-            current_entry = 0;
-            current_id = id;
-            faction.id = id;
-            faction.primaryfaction = static_cast<uint32>(atoul(row[1]));
-            faction.assistprimaryfaction = (atoi(row[2]) == 0);
-        }
-
-        if(!row[3])
-            continue;
-
-        if(current_entry >= MAX_NPC_FACTIONS)
-				continue;
-
-        faction.factionid[current_entry] = static_cast<uint32>(atoul(row[3]));
-        faction.factionvalue[current_entry] = static_cast<int32>(atoi(row[4]));
-        faction.factionnpcvalue[current_entry] = static_cast<int8>(atoi(row[5]));
-        faction.factiontemp[current_entry] = static_cast<uint8>(atoi(row[6]));
-        ++current_entry;
-    }
-
-    if(current_id != 0)
-        hash.insert(current_id, faction);
-
-}
-
-bool SharedDatabase::LoadNPCFactionLists(const std::string &prefix)
-{
-	faction_mmf.reset(nullptr);
-	faction_hash.reset(nullptr);
-
-	try {
-		auto Config = EQEmuConfig::get();
-		EQ::IPCMutex mutex("faction");
-		mutex.Lock();
-		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("faction"));
-		LogInfo("Attempting to load file [{0}]", file_name);
-		faction_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
-		faction_hash = std::unique_ptr<EQ::FixedMemoryHashSet<NPCFactionList>>(new EQ::FixedMemoryHashSet<NPCFactionList>(reinterpret_cast<uint8*>(faction_mmf->Get()), faction_mmf->Size()));
-		mutex.Unlock();
-	} catch(std::exception& ex) {
-		LogError("Error Loading npc factions: {0}", ex.what());
-		return false;
-	}
-
-	return true;
-}
-
 // Create appropriate ItemInst class
 EQ::ItemInstance* SharedDatabase::CreateItem(uint32 item_id, int8 charges)
 {
@@ -1068,139 +963,6 @@ bool SharedDatabase::GetCommandSubSettings(std::vector<CommandSubsettingsReposit
 	return true;
 }
 
-bool SharedDatabase::LoadSkillCaps(const std::string &prefix)
-{
-	skill_caps_mmf.reset(nullptr);
-
-	uint32 class_count = Class::PLAYER_CLASS_COUNT;
-	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
-	uint32 level_count = HARD_LEVEL_CAP + 1;
-	uint32 size = (class_count * skill_count * level_count * sizeof(uint16));
-
-	try {
-		auto Config = EQEmuConfig::get();
-		EQ::IPCMutex mutex("skill_caps");
-		mutex.Lock();
-		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("skill_caps"));
-		LogInfo("Attempting to load file [{0}]", file_name);
-		skill_caps_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
-		mutex.Unlock();
-	} catch(std::exception &ex) {
-		LogError("Error loading skill caps: {0}", ex.what());
-		return false;
-	}
-
-	return true;
-}
-
-void SharedDatabase::LoadSkillCaps(void *data)
-{
-	uint32 class_count = Class::PLAYER_CLASS_COUNT;
-	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
-	uint32 level_count = HARD_LEVEL_CAP + 1;
-	uint16 *skill_caps_table = reinterpret_cast<uint16*>(data);
-
-	const std::string query = "SELECT skillID, class, level, cap FROM skill_caps ORDER BY skillID, class, level";
-	auto results = QueryDatabase(query);
-	if (!results.Success()) {
-        LogError("Error loading skill caps from database: {0}", results.ErrorMessage().c_str());
-        return;
-	}
-
-    for(auto row = results.begin(); row != results.end(); ++row) {
-        uint8 skillID = atoi(row[0]);
-        uint8 class_ = atoi(row[1]) - 1;
-        uint8 level = atoi(row[2]);
-        uint16 cap = atoi(row[3]);
-
-        if(skillID >= skill_count || class_ >= class_count || level >= level_count)
-            continue;
-
-        uint32 index = (((class_ * skill_count) + skillID) * level_count) + level;
-        skill_caps_table[index] = cap;
-    }
-}
-
-uint16 SharedDatabase::GetSkillCap(uint8 Class_, EQ::skills::SkillType Skill, uint8 Level) 
-{
-	if(!skill_caps_mmf) {
-		return 0;
-	}
-
-	if(Class_ == 0)
-		return 0;
-
-	int SkillMaxLevel = RuleI(Character, SkillCapMaxLevel);
-	if(SkillMaxLevel < 1) {
-		SkillMaxLevel = RuleI(Character, MaxLevel);
-	}
-
-	uint32 class_count = Class::PLAYER_CLASS_COUNT;
-	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
-	uint32 level_count = HARD_LEVEL_CAP + 1;
-	if(Class_ > class_count || static_cast<uint32>(Skill) > skill_count || Level > level_count) {
-		return 0;
-	}
-
-	if(Level > static_cast<uint8>(SkillMaxLevel)){
-		Level = static_cast<uint8>(SkillMaxLevel);
-	}
-
-	uint32 index = ((((Class_ - 1) * skill_count) + Skill) * level_count) + Level;
-	uint16 *skill_caps_table = reinterpret_cast<uint16*>(skill_caps_mmf->Get());
-	return skill_caps_table[index];
-}
-
-uint8 SharedDatabase::GetTrainLevel(uint8 Class_, EQ::skills::SkillType Skill, uint8 Level)
-{
-	if(!skill_caps_mmf) {
-		return 0;
-	}
-
-	if(Class_ == 0)
-		return 0;
-
-	int SkillMaxLevel = RuleI(Character, SkillCapMaxLevel);
-	if (SkillMaxLevel < 1) {
-		SkillMaxLevel = RuleI(Character, MaxLevel);
-	}
-
-	uint32 class_count = Class::PLAYER_CLASS_COUNT;
-	uint32 skill_count = EQ::skills::HIGHEST_SKILL + 1;
-	uint32 level_count = HARD_LEVEL_CAP + 1;
-	if(Class_ > class_count || static_cast<uint32>(Skill) > skill_count || Level > level_count) {
-		return 0;
-	}
-
-	uint8 ret = 0;
-	if(Level > static_cast<uint8>(SkillMaxLevel)) {
-		uint32 index = ((((Class_ - 1) * skill_count) + Skill) * level_count);
-		uint16 *skill_caps_table = reinterpret_cast<uint16*>(skill_caps_mmf->Get());
-		for(uint8 x = 0; x < Level; x++){
-			if(skill_caps_table[index + x]){
-				ret = x;
-				break;
-			}
-		}
-	}
-	else
-	{
-		uint32 index = ((((Class_ - 1) * skill_count) + Skill) * level_count);
-		uint16 *skill_caps_table = reinterpret_cast<uint16*>(skill_caps_mmf->Get());
-		for(int x = 0; x < SkillMaxLevel; x++){
-			if(skill_caps_table[index + x]){
-				ret = x;
-				break;
-			}
-		}
-	}
-
-	if(ret > GetSkillCap(Class_, Skill, Level))
-		ret = static_cast<uint8>(GetSkillCap(Class_, Skill, Level));
-
-	return ret;
-}
-
 void SharedDatabase::LoadDamageShieldTypes(SPDat_Spell_Struct* sp, int32 iMaxSpellID)
 {
 
@@ -1243,10 +1005,12 @@ bool SharedDatabase::LoadSpells(const std::string &prefix, int32 *records, const
 	
 		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("spells"));
 		spells_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
-		LogInfo("Attempting to load file [{0}]", file_name);
+		LogInfo("Loading [{}]", file_name);
 		*records = *reinterpret_cast<uint32*>(spells_mmf->Get());
 		*sp = reinterpret_cast<const SPDat_Spell_Struct*>((char*)spells_mmf->Get() + 4);
 		mutex.Unlock();
+
+		LogInfo("Loaded [{}] spells via shared memory", Strings::Commify(m_shared_spells_count));
 	}
 	catch(std::exception& ex) {
 		LogError("Error Loading Spells: {0}", ex.what());

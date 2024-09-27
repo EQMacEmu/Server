@@ -189,7 +189,7 @@ void Console::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_
 		return;
 	if (to_guilddbid != 0 || to_minstatus > Admin())
 		return;
-	SendMessage(1, message);
+	SendMessage(1, "%s", message);
 }
 
 void Console::SendMessage(uint8 newline, const char* message, ...) {

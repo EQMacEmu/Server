@@ -26,7 +26,7 @@
 #include "../common/eqemu_logsys.h"
 #include "../common/global_define.h"
 #include "../common/types.h"
-#include "../common/dbcore.h"
+#include "../common/database.h"
 #include "../common/linked_list.h"
 #include "../common/servertalk.h"
 
@@ -37,12 +37,8 @@
 //atoi is not uint32 or uint32 safe!!!!
 #define atoul(str) strtoul(str, nullptr, 10)
 
-class Database : public DBcore {
+class QSDatabase : public Database {
 public:
-	Database();
-	~Database();
-	Database(const char* host, const char* user, const char* passwd, const char* database, uint32 port);
-	bool Connect(const char* host, const char* user, const char* passwd, const char* database, uint32 port);
 
 	void LogPlayerAARateHourly(QSPlayerAARateHourly_Struct* QS, uint32 items);
 	void LogPlayerAAPurchase(QSPlayerAAPurchase_Struct* QS, uint32 items);
@@ -92,11 +88,6 @@ public:
 	bool Check_ItemMove_Tables();
 	bool Create_ItemMove_Table();
 	bool Copy_ItemMove_Record();
-
-protected:
-	void HandleMysqlError(uint32 errnum);
-private:
-	void DBInitVars();
 
 };
 

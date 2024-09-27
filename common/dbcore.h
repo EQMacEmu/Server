@@ -13,6 +13,9 @@
 #include <mysql.h>
 #include <string.h>
 
+#define CR_SERVER_GONE_ERROR    2006
+#define CR_SERVER_LOST          2013
+
 class DBcore {
 public:
 	enum eStatus { Closed, Connected, Error };

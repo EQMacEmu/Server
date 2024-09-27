@@ -18,6 +18,8 @@
 #include "../common/data_verification.h"
 #include "../common/opcodemgr.h"
 #include "../common/zone_store.h"
+#include "../common/content/world_content_service.h"
+#include "../common/skill_caps.h"
 
 #include "client.h"
 #include "worlddb.h"

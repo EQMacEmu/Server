@@ -36,6 +36,8 @@
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
 #include "../common/patches/patches.h"
+#include "../common/skill_caps.h"
+#include "../common/profanity_manager.h"
 
 #include "client.h"
 #include "command.h"
@@ -684,6 +686,12 @@ void WorldServer::Process() {
 
 				LogInfo("Time Broadcast Packet: {}", time_string);
 				zone->GotCurTime(true);
+			}
+			break;
+		}
+		case ServerOP_RefreshCensorship: {
+			if (!EQ::ProfanityManager::LoadProfanityList(&database)) {
+				LogInfo("Received request to refresh the profanity list..but, the action failed");
 			}
 			break;
 		}
@@ -1768,6 +1776,15 @@ void WorldServer::Process() {
 			entity_list.RespawnAllDoors();
 			break;
 		}
+		case ServerOP_ReloadFactions:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Factions");
+				database.LoadFactionData();
+				zone->ReloadNPCFactions();
+			}
+			break;
+		}
 		case ServerOP_ReloadGroundSpawns:
 		{
 			zone->SendReloadMessage("Ground Spawns");
@@ -1837,6 +1854,14 @@ void WorldServer::Process() {
 			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
 			break;
 		}
+		case ServerOP_ReloadSkillCaps:
+		{
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Skill Caps");
+				skill_caps.ReloadSkillCaps();
+			}
+			break;
+		}
 		case ServerOP_ReloadStaticZoneData: {
 			zone->SendReloadMessage("Static Zone Data");
 			zone->ReloadStaticData();
@@ -1902,16 +1927,6 @@ void WorldServer::Process() {
 				LogError("Loading items FAILED!");
 			}
 
-			LogInfo("Loading npc faction lists");
-			if(!database.LoadNPCFactionLists(hotfix_name)) {
-				LogError("Loading npcs faction lists FAILED!");
-			}
-
-			LogInfo("Loading skill caps");
-			if(!database.LoadSkillCaps(std::string(hotfix_name))) {
-				LogError("Loading skill caps FAILED!");
-			}
-
 			LogInfo("Loading spells");
 			if(!database.LoadSpells(hotfix_name, &SPDAT_RECORDS, &spells)) {
 				LogError("Loading spells FAILED!");
@@ -1920,8 +1935,8 @@ void WorldServer::Process() {
 		}
 		case ServerOP_ReloadSkills: 
 		{
-			if(zone)
-			{
+			if(zone) {
+				zone->SendReloadMessage("Skill Difficulty");
 				zone->skill_difficulty.clear();
 				zone->LoadSkillDifficulty();
 			}

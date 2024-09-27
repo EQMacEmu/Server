@@ -6,7 +6,7 @@
  * Any modifications to base repositories are to be made by the generator only
  *
  * @generator ./utils/scripts/generators/repository-generator.pl
- * @docs https://eqemu.gitbook.io/server/in-development/developer-area/repositories
+ * @docs https://docs.eqemu.io/developer/repositories
  */
 
 #ifndef EQEMU_BASE_NPC_FACTION_REPOSITORY_H
@@ -15,7 +15,6 @@
 #include "../../database.h"
 #include "../../strings.h"
 #include <ctime>
-
 
 class BaseNpcFactionRepository {
 public:
@@ -128,10 +127,10 @@ public:
 		if (results.RowCount() == 1) {
 			NpcFaction e{};
 
-			e.id                    = static_cast<int32_t>(atoi(row[0]));
+			e.id                    = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name                  = row[1] ? row[1] : "";
-			e.primaryfaction        = static_cast<int32_t>(atoi(row[2]));
-			e.ignore_primary_assist = static_cast<int8_t>(atoi(row[3]));
+			e.primaryfaction        = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.ignore_primary_assist = row[3] ? static_cast<int8_t>(atoi(row[3])) : 0;
 
 			return e;
 		}
@@ -259,10 +258,10 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			NpcFaction e{};
 
-			e.id                    = static_cast<int32_t>(atoi(row[0]));
+			e.id                    = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name                  = row[1] ? row[1] : "";
-			e.primaryfaction        = static_cast<int32_t>(atoi(row[2]));
-			e.ignore_primary_assist = static_cast<int8_t>(atoi(row[3]));
+			e.primaryfaction        = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.ignore_primary_assist = row[3] ? static_cast<int8_t>(atoi(row[3])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -287,10 +286,10 @@ public:
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			NpcFaction e{};
 
-			e.id                    = static_cast<int32_t>(atoi(row[0]));
+			e.id                    = row[0] ? static_cast<int32_t>(atoi(row[0])) : 0;
 			e.name                  = row[1] ? row[1] : "";
-			e.primaryfaction        = static_cast<int32_t>(atoi(row[2]));
-			e.ignore_primary_assist = static_cast<int8_t>(atoi(row[3]));
+			e.primaryfaction        = row[2] ? static_cast<int32_t>(atoi(row[2])) : 0;
+			e.ignore_primary_assist = row[3] ? static_cast<int8_t>(atoi(row[3])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -349,6 +348,68 @@ public:
 		return (results.Success() && results.begin()[0] ? strtoll(results.begin()[0], nullptr, 10) : 0);
 	}
 
+	static std::string BaseReplace()
+	{
+		return fmt::format(
+			"REPLACE INTO {} ({}) ",
+			TableName(),
+			ColumnsRaw()
+		);
+	}
+
+	static int ReplaceOne(
+		Database& db,
+		const NpcFaction &e
+	)
+	{
+		std::vector<std::string> v;
+
+		v.push_back(std::to_string(e.id));
+		v.push_back("'" + Strings::Escape(e.name) + "'");
+		v.push_back(std::to_string(e.primaryfaction));
+		v.push_back(std::to_string(e.ignore_primary_assist));
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES ({})",
+				BaseReplace(),
+				Strings::Implode(",", v)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
+	static int ReplaceMany(
+		Database& db,
+		const std::vector<NpcFaction> &entries
+	)
+	{
+		std::vector<std::string> insert_chunks;
+
+		for (auto &e: entries) {
+			std::vector<std::string> v;
+
+			v.push_back(std::to_string(e.id));
+			v.push_back("'" + Strings::Escape(e.name) + "'");
+			v.push_back(std::to_string(e.primaryfaction));
+			v.push_back(std::to_string(e.ignore_primary_assist));
+
+			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
+		}
+
+		std::vector<std::string> v;
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"{} VALUES {}",
+				BaseReplace(),
+				Strings::Implode(",", insert_chunks)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
 };
 
 #endif //EQEMU_BASE_NPC_FACTION_REPOSITORY_H

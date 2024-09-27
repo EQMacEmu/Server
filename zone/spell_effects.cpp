@@ -1801,7 +1801,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Sacrifice");
 #endif
-				if(!IsClient()){
+				if (!caster || !IsClient()) {
 					break;
 				}
 				CastToClient()->SacrificeConfirm(caster);
