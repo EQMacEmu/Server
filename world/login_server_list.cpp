@@ -55,43 +55,11 @@ void LoginServerList::Add(const char* iAddress, uint16 iPort, const char* Accoun
 	list.Insert(loginserver);
 }
 
-bool LoginServerList::Process() {
-	LinkedListIterator<LoginServer*> iterator(list);
-
-	iterator.Reset();
-	while(iterator.MoreElements()){
-		iterator.GetData()->Process();
-		iterator.Advance();
-	}
-	return true;
-}
-
-#ifdef _WINDOWS
-void AutoInitLoginServer(void *tmp) {
-#else
-void *AutoInitLoginServer(void *tmp) {
-#endif
-	loginserverlist.InitLoginServer();
-#ifndef WIN32
-	return 0;
-#endif
-}
-
-void LoginServerList::InitLoginServer() {
-	LinkedListIterator<LoginServer*> iterator(list);
-
-	iterator.Reset();
-	while(iterator.MoreElements()){
-		iterator.GetData()->InitLoginServer();
-		iterator.Advance();
-	}
-}
-
 bool LoginServerList::SendInfo() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
+	while (iterator.MoreElements()) {
 		iterator.GetData()->SendInfo();
 		iterator.Advance();
 	}
@@ -102,7 +70,7 @@ bool LoginServerList::SendNewInfo() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
+	while (iterator.MoreElements()) {
 		iterator.GetData()->SendNewInfo();
 		iterator.Advance();
 	}
@@ -113,7 +81,7 @@ bool LoginServerList::SendStatus() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
+	while (iterator.MoreElements()) {
 		iterator.GetData()->SendStatus();
 		iterator.Advance();
 	}
@@ -124,7 +92,7 @@ bool LoginServerList::SendPacket(ServerPacket* pack) {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
+	while (iterator.MoreElements()) {
 		iterator.GetData()->SendPacket(pack);
 		iterator.Advance();
 	}
@@ -136,8 +104,8 @@ bool LoginServerList::SendAccountUpdate(ServerPacket* pack) {
 
 	Log(Logs::Detail, Logs::WorldServer, "Requested to send ServerOP_LSAccountUpdate packet to all loginservers");
 	iterator.Reset();
-	while(iterator.MoreElements()){
-		if(iterator.GetData()->CanUpdate()) {
+	while (iterator.MoreElements()) {
+		if (iterator.GetData()->CanUpdate()) {
 			iterator.GetData()->SendAccountUpdate(pack);
 		}
 		iterator.Advance();
@@ -149,8 +117,8 @@ bool LoginServerList::Connected() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
-		if(iterator.GetData()->Connected())
+	while (iterator.MoreElements()) {
+		if (iterator.GetData()->Connected())
 			return true;
 		iterator.Advance();
 	}
@@ -161,8 +129,8 @@ bool LoginServerList::AllConnected() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
-		if(iterator.GetData()->Connected() == false)
+	while (iterator.MoreElements()) {
+		if (iterator.GetData()->Connected() == false)
 			return false;
 		iterator.Advance();
 	}
@@ -173,8 +141,8 @@ bool LoginServerList::CanUpdate() {
 	LinkedListIterator<LoginServer*> iterator(list);
 
 	iterator.Reset();
-	while(iterator.MoreElements()){
-		if(iterator.GetData()->CanUpdate())
+	while (iterator.MoreElements()) {
+		if (iterator.GetData()->CanUpdate())
 			return true;
 		iterator.Advance();
 	}

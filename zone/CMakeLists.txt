@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 SET(zone_sources
 	aa.cpp
 	aggro.cpp
+	api_service.cpp
 	attack.cpp
 	beacon.cpp
 	bonuses.cpp
@@ -98,6 +99,7 @@ SET(zone_sources
 
 SET(zone_headers
 	aa.h
+	api_service.h
 	beacon.h
 	client.h
 	client_packet.h

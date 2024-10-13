@@ -25,6 +25,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/fastmath.h"
+#include "../common/misc_functions.h"
 #include "quest_parser_collection.h"
 #include "string_ids.h"
 #include "water_map.h"

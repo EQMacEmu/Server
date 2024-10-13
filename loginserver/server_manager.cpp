@@ -29,87 +29,53 @@ extern bool run_server;
 
 ServerManager::ServerManager()
 {
-	char error_buffer[TCPConnection_ErrorBufferSize];
-
 	int listen_port = server.config.GetVariableInt("client_configuration", "listen_port", 5998);
-	tcps = new EmuTCPServer(listen_port, true);
-	if(tcps->Open(listen_port, error_buffer)) {
-		LogInfo("ServerManager listening on port {} ", listen_port);
-	}
-	else {
-		LogError("ServerManager fatal error opening port on %u: %s", listen_port, error_buffer);
-		run_server = false;
-	}
+
+	m_server_connection.reset(new EQ::Net::ServertalkServer());
+	EQ::Net::ServertalkServerOptions opts;
+	opts.port = listen_port;
+	opts.ipv6 = false;
+	m_server_connection->Listen(opts);
+	m_server_connection->OnConnectionIdentified("World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> c) {
+		LogInfo("New world server connection from {0}:{1}", c->Handle()->RemoteIP(), c->Handle()->RemotePort());
+
+		WorldServer* server_entity = GetServerByAddress(c->Handle()->RemoteIP(), c->Handle()->RemotePort());
+		if (server_entity) {
+
+			LogInfo("World server already existed for {0}:{1}, removing existing connection and updating current.",
+				c->Handle()->RemoteIP(), c->Handle()->RemotePort());
+			server_entity->SetConnection(c);
+			server_entity->Reset();
+		}
+		else {
+			m_world_servers.push_back(std::unique_ptr<WorldServer>(new WorldServer(c)));
+		}
+
+	});
+
+	m_server_connection->OnConnectionRemoved("World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> c) {
+		auto iter = m_world_servers.begin();
+		while (iter != m_world_servers.end()) {
+			if ((*iter)->GetConnection()->Handle() == c->Handle()) {
+				LogInfo("World server {0} has been disconnected, removing.", (*iter)->GetServerLongName().c_str());
+				m_world_servers.erase(iter);
+				return;
+			}
+		}
+	});
 }
 
 ServerManager::~ServerManager()
 {
-	if (tcps) {
-		tcps->Close();
-		delete tcps;
-	}
+
 }
 
-void ServerManager::Process()
+WorldServer* ServerManager::GetServerByAddress(const std::string& addr, int port)
 {
-	ProcessDisconnect();
-	EmuTCPConnection *tcp_c = nullptr;
-	while (tcp_c = tcps->NewQueuePop()) {
-		in_addr tmp;
-		tmp.s_addr = tcp_c->GetrIP();
-		LogInfo("New world server connection from [{0}]:[{1}]", inet_ntoa(tmp), tcp_c->GetrPort());
-
-		WorldServer *server_entity = GetServerByAddress(tcp_c->GetrIP());
-		if (server_entity) {
-			LogInfo("World server already existed for [{0}], removing existing connection and updating current.", inet_ntoa(tmp));
-			server_entity->GetConnection()->Free();
-			server_entity->SetConnection(tcp_c);
-			server_entity->Reset();
-		}
-		else {
-			WorldServer *w = new WorldServer(tcp_c);
-			m_world_servers.push_back(w);
-		}
-	}
-
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
+	auto iter = m_world_servers.begin();
 	while (iter != m_world_servers.end()) {
-		if ((*iter)->Process() == false) {
-			LogInfo("World server [{0}] had a fatal error and had to be removed from the login.", (*iter)->GetServerLongName().c_str());
-			delete (*iter);
-			iter = m_world_servers.erase(iter);
-		}
-		else {
-			++iter;
-		}
-	}
-}
-
-void ServerManager::ProcessDisconnect()
-{
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
-	while (iter != m_world_servers.end()) {
-		EmuTCPConnection *connection = (*iter)->GetConnection();
-		if (!connection->Connected()) {
-			in_addr tmp;
-			tmp.s_addr = connection->GetrIP();
-			LogInfo("World server disconnected from the server, removing server and freeing connection.");
-			connection->Free();
-			delete (*iter);
-			iter = m_world_servers.erase(iter);
-		}
-		else {
-			++iter;
-		}
-	}
-}
-
-WorldServer* ServerManager::GetServerByAddress(unsigned int address)
-{
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
-	while (iter != m_world_servers.end()) {
-		if ((*iter)->GetConnection()->GetrIP() == address) {
-			return (*iter);
+		if ((*iter)->GetConnection()->Handle()->RemoteIP() == addr && (*iter)->GetConnection()->Handle()->RemotePort()) {
+			return (*iter).get();
 		}
 		++iter;
 	}
@@ -123,19 +89,17 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 	unsigned int server_count = 0;
 	in_addr in;
 	in.s_addr = c->GetConnection()->GetRemoteIP();
-	string client_ip = inet_ntoa(in);
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
-	while (iter != m_world_servers.end())
-	{
-		if ((*iter)->IsAuthorized() == false)
-		{
+	std::string client_ip = inet_ntoa(in);
+	auto iter = m_world_servers.begin();
+	while (iter != m_world_servers.end()) {
+		if ((*iter)->IsAuthorized() == false) {
 			++iter;
 			continue;
 		}
 
-		in.s_addr = (*iter)->GetConnection()->GetrIP();
-		string world_ip = inet_ntoa(in);
-		string servername = (*iter)->GetServerLongName().c_str();
+		std::string world_ip = (*iter)->GetConnection()->Handle()->RemoteIP();
+
+		std::string servername = (*iter)->GetServerLongName().c_str();
 		servername.append(" Server");
 
 		if(world_ip.compare(client_ip) == 0) {
@@ -145,8 +109,7 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 			LogInfo("Client is requesting server list from a local address [{0}]", client_ip);
 			packet_size += servername.size() + 1 + (*iter)->GetLocalIP().size() + 1 + sizeof(ServerListServerFlags_Struct);
 		}
-		else
-		{
+		else {
 			packet_size += servername.size() + 1 + (*iter)->GetRemoteIP().size() + 1 + sizeof(ServerListServerFlags_Struct);
 		}
 
@@ -160,10 +123,8 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 	ServerList_Struct* sl = (ServerList_Struct*)outapp->pBuffer;
 	sl->numservers = server_count;
 	uint8 showcount = 0x0;
-	if (server.db->CheckExtraSettings("pop_count"))
-	{
-		if (server.db->LoginSettings("pop_count") == "1")
-		{
+	if (server.db->CheckExtraSettings("pop_count"))	{
+		if (server.db->LoginSettings("pop_count") == "1") {
 			showcount = 0xFF;
 		}
 	}
@@ -173,43 +134,36 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 	data_ptr += sizeof(ServerList_Struct);
 
 	iter = m_world_servers.begin();
-	while (iter != m_world_servers.end())
-	{
-		if ((*iter)->IsAuthorized() == false)
-		{
+	while (iter != m_world_servers.end()) {
+		if ((*iter)->IsAuthorized() == false) {
 			++iter;
 			continue;
 		}
 
-		in.s_addr = (*iter)->GetConnection()->GetrIP();
-		string world_ip = inet_ntoa(in);
+		std::string world_ip = (*iter)->GetConnection()->Handle()->RemoteIP();
 
-		string servername = (*iter)->GetServerLongName().c_str();
+		std::string servername = (*iter)->GetServerLongName().c_str();
 		servername.append(" Server");
 
 		memcpy(data_ptr, servername.c_str(), servername.size());
 		data_ptr += (servername.size() + 1);
 
-		if (world_ip.compare(client_ip) == 0)
-		{
+		if (world_ip.compare(client_ip) == 0) {
 			memcpy(data_ptr, (*iter)->GetLocalIP().c_str(), (*iter)->GetLocalIP().size());
 			data_ptr += ((*iter)->GetLocalIP().size() + 1);
 		}
-		else if (IpUtil::IsIpInPrivateRfc1918(client_ip))
-		{
+		else if (IpUtil::IsIpInPrivateRfc1918(client_ip)) {
 			memcpy(data_ptr, (*iter)->GetLocalIP().c_str(), (*iter)->GetLocalIP().size());
 			data_ptr += ((*iter)->GetLocalIP().size() + 1);
 		}
-		else
-		{
+		else {
 			memcpy(data_ptr, (*iter)->GetRemoteIP().c_str(), (*iter)->GetRemoteIP().size());
 			data_ptr += ((*iter)->GetRemoteIP().size() + 1);
 		}
 
 		ServerListServerFlags_Struct* slsf = (ServerListServerFlags_Struct*)data_ptr;
 		slsf->greenname = 0;
-		if (server.db->GetWorldPreferredStatus((*iter)->GetRuntimeID()))
-		{
+		if (server.db->GetWorldPreferredStatus((*iter)->GetRuntimeID())) {
 			slsf->greenname = 1;
 		}
 		slsf->flags = 0x1;
@@ -225,44 +179,41 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 
 void ServerManager::SendOldUserToWorldRequest(const char* server_id, unsigned int client_account_id, uint32 ip)
 {
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
+	auto iter = m_world_servers.begin();
 	bool found = false;
-	while (iter != m_world_servers.end())
-	{
-		if ((*iter)->GetRemoteIP() == server_id || (*iter)->GetLocalIP() == server_id)
-		{
-			auto outapp = new ServerPacket(ServerOP_UsertoWorldReq, sizeof(UsertoWorldRequest_Struct));
-			auto *r = (UsertoWorldRequest_Struct*)outapp->pBuffer;
+	while (iter != m_world_servers.end()) {
+		if ((*iter)->GetRemoteIP() == server_id || (*iter)->GetLocalIP() == server_id) {
+			EQ::Net::DynamicPacket outapp;
+			outapp.Resize(sizeof(UsertoWorldRequest_Struct));
+			UsertoWorldRequest_Struct* r = (UsertoWorldRequest_Struct*)outapp.Data();
 
 			//utwr->worldid = (*iter)->GetServerListID(); //This pulls preffered status instead of actual ID? That does not seem right.
 			r->worldid = (*iter)->GetRuntimeID();
 
 			r->lsaccountid = client_account_id;
 			r->ip = ip;
-			(*iter)->GetConnection()->SendPacket(outapp);
+			(*iter)->GetConnection()->Send(ServerOP_UsertoWorldReq, outapp);
 			found = true;
 
 			LogPacketServerClient(
-				"[UsertoWorldRequest][Size: {}]\n{}",
-				outapp->size,
-				DumpServerPacketToString(outapp)
+				"[{}]",
+				outapp.ToString()
 			);
-
-			delete outapp;
-
-			return;
 		}
+
 		++iter;
 	}
 
-	LogError("Client requested a user to world but supplied an invalid id of {} .", server_id);
+	if (!found) {
+		LogError("Client requested a user to world but supplied an invalid id of {}.", server_id);
+	}
 }
 
-bool ServerManager::ServerExists(string l_name, string s_name, WorldServer *ignore)
+bool ServerManager::ServerExists(std::string l_name, std::string s_name, WorldServer *ignore)
 {
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
+	auto iter = m_world_servers.begin();
 	while (iter != m_world_servers.end()) {
-		if ((*iter) == ignore) {
+		if ((*iter).get() == ignore) {
 			++iter;
 			continue;
 		}
@@ -276,22 +227,17 @@ bool ServerManager::ServerExists(string l_name, string s_name, WorldServer *igno
 	return false;
 }
 
-void ServerManager::DestroyServerByName(string l_name, string s_name, WorldServer *ignore)
+void ServerManager::DestroyServerByName(std::string l_name, std::string s_name, WorldServer *ignore)
 {
-	list<WorldServer*>::iterator iter = m_world_servers.begin();
+	auto iter = m_world_servers.begin();
 	while (iter != m_world_servers.end()) {
-		if ((*iter) == ignore) {
+		if ((*iter).get() == ignore) {
 			++iter;
 			continue;
 		}
 
 		if ((*iter)->GetServerLongName().compare(l_name) == 0 && (*iter)->GetServerShortName().compare(s_name) == 0) {
-			EmuTCPConnection *c = (*iter)->GetConnection();
-			if (c->Connected()) {
-				c->Disconnect();
-			}
-			c->Free();
-			delete (*iter);
+			(*iter)->GetConnection()->Handle()->Disconnect();
 			iter = m_world_servers.erase(iter);
 			continue;
 		}

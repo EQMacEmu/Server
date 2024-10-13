@@ -8,6 +8,7 @@
 #include "../common/misc_functions.h"
 #include "../common/data_verification.h"
 #include "../common/fastmath.h"
+#include "../common/misc_functions.h"
 #include "pathfinder_interface.h"
 #include <vector>
 #include <deque>

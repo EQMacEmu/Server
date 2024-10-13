@@ -17,6 +17,7 @@
 */
 
 #include "../common/global_define.h"
+#include "../common/misc_functions.h"
 #include "launcher_link.h"
 #include "launcher_list.h"
 #include "world_config.h"
@@ -24,8 +25,8 @@
 #include "../common/md5.h"
 #include "../common/packet_dump.h"
 #include "../common/servertalk.h"
-#include "../common/emu_tcp_connection.h"
 #include "../common/strings.h"
+
 #include "worlddb.h"
 #include "eql_config.h"
 
@@ -34,7 +35,7 @@
 
 extern LauncherList launcher_list;
 
-LauncherLink::LauncherLink(int id, EmuTCPConnection *c)
+LauncherLink::LauncherLink(int id, std::shared_ptr<EQ::Net::ServertalkServerConnection> c)
 : ID(id),
 	tcpc(c),
 	authenticated(false),
@@ -43,68 +44,35 @@ LauncherLink::LauncherLink(int id, EmuTCPConnection *c)
 {
 	m_dynamicCount = 0;
 	m_bootTimer.Disable();
+
+	tcpc->OnMessage(std::bind(&LauncherLink::ProcessMessage, this, std::placeholders::_1, std::placeholders::_2));
+	m_process_timer.reset(new EQ::Timer(100, true, std::bind(&LauncherLink::Process, this, std::placeholders::_1)));
+
 }
 
 LauncherLink::~LauncherLink() {
-	tcpc->Free();
 }
 
-bool LauncherLink::Process() {
-	if (!tcpc->Connected())
-		return false;
-
-	if(m_bootTimer.Check(false)) {
+void LauncherLink::Process(EQ::Timer* t) {
+	if (m_bootTimer.Check(false)) {
 		//force a boot on any zone which isnt running.
 		std::map<std::string, ZoneState>::iterator cur, end;
 		cur = m_states.begin();
 		end = m_states.end();
-		for(; cur != end; ++cur) {
-			if(!cur->second.up) {
+		for (; cur != end; ++cur) {
+			if (!cur->second.up) {
 				StartZone(cur->first.c_str(), cur->second.port);
 			}
 		}
 		m_bootTimer.Disable();
 	}
+}
 
-	ServerPacket *pack = 0;
-	while((pack = tcpc->PopPacket())) {
-		if (!authenticated) {
-			if (WorldConfig::get()->SharedKey.length() > 0) {
-				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16) {
-					uint8 tmppass[16];
-					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
-					if (memcmp(pack->pBuffer, tmppass, 16) == 0)
-						authenticated = true;
-					else {
-						struct in_addr in;
-						in.s_addr = GetIP();
-						Log(Logs::Detail, Logs::WorldServer, "Launcher authorization failed.");
-						auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-						SendPacket(pack);
-						delete pack;
-						Disconnect();
-						return false;
-					}
-				}
-				else {
-					struct in_addr in;
-					in.s_addr = GetIP();
-					Log(Logs::Detail, Logs::WorldServer, "Launcher authorization failed.");
-					auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-					SendPacket(pack);
-					delete pack;
-					Disconnect();
-					return false;
-				}
-			}
-			else
-			{
-				Log(Logs::Detail, Logs::WorldServer,"**WARNING** You have not configured a world shared key in your config file. You should add a <key>STRING</key> element to your <world> element to prevent unauthroized zone access.");
-				authenticated = true;
-			}
-			delete pack;
-			continue;
-		}
+void LauncherLink::ProcessMessage(uint16 opcode, EQ::Net::Packet& p)
+{
+	ServerPacket tpack(opcode, p);
+	ServerPacket* pack = &tpack;
+
 		switch(pack->opcode) {
 		case 0:
 			break;
@@ -177,9 +145,6 @@ bool LauncherLink::Process() {
 		}
 		}
 
-		delete pack;
-	}
-	return(true);
 }
 
 bool LauncherLink::ContainsZone(const char *short_name) const {

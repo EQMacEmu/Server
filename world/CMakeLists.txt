@@ -17,6 +17,7 @@ SET(world_sources
 	wguild_mgr.cpp
 	world_event_scheduler.cpp
 	world_config.cpp
+	world_console_connection.cpp
 	world_server_cli.cpp
 	worlddb.cpp
 	zonelist.cpp
@@ -40,6 +41,7 @@ SET(world_headers
 	ucs.h
 	wguild_mgr.h
 	world_config.h
+	world_console_connection.h
 	world_tcp_connection.h
 	world_server_cli.h
 	worlddb.h

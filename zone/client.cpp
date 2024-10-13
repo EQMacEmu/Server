@@ -37,6 +37,8 @@
 #include "../common/strings.h"
 #include "../common/data_verification.h"
 #include "../common/profanity_manager.h"
+#include "../common/misc_functions.h"
+#include "../common/timer.h"
 #include "data_bucket.h"
 #include "position.h"
 #include "worldserver.h"
@@ -823,7 +825,6 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 			sem->from[63] = 0;
 		}
 
-		pack->Deflate();
 		if(worldserver.Connected())
 			worldserver.SendPacket(pack);
 		safe_delete(pack);

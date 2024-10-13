@@ -178,7 +178,7 @@ public:
 	void	SetNumAggroedNPCs(uint16 count) { aggroed_npcs = count; }
 	void		SetStaticZone(bool sz)	{ staticzone = sz; }
 	inline bool	IsStaticZone()			{ return staticzone; }
-	inline void	GotCurTime(bool time)	{ gottime = time; }
+	inline void	GotCurTime(bool time)	{ zone_has_current_time = time; }
 
 	void	SpawnConditionChanged(const SpawnCondition &c, int16 old_value);
 	void	UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer);
@@ -411,7 +411,7 @@ private:
 	uint16	pull_limit;
 
 	bool	staticzone;
-	bool	gottime;
+	bool	zone_has_current_time;
 
 	uint32 pQueuedMerchantsWorkID;
 	uint32 pQueuedTempMerchantsWorkID;

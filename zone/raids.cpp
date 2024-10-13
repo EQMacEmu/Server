@@ -17,6 +17,7 @@
 */
 
 #include "../common/strings.h"
+#include "../common/misc_functions.h"
 
 #include "client.h"
 #include "entity.h"

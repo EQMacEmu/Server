@@ -29,6 +29,7 @@
 #include "../common/unix.h"
 #endif
 
+#include "../common/misc_functions.h"
 #include "../common/features.h"
 #include "../common/guilds.h"
 

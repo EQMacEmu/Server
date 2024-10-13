@@ -25,25 +25,29 @@
 #include "zone_launch.h"
 
 WorldServer::WorldServer(std::map<std::string, ZoneLaunch *> &zones, const char *name, const EQEmuConfig *config)
-: WorldConnection(EmuTCPConnection::packetModeLauncher, config->SharedKey.c_str()),
+	:
 	m_name(name),
 	m_config(config),
 	m_zones(zones)
 {
+	m_connection.reset(new EQ::Net::ServertalkClient(config->WorldIP, config->WorldTCPPort, false, "Launcher", config->SharedKey));
+	m_connection->OnConnect([this](EQ::Net::ServertalkClient* client) {
+		OnConnected();
+	});
+
+	m_connection->OnMessage(std::bind(&WorldServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
+
 }
 
 WorldServer::~WorldServer() {
 }
 
 void WorldServer::OnConnected() {
-	WorldConnection::OnConnected();
-
+	
 	auto pack = new ServerPacket(ServerOP_LauncherConnectInfo, sizeof(LauncherConnectInfo));
 	LauncherConnectInfo* sci = (LauncherConnectInfo*) pack->pBuffer;
 	strn0cpy(sci->name, m_name, sizeof(sci->name));
-//	sci->port = net.GetZonePort();
-//	strcpy(sci->address, net.GetZoneAddress());
-	SendPacket(pack);
+	m_connection->SendPacket(pack);	
 	safe_delete(pack);
 
 	//send status for all zones...
@@ -55,28 +59,19 @@ void WorldServer::OnConnected() {
 	}
 }
 
-void WorldServer::Process() {
+void WorldServer::HandleMessage(uint16 opcode, EQ::Net::Packet& p) {
+	ServerPacket tpack(opcode, p);
+	ServerPacket* pack = &tpack;
 
-	WorldConnection::Process();
 
-	if (!Connected())
-		return;
-
-	ServerPacket *pack = 0;
-	while((pack = tcpc.PopPacket())) {
-		switch(pack->opcode) {
+	
+		switch(opcode) {
 		case 0: {
 			break;
 		}
 		case ServerOP_EmoteMessage:
 		case ServerOP_KeepAlive: {
 			// ignore this
-			break;
-		}
-		case ServerOP_ZAAuthFailed: {
-			Log(Logs::Detail, Logs::Launcher, "World server responded 'Not Authorized', disabling reconnect");
-			pTryReconnect = false;
-			Disconnect();
 			break;
 		}
 		case ServerOP_LauncherZoneRequest: {
@@ -130,8 +125,8 @@ void WorldServer::Process() {
 			break;
 		}
 		}
-		safe_delete(pack);
-	}
+
+	
 }
 
 
@@ -144,7 +139,7 @@ void WorldServer::SendStatus(const char *short_name, uint32 start_count, bool ru
 	it->start_count = start_count;
 	it->running = running?1:0;
 
-	SendPacket(pack);
+	m_connection->SendPacket(pack);
 	safe_delete(pack);
 }
 

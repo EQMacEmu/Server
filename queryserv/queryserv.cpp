@@ -25,6 +25,8 @@
 #include "../common/servertalk.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
+#include "../common/event/event_loop.h"
+#include "../common/timer.h"
 #include "../common/strings.h"
 #include "../common/event/timer.h"
 #include "../common/path_manager.h"
@@ -51,8 +53,6 @@ WorldContentService   content_service;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 
-	if(worldserver)
-		worldserver->Disconnect();
 }
 
 int main() {
@@ -62,7 +62,6 @@ int main() {
 
 	path.LoadPaths();
 
-	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
 
 	LogInfo("Starting EQMacEmu QueryServ.");
 	if (!queryservconfig::LoadConfig()) {
@@ -126,11 +125,8 @@ int main() {
 		else {
 			worldwasconnected = false;
 		}
-		if (InterserverTimer.Check()) {
-			if (worldserver->TryReconnect() && (!worldserver->Connected()))
-				worldserver->AsyncConnect();
-		}
-		worldserver->Process();
+
+		EQ::EventLoop::Get().Process();
 		timeout_manager.CheckTimeouts();
 	};
 

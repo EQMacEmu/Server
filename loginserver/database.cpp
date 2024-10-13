@@ -24,7 +24,7 @@
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
 
-Database::Database(string user, string pass, string host, string port, string name)
+Database::Database(std::string user, std::string pass, std::string host, std::string port, std::string name)
 {
 	this->user = user;
 	this->pass = pass;
@@ -59,7 +59,7 @@ Database::~Database()
 	}
 }
 
-bool Database::GetLoginDataFromAccountName(string &name, string &password, unsigned int &id)
+bool Database::GetLoginDataFromAccountName(std::string &name, std::string &password, unsigned int &id)
 {
 	auto query = fmt::format("SELECT LoginServerID, AccountPassword FROM {} WHERE AccountName = '{}';",
 		server.options.GetAccountTable(),
@@ -156,8 +156,8 @@ bool Database::CreateLoginData(const std::string &name, const std::string &passw
 	return true;
 }
 
-bool Database::GetWorldRegistration(string long_name, string short_name, unsigned int &id, string &desc, unsigned int &list_id,
-	unsigned int &trusted, string &list_desc, string &account, string &password)
+bool Database::GetWorldRegistration(std::string long_name, std::string short_name, unsigned int &id, std::string &desc, unsigned int &list_id,
+	unsigned int &trusted, std::string &list_desc, std::string &account, std::string &password)
 {
 	auto query = fmt::format(
 		"SELECT\n"
@@ -213,7 +213,7 @@ bool Database::GetWorldRegistration(string long_name, string short_name, unsigne
 	return true;
 }
 
-void Database::UpdateLSAccountData(unsigned int id, string ip_address)
+void Database::UpdateLSAccountData(unsigned int id, std::string ip_address)
 {
 	auto query = fmt::format(
 		"UPDATE {0} SET LastIPAddress = '{1}', LastLoginDate = NOW() where LoginServerId = {2}",
@@ -226,7 +226,7 @@ void Database::UpdateLSAccountData(unsigned int id, string ip_address)
 }
 
 
-void Database::UpdateLSAccountInfo(unsigned int id, string name, string password, string email)
+void Database::UpdateLSAccountInfo(unsigned int id, std::string name, std::string password, std::string email)
 {
 	auto query = fmt::format(
 		"REPLACE {0} SET LoginServerID = {1}, AccountName = '{2}', AccountPassword = sha('{3}'), AccountCreateDate = now(), "
@@ -241,7 +241,7 @@ void Database::UpdateLSAccountInfo(unsigned int id, string name, string password
 	QueryDatabase(query);
 }
 
-void Database::UpdateWorldRegistration(unsigned int id, string long_name, string ip_address)
+void Database::UpdateWorldRegistration(unsigned int id, std::string long_name, std::string ip_address)
 {
 	auto query = fmt::format(
 		"UPDATE {0} SET ServerLastLoginDate = NOW(), ServerLastIPAddr = '{1}', ServerLongName = '{2}' WHERE ServerID = {3}",
@@ -254,7 +254,7 @@ void Database::UpdateWorldRegistration(unsigned int id, string long_name, string
 	QueryDatabase(query);
 }
 
-bool Database::CreateWorldRegistration(string long_name, string short_name, unsigned int &id)
+bool Database::CreateWorldRegistration(std::string long_name, std::string short_name, unsigned int &id)
 {
 	auto query = fmt::format(
 		"SELECT ifnull(max(ServerID),0) + 1 FROM {0}",

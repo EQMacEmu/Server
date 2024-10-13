@@ -20,6 +20,7 @@
 
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
+#include "../common/misc_functions.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>

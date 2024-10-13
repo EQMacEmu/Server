@@ -26,7 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <signal.h>
 
 #include "../common/global_define.h"
@@ -74,12 +73,10 @@
 
 #endif
 
-#include "../common/emu_tcp_server.h"
 #include "../common/patches/patches.h"
 #include "../common/random.h"
 #include "../common/path_manager.h"
 #include "zoneserver.h"
-#include "console.h"
 #include "login_server.h"
 #include "login_server_list.h"
 #include "world_config.h"
@@ -96,12 +93,14 @@
 #include "../zone/data_bucket.h"
 #include "../common/zone_store.h"
 #include "../common/skill_caps.h"
+#include "console.h"
+
+#include "../common/net/servertalk_server.h"
 
 SkillCaps skill_caps;
 ZoneStore zone_store;
 TimeoutManager timeout_manager;
 EQStreamFactory eqsf(WorldStream,9000);
-EmuTCPServer tcps;
 ClientList client_list;
 ZSList zoneserver_list;
 LoginServerList loginserverlist;
@@ -118,8 +117,6 @@ const WorldConfig *Config;
 EQEmuLogSys LogSys;
 WorldContentService content_service;
 PathManager         path;
-
-extern ConsoleList console_list;
 
 void CatchSignal(int sig_num);
 
@@ -217,10 +214,6 @@ int main(int argc, char** argv) {
 	Config=WorldConfig::get();
 
 	LogInfo("CURRENT_VERSION: [{0}]", CURRENT_VERSION);
-
-	#ifdef _DEBUG
-		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	#endif
 
 	if (signal(SIGINT, CatchSignal) == SIG_ERR)	{
 		LogError("Could not set signal handler");
@@ -359,14 +352,116 @@ int main(int argc, char** argv) {
 
 	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
 
-	char errbuf[TCPConnection_ErrorBufferSize];
-	if (tcps.Open(Config->WorldTCPPort, errbuf)) {
-		LogInfo("Zone (TCP) listener started.");
-	} else {
-		LogInfo("Failed to start zone (TCP) listener on port [{0}]:",Config->WorldTCPPort);
-		LogError("        {0}",errbuf);
-		return 1;
+	std::unique_ptr<EQ::Net::ConsoleServer> console;
+	if (Config->TelnetEnabled) {
+		LogInfo("Console (TCP) listener started.");
+		console.reset(new EQ::Net::ConsoleServer(Config->TelnetIP, Config->TelnetTCPPort));
+		RegisterConsoleFunctions(console);
 	}
+
+	std::unique_ptr<EQ::Net::ServertalkServer> server_connection;
+	server_connection.reset(new EQ::Net::ServertalkServer());
+	EQ::Net::ServertalkServerOptions server_opts;
+	server_opts.port = Config->WorldTCPPort;
+	server_opts.ipv6 = false;
+	server_opts.credentials = Config->SharedKey;
+	server_connection->Listen(server_opts);
+	LogInfo("Server (TCP) listener started.");
+		
+	server_connection->OnConnectionIdentified(
+		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		numzones++;
+		zoneserver_list.Add(new ZoneServer(connection));
+		LogInfo(
+			"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
+			connection->Handle()->RemoteIP(),
+			connection->Handle()->RemotePort(),
+			connection->GetUUID(),
+			numzones
+		);
+	}
+	);
+
+	server_connection->OnConnectionRemoved(
+		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		numzones--;
+		zoneserver_list.Remove(connection->GetUUID());
+		LogInfo(
+			"Removed Zone Server connection from [{}] total zone_count [{}]",
+			connection->GetUUID(),
+			numzones
+		);
+	}
+	);
+
+	server_connection->OnConnectionIdentified(
+		"Launcher", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		LogInfo(
+			"New Launcher connection from [{}] at [{}:{}]",
+			connection->Handle()->RemoteIP(),
+			connection->Handle()->RemotePort(),
+			connection->GetUUID()
+		);
+		launcher_list.Add(connection);
+	}
+	);
+
+	server_connection->OnConnectionRemoved(
+		"Launcher", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		LogInfo(
+			"Removed Launcher connection from [{0}]",
+			connection->GetUUID()
+		);
+
+		launcher_list.Remove(connection);
+	}
+	);
+
+	server_connection->OnConnectionIdentified(
+		"QueryServ", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+			LogInfo(
+				"New Query Server connection from [{}] at [{}:{}]",
+				connection->Handle()->RemoteIP(),
+				connection->Handle()->RemotePort(),
+				connection->GetUUID());
+
+			QSLink.AddConnection(connection);
+		}
+	);
+
+	server_connection->OnConnectionRemoved(
+		"QueryServ", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+			LogInfo(
+				"Removed Query Server connection from [{}]",
+				connection->GetUUID()
+			);
+
+			QSLink.RemoveConnection(connection);
+		}
+	);
+
+	server_connection->OnConnectionIdentified(
+		"UCS", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+			LogInfo(
+				"New UCS Server connection from [{}] at [{}:{}]",
+				connection->Handle()->RemoteIP(),
+				connection->Handle()->RemotePort(),
+				connection->GetUUID()
+			);
+
+			UCSLink.SetConnection(connection);
+		}
+	);
+
+	server_connection->OnConnectionRemoved(
+		"UCS", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+			LogInfo("Connection lost from UCS Server [{}]", 
+				connection->GetUUID());
+
+			UCSLink.SetConnection(nullptr);
+		}
+	);
+
 	if (eqsf.Open()) {
 		LogInfo("Client (UDP) listener started.");
 	} else {
@@ -386,7 +481,6 @@ int main(int argc, char** argv) {
 	uint8 ReconnectCounter = 100;
 	std::shared_ptr<EQStream> eqs;
 	std::shared_ptr<EQOldStream> eqos;
-	EmuTCPConnection* tcpc;
 	EQStreamInterface *eqsi;
 
 	auto loop_fn = [&](EQ::Timer* t) {
@@ -462,17 +556,7 @@ int main(int argc, char** argv) {
 		event_scheduler.Process(&zoneserver_list);
 
 		client_list.Process();
-		i = 0;
-		while ((tcpc = tcps.NewQueuePop())) {
-			struct in_addr in{};
-			in.s_addr = tcpc->GetrIP();
-			LogInfo("New TCP connection from {0}:{1}", inet_ntoa(in),tcpc->GetrPort());
-			console_list.Add(new Console(tcpc));
-			i++;
-			if (i == 5)
-				break;
-		}
-
+		
 		if(EQTimeTimer.Check())
 		{
 			TimeOfDay_Struct tod;
@@ -489,12 +573,8 @@ int main(int argc, char** argv) {
 
 		//check for timeouts in other threads
 		timeout_manager.CheckTimeouts();
-		loginserverlist.Process();
-		console_list.Process();
 		zoneserver_list.Process();
 		launcher_list.Process();
-		UCSLink.Process();
-		QSLink.Process();
 
 		//WILink.Process();
 
@@ -505,14 +585,6 @@ int main(int argc, char** argv) {
 			ReconnectCounter++;
 			if (ReconnectCounter >= 12) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
 				ReconnectCounter = 0;
-				if (loginserverlist.AllConnected() == false) {
-#ifdef _WINDOWS
-					_beginthread(AutoInitLoginServer, 0, nullptr);
-#else
-					pthread_t thread;
-					pthread_create(&thread, nullptr, &AutoInitLoginServer, nullptr);
-#endif
-				}
 			}
 		}
 	};
@@ -523,12 +595,9 @@ int main(int argc, char** argv) {
 	EQ::EventLoop::Get().Run();
 
 	LogInfo("World main loop completed.");
-	LogInfo("Shutting down console connections (if any).");
-	console_list.KillAll();
 	LogInfo("Shutting down zone connections (if any).");
 	zoneserver_list.KillAll();
 	LogInfo("Zone (TCP) listener stopped.");
-	tcps.Close();
 	LogInfo("Client (UDP) listener stopped.");
 	eqsf.Close();
 	LogSys.CloseFileLogs();

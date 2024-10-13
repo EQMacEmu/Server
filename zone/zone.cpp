@@ -149,7 +149,10 @@ bool Zone::Bootup(uint32 iZoneID, bool is_static) {
 		(is_static) ? "Static" : "Dynamic", zonename, iZoneID);
  	parse->Init();
 	UpdateWindowTitle(nullptr);
-	zone->GetTimeSync();
+
+	if (!is_static) {
+		zone->GetTimeSync();
+	}
 
 	/* Set Logging */
 
@@ -850,7 +853,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	zone_total_blocked_spells = 0;
 	aas = nullptr;
 	totalAAs = 0;
-	gottime = false;
+	zone_has_current_time = false;
 	idle = false;
 
 	map_name = nullptr;
@@ -1575,7 +1578,8 @@ void Zone::Repop() {
 
 void Zone::GetTimeSync()
 {
-	if (worldserver.Connected() && !gottime) {
+	if (!zone_has_current_time) {
+		LogInfo("Requesting world time");
 		auto pack = new ServerPacket(ServerOP_GetWorldTime, 0);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);

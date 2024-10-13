@@ -6224,6 +6224,10 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 				if (!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
 					mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
 				mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Sitting);
+				mypet->StopNavigation();
+				glm::vec3 petloc = glm::vec3(mypet->GetPosition().x, mypet->GetPosition().y, mypet->GetPosition().z);
+				mypet->Teleport(petloc);
+				mypet->FixZ();
 		}
 		break;
 	}

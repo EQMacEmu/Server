@@ -16,11 +16,10 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "../common/global_define.h"
+#include "../common/misc_functions.h"
 #include "zonelist.h"
 #include "zoneserver.h"
-#include "world_tcp_connection.h"
 #include "worlddb.h"
-#include "console.h"
 #include "ucs.h"
 #include "world_config.h"
 #include "../common/servertalk.h"
@@ -28,9 +27,8 @@
 #include "../common/random.h"
 #include "../common/zone_store.h"
 
-extern uint32			numzones;
+extern uint32 numzones;
 extern bool holdzones;
-extern ConsoleList		console_list;
 extern UCSConnection UCSLink;
 extern EQ::Random emu_random;
 void CatchSignal(int sig_num);
@@ -65,7 +63,19 @@ void ZSList::ShowUpTime(WorldTCPConnection* con, const char* adminname) {
 
 void ZSList::Add(ZoneServer* zoneserver) {
 	zone_server_list.push_back(std::unique_ptr<ZoneServer>(zoneserver));
-	zoneserver->SendGroupIDs();	//send its initial set of group ids
+	zoneserver->SendGroupIDs();
+}
+
+void ZSList::Remove(const std::string& uuid)
+{
+	auto iter = zone_server_list.begin();
+	while (iter != zone_server_list.end()) {
+		if ((*iter)->GetUUID().compare(uuid) == 0) {
+			zone_server_list.erase(iter);
+			return;
+		}
+		iter++;
+	}
 }
 
 void ZSList::KillAll() {
@@ -91,30 +101,6 @@ void ZSList::Process() {
 	if(reminder && reminder->Check() && shutdowntimer){
 		SendEmoteMessage(0, 0, AccountStatus::Player, Chat::Yellow , fmt::format("[SYSTEM] World coming down in {} minutes.", ((shutdowntimer->GetRemainingTime() / 1000) / 60)).c_str());
 	}
-
-	auto iterator = zone_server_list.begin();
-	while (iterator != zone_server_list.end()) {
-		if (!(*iterator)->Process()) {
-			ZoneServer* zs = (*iterator).get(); 
-			struct in_addr in;
-			in.s_addr = zs->GetIP();
-			Log(Logs::Detail, Logs::WorldServer,"Removing zoneserver #%d at %s:%d",zs->GetID(),zs->GetCAddress(),zs->GetCPort());
-			database.ZoneDisconnect(zs->GetZoneID());
-			zs->LSShutDownUpdate(zs->GetZoneID());
-			if (holdzones){
-				Log(Logs::Detail, Logs::WorldServer,"Hold Zones mode is ON - rebooting lost zone");
-				if(!zs->IsStaticZone())
-					RebootZone(inet_ntoa(in),zs->GetCPort(),zs->GetCAddress(),zs->GetID());
-				else
-					RebootZone(inet_ntoa(in),zs->GetCPort(),zs->GetCAddress(),zs->GetID(),ZoneID(zs->GetZoneName()));
-			}
-
-			iterator = zone_server_list.erase(iterator);
-		}
-		else {
-			iterator++;
-		}
-	}
 }
 
 bool ZSList::SendPacket(ServerPacket* pack) {
@@ -131,7 +117,8 @@ bool ZSList::SendPacket(uint32 ZoneID, ServerPacket* pack) {
 	while (iterator != zone_server_list.end()) {
 		if ((*iterator)->GetZoneID() == ZoneID) {
 			ZoneServer* tmp = (*iterator).get();
-			return(tmp->SendPacket(pack));
+			tmp->SendPacket(pack);
+			return true;
 		}
 		iterator++;
 	}
@@ -233,20 +220,13 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 		strcpy(locked, "No");
 	}
 
-	std::vector<char> out;
+	auto out = fmt::memory_buffer();
 
 	if (connection->IsConsole()) {
 		fmt::format_to(std::back_inserter(out), "World Locked: {}\r\n", locked);
 	}
 	else {
 		fmt::format_to(std::back_inserter(out), "World Locked: {}^", locked);
-	}
-
-	if (connection->IsConsole()) {
-		fmt::format_to(std::back_inserter(out), "UCS Server: {}\r\n", UCSLink.Connected() ? "Connected" : "Unavailable");
-	}
-	else {
-		fmt::format_to(std::back_inserter(out), "UCS Server: {}^", UCSLink.Connected() ? "Connected" : "Unavailable");
 	}
 
 	if (connection->IsConsole()) {
@@ -265,8 +245,7 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 	auto iterator = zone_server_list.begin();
 	while (iterator != zone_server_list.end()) {
 		zone_server_data = (*iterator).get();
-		struct in_addr in;
-		in.s_addr = zone_server_data->GetIP();
+		auto addr = zone_server_data->GetIP();
 
 		if (!zone_server_data->IsStaticZone()) {
 			is_static_string = "D";
@@ -299,7 +278,7 @@ void ZSList::SendZoneStatus(const char* to, int16 admin, WorldTCPConnection* con
 			buffer.c_str(),
 			zone_server_data->GetID(), 
 			is_static_string, 
-			inet_ntoa(in),
+			addr.c_str(),
 			zone_server_data->GetPort(), 
 			zone_server_data->NumPlayers(), 
 			zone_server_data->GetCAddress(), 
@@ -430,10 +409,9 @@ void ZSList::SendChannelMessageRaw(const char* from, const char* to, uint8 chan_
 	scm->lang_skill = lang_skill;
 	scm->chan_num = chan_num;
 	strcpy(&scm->message[0], message);
-	if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
-		console_list.SendChannelMessage(scm);
-	}
-	pack->Deflate();
+	//if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
+	//	console_list.SendChannelMessage(scm);
+	//}
 	SendPacket(pack);
 	delete pack;
 }
@@ -463,13 +441,6 @@ void ZSList::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_m
 	ServerEmoteMessage_Struct* sem = (ServerEmoteMessage_Struct*) pack->pBuffer;
 
 	if (to) {
-		if (to[0] == '*') {
-			Console* con = console_list.FindByAccountName(&to[1]);
-			if (con)
-				con->SendEmoteMessageRaw(to, to_guilddbid, to_minstatus, type, message);
-			delete pack;
-			return;
-		}
 		strcpy((char *) sem->to, to);
 	}
 	else {
@@ -483,11 +454,8 @@ void ZSList::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_m
 	char tempto[64]={0};
 	if(to)
 		strn0cpy(tempto,to,64);
-	pack->Deflate();
 	if (tempto[0] == 0) {
 		SendPacket(pack);
-		if (to_guilddbid == 0)
-			console_list.SendEmoteMessageRaw(type, message);
 	}
 	else {
 		ZoneServer* zs = FindByName(to);
@@ -546,7 +514,7 @@ void ZSList::SOPZoneBootup(const char* adminname, uint32 ZoneServerID, const cha
 }
 
 void ZSList::RebootZone(const char* ip1,uint16 port,const char* ip2, uint32 skipid, uint32 zoneid){
-// get random zone
+	// get random zone
 	uint32 x = 0;
 	auto iterator = zone_server_list.begin();
 	while (iterator != zone_server_list.end()) {

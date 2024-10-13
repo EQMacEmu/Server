@@ -50,6 +50,7 @@
 #include "../common/repositories/content_flags_repository.h"
 #include "../common/skill_caps.h"
 
+#include "api_service.h"
 #include "zonedb.h"
 #include "zone_config.h"
 #include "masterentity.h"
@@ -206,8 +207,6 @@ int main(int argc, char** argv) {
 		worldserver.SetLauncherName("NONE");
 	}
 
-	worldserver.SetPassword(Config->SharedKey.c_str());
-	
 	LogInfo("Connecting to MySQL...");
 	if (!database.Connect(
 		Config->DatabaseHost.c_str(),
@@ -345,9 +344,7 @@ int main(int argc, char** argv) {
 	LogInfo("Loading quests");
 	parse->ReloadQuests();
 
-	if (!worldserver.Connect()) {
-		LogError("Worldserver Connection Failed :: worldserver.Connect()");
-	}
+	worldserver.Connect();
 
 	worldserver.SetScheduler(&event_scheduler);
 
@@ -376,14 +373,21 @@ int main(int argc, char** argv) {
 
 	Timer quest_timers(100);
 	UpdateWindowTitle(nullptr);
+
 	bool worldwasconnected = worldserver.Connected();
+	bool websocker_server_opened = false;
+
 	std::shared_ptr<EQStream> eqss;
 	std::shared_ptr<EQOldStream> eqoss;
 	EQStreamInterface *eqsi;
 	std::chrono::time_point<std::chrono::steady_clock> frame_prev = std::chrono::steady_clock::now();
+	std::unique_ptr<EQ::Net::WebsocketServer>          ws_server;
 
 	auto loop_fn = [&](EQ::Timer* t) {
-		{	//profiler block to omit the sleep from times
+		{	
+		//profiler block to omit the sleep from times
+		//Advance the timer to our current point in time
+		Timer::SetCurrentTime();
 
 		/**
 		* Calculate frame time
@@ -391,17 +395,23 @@ int main(int argc, char** argv) {
 			std::chrono::time_point<std::chrono::steady_clock> frame_now = std::chrono::steady_clock::now();
 			frame_time = std::chrono::duration<double>(frame_now - frame_prev).count();
 			frame_prev = frame_now;
-			//Advance the timer to our current point in time
-			Timer::SetCurrentTime();
 
-			worldserver.Process();
+			/**
+			* Websocket server
+			*/
+			if (!websocker_server_opened && Config->ZonePort != 0) {
+				LogInfo("Websocket Server listener started on address [{}] port [{}]", Config->TelnetIP.c_str(), Config->ZonePort);
+				ws_server = std::make_unique<EQ::Net::WebsocketServer>(Config->TelnetIP, Config->ZonePort);
+				RegisterApiService(ws_server);
+				websocker_server_opened = true;
+			}
+
 
 			if (!eqsf.IsOpen() && Config->ZonePort != 0) {
 				LogInfo("Starting EQ Network server on port {} ", Config->ZonePort);
 				if (!eqsf.Open(Config->ZonePort)) {
 					LogError("Failed to open port {} ", Config->ZonePort);
 					ZoneConfig::SetZonePort(0);
-					worldserver.Disconnect();
 					worldwasconnected = false;
 				}
 			}
@@ -448,9 +458,10 @@ int main(int argc, char** argv) {
 				worldwasconnected = true;
 			}
 			else {
-				if (worldwasconnected && is_zone_loaded)
+				if (worldwasconnected && is_zone_loaded) {
 					entity_list.ChannelMessageFromWorld(0, 0, ChatChannel_Broadcast, 0, 0, 100, "WARNING: World server connection lost");
-				worldwasconnected = false;
+					worldwasconnected = false;
+				}
 			}
 
 			if (is_zone_loaded)
@@ -490,8 +501,7 @@ int main(int argc, char** argv) {
 				database.ping();
 				// AsyncLoadVariables(dbasync, &database);
 				entity_list.UpdateWho();
-				if (worldserver.TryReconnect() && (!worldserver.Connected()))
-					worldserver.AsyncConnect();
+				
 			}
 
 			if (!RunLoops)
@@ -530,7 +540,6 @@ int main(int argc, char** argv) {
 		Zone::Shutdown(true);
 	//Fix for Linux world server problem.
 	eqsf.Close();
-	worldserver.Disconnect();
 	command_deinit();
 	safe_delete(parse);
 	LogInfo("Proper zone shutdown complete.");

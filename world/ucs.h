@@ -2,24 +2,23 @@
 #define UCS_H
 
 #include "../common/types.h"
-#include "../common/emu_tcp_connection.h"
+#include "../common/net/servertalk_server_connection.h"
 #include "../common/servertalk.h"
 #include "../common/event/timer.h"
+#include <memory>
 
 class UCSConnection
 {
 public:
 	UCSConnection();
-	void SetConnection(EmuTCPConnection *inStream);
-	bool Process();
-	bool Connected() { return Stream ? Stream->Connected() : false; }
-	bool SendPacket(ServerPacket* pack);
-	void Disconnect() { if(Stream) Stream->Disconnect(); }
+	void SetConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	void ProcessPacket(uint16 opcode, EQ::Net::Packet& p);
+	void SendPacket(ServerPacket* pack);
+	void Disconnect() { if (Stream && Stream->Handle()) Stream->Handle()->Disconnect(); }
 	void SendMessage(const char *From, const char *Message);
 private:
-	inline uint32 GetIP() const { return Stream ? Stream->GetrIP() : 0; }
-	EmuTCPConnection *Stream;
-	bool authenticated;
+	inline std::string GetIP() const { return (Stream && Stream->Handle()) ? Stream->Handle()->RemoteIP() : 0; }
+	std::shared_ptr<EQ::Net::ServertalkServerConnection> Stream;
 
 	/**
 	 * Keepalive

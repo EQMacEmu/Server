@@ -50,6 +50,7 @@ void callGetZoneList(Json::Value &response)
 		row["number_players"]       = zone->NumPlayers();
 		row["port"]                 = zone->GetPort();
 		row["previous_zone_id"]     = zone->GetPrevZoneID();
+		row["uuid"]                 = zone->GetUUID();
 		row["zone_id"]              = zone->GetZoneID();
 		row["zone_long_name"]       = zone->GetZoneLongName();
 		row["zone_name"]            = zone->GetZoneName();

@@ -36,6 +36,10 @@
 #include <list>
 #include <signal.h>
 
+#include "../common/net/tcp_server.h"
+#include "../common/net/servertalk_server.h"
+#include "../common/net/servertalk_client_connection.h"
+
 ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
 EQEmuLogSys LogSys;
@@ -56,8 +60,6 @@ void CatchSignal(int sig_num) {
 
 	RunLoops = false;
 
-	if(worldserver)
-		worldserver->Disconnect();
 }
 
 int main() {
@@ -134,8 +136,6 @@ int main() {
 
 	worldserver = new WorldServer;
 
-	worldserver->Connect();
-
 	auto loop_fn = [&](EQ::Timer* t) {
 
 		Timer::SetCurrentTime();
@@ -154,12 +154,6 @@ int main() {
 		if (ClientConnectionPruneTimer.Check()) {
 			g_Clientlist->CheckForStaleConnectionsAll();
 		}
-
-		if (InterserverTimer.Check()) {
-			if (worldserver->TryReconnect() && (!worldserver->Connected()))
-				worldserver->AsyncConnect();
-		}
-		worldserver->Process();
 
 		timeout_manager.CheckTimeouts();
 

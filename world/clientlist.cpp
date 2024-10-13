@@ -21,19 +21,18 @@
 #include "zoneserver.h"
 #include "zonelist.h"
 #include "client.h"
-#include "console.h"
 #include "worlddb.h"
 #include "../common/strings.h"
 #include "../common/guilds.h"
 #include "../common/races.h"
 #include "../common/classes.h"
 #include "../common/packet_dump.h"
+#include "../common/misc_functions.h"
 #include "wguild_mgr.h"
 #include "../zone/string_ids.h"
 #include "../common/zone_store.h"
 #include <set>
 
-extern ConsoleList		console_list;
 extern ZSList			zoneserver_list;
 uint32 numplayers = 0;	//this really wants to be a member variable of ClientList...
 
@@ -406,8 +405,8 @@ void ClientList::SendCLEList(const int16& admin, const char* to, WorldTCPConnect
 		strcpy(newline, "\r\n");
 	else
 		strcpy(newline, "^");
-	std::vector<char> out;
-
+	
+	auto out = fmt::memory_buffer();
 	iterator.Reset();
 	while(iterator.MoreElements()) {
 		ClientListEntry* cle = iterator.GetData();
@@ -871,7 +870,6 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 			iterator.Advance();
 		}
 
-		pack2->Deflate();
 		SendPacket(to,pack2);
 		safe_delete(pack2);
 	}
@@ -1020,7 +1018,6 @@ void ClientList::SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPCon
 			bufptr += sizeof(WhoAllPlayerPart4);
 
 		}
-		pack2->Deflate();
 		SendPacket(FriendsWho->FromName,pack2);
 		safe_delete(pack2);
 	}
@@ -1045,7 +1042,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 	if (whom)
 		whomlen = strlen(whom->whom);
 
-	std::vector<char> out;
+	auto out = fmt::memory_buffer();
 	fmt::format_to(std::back_inserter(out), "Players on server:\r\n");
 	iterator.Reset();
 	while(iterator.MoreElements()) 

@@ -19,6 +19,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/zone_store.h"
+#include "../common/misc_functions.h"
 
 #include "data_bucket.h"
 #include "quest_parser_collection.h"

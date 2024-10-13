@@ -24,16 +24,16 @@
 #include "../common/classes.h"
 #include "../common/misc_functions.h"
 #include "../common/path_manager.h"
+#include "../common/misc_functions.h"
 
 #include "ucsconfig.h"
 #include "clientlist.h"
 #include "database.h"
 #include "chatchannel.h"
+#include "worldserver.h"
 
 #include "../common/eqemu_config.h"
 #include "../common/eq_stream_factory.h"
-#include "../common/emu_tcp_connection.h"
-#include "../common/emu_tcp_server.h"
 #include "../common/servertalk.h"
 #include "worldserver.h"
 #include <list>
@@ -342,7 +342,7 @@ void Clientlist::Process()
 
 	// Pop sets PutInUse() for the stream.
 	while ((eqs = chatsf->Pop())) {
-		struct in_addr in;
+		struct in_addr in {};
 		in.s_addr = eqs->GetRemoteIP();
 
 		LogInfo("New Client UDP connection from [{0}]:[{1}]", long2ip(eqs->GetRemoteIP()).c_str(),
