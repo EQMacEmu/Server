@@ -36,7 +36,7 @@ void EQ::Net::ServertalkServerConnection::Send(uint16_t opcode, EQ::Net::Packet 
 			req.PutData(i, req_in->IPAddr, 64); i += 64;
 
 			EQ::Net::DynamicPacket out;
-			out.PutUInt16(0, ServerOP_UsertoWorldReqLeg);
+			out.PutUInt16(0, ServerOP_UsertoWorldResp);
 			out.PutUInt16(2, req.Length() + 4);
 			out.PutPacket(4, req);
 
@@ -58,7 +58,7 @@ void EQ::Net::ServertalkServerConnection::Send(uint16_t opcode, EQ::Net::Packet 
 			req.PutUInt8(i, req_in->is_client_from_local_network); i += 1;
 
 			EQ::Net::DynamicPacket out;
-			out.PutUInt16(0, ServerOP_LSClientAuthLeg);
+			out.PutUInt16(0, ServerOP_LSClientAuth);
 			out.PutUInt16(2, req.Length() + 4);
 			out.PutPacket(4, req);
 

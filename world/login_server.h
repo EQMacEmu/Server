@@ -25,6 +25,7 @@
 #include "../common/eq_packet_structs.h"
 #include "../common/mutex.h"
 #include "../common/net/servertalk_client_connection.h"
+#include "../common/net/servertalk_legacy_client_connection.h"
 #include "../common/event/timer.h"
 #include <memory>
 
@@ -39,9 +40,9 @@ public:
 	void SendNewInfo();
 	void SendStatus();
 
-	void SendPacket(ServerPacket* pack) { client->SendPacket(pack); }
+	void SendPacket(ServerPacket* pack);
 	void SendAccountUpdate(ServerPacket* pack);
-	bool Connected() { return client->Connected(); }
+	bool Connected() { if (LoginIsLegacy) { return legacy_client->Connected(); } else { return client->Connected(); } }
 	bool CanUpdate() { return CanAccountUpdate; }
 
 private:
@@ -53,13 +54,14 @@ private:
 	void ProcessLSAccountUpdate(uint16_t opcode, EQ::Net::Packet& p);
 
 	std::unique_ptr<EQ::Net::ServertalkClient> client;
+	std::unique_ptr<EQ::Net::ServertalkLegacyClient> legacy_client;
 	std::unique_ptr<EQ::Timer> statusupdate_timer;
 	char	LoginServerAddress[256];
 	uint32	LoginServerIP;
 	uint16	LoginServerPort;
 	char	LoginAccount[32];
 	char	LoginPassword[32];
-	uint8	LoginServerType;
+	bool	LoginIsLegacy;
 	bool	CanAccountUpdate;
 };
 #endif

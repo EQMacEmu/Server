@@ -134,7 +134,6 @@
 #define ServerOP_NewLSInfo			0x1008
 #define ServerOP_LSRemoteAddr		0x1009
 #define ServerOP_LSAccountUpdate	0x100A
-#define ServerOP_LSClientAuthLeg	0x100B
 
 #define ServerOP_EncapPacket		0x2007	// Packet within a packet
 #define ServerOP_WorldListUpdate	0x2008
@@ -155,10 +154,8 @@
 #define ServerOP_LSPlayerJoinWorld	0x3007
 #define ServerOP_LSPlayerZoneChange	0x3008
 
-#define	ServerOP_UsertoWorldReqLeg	0xAB00
-#define	ServerOP_UsertoWorldRespLeg	0xAB01
-#define	ServerOP_UsertoWorldReq		0xAB02
-#define	ServerOP_UsertoWorldResp	0xAB03
+#define	ServerOP_UsertoWorldReq		0xAB00
+#define	ServerOP_UsertoWorldResp	0xAB01
 
 
 #define ServerOP_LauncherConnectInfo	0x3000
