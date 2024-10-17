@@ -1,20 +1,21 @@
-
-/*	EQEMu: Everquest Server Emulator
-	Copyright (C) 2001-2015 EQEMu Development Team (http://eqemulator.net)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; version 2 of the License.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY except by those people which sell it, which
-	are required to give you total support for your newly bought product;
-	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+/**
+ * EQEmulator: Everquest Server Emulator
+ * Copyright (C) 2001-2018 EQEmulator Development Team (https://github.com/EQEmu/Server)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY except by those people which sell it, which
+ * are required to give you total support for your newly bought product;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
 */
 
 #ifndef EQEMU_LOGSYS_H
@@ -35,17 +36,17 @@
 #include <fmt/format.h>
 #include "types.h"
 
-namespace Logs{
+namespace Logs {
 	enum DebugLevel {
-		General = 1,	/* 1 - Low-Level general debugging, useful info on single line */
+		General = 1,    // 1 - Low-Level general debugging, useful info on single line
 		Detail          // 2 - Use this for very chatty logging you want to leave in but don't want on by default
 	};
 
-	/*
-		If you add to this, make sure you update LogCategoryName
-		NOTE: Only add to the bottom of the enum because that is the type ID assignment
-	*/
-
+	/**
+	 * If you add to this, make sure you update LogCategoryName
+	 *
+	 * NOTE: Only add to the bottom of the enum because that is the type ID assignment
+	 */
 	enum LogCategory {
 		None = 0,
 		AA,
@@ -120,6 +121,7 @@ namespace Logs{
 		PacketServerToServer,
 		HotReload,
 		ZonePoints,
+		EqTime,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -197,7 +199,8 @@ namespace Logs{
 		"Packet C->S",
 		"Packet S->S",
 		"HotReload",
-		"Zone Points"
+		"Zone Points",
+		"EqTime"
 	};
 }
 
@@ -214,22 +217,23 @@ public:
 	 * Close File Logs wherever necessary, either at zone shutdown or entire process shutdown for everything else.
 	 * This should be handled on deconstructor but to be safe we use it anyways.
 	 */
-	void CloseFileLogs(); 
+	void CloseFileLogs();
 	EQEmuLogSys* LoadLogSettingsDefaults();
 	EQEmuLogSys* LoadLogDatabaseSettings();
 
 	/**
 	 * @param directory_name
 	 */
-	void MakeDirectory(const std::string &directory_name); /* Platform independent way of performing a MakeDirectory based on name */
-	/*
-		The one and only Logging function that uses a debug level as a parameter, as well as a log_category
-		log_category - defined in Logs::LogCategory::[]
-		log_category name resolution works by passing the enum int ID to Logs::LogCategoryName[category_id]
+	void MakeDirectory(const std::string& directory_name);
 
-		Example: EQEmuLogSys::Out(Logs::General, Logs::Guilds, "This guild has no leader present");
-			- This would pipe the same category and debug level to all output formats, but the internal memory reference of log_settings would
-				be checked against to see if that piped output is set to actually process it for the category and debug level
+	/**
+	 *	The one and only Logging function that uses a debug level as a parameter, as well as a log_category
+	 *		log_category - defined in Logs::LogCategory::[]
+	 *		log_category name resolution works by passing the enum int ID to Logs::LogCategoryName[category_id]
+	 *
+	 *	Example: EQEmuLogSys::Out(Logs::General, Logs::Guilds, "This guild has no leader present");
+	 *		- This would pipe the same category and debug level to all output formats, but the internal memory reference of log_settings would
+	 *			be checked against to see if that piped output is set to actually process it for the category and debug level
 	*/
 	void Out(
 		Logs::DebugLevel debug_level,
@@ -245,35 +249,36 @@ public:
 	 * Used in file logs to prepend a timestamp entry for logs
 	 * @param time_stamp
 	 */
-	void SetCurrentTimeStamp(char *time_stamp);
+	void SetCurrentTimeStamp(char* time_stamp);
 
 	/**
 	 * @param log_name
 	 */
-	void StartFileLogs(const std::string &log_name = ""); /* Used to declare the processes file log and to keep it open for later use */
+	void StartFileLogs(const std::string& log_name = "");
 
-	/*
-		LogSettings Struct
-
-		This struct is the master reference for all settings for each category, and for each output
-
-		log_to_file[category_id] = [1-3] - Sets debug level for category to output to file
-		log_to_console[category_id] = [1-3] - Sets debug level for category to output to console
-		log_to_gmsay[category_id] = [1-3] - Sets debug level for category to output to gmsay
+	/**
+	 * LogSettings Struct
+	 *
+	 * This struct is the master reference for all settings for each category, and for each output
+	 *
+	 * log_to_file[category_id]    = [1-3] - Sets debug level for category to output to file
+	 * log_to_console[category_id] = [1-3] - Sets debug level for category to output to console
+	 * log_to_gmsay[category_id]   = [1-3] - Sets debug level for category to output to gmsay
+	 *
 	*/
-
-	struct LogSettings{
+	struct LogSettings {
 		uint8 log_to_file;
 		uint8 log_to_console;
 		uint8 log_to_gmsay;
 		uint8 is_category_enabled; /* When any log output in a category > 0, set this to 1 as (Enabled) */
 	};
 
-	/* Internally used memory reference for all log settings per category.
-		These are loaded via DB and have defaults loaded in LoadLogSettingsDefaults.
-		Database loaded via LogSys.SetDatabase(&database)->LoadLogDatabaseSettings();
+	/**
+	 * Internally used memory reference for all log settings per category
+	 * These are loaded via DB and have defaults loaded in LoadLogSettingsDefaults
+	 * Database loaded via LogSys.SetDatabase(&database)->LoadLogDatabaseSettings();
 	*/
-	LogSettings log_settings[Logs::LogCategory::MaxCategoryID];
+	LogSettings log_settings[Logs::LogCategory::MaxCategoryID]{};
 
 	// temporary bucket to re-load after silencing
 	LogSettings pre_silence_settings[Logs::LogCategory::MaxCategoryID]{};
@@ -285,14 +290,16 @@ public:
 		bool log_enabled;
 	};
 
-	LogEnabled GetLogsEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category);
-	bool IsLogEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category);
+	LogEnabled GetLogsEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category);
+	bool IsLogEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category);
+
 
 	// gmsay
 	uint16 GetGMSayColorFromCategory(uint16 log_category);
 
-	EQEmuLogSys *SetGMSayHandler(const std::function<void(uint16 log_type, const char *func, const std::string &)> &f) {
-		m_on_log_gmsay_hook = f; 
+	EQEmuLogSys* SetGMSayHandler(const std::function<void(uint16 log_type, const char* func, const std::string&)>& f)
+	{
+		m_on_log_gmsay_hook = f;
 		return this;
 	}
 
@@ -300,7 +307,7 @@ public:
 	void SetConsoleHandler(
 		std::function<void(
 			uint16 log_type,
-			const std::string &
+			const std::string&
 			)> f
 	) {
 		m_on_log_console_hook = f;
@@ -308,35 +315,34 @@ public:
 	void SilenceConsoleLogging();
 	void EnableConsoleLogging();
 
-
 	// database
-	EQEmuLogSys * SetDatabase(Database* db);
+	EQEmuLogSys* SetDatabase(Database* db);
+
+	[[nodiscard]] const std::string& GetLogPath() const;
+	EQEmuLogSys* SetLogPath(const std::string& log_path);
 
 	void DisableMySQLErrorLogs();
 	void EnableMySQLErrorLogs();
 
-	[[nodiscard]] const std::string &GetLogPath() const;
-	EQEmuLogSys *SetLogPath(const std::string &log_path);
-
 private:
 
 	// reference to database
-	Database *m_database;
-	std::function<void(uint16 log_category, const char *func, const std::string &)> m_on_log_gmsay_hook;
-	std::function<void(uint16 log_category, const std::string &)>                   m_on_log_console_hook;
-	bool                                                                            m_file_logs_enabled = false;
-	int                                                                             m_log_platform = 0;
-	std::string                                                                     m_platform_file_name;
-	std::string                                                                   m_log_path;
+	Database* m_database;
+	std::function<void(uint16 log_category, const char* func, const std::string&)> m_on_log_gmsay_hook;
+	std::function<void(uint16 log_category, const std::string&)>                   m_on_log_console_hook;
+	bool                                                                           m_file_logs_enabled = false;
+	int                                                                            m_log_platform = 0;
+	std::string                                                                    m_platform_file_name;
+	std::string                                                                    m_log_path;
 
 	void ProcessConsoleMessage(
 		uint16 log_category,
-		const std::string &message,
-		const char *file,
-		const char *func,
+		const std::string& message,
+		const char* file,
+		const char* func,
 		int line
 	);
-	void ProcessLogWrite(uint16 log_category, const std::string &message);
+	void ProcessLogWrite(uint16 log_category, const std::string& message);
 	void InjectTablesIfNotExist();
 };
 

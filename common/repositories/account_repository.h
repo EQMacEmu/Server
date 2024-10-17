@@ -45,6 +45,37 @@ public:
 
 	// Custom extended repository methods here
 
+	static int UpdateGodModeFlags(
+		Database &db,
+		int32_t id,
+		int8_t flymode,
+		uint8_t gmspeed,
+		int8_t gminvul,
+		int8_t hideme
+	)
+	{
+		std::vector<std::string> v;
+
+		auto columns = Columns();
+
+		v.push_back("gmspeed = " + std::to_string(gmspeed));
+		v.push_back("hideme = " + std::to_string(hideme));
+		v.push_back("gminvul = " + std::to_string(gminvul));
+		v.push_back("flymode = " + std::to_string(flymode));
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"UPDATE {} SET {} WHERE {} = {}",
+				TableName(),
+				Strings::Implode(", ", v),
+				PrimaryKey(),
+				id
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}
+
 };
 
 #endif //EQEMU_ACCOUNT_REPOSITORY_H

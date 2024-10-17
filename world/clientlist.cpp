@@ -1147,8 +1147,9 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 			else
 				sprintf(line, "  %s[%i %s] %s (%s)%s zone: %s%s%s%s", tmpgm, cle->level(), GetClassIDName(cle->class_(),cle->level()), cle->name(), GetRaceIDName(cle->race()), tmpguild, tmpZone, LFG, Trader, accinfo);
 
-			fmt::format_to(std::back_inserter(out), fmt::runtime(line));
+			fmt::format_to(std::back_inserter(out), "{}", line);
 			if (out.size() >= 3584) {
+				out.push_back(0);
 				connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 				out.clear();
 			}
@@ -1179,6 +1180,7 @@ void ClientList::ConsoleSendWhoAll(const char* to, int16 admin, Who_All_Struct* 
 		
 		//console_list.SendConsoleWho(connection, to, admin);
 	}
+	out.push_back(0);
 	connection->SendEmoteMessageRaw(to, 0, AccountStatus::Player, Chat::NPCQuestSay, out.data());
 }
 

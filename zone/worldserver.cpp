@@ -663,19 +663,21 @@ void WorldServer::Process() {
 			break;
 		}
 		case ServerOP_SyncWorldTime: {
-			if(zone!=0) {
+			if(zone != 0 && !zone->is_zone_time_localized) {
 				Log(Logs::Detail, Logs::ZoneServer, "%s Received Message SyncWorldTime", __FUNCTION__);
+
 				eqTimeOfDay* newtime = (eqTimeOfDay*) pack->pBuffer;
-				zone->zone_time.setEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
+				zone->zone_time.SetCurrentEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
 				auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
-				TimeOfDay_Struct* tod = (TimeOfDay_Struct*)outapp->pBuffer;
-				zone->zone_time.getEQTimeOfDay(time(0), tod);
+				TimeOfDay_Struct* time_of_day = (TimeOfDay_Struct*)outapp->pBuffer;
+				zone->zone_time.GetCurrentEQTimeOfDay(time(0), time_of_day);
 				entity_list.QueueClients(0, outapp, false);
 				safe_delete(outapp);
 				
+				/* Buffer garbage to generate debug message */
 				time_t timeCurrent = time(nullptr);
 				TimeOfDay_Struct eqTime;
-				zone->zone_time.getEQTimeOfDay( timeCurrent, &eqTime);
+				zone->zone_time.GetCurrentEQTimeOfDay( timeCurrent, &eqTime);
 
 				auto time_string = fmt::format("EQTime {}:{}{} {}",
 					((eqTime.hour) % 12) == 0 ? 12 : ((eqTime.hour) % 12),
@@ -685,7 +687,11 @@ void WorldServer::Process() {
 				);
 
 				LogInfo("Time Broadcast Packet: {}", time_string);
-				zone->GotCurTime(true);
+				zone->SetZoneHasCurrentTime(true);
+
+			}
+			if (zone->is_zone_time_localized) {
+				LogInfo("Received request to sync time from world, but our time is localized currently");
 			}
 			break;
 		}

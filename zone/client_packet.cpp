@@ -1831,7 +1831,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	/* Time of Day packet */
 	outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
 	TimeOfDay_Struct* tod = (TimeOfDay_Struct*)outapp->pBuffer;
-	zone->zone_time.getEQTimeOfDay(time(0), tod);
+	zone->zone_time.GetCurrentEQTimeOfDay(time(0), tod);
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
@@ -6224,6 +6224,10 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 				if (!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
 					mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
 				mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Sitting);
+				mypet->StopNavigation();
+				glm::vec3 petloc = glm::vec3(mypet->GetPosition().x, mypet->GetPosition().y, mypet->GetPosition().z);
+				mypet->Teleport(petloc);
+				mypet->FixZ();
 		}
 		break;
 	}

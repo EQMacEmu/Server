@@ -18,12 +18,10 @@
  *
 */
 
-
 #include "eqemu_logsys.h"
 #include "rulesys.h"
 #include "platform.h"
 #include "strings.h"
-#include "misc.h"
 #include "repositories/logsys_categories_repository.h"
 #include "termcolor/rang.hpp"
 
@@ -56,17 +54,16 @@ std::ofstream process_log;
  */
 EQEmuLogSys::EQEmuLogSys()
 {
-	m_on_log_gmsay_hook = [](uint16 log_type, const char *func, const std::string &) {};
-	m_on_log_console_hook = [](uint16 log_type, const std::string &) {};
+	m_on_log_gmsay_hook   = [](uint16 log_type, const char* func, const std::string&) {};
+	m_on_log_console_hook = [](uint16 log_type, const std::string&) {};
 }
-
 
 /**
  * EQEmuLogSys Deconstructor
  */
 EQEmuLogSys::~EQEmuLogSys() = default;
 
-EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
+EQEmuLogSys* EQEmuLogSys::LoadLogSettingsDefaults()
 {
 	/**
 	 * Get Executable platform currently running this code (Zone/World/etc)
@@ -74,10 +71,10 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 	m_log_platform = GetExecutablePlatformInt();
 
 	for (int log_category_id = Logs::AA; log_category_id != Logs::MaxCategoryID; log_category_id++) {
-		log_settings[log_category_id].log_to_console		= 0;
-		log_settings[log_category_id].log_to_file			= 0;
-		log_settings[log_category_id].log_to_gmsay			= 0;
-		log_settings[log_category_id].is_category_enabled	= 0;
+		log_settings[log_category_id].log_to_console = 0;
+		log_settings[log_category_id].log_to_file = 0;
+		log_settings[log_category_id].log_to_gmsay = 0;
+		log_settings[log_category_id].is_category_enabled = 0;
 	}
 
 	m_file_logs_enabled = false;
@@ -85,14 +82,16 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 	/**
 	 * Set Defaults
 	 */
-	log_settings[Logs::Crash].log_to_console            = static_cast<uint8>(Logs::General);
-	log_settings[Logs::MySQLError].log_to_console       = static_cast<uint8>(Logs::General);
-	log_settings[Logs::QuestErrors].log_to_gmsay        = static_cast<uint8>(Logs::General);
-	log_settings[Logs::QuestErrors].log_to_console      = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Loot].log_to_gmsay               = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Scheduler].log_to_console        = static_cast<uint8>(Logs::General);
-	log_settings[Logs::HotReload].log_to_gmsay          = static_cast<uint8>(Logs::General);
-	log_settings[Logs::HotReload].log_to_console        = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Crash].log_to_console       = static_cast<uint8>(Logs::General);
+	log_settings[Logs::MySQLError].log_to_console  = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_gmsay     = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_console   = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Loot].log_to_gmsay          = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Scheduler].log_to_console   = static_cast<uint8>(Logs::General);
+	log_settings[Logs::QuestErrors].log_to_gmsay   = static_cast<uint8>(Logs::General);
+	log_settings[Logs::QuestErrors].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::EqTime].log_to_console      = static_cast<uint8>(Logs::General);
+	log_settings[Logs::EqTime].log_to_gmsay        = static_cast<uint8>(Logs::General);
 
 	/**
 	 * RFC 5424
@@ -105,18 +104,18 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
 	 * Set Category enabled status on defaults
 	 */
 	for (int log_category_id = Logs::AA; log_category_id != Logs::MaxCategoryID; log_category_id++) {
-		const bool log_to_console		= log_settings[log_category_id].log_to_console > 0;
-		const bool log_to_file			= log_settings[log_category_id].log_to_file > 0;
-		const bool log_to_gmsay			= log_settings[log_category_id].log_to_gmsay > 0;
-		const bool is_category_enabled	= log_to_console || log_to_file || log_to_gmsay;
+		const bool log_to_console = log_settings[log_category_id].log_to_console > 0;
+		const bool log_to_file    = log_settings[log_category_id].log_to_file > 0;
+		const bool log_to_gmsay   = log_settings[log_category_id].log_to_gmsay > 0;
+		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay;
 		if (is_category_enabled) {
 			log_settings[log_category_id].is_category_enabled = 1;
 		}
 	}
 
-	/*	Declare process file names for log writing
-		If there is no process_file_name declared, no log file will be written, simply
-	*/
+	/**
+	 * Declare process file names for log writing=
+	 */
 	if (EQEmuLogSys::m_log_platform == EQEmuExePlatform::ExePlatformWorld) {
 		m_platform_file_name = "world";
 	}
@@ -146,7 +145,7 @@ EQEmuLogSys	*EQEmuLogSys::LoadLogSettingsDefaults()
  */
 void EQEmuLogSys::ProcessLogWrite(
 	uint16 log_category,
-	const std::string &message
+	const std::string& message
 )
 {
 	if (log_category == Logs::Crash) {
@@ -173,24 +172,26 @@ void EQEmuLogSys::ProcessLogWrite(
  * @param log_category
  * @return
  */
-uint16 EQEmuLogSys::GetGMSayColorFromCategory(uint16 log_category){
+uint16 EQEmuLogSys::GetGMSayColorFromCategory(uint16 log_category)
+{
 	switch (log_category) {
-		case Logs::Crash:
-		case Logs::Error:
-		case Logs::MySQLError:
-		case Logs::QuestErrors:
-			return Chat::Red;
-		case Logs::MySQLQuery:
-		case Logs::Debug:
-			return Chat::Lime;
-		case Logs::Quests:
-			return Chat::Group;
-		case Logs::Commands:
-			return Chat::Magenta;
-		default:
-			return Chat::Yellow;
+	case Logs::Crash:
+	case Logs::Error:
+	case Logs::MySQLError:
+	case Logs::QuestErrors:
+		return Chat::Red;
+	case Logs::MySQLQuery:
+	case Logs::Debug:
+		return Chat::Lime;
+	case Logs::Quests:
+		return Chat::Group;
+	case Logs::Commands:
+		return Chat::Magenta;
+	default:
+		return Chat::Yellow;
 	}
 }
+
 
 /**
  * @param debug_level
@@ -199,9 +200,9 @@ uint16 EQEmuLogSys::GetGMSayColorFromCategory(uint16 log_category){
  */
 void EQEmuLogSys::ProcessConsoleMessage(
 	uint16 log_category,
-	const std::string &message,
-	const char *file,
-	const char *func,
+	const std::string& message,
+	const char* file,
+	const char* func,
 	int line
 )
 {
@@ -210,10 +211,10 @@ void EQEmuLogSys::ProcessConsoleMessage(
 		log_category == Logs::LogCategory::MySQLError ||
 		log_category == Logs::LogCategory::Crash ||
 		log_category == Logs::LogCategory::QuestErrors
-	);
+		);
 	bool is_warning = (
 		log_category == Logs::LogCategory::Warning
-	);
+		);
 
 	(!is_error ? std::cout : std::cerr)
 		<< ""
@@ -270,7 +271,7 @@ void EQEmuLogSys::ProcessConsoleMessage(
 		}
 	}
 	else if (Strings::Contains(message, "[")) {
-		for (auto &e : Strings::Split(message, " ")) {
+		for (auto& e : Strings::Split(message, " ")) {
 			if (Strings::Contains(e, "[") && Strings::Contains(e, "]")) {
 				e = Strings::Replace(e, "[", "");
 				e = Strings::Replace(e, "]", "");
@@ -284,7 +285,7 @@ void EQEmuLogSys::ProcessConsoleMessage(
 				}
 
 				// color matching in []
-								// ex: [<red>variable] would produce [variable] with red inside brackets
+				// ex: [<red>variable] would produce [variable] with red inside brackets
 				std::map<std::string, rang::fgB> colors = {
 					{"<black>",   rang::fgB::black},
 					{"<green>",   rang::fgB::green},
@@ -297,7 +298,7 @@ void EQEmuLogSys::ProcessConsoleMessage(
 				};
 
 				bool      match_color = false;
-				for (auto &c : colors) {
+				for (auto& c : colors) {
 					if (Strings::Contains(e, c.first)) {
 						e = Strings::Replace(e, c.first, "");
 						(!is_error ? std::cout : std::cerr)
@@ -320,7 +321,7 @@ void EQEmuLogSys::ProcessConsoleMessage(
 					{"ok",      rang::fgB::green},
 				};
 
-				for (auto &c : matches) {
+				for (auto& c : matches) {
 					if (Strings::Contains(e, c.first)) {
 						(!is_error ? std::cout : std::cerr)
 							<< rang::fgB::gray
@@ -379,7 +380,7 @@ void EQEmuLogSys::ProcessConsoleMessage(
  * @param str
  * @return
  */
-constexpr const char *str_end(const char *str)
+constexpr const char* str_end(const char* str)
 {
 	return *str ? str_end(str + 1) : str;
 }
@@ -392,18 +393,16 @@ constexpr const char *str_end(const char *str)
  * @param message
  * @param ...
  */
-
 void EQEmuLogSys::Out(
 	Logs::DebugLevel debug_level,
 	uint16 log_category,
-	const char *file,
-	const char *func,
+	const char* file,
+	const char* func,
 	int line,
-	const char *message,
+	const char* message,
 	...
 )
 {
-
 	auto l = GetLogsEnabled(debug_level, log_category);
 
 	// bail out if nothing to log
@@ -424,7 +423,7 @@ void EQEmuLogSys::Out(
 		log_category == Logs::PacketServerClient ||
 		log_category == Logs::PacketClientServer ||
 		log_category == Logs::PacketServerToServer
-	);
+		);
 
 	// remove this when we remove all legacy logs
 	std::string output_message = message;
@@ -434,7 +433,6 @@ void EQEmuLogSys::Out(
 		output_message = vStringFormat(message, args);
 		va_end(args);
 	}
-
 
 	if (l.log_to_console_enabled) {
 		EQEmuLogSys::ProcessConsoleMessage(
@@ -461,8 +459,8 @@ void EQEmuLogSys::Out(
  */
 void EQEmuLogSys::SetCurrentTimeStamp(char* time_stamp)
 {
-	time_t raw_time;
-	struct tm * time_info;
+	time_t    raw_time;
+	struct tm* time_info;
 	time(&raw_time);
 	time_info = localtime(&raw_time);
 	strftime(time_stamp, 80, "[%m-%d-%Y %H:%M:%S]", time_info);
@@ -471,7 +469,7 @@ void EQEmuLogSys::SetCurrentTimeStamp(char* time_stamp)
 /**
  * @param directory_name
  */
-void EQEmuLogSys::MakeDirectory(const std::string &directory_name)
+void EQEmuLogSys::MakeDirectory(const std::string& directory_name)
 {
 #ifdef _WINDOWS
 	struct _stat st;
@@ -489,7 +487,7 @@ void EQEmuLogSys::MakeDirectory(const std::string &directory_name)
 
 void EQEmuLogSys::CloseFileLogs()
 {
-	if (process_log.is_open()){
+	if (process_log.is_open()) {
 		process_log.close();
 	}
 }
@@ -497,11 +495,13 @@ void EQEmuLogSys::CloseFileLogs()
 /**
  * @param log_name
  */
-void EQEmuLogSys::StartFileLogs(const std::string &log_name)
+void EQEmuLogSys::StartFileLogs(const std::string& log_name)
 {
 	EQEmuLogSys::CloseFileLogs();
 
-	/* When loading settings, we must have been given a reason in category based logging to output to a file in order to even create or open one... */
+	/**
+	 * When loading settings, we must have been given a reason in category based logging to output to a file in order to even create or open one...
+	 */
 	if (!m_file_logs_enabled) {
 		return;
 	}
@@ -528,7 +528,8 @@ void EQEmuLogSys::StartFileLogs(const std::string &log_name)
 			fmt::format("{}/zone/{}_{}.log", GetLogPath(), m_platform_file_name, getpid()),
 			std::ios_base::app | std::ios_base::out
 		);
-	} else {
+	}
+	else {
 
 		// All other processes
 		if (m_platform_file_name.empty()) {
@@ -553,9 +554,11 @@ void EQEmuLogSys::SilenceConsoleLogging()
 	std::copy(std::begin(log_settings), std::end(log_settings), std::begin(pre_silence_settings));
 
 	for (int log_index = Logs::AA; log_index != Logs::MaxCategoryID; log_index++) {
-		log_settings[log_index].log_to_console      = 0;
+		log_settings[log_index].log_to_console = 0;
 		log_settings[log_index].is_category_enabled = 0;
 	}
+
+	log_settings[Logs::Crash].log_to_console = static_cast<uint8>(Logs::General);
 }
 
 /**
@@ -586,14 +589,14 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 		}
 
 		log_settings[c.log_category_id].log_to_console = static_cast<uint8>(c.log_to_console);
-		log_settings[c.log_category_id].log_to_file = static_cast<uint8>(c.log_to_file);
-		log_settings[c.log_category_id].log_to_gmsay = static_cast<uint8>(c.log_to_gmsay);
+		log_settings[c.log_category_id].log_to_file    = static_cast<uint8>(c.log_to_file);
+		log_settings[c.log_category_id].log_to_gmsay   = static_cast<uint8>(c.log_to_gmsay);
 
 		// Determine if any output method is enabled for the category
 		// and set it to 1 so it can used to check if category is enabled
 		const bool log_to_console = log_settings[c.log_category_id].log_to_console > 0;
-		const bool log_to_file = log_settings[c.log_category_id].log_to_file > 0;
-		const bool log_to_gmsay = log_settings[c.log_category_id].log_to_gmsay > 0;
+		const bool log_to_file    = log_settings[c.log_category_id].log_to_file > 0;
+		const bool log_to_gmsay   = log_settings[c.log_category_id].log_to_gmsay > 0;
 		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay;
 
 		if (is_category_enabled) {
@@ -611,21 +614,24 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 	}
 
 	// Auto inject categories that don't exist in the database...
+
+	std::vector<LogsysCategoriesRepository::LogsysCategories> db_categories_to_add{};
+
 	for (int i = Logs::AA; i != Logs::MaxCategoryID; i++) {
 
 		bool is_missing_in_database = std::find(db_categories.begin(), db_categories.end(), i) == db_categories.end();
 		bool is_deprecated_category = Strings::Contains(fmt::format("{}", Logs::LogCategoryName[i]), "Deprecated");
 		if (!is_missing_in_database && is_deprecated_category) {
-			LogInfo("Logging category [{}] ({}) is now deprecated, deleting from database", Logs::LogCategoryName[i], i);
+			LogInfo(
+				"Logging category [{}] ({}) is now deprecated, deleting from database",
+				Logs::LogCategoryName[i],
+				i
+			);
 			LogsysCategoriesRepository::DeleteOne(*m_database, i);
 		}
 
 		if (is_missing_in_database && !is_deprecated_category) {
-			LogInfo(
-				"Automatically adding new log category [{}] ({})",
-				Logs::LogCategoryName[i],
-				i
-			);
+			LogInfo("Automatically adding new log category [{}] ({})", Logs::LogCategoryName[i], i);
 
 			auto new_category = LogsysCategoriesRepository::NewEntity();
 			new_category.log_category_id = i;
@@ -633,19 +639,24 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 			new_category.log_to_console = log_settings[i].log_to_console;
 			new_category.log_to_gmsay = log_settings[i].log_to_gmsay;
 			new_category.log_to_file = log_settings[i].log_to_file;
-
-			LogsysCategoriesRepository::InsertOne(*m_database, new_category);
+			db_categories_to_add.emplace_back(new_category);
 		}
+	}
+
+	if (!db_categories_to_add.empty()) {
+		LogsysCategoriesRepository::ReplaceMany(*m_database, db_categories_to_add);
+		LoadLogDatabaseSettings();
+		return this;
 	}
 
 	LogInfo("Loaded [{}] log categories", categories.size());
 
 	// force override this setting
 	log_settings[Logs::Crash].log_to_console = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Crash].log_to_gmsay   = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Crash].log_to_file    = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Info].log_to_file     = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Info].log_to_console  = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Crash].log_to_gmsay = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Crash].log_to_file = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Info].log_to_file = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Info].log_to_console = static_cast<uint8>(Logs::General);
 
 	return this;
 }
@@ -669,21 +680,23 @@ void EQEmuLogSys::InjectTablesIfNotExist()
 	if (!m_database->DoesTableExist("logsys_categories")) {
 		LogInfo("Creating table [logsys_categories]");
 		m_database->QueryDatabase(
-		SQL(
-			CREATE TABLE `logsys_categories` (
-				`log_category_id` int(11) NOT NULL,
-				`log_category_description` varchar(150) DEFAULT NULL,
-				`log_to_console` smallint(11) DEFAULT 0,
-				`log_to_file` smallint(11) DEFAULT 0,
-				`log_to_gmsay` smallint(11) DEFAULT 0,
-				PRIMARY KEY(`log_category_id`)
-				) ENGINE = InnoDB DEFAULT CHARSET = latin1
-			)
-		);
+			SQL(
+				CREATE TABLE `logsys_categories` (
+					`log_category_id` int(11) NOT NULL,
+					`log_category_description` varchar(150) DEFAULT NULL,
+					`log_to_console` smallint(11) DEFAULT 0,
+					`log_to_file` smallint(11) DEFAULT 0,
+					`log_to_gmsay` smallint(11) DEFAULT 0,
+					`log_to_discord` smallint(11) DEFAULT 0,
+					`discord_webhook_id` int(11) DEFAULT 0,
+					PRIMARY KEY(`log_category_id`)
+					) ENGINE = InnoDB DEFAULT CHARSET = latin1
+					)
+			);
 	}
 }
 
-EQEmuLogSys::LogEnabled EQEmuLogSys::GetLogsEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category)
+EQEmuLogSys::LogEnabled EQEmuLogSys::GetLogsEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category)
 {
 	auto e = LogEnabled{};
 
@@ -702,9 +715,21 @@ EQEmuLogSys::LogEnabled EQEmuLogSys::GetLogsEnabled(const Logs::DebugLevel &debu
 	return e;
 }
 
-bool EQEmuLogSys::IsLogEnabled(const Logs::DebugLevel &debug_level, const uint16 &log_category)
+bool EQEmuLogSys::IsLogEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category)
 {
 	return GetLogsEnabled(debug_level, log_category).log_enabled;
+}
+
+const std::string& EQEmuLogSys::GetLogPath() const
+{
+	return m_log_path;
+}
+
+EQEmuLogSys* EQEmuLogSys::SetLogPath(const std::string& log_path)
+{
+	EQEmuLogSys::m_log_path = log_path;
+
+	return this;
 }
 
 void EQEmuLogSys::DisableMySQLErrorLogs()
@@ -719,16 +744,4 @@ void EQEmuLogSys::EnableMySQLErrorLogs()
 	log_settings[Logs::MySQLError].log_to_file = 1;
 	log_settings[Logs::MySQLError].log_to_console = 1;
 	log_settings[Logs::MySQLError].log_to_gmsay = 1;
-}
-
-const std::string &EQEmuLogSys::GetLogPath() const
-{
-	return m_log_path;
-}
-
-EQEmuLogSys *EQEmuLogSys::SetLogPath(const std::string &log_path)
-{
-	EQEmuLogSys::m_log_path = log_path;
-
-	return this;
 }

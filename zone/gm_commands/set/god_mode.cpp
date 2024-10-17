@@ -38,5 +38,5 @@ void SetGodMode(Client *c, const Seperator *sep)
 		).c_str()
 	);
 
-	AccountRepository::UpdateOne(database, a);
+	AccountRepository::UpdateGodModeFlags(database, a.id, a.flymode, a.gmspeed, a.gminvul, a.hideme);
 }

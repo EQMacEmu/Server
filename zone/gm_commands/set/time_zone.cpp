@@ -33,7 +33,7 @@ void SetTimeZone(Client *c, const Seperator *sep)
 	auto outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
 
 	auto tod = (TimeOfDay_Struct*)outapp->pBuffer;
-	zone->zone_time.getEQTimeOfDay(time(0), tod);
+	zone->zone_time.GetCurrentEQTimeOfDay(time(0), tod);
 
 	entity_list.QueueClients(c, outapp);
 	safe_delete(outapp);

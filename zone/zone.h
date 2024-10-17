@@ -112,6 +112,10 @@ public:
 
 	Zone(uint32 in_zoneid, const char* in_short_name);
 	~Zone();
+
+	/* When zone has its own version of time */
+	bool is_zone_time_localized;
+
 	bool	Init(bool is_static);
 	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
 	bool	SaveZoneCFG();
@@ -178,7 +182,7 @@ public:
 	void	SetNumAggroedNPCs(uint16 count) { aggroed_npcs = count; }
 	void		SetStaticZone(bool sz)	{ staticzone = sz; }
 	inline bool	IsStaticZone()			{ return staticzone; }
-	inline void	GotCurTime(bool time)	{ gottime = time; }
+	inline void	SetZoneHasCurrentTime(bool time)	{ zone_has_current_time = time; }
 
 	void	SpawnConditionChanged(const SpawnCondition &c, int16 old_value);
 	void	UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer);
@@ -226,7 +230,7 @@ public:
 	EQTime	zone_time;
 	void	GetTimeSync();
 	void	SetDate(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute);
-	void	SetTime(uint8 hour, uint8 minute);
+	void	SetTime(uint8 hour, uint8 minute, bool update_world = true);
 
 	bool	process_mobs_while_empty;
 	void	weatherSend(uint32 timer = 0);
@@ -411,7 +415,7 @@ private:
 	uint16	pull_limit;
 
 	bool	staticzone;
-	bool	gottime;
+	bool	zone_has_current_time;
 
 	uint32 pQueuedMerchantsWorkID;
 	uint32 pQueuedTempMerchantsWorkID;

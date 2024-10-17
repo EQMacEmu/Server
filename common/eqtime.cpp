@@ -55,7 +55,7 @@ EQTime::EQTime()
 	//Set default time zone
 	timezone=0;
 	//Start EQTimer
-	setEQTimeOfDay(start, time(0));
+	SetCurrentEQTimeOfDay(start, time(0));
 }
 
 EQTime::~EQTime()
@@ -67,7 +67,7 @@ EQTime::~EQTime()
 //Input: Current Time (as a time_t), a pointer to the TimeOfDay_Struct that will be written to.
 //Output: 0=Error, 1=Sucess
 
-int EQTime::getEQTimeOfDay( time_t timeConvert, struct TimeOfDay_Struct *eqTimeOfDay )
+int EQTime::GetCurrentEQTimeOfDay( time_t timeConvert, struct TimeOfDay_Struct *eqTimeOfDay )
 {
 	/* check to see if we have a reference time to go by. */
 	if( eqTime.start_realtime == 0 )
@@ -124,7 +124,7 @@ int EQTime::getEQTimeOfDay( time_t timeConvert, struct TimeOfDay_Struct *eqTimeO
 }
 
 //setEQTimeOfDay
-int EQTime::setEQTimeOfDay(TimeOfDay_Struct start_eq, time_t start_real)
+int EQTime::SetCurrentEQTimeOfDay(TimeOfDay_Struct start_eq, time_t start_real)
 {
 	if(start_real==0)
 		return 0;
@@ -208,7 +208,7 @@ void EQTime::ToString(TimeOfDay_Struct *t, std::string &str) {
 bool EQTime::IsNightTime()
 {
 	TimeOfDay_Struct tod;
-	getEQTimeOfDay(&tod);
+	GetCurrentEQTimeOfDay(&tod);
 
 	if (!&tod)
 	{
@@ -227,7 +227,7 @@ bool EQTime::IsNightTime()
 bool EQTime::IsInbetweenTime(uint8 mintime, uint8 maxtime)
 {
 	TimeOfDay_Struct tod;
-	getEQTimeOfDay(&tod);
+	GetCurrentEQTimeOfDay(&tod);
 
 	if(mintime == 0 || maxtime == 0 || mintime > 24 || maxtime > 24)
 		return true;

@@ -42,7 +42,7 @@ void command_find(Client *c, const Seperator *sep)
 			}
 		},
 		Cmd{.cmd = "race", .u = "race [Search Criteria]", .fn = FindRace, .a = {"#findrace"}},
-		Cmd{.cmd = "spell", .u = "spell [Search Criteria]", .fn = FindSpell, .a = {"#fs", "#findspell"}},
+		Cmd{.cmd = "spell", .u = "spell [Search Criteria]", .fn = FindSpell, .a = {"#fs", "#findspell", "#spfind"}},
 		Cmd{.cmd = "special_ability", .u = "special_ability [Search Criteria]", .fn = FindSpecialAbility, .a = {"#fsa", "#findspecialability"}},
 		Cmd{.cmd = "zone", .u = "zone [Search Criteria]", .fn = FindZone, .a = {"#fz", "#findzone"}},
 	};

@@ -753,7 +753,7 @@ void Zone::Shutdown(bool quite)
 
 	LogInfo("Zone Shutdown: {} ({})", zone->GetShortName(), zone->GetZoneID());
 	petition_list.ClearPetitions();
-	zone->GotCurTime(false);
+	zone->SetZoneHasCurrentTime(false);
 	if (!quite)
 		LogInfo("Zone shutdown: going to sleep");
 	is_zone_loaded = false;
@@ -799,6 +799,8 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	pathing = nullptr;
 	qGlobals = nullptr;
 	default_ruleset = 0;
+
+	is_zone_time_localized = false;
 
 	process_mobs_while_empty = false;
 
@@ -850,7 +852,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	zone_total_blocked_spells = 0;
 	aas = nullptr;
 	totalAAs = 0;
-	gottime = false;
+	zone_has_current_time = false;
 	idle = false;
 
 	map_name = nullptr;
@@ -1575,7 +1577,7 @@ void Zone::Repop() {
 
 void Zone::GetTimeSync()
 {
-	if (worldserver.Connected() && !gottime) {
+	if (worldserver.Connected() && !zone_has_current_time) {
 		auto pack = new ServerPacket(ServerOP_GetWorldTime, 0);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -1599,17 +1601,38 @@ void Zone::SetDate(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute
 	}
 }
 
-void Zone::SetTime(uint8 hour, uint8 minute)
+void Zone::SetTime(uint8 hour, uint8 minute, bool update_world /*= true*/)
 {
 	if (worldserver.Connected()) {
 		auto pack = new ServerPacket(ServerOP_SetWorldTime, sizeof(eqTimeOfDay));
-		eqTimeOfDay* eqtod = (eqTimeOfDay*)pack->pBuffer;
-		zone_time.getEQTimeOfDay(time(0), &eqtod->start_eqtime);
-		eqtod->start_eqtime.minute=minute;
-		eqtod->start_eqtime.hour=hour;
-		eqtod->start_realtime=time(0);
-		LogInfo("Setting master time on world server to: {}:{} ({})\n", hour, minute, (int)eqtod->start_realtime);
-		worldserver.SendPacket(pack);
+		eqTimeOfDay *eq_time_of_day = (eqTimeOfDay*)pack->pBuffer;
+
+		zone_time.GetCurrentEQTimeOfDay(time(0), &eq_time_of_day->start_eqtime);
+		eq_time_of_day->start_eqtime.minute=minute;
+		eq_time_of_day->start_eqtime.hour=hour;
+		eq_time_of_day->start_realtime=time(0);
+
+		/* By Default we update worlds time, but we can optionally no update world which updates the rest of the zone servers */
+		if (update_world) {
+			LogInfo("Setting master time on world server to: {}:{} ({})\n", hour, minute, (int)eq_time_of_day->start_realtime);
+			worldserver.SendPacket(pack);
+			/* Set Time Localization Flag */
+			zone->is_zone_time_localized = false;
+		} 
+		/* When we don't update world, we are localizing ourselves, we become disjointed from normal syncs and set time locally */
+		else {
+			LogInfo("Setting zone localized time...");
+
+			zone->zone_time.SetCurrentEQTimeOfDay(eq_time_of_day->start_eqtime, eq_time_of_day->start_realtime);
+			EQApplicationPacket* outapp = new EQApplicationPacket(OP_TimeOfDay, sizeof(TimeOfDay_Struct));
+			TimeOfDay_Struct* time_of_day = (TimeOfDay_Struct*)outapp->pBuffer;
+			zone->zone_time.GetCurrentEQTimeOfDay(time(0), time_of_day);
+			entity_list.QueueClients(0, outapp, false);
+			safe_delete(outapp);
+
+			/* Set Time Localization Flag */
+			zone->is_zone_time_localized = true;
+		}
 		safe_delete(pack);
 	}
 }

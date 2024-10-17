@@ -15,7 +15,7 @@ void SetDate(Client* c, const Seperator* sep)
 	}
 
 	TimeOfDay_Struct eq_time;
-	zone->zone_time.getEQTimeOfDay(time(0), &eq_time);
+	zone->zone_time.GetCurrentEQTimeOfDay(time(0), &eq_time);
 
 	const uint16 year = Strings::ToUnsignedInt(sep->arg[2]);
 	const uint8  month = Strings::ToUnsignedInt(sep->arg[3]);

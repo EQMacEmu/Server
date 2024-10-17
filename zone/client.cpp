@@ -6044,7 +6044,7 @@ std::vector<int> Client::GetMemmedSpells() {
 
 std::vector<int> Client::GetScribeableSpells(uint8 min_level, uint8 max_level) {
 	std::vector<int> scribeable_spells;
-	for (uint8 spell_id = 0; spell_id < SPDAT_RECORDS; ++spell_id) {
+	for (int16 spell_id = 0; spell_id < SPDAT_RECORDS; ++spell_id) {
 		bool scribeable = false;
 		if (!IsValidSpell(spell_id)) {
 			continue;
@@ -6124,12 +6124,12 @@ void Client::SaveSpells()
 
 uint16 Client::ScribeSpells(uint8 min_level, uint8 max_level)
 {
-	int available_book_slot = GetNextAvailableSpellBookSlot();
+	auto             available_book_slot = GetNextAvailableSpellBookSlot();
 	std::vector<int> spell_ids = GetScribeableSpells(min_level, max_level);
-	uint16 spell_count = spell_ids.size();
-	uint16 scribed_spells = 0;
-	if (spell_count > 0) {
-		for (auto spell_id : spell_ids) {
+	uint16           scribed_spells = 0;
+
+	if (!spell_ids.empty()) {
+		for (const auto& spell_id : spell_ids) {
 			if (available_book_slot == -1) {
 				Message(
 					Chat::Red,

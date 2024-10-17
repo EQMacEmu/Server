@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
 	TimeOfDay_Struct eqTime;
 	time_t realtime;
 	eqTime = database.LoadTime(realtime);
-	zoneserver_list.worldclock.setEQTimeOfDay(eqTime,realtime);
+	zoneserver_list.worldclock.SetCurrentEQTimeOfDay(eqTime,realtime);
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
 
@@ -473,17 +473,21 @@ int main(int argc, char** argv) {
 				break;
 		}
 
-		if(EQTimeTimer.Check())
-		{
+		if(EQTimeTimer.Check()) {
 			TimeOfDay_Struct tod;
-			zoneserver_list.worldclock.getEQTimeOfDay(time(0), &tod);
+			zoneserver_list.worldclock.GetCurrentEQTimeOfDay(time(0), &tod);
 			if (!database.SaveTime(tod.minute, tod.hour, tod.day, tod.month, tod.year))
 			{
 				LogError("Failed to save eqtime.");
 			}
-			else
-			{
-				LogInfo("EQTime successfully saved.");
+			else {
+				LogEqTimeDetail("EQTime successfully saved - time is now year [{}] month [{}] day [{}] hour [{}] minute [{}]",
+					tod.year,
+					tod.month,
+					tod.day,
+					tod.hour,
+					tod.minute
+				);
 			}
 		}
 

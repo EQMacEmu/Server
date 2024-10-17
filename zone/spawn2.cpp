@@ -898,7 +898,7 @@ void SpawnConditionManager::Process() {
 
 		//get our current time
 		TimeOfDay_Struct tod;
-		zone->zone_time.getEQTimeOfDay(&tod);
+		zone->zone_time.GetCurrentEQTimeOfDay(&tod);
 
 		//see if time is past our nearest event.
 		if(EQTime::IsTimeBefore(&next_event, &tod))
@@ -950,7 +950,7 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	}
 
 	TimeOfDay_Struct tod;
-	zone->zone_time.getEQTimeOfDay(&tod);
+	zone->zone_time.GetCurrentEQTimeOfDay(&tod);
 	//If we're here, strict has already been checked. Check again in case hour has changed.
 	if(event.strict && (event.next.hour != tod.hour || event.next.day != tod.day || event.next.month != tod.month || event.next.year != tod.year))
 	{
@@ -1149,7 +1149,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
 	//better solution, and I just dont care thats much.
 	//get our current time
 	TimeOfDay_Struct tod;
-	zone->zone_time.getEQTimeOfDay(&tod);
+	zone->zone_time.GetCurrentEQTimeOfDay(&tod);
 
 	for(auto cur = spawn_events.begin(); cur != spawn_events.end(); ++cur) {
 		SpawnEvent &cevent = *cur;
@@ -1375,7 +1375,7 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 				if(reset_base) {
 					Log(Logs::Detail, Logs::Spawns, "Spawn event %d located in this zone. State set. Trigger time reset (period %d).", event_id, cevent.period);
 					//start with the time now
-					zone->zone_time.getEQTimeOfDay(&cevent.next);
+					zone->zone_time.GetCurrentEQTimeOfDay(&cevent.next);
 					//advance the next time by our period
 					EQTime::AddMinutes(cevent.period, &cevent.next);
 				} else {
@@ -1420,7 +1420,7 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 	if(reset_base) {
 		Log(Logs::Detail, Logs::Spawns, "Spawn event %d is in zone %s. State set. Trigger time reset (period %d). Notifying world.", event_id, zone_short_name.c_str(), e.period);
 		//start with the time now
-		zone->zone_time.getEQTimeOfDay(&e.next);
+		zone->zone_time.GetCurrentEQTimeOfDay(&e.next);
 		//advance the next time by our period
 		EQTime::AddMinutes(e.period, &e.next);
 	} else {

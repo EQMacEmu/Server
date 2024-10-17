@@ -4280,7 +4280,7 @@ void Client::ScribeSpell(uint16 spell_id, int slot, bool update_client, bool def
 	}
 
 	if(update_client) {
-		if (m_pp.spell_book[slot] != 0xFFFFFFFF) {
+		if (m_pp.spell_book[slot] != -1) {
 			UnscribeSpell(slot, update_client, defer_save);
 		}
 	}

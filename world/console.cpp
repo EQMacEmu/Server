@@ -196,16 +196,14 @@ void Console::SendMessage(uint8 newline, const char* message, ...) {
 	if (!message)
 		return;
 	char* buffer = 0;
-	uint32 bufsize = 1500;
-	if (message)
-		bufsize += strlen(message);
+	uint32 bufsize = 5000;
 	buffer = new char[bufsize];
 	memset(buffer, 0, bufsize);
 	if (message != 0) {
 		va_list argptr;
 
 		va_start(argptr, message);
-		vsnprintf(buffer, bufsize - 512, message, argptr);
+		vsnprintf(buffer, bufsize, message, argptr);
 		va_end(argptr);
 	}
 
