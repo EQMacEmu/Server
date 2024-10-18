@@ -3,7 +3,10 @@
 void command_iteminfo(Client *c, const Seperator *sep)
 {
 	auto inst = c->GetInv()[EQ::invslot::slotCursor];
-	if (!inst) { c->Message(13, "Error: You need an item on your cursor for this command"); }
+	if (!inst) { 
+		c->Message(Chat::Red, "Error: You need an item on your cursor for this command");
+		return;
+	}
 	auto item = inst->GetItem();
 	if (!item)
 		c->Message(Chat::Red, "Error: You need an item on your cursor for this command");
