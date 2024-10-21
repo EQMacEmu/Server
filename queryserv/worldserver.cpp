@@ -47,7 +47,13 @@ WorldServer::~WorldServer() {}
 
 void WorldServer::Connect()
 {
-	m_connection.reset(new EQ::Net::ServertalkClient(Config->WorldIP, Config->WorldTCPPort, false, "QueryServ", Config->SharedKey));
+	m_connection = std::make_unique<EQ::Net::ServertalkClient>(
+		Config->WorldIP,
+		Config->WorldTCPPort,
+		false,
+		"QueryServ",
+		Config->SharedKey
+	); 
 	
 	m_connection->OnMessage(std::bind(&WorldServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
 }
@@ -75,7 +81,6 @@ bool WorldServer::Connected() const
 
 void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 {
-	LogInfo("Received Opcode: {0}\n{1}", opcode, p.ToString());
 	switch (opcode) {
 		case 0: {
 			break;
@@ -84,15 +89,13 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			break;
 		}
 		case ServerOP_QSPlayerLogItemDeletes: {
-			if (p.Length() < sizeof(QSPlayerLogItemDelete_Struct))
-			{
+			if (p.Length() < sizeof(QSPlayerLogItemDelete_Struct)) {
 				LogInfoDetail("Received malformed ServerOP_QSPlayerLogItemDeletes");
 				break;
 			}
 			QSPlayerLogItemDelete_Struct* QS = (QSPlayerLogItemDelete_Struct*)p.Data();
 			uint32 Items = QS->char_count;
-			if (p.Length() < sizeof(QSPlayerLogItemDelete_Struct) * Items)
-			{
+			if (p.Length() < sizeof(QSPlayerLogItemDelete_Struct) * Items) {
 				LogInfoDetail("Received malformed ServerOP_QSPlayerLogItemDeletes");
 				break;
 			}
@@ -165,17 +168,14 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			auto from = p.GetCString(8);
 			uint32 Type = p.GetUInt32(8 + from.length() + 1);
 
-			switch (Type)
-			{
-			case 0:
-			{
-				break;
-			}
-			default:
-			{
-				LogInfoDetail("Received unhandled ServerOP_QueryServGeneric [{}]", Type);
-				break;
-			}
+			switch (Type) {
+				case 0: {
+					break;
+				}
+				default: {
+					LogInfoDetail("Received unhandled ServerOP_QueryServGeneric [{}]", Type);
+					break;
+				}
 			}
 			break;
 		}

@@ -28,74 +28,60 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "../common/global_define.h"
+#include "../common/strings.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/queue.h"
 #include "../common/timer.h"
-#include "../common/eq_stream_factory.h"
 #include "../common/eq_packet.h"
 #include "../common/seperator.h"
 #include "../common/version.h"
 #include "../common/eqtime.h"
-#include "../common/timeoutmgr.h"
-
+#include "../common/event/event_loop.h"
+#include "../common/eq_stream_factory.h"
+#include "../common/net/eqstream.h"
 #include "../common/opcodemgr.h"
 #include "../common/guilds.h"
 #include "../common/eq_stream_ident.h"
 #include "../common/rulesys.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
-#include "../common/event/timer.h"
+#include "../common/misc.h"
 #include "client.h"
 #include "worlddb.h"
+#include "wguild_mgr.h"
+
 #ifdef _WINDOWS
-	#include <process.h>
-	#define snprintf	_snprintf
-	#define strncasecmp	_strnicmp
-	#define strcasecmp	_stricmp
-	#include <conio.h>
+#include <process.h>
+#define snprintf	_snprintf
+#define strncasecmp	_strnicmp
+#define strcasecmp	_stricmp
+#include <conio.h>
 #else
-	#include <pthread.h>
-	#include "../common/unix.h"
-	#include <sys/types.h>
-	#include <sys/ipc.h>
-	#include <sys/sem.h>
-	#include <sys/shm.h>
-	#if not defined (FREEBSD) && not defined (DARWIN)
-		union semun {
-			int val;
-			struct semid_ds *buf;
-			ushort *array;
-			struct seminfo *__buf;
-			void *__pad;
-		};
-	#endif
+
+#include <sys/sem.h>
+#include <thread>
 
 #endif
 
 #include "../common/patches/patches.h"
-#include "../common/random.h"
-#include "../common/path_manager.h"
 #include "zoneserver.h"
 #include "login_server.h"
 #include "login_server_list.h"
 #include "world_config.h"
-#include "zoneserver.h"
 #include "zonelist.h"
 #include "clientlist.h"
 #include "launcher_list.h"
-#include "wguild_mgr.h"
 #include "ucs.h"
 #include "queryserv.h"
-#include "world_server_cli.h"
-#include "../common/content/world_content_service.h"
-#include "world_event_scheduler.h"
-#include "../zone/data_bucket.h"
-#include "../common/zone_store.h"
-#include "../common/skill_caps.h"
+#include "web_interface.h"
 #include "console.h"
 
-#include "../common/net/servertalk_server.h"
+#include "world_server_cli.h"
+#include "../common/content/world_content_service.h"
+#include "../common/zone_store.h"
+#include "world_event_scheduler.h"
+#include "../common/path_manager.h"
+#include "../common/skill_caps.h"
 
 SkillCaps skill_caps;
 ZoneStore zone_store;
@@ -115,6 +101,7 @@ uint32 numzones = 0;
 bool holdzones = false;
 const WorldConfig *Config;
 EQEmuLogSys LogSys;
+WebInterfaceList web_interface;
 WorldContentService content_service;
 PathManager         path;
 
@@ -204,6 +191,11 @@ int main(int argc, char** argv) {
 	set_exception_handler();
 
 	if (argc > 1) {
+		LogSys.SilenceConsoleLogging();
+		path.LoadPaths();
+		WorldConfig::LoadConfig();
+		RuleManager::Instance()->LoadRules(&database, "default", false);
+		LogSys.EnableConsoleLogging();
 		WorldserverCLI::CommandHandler(argc, argv);
 	}
 
@@ -233,12 +225,11 @@ int main(int argc, char** argv) {
 	RegisterLoginservers();
 	LoadDatabaseConnections();
 
-	guild_mgr.SetDatabase(&database);
-
-	LogSys.SetDatabase(&database)
+	auto logging = LogSys.SetDatabase(&database)
 		->SetLogPath(path.GetLogPath())
-		->LoadLogDatabaseSettings()
-		->StartFileLogs();
+		->LoadLogDatabaseSettings();
+	
+	logging->StartFileLogs();
 
 	bool ignore_db = false;
 	if (argc >= 2) {
@@ -261,10 +252,19 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	guild_mgr.SetDatabase(&database);
+
 	LogInfo("Purging expiring data buckets...");
 	database.PurgeAllDeletedDataBuckets();
+
 	LogInfo("Loading zones..");
 	zone_store.LoadZones(database);
+
+	if (zone_store.GetZones().empty()) {
+		LogError("Failed to load zones data, check your schema for possible errors");
+		return 1;
+	}
+
 	LogInfo("Clearing groups..");
 	database.ClearGroup();
 	LogInfo("Clearing raids..");
@@ -322,11 +322,6 @@ int main(int argc, char** argv) {
 	time_t realtime;
 	eqTime = database.LoadTime(realtime);
 	zoneserver_list.worldclock.setEQTimeOfDay(eqTime,realtime);
-	Timer EQTimeTimer(600000);
-	EQTimeTimer.Start(600000);
-
-	LogInfo("Loading launcher list..");
-	launcher_list.LoadList();
 
 	LogInfo("Clearing Saylinks..");
 	database.ClearSayLink();
@@ -343,7 +338,22 @@ int main(int argc, char** argv) {
 	database.LoadCharacterCreateAllocations();
 	database.LoadCharacterCreateCombos();
 
+	LogInfo("Initializing [EventScheduler]");
 	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
+
+	Timer EQTimeTimer(600000);
+	EQTimeTimer.Start(600000);
+
+	// global loads
+	LogInfo("Loading launcher list..");
+	launcher_list.LoadList();
+
+	std::unique_ptr<EQ::Net::ConsoleServer> console;
+	if (Config->TelnetEnabled) {
+		LogInfo("Console (TCP) listener started on [{}:{}]", Config->TelnetIP, Config->TelnetTCPPort);
+		console = std::make_unique<EQ::Net::ConsoleServer>(Config->TelnetIP, Config->TelnetTCPPort);
+		RegisterConsoleFunctions(console);
+	}
 
 	LogInfo("Initializing [WorldContentService]");
 	content_service.SetDatabase(&database)
@@ -352,69 +362,66 @@ int main(int argc, char** argv) {
 
 	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
 
-	std::unique_ptr<EQ::Net::ConsoleServer> console;
-	if (Config->TelnetEnabled) {
-		LogInfo("Console (TCP) listener started.");
-		console.reset(new EQ::Net::ConsoleServer(Config->TelnetIP, Config->TelnetTCPPort));
-		RegisterConsoleFunctions(console);
-	}
-
 	std::unique_ptr<EQ::Net::ServertalkServer> server_connection;
-	server_connection.reset(new EQ::Net::ServertalkServer());
+	server_connection = std::make_unique<EQ::Net::ServertalkServer>();
+
 	EQ::Net::ServertalkServerOptions server_opts;
 	server_opts.port = Config->WorldTCPPort;
 	server_opts.ipv6 = false;
 	server_opts.credentials = Config->SharedKey;
 	server_connection->Listen(server_opts);
-	LogInfo("Server (TCP) listener started.");
+	LogInfo("Server (TCP) listener started on port [{}]", Config->WorldTCPPort);
 		
 	server_connection->OnConnectionIdentified(
-		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		numzones++;
-		zoneserver_list.Add(new ZoneServer(connection));
-		LogInfo(
-			"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
-			connection->Handle()->RemoteIP(),
-			connection->Handle()->RemotePort(),
-			connection->GetUUID(),
-			numzones
-		);
-	}
+		"Zone", [&console](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+			numzones++;
+			zoneserver_list.Add(new ZoneServer(connection, console.get()));
+
+			LogInfo(
+				"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
+				connection->Handle()->RemoteIP(),
+				connection->Handle()->RemotePort(),
+				connection->GetUUID(),
+				numzones
+			);
+		}
 	);
 
 	server_connection->OnConnectionRemoved(
 		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		numzones--;
-		zoneserver_list.Remove(connection->GetUUID());
-		LogInfo(
-			"Removed Zone Server connection from [{}] total zone_count [{}]",
-			connection->GetUUID(),
-			numzones
-		);
-	}
+			numzones--;
+			zoneserver_list.Remove(connection->GetUUID());
+
+			LogInfo(
+				"Removed Zone Server connection from [{}] total zone_count [{}]",
+				connection->GetUUID(),
+				numzones
+			);
+		}
 	);
 
 	server_connection->OnConnectionIdentified(
 		"Launcher", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		LogInfo(
-			"New Launcher connection from [{}] at [{}:{}]",
-			connection->Handle()->RemoteIP(),
-			connection->Handle()->RemotePort(),
-			connection->GetUUID()
-		);
-		launcher_list.Add(connection);
-	}
+			LogInfo(
+				"New Launcher connection from [{}] at [{}:{}]",
+				connection->Handle()->RemoteIP(),
+				connection->Handle()->RemotePort(),
+				connection->GetUUID()
+			);
+
+			launcher_list.Add(connection);
+		}
 	);
 
 	server_connection->OnConnectionRemoved(
 		"Launcher", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		LogInfo(
-			"Removed Launcher connection from [{0}]",
-			connection->GetUUID()
-		);
-
-		launcher_list.Remove(connection);
-	}
+			LogInfo(
+					"Removed Launcher connection from [{0}]",
+				connection->GetUUID()
+			);
+				
+			launcher_list.Remove(connection);
+		}
 	);
 
 	server_connection->OnConnectionIdentified(
@@ -458,9 +465,38 @@ int main(int argc, char** argv) {
 			LogInfo("Connection lost from UCS Server [{}]", 
 				connection->GetUUID());
 
-			UCSLink.SetConnection(nullptr);
+			auto ucs_connection = UCSLink.GetConnection();
+			if (ucs_connection->GetUUID() == connection->GetUUID()) {
+				UCSLink.SetConnection(nullptr);
+			}
 		}
 	);
+
+	server_connection->OnConnectionIdentified(
+		"WebInterface", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		LogInfo(
+			"New WebInterface Server connection from [{}] at [{}:{}]",
+			connection->Handle()->RemoteIP(),
+			connection->Handle()->RemotePort(),
+			connection->GetUUID()
+		);
+
+		web_interface.AddConnection(connection);
+	}
+	);
+
+	server_connection->OnConnectionRemoved(
+		"WebInterface", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
+		LogInfo(
+			"Removed WebInterface Server connection from [{}]",
+			connection->GetUUID()
+		);
+
+		web_interface.RemoveConnection(connection);
+	}
+	);
+
+
 
 	if (eqsf.Open()) {
 		LogInfo("Client (UDP) listener started.");
@@ -524,7 +560,6 @@ int main(int argc, char** argv) {
 				break;
 		}
 
-		i = 0;
 		//check the stream identifier for any now-identified streams
 		while((eqsi = stream_identifier.PopIdentified())) {
 			//now that we know what patch they are running, start up their client object
@@ -548,9 +583,6 @@ int main(int argc, char** argv) {
 					// @merth: client->zoneattempt=0;
 					client_list.Add(client);
 			}
-			i++;
-			if (i == 5)
-				break;
 		}
 
 		event_scheduler.Process(&zoneserver_list);

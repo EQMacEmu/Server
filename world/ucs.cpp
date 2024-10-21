@@ -13,25 +13,40 @@ extern QueryServConnection QSLink;
 
 UCSConnection::UCSConnection()
 {
-	Stream = 0;
+	connection = 0;
 }
 
 void UCSConnection::SetConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> inStream)
 {
-	if(Stream && Stream->Handle()) {
-		Log(Logs::Detail, Logs::UCSServer, "Incoming UCS Connection while we were already connected to a UCS.");
-		Stream->Handle()->Disconnect();
+	if (inStream && connection && connection->Handle()) {
+		LogInfo("Incoming UCS Connection while we were already connected to a UCS");
+		connection->Handle()->Disconnect();
 	}
 
-	Stream = inStream;
+	connection = inStream;
+	if (connection) {
+		connection->OnMessage(
+			std::bind(
+				&UCSConnection::ProcessPacket,
+				this,
+				std::placeholders::_1,
+				std::placeholders::_2
+			)
+		);
+	}
 
-	m_keepalive.reset(new EQ::Timer(5000, true, std::bind(&UCSConnection::OnKeepAlive, this, std::placeholders::_1)));
-	Stream->OnMessage(std::bind(&UCSConnection::ProcessPacket, this, std::placeholders::_1, std::placeholders::_2));
+	m_keepalive = std::make_unique<EQ::Timer>(1000, true, std::bind(&UCSConnection::OnKeepAlive, this, std::placeholders::_1));
 }
+
+const std::shared_ptr<EQ::Net::ServertalkServerConnection>& UCSConnection::GetConnection() const
+{
+	return connection;
+}
+
 
 void UCSConnection::ProcessPacket(uint16 opcode, EQ::Net::Packet& p)
 {
-	if (!Stream) {
+	if (!connection) {
 		return;
 	}
 
@@ -62,11 +77,11 @@ void UCSConnection::ProcessPacket(uint16 opcode, EQ::Net::Packet& p)
 
 void UCSConnection::SendPacket(ServerPacket* pack)
 {
-	if(!Stream) {
+	if(!connection) {
 		return;
 	}
 
-	Stream->SendPacket(pack);
+	connection->SendPacket(pack);
 }
 
 void UCSConnection::SendMessage(const char *From, const char *Message)
@@ -84,10 +99,10 @@ void UCSConnection::SendMessage(const char *From, const char *Message)
 
 void UCSConnection::OnKeepAlive(EQ::Timer* t)
 {
-	if (!Stream) {
+	if (!connection) {
 		return;
 	}
 
 	ServerPacket pack(ServerOP_KeepAlive, 0);
-	Stream->SendPacket(&pack);
+	connection->SendPacket(&pack);
 }

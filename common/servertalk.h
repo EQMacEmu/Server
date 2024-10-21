@@ -60,7 +60,7 @@
 #define ServerOP_ItemStatus			0x002C
 #define ServerOP_OOCMute			0x002D
 #define ServerOP_Revoke				0x002E
-//#define			0x002F
+#define	ServerOP_WebInterfaceCall   0x002F
 #define ServerOP_GroupIDReq			0x0030
 #define ServerOP_GroupIDReply		0x0031
 #define ServerOP_GroupLeave			0x0032	// for disbanding out of zone folks
@@ -91,6 +91,9 @@
 #define ServerOP_ChangeSharedMem	0x0065
 #define ServerOP_ConsentDeny		0x0066
 #define ServerOP_ConsentDenyByID	0x0067
+#define	ServerOP_WebInterfaceEvent  0x0068
+#define ServerOP_WebInterfaceSubscribe 0x0069
+#define ServerOP_WebInterfaceUnsubscribe 0x0070
 
 #define ServerOP_RaidAdd			0x0100 //in use
 #define ServerOP_RaidRemove			0x0101 //in use
@@ -361,6 +364,7 @@ struct ServerChannelMessage_Struct {
 	char to[64];
 	char from[64];
 	uint8 fromadmin;
+	bool noreply;
 	uint16 chan_num;
 	uint32 guilddbid;
 	uint8 language;

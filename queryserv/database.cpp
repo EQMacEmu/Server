@@ -340,6 +340,5 @@ void QSDatabase::GeneralQueryReceive(ServerPacket *pack)
 	{
 		Log(Logs::Detail, Logs::QSServer, "Failed Delete Log Record Insert: %s\n%s", results.ErrorMessage().c_str(), query.c_str());
 	}
-	safe_delete(pack);
 	safe_delete_array(queryBuffer);
 }

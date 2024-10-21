@@ -20,7 +20,6 @@
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/opcodemgr.h"
-#include "../common/eq_stream_factory.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
 #include "../common/platform.h"
@@ -41,7 +40,6 @@
 
 volatile bool RunLoops = true;
 
-TimeoutManager        timeout_manager;
 QSDatabase            database;
 std::string           WorldShortName;
 const queryservconfig *Config;
@@ -109,8 +107,6 @@ int main() {
 	worldserver = new WorldServer;
 	worldserver->Connect(); 
 
-	bool worldwasconnected = worldserver->Connected();
-	/* Load Looking For Guild Manager */
 	auto loop_fn = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
 
@@ -118,16 +114,6 @@ int main() {
 			EQ::EventLoop::Get().Shutdown();
 			return;
 		}
-
-		if (worldserver->Connected()) {
-			worldwasconnected = true;
-		}
-		else {
-			worldwasconnected = false;
-		}
-
-		EQ::EventLoop::Get().Process();
-		timeout_manager.CheckTimeouts();
 	};
 
 	EQ::Timer process_timer(loop_fn);

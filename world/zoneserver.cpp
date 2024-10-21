@@ -46,8 +46,8 @@ extern UCSConnection UCSLink;
 extern QueryServConnection QSLink;
 void CatchSignal(int sig_num);
 
-ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection)
-	: tcpc(connection), zone_boot_timer(100) {
+ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_connection, EQ::Net::ConsoleServer* in_console)
+	: tcpc(in_connection), zone_boot_timer(100) {
 
 	/* Set Process tracking variable defaults */
 	memset(zone_name, 0, sizeof(zone_name));
@@ -67,12 +67,14 @@ ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> conn
 
 	tcpc->OnMessage(std::bind(&ZoneServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
 
-	boot_timer_obj.reset(new EQ::Timer(100, true, [this](EQ::Timer* obj) {
+	boot_timer_obj = std::make_unique<EQ::Timer>(100, true, [this](EQ::Timer* obj) {
 		if (zone_boot_timer.Check()) {
 			LSBootUpdate(GetZoneID(), true);
 			zone_boot_timer.Disable();
 		}
-	}));
+	});
+
+	console = in_console;
 }
 
 ZoneServer::~ZoneServer() {
@@ -557,17 +559,43 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 				}
 				// tells get a reply echo
 				if (scm->chan_num == ChatChannel_Tell || scm->chan_num == ChatChannel_TellEcho) {
-					// deliver to console user
-					//if (scm->deliverto[0] == '*') {
-					//	Console* con = 0;
-					//	con = console_list.FindByAccountName(&scm->deliverto[1]);
-					//	if (((!con) || (!con->SendChannelMessage(scm))) && (scm->chan_num == ChatChannel_Tell && scm->queued == 0))
-					//		zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, Chat::White, fmt::format(" {} is not online at this time ", scm->to).c_str());
-					//	break;
-					//}
+					if (scm->deliverto[0] == '*') {
+						if (console) {
+							auto con = console->FindByAccountName(&scm->deliverto[1]);
+							if (
+								!con ||
+								(
+									!con->SendChannelMessage(
+										scm,
+										[&scm]() {
+								auto pack = new ServerPacket(ServerOP_ChannelMessage, sizeof(ServerChannelMessage_Struct) + strlen(scm->message) + 1);
+								memcpy(pack->pBuffer, scm, pack->size);
+								auto scm2 = (ServerChannelMessage_Struct*)pack->pBuffer;
+								strcpy(scm2->deliverto, scm2->from);
+								scm2->noreply = true;
+								client_list.SendPacket(scm->from, pack);
+								safe_delete(pack);
+							}
+									)
+									) &&
+								!scm->noreply
+								) {
+								zoneserver_list.SendEmoteMessage(
+									scm->from,
+									0,
+									AccountStatus::Player,
+									Chat::White,
+									fmt::format(
+										"{} is not online at this time.",
+										scm->to
+									).c_str()
+								);
+							}
+						}
+						break;
+					}
 
-					// deliver to client
-					ClientListEntry* cle = client_list.FindCharacter(scm->deliverto);
+					auto cle = client_list.FindCharacter(scm->deliverto);
 
 					if (cle == 0 || cle->Online() < CLE_Status_Zoning ||
 							(cle->TellsOff() && (scm->fromadmin < cle->Admin() || scm->fromadmin < 80))) {

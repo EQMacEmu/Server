@@ -48,6 +48,10 @@ ClientListEntry::ClientListEntry(uint32 in_id, uint32 iLSID, const char* iLoginN
 	pworldadmin = iWorldAdmin;
 	plocal=(local==1);
 	pversion = version;
+	pLFGFromLevel = 0;
+	pLFGToLevel = 0;
+	pLFGMatchFilter = false;
+	memset(pLFGComments, 0, 64);
 }
 
 ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList_Struct* scl, int8 iOnline)
@@ -66,6 +70,10 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer* iZS, ServerClientList
 	padmin = scl->Admin;
 	//THIS IS FOR AN ALTERNATE LOGIN METHOD FOR RAPID TESTING. Hardcoded to the PC client because only PCs should be using this 'hackish' login method. Requires password field set in the database.
 	pversion = 2;
+	pLFGFromLevel = 0;
+	pLFGToLevel = 0;
+	pLFGMatchFilter = false;
+	memset(pLFGComments, 0, 64);
 
 	if (iOnline >= CLE_Status_Zoning)
 		Update(iZS, scl, iOnline);

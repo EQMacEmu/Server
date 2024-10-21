@@ -65,15 +65,16 @@ public:
 
 	const std::list<std::unique_ptr<ZoneServer>> &getZoneServerList() const;
 
-protected:
+private:
+	void OnTick(EQ::Timer* t);
 	void OnKeepAlive(EQ::Timer *t);
 	uint32 NextID;
 	uint16 pLockedZones[MaxLockedZones];
 	uint32 CurGroupID;
 	uint16 LastAllocatedPort;
 
+	std::unique_ptr<EQ::Timer> m_tick;
 	std::unique_ptr<EQ::Timer> m_keepalive;
-
 	std::list<std::unique_ptr<ZoneServer>> zone_server_list;
 };
 

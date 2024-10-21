@@ -10,6 +10,7 @@ public:
 	static void CommandHandler(int argc, char **argv);
 	static void Version(int argc, char **argv, argh::parser &cmd, std::string &description);
 	static void DatabaseVersion(int argc, char **argv, argh::parser &cmd, std::string &description);
+	static void DatabaseSetAccountStatus(int argc, char** argv, argh::parser& cmd, std::string& description);
 	static void DatabaseGetSchema(int argc, char **argv, argh::parser &cmd, std::string &description);
 	static void DatabaseDump(int argc, char **argv, argh::parser &cmd, std::string &description);
 	static void TestCommand(int argc, char **argv, argh::parser &cmd, std::string &description);

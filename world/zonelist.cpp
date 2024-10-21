@@ -22,6 +22,9 @@
 #include "worlddb.h"
 #include "ucs.h"
 #include "world_config.h"
+#include "../common/json/json.h"
+#include "../common/event_sub.h"
+#include "web_interface.h"
 #include "../common/servertalk.h"
 #include "../common/strings.h"
 #include "../common/random.h"
@@ -31,6 +34,8 @@ extern uint32 numzones;
 extern bool holdzones;
 extern UCSConnection UCSLink;
 extern EQ::Random emu_random;
+extern WebInterfaceList web_interface;
+
 void CatchSignal(int sig_num);
 
 ZSList::ZSList()
@@ -40,7 +45,8 @@ ZSList::ZSList()
 	LastAllocatedPort=0;
 	memset(pLockedZones, 0, sizeof(pLockedZones));
 
-	m_keepalive.reset(new EQ::Timer(2500, true, std::bind(&ZSList::OnKeepAlive, this, std::placeholders::_1)));
+	m_tick.reset(new EQ::Timer(1000, true, std::bind(&ZSList::OnTick, this, std::placeholders::_1)));
+	m_keepalive = std::make_unique<EQ::Timer>(1000, true, std::bind(&ZSList::OnKeepAlive, this, std::placeholders::_1));
 }
 
 ZSList::~ZSList() {
@@ -672,7 +678,7 @@ void ZSList::SendLSZones(){
 }
 
 int ZSList::GetZoneCount() {
-	return(numzones);
+	return(zone_server_list.size());
 }
 
 void ZSList::GetZoneIDList(std::vector<uint32> &zones) {
@@ -707,6 +713,42 @@ void ZSList::WorldShutDown(uint32 time, uint32 interval)
 		Process();
 		CatchSignal(2);
 	}
+}
+
+void ZSList::OnTick(EQ::Timer* t)
+{
+	if (!EventSubscriptionWatcher::Get()->IsSubscribed("EQW::ZoneUpdate")) {
+		return;
+	}
+
+	Json::Value out;
+	out["event"] = "EQW::ZoneUpdate";
+	out["data"] = Json::Value();
+	for (auto& zone : zone_server_list)
+	{
+		Json::Value outzone;
+
+		outzone["CAddress"] = zone->GetCAddress();
+		outzone["CLocalAddress"] = zone->GetCLocalAddress();
+		outzone["CompileTime"] = zone->GetCompileTime();
+		outzone["CPort"] = zone->GetCPort();
+		outzone["ID"] = zone->GetID();
+		outzone["IP"] = zone->GetIP();
+		outzone["LaunchedName"] = zone->GetLaunchedName();
+		outzone["LaunchName"] = zone->GetLaunchName();
+		outzone["Port"] = zone->GetPort();
+		outzone["PrevZoneID"] = zone->GetPrevZoneID();
+		outzone["UUID"] = zone->GetUUID();
+		outzone["ZoneID"] = zone->GetZoneID();
+		outzone["ZoneLongName"] = zone->GetZoneLongName();
+		outzone["ZoneName"] = zone->GetZoneName();
+		outzone["ZoneOSProcessID"] = zone->GetZoneOSProcessID();
+		outzone["NumPlayers"] = zone->NumPlayers();
+		outzone["BootingUp"] = zone->IsBootingUp();
+		outzone["StaticZone"] = zone->IsStaticZone();
+		out["data"].append(outzone);
+	}
+	web_interface.SendEvent(out);
 }
 
 void ZSList::OnKeepAlive(EQ::Timer *t) {

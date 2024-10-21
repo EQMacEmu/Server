@@ -22,6 +22,8 @@
 #include "../common/net/servertalk_server.h"
 #include "../common/event/timer.h"
 #include "../common/timer.h"
+#include "../common/emu_constants.h"
+#include "console.h"
 #include <string.h>
 #include <string>
 
@@ -31,7 +33,7 @@ class ServerPacket;
 
 class ZoneServer : public WorldTCPConnection {
 public:
-	ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_connection, EQ::Net::ConsoleServer* in_console);
 	~ZoneServer();
 	virtual inline bool IsZoneServer() { return true; }
 
@@ -95,6 +97,7 @@ private:
 	uint32  zone_os_process_id;
 	std::string launcher_name;	//the launcher which started us
 	std::string launched_name;	//the name of the zone we launched.
+	EQ::Net::ConsoleServer* console;
 };
 
 #endif

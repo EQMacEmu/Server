@@ -30,6 +30,7 @@ SET(common_sources
 	eq_stream_ident.cpp
 	eq_stream_proxy.cpp
 	eqtime.cpp
+	event_sub.cpp
 	extprofile.cpp
 	faction.cpp
 	fastmath.cpp
@@ -210,7 +211,6 @@ SET(repositories
 	repositories/base/base_account_flags_repository.h
 	repositories/base/base_account_ip_repository.h
 	repositories/base/base_account_repository.h
-	repositories/base/base_account_rewards_repository.h
 	repositories/base/base_altadv_vars_repository.h
 	
 	# Extended Repositories
@@ -312,7 +312,6 @@ SET(repositories
 	repositories/account_flags_repository.h
 	repositories/account_ip_repository.h
 	repositories/account_repository.h
-	repositories/account_rewards_repository.h
 	repositories/altadv_vars_repository.h
 	repositories/blocked_spells_repository.h
 	)
@@ -362,6 +361,7 @@ SET(common_headers
 	eq_stream_proxy.h
 	eq_stream_type.h
 	eqtime.h
+	event_sub.h
 	extprofile.h
 	faction.h
 	fastmath.h
