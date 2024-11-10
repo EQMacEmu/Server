@@ -1773,7 +1773,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	Mob *oos = nullptr;
 	bool skip_corpse_checks = false;
 	bool ismerchant = class_ == Class::Merchant || MerchantType > 0;
-	bool player_damaged = ds_damage + npc_damage < total_damage;
+	bool player_damaged = ds_damage + npc_damage < player_damage;
 	bool corpse = false;
 	bool xp = false;
 	bool faction = false;
@@ -1891,7 +1891,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	}
 
 	// Do faction hits to any player on the hatelist, so long as a player damaged us.
-	if (GetNPCFactionID() > 0 && player_damaged)
+	if (GetNPCFactionID() > 0 && player_damaged && !oos->IsNPC())
 	{
 		hate_list.DoFactionHits(GetNPCFactionID(), faction);
 	}

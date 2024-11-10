@@ -49,7 +49,7 @@ void EntityList::CheckClientAggro(Client *around)
 
 		if (!npc->CheckAggro(around) && npc->CheckWillAggro(around, true))
 		{
-			if (npc->WillAggroNPCs() && !npc->IsEngaged())
+			if (npc->GetNPCAggro() && !npc->IsEngaged())
 				AICheckNPCAggro(npc);	// if npc will become aggro from unaggro state, then also check for other npcs to attack
 
 			AICheckClientAggro(npc);
@@ -88,7 +88,7 @@ void EntityList::DescribeAggro(Client *to_who, NPC *from_who, float d, bool verb
 	);
 
 	bool is_engaged = from_who->IsEngaged();
-	bool Will_aggro_npcs = from_who->WillAggroNPCs();
+	bool Will_aggro_npcs = from_who->GetNPCAggro();
 	if(is_engaged) {
 		Mob *top = from_who->GetHateTop();
 		to_who->Message(
@@ -642,7 +642,7 @@ bool EntityList::AICheckNPCAggro(NPC* aggressor)
 	bool engaged = aggressor->IsEngaged();
 	bool found = false;
 
-	if (!aggressor->WillAggroNPCs() || (engaged && aggressor->GetTarget() && !proxAggro))
+	if (!aggressor->GetNPCAggro() || (engaged && aggressor->GetTarget() && !proxAggro))
 		return false;
 
 	float tankDist = 0.0f;
@@ -692,7 +692,7 @@ bool EntityList::AICheckPetAggro(NPC* aggressor)
 		if (!npc->IsCharmedPet())
 			continue;
 
-		if (!npc->IsPlayerOwned() && !aggressor->WillAggroNPCs())
+		if (!npc->IsPlayerOwned() && !aggressor->GetNPCAggro())
 			continue;
 
 		if (!aggressor->CheckAggro(npc) && aggressor->CheckWillAggro(npc))
@@ -1758,7 +1758,8 @@ int32 Mob::CheckHealAggroAmount(uint16 spell_id, Mob* target, uint32 heal_possib
 			}
 			case SE_Rune:
 			{
-				AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id) * 2;
+				if (o == 0)		// only slot 1 runes aggro in our era
+					AggroAmount += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id) * 2;
 				break;
 			}
 			case SE_HealOverTime:

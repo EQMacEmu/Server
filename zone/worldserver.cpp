@@ -1612,18 +1612,14 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_QGlobalUpdate:
-		{
-			if(pack->size != sizeof(ServerQGlobalUpdate_Struct))
-			{
+		case ServerOP_QGlobalUpdate: {
+			if(pack->size != sizeof(ServerQGlobalUpdate_Struct)) {
 				break;
 			}
 
-			if(zone)
-			{
+			if(zone) {
 				ServerQGlobalUpdate_Struct *qgu = (ServerQGlobalUpdate_Struct*)pack->pBuffer;
-				if(qgu->from_zone_id != zone->GetZoneID())
-				{
+				if(qgu->from_zone_id != zone->GetZoneID()) {
 					QGlobal temp;
 					temp.npc_id = qgu->npc_id;
 					temp.char_id = qgu->char_id;
@@ -1637,18 +1633,14 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_QGlobalDelete:
-		{
-			if(pack->size != sizeof(ServerQGlobalDelete_Struct))
-			{
+		case ServerOP_QGlobalDelete: {
+			if(pack->size != sizeof(ServerQGlobalDelete_Struct)) {
 				break;
 			}
 
-			if(zone)
-			{
+			if(zone) {
 				ServerQGlobalDelete_Struct *qgd = (ServerQGlobalDelete_Struct*)pack->pBuffer;
-				if(qgd->from_zone_id != zone->GetZoneID())
-				{
+				if(qgd->from_zone_id != zone->GetZoneID()) {
 					entity_list.DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 					zone->DeleteQGlobal(std::string((char*)qgd->name), qgd->npc_id, qgd->char_id, qgd->zone_id);
 				}
@@ -1663,8 +1655,7 @@ void WorldServer::Process() {
 
 			break;
 		}
-		case ServerOP_QueryServGeneric:
-		{
+		case ServerOP_QueryServGeneric: {
 			pack->SetReadPosition(8);
 			char From[64];
 			pack->ReadString(From);
@@ -1678,8 +1669,7 @@ void WorldServer::Process() {
 
 			break;
 		}
-		case ServerOP_CZSetEntityVariableByNPCTypeID:
-		{
+		case ServerOP_CZSetEntityVariableByNPCTypeID: {
 			CZSetEntVarByNPCTypeID_Struct* CZM = (CZSetEntVarByNPCTypeID_Struct*)pack->pBuffer;
 			NPC* n = entity_list.GetNPCByNPCTypeID(CZM->npctype_id);
 			if (n != 0) {
@@ -1687,8 +1677,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_CZSignalNPC:
-		{
+		case ServerOP_CZSignalNPC: {
 			CZNPCSignal_Struct* CZCN = (CZNPCSignal_Struct*)pack->pBuffer;
 			NPC* n = entity_list.GetNPCByNPCTypeID(CZCN->npctype_id); 
 			if (n != 0) {
@@ -1696,8 +1685,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_CZSignalClient:
-		{
+		case ServerOP_CZSignalClient: {
 			CZClientSignal_Struct* CZCS = (CZClientSignal_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByCharID(CZCS->charid);
 			if (client != 0) {
@@ -1705,8 +1693,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_CZSignalClientByName:
-		{
+		case ServerOP_CZSignalClientByName: {
 			CZClientSignalByName_Struct* CZCS = (CZClientSignalByName_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(CZCS->Name);
 			if (client != 0) {
@@ -1714,8 +1701,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_CZMessagePlayer:
-		{
+		case ServerOP_CZMessagePlayer: {
 			CZMessagePlayer_Struct* CZCS = (CZMessagePlayer_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(CZCS->CharName);
 			if (client != 0) {
@@ -1723,8 +1709,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_HotReloadQuests:
-		{
+		case ServerOP_HotReloadQuests: {
 			if (!zone) {
 				break;
 			}
@@ -1746,25 +1731,26 @@ void WorldServer::Process() {
 
 			break;
 		}
-		case ServerOP_ReloadOpcodes:
-		{
+		case ServerOP_ReloadOpcodes: {
 			zone->SendReloadMessage("Opcodes");
 			ReloadAllPatches();
 			break;
 		}
 		case ServerOP_ReloadAAData: {
-			zone->SendReloadMessage("Alternate Advancement Data");
-			zone->LoadAlternateAdvancement();
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Alternate Advancement Data");
+				zone->LoadAlternateAdvancement();
+			}
 			break;
 		}
-		case ServerOP_ReloadBlockedSpells:
-		{
-			zone->SendReloadMessage("Blocked Spells");
-			zone->LoadZoneBlockedSpells();
+		case ServerOP_ReloadBlockedSpells: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Blocked Spells");
+				zone->LoadZoneBlockedSpells();
+			}
 			break;
 		}
-		case ServerOP_ReloadCommands:
-		{
+		case ServerOP_ReloadCommands: {
 			zone->SendReloadMessage("Commands");
 			command_init();
 			break;
@@ -1774,16 +1760,16 @@ void WorldServer::Process() {
 			content_service.SetExpansionContext()->ReloadContentFlags();
 			break;
 		}
-		case ServerOP_ReloadDoors:
-		{
-			zone->SendReloadMessage("Doors");
-			entity_list.RemoveAllDoors();
-			zone->LoadZoneDoors();
-			entity_list.RespawnAllDoors();
+		case ServerOP_ReloadDoors: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Doors");
+				entity_list.RemoveAllDoors();
+				zone->LoadZoneDoors();
+				entity_list.RespawnAllDoors();
+			}
 			break;
 		}
-		case ServerOP_ReloadFactions:
-		{
+		case ServerOP_ReloadFactions: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("Factions");
 				database.LoadFactionData();
@@ -1791,15 +1777,18 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadGroundSpawns:
-		{
-			zone->SendReloadMessage("Ground Spawns");
-			zone->LoadGroundSpawns();
+		case ServerOP_ReloadGroundSpawns: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Ground Spawns");
+				zone->LoadGroundSpawns();
+			}
 			break;
 		}
 		case ServerOP_ReloadLevelEXPMods: {
-			zone->SendReloadMessage("Level Based Experience Modifiers");
-			zone->LoadLevelEXPMods();
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Level Based Experience Modifiers");
+				zone->LoadLevelEXPMods();
+			}
 			break;
 		}
 		case ServerOP_ReloadLogs: {
@@ -1807,16 +1796,14 @@ void WorldServer::Process() {
 			LogSys.LoadLogDatabaseSettings();
 			break;
 		}
-		case ServerOP_ReloadLoot:
-		{
+		case ServerOP_ReloadLoot: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("Loot");
 				zone->ReloadLootTables();
 			}
 			break;
 		}
-		case ServerOP_ReloadKeyRings:
-		{
+		case ServerOP_ReloadKeyRings: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("Key Rings");
 				zone->key_ring_data_list.Clear();
@@ -1825,20 +1812,20 @@ void WorldServer::Process() {
 			break;
 		}
 		case ServerOP_ReloadMerchants: {
-			zone->SendReloadMessage("Merchants");
-			entity_list.ReloadMerchants();
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Merchants");
+				entity_list.ReloadMerchants();
+			}
 			break;
 		}
-		case ServerOP_ReloadNPCEmotes:
-		{
+		case ServerOP_ReloadNPCEmotes: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("NPC Emotes");
 				zone->LoadNPCEmotes(&zone->npc_emote_list);
 			}
 			break;
 		}
-		case ServerOP_ReloadNPCSpells:
-		{
+		case ServerOP_ReloadNPCSpells: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("NPC Spells");
 				database.ClearNPCSpells();
@@ -1848,11 +1835,12 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadObjects:
-		{
-			zone->SendReloadMessage("Objects");
-			entity_list.RemoveAllObjects();
-			zone->LoadZoneObjects();
+		case ServerOP_ReloadObjects: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Objects");
+				entity_list.RemoveAllObjects();
+				zone->LoadZoneObjects();
+			}
 			break;
 		}
 		case ServerOP_ReloadRules: {
@@ -1860,8 +1848,7 @@ void WorldServer::Process() {
 			RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset());
 			break;
 		}
-		case ServerOP_ReloadSkillCaps:
-		{
+		case ServerOP_ReloadSkillCaps: {
 			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("Skill Caps");
 				skill_caps.ReloadSkillCaps();
@@ -1869,51 +1856,56 @@ void WorldServer::Process() {
 			break;
 		}
 		case ServerOP_ReloadStaticZoneData: {
-			zone->SendReloadMessage("Static Zone Data");
-			zone->ReloadStaticData();
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Static Zone Data");
+				zone->ReloadStaticData();
+			}
 			break;
 		}
-		case ServerOP_ReloadTitles:
-		{
-			zone->SendReloadMessage("Titles");
-			title_manager.LoadTitles();
+		case ServerOP_ReloadTitles: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Titles");
+				title_manager.LoadTitles();
+			}
 			break;
 		}
-		case ServerOP_ReloadTraps:
-		{
-			zone->SendReloadMessage("Traps");
-			entity_list.UpdateAllTraps(true, true);
+		case ServerOP_ReloadTraps: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Traps");
+				entity_list.UpdateAllTraps(true, true);
+			}
 			break;
 		}
-		case ServerOP_ReloadVariables:
-		{
-			zone->SendReloadMessage("Variables");
-			database.LoadVariables();
+		case ServerOP_ReloadVariables: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Variables");
+				database.LoadVariables();
+			}
 			break;
 		}
-		case ServerOP_ReloadWorld:
-		{
+		case ServerOP_ReloadWorld: {
 			auto* reload_world = (ReloadWorld_Struct*)pack->pBuffer;
 			if (zone) {
 				zone->ReloadWorld(reload_world->global_repop);
 			}
 			break;
 		}
-		case ServerOP_ReloadZonePoints:
-		{
-			zone->SendReloadMessage("Zone Points");
-			database.LoadStaticZonePoints(&zone->zone_point_list, zone->GetShortName());
+		case ServerOP_ReloadZonePoints: {
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Zone Points");
+				database.LoadStaticZonePoints(&zone->zone_point_list, zone->GetShortName());
+			}
 			break;
 		}
-		case ServerOP_ReloadZoneData:
-		{
-			zone->SendReloadMessage("Zone Data");
+		case ServerOP_ReloadZoneData: {
 			zone_store.LoadZones(database);
-			zone->LoadZoneCFG(zone->GetShortName());
+			if (zone && zone->IsLoaded()) {
+				zone->SendReloadMessage("Zone Data");
+				zone->LoadZoneCFG(zone->GetShortName());
+			}
 			break;
 		}
-		case ServerOP_Soulmark:
-		{
+		case ServerOP_Soulmark: {
 			ServerRequestSoulMark_Struct* SM = (ServerRequestSoulMark_Struct*) pack->pBuffer;
 			if(zone){
 				
@@ -1925,8 +1917,7 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ChangeSharedMem:
-		{
+		case ServerOP_ChangeSharedMem: {
 			std::string hotfix_name = std::string((char*)pack->pBuffer);
 			LogInfo("Loading items");
 			if(!database.LoadItems(hotfix_name)) {
@@ -1939,22 +1930,18 @@ void WorldServer::Process() {
 			}
 			break;
 		}
-		case ServerOP_ReloadSkills: 
-		{
-			if(zone) {
+		case ServerOP_ReloadSkills: {
+			if (zone && zone->IsLoaded()) {
 				zone->SendReloadMessage("Skill Difficulty");
 				zone->skill_difficulty.clear();
 				zone->LoadSkillDifficulty();
 			}
 			break;
 		}
-		case ServerOP_Weather:
-		{
-			if (zone)
-			{
+		case ServerOP_Weather: {
+			if (zone) {
 				// Stop any weather first.
-				if (zone->zone_weather > 0)
-				{
+				if (zone->zone_weather > 0)	{
 					zone->zone_weather = 0;
 					zone->weather_intensity = 0;
 					zone->weatherSend();

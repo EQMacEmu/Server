@@ -132,7 +132,7 @@ Client::Client(EQStreamInterface* ieqs) : Mob(
 	global_channel_timer(1000),
 	fishing_timer(8000),
 	autosave_timer(RuleI(Character, AutosaveIntervalS) * 1000),
-	scanarea_timer(RuleI(Aggro, ClientAggroCheckInterval) * 1000),
+	m_client_npc_aggro_scan_timer(RuleI(Aggro, ClientAggroCheckIdleInterval)),
 	proximity_timer(ClientProximity_interval),
 	charm_class_attacks_timer(3000),
 	charm_cast_timer(3500),
@@ -334,7 +334,7 @@ Client::Client(EQStreamInterface* ieqs) : Mob(
 
 	if (!zone->CanDoCombat())
 	{
-		scanarea_timer.Disable();
+		m_client_npc_aggro_scan_timer.Disable();
 	}
 
 	helmcolor = 0;
@@ -6711,5 +6711,32 @@ void Client::MaxSkills()
 		if (GetSkill(s.first) < current_skill_value) {
 			SetSkill(s.first, current_skill_value);
 		}
+	}
+}
+
+const uint16 scan_npc_aggro_timer_idle = RuleI(Aggro, ClientAggroCheckIdleInterval);
+const uint16 scan_npc_aggro_timer_moving = RuleI(Aggro, ClientAggroCheckMovingInterval);
+
+void Client::CheckClientToNpcAggroTimer()
+{
+	LogAggroDetail(
+		"ClientUpdate [{}] {}moving, scan timer [{}]",
+		GetCleanName(),
+		IsMoving() ? "" : "NOT ",
+		m_client_npc_aggro_scan_timer.GetRemainingTime()
+	);
+
+	if (IsMoving()) {
+		if (m_client_npc_aggro_scan_timer.GetRemainingTime() > scan_npc_aggro_timer_moving) {
+			LogAggroDetail("Client [{}] Restarting with moving timer", GetCleanName());
+			m_client_npc_aggro_scan_timer.Disable();
+			m_client_npc_aggro_scan_timer.Start(scan_npc_aggro_timer_moving);
+			m_client_npc_aggro_scan_timer.Trigger();
+		}
+	}
+	else if (m_client_npc_aggro_scan_timer.GetDuration() == scan_npc_aggro_timer_moving) {
+		LogAggroDetail("Client [{}] Restarting with idle timer", GetCleanName());
+		m_client_npc_aggro_scan_timer.Disable();
+		m_client_npc_aggro_scan_timer.Start(scan_npc_aggro_timer_idle);
 	}
 }

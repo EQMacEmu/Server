@@ -141,7 +141,6 @@ public:
 	int QuestLootCount(int itemid);
 	bool CanTalk();
 	void ForceRepop();
-	void SetNPCAggro(bool state);
 	void SetBaseHP(uint32 new_hp);
 	void SetSpawnPoint(float x, float y, float z, float h);
 	void SetClass(int classNum);
@@ -149,6 +148,8 @@ public:
 	void SetMinDamage(uint32 new_min_damage);
 	void ReloadSpells();
 	float GetNPCStat(std::string stat);
+	bool GetNPCAggro();
+	void SetNPCAggro(bool in_npc_aggro);
 };
 
 #endif

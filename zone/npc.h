@@ -359,7 +359,8 @@ public:
 	void				AI_SetRoambox(float iMaxX, float iMinX, float iMaxY, float iMinY, uint32 iDelay = 2500, uint32 iMinDelay = 2500);
 	void				SetSpawnPoint(float x, float y, float z, float h);
 
-	inline bool WillAggroNPCs() const { return(npc_aggro); }
+	inline bool GetNPCAggro() const { return npc_aggro; }
+	inline void SetNPCAggro(bool in_npc_aggro) { npc_aggro = in_npc_aggro; }
 
 	inline const uint32 GetNPCSpellsID()	const { return npc_spells_id; }
 	inline const uint32 GetNPCSpellsEffectsID()	const { return npc_spells_effects_id; }
@@ -393,8 +394,6 @@ public:
 	const bool IsUnderwaterOnly() const { return underwater; }
 	const char* GetRawNPCTypeName() const { return NPCTypedata->name; }
 
-	inline bool GetNPCAggro() { return npc_aggro; }
-	inline void SetNPCAggro(bool state) { npc_aggro = state; }
 	inline bool GetIgnoreDespawn() { return ignore_despawn; }
 	inline void GiveNPCTypeData() { NPCTypedata_ours = true; }
 

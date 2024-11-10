@@ -38,6 +38,42 @@ WorldContentService content_service;
 ZoneStore zone_store;
 PathManager path;
 
+#ifdef _WINDOWS
+#include <direct.h>
+#else
+
+#include <unistd.h>
+
+#endif
+
+#include <sys/stat.h>
+
+inline bool MakeDirectory(const std::string& directory_name)
+{
+#ifdef _WINDOWS
+	struct _stat st;
+	if (_stat(directory_name.c_str(), &st) == 0) {
+		return false;
+	}
+	else {
+		_mkdir(directory_name.c_str());
+		return true;
+	}
+
+#else
+	struct stat st;
+	if (stat(directory_name.c_str(), &st) == 0) {
+		return false;
+	}
+	else {
+		mkdir(directory_name.c_str(), 0755);
+		return true;
+	}
+
+#endif
+	return false;
+}
+
 int main(int argc, char **argv) {
 	RegisterExecutablePlatform(ExePlatformSharedMemory);
 	LogSys.LoadLogSettingsDefaults();
@@ -55,8 +91,13 @@ int main(int argc, char **argv) {
 
 	SharedDatabase database;
 	LogInfo("Connecting to database...");
-	if(!database.Connect(Config->DatabaseHost.c_str(), Config->DatabaseUsername.c_str(),
-		Config->DatabasePassword.c_str(), Config->DatabaseDB.c_str(), Config->DatabasePort)) {
+	if(!database.Connect(
+		Config->DatabaseHost.c_str(), 
+		Config->DatabaseUsername.c_str(),
+		Config->DatabasePassword.c_str(), 
+		Config->DatabaseDB.c_str(), 
+		Config->DatabasePort
+	)) {
 		LogError("Unable to connect to the database, cannot continue without a database connection");
 		return 1;
 	}
@@ -65,6 +106,11 @@ int main(int argc, char **argv) {
 		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
+
+	std::string shared_mem_directory = Config->SharedMemDir;
+	if (MakeDirectory(shared_mem_directory)) {
+		LogInfo("Shared Memory folder doesn't exist, so we created it [{}]", shared_mem_directory.c_str());
+	}
 
 	database.LoadVariables();
 
@@ -111,9 +157,11 @@ int main(int argc, char **argv) {
 	);
 
 	std::string hotfix_name = "";
+
 	bool load_all = true;
 	bool load_items = false;
 	bool load_spells = false;
+
 	if(argc > 1) {
 		for(int i = 1; i < argc; ++i) {
 			switch(argv[i][0]) {	

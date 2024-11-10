@@ -1228,7 +1228,7 @@ protected:
 	std::unique_ptr<Timer> AIthink_timer;
 	std::unique_ptr<Timer> AImovement_timer;
 	bool permarooted;
-	std::unique_ptr<Timer> AIscanarea_timer;
+	std::unique_ptr<Timer> AI_scan_area_timer;
 	std::unique_ptr<Timer> AIwalking_timer;
 	std::unique_ptr<Timer> AIhail_timer;
 	std::unique_ptr<Timer> AIpetguard_timer;

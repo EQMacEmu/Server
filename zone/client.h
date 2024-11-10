@@ -1206,7 +1206,7 @@ private:
 	Timer global_channel_timer;
 	Timer fishing_timer;
 	Timer autosave_timer;
-	Timer scanarea_timer;
+
 	Timer	proximity_timer;
 	Timer	charm_class_attacks_timer;
 	Timer	charm_cast_timer;
@@ -1230,6 +1230,10 @@ private:
 	Timer zoning_timer;
 
     glm::vec3 m_Proximity;
+
+	// client aggro
+	Timer m_client_npc_aggro_scan_timer;
+	void CheckClientToNpcAggroTimer();
 
 	void BulkSendInventoryItems();
 	void SendCursorItems();

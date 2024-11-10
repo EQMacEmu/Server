@@ -191,7 +191,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 
 					case SpellType_Escape:
 					{
-						if (!roambox_distance && !IsPet() && GetHPRatio() <= 10.0f && zone->GetZoneExpansion() != ClassicEQ
+						if (!roambox_distance && !IsPet() && GetHPRatio() <= 15.0f && zone->GetZoneExpansion() != ClassicEQ
 							&& zone->random.Roll(50) && DistanceSquared(CastToNPC()->GetSpawnPoint(), GetPosition()) > 40000)
 						{
 							entity_list.MessageClose_StringID(this, true, 200, Chat::Spells, BEGIN_GATE, this->GetCleanName());
@@ -522,7 +522,7 @@ void Mob::AI_Init() {
 	AIthink_timer.reset(nullptr);
 	AImovement_timer.reset(nullptr);
 	AIwalking_timer.reset(nullptr);
-	AIscanarea_timer.reset(nullptr);
+	AI_scan_area_timer.reset(nullptr);
 	AIdoor_timer.reset(nullptr);
 
 	pDontBuffMeBefore = 0;
@@ -560,9 +560,8 @@ void Mob::AI_Start() {
 	AIthink_timer->Trigger();
 	AIwalking_timer = std::unique_ptr<Timer>(new Timer(0));
 	AImovement_timer = std::unique_ptr<Timer>(new Timer(AImovement_duration));
-	if (zone->CanDoCombat())
-	{
-		AIscanarea_timer = std::unique_ptr<Timer>(new Timer(AIscanarea_delay));
+	if (zone->CanDoCombat() && CastToNPC()->GetNPCAggro()) {
+		AI_scan_area_timer = std::make_unique<Timer>(RandomTimer(RuleI(NPC, NPCToNPCAggroTimerMin), RuleI(NPC, NPCToNPCAggroTimerMax)));
 	}
 	AIhail_timer = std::unique_ptr<Timer>(new Timer(100));
 	AIhail_timer->Disable();
@@ -641,7 +640,7 @@ void Mob::AI_Stop() {
 
 	AIthink_timer.reset(nullptr);
 	AIwalking_timer.reset(nullptr);
-	AIscanarea_timer.reset(nullptr);
+	AI_scan_area_timer.reset(nullptr);
 	AIhail_timer.reset(nullptr);
 	AIpetguard_timer.reset(nullptr);
 	AIdoor_timer.reset(nullptr);
@@ -1814,7 +1813,7 @@ void Mob::AI_Process() {
 				StopNavigation();
 			}
 		}
-		else if (AIscanarea_timer != nullptr && AIscanarea_timer->Check())
+		else if (AI_scan_area_timer != nullptr && AI_scan_area_timer->Check())
 		{
 			/*
 			* This is where NPCs look around to see if they want to attack other NPCs.
@@ -1822,7 +1821,7 @@ void Mob::AI_Process() {
 			*/
 			if (IsNPC() && !zone->IsIdling())
 			{
-				if (CastToNPC()->WillAggroNPCs())
+				if (CastToNPC()->GetNPCAggro())
 				{
 					// if attackable NPC found then also check for clients so both NPCs and clients end up on hate list
 					if (entity_list.AICheckNPCAggro(this->CastToNPC()))

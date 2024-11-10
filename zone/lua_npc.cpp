@@ -611,10 +611,15 @@ void Lua_NPC::ForceRepop()
 	self->ForceRepop();
 }
 
-void Lua_NPC::SetNPCAggro(bool state)
+bool Lua_NPC::GetNPCAggro()
+{
+	Lua_Safe_Call_Bool();
+	return self->GetNPCAggro();
+}
+void Lua_NPC::SetNPCAggro(bool in_npc_aggro)
 {
 	Lua_Safe_Call_Void();
-	self->SetNPCAggro(state);
+	self->SetNPCAggro(in_npc_aggro);
 }
 
 void Lua_NPC::SetBaseHP(uint32 new_hp) {
@@ -772,7 +777,8 @@ luabind::scope lua_register_npc() {
 		.def("SetClass", (void(Lua_NPC::*)(int))& Lua_NPC::SetClass)
 		.def("SetMaxDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMaxDamage)
 		.def("SetMinDamage", (void(Lua_NPC:: *)(uint32)) &Lua_NPC::SetMinDamage)
-		.def("ReloadSpells", (void(Lua_NPC::*)(void))& Lua_NPC::ReloadSpells);
+		.def("ReloadSpells", (void(Lua_NPC::*)(void))& Lua_NPC::ReloadSpells)
+		.def("GetNPCAggro", (bool(Lua_NPC::*)(void))& Lua_NPC::GetNPCAggro);
 }
 
 #endif

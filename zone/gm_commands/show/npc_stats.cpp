@@ -11,7 +11,4 @@ void ShowNPCStats(Client * c, const Seperator * sep)
 
 	// Stats
 	t->ShowQuickStats(c);
-
-	// Loot Data
-	t->QueryLoot(c);
 }

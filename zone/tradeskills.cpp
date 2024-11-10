@@ -442,7 +442,7 @@ bool ZoneDatabase::GetTradeRecipe(const EQ::ItemInstance* container, uint8 c_typ
 	}
 
 	std::string containers;// make where clause segment for container(s)
-	if (some_id == 0) {
+	if (some_id < 75) {
 		containers = StringFormat("= %u", c_type); // world combiner so no item number
 	}
 	else {
@@ -661,7 +661,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 
 	// make where clause segment for container(s)
 	std::string containers;
-	if (some_id == 0) {
+	if (some_id < 75) {
 		// world combiner so no item number
 		containers = StringFormat("= %u", c_type); 
 	}

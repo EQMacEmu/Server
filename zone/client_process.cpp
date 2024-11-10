@@ -596,7 +596,7 @@ bool Client::Process() {
 	//At this point, we are still connected, everything important has taken
 	//place, now check to see if anybody wants to aggro us.
 	// only if client is not feigned
-	if(ClientDataLoaded() && ret && scanarea_timer.Check()) {
+	if(ClientDataLoaded() && ret && m_client_npc_aggro_scan_timer.Check()) {
 		entity_list.CheckClientAggro(this);
 	}
 

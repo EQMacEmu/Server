@@ -3070,6 +3070,8 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		entity_list.OpenFloorTeleportNear(this);
 	}
 
+	CheckClientToNpcAggroTimer();
+
 	//last_update = Timer::GetCurrentTime();
 	m_Position.x = ppu->x_pos;
 	m_Position.y = ppu->y_pos;
