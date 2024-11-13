@@ -1773,7 +1773,7 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	Mob *oos = nullptr;
 	bool skip_corpse_checks = false;
 	bool ismerchant = class_ == Class::Merchant || MerchantType > 0;
-	bool player_damaged = ds_damage + npc_damage < player_damage;
+	bool player_damaged = ds_damage + npc_damage < total_damage;
 	bool corpse = false;
 	bool xp = false;
 	bool faction = false;
