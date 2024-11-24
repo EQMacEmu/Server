@@ -286,4 +286,5 @@ N(OP_ReturnClientControl),
 N(OP_FreezeClientControl),
 N(OP_UnfreezeClientControl),
 N(OP_CorpsePosition),
+N(OP_ResetModulationTimer),
 // chat opcodes located in ../chat_oplist.h

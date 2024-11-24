@@ -8,7 +8,6 @@ void command_connectworldserver(Client *c, const Seperator *sep){
 	else
 	{
 		c->Message(Chat::White, "Attempting to connect to world server...");
-		worldserver.AsyncConnect();
 	}
 }
 

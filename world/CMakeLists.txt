@@ -14,9 +14,12 @@ SET(world_sources
 	main.cpp
 	queryserv.cpp
 	ucs.cpp
+	web_interface.cpp
+	web_interface_eqw.cpp
 	wguild_mgr.cpp
 	world_event_scheduler.cpp
 	world_config.cpp
+	world_console_connection.cpp
 	world_server_cli.cpp
 	worlddb.cpp
 	zonelist.cpp
@@ -38,8 +41,11 @@ SET(world_headers
 	queryserv.h
 	char_create_data.h
 	ucs.h
+	web_interface.h
+	web_interface_eqw.h
 	wguild_mgr.h
 	world_config.h
+	world_console_connection.h
 	world_tcp_connection.h
 	world_server_cli.h
 	worlddb.h

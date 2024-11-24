@@ -957,8 +957,8 @@ namespace Mac {
 			mac_pop_item->ReqLevel = item->ReqLevel; 
 			mac_pop_item->BardType = item->BardType;
 			mac_pop_item->BardValue = item->BardValue;
-
-			if (item->Focus.Effect > 0 && content_service.IsTheShadowsOfLuclinEnabled()) {
+			
+			if (item->Focus.Effect > 0) {
 				mac_pop_item->FocusEffect = item->Focus.Effect;
 			}
 			else {

@@ -19,18 +19,20 @@ void WorldserverCLI::CommandHandler(int argc, char **argv)
 	/**
 	 * Register commands
 	 */
-	function_map["world:version"]    = &WorldserverCLI::Version;
-	function_map["database:version"] = &WorldserverCLI::DatabaseVersion;
-	function_map["database:schema"]  = &WorldserverCLI::DatabaseGetSchema;
-	function_map["database:dump"]    = &WorldserverCLI::DatabaseDump;
-	function_map["test:test"]        = &WorldserverCLI::TestCommand;
-	function_map["test:expansion"]   = &WorldserverCLI::ExpansionTestCommand;
+	function_map["world:version"]               = &WorldserverCLI::Version;
+	function_map["database:version"]            = &WorldserverCLI::DatabaseVersion;
+	function_map["database:set-account-status"] = &WorldserverCLI::DatabaseSetAccountStatus;
+	function_map["database:schema"]             = &WorldserverCLI::DatabaseGetSchema;
+	function_map["database:dump"]               = &WorldserverCLI::DatabaseDump;
+	function_map["test:test"]                   = &WorldserverCLI::TestCommand;
+	function_map["test:expansion"]              = &WorldserverCLI::ExpansionTestCommand;
 
 	EQEmuCommand::HandleMenu(function_map, cmd, argc, argv);
 }
 	
 #include "cli/database_dump.cpp"
 #include "cli/database_get_schema.cpp"
+#include "cli/database_set_account_status.cpp"
 #include "cli/database_version.cpp"
 #include "cli/test.cpp"
 #include "cli/test_expansion.cpp"

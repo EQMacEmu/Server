@@ -292,6 +292,7 @@ public:
 	inline void	PreDisconnect() { client_state = PREDISCONNECTED; }
 	inline void	Reconnect() { client_state = CLIENT_CONNECTED; }
 	inline bool IsLD() const { return (bool) (client_state == CLIENT_LINKDEAD); }
+	void Kick(const std::string& reason);
 	void WorldKick();
 	inline uint8 GetAnon() const { return m_pp.anon; }
 	inline PlayerProfile_Struct& GetPP() { return m_pp; }

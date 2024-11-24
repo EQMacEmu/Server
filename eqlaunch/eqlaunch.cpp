@@ -24,7 +24,7 @@
 #include "../common/path_manager.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
-#include "../common/event/timer.h"
+#include "../common/unix.h"
 #include "worldserver.h"
 #include "zone_launch.h"
 #include <vector>
@@ -96,10 +96,7 @@ int main(int argc, char *argv[]) {
 
 	std::map<std::string, ZoneLaunch *> zones;
 	WorldServer world(zones, launcher_name.c_str(), Config);
-	if (!world.Connect()) {
-		Log(Logs::Detail, Logs::Launcher, "worldserver.Connect() FAILED! Will retry.");
-	}
-
+	
 	std::map<std::string, ZoneLaunch *>::iterator zone, zend;
 	std::set<std::string> to_remove;
 
@@ -117,12 +114,7 @@ int main(int argc, char *argv[]) {
 			EQ::EventLoop::Get().Shutdown();
 			return;
 		}
-
-		/*
-		* Process the world connection
-		*/
-		world.Process();
-
+				
 		/*
 		* Let the process manager look for dead children
 		*/
@@ -152,12 +144,6 @@ int main(int argc, char *argv[]) {
 			}
 			delete zone->second;
 			zones.erase(rem);
-		}
-
-
-		if (InterserverTimer.Check()) {
-			if (world.TryReconnect() && (!world.Connected()))
-				world.AsyncConnect();
 		}
 	};
 

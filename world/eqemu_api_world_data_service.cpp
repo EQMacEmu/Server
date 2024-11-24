@@ -27,10 +27,12 @@
 #include "../common/database_schema.h"
 #include "../common/zone_store.h"
 #include "worlddb.h"
-
+#include "wguild_mgr.h"
+#include "world_config.h"
 
 extern ZSList zoneserver_list;
 extern ClientList client_list;
+extern WorldGuildManager guild_mgr;
 
 void callGetZoneList(Json::Value &response)
 {
@@ -50,6 +52,7 @@ void callGetZoneList(Json::Value &response)
 		row["number_players"]       = zone->NumPlayers();
 		row["port"]                 = zone->GetPort();
 		row["previous_zone_id"]     = zone->GetPrevZoneID();
+		row["uuid"]                 = zone->GetUUID();
 		row["zone_id"]              = zone->GetZoneID();
 		row["zone_long_name"]       = zone->GetZoneLongName();
 		row["zone_name"]            = zone->GetZoneName();
@@ -79,18 +82,39 @@ void callGetDatabaseSchema(Json::Value &response)
 		server_tables_json.append(table);
 	}
 
+	Json::Value              login_tables_json;
+	std::vector<std::string> login_tables = DatabaseSchema::GetLoginTables();
+	for (const auto& table : login_tables) {
+		login_tables_json.append(table);
+	}
+
 	Json::Value              state_tables_json;
 	std::vector<std::string> state_tables = DatabaseSchema::GetStateTables();
 	for (const auto &table : state_tables) {
 		state_tables_json.append(table);
 	}
 
+	Json::Value              version_tables_json;
+	std::vector<std::string> version_tables = DatabaseSchema::GetVersionTables();
+	for (const auto& table : version_tables) {
+		version_tables_json.append(table);
+	}
+
+	Json::Value                        character_table_columns_json;
+	std::map<std::string, std::string> character_table = DatabaseSchema::GetCharacterTables();
+	for (const auto& ctc : character_table) {
+		character_table_columns_json[ctc.first] = ctc.second;
+	}
+
 	Json::Value schema;
 
+	schema["character_table_columns"] = character_table_columns_json;
 	schema["content_tables"] = content_tables_json;
+	schema["login_tables"] = login_tables_json;
 	schema["player_tables"] = player_tables_json;
 	schema["server_tables"] = server_tables_json;
 	schema["state_tables"] = state_tables_json;
+	schema["version_tables"] = version_tables_json;
 
 	response.append(schema);
 }

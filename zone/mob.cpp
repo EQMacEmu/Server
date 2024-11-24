@@ -19,6 +19,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/zone_store.h"
+#include "../common/misc_functions.h"
 
 #include "data_bucket.h"
 #include "quest_parser_collection.h"
@@ -1622,9 +1623,9 @@ void Mob::SendIllusionPacket(uint16 in_race, uint8 in_gender, uint8 in_texture, 
 uint8 Mob::GetDefaultGender(uint16 in_race, uint8 in_gender) {
 	if (IsPlayableRace(in_race) ||
 		in_race == BROWNIE || in_race == LION || in_race == DRACNID || in_race == ZOMBIE || in_race == ELF_VAMPIRE || in_race == ERUDITE_GHOST) {
-		if (in_gender >= 2) {
+		if (in_gender >= Gender::Neuter) {
 			// Female default for PC Races
-			return 1;
+			return Gender::Female;
 		}
 		else
 			return in_gender;
@@ -1634,16 +1635,16 @@ uint8 Mob::GetDefaultGender(uint16 in_race, uint8 in_gender) {
 		in_race == RIVERVALE_CITIZEN || in_race == HALAS_CITIZEN || in_race == GROBB_CITIZEN || in_race == OGGOK_CITIZEN || in_race == KALADIM_CITIZEN || 
 		in_race == FELGUARD || in_race == FAYGUARD) {
 		// Male only races
-		return 0;
+		return Gender::Male;
 
 	}
 	else if (in_race == FAIRY || in_race == PIXIE) {
 		// Female only races
-		return 1;
+		return Gender::Female;
 	}
 	else {
 		// Neutral default for NPC Races
-		return 2;
+		return Gender::Neuter;
 	}
 }
 

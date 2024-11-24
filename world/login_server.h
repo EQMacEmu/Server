@@ -24,38 +24,44 @@
 #include "../common/queue.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/mutex.h"
-#include "../common/emu_tcp_connection.h"
+#include "../common/net/servertalk_client_connection.h"
+#include "../common/net/servertalk_legacy_client_connection.h"
+#include "../common/event/timer.h"
+#include <memory>
 
-class LoginServer{
+class LoginServer {
 public:
 	LoginServer(const char*, uint16, const char*, const char*, uint8);
 	~LoginServer();
 
-	bool InitLoginServer();
-
-	bool Process();
 	bool Connect();
 
 	void SendInfo();
 	void SendNewInfo();
 	void SendStatus();
 
-	void SendPacket(ServerPacket* pack) { tcpc->SendPacket(pack); }
+	void SendPacket(ServerPacket* pack);
 	void SendAccountUpdate(ServerPacket* pack);
-	bool ConnectReady() { return tcpc->ConnectReady(); }
-	bool Connected() { return tcpc->Connected(); }
+	bool Connected() { if (LoginIsLegacy) { return legacy_client->Connected(); } else { return client->Connected(); } }
 	bool CanUpdate() { return CanAccountUpdate; }
 
 private:
-	EmuTCPConnection* tcpc;
+	void ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p);
+	void ProcessLSClientAuth(uint16_t opcode, EQ::Net::Packet& p);
+	void ProcessLSFatalError(uint16_t opcode, EQ::Net::Packet& p);
+	void ProcessSystemwideMessage(uint16_t opcode, EQ::Net::Packet& p);
+	void ProcessLSRemoteAddr(uint16_t opcode, EQ::Net::Packet& p);
+	void ProcessLSAccountUpdate(uint16_t opcode, EQ::Net::Packet& p);
+
+	std::unique_ptr<EQ::Net::ServertalkClient> client;
+	std::unique_ptr<EQ::Net::ServertalkLegacyClient> legacy_client;
+	std::unique_ptr<EQ::Timer> statusupdate_timer;
 	char	LoginServerAddress[256];
 	uint32	LoginServerIP;
 	uint16	LoginServerPort;
 	char	LoginAccount[32];
 	char	LoginPassword[32];
-	uint8	LoginServerType;
+	bool	LoginIsLegacy;
 	bool	CanAccountUpdate;
-
-	Timer statusupdate_timer;
 };
 #endif

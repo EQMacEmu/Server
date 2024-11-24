@@ -510,7 +510,6 @@ void Client::DeleteItemInInventory(int16 slot_id, int8 quantity, bool client_upd
 			}
 		}
 
-		pack->Deflate();
 		if(worldserver.Connected()) { worldserver.SendPacket(pack); }
 		safe_delete(pack);
 	}
@@ -1755,7 +1754,6 @@ void Client::QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call) {
 	}
 
 	if(move_count && worldserver.Connected()) {
-		pack->Deflate();
 		worldserver.SendPacket(pack);
 	}
 

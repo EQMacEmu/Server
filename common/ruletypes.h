@@ -116,6 +116,7 @@ RULE_INT (World, FVNoDropFlag, 0, "Sets the Firiona Vie settings on the client. 
 RULE_BOOL (World, IPLimitDisconnectAll, false, "")
 RULE_INT (World, TellQueueSize, 200, "")
 RULE_BOOL (World, AdjustRespawnTimes, false, "Determines if spawntimes with a boot time variable take effect or not. Set to false in the db for emergency patches.")
+RULE_INT( World, MaximumQuestErrors, 30, "Changes the maximum number of quest errors that can be displayed in #questerrors, default is 30")
 RULE_INT (World, BootHour, 0, "Sets the in-game hour world will set when it first boots. 0-24 are valid options, where 0 disables this rule.")
 RULE_INT(World, StreamDataRate, 50, "Sets the datarate for EQOldStream. Defaults to 50.")
 RULE_INT(World, WhoListLimit, 20, "The max players returned in /who all.")
@@ -140,7 +141,7 @@ RULE_BOOL ( Zone, EnableMQGateDetector, true, "Enable the MQGate Detector. Set t
 RULE_BOOL ( Zone, EnableMQGhostDetector, true, "Enable the MQGhost Detector. Set to False to disable this feature.")
 RULE_REAL ( Zone, MQWarpDetectionDistanceFactor, 9.0, "clients move at 4.4 about if in a straight line but with movement and to acct for lag we raise it a bit")
 RULE_BOOL ( Zone, MarkMQWarpLT, false, "")
-RULE_INT ( Zone, AutoShutdownDelay, 5000, "How long a dynamic zone stays loaded while empty.  if the zone database field is longer then that is used instead")
+RULE_INT ( Zone, AutoShutdownDelay, 60000, "How long a dynamic zone stays loaded while empty (milliseconds).")
 RULE_INT ( Zone, PEQZoneReuseTime, 900, "How long, in seconds, until you can reuse the #peqzone command.")
 RULE_INT ( Zone, PEQZoneDebuff1, 4454, "First debuff casted by #peqzone Default is Cursed Keeper's Blight.")
 RULE_INT ( Zone, PEQZoneDebuff2, 2209, "Second debuff casted by #peqzone Default is Tendrils of Apathy.")
@@ -158,6 +159,7 @@ RULE_INT ( Zone, NexusScionTimer, 900000, "Nexus timer in ms. Defaults to 15 min
 RULE_BOOL ( Zone, EnableNexusPortalsOnExpansion, true, "Nexus enables When Luclin is the current expansion")
 RULE_INT(Zone, GlobalLootMultiplier, 1, "Sets Global Loot drop multiplier for database based drops, useful for double, triple loot etc")
 RULE_REAL(Zone, HotZoneBonus, 0.75, "Value which is added to the experience multiplier. This also applies to AA experience.")
+RULE_BOOL (Zone, KillProcessOnDynamicShutdown, true, "When process has booted a zone and has hit its zone shut down timer, it will hard kill the process to free memory back to the OS")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( AlKabor )
@@ -438,6 +440,7 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY(Expansion)
 RULE_INT(Expansion, CurrentExpansion, -1, "The current expansion enabled for the server [-1 = All Expansion, 0 = Classic, 1 = Kunark etc.]")
+RULE_BOOL(Expansion, UseItemExpansionSetting, true, "Disabled focus effect, skill mod, bane, and level rec/req on items for appropiate expansion setting")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(Logging)

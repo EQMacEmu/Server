@@ -30,9 +30,7 @@ typedef int32_t int32;
 typedef int64_t int64;
 
 #ifdef _WINDOWS
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
+#pragma warning( disable : 4200 )
 #endif
 
 #ifndef __cplusplus
@@ -45,39 +43,36 @@ typedef unsigned char		uchar;
 typedef const char Const_char;	//for perl XS
 
 #ifdef _WINDOWS
-	#if (!defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER < 1900))
-		#define snprintf	_snprintf
-	#endif
-	#define strncasecmp	_strnicmp
-	#define strcasecmp	_stricmp
-	typedef void ThreadReturnType;
-	#define THREAD_RETURN(x) _endthread(); return;
+#if (!defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER < 1900))
+#define snprintf	_snprintf
+#endif
+#define strncasecmp	_strnicmp
+#define strcasecmp	_stricmp
+typedef void ThreadReturnType;
+#define THREAD_RETURN(x) _endthread(); return;
 #else
-	typedef void* ThreadReturnType;
-	#define THREAD_RETURN(x) return(x);
+typedef void* ThreadReturnType;
+#define THREAD_RETURN(x) return(x);
 #endif
 
 #define safe_delete(d) if(d) { delete d; d=nullptr; }
 #define safe_delete_array(d) if(d) { delete[] d; d=nullptr; }
-#define L32(i)	((uint32) i)
-#define H32(i)	((uint32) (i >> 32))
-#define L16(i)	((uint16) i)
 
 #ifndef WIN32
 // More WIN32 compatability
-	typedef unsigned long DWORD;
-	typedef unsigned char BYTE;
-	typedef char CHAR;
-	typedef unsigned short WORD;
-	typedef float FLOAT;
-	typedef FLOAT *PFLOAT;
-	typedef BYTE *PBYTE,*LPBYTE;
-	typedef int *PINT,*LPINT;
-	typedef WORD *PWORD,*LPWORD;
-	typedef long *LPLONG, LONG;
-	typedef DWORD *PDWORD,*LPDWORD;
-	typedef int INT;
-	typedef unsigned int UINT,*PUINT,*LPUINT;
+typedef unsigned long DWORD;
+typedef unsigned char BYTE;
+typedef char CHAR;
+typedef unsigned short WORD;
+typedef float FLOAT;
+typedef FLOAT* PFLOAT;
+typedef BYTE* PBYTE, * LPBYTE;
+typedef int* PINT, * LPINT;
+typedef WORD* PWORD, * LPWORD;
+typedef long* LPLONG, LONG;
+typedef DWORD* PDWORD, * LPDWORD;
+typedef int INT;
+typedef unsigned int UINT, * PUINT, * LPUINT;
 #endif
 
 

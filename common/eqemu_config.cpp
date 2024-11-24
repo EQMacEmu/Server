@@ -40,7 +40,7 @@ void EQEmuConfig::parse_config() {
 		LoginPort = atoi(_root["server"]["world"]["loginserver"].get("port", "").asString().c_str());
 		LoginAccount = _root["server"]["world"]["loginserver"].get("account", "").asString();
 		LoginPassword = _root["server"]["world"]["loginserver"].get("password", "").asString();
-		LoginType = atoi(_root["server"]["world"]["loginserver"].get("type", "").asString().c_str());
+		LoginType = atoi(_root["server"]["world"]["loginserver"].get("legacy", "").asString().c_str());
 
 
 	}
@@ -58,7 +58,7 @@ void EQEmuConfig::parse_config() {
 			loginconfig->LoginPort = atoi(_root["server"]["world"][str].get("port", "").asString().c_str());
 			loginconfig->LoginAccount = _root["server"]["world"][str].get("account", "").asString();
 			loginconfig->LoginPassword = _root["server"]["world"][str].get("password", "").asString();
-			loginconfig->LoginType = atoi(_root["server"]["world"][str].get("type", "").asString().c_str());
+			loginconfig->LoginType = atoi(_root["server"]["world"][str].get("legacy", "").asString().c_str());
 
 			loginlist.Insert(loginconfig);
 
@@ -72,6 +72,8 @@ void EQEmuConfig::parse_config() {
 	WorldIP = _root["server"]["world"]["tcp"].get("host", "127.0.0.1").asString();
 	WorldTCPPort = atoi(_root["server"]["world"]["tcp"].get("port", "9000").asString().c_str());
 
+	TelnetIP = _root["server"]["world"]["telnet"].get("ip", "127.0.0.1").asString();
+	TelnetTCPPort = atoi(_root["server"]["world"]["telnet"].get("port", "9001").asString().c_str());
 	TelnetEnabled = false;
 	if (_root["server"]["world"]["telnet"].get("enabled", "false").asString() == "true") TelnetEnabled = true;
 
@@ -150,6 +152,12 @@ std::string EQEmuConfig::GetByName(const std::string &var_name) const
 	}
 	if (var_name == "WorldIP") {
 		return (WorldIP);
+	}
+	if (var_name == "TelnetTCPPort") {
+		return (itoa(TelnetTCPPort));
+	}
+	if (var_name == "TelnetIP") {
+		return (TelnetIP);
 	}
 	if (var_name == "TelnetEnabled") {
 		return (TelnetEnabled ? "true" : "false");
@@ -255,6 +263,8 @@ void EQEmuConfig::Dump() const
 	std::cout << "Locked = " << Locked << std::endl;
 	std::cout << "WorldTCPPort = " << WorldTCPPort << std::endl;
 	std::cout << "WorldIP = " << WorldIP << std::endl;
+	std::cout << "TelnetTCPPort = " << TelnetTCPPort << std::endl;
+	std::cout << "TelnetIP = " << TelnetIP << std::endl;
 	std::cout << "TelnetEnabled = " << TelnetEnabled << std::endl;
 	std::cout << "ChatHost = " << ChatHost << std::endl;
 	std::cout << "ChatPort = " << ChatPort << std::endl;

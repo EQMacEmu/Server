@@ -22,7 +22,6 @@
 #include "login_server_list.h"
 #include "zonelist.h"
 #include "worlddb.h"
-#include "console.h"
 #include "client.h"
 #include "../common/md5.h"
 #include "world_config.h"
@@ -41,18 +40,16 @@
 
 extern ClientList client_list;
 extern ZSList zoneserver_list;
-extern ConsoleList console_list;
 extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 extern UCSConnection UCSLink;
 extern QueryServConnection QSLink;
 void CatchSignal(int sig_num);
 
-ZoneServer::ZoneServer(EmuTCPConnection* itcpc)
-: WorldTCPConnection(), tcpc(itcpc), zone_boot_timer(5000) {
+ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_connection, EQ::Net::ConsoleServer* in_console)
+	: tcpc(in_connection), zone_boot_timer(5000) {
 
 	/* Set Process tracking variable defaults */
-
 	memset(zone_name, 0, sizeof(zone_name));
 	memset(compiled, 0, sizeof(compiled));
 	memset(client_address, 0, sizeof(client_address));
@@ -67,17 +64,26 @@ ZoneServer::ZoneServer(EmuTCPConnection* itcpc)
 	is_authenticated = false;
 	is_static_zone = false;
 	zone_player_count = 0;
+
+	tcpc->OnMessage(std::bind(&ZoneServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
+
+	boot_timer_obj = std::make_unique<EQ::Timer>(100, true, [this](EQ::Timer* obj) {
+		if (zone_boot_timer.Check()) {
+			LSBootUpdate(GetZoneID(), true);
+			zone_boot_timer.Disable();
+		}
+	});
+
+	console = in_console;
 }
 
 ZoneServer::~ZoneServer() {
 	if (RunLoops)
 		client_list.CLERemoveZSRef(this);
-	tcpc->Free();
 }
 
 bool ZoneServer::SetZone(uint32 iZoneID, bool iStaticZone) {
 	is_booting_up = false;
-	ucs_connected = UCSLink.Connected();
 
 	const char* zonename = MakeLowerString(ZoneName(iZoneID));
 	char*	longname;
@@ -173,63 +179,12 @@ void ZoneServer::LSSleepUpdate(uint32 zoneid){
 	}
 }
 
-bool ZoneServer::Process() {
-	if (!tcpc->Connected())
-		return false;
-	if(zone_boot_timer.Check()){
-		LSBootUpdate(GetZoneID(), true);
-		zone_boot_timer.Disable();
-	}
-	if (is_authenticated && !IsBootingUp()) {
-		bool was_connected = ucs_connected;
-		ucs_connected = UCSLink.Connected();
-		if (was_connected != ucs_connected) {
-			if (was_connected) {
-				this->SendEmoteMessage(0, 0, AccountStatus::Player, Chat::ChatChannel, "The Universal Chat service is temporarily unavailable. You will be notified when it is restored.");
-			}
-			else {
-				this->SendEmoteMessage(0, 0, AccountStatus::Player, Chat::ChatChannel, "The Universal Chat service has been restored.  You must zone to re-join channels.");
-			}
-		}
-	}
-	ServerPacket *pack = 0;
-	while((pack = tcpc->PopPacket())) {
-		if (!is_authenticated) {
-			if (WorldConfig::get()->SharedKey.length() > 0) {
-				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16) {
-					uint8 tmppass[16];
-					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
-					if (memcmp(pack->pBuffer, tmppass, 16) == 0)
-						is_authenticated = true;
-					else {
-						struct in_addr in;
-						in.s_addr = GetIP();
-						Log(Logs::Detail, Logs::WorldServer,"Zone authorization failed.");
-						auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-						SendPacket(pack);
-						safe_delete(pack);
-						Disconnect();
-						return false;
-					}
-				}
-				else {
-					struct in_addr in;
-					in.s_addr = GetIP();
-					Log(Logs::Detail, Logs::WorldServer,"Zone authorization failed.");
-					auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-					SendPacket(pack);
-					safe_delete(pack);
-					Disconnect();
-					return false;
-				}
-			}
-			else
-			{
-				Log(Logs::Detail, Logs::WorldServer,"**WARNING** You have not configured a world shared key in your config file. You should add a <key>STRING</key> element to your <world> element to prevent unauthroized zone access.");
-				is_authenticated = true;
-			}
-		}
-		switch(pack->opcode) {
+void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
+
+	ServerPacket tpack(opcode, p);
+	ServerPacket* pack = &tpack;
+
+		switch(opcode) {
 			case 0:
 			case ServerOP_KeepAlive:
 			case ServerOP_ZAAuth: {
@@ -604,17 +559,43 @@ bool ZoneServer::Process() {
 				}
 				// tells get a reply echo
 				if (scm->chan_num == ChatChannel_Tell || scm->chan_num == ChatChannel_TellEcho) {
-					// deliver to console user
 					if (scm->deliverto[0] == '*') {
-						Console* con = 0;
-						con = console_list.FindByAccountName(&scm->deliverto[1]);
-						if (((!con) || (!con->SendChannelMessage(scm))) && (scm->chan_num == ChatChannel_Tell && scm->queued == 0))
-							zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, Chat::White, fmt::format(" {} is not online at this time ", scm->to).c_str());
+						if (console) {
+							auto con = console->FindByAccountName(&scm->deliverto[1]);
+							if (
+								!con ||
+								(
+									!con->SendChannelMessage(
+										scm,
+										[&scm]() {
+								auto pack = new ServerPacket(ServerOP_ChannelMessage, sizeof(ServerChannelMessage_Struct) + strlen(scm->message) + 1);
+								memcpy(pack->pBuffer, scm, pack->size);
+								auto scm2 = (ServerChannelMessage_Struct*)pack->pBuffer;
+								strcpy(scm2->deliverto, scm2->from);
+								scm2->noreply = true;
+								client_list.SendPacket(scm->from, pack);
+								safe_delete(pack);
+							}
+									)
+									) &&
+								!scm->noreply
+								) {
+								zoneserver_list.SendEmoteMessage(
+									scm->from,
+									0,
+									AccountStatus::Player,
+									Chat::White,
+									fmt::format(
+										"{} is not online at this time.",
+										scm->to
+									).c_str()
+								);
+							}
+						}
 						break;
 					}
 
-					// deliver to client
-					ClientListEntry* cle = client_list.FindCharacter(scm->deliverto);
+					auto cle = client_list.FindCharacter(scm->deliverto);
 
 					if (cle == 0 || cle->Online() < CLE_Status_Zoning ||
 							(cle->TellsOff() && (scm->fromadmin < cle->Admin() || scm->fromadmin < 80))) {
@@ -666,9 +647,9 @@ bool ZoneServer::Process() {
 					}
 				}
 				else {
-					if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
-						console_list.SendChannelMessage(scm);
-					}
+					//if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
+					//	console_list.SendChannelMessage(scm);
+					//}
 					zoneserver_list.SendPacket(pack); // broadcast to zones
 
 					if (scm->chan_num == ChatChannel_Guild || scm->chan_num == ChatChannel_GMSAY || scm->chan_num == ChatChannel_Broadcast) {
@@ -1217,49 +1198,41 @@ bool ZoneServer::Process() {
 				break;
 			}
 			case ServerOP_SpawnPlayerCorpse: {
-				auto s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
+				SpawnPlayerCorpse_Struct* s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
 				ZoneServer* zs = zoneserver_list.FindByZoneID(s->zone_id);
-				if(zs) {
-					if (zs->SendPacket(pack)) {
-						Log(Logs::Detail, Logs::WorldServer,"Sent request to spawn player corpse id %i in zone %u.",s->player_corpse_id, s->zone_id);
-					}
-					else {
-						Log(Logs::Detail, Logs::WorldServer,"Could not send request to spawn player corpse id %i in zone %u.",s->player_corpse_id, s->zone_id);
-					}
+				if (zs) {
+					zs->SendPacket(pack);
 				}
 				break;
 			}
 			case ServerOP_Consent: 
 			{
 				bool success = false;
+
 				ZoneServer* zs;
 				auto s = (ServerOP_Consent_Struct*)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCharacter(s->grantname);
 				if (cle) {
 					zs = zoneserver_list.FindByZoneID(cle->zone());
 					if (zs) {
-						//Sends packet to player granted consent. This causes zone to call Consent() and sends the granted player a success message.
-						if (zs->SendPacket(pack)) {
-							success = true;
-							ClientListEntry* cle_reply = client_list.FindCharacter(s->ownername);
-							if (cle_reply) {
-								auto reply = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
-								ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)reply->pBuffer;
-								strcpy(scs->grantname, s->grantname);
-								strcpy(scs->ownername, s->ownername);
-								scs->permission = s->permission;
-								scs->zone_id = s->zone_id;
-								scs->message_string_id = 1427; //CONSENT_GIVEN
-								scs->corpse_id = s->corpse_id;
-								zs = zoneserver_list.FindByZoneID(cle_reply->zone());
-								if (zs) {
-									// Sends packet to owner so they get the success message. If this fails, consent will still occur the owner just won't get a message.
-									if (zs->SendPacket(reply)) {
-										Log(Logs::Detail, Logs::WorldServer, "Sent consent packet from player %s to player %s in zone %u.", s->ownername, s->grantname, cle->zone());
-									}
-								}
-								safe_delete(reply);
+						zs->SendPacket(pack);
+						success = true;
+						ClientListEntry* cle_reply = client_list.FindCharacter(s->ownername);
+						if (cle_reply) {
+							auto reply = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
+							ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)reply->pBuffer;
+							strcpy(scs->grantname, s->grantname);
+							strcpy(scs->ownername, s->ownername);
+							scs->permission = s->permission;
+							scs->zone_id = s->zone_id;
+							scs->message_string_id = 1427; //CONSENT_GIVEN
+							scs->corpse_id = s->corpse_id;
+							zs = zoneserver_list.FindByZoneID(cle_reply->zone());
+							if (zs) {
+								// Sends packet to owner so they get the success message. If this fails, consent will still occur the owner just won't get a message.
+								Log(Logs::Detail, Logs::WorldServer, "Sent consent packet from player %s to player %s in zone %u.", s->ownername, s->grantname, cle->zone());
 							}
+							safe_delete(reply);
 						}
 					}
 				}
@@ -1276,9 +1249,7 @@ bool ZoneServer::Process() {
 					scs->corpse_id = s->corpse_id;
 					zs = zoneserver_list.FindByZoneID(s->zone_id);
 					if (zs) {
-						if (!zs->SendPacket(reply)) {
-							Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
-						}
+						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
 					}
 					else {
 						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to locate zone record for zone id %u in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
@@ -1291,13 +1262,11 @@ bool ZoneServer::Process() {
 				// This just relays the packet back to the owner's zone. 
 				auto s = (ServerOP_Consent_Struct*)pack->pBuffer;
 				ZoneServer* zs = zoneserver_list.FindByZoneID(s->zone_id);
-				if(zs)  {
-					if (!zs->SendPacket(pack)) {
-						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent_Response: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
-					}
+				if (zs) {
+					zs->SendPacket(pack);
 				}
 				else {
-					Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent_Response: Unable to locate zone record for zone id %u in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
+					LogInfo("Unable to locate zone record for zone id {} in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
 				}
 				break;
 			}
@@ -1550,14 +1519,7 @@ bool ZoneServer::Process() {
 				break;
 			}
 		}
-		if (pack) {
-			safe_delete(pack);
-		}
-		else {
-			Log(Logs::Detail, Logs::WorldServer, "Zoneserver process attempted to delete pack when pack does not exist.");
-		}
-	}
-	return true;
+		
 }
 
 void ZoneServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...) {
@@ -1599,7 +1561,6 @@ void ZoneServer::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 
 	sem->type = type;
 	strcpy(&sem->message[0], message);
 
-	pack->Deflate();
 	SendPacket(pack);
 	delete pack;
 }
@@ -1657,6 +1618,8 @@ void ZoneServer::IncomingClient(Client* client) {
 	s->accid = client->GetAccountID();
 	s->admin = client->GetAdmin();
 	s->charid = client->GetCharID();
+	s->lsid = client->GetLSID();
+
 	if (client->GetCLE())
 		s->tellsoff = client->GetCLE()->TellsOff();
 	strn0cpy(s->charname, client->GetCharName(), sizeof(s->charname));

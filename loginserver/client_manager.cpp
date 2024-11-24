@@ -28,12 +28,10 @@ ClientManager::ClientManager()
 			server.config.GetVariableString("Old", "opcodes", "login_opcodes_oldver.conf"));
 		run_server = false;
 	}
-	else if (old_stream->Open())
-	{
+	else if (old_stream->Open()) {
 		LogInfo("ClientManager listening on Old stream.");
 	}
-	else
-	{
+	else {
 		LogError("ClientManager fatal error: couldn't open Old stream.");
 		run_server = false;
 	}
@@ -41,14 +39,12 @@ ClientManager::ClientManager()
 
 ClientManager::~ClientManager()
 {
-	if (old_stream)
-	{
+	if (old_stream)	{
 		old_stream->Close();
 		delete old_stream;
 	}
 
-	if (old_ops)
-	{
+	if (old_ops) {
 		delete old_ops;
 	}
 }
@@ -58,8 +54,7 @@ void ClientManager::Process()
 	ProcessDisconnect();
 	if (old_stream) {
 		std::shared_ptr<EQStreamInterface> oldcur = old_stream->PopOld();
-		while (oldcur)
-		{
+		while (oldcur) {
 			struct in_addr in;
 			in.s_addr = oldcur->GetRemoteIP();
 			LogInfo("New client connection from {0}:{1}", inet_ntoa(in), ntohs(oldcur->GetRemotePort()));
@@ -71,17 +66,14 @@ void ClientManager::Process()
 		}
 	}
 
-	list<Client*>::iterator iter = clients.begin();
-	while (iter != clients.end())
-	{
-		if ((*iter)->Process() == false)
-		{
+	auto iter = clients.begin();
+	while (iter != clients.end()) {
+		if ((*iter)->Process() == false) {
 			Log(Logs::General, Logs::LoginServer, "Client had a fatal error and had to be removed from the login.");
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
-		else
-		{
+		else {
 			++iter;
 		}
 	}
@@ -89,19 +81,16 @@ void ClientManager::Process()
 
 void ClientManager::ProcessDisconnect()
 {
-	list<Client*>::iterator iter = clients.begin();
-	while(iter != clients.end())
-	{
+	auto iter = clients.begin();
+	while (iter != clients.end()) {
 		std::shared_ptr<EQStreamInterface> c = (*iter)->GetConnection();
-		if (c->CheckState(CLOSED))
-		{
+		if (c->CheckState(CLOSED)) {
 			c->ReleaseFromUse();
 			LogInfo("Client disconnected from the server, removing client.");
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
-		else
-		{
+		else {
 			++iter;
 		}
 	}
@@ -109,17 +98,14 @@ void ClientManager::ProcessDisconnect()
 
 void ClientManager::RemoveExistingClient(unsigned int account_id)
 {
-	list<Client*>::iterator iter = clients.begin();
-	while(iter != clients.end())
-	{
-		if((*iter)->GetAccountID() == account_id)
-		{
+	auto iter = clients.begin();
+	while (iter != clients.end()){
+		if ((*iter)->GetAccountID() == account_id) {
 			Log(Logs::General, Logs::LoginServer, "Client attempting to log in and existing client already logged in, removing existing client.");
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
-		else
-		{
+		else{
 			++iter;
 		}
 	}
@@ -127,9 +113,8 @@ void ClientManager::RemoveExistingClient(unsigned int account_id)
 
 void ClientManager::UpdateServerList()
 {
-	list<Client*>::iterator iter = clients.begin();
-	while (iter != clients.end())
-	{
+	auto iter = clients.begin();
+	while (iter != clients.end()) {
 		(*iter)->SendServerListPacket();
 		++iter;
 	}
@@ -139,19 +124,16 @@ Client *ClientManager::GetClient(unsigned int account_id)
 {
 	Client *cur = nullptr;
 	int count = 0;
-	list<Client*>::iterator iter = clients.begin();
-	while(iter != clients.end())
-	{
-		if((*iter)->GetAccountID() == account_id)
-		{
+	auto iter = clients.begin();
+	while(iter != clients.end()) {
+		if((*iter)->GetAccountID() == account_id) {
 			cur = (*iter);
 			count++;
 		}
 		++iter;
 	}
 
-	if(count > 1)
-	{
+	if(count > 1) {
 		Log(Logs::General, Logs::Error, "More than one client with a given account_id existed in the client list.");
 	}
 	return cur;

@@ -31,10 +31,10 @@ public:
 	virtual bool CheckState(EQStreamState state);
 	virtual std::string Describe() const;
 	virtual const EQ::versions::ClientVersion ClientVersion() const;
+	virtual EQStreamState GetState();
+	virtual void SetOpcodeManager(OpcodeManager** opm);
 	virtual bool IsInUse();
 
-	virtual EQStreamState GetState();
-	virtual void SetOpcodeManager(OpcodeManager **opm);
 	virtual OpcodeManager *GetOpcodeManager() const;
 
 	virtual const uint32 GetBytesSent() const;

@@ -7,6 +7,7 @@
 #include "../common/event/timer.h"
 #include <vector>
 #include <memory>
+#include <deque>
 
 class WorldTCPConnection;
 class ServerPacket;
@@ -22,6 +23,7 @@ public:
 	ZSList();
 	~ZSList();
 
+	void Init();
 	bool IsZoneLocked(uint16 iZoneID);
 	bool SendPacket(ServerPacket *pack);
 	bool SendPacket(uint32 zoneid, ServerPacket *pack);
@@ -46,6 +48,7 @@ public:
 	void NextGroupIDs(uint32 &start, uint32 &end);
 	void Process();
 	void RebootZone(const char *ip1, uint16 port, const char *ip2, uint32 skipid, uint32 zoneid = 0);
+	void Remove(const std::string& uuid);
 	void SendChannelMessage(const char *from, const char *to, uint8 chan_num, uint8 language, uint8 lang_skill, const char *message, ...);
 	void SendChannelMessageRaw(const char *from, const char *to, uint8 chan_num, uint8 language, uint8 lang_skill, const char *message);
 	void SendEmoteMessage(const char *to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char *message, ...);
@@ -64,17 +67,17 @@ public:
 
 	const std::list<std::unique_ptr<ZoneServer>> &getZoneServerList() const;
 
-protected:
+private:
+	void OnTick(EQ::Timer* t);
 	void OnKeepAlive(EQ::Timer *t);
 	uint32 NextID;
 	uint16 pLockedZones[MaxLockedZones];
 	uint32 CurGroupID;
-	uint16 LastAllocatedPort;
-
+	std::deque<uint16> m_ports_free;
+	std::unique_ptr<EQ::Timer> m_tick;
 	std::unique_ptr<EQ::Timer> m_keepalive;
 
 	std::list<std::unique_ptr<ZoneServer>> zone_server_list;
 };
 
 #endif /*ZONELIST_H_*/
-

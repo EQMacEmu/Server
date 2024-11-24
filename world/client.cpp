@@ -31,7 +31,6 @@
 #include "clientlist.h"
 #include "wguild_mgr.h"
 #include "char_create_data.h"
-#include "console.h"
 
 #include <iostream>
 #include <iomanip>
@@ -213,16 +212,14 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		id=database.GetAccountIDByName(name);
 	else
 		id=atoi(name);
-#ifdef IPBASED_AUTH_HACK
-	if ((cle = zoneserver_list.CheckAuth(inet_ntoa(tmpip), password)))
-#else
+
 	if (loginserverlist.Connected() == false && !is_player_zoning) {
 		Log(Logs::Detail, Logs::WorldServer,"Error: Login server login while not connected to login server.");
 		return false;
 	}
 
 	if (((cle = client_list.CheckAuth(name, password)) || (cle = client_list.CheckAuth(id, password))))
-#endif
+
 	{
 		if(GetSessionLimit())
 			return false;
@@ -1015,11 +1012,8 @@ void Client::Clearance(int8 response)
 		if(local_addr[0]) {
 			zs_addr = local_addr;
 		} else {
-			struct in_addr in;
-			in.s_addr = zs->GetIP();
-			zs_addr = inet_ntoa(in);
-
-			if(strcmp(zs_addr, "127.0.0.1") == 0)
+			
+			if (strcmp(zs->GetIP().c_str(), "127.0.0.1") == 0)
 			{
 				Log(Logs::Detail, Logs::WorldServer, "Local zone address was %s, setting local address to: %s", zs_addr, WorldConfig::get()->LocalAddress.c_str());
 				zs_addr = WorldConfig::get()->LocalAddress.c_str();

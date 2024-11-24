@@ -17,6 +17,7 @@
 */
 
 #include "../common/global_define.h"
+#include "../common/misc_functions.h"
 #include "launcher_link.h"
 #include "launcher_list.h"
 #include "world_config.h"
@@ -24,8 +25,8 @@
 #include "../common/md5.h"
 #include "../common/packet_dump.h"
 #include "../common/servertalk.h"
-#include "../common/emu_tcp_connection.h"
 #include "../common/strings.h"
+
 #include "worlddb.h"
 #include "eql_config.h"
 
@@ -34,7 +35,7 @@
 
 extern LauncherList launcher_list;
 
-LauncherLink::LauncherLink(int id, EmuTCPConnection *c)
+LauncherLink::LauncherLink(int id, std::shared_ptr<EQ::Net::ServertalkServerConnection> c)
 : ID(id),
 	tcpc(c),
 	authenticated(false),
@@ -43,68 +44,35 @@ LauncherLink::LauncherLink(int id, EmuTCPConnection *c)
 {
 	m_dynamicCount = 0;
 	m_bootTimer.Disable();
+
+	tcpc->OnMessage(std::bind(&LauncherLink::ProcessMessage, this, std::placeholders::_1, std::placeholders::_2));
+	m_process_timer.reset(new EQ::Timer(100, true, std::bind(&LauncherLink::Process, this, std::placeholders::_1)));
+
 }
 
 LauncherLink::~LauncherLink() {
-	tcpc->Free();
 }
 
-bool LauncherLink::Process() {
-	if (!tcpc->Connected())
-		return false;
-
-	if(m_bootTimer.Check(false)) {
+void LauncherLink::Process(EQ::Timer* t) {
+	if (m_bootTimer.Check(false)) {
 		//force a boot on any zone which isnt running.
 		std::map<std::string, ZoneState>::iterator cur, end;
 		cur = m_states.begin();
 		end = m_states.end();
-		for(; cur != end; ++cur) {
-			if(!cur->second.up) {
+		for (; cur != end; ++cur) {
+			if (!cur->second.up) {
 				StartZone(cur->first.c_str(), cur->second.port);
 			}
 		}
 		m_bootTimer.Disable();
 	}
+}
 
-	ServerPacket *pack = 0;
-	while((pack = tcpc->PopPacket())) {
-		if (!authenticated) {
-			if (WorldConfig::get()->SharedKey.length() > 0) {
-				if (pack->opcode == ServerOP_ZAAuth && pack->size == 16) {
-					uint8 tmppass[16];
-					MD5::Generate((const uchar*) WorldConfig::get()->SharedKey.c_str(), WorldConfig::get()->SharedKey.length(), tmppass);
-					if (memcmp(pack->pBuffer, tmppass, 16) == 0)
-						authenticated = true;
-					else {
-						struct in_addr in;
-						in.s_addr = GetIP();
-						Log(Logs::Detail, Logs::WorldServer, "Launcher authorization failed.");
-						auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-						SendPacket(pack);
-						delete pack;
-						Disconnect();
-						return false;
-					}
-				}
-				else {
-					struct in_addr in;
-					in.s_addr = GetIP();
-					Log(Logs::Detail, Logs::WorldServer, "Launcher authorization failed.");
-					auto pack = new ServerPacket(ServerOP_ZAAuthFailed);
-					SendPacket(pack);
-					delete pack;
-					Disconnect();
-					return false;
-				}
-			}
-			else
-			{
-				Log(Logs::Detail, Logs::WorldServer,"**WARNING** You have not configured a world shared key in your config file. You should add a <key>STRING</key> element to your <world> element to prevent unauthroized zone access.");
-				authenticated = true;
-			}
-			delete pack;
-			continue;
-		}
+void LauncherLink::ProcessMessage(uint16 opcode, EQ::Net::Packet& p)
+{
+	ServerPacket tpack(opcode, p);
+	ServerPacket* pack = &tpack;
+
 		switch(pack->opcode) {
 		case 0:
 			break;
@@ -113,25 +81,25 @@ bool LauncherLink::Process() {
 			break;
 		}
 		case ServerOP_ZAAuth: {
-			Log(Logs::Detail, Logs::WorldServer, "Got authentication from %s when they are already authenticated.", m_name.c_str());
+			LogInfo("Got authentication from [{}] when they are already authenticated", m_name.c_str());
 			break;
 		}
 		case ServerOP_LauncherConnectInfo: {
 			const LauncherConnectInfo *it = (const LauncherConnectInfo *) pack->pBuffer;
 			if(HasName()) {
-				Log(Logs::Detail, Logs::WorldServer, "Launcher '%s' received an additional connect packet with name '%s'. Ignoring.", m_name.c_str(), it->name);
+				LogInfo("Launcher [{}] received an additional connect packet with name [{}]. Ignoring", m_name.c_str(), it->name);
 				break;
 			}
 			m_name = it->name;
 
 			EQLConfig *config = launcher_list.GetConfig(m_name.c_str());
 			if(config == nullptr) {
-				Log(Logs::Detail, Logs::WorldServer, "Unknown launcher '%s' connected. Disconnecting.", it->name);
+				LogInfo("Unknown launcher [{}] connected. Disconnecting", it->name);
 				Disconnect();
 				break;
 			}
 
-			Log(Logs::Detail, Logs::WorldServer, "Launcher Identified itself as '%s'. Loading zone list.", it->name);
+			LogInfo("Launcher Identified itself as [{}]. Loading zone list", it->name);
 
 			std::vector<LauncherZone> result;
 			//database.GetLauncherZones(it->name, result);
@@ -145,7 +113,7 @@ bool LauncherLink::Process() {
 				zs.port = cur->port;
 				zs.up = false;
 				zs.starts = 0;
-				Log(Logs::Detail, Logs::WorldServer, "%s: Loaded zone '%s' on port %d", m_name.c_str(), cur->name.c_str(), zs.port);
+				LogInfo("[{}] Loaded zone [{}] on port [{}]", m_name.c_str(), cur->name.c_str(), zs.port);
 				m_states[cur->name] = zs;
 			}
 
@@ -161,25 +129,21 @@ bool LauncherLink::Process() {
 			std::map<std::string, ZoneState>::iterator res;
 			res = m_states.find(it->short_name);
 			if(res == m_states.end()) {
-				Log(Logs::Detail, Logs::WorldServer, "%s: reported state for zone %s which it does not have.", m_name.c_str(), it->short_name);
+				LogInfo("[{}] reported state for zone [{}] which it does not have", m_name.c_str(), it->short_name);
 				break;
 			}
-			Log(Logs::Detail, Logs::WorldServer, "%s: %s reported state %s (%d starts)", m_name.c_str(), it->short_name, it->running?"STARTED":"STOPPED", it->start_count);
+			LogInfo("[{}] [{}] reported state [{}] ([{}] starts)", m_name.c_str(), it->short_name, it->running ? "STARTED" : "STOPPED", it->start_count);
 			res->second.up = it->running;
 			res->second.starts = it->start_count;
 			break;
 		}
 		default:
 		{
-			Log(Logs::Detail, Logs::WorldServer, "Unknown ServerOPcode from launcher 0x%04x, size %d",pack->opcode,pack->size);
+			LogInfo("Unknown ServerOPcode from launcher {:#04x}, size [{}]", pack->opcode, pack->size);
 			DumpPacket(pack->pBuffer, pack->size);
 			break;
 		}
-		}
-
-		delete pack;
 	}
-	return(true);
 }
 
 bool LauncherLink::ContainsZone(const char *short_name) const {
@@ -191,7 +155,7 @@ void LauncherLink::BootZone(const char *short_name, uint16 port) {
 	zs.port = port;
 	zs.up = false;
 	zs.starts = 0;
-	Log(Logs::Detail, Logs::WorldServer, "%s: Loaded zone '%s' on port %d", m_name.c_str(), short_name, zs.port);
+	LogInfo("[{}] Loaded zone [{}] on port [{}]", m_name.c_str(), short_name, zs.port);
 	m_states[short_name] = zs;
 
 	StartZone(short_name, port);

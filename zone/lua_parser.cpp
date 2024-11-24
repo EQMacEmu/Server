@@ -10,7 +10,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "../common/path_manager.h"
 #include "../common/spdat.h"
 #include "masterentity.h"
 #include "questmgr.h"
@@ -18,27 +17,26 @@
 #include "zone_config.h"
 
 #include "lua_bit.h"
+#include "lua_client.h"
+#include "lua_corpse.h"
+#include "lua_door.h"
+#include "lua_encounter.h"
 #include "lua_entity.h"
+#include "lua_entity_list.h"
+#include "lua_general.h"
+#include "lua_group.h"
+#include "lua_hate_list.h"
+#include "lua_inventory.h"
 #include "lua_item.h"
 #include "lua_iteminst.h"
 #include "lua_mob.h"
-#include "lua_hate_list.h"
-#include "lua_client.h"
-#include "lua_inventory.h"
 #include "lua_npc.h"
-#include "lua_spell.h"
-#include "lua_entity_list.h"
-#include "lua_group.h"
-#include "lua_raid.h"
-#include "lua_corpse.h"
 #include "lua_object.h"
-#include "lua_door.h"
-#include "lua_spawn.h"
 #include "lua_packet.h"
-#include "lua_general.h"
 #include "lua_parser.h"
-#include "lua_encounter.h"
-
+#include "lua_raid.h"
+#include "lua_spawn.h"
+#include "lua_spell.h"
 
 const char *LuaEvents[_LargestEventID] = {
 	"event_say",
@@ -211,6 +209,7 @@ LuaParser::LuaParser() {
 	EncounterArgumentDispatch[EVENT_TIMER] = handle_encounter_timer;
 	EncounterArgumentDispatch[EVENT_ENCOUNTER_LOAD] = handle_encounter_load;
 	EncounterArgumentDispatch[EVENT_ENCOUNTER_UNLOAD] = handle_encounter_unload;
+#endif
 
 	L = nullptr;
 }
@@ -829,7 +828,7 @@ void LuaParser::ReloadQuests() {
 #ifdef SANITIZE_LUA_LIBS
 	//io
 	lua_pushnil(L);
-	lua_setglobal(L, "io");
+	//lua_setglobal(L, "io");
 
 	//some os/debug are okay some are not
 	lua_getglobal(L, "os");
@@ -920,7 +919,7 @@ void LuaParser::ReloadQuests() {
 		f = fopen(zone_script.c_str(), "r");
 		if (f) {
 			fclose(f);
-			
+
 			if (luaL_dofile(L, zone_script.c_str())) {
 				std::string error = lua_tostring(L, -1);
 				AddError(error);
@@ -933,7 +932,6 @@ void LuaParser::ReloadQuests() {
 	if (n > 0) {
 		lua_pop(L, n);
 	}
-
 }
 
 /*
@@ -1268,4 +1266,4 @@ QuestEventID LuaParser::ConvertLuaEvent(QuestEventID evt) {
 	}
 }
 
-#endif
+

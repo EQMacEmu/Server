@@ -48,9 +48,10 @@
 
 #include "guild_mgr.h"
 #include "quest_parser_collection.h"
-#include "../common/crc32.h"
-#include "../common/packet_dump_file.h"
 #include "queryserv.h"
+#include "mob_movement_manager.h"
+#include "lua_parser.h"
+
 #include "../common/zone_store.h"
 #include "../common/skill_caps.h"
 #include "../common/repositories/character_spells_repository.h"
@@ -823,7 +824,6 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 			sem->from[63] = 0;
 		}
 
-		pack->Deflate();
 		if(worldserver.Connected())
 			worldserver.SendPacket(pack);
 		safe_delete(pack);
@@ -2203,6 +2203,12 @@ void Client::SetPVP(bool toggle) {
 
 	SendAppearancePacket(AppearanceType::PVP, GetPVP());
 	Save();
+}
+
+void Client::Kick(const std::string& reason) {
+	client_state = CLIENT_KICKED;
+
+	LogInfo("Client [{}] kicked, reason [{}]", GetCleanName(), reason.c_str());
 }
 
 void Client::WorldKick() {
@@ -4764,9 +4770,11 @@ void Client::TryItemTimer(int slot)
 
 	auto item_timers = inst->GetTimers();
 	auto it_iter = item_timers.begin();
-	while(it_iter != item_timers.end()) {
-		if(it_iter->second.Check()) {
-			parse->EventItem(EVENT_TIMER, this, inst, nullptr, it_iter->first, 0);
+	while (it_iter != item_timers.end()) {
+		if (it_iter->second.Check()) {
+			if (parse->ItemHasQuestSub(inst, EVENT_TIMER)) {
+				parse->EventItem(EVENT_TIMER, this, inst, nullptr, it_iter->first, 0);
+			}
 		}
 		++it_iter;
 	}

@@ -68,6 +68,7 @@ struct ZoneClientAuth_Struct {
 	uint32	accid;
 	int16	admin;
 	uint32	charid;
+	uint32  lsid;
 	bool	tellsoff;
 	char	charname[64];
 	char	lskey[30];
@@ -117,7 +118,7 @@ public:
 	bool is_zone_time_localized;
 
 	bool	Init(bool is_static);
-	bool	LoadZoneCFG(const char* filename, bool DontLoadDefault = false);
+	bool	LoadZoneCFG(const char* filename);
 	bool	SaveZoneCFG();
 	bool	IsLoaded();
 	bool	IsPVPZone() { return pvpzone; }
@@ -163,7 +164,9 @@ public:
 	void	RepopClose(const glm::vec4& client_position, uint32 repop_distance);
 	void	ClearNPCTypeCache(int id);
 	void	SpawnStatus(Mob* client, char filter = 'a', uint32 spawnid = 0);
-	void	StartShutdownTimer(uint32 set_time = 0);
+	void	StartShutdownTimer(uint32 set_time = (RuleI(Zone, AutoShutdownDelay)));
+	void	ResetShutdownTimer();
+	void    StopShutdownTimer();
 	void    ChangeWeather();
 	bool	HasWeather();
 	bool	IsSpecialWeatherZone();
@@ -173,6 +176,7 @@ public:
 
 	void	AddAuth(ServerZoneIncomingClient_Struct* szic);
 	void	RemoveAuth(const char* iCharName, uint32 entity_id);
+	void	RemoveAuth(uint32 lsid);
 	void	ResetAuth();
 	bool	GetAuth(uint32 iIP, const char* iCharName, uint32* oWID = 0, uint32* oAccID = 0, uint32* oCharID = 0, int16* oStatus = 0, char* oLSKey = 0, bool* oTellsOff = 0, uint32* oVersionbit = 0, uint32 entity_id = 0);
 	bool	CheckAuth(const char* iCharName);

@@ -12,6 +12,3 @@
 #include "trap.h"
 #include "beacon.h"
 #include "horse.h"
-
-
-

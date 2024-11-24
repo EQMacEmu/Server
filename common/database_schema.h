@@ -28,6 +28,44 @@
 namespace DatabaseSchema {
 
 	/**
+ * Character-specific tables
+ *
+ * Does not included related meta-data tables such as 'guilds', 'accounts'
+ * @return
+ */
+	static std::map<std::string, std::string> GetCharacterTables()
+	{
+		return {
+			{"character_alternate_abilities",  "id"},
+			{"character_bind",                 "id"},
+			{"character_buffs",                "character_id"},
+			{"character_corpses",              "id"},
+			{"character_currency",             "id"},
+			{"character_data",                 "id"},
+			{"character_faction_values",       "char_id"},
+			{"character_inventory",            "charid"},
+			{"character_keyring",              "char_id"},
+			{"character_languages",            "id"},
+			{"character_memmed_spells",        "id"},
+			{"character_pet_buffs",            "char_id"},
+			{"character_pet_info",             "char_id"},
+			{"character_pet_inventory",        "char_id"},
+			{"character_skills",               "id"},
+			{"character_spells",               "id"},
+			{"character_timers",               "char_id"},
+			{"character_zone_flags",           "charID"},
+			{"data_buckets",                   "character_id"},
+			{"friends",                        "charid"},
+			{"guild_members",                  "char_id"},
+			{"guilds",                         "id"},
+			{"mail",                           "charid"},
+			{"player_titlesets",               "char_id"},
+			{"quest_globals",                  "charid"},
+			{"trader",                         "char_id"}
+		};
+	}
+
+	/**
 	 * Gets player tables
 	 *
 	 * @return
@@ -36,14 +74,13 @@ namespace DatabaseSchema {
 	{
 		return {
 			"account",
-			"account_flags",
 			"account_ip",
-			"account_rewards",
+			"account_flags",
 			"character_alternate_abilities",
 			"character_consent",
-			"character_bandolier",
 			"character_bind",
 			"character_buffs",
+			"character_consent",
 			"character_corpse_items",
 			"character_corpse_items_backup",
 			"character_corpses",
@@ -51,12 +88,10 @@ namespace DatabaseSchema {
 			"character_currency",
 			"character_data",
 			"character_faction_values",
-			"character_inspect_messages",
 			"character_inventory",
 			"character_keyring",
 			"character_languages",
 			"character_lookup",
-			"character_material",
 			"character_memmed_spells",
 			"character_pet_buffs",
 			"character_pet_info",
@@ -66,6 +101,7 @@ namespace DatabaseSchema {
 			"character_spells",
 			"character_timers",
 			"character_zone_flags",
+			"data_buckets",
 			"discovered_items",
 			"friends",
 			"guilds",
@@ -75,9 +111,8 @@ namespace DatabaseSchema {
 			"petitions",
 			"player_titlesets",
 			"quest_globals",
+			"spell_buckets",
 			"spell_globals",
-			"client_version",
-			"commands_log",
 			"titles",
 			"trader",
 		};
@@ -104,6 +139,7 @@ namespace DatabaseSchema {
 			"faction_list_mod",
 			"fishing",
 			"forage",
+			"global_loot",
 			"goallists",
 			"graveyard",
 			"grid",
@@ -112,7 +148,6 @@ namespace DatabaseSchema {
 			"horses",
 			"items",
 			"keyring_data",
-			"level_exp_mods",
 			"lootdrop",
 			"lootdrop_entries",
 			"loottable",
@@ -130,14 +165,11 @@ namespace DatabaseSchema {
 			"npc_types_tint",
 			"object",
 			"pets",
-			"proximities",
 			"races",
 			"skill_caps",
 			"skill_difficulty",
 			"spawn2",
 			"spawn_conditions",
-			"spawn_condition_values",
-			"spawn_events",
 			"spawnentry",
 			"spawngroup",
 			"spells_en",
@@ -148,10 +180,7 @@ namespace DatabaseSchema {
 			"tradeskill_recipe_entries",
 			"traps",
 			"zone",
-			"zone_points",
-			"zone_server",
-			"zone_state_dump",
-			"zoneserver_auth"
+			"zone_points"
 		};
 	}
 
@@ -163,19 +192,23 @@ namespace DatabaseSchema {
 	static std::vector<std::string> GetServerTables()
 	{
 		return {
-			"banned_ips",
+			
 			"chatchannels",
 			"command_settings",
+			"command_subsettings",
 			"content_flags",
 			"eqtime",
-			"gm_ips",
-			"hackers",
 			"launcher",
 			"launcher_zones",
+			"level_exp_mods",
 			"logsys_categories",
 			"name_filter",
+			"profanity_list",
+			"spawn_condition_values",
+			"spawn_events",
 			"rule_sets",
 			"rule_values",
+			"titles",
 			"variables",
 		};
 	}
@@ -220,13 +253,21 @@ namespace DatabaseSchema {
 	static std::vector<std::string> GetStateTables()
 	{
 		return {
+			"banned_ips",
 			"bugs",
+			"commands_log",
 			"eventlog",
+			"gm_ips",
+			"hackers",
 			"group_id",
 			"group_leaders",
+			"group_members",
+			"group_ranks",
 			"item_tick",
+			"mb_messages",
 			"merchantlist_temp",
 			"object_contents",
+			"proximities",
 			"raid_details",
 			"raid_members",
 			"reports",
@@ -237,6 +278,39 @@ namespace DatabaseSchema {
 			"webdata_servers"
 		};
 	}
+
+	/**
+	* Gets login tables
+	 *
+	 * @return
+	 */
+	static std::vector<std::string> GetLoginTables()
+	{
+		return {
+			"login_accounts",
+			//"login_api_tokens",
+			"login_server_admins",
+			"login_server_list_types",
+			"login_world_servers",
+		};
+	}
+
+	/**
+	* Gets login tables
+	*
+	 * @return
+	 */
+	static std::vector<std::string> GetVersionTables()
+	{
+		return {
+			"client_version"//,
+			//"db_version"
+		};
+	}
 }
+
+
+
+
 
 #endif //EQEMU_DATABASE_SCHEMA_H

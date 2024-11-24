@@ -17,6 +17,14 @@
 */
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
+#include "../common/servertalk.h"
+#include "../common/misc_functions.h"
+#include "../common/packet_functions.h"
+#include "../common/md5.h"
+#include "worldserver.h"
+#include "clientlist.h"
+#include "ucsconfig.h"
+#include "database.h"
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -25,98 +33,66 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "../common/servertalk.h"
-#include "../common/misc_functions.h"
-#include "worldserver.h"
-#include "clientlist.h"
-#include "ucsconfig.h"
-#include "database.h"
-#include "../common/packet_functions.h"
-#include "../common/md5.h"
-
 extern WorldServer worldserver;
 extern Clientlist *g_Clientlist;
 extern const ucsconfig *Config;
 extern Database database;
 
 WorldServer::WorldServer()
-: WorldConnection(EmuTCPConnection::packetModeUCS, Config->SharedKey.c_str())
 {
-	pTryReconnect = true;
+	m_connection = std::make_unique<EQ::Net::ServertalkClient>(Config->WorldIP, Config->WorldTCPPort, false, "UCS", Config->SharedKey);
+	m_connection->OnMessage(std::bind(&WorldServer::ProcessMessage, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 WorldServer::~WorldServer()
 {
 }
 
-void WorldServer::OnConnected()
-{
-	LogInfo("Connected to World.");
-	WorldConnection::OnConnected();
-}
+void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
+	ServerPacket tpack(opcode, p);
+	ServerPacket* pack = &tpack;
 
-void WorldServer::Process()
-{
-	WorldConnection::Process();
+	LogNetcode("Received Opcode: {:#04x}", opcode);
 
-	if (!Connected())
-		return;
+	switch(opcode) {
+		case 0: {
+			break;
+		}
+		case ServerOP_KeepAlive: {
+			break;
+		}
+		case ServerOP_UCSMessage: {
+			char *Buffer = (char *)pack->pBuffer;
 
-	ServerPacket *pack = nullptr;
+			auto From = new char[strlen(Buffer) + 1];
 
-	while((pack = tcpc.PopPacket()))
-	{
-		LogNetcode("Received Opcode: {:#04x}", pack->opcode);
+			VARSTRUCT_DECODE_STRING(From, Buffer);
 
-		switch(pack->opcode)
-		{
-			case 0: {
+			std::string Message = Buffer;
+
+			LogInfo("Player: [{0}], Sent Message: [{1}]", From, Message.c_str());
+
+			Client *c = g_Clientlist->FindCharacter(From);
+
+			safe_delete_array(From);
+
+			if (Message.length() < 2) {
 				break;
 			}
-			case ServerOP_KeepAlive:
-			{
+
+			if(!c) {
+				LogInfo("Client not found");
 				break;
 			}
-			case ServerOP_UCSMessage:
-			{
-				char *Buffer = (char *)pack->pBuffer;
 
-				auto From = new char[strlen(Buffer) + 1];
-
-				VARSTRUCT_DECODE_STRING(From, Buffer);
-
-				std::string Message = Buffer;
-
-				LogInfo("Player: [{0}], Sent Message: [{1}]", From, Message.c_str());
-
-				Client *c = g_Clientlist->FindCharacter(From);
-
-				safe_delete_array(From);
-
-				if(Message.length() < 2)
-					break;
-
-				if(!c)
-				{
-					LogInfo("Client not found");
-					break;
-				}
-
-				if(Message[0] == ';')
-				{
+			if(Message[0] == ';') {
 					c->SendChannelMessageByNumber(Message.substr(1, std::string::npos));
-				}
-				else if(Message[0] == '[')
-				{
-					g_Clientlist->ProcessOPChatCommand(c, Message.substr(1, std::string::npos));
-				}
-
-				break;
 			}
+			else if(Message[0] == '[') {
+				g_Clientlist->ProcessOPChatCommand(c, Message.substr(1, std::string::npos));
+			}
+
+			break;
 		}
 	}
-
-	safe_delete(pack);
-	return;
 }
-

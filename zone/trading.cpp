@@ -20,6 +20,7 @@
 #include "../common/eqemu_logsys.h"
 #include "../common/rulesys.h"
 #include "../common/strings.h"
+#include "../common/misc_functions.h"
 
 #include "client.h"
 #include "entity.h"
@@ -656,10 +657,9 @@ void Client::FinishTrade(Mob* tradingWith, bool finalizer, void* event_entry)
 		}
 
 		bool quest_npc = false;
-		if(parse->HasQuestSub(tradingWith->GetNPCTypeID(), EVENT_TRADE, true)) {
+		if (parse->HasQuestSub(tradingWith->GetNPCTypeID(), EVENT_TRADE)) {
 			// This is a quest NPC
 			quest_npc = true;
-			Log(Logs::General, Logs::Trading, "NPC %s has a scripted EVENT_TRADE, internal checks will be skipped if they pass the faction check.", npc->GetName());
 		}
 
 		std::vector<std::any> item_list;

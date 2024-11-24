@@ -2,22 +2,23 @@
 #define QueryServ_H
 
 #include "../common/types.h"
-#include "../common/emu_tcp_connection.h"
+#include "../common/net/servertalk_server.h"
 #include "../common/servertalk.h"
+#include "../common/event/timer.h"
 
 class QueryServConnection
 {
 public:
 	QueryServConnection();
-	void SetConnection(EmuTCPConnection *inStream);
-	bool Process();
+	void AddConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	void RemoveConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	void HandleGenericMessage(uint16_t opcode, EQ::Net::Packet& p);
 	bool SendPacket(ServerPacket* pack);
-	void Disconnect() { if(Stream) Stream->Disconnect(); }
-	void SendMessage(const char *From, const char *Message);
+	void OnKeepAlive(EQ::Timer* t);
+	
 private:
-	inline uint32 GetIP() const { return Stream ? Stream->GetrIP() : 0; }
-	EmuTCPConnection *Stream;
-	bool authenticated;
+	std::map<std::string, std::shared_ptr<EQ::Net::ServertalkServerConnection>> m_streams;
+	std::unique_ptr<EQ::Timer> m_keepalive;
 };
 
 #endif /*QueryServ_H_*/

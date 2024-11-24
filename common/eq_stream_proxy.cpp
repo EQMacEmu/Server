@@ -36,10 +36,6 @@ const EQ::versions::ClientVersion EQStreamProxy::ClientVersion() const
 	return m_structs->ClientVersion();
 }
 
-void EQStreamProxy::SetOpcodeManager(OpcodeManager **opm)
-{
-	return m_stream->SetOpcodeManager(opm);
-}
 void EQStreamProxy::QueuePacket(const EQApplicationPacket *p, bool ack_req) {
 	if(p == nullptr)
 		return;
@@ -116,6 +112,11 @@ bool EQStreamProxy::IsInUse() {
 EQStreamState EQStreamProxy::GetState()
 {
 	return m_stream->GetState();
+}
+
+void EQStreamProxy::SetOpcodeManager(OpcodeManager** opm)
+{
+	return m_stream->SetOpcodeManager(opm);
 }
 
 bool EQStreamProxy::CheckState(EQStreamState state) {

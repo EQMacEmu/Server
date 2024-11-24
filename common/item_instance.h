@@ -170,7 +170,7 @@ namespace EQ
 		inline int32 GetSerialNumber() const { return m_SerialNumber; }
 		inline void SetSerialNumber(int32 id) { m_SerialNumber = id; }
 
-		std::map<std::string, Timer>& GetTimers() { return m_timers; }
+		std::map<std::string, ::Timer>& GetTimers() { return m_timers; }
 		void SetTimer(std::string name, uint32 time);
 		void StopTimer(std::string name);
 		void ClearTimers();
@@ -203,7 +203,7 @@ namespace EQ
 		// Items inside of this item (augs or contents);
 		std::map<uint8, ItemInstance*>			m_contents; // Zero-based index: min=0, max=9
 		std::map<std::string, std::string>	m_custom_data;
-		std::map<std::string, Timer>		m_timers;
+		std::map<std::string, ::Timer>		m_timers;
 	};
 }
 

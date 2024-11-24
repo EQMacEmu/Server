@@ -25,11 +25,11 @@
 #include "../common/servertalk.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
+#include "../common/event/event_loop.h"
+#include "../common/timer.h"
 #include "../common/strings.h"
-#include "../common/event/timer.h"
 #include "../common/path_manager.h"
 #include "../common/zone_store.h"
-#include "../common/timer.h"
 #include "../common/content/world_content_service.h"
 #include "database.h"
 #include "queryservconfig.h"
@@ -51,8 +51,6 @@ WorldContentService   content_service;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 
-	if(worldserver)
-		worldserver->Disconnect();
 }
 
 int main() {
@@ -62,7 +60,6 @@ int main() {
 
 	path.LoadPaths();
 
-	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
 
 	LogInfo("Starting EQMacEmu QueryServ.");
 	if (!queryservconfig::LoadConfig()) {
@@ -110,8 +107,6 @@ int main() {
 	worldserver = new WorldServer;
 	worldserver->Connect(); 
 
-	bool worldwasconnected = worldserver->Connected();
-	/* Load Looking For Guild Manager */
 	auto loop_fn = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
 
@@ -119,19 +114,8 @@ int main() {
 			EQ::EventLoop::Get().Shutdown();
 			return;
 		}
-
-		if (worldserver->Connected()) {
-			worldwasconnected = true;
-		}
-		else {
-			worldwasconnected = false;
-		}
-		if (InterserverTimer.Check()) {
-			if (worldserver->TryReconnect() && (!worldserver->Connected()))
-				worldserver->AsyncConnect();
-		}
-		worldserver->Process();
 		timeout_manager.CheckTimeouts();
+
 	};
 
 	EQ::Timer process_timer(loop_fn);

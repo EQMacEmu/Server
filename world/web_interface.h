@@ -1,23 +1,47 @@
-#ifndef WORLD_WEB_INTERFACE_H
-#define WORLD_WEB_INTERFACE_H
+#pragma once
 
-#include "../common/types.h"
-#include "../common/emu_tcp_connection.h"
-#include "../common/servertalk.h"
+#include "../common/net/servertalk_server_connection.h"
+#include "../common/json/json.h"
+#include <map>
+#include <string>
+#include <functional>
 
-class WebInterfaceConnection
+
+
+class WebInterface
 {
 public:
-	WebInterfaceConnection();
-	void SetConnection(EmuTCPConnection *inStream);
-	bool Process();
-	bool SendPacket(ServerPacket* pack);
-	void Disconnect() { if(stream) stream->Disconnect(); }
-	void SendMessage(const char *From, const char *Message);
+	typedef std::function<void(WebInterface*, const std::string&, const std::string&, const Json::Value&)> WebInterfaceCall;
+	WebInterface(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	~WebInterface();
+
+	std::string GetUUID() const { return m_connection->GetUUID(); }
+	void SendResponse(const std::string& id, const Json::Value& response);
+	void SendError(const std::string& message);
+	void SendError(const std::string& message, const std::string& id);
+	void AddCall(const std::string& method, WebInterfaceCall call);
+	void SendEvent(const Json::Value& value);
 private:
-	inline uint32 GetIP() const { return stream ? stream->GetrIP() : 0; }
-	EmuTCPConnection *stream;
-	bool authenticated;
+	void OnCall(uint16 opcode, EQ::Net::Packet& p);
+	void Send(const Json::Value& value);
+
+	std::shared_ptr<EQ::Net::ServertalkServerConnection> m_connection;
+	std::map<std::string, WebInterfaceCall> m_calls;
 };
 
-#endif /*WORLD_WEB_INTERFACE_H*/
+class WebInterfaceList
+{
+public:
+	WebInterfaceList();
+	~WebInterfaceList();
+
+	void AddConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	void RemoveConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> connection);
+	void SendResponse(const std::string& uuid, std::string& id, const Json::Value& response);
+	void SendEvent(const Json::Value& value);
+	void SendError(const std::string& uuid, const std::string& message);
+	void SendError(const std::string& uuid, const std::string& message, const std::string& id);
+
+private:
+	std::map<std::string, std::unique_ptr<WebInterface>> m_interfaces;
+};

@@ -21,13 +21,12 @@
 #include "../common/global_define.h"
 #include "clientlist.h"
 #include "../common/opcodemgr.h"
-#include "../common/eq_stream_factory.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
 #include "../common/strings.h"
-#include "../common/event/timer.h"
+#include "../common/event/event_loop.h"
 #include "../common/path_manager.h"
 #include "database.h"
 #include "ucsconfig.h"
@@ -35,6 +34,11 @@
 #include "worldserver.h"
 #include <list>
 #include <signal.h>
+#include <csignal>
+#include <thread>
+
+#include "../common/net/tcp_server.h"
+#include "../common/net/servertalk_client_connection.h"
 
 ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
@@ -53,11 +57,14 @@ uint32 ChatMessagesSent = 0;
 volatile bool RunLoops = true;
 
 void CatchSignal(int sig_num) {
-
 	RunLoops = false;
+}
 
-	if(worldserver)
-		worldserver->Disconnect();
+void Shutdown() {
+	LogInfo("Shutting down...");
+	ChannelList->RemoveAllChannels();
+	g_Clientlist->CloseAllConnections();
+	LogSys.CloseFileLogs();
 }
 
 int main() {
@@ -72,7 +79,7 @@ int main() {
 	Timer ChannelListProcessTimer(60000);
 	Timer ClientConnectionPruneTimer(60000);
 
-	Timer InterserverTimer(INTERSERVER_TIMER); // does auto-reconnect
+	Timer keepalive(INTERSERVER_TIMER); // does auto-reconnect
 
 	LogInfo("Starting EQEmu Universal Chat Server.");
 
@@ -123,18 +130,20 @@ int main() {
 
 	database.LoadChatChannels();
 
-	if (signal(SIGINT, CatchSignal) == SIG_ERR)	{
+	if (signal(SIGINT, CatchSignal) == SIG_ERR) {
 		LogInfo("Could not set signal handler");
 		return 1;
 	}
-	if (signal(SIGTERM, CatchSignal) == SIG_ERR)	{
+	if (signal(SIGTERM, CatchSignal) == SIG_ERR) {
 		LogInfo("Could not set signal handler");
 		return 1;
 	}
 
 	worldserver = new WorldServer;
 
-	worldserver->Connect();
+		// uncomment to simulate timed crash for catching SIGSEV
+//	std::thread crash_test(crash_func);
+//	crash_test.detach();
 
 	auto loop_fn = [&](EQ::Timer* t) {
 
@@ -155,14 +164,12 @@ int main() {
 			g_Clientlist->CheckForStaleConnectionsAll();
 		}
 
-		if (InterserverTimer.Check()) {
-			if (worldserver->TryReconnect() && (!worldserver->Connected()))
-				worldserver->AsyncConnect();
+		if (keepalive.Check()) {
+			keepalive.Start();
+			database.ping();
 		}
-		worldserver->Process();
 
 		timeout_manager.CheckTimeouts();
-
 	};
 
 	EQ::Timer process_timer(loop_fn);
@@ -170,12 +177,7 @@ int main() {
 
 	EQ::EventLoop::Get().Run();
 
-	ChannelList->RemoveAllChannels();
-
-	g_Clientlist->CloseAllConnections();
-
-	LogSys.CloseFileLogs();
-
+	Shutdown();
 }
 
 void UpdateWindowTitle(char* iNewTitle)

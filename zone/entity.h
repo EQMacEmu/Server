@@ -153,6 +153,8 @@ public:
 	}
 	Client *GetClientByCharID(uint32 iCharID);
 	Client *GetClientByWID(uint32 iWID);
+	Client* GetClientByLSID(uint32 iLSID);
+
 	Client *GetRandomClient(const glm::vec3& location, float Distance, Client *ExcludeClient = nullptr);
 	Group *GetGroupByMob(Mob* mob);
 	Group *GetGroupByClient(Client* client);
