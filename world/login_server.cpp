@@ -16,40 +16,41 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "../common/global_define.h"
-#include "../common/misc_functions.h"
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
 #include <iomanip>
 #include <stdlib.h>
 #include "../common/version.h"
-
 #include "../common/servertalk.h"
-#include "login_server.h"
-#include "login_server_list.h"
+#include "../common/misc_functions.h"
 #include "../common/eq_packet_structs.h"
 #include "../common/packet_dump.h"
 #include "../common/strings.h"
+#include "../common/eqemu_logsys.h"
+#include "login_server.h"
+#include "login_server_list.h"
 #include "zoneserver.h"
 #include "worlddb.h"
 #include "zonelist.h"
 #include "clientlist.h"
+#include "cliententry.h"
 #include "world_config.h"
 
-extern ZSList zoneserver_list;
-extern ClientList client_list;
-extern uint32 numzones;
-extern uint32 numplayers;
-extern volatile bool	RunLoops;
+extern ZSList        zoneserver_list;
+extern ClientList    client_list;
+extern uint32        numzones;
+extern uint32        numplayers;
+extern volatile bool RunLoops;
 
 LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account, const char* Password, uint8 Type)
 {
-	strn0cpy(LoginServerAddress, iAddress, 256);
-	LoginServerPort = iPort;
-	strn0cpy(LoginAccount, Account, 16);
-	strn0cpy(LoginPassword, Password, 16);
-	LoginIsLegacy = Type == 1;
-	CanAccountUpdate = false;
+	strn0cpy(m_loginserver_address, iAddress, 256);
+	m_loginserver_port = iPort;
+	m_login_account = Account;
+	m_login_password = Password;
+	m_can_account_update = false;
+	m_is_legacy = Type == 1;
 	Connect();
 }
 
@@ -63,18 +64,20 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
 
 	UsertoWorldRequest_Struct* utwr = (UsertoWorldRequest_Struct*)p.Data();
-	uint32 id = database.GetAccountIDFromLSID(utwr->lsaccountid);
-	int16 status = database.CheckStatus(id);
+	uint32                     id = database.GetAccountIDFromLSID(utwr->lsaccountid);
+	int16                      status = database.CheckStatus(id);
+	
 	bool mule = false;
 	uint16 expansion = 0;
 	database.GetAccountRestriction(id, expansion, mule);
 
-	auto outpack = new ServerPacket;
-	outpack->opcode = ServerOP_UsertoWorldResp;
-	outpack->size = sizeof(UsertoWorldResponse_Struct);
-	outpack->pBuffer = new uchar[outpack->size];
-	memset(outpack->pBuffer, 0, outpack->size);
-	UsertoWorldResponse_Struct* utwrs = (UsertoWorldResponse_Struct*)outpack->pBuffer;
+	ServerPacket outpack;
+	outpack.opcode = ServerOP_UsertoWorldResp;
+	outpack.size = sizeof(UsertoWorldResponse_Struct);
+	outpack.pBuffer = new uchar[outpack.size];
+	memset(outpack.pBuffer, 0, outpack.size);
+
+	UsertoWorldResponse_Struct* utwrs = (UsertoWorldResponse_Struct*)outpack.pBuffer;
 	utwrs->lsaccountid = utwr->lsaccountid;
 	utwrs->ToID = utwr->FromID;
 
@@ -112,8 +115,7 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	}
 
 	utwrs->worldid = utwr->worldid;
-	SendPacket(outpack);
-	delete outpack;
+	SendPacket(&outpack);
 }
 
 void LoginServer::ProcessLSClientAuth(uint16_t opcode, EQ::Net::Packet& p) {
@@ -163,40 +165,40 @@ void LoginServer::ProcessLSAccountUpdate(uint16_t opcode, EQ::Net::Packet& p) {
 	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
 
 	LogInfo("Received ServerOP_LSAccountUpdate packet from loginserver");
-	CanAccountUpdate = true;
+	m_can_account_update = true;
 }
 
 bool LoginServer::Connect() {
 
 	char errbuf[1024];
-	if ((LoginServerIP = ResolveIP(LoginServerAddress, errbuf)) == 0) {
-		LogInfo("Unable to resolve [{}] to an IP", LoginServerAddress);
+	if ((m_loginserver_ip = ResolveIP(m_loginserver_address, errbuf)) == 0) {
+		LogInfo("Unable to resolve [{}] to an IP", m_loginserver_address);
 		database.LSDisconnect();
 		return false;
 	}
 
-	if (LoginServerIP == 0 || LoginServerPort == 0) {
-		LogInfo("Connect info incomplete, cannot connect: [{0}:{1}]", LoginServerAddress, LoginServerPort);
+	if (m_loginserver_ip == 0 || m_loginserver_port == 0) {
+		LogInfo("Connect info incomplete, cannot connect: [{0}:{1}]", m_loginserver_address, m_loginserver_port);
 		database.LSDisconnect();
 		return false;
 	}
 
-	if (LoginIsLegacy) {
-		legacy_client.reset(new EQ::Net::ServertalkLegacyClient(LoginServerAddress, LoginServerPort, false));
+	if (m_is_legacy) {
+		m_legacy_client.reset(new EQ::Net::ServertalkLegacyClient(m_loginserver_address, m_loginserver_port, false));
 
-		legacy_client->OnConnect(
+		m_legacy_client->OnConnect(
 			[this](EQ::Net::ServertalkLegacyClient* client) {
 			if (client) {
 				LogInfo(
 					"Connected to Legacy Loginserver: [{0}:{1}]",
-					LoginServerAddress,
-					LoginServerPort
+					m_loginserver_address,
+					m_loginserver_port
 				);
 
 				SendNewInfo();
 				SendStatus();
 				zoneserver_list.SendLSZones();
-				statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
+				m_statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
 					SendStatus();
 				}
 				));
@@ -204,44 +206,44 @@ bool LoginServer::Connect() {
 			else {
 				LogInfo(
 					"Could not connect to Legacy Loginserver: [{0}:{1}]",
-					LoginServerAddress,
-					LoginServerPort
+					m_loginserver_address,
+					m_loginserver_port
 				);
 			}
 		}
 		);
 
-		legacy_client->OnMessage(ServerOP_UsertoWorldReq, std::bind(&LoginServer::ProcessUsertoWorldReq, this, std::placeholders::_1, std::placeholders::_2));
-		legacy_client->OnMessage(ServerOP_LSClientAuth, std::bind(&LoginServer::ProcessLSClientAuth, this, std::placeholders::_1, std::placeholders::_2));
-		legacy_client->OnMessage(ServerOP_LSFatalError, std::bind(&LoginServer::ProcessLSFatalError, this, std::placeholders::_1, std::placeholders::_2));
-		legacy_client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
-		legacy_client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
-		legacy_client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_UsertoWorldReq, std::bind(&LoginServer::ProcessUsertoWorldReq, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_LSClientAuth, std::bind(&LoginServer::ProcessLSClientAuth, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_LSFatalError, std::bind(&LoginServer::ProcessLSFatalError, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
 	}
 	else {
-		client.reset(new EQ::Net::ServertalkClient(LoginServerAddress, LoginServerPort, false, "World", ""));
-		client->OnConnect([this](EQ::Net::ServertalkClient* client) {
+		m_client.reset(new EQ::Net::ServertalkClient(m_loginserver_address, m_loginserver_port, false, "World", ""));
+		m_client->OnConnect([this](EQ::Net::ServertalkClient* client) {
 			if (client) {
-				LogInfo("Connected to Loginserver: {}:{}", LoginServerAddress, LoginServerPort);
+				LogInfo("Connected to Loginserver: {}:{}", m_loginserver_address, m_loginserver_port);
 				SendNewInfo();
 				SendStatus();
 				zoneserver_list.SendLSZones();
-				statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
+				m_statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
 					SendStatus();
 				}
 				));
 			}
 			else {
-				LogInfo("Could not connect to Loginserver: {}:{}", LoginServerAddress, LoginServerPort);
+				LogInfo("Could not connect to Loginserver: {}:{}", m_loginserver_address, m_loginserver_port);
 			}
 		});
 
-		client->OnMessage(ServerOP_UsertoWorldReq, std::bind(&LoginServer::ProcessUsertoWorldReq, this, std::placeholders::_1, std::placeholders::_2));
-		client->OnMessage(ServerOP_LSClientAuth, std::bind(&LoginServer::ProcessLSClientAuth, this, std::placeholders::_1, std::placeholders::_2));
-		client->OnMessage(ServerOP_LSFatalError, std::bind(&LoginServer::ProcessLSFatalError, this, std::placeholders::_1, std::placeholders::_2));
-		client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
-		client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
-		client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_UsertoWorldReq, std::bind(&LoginServer::ProcessUsertoWorldReq, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_LSClientAuth, std::bind(&LoginServer::ProcessLSClientAuth, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_LSFatalError, std::bind(&LoginServer::ProcessLSFatalError, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
 	}
 	return true;
 }
@@ -254,13 +256,13 @@ void LoginServer::SendInfo() {
 	pack->size = sizeof(ServerLSInfo_Struct);
 	pack->pBuffer = new uchar[pack->size];
 	memset(pack->pBuffer, 0, pack->size);
-	ServerLSInfo_Struct* lsi = (ServerLSInfo_Struct*)pack->pBuffer;
-	strcpy(lsi->protocolversion, EQEMU_PROTOCOL_VERSION);
-	strcpy(lsi->serverversion, LOGIN_VERSION);
-	strcpy(lsi->name, Config->LongName.c_str());
-	strcpy(lsi->account, LoginAccount);
-	strcpy(lsi->password, LoginPassword);
-	strcpy(lsi->address, Config->WorldAddress.c_str());
+	ServerLSInfo_Struct* l = (ServerLSInfo_Struct*)pack->pBuffer;
+	strcpy(l->protocolversion, EQEMU_PROTOCOL_VERSION);
+	strcpy(l->serverversion, LOGIN_VERSION);
+	strcpy(l->name, Config->LongName.c_str());
+	strn0cpy(l->account, m_login_account.c_str(), 30);
+	strn0cpy(l->password, m_login_password.c_str(), 30);
+	strcpy(l->address, Config->WorldAddress.c_str());
 	SendPacket(pack);
 	delete pack;
 }
@@ -274,25 +276,25 @@ void LoginServer::SendNewInfo() {
 	pack->size = sizeof(ServerNewLSInfo_Struct);
 	pack->pBuffer = new uchar[pack->size];
 	memset(pack->pBuffer, 0, pack->size);
-	ServerNewLSInfo_Struct* lsi = (ServerNewLSInfo_Struct*)pack->pBuffer;
-	strcpy(lsi->protocolversion, EQEMU_PROTOCOL_VERSION);
-	strcpy(lsi->serverversion, LOGIN_VERSION);
-	strcpy(lsi->name, Config->LongName.c_str());
-	strcpy(lsi->shortname, Config->ShortName.c_str());
-	strcpy(lsi->account, LoginAccount);
-	strcpy(lsi->password, LoginPassword);
-	if (Config->WorldAddress.length())
-		strcpy(lsi->remote_address, Config->WorldAddress.c_str());
-	if (Config->LocalAddress.length())
-		strcpy(lsi->local_address, Config->LocalAddress.c_str());
-	else {
-		if (legacy_client) {
-			WorldConfig::SetLocalAddress(legacy_client->Handle()->LocalIP());
-		}
-		else if (client) {
-			WorldConfig::SetLocalAddress(client->Handle()->LocalIP());
-		}
+	ServerNewLSInfo_Struct* l = (ServerNewLSInfo_Struct*)pack->pBuffer;
+	strcpy(l->protocolversion, EQEMU_PROTOCOL_VERSION);
+	strcpy(l->serverversion, LOGIN_VERSION);
+	strcpy(l->name, Config->LongName.c_str());
+	strcpy(l->shortname, Config->ShortName.c_str());
+	strn0cpy(l->account, m_login_account.c_str(), 30);
+	strn0cpy(l->password, m_login_password.c_str(), 30);
+	if (Config->WorldAddress.length()) {
+		strcpy(l->remote_address, Config->WorldAddress.c_str());
 	}
+	if (Config->LocalAddress.length()) {
+		strcpy(l->local_address, Config->LocalAddress.c_str());
+	}
+	else {
+		auto local_addr = m_is_legacy ? m_legacy_client->Handle()->LocalIP() : m_client->Handle()->LocalIP();
+		strcpy(l->local_address, local_addr.c_str());
+		WorldConfig::SetLocalAddress(l->local_address);
+	}
+
 	SendPacket(pack);
 	delete pack;
 }
@@ -320,20 +322,26 @@ void LoginServer::SendStatus() {
 
 void LoginServer::SendPacket(ServerPacket* pack)
 {
-	if (legacy_client) {
-		legacy_client->SendPacket(pack);
+	if (m_legacy_client) {
+		m_legacy_client->SendPacket(pack);
 	}
-	else if (client) {
-		client->SendPacket(pack);
+	else if (m_client) {
+		m_client->SendPacket(pack);
 	}
 }
 
-void LoginServer::SendAccountUpdate(ServerPacket* pack) {
-	ServerLSAccountUpdate_Struct* s = (ServerLSAccountUpdate_Struct*)pack->pBuffer;
+void LoginServer::SendAccountUpdate(ServerPacket* pack) 
+{
+	if (m_client == nullptr && m_legacy_client == nullptr) {
+		LogDebug("No client to send account update to loginserver");
+		return;
+	}
+
+	auto* ls_account_update = (ServerLSAccountUpdate_Struct*)pack->pBuffer;
 	if (CanUpdate()) {
-		Log(Logs::Detail, Logs::WorldServer, "Sending ServerOP_LSAccountUpdate packet to loginserver: %s:%d", LoginServerAddress, LoginServerPort);
-		strn0cpy(s->worldaccount, LoginAccount, 30);
-		strn0cpy(s->worldpassword, LoginPassword, 30);
+		Log(Logs::Detail, Logs::WorldServer, "Sending ServerOP_LSAccountUpdate packet to loginserver: %s:%d", m_loginserver_address, m_loginserver_port);
+		strn0cpy(ls_account_update->worldaccount, m_login_account.c_str(), 30);
+		strn0cpy(ls_account_update->worldpassword, m_login_password.c_str(), 30);
 		SendPacket(pack);
 	}
 }

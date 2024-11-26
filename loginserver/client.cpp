@@ -53,7 +53,6 @@ bool Client::Process()
 
 		switch(app->GetOpcode()) {
 			case OP_SessionReady: {
-				LogInfo("Session ready received from client account {}", GetClientDescription());
 				Handle_SessionReady((const char*)app->pBuffer, app->Size());
 				break;
 			}
@@ -79,8 +78,8 @@ bool Client::Process()
 					break;
 				}
 
-				LogInfo("Login received from PC client. {}", GetClientDescription());
 				Handle_Login((const char*)app->pBuffer, app->Size(), "PC");
+				LogInfo("Login received from PC client. {}", GetClientDescription());
 				break;
 			}
 			case OP_LoginComplete: {

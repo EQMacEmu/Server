@@ -35,15 +35,26 @@ public:
 	~LoginServer();
 
 	bool Connect();
-
 	void SendInfo();
 	void SendNewInfo();
 	void SendStatus();
 
 	void SendPacket(ServerPacket* pack);
 	void SendAccountUpdate(ServerPacket* pack);
-	bool Connected() { if (LoginIsLegacy) { return legacy_client->Connected(); } else { return client->Connected(); } }
-	bool CanUpdate() { return CanAccountUpdate; }
+	bool Connected() 
+	{ 
+		if (m_is_legacy) {
+			if (m_legacy_client) {
+				return m_legacy_client->Connected();
+			}
+		} 
+		else {
+			if (m_client) {
+				return m_client->Connected();
+			}
+		} 
+	}
+	bool CanUpdate() { return m_can_account_update; }
 
 private:
 	void ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p);
@@ -53,15 +64,15 @@ private:
 	void ProcessLSRemoteAddr(uint16_t opcode, EQ::Net::Packet& p);
 	void ProcessLSAccountUpdate(uint16_t opcode, EQ::Net::Packet& p);
 
-	std::unique_ptr<EQ::Net::ServertalkClient> client;
-	std::unique_ptr<EQ::Net::ServertalkLegacyClient> legacy_client;
-	std::unique_ptr<EQ::Timer> statusupdate_timer;
-	char	LoginServerAddress[256];
-	uint32	LoginServerIP;
-	uint16	LoginServerPort;
-	char	LoginAccount[32];
-	char	LoginPassword[32];
-	bool	LoginIsLegacy;
-	bool	CanAccountUpdate;
+	std::unique_ptr<EQ::Net::ServertalkClient>       m_client;
+	std::unique_ptr<EQ::Net::ServertalkLegacyClient> m_legacy_client;
+	std::unique_ptr<EQ::Timer>                       m_statusupdate_timer;
+	char	                                         m_loginserver_address[256];
+	uint32	                                         m_loginserver_ip;
+	uint16	                                         m_loginserver_port;
+	std::string	                                     m_login_account;
+	std::string                                      m_login_password;
+	bool	                                         m_can_account_update;
+	bool	                                         m_is_legacy;
 };
 #endif
