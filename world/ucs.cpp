@@ -1,13 +1,14 @@
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
-#include "../common/misc_functions.h"
 #include "ucs.h"
 #include "world_config.h"
 #include "queryserv.h" 
 
-
+#include "../common/misc_functions.h"
 #include "../common/md5.h"
 #include "../common/packet_dump.h"
+#include "../common/event/timer.h"
+
 
 extern QueryServConnection QSLink;
 
@@ -64,11 +65,11 @@ void UCSConnection::ProcessPacket(uint16 opcode, EQ::Net::Packet& p)
 			break;
 		}
 		case ServerOP_ZAAuth: {
-			Log(Logs::Detail, Logs::UCSServer, "Got authentication from UCS when they are already authenticated.");
+			LogInfo("Got authentication from UCS when they are already authenticated.");
 			break;
 		}
 		default: {
-			Log(Logs::Detail, Logs::UCSServer, "Unknown ServerOPcode from UCS 0x%04x, size %d", pack->opcode, pack->size);
+			LogInfo("Unknown ServerOPcode from UCS {:#04x}, size [{}]", opcode, pack->size);
 			DumpPacket(pack->pBuffer, pack->size);
 			break;
 		}

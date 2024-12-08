@@ -29,12 +29,16 @@
 #include "../common/strings.h"
 #include "../common/random.h"
 #include "../common/zone_store.h"
+#include "queryserv.h"
+
 
 extern uint32 numzones;
 extern bool holdzones;
 extern UCSConnection UCSLink;
+extern QueryServConnection QSLink;
 extern EQ::Random emu_random;
 extern WebInterfaceList web_interface;
+volatile bool UCSServerAvailable_ = false;
 
 void CatchSignal(int sig_num);
 
@@ -44,7 +48,7 @@ ZSList::ZSList()
 	CurGroupID = 1;
 	memset(pLockedZones, 0, sizeof(pLockedZones));
 
-	m_tick.reset(new EQ::Timer(1000, true, std::bind(&ZSList::OnTick, this, std::placeholders::_1)));
+	m_tick = std::make_unique<EQ::Timer>(5000, true, std::bind(&ZSList::OnTick, this, std::placeholders::_1));
 	m_keepalive = std::make_unique<EQ::Timer>(1000, true, std::bind(&ZSList::OnKeepAlive, this, std::placeholders::_1));
 }
 
@@ -67,7 +71,7 @@ void ZSList::ShowUpTime(WorldTCPConnection* con, const char* adminname) {
 }
 
 void ZSList::Add(ZoneServer* zoneserver) {
-	zone_server_list.push_back(std::unique_ptr<ZoneServer>(zoneserver));
+	zone_server_list.emplace_back(std::unique_ptr<ZoneServer>(zoneserver));
 	zoneserver->SendGroupIDs();
 }
 
@@ -715,6 +719,17 @@ void ZSList::WorldShutDown(uint32 time, uint32 interval)
 	}
 }
 
+void ZSList::DropClient(uint32 lsid, ZoneServer* ignore_zoneserver) {
+	ServerPacket packet(ServerOP_DropClient, sizeof(ServerZoneDropClient_Struct));
+	auto drop = (ServerZoneDropClient_Struct*)packet.pBuffer;
+	drop->lsid = lsid;
+	for (auto& zs : zone_server_list) {
+		if (zs.get() != ignore_zoneserver) {
+			zs->SendPacket(&packet);
+		}
+	}
+}
+
 void ZSList::OnTick(EQ::Timer* t)
 {
 	if (!EventSubscriptionWatcher::Get()->IsSubscribed("EQW::ZoneUpdate")) {
@@ -760,4 +775,21 @@ void ZSList::OnKeepAlive(EQ::Timer *t) {
 const std::list<std::unique_ptr<ZoneServer>> &ZSList::getZoneServerList() const
 {
 	return zone_server_list;
+}
+
+void ZSList::UpdateUCSServerAvailable(bool ucss_available) {
+	UCSServerAvailable_ = ucss_available;
+	auto outapp = new ServerPacket(ServerOP_UCSServerStatusReply, sizeof(UCSServerStatus_Struct));
+	auto ucsss = (UCSServerStatus_Struct*)outapp->pBuffer;
+	ucsss->available = (ucss_available ? 1 : 0);
+	ucsss->timestamp = Timer::GetCurrentTime();
+	SendPacket(outapp);
+	safe_delete(outapp);
+
+	if (ucss_available) {
+		SendEmoteMessage(0, 0, AccountStatus::Player, Chat::ChatChannel, "The Universal Chat service has been restored.  You must zone to re-join channels.");
+	}
+	else {
+		SendEmoteMessage(0, 0, AccountStatus::Player, Chat::ChatChannel, "The Universal Chat service is temporarily unavailable. You will be notified when it is restored.");
+	}
 }

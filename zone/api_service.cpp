@@ -63,13 +63,11 @@ Json::Value ApiGetPacketStatistics(EQ::Net::WebsocketServerConnection *connectio
 	for (auto &iter : list) {
 		auto client                = iter.second;
 		auto connection            = client->Connection();
-	/*	auto opts = connection->GetManager()->GetOptions();
-		auto eqs_stats             = connection->GetStats();
-		auto &stats                = eqs_stats.DaybreakStats;
+	    //auto opts                  = connection->GetManager()->GetOptions();
+		//auto eqs_stats             = connection->GetStats();
+		//auto &stats                = eqs_stats.DaybreakStats;
 		auto now                   = EQ::Net::Clock::now();
-		auto sec_since_stats_reset = std::chrono::duration_cast<std::chrono::duration<double>>(
-			now - stats.created
-		).count();*/
+		//auto sec_since_stats_reset = std::chrono::duration_cast<std::chrono::duration<double>>(now - stats.created).count();
 		
 		Json::Value row;
 		
@@ -181,16 +179,9 @@ Json::Value ApiGetNpcListDetail(EQ::Net::WebsocketServerConnection *connection, 
 		row["has_private_corpse"]            = npc->HasPrivateCorpse();
 		row["is_animal"]                     = npc->IsAnimal();
 		row["is_guarding"]                   = npc->IsGuarding();
-		//row["is_ldon_locked"]                = npc->IsLDoNLocked();
-		//row["is_ldon_trap_detected"]         = npc->IsLDoNTrapDetected();
-		//row["is_ldon_trapped"]               = npc->IsLDoNTrapped();
 		row["is_merchant_open"]              = npc->IsMerchantOpen();
-		//row["is_not_targetable_with_hotkey"] = npc->IsNotTargetableWithHotkey();
 		//row["is_proximity_set"]              = npc->IsProximitySet();
 		row["is_taunting"]                   = npc->IsTaunting();
-		//row["ldon_locked_skill"]             = npc->GetLDoNLockedSkill();
-		//row["ldon_trap_spell_id"]            = npc->GetLDoNTrapSpellID();
-		//row["ldon_trap_type"]                = npc->GetLDoNTrapType();
 		row["loottable_id"]                  = npc->GetLoottableID();
 		row["max_dmg"]                       = npc->GetMaxDMG();
 		row["max_wp"]                        = npc->GetMaxWp();
@@ -199,8 +190,6 @@ Json::Value ApiGetNpcListDetail(EQ::Net::WebsocketServerConnection *connection, 
 		row["npc_spells_effects_id"]         = npc->GetNPCSpellsEffectsID();
 		row["npc_spells_id"]                 = npc->GetNPCSpellsID();
 		row["npchp_regen"]                   = npc->GetNPCHPRegen();
-		//row["num_merc_types"]                = npc->GetNumMercTypes();
-		//row["num_mercs"]                     = npc->GetNumMercs();
 		row["number_of_attacks"]             = npc->GetNumberOfAttacks();
 		row["pet_spell_id"]                  = npc->GetPetSpellID();
 		row["platinum"]                      = npc->GetPlatinum();
@@ -220,7 +209,7 @@ Json::Value ApiGetNpcListDetail(EQ::Net::WebsocketServerConnection *connection, 
 		row["sec_skill"]       = npc->GetSecSkill();
 		row["silver"]          = npc->GetSilver();
 		row["slow_mitigation"] = npc->GetSlowMitigation();
-		//row["sp2"]             = npc->GetSp2();
+		row["spawn_group_id"] = npc->GetSpawnGroupId();
 		row["swarm_owner"]     = npc->GetSwarmOwner();
 		row["swarm_target"]    = npc->GetSwarmTarget();
 		//row["waypoint_max"]    = npc->GetWaypointMax();
@@ -252,12 +241,10 @@ Json::Value ApiGetDoorListDetail(EQ::Net::WebsocketServerConnection *connection,
 		row["door_id"]             = door->GetDoorID();
 		row["door_param"]          = door->GetDoorParam();
 		row["entity_id"]           = door->GetEntityID();
-		//row["guild_id"]            = door->GetGuildID();
 		row["incline"]             = door->GetIncline();
 		row["invert_state"]        = door->GetInvertState();
 		row["is_door"]             = door->IsDoor();
 		row["is_door_open"]        = door->IsDoorOpen();
-		//row["is_ldon_door"]        = door->IsLDoNDoor();
 		row["key_item"]            = door->GetKeyItem();
 		row["lockpick"]            = door->GetLockpick();
 		row["no_keyring"]          = door->GetNoKeyring();
@@ -416,9 +403,6 @@ Json::Value ApiGetMobListDetail(EQ::Net::WebsocketServerConnection *connection, 
 		//row["dont_heal_me_before"]        = mob->DontHealMeBefore();
 		row["dont_root_me_before"]        = mob->DontRootMeBefore();
 		row["dont_snare_me_before"]       = mob->DontSnareMeBefore();
-		//row["drakkin_details"]            = mob->GetDrakkinDetails();
-		//row["drakkin_heritage"]           = mob->GetDrakkinHeritage();
-		//row["drakkin_tattoo"]             = mob->GetDrakkinTattoo();
 		row["emote_id"]                   = mob->GetEmoteID();
 		row["equipment_light_type"]       = mob->GetEquipmentLightType();
 		row["eye_color1"]                 = mob->GetEyeColor1();
@@ -537,9 +521,6 @@ Json::Value ApiGetMobListDetail(EQ::Net::WebsocketServerConnection *connection, 
 		row["spell_x"]                    = mob->GetSpellX();
 		row["spell_y"]                    = mob->GetSpellY();
 		row["spell_z"]                    = mob->GetSpellZ();
-		//row["tar_ring_x"]                 = mob->GetTargetRingX();
-		//row["tar_ring_y"]                 = mob->GetTargetRingY();
-		//row["tar_ring_z"]                 = mob->GetTargetRingZ();
 		row["temp_pet_count"]             = mob->GetTempPetCount();
 		row["texture"]                    = mob->GetTexture();
 		//row["trap_slots"]                 = mob->GetTrapSlots();
@@ -694,15 +675,12 @@ Json::Value ApiGetClientListDetail(EQ::Net::WebsocketServerConnection *connectio
 		//row["is_leadership_exp_on"]                    = client->IsLeadershipEXPOn();
 		//row["is_lfp"]                                  = client->IsLFP();
 		row["is_medding"]                              = client->IsMedding();
-		//row["is_on_adventure"]                         = client->IsOnAdventure();
 		row["is_rezz_pending"]                         = client->IsRezzPending();
 		row["is_sitting"]                              = client->IsSitting();
 		//row["is_starved"]                              = client->IsStarved();
 		//row["is_tracking"]                             = client->IsTracking();
 		row["is_trader"]                               = client->IsTrader();
 		row["is_unconscious"]                          = client->IsUnconscious();
-		//row["ldon_losses"]                             = client->GetLDoNLosses();
-		//row["ldon_wins"]                               = client->GetLDoNWins();
 		//row["last_inv_snapshot_time"]                  = client->GetLastInvSnapshotTime();
 		row["last_name"]                               = client->GetLastName();
 		row["level2"]                                  = client->GetLevel2();
@@ -710,15 +688,7 @@ Json::Value ApiGetClientListDetail(EQ::Net::WebsocketServerConnection *connectio
 		row["ls_account_id"]                           = client->LSAccountID();
 		//row["max_endurance"]                           = client->GetMaxEndurance();
 		//row["max_x_tars"]                              = client->GetMaxXTargets();
-		//row["merc_id"]                                 = client->GetMercID();
-		//row["merc_only_or_no_group"]                   = client->MercOnlyOrNoGroup();
-		//row["merc_slot"]                               = client->GetMercSlot();
 		//row["next_inv_snapshot_time"]                  = client->GetNextInvSnapshotTime();
-		//row["num_mercs"]                               = client->GetNumMercs();
-		//row["pending_adventure_create"]                = client->GetPendingAdventureCreate();
-		//row["pending_adventure_door_click"]            = client->GetPendingAdventureDoorClick();
-		//row["pending_adventure_leave"]                 = client->GetPendingAdventureLeave();
-		//row["pending_adventure_request"]               = client->GetPendingAdventureRequest();
 		row["pending_guild_invitation"]                = client->GetPendingGuildInvitation();
 		row["platinum"]                                = client->GetPlatinum();
 		row["port"]                                    = client->GetPort();
@@ -727,7 +697,6 @@ Json::Value ApiGetClientListDetail(EQ::Net::WebsocketServerConnection *connectio
 		row["proximity_y"]                             = client->ProximityY();
 		row["proximity_z"]                             = client->ProximityZ();
 		//row["pvp_points"]                              = client->GetPVPPoints();
-		//row["radiant_crystals"]                        = client->GetRadiantCrystals();
 		//row["raid_exp"]                                = client->GetRaidEXP();
 		//row["raid_points"]                             = client->GetRaidPoints();
 		row["raw_item_ac"]                             = client->GetRawItemAC();
@@ -763,7 +732,6 @@ Json::Value ApiGetZoneAttributes(EQ::Net::WebsocketServerConnection *connection,
 	Json::Value row;
 
 	//row["aggro_limit_reached"]     = zone->AggroLimitReached();
-	//row["allow_mercs"]             = zone->AllowMercs();
 	row["buff_timers_suspended"]   = zone->BuffTimersSuspended();
 	row["can_bind"]                = zone->CanBind();
 	row["can_cast_outdoor"]        = zone->CanCastOutdoor();
@@ -778,15 +746,11 @@ Json::Value ApiGetZoneAttributes(EQ::Net::WebsocketServerConnection *connection,
 	row["has_map"]                 = zone->HasMap();
 	row["has_water_map"]           = zone->HasWaterMap();
 	row["has_weather"]             = zone->HasWeather();
-	//row["instance_id"]             = zone->GetInstanceID();
-	//row["instance_version"]        = zone->GetInstanceVersion();
-	//row["instant_grids"]           = zone->InstantGrids();
 	row["is_city"]                 = zone->IsCity();
 	row["is_hotzone"]              = zone->IsHotzone();
-	//row["is_instance_persistent"]  = zone->IsInstancePersistent();
 	row["is_pvp_zone"]             = zone->IsPVPZone();
 	row["is_static_zone"]          = zone->IsStaticZone();
-	//row["is_ucs_server_available"] = zone->IsUCSServerAvailable();
+	row["is_ucs_server_available"] = zone->IsUCSServerAvailable();
 	row["long_name"]               = zone->GetLongName();
 	row["max_clients"]             = zone->GetMaxClients();
 	//row["mobs_aggro_count"]        = zone->MobsAggroCount();

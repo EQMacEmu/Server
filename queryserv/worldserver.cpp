@@ -43,7 +43,9 @@ WorldServer::WorldServer()
 {
 }
 
-WorldServer::~WorldServer() {}
+WorldServer::~WorldServer() 
+{
+}
 
 void WorldServer::Connect()
 {
@@ -53,8 +55,7 @@ void WorldServer::Connect()
 		false,
 		"QueryServ",
 		Config->SharedKey
-	); 
-	
+		);
 	m_connection->OnMessage(std::bind(&WorldServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
 }
 
@@ -184,7 +185,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			ServerPacket pack;
 			pack.pBuffer = (uchar*)p.Data();
 			pack.opcode = opcode;
-			pack.size = p.Length();
+			pack.size = (uint32)p.Length();
 
 			database.GeneralQueryReceive(&pack);
 			pack.pBuffer = nullptr;
@@ -192,4 +193,3 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		}
 	}
 }
-

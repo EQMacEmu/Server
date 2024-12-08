@@ -176,6 +176,7 @@ public:
 
 	void	AddAuth(ServerZoneIncomingClient_Struct* szic);
 	void	RemoveAuth(const char* iCharName, uint32 entity_id);
+	void	RemoveAuth(const char* iCharName, const char* iLSKey);
 	void	RemoveAuth(uint32 lsid);
 	void	ResetAuth();
 	bool	GetAuth(uint32 iIP, const char* iCharName, uint32* oWID = 0, uint32* oAccID = 0, uint32* oCharID = 0, int16* oStatus = 0, char* oLSKey = 0, bool* oTellsOff = 0, uint32* oVersionbit = 0, uint32 entity_id = 0);
@@ -307,6 +308,10 @@ public:
 	inline void ShowZoneGlobalLoot(Client *to) { m_global_loot.ShowZoneGlobalLoot(to); }
 	inline void ShowNPCGlobalLoot(Client *to, NPC *who) { m_global_loot.ShowNPCGlobalLoot(to, who); }
 
+	void RequestUCSServerStatus();
+	void SetUCSServerAvailable(bool ucss_available, uint32 update_timestamp);
+	bool IsUCSServerAvailable() { return m_ucss_available; }
+
 	// random object that provides random values for the zone
 	EQ::Random random;
 
@@ -437,6 +442,9 @@ private:
 	MobMovementManager* mMovementManager;
 
 	GlobalLootManager m_global_loot;
+
+	bool m_ucss_available;
+	uint32 m_last_ucss_update;
 
 	// loot
 	std::vector<LoottableRepository::Loottable>               m_loottables = {};

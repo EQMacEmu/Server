@@ -3521,7 +3521,7 @@ bool Mob::IsImmuneToSpell(uint16 spell_id, Mob *caster, bool isProc)
 
 	if(IsCharmSpell(spell_id))
 	{
-		if(GetSpecialAbility(SpecialAbility::CharmImmunity))
+		if(GetSpecialAbility(SpecialAbility::CharmImmunity) || GetClass() == Class::Merchant)
 		{
 			Log(Logs::Detail, Logs::Spells, "We are immune to Charm spells.");
 			caster->Message_StringID(Chat::SpellFailure, CANNOT_CHARM);

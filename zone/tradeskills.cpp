@@ -735,7 +735,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 	for(auto row = results.begin(); row != results.end(); ++row) {
 		uint32 item = (uint32)atoi(row[0]);
 		uint8 num = (uint8) atoi(row[1]);
-		spec->onsuccess.push_back(std::pair<uint32,uint8>(item, num));
+		spec->onsuccess.emplace_back(std::pair<uint32,uint8>(item, num));
 	}
 
 	spec->onfail.clear();
@@ -747,7 +747,7 @@ bool ZoneDatabase::GetTradeRecipe(uint32 recipe_id, uint8 c_type, uint32 some_id
 		for (auto row = results.begin(); row != results.end(); ++row) {
 			uint32	item	= (uint32)atoi(row[0]);
 			uint8	num		= (uint8)atoi(row[1]);
-			spec->onfail.push_back(std::pair<uint32, uint8>(item, num));
+			spec->onfail.emplace_back(std::pair<uint32, uint8>(item, num));
 		}
 	}
 

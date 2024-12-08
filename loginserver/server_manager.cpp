@@ -31,7 +31,7 @@ ServerManager::ServerManager()
 {
 	int listen_port = server.config.GetVariableInt("client_configuration", "listen_port", 5998);
 
-	m_server_connection.reset(new EQ::Net::ServertalkServer());
+	m_server_connection = std::make_unique<EQ::Net::ServertalkServer>();
 	EQ::Net::ServertalkServerOptions opts;
 	opts.port = listen_port;
 	opts.ipv6 = false;

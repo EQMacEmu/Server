@@ -25,7 +25,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-extern Database database;
+extern UCSDatabase database;
 extern uint32 ChatMessagesSent;
 
 ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string inPassword, bool inPermanent, int inMinimumStatus) :
@@ -394,7 +394,7 @@ void ChatChannel::SendMessageToChannel(std::string Message, Client* Sender) {
 
 		Client *ChannelClient = iterator.GetData();
 
-		if(ChannelClient && !ChannelClient->GetStale())
+		if(ChannelClient)
 		{
 			LogDebug("Sending message to [{0}] from [{1}]",
 				ChannelClient->GetName().c_str(), Sender->GetName().c_str());
@@ -417,7 +417,7 @@ void ChatChannel::SetModerated(bool inModerated) {
 
 		Client *ChannelClient = iterator.GetData();
 
-		if(ChannelClient && !ChannelClient->GetStale()) {
+		if(ChannelClient) {
 
 			if(Moderated)
 				ChannelClient->GeneralChannelMessage("Channel " + Name + " is now moderated.");

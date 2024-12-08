@@ -135,7 +135,7 @@ std::vector<std::string> join_pair(const std::string &glue, const std::pair<char
 	std::vector<std::string> output;
 
 	for (const std::pair<T1, T2> &src_iter : src) {
-		output.push_back(
+		output.emplace_back(
 
 			fmt::format(
 				"{}{}{}{}{}{}{}",
@@ -165,7 +165,7 @@ std::vector<std::string> join_tuple(const std::string &glue, const std::pair<cha
 
 	for (const std::tuple<T1, T2, T3, T4> &src_iter : src) {
 
-		output.push_back(
+		output.emplace_back(
 
 			fmt::format(
 				"{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}",

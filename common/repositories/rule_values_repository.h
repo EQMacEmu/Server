@@ -126,6 +126,31 @@ public:
 		return db.QueryDatabase(query).Success();
 	}
 
-};
+	static int UpdateRule(
+		Database &db,
+		const RuleValues &e
+	)
+	{
+		std::vector<std::string> v;
+
+		auto columns = Columns();
+
+		v.push_back(columns[0] + " = " + std::to_string(e.ruleset_id));
+		v.push_back(columns[1] + " = '" + Strings::Escape(e.rule_name) + "'");
+		v.push_back(columns[2] + " = '" + Strings::Escape(e.rule_value) + "'");
+		v.push_back(columns[3] + " = '" + Strings::Escape(e.notes) + "'");
+
+		auto results = db.QueryDatabase(
+			fmt::format(
+				"UPDATE {} SET {} WHERE ruleset_id = {} AND rule_name = '{}'",
+				TableName(),
+				Strings::Implode(", ", v),
+				std::to_string(e.ruleset_id),
+				Strings::Escape(e.rule_name)
+			)
+		);
+
+		return (results.Success() ? results.RowsAffected() : 0);
+	}};
 
 #endif //EQEMU_RULE_VALUES_REPOSITORY_H

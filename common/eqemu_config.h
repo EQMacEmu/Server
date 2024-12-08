@@ -57,7 +57,11 @@ class EQEmuConfig
 		std::string TelnetIP;
 		bool TelnetEnabled;
 		int32 MaxClients;
+		bool WorldHTTPEnabled;
+		uint16 WorldHTTPPort;
+		std::string WorldHTTPMimeFile;
 		std::string SharedKey;
+		bool DisableConfigChecks;
 
 		// From <chatserver/>
 		std::string ChatHost;

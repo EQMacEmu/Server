@@ -17,7 +17,6 @@
 */
 
 #include "../common/global_define.h"
-#include "../common/misc_functions.h"
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -35,26 +34,26 @@
 #include "../common/eq_packet_structs.h"
 #include "../common/misc_functions.h"
 #include "../common/rulesys.h"
+#include "../common/say_link.h"
 #include "../common/servertalk.h"
-#include "../common/patches/patches.h"
-#include "../common/skill_caps.h"
 #include "../common/profanity_manager.h"
 
 #include "client.h"
 #include "command.h"
 #include "corpse.h"
 #include "entity.h"
+#include "quest_parser_collection.h"
 #include "guild_mgr.h"
 #include "mob.h"
 #include "petitions.h"
-#include "quest_parser_collection.h"
 #include "raids.h"
 #include "string_ids.h"
 #include "titles.h"
 #include "worldserver.h"
 #include "zone.h"
 #include "zone_config.h"
-#include "zone_reload.h"
+#include "../common/patches/patches.h"
+#include "../common/skill_caps.h"
 
 extern EntityList entity_list;
 extern Zone* zone;
@@ -154,7 +153,7 @@ void WorldServer::OnConnected() {
 	if (is_zone_loaded) {
 		SetZoneData(zone->GetZoneID());
 		entity_list.UpdateWho(true);
-		SendEmoteMessage(
+		/*SendEmoteMessage(
 			0,
 			0,
 			Chat::Yellow,
@@ -162,7 +161,7 @@ void WorldServer::OnConnected() {
 				"Zone Connected | {}",
 				zone->GetZoneDescription()
 			).c_str()
-		);
+		);*/
 		zone->GetTimeSync();
 	}
 	else {
@@ -203,6 +202,19 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 				LogInfo("World assigned Port: [{}] for this zone", sci->port);
 				ZoneConfig::SetZonePort(sci->port);
 			}
+
+			if (is_zone_loaded) {
+				SendEmoteMessage(
+					0,
+					0,
+					Chat::Yellow,
+					fmt::format(
+						"Zone Connected : {}",
+						ZoneName(zone->GetZoneID())
+					).c_str()
+				);
+			}
+
 			break;
 		}
 		case ServerOP_ChannelMessage: {

@@ -27,7 +27,6 @@
 #include "../common/crash.h"
 #include "../common/strings.h"
 #include "../common/event/event_loop.h"
-#include "../common/path_manager.h"
 #include "database.h"
 #include "ucsconfig.h"
 #include "chatchannel.h"
@@ -39,14 +38,18 @@
 
 #include "../common/net/tcp_server.h"
 #include "../common/net/servertalk_client_connection.h"
+#include "../common/path_manager.h"
+#include "../common/zone_store.h"
+#include "../common/content/world_content_service.h"
 
 ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
 EQEmuLogSys LogSys;
-TimeoutManager timeout_manager;
-Database database;
+UCSDatabase database;
 WorldServer *worldserver = nullptr;
 PathManager path;
+ZoneStore zone_store;
+WorldContentService content_service;
 
 const ucsconfig *Config;
 
@@ -54,10 +57,10 @@ std::string WorldShortName;
 
 uint32 ChatMessagesSent = 0;
 
-volatile bool RunLoops = true;
-
-void CatchSignal(int sig_num) {
-	RunLoops = false;
+void crash_func() {
+	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+	int* p = 0;
+	*p = 0;
 }
 
 void Shutdown() {
@@ -65,6 +68,23 @@ void Shutdown() {
 	ChannelList->RemoveAllChannels();
 	g_Clientlist->CloseAllConnections();
 	LogSys.CloseFileLogs();
+}
+
+int caught_loop = 0;
+void CatchSignal(int sig_num) {
+	LogInfo("Caught signal [{}]", sig_num);
+
+	EQ::EventLoop::Get().Shutdown();
+
+	caught_loop++;
+	// when signal handler is incapable of exiting properly
+	if (caught_loop > 1) {
+		LogInfo("In a signal handler loop and process is incapable of exiting properly, forcefully cleaning up");
+		ChannelList->RemoveAllChannels();
+		g_Clientlist->CloseAllConnections();
+		LogSys.CloseFileLogs();
+		std::exit(0);
+	}
 }
 
 int main() {
@@ -111,7 +131,7 @@ int main() {
 
 	char tmp[64];
 
-	if (database.GetVariable("RuleSet", tmp, sizeof(tmp)-1)) {
+	if (database.GetVariable("RuleSet", tmp, sizeof(tmp) - 1)) {
 		LogInfo("Loading rule set '[{0}]'", tmp);
 		if(!RuleManager::Instance()->LoadRules(&database, tmp)) {
 			LogInfo("Failed to load ruleset '[{0}]', falling back to defaults.", tmp);
@@ -130,14 +150,10 @@ int main() {
 
 	database.LoadChatChannels();
 
-	if (signal(SIGINT, CatchSignal) == SIG_ERR) {
-		LogInfo("Could not set signal handler");
-		return 1;
-	}
-	if (signal(SIGTERM, CatchSignal) == SIG_ERR) {
-		LogInfo("Could not set signal handler");
-		return 1;
-	}
+	std::signal(SIGINT, CatchSignal);
+	std::signal(SIGTERM, CatchSignal);
+	std::signal(SIGKILL, CatchSignal);
+	std::signal(SIGSEGV, CatchSignal);
 
 	worldserver = new WorldServer;
 
@@ -146,13 +162,12 @@ int main() {
 //	crash_test.detach();
 
 	auto loop_fn = [&](EQ::Timer* t) {
+		if (keepalive.Check()) {
+			keepalive.Start();
+			database.ping();
+		}
 
 		Timer::SetCurrentTime();
-
-		if (!RunLoops) {
-			EQ::EventLoop::Get().Shutdown();
-			return;
-		}
 
 		g_Clientlist->Process();
 
@@ -163,13 +178,6 @@ int main() {
 		if (ClientConnectionPruneTimer.Check()) {
 			g_Clientlist->CheckForStaleConnectionsAll();
 		}
-
-		if (keepalive.Check()) {
-			keepalive.Start();
-			database.ping();
-		}
-
-		timeout_manager.CheckTimeouts();
 	};
 
 	EQ::Timer process_timer(loop_fn);

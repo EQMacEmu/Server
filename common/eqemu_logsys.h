@@ -122,6 +122,7 @@ namespace Logs {
 		HotReload,
 		ZonePoints,
 		EqTime,
+		ClientLogin,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -200,7 +201,8 @@ namespace Logs {
 		"Packet S->S",
 		"HotReload",
 		"Zone Points",
-		"EqTime"
+		"EqTime",
+		"Client Login"
 	};
 }
 

@@ -151,6 +151,8 @@ bool Zone::Bootup(uint32 iZoneID, bool is_static) {
 
 	zone->StartShutdownTimer();
 
+	zone->RequestUCSServerStatus();
+
 	/* Set Logging */
 
 	LogSys.StartFileLogs(StringFormat("%s_port_%u", zone->GetShortName(), ZoneConfig::get()->ZonePort));
@@ -894,6 +896,8 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 		}
 	}
 
+	m_ucss_available = false;
+	m_last_ucss_update = 0;
 
 }
 
@@ -1164,6 +1168,21 @@ void Zone::RemoveAuth(const char* iCharName, uint32 entity_id)
 	while (iterator.MoreElements()) {
 		ZoneClientAuth_Struct* zca = iterator.GetData();
 		if (strcasecmp(zca->charname, iCharName) == 0 && zca->entity_id == entity_id) {
+			iterator.RemoveCurrent();
+			return;
+		}
+		iterator.Advance();
+	}
+}
+
+void Zone::RemoveAuth(const char* iCharName, const char* iLSKey)
+{
+	LinkedListIterator<ZoneClientAuth_Struct*> iterator(client_auth_list);
+
+	iterator.Reset();
+	while (iterator.MoreElements()) {
+		ZoneClientAuth_Struct* zca = iterator.GetData();
+		if (strcasecmp(zca->charname, iCharName) == 0 && strcasecmp(zca->lskey, iLSKey) == 0) {
 			iterator.RemoveCurrent();
 			return;
 		}
@@ -2757,6 +2776,28 @@ void Zone::SendReloadMessage(std::string reload_type)
 			GetZoneDescription()
 		).c_str()
 	);
+}
+
+void Zone::RequestUCSServerStatus() {
+	auto outapp = new ServerPacket(ServerOP_UCSServerStatusRequest, sizeof(UCSServerStatus_Struct));
+	auto ucsss = (UCSServerStatus_Struct*)outapp->pBuffer;
+	ucsss->available = 0;
+	ucsss->port = Config->ZonePort;
+	ucsss->unused = 0;
+	worldserver.SendPacket(outapp);
+	safe_delete(outapp);
+}
+
+void Zone::SetUCSServerAvailable(bool ucss_available, uint32 update_timestamp) 
+{
+	if (m_last_ucss_update == update_timestamp && m_ucss_available != ucss_available) {
+		m_ucss_available = false;
+		RequestUCSServerStatus();
+		return;
+	}
+
+	if (m_last_ucss_update < update_timestamp)
+		m_ucss_available = ucss_available;
 }
 
 #include "zone_loot.cpp"

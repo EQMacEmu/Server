@@ -37,24 +37,116 @@ extern WorldServer worldserver;
 
 float Mob::GetBaseEXP()
 {
-	if (IsZomm())
+	if (IsZomm()) {
 		return 1.0f;
+	}
 
 	float exp = EXP_FORMULA;
-
+	float hotzonexp = 0.0f;
 	float zemmod = 75.0f;
-	if(zone->newzone_data.zone_exp_multiplier >= 0) {
+	if (zone->newzone_data.zone_exp_multiplier >= 0) {
 		zemmod = zone->newzone_data.zone_exp_multiplier * 100;
 	}
 
-	float hotzonexp = 0.0f;
+	if (RuleB(Expansion, UseExperienceExpansionSetting) && !content_service.IsThePlanesOfPowerEnabled()) {
+		// Base ZEM from Classic to Luclin
+		if (zone->GetZoneID() == Zones::BEFALLEN ||
+			zone->GetZoneID() == Zones::BLACKBURROW ||
+			zone->GetZoneID() == Zones::HIGHKEEP ||
+			zone->GetZoneID() == Zones::NAJENA ||
+			zone->GetZoneID() == Zones::QCAT ||
+			zone->GetZoneID() == Zones::RUNNYEYE ||
+			zone->GetZoneID() == Zones::SOLDUNGA ||
+			zone->GetZoneID() == Zones::CAZICTHULE ||
+			zone->GetZoneID() == Zones::GUKTOP ||
+			zone->GetZoneID() == Zones::MISTMOORE ||
+			zone->GetZoneID() == Zones::CRUSHBONE ||
+			zone->GetZoneID() == Zones::UNREST ||
+			zone->GetZoneID() == Zones::HOLE ||
+			zone->GetZoneID() == Zones::KERRARIDGE ||
+			zone->GetZoneID() == Zones::WARRENS ||
+			zone->GetZoneID() == Zones::SKYFIRE
+			) {
+			zemmod = 80.0f;
+		}
+		else if (
+			zone->GetZoneID() == Zones::DALNIR ||
+			zone->GetZoneID() == Zones::KAESORA ||
+			zone->GetZoneID() == Zones::KURN ||
+			zone->GetZoneID() == Zones::NURGA ||
+			zone->GetZoneID() == Zones::DROGA
+			) {
+			zemmod = 85.0f;
+		}
+		else if (
+			zone->GetZoneID() == Zones::HALAS ||
+			zone->GetZoneID() == Zones::FREPORTN ||
+			zone->GetZoneID() == Zones::QEYNOS2 ||
+			zone->GetZoneID() == Zones::OGGOK ||
+			zone->GetZoneID() == Zones::KALADIMA ||
+			zone->GetZoneID() == Zones::KALADIMB ||
+			zone->GetZoneID() == Zones::LAKEOFILLOMEN
+			) {
+			zemmod = 100.0f;
+		}
+		else if (zone->GetZoneID() == Zones::PALUDAL) { // Not Confirm - Luclin era 
+			zemmod = 115.0f;
+		}
+
+		// Velious Era ZEM modification
+		if (content_service.IsTheScarsOfVeliousEnabled()) {
+			if (zone->GetZoneID() == Zones::LAKEOFILLOMEN) {
+				zemmod = 75.0f;
+			}
+			else if (zone->GetZoneID() == Zones::BEFALLEN ||
+				zone->GetZoneID() == Zones::NAJENA ||
+				zone->GetZoneID() == Zones::PERMAFROST ||
+				zone->GetZoneID() == Zones::SOLDUNGA ||
+				zone->GetZoneID() == Zones::PAW ||
+				zone->GetZoneID() == Zones::GUKTOP
+				) {
+				zemmod = 90.0f;
+			}
+			else if (
+				zone->GetZoneID() == Zones::QCAT ||
+				zone->GetZoneID() == Zones::RUNNYEYE ||
+				zone->GetZoneID() == Zones::KERRARIDGE ||
+				zone->GetZoneID() == Zones::DROGA ||
+				zone->GetZoneID() == Zones::NURGA
+				) {
+				zemmod = 96.0f;
+			}
+			else if (zone->GetZoneID() == Zones::HOLE || zone->GetZoneID() == Zones::KAESORA) {
+				zemmod = 100.0f;
+			}
+		}
+
+		// Luclin era ZEM modification.  Not confirmed - Needs more info
+		if (content_service.IsTheShadowsOfLuclinEnabled()) {
+			// low level zone bonus.
+			if (zone->GetZoneID() == Zones::BLACKBURROW ||
+				zone->GetZoneID() == Zones::BEFALLEN ||
+				zone->GetZoneID() == Zones::QCAT ||
+				zone->GetZoneID() == Zones::RUNNYEYE ||
+				zone->GetZoneID() == Zones::SOLDUNGA ||
+				zone->GetZoneID() == Zones::GUKTOP ||
+				zone->GetZoneID() == Zones::CRUSHBONE ||
+				zone->GetZoneID() == Zones::UNREST ||
+				zone->GetZoneID() == Zones::WARRENS ||
+				zone->GetZoneID() == Zones::DALNIR ||
+				zone->GetZoneID() == Zones::KURN) {
+				zemmod = 115.0f;
+			}
+		}
+	}
+
 	if (zone->IsHotzone()) {
 		hotzonexp = RuleR(Zone, HotZoneBonus) * 100;
 	}
 
 	// very low levels get an artifical ZEM.  It's either 100 or 114, not sure.  Also not sure how many levels this applies.  If you find out, fix this
 	if (GetLevel() < 6 && zemmod < 100.0f) {
-		zemmod = 100.0f;
+		zemmod = 114.0f;
 	}
 
 	float server_bonus = 1.0f;

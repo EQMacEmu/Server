@@ -82,6 +82,7 @@
 #define ServerOP_IsOwnerOnline		0x0042
 #define ServerOP_CheckGroupLeader	0x0043
 #define ServerOP_RaidGroupJoin		0x0044
+#define ServerOP_DropClient         0x0045	// DropClient
 
 #define ServerOP_DepopAllPlayersCorpses	0x0060
 #define ServerOP_QGlobalUpdate		0x0061
@@ -175,6 +176,8 @@
 #define ServerOP_UCSMessage		0x4005
 #define ServerOP_UCSMailMessage 0x4006
 #define ServerOP_UpdateSchedulerEvents 0x4007
+#define ServerOP_UCSServerStatusRequest		0x4008
+#define ServerOP_UCSServerStatusReply		0x4009
 
 #define ServerOP_ReloadAAData 0x4100
 #define ServerOP_ReloadBlockedSpells 0x4101
@@ -279,13 +282,16 @@ public:
 		return ret;
 	}
 
-	void WriteUInt8(uint8 value) { *(uint8 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
-	void WriteUInt32(uint32 value) { *(uint32 *)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
-	void WriteString(const char * str) { uint32 len = static_cast<uint32>(strlen(str)) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
+	void WriteUInt8(uint8 value) { *(uint8*)(pBuffer + _wpos) = value; _wpos += sizeof(uint8); }
+	void WriteInt8(uint8_t value) { *(uint8_t*)(pBuffer + _wpos) = value; _wpos += sizeof(uint8_t); }
+	void WriteUInt32(uint32 value) { *(uint32*)(pBuffer + _wpos) = value; _wpos += sizeof(uint32); }
+	void WriteInt32(int32_t value) { *(int32_t*)(pBuffer + _wpos) = value; _wpos += sizeof(int32_t); }
 
-	uint8 ReadUInt8() { uint8 value = *(uint8 *)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
-	uint32 ReadUInt32() { uint32 value = *(uint32 *)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
-	void ReadString(char *str) { uint32 len = static_cast<uint32>(strlen((char *)(pBuffer + _rpos))) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
+	void WriteString(const char* str) { uint32 len = static_cast<uint32>(strlen(str)) + 1; memcpy(pBuffer + _wpos, str, len); _wpos += len; }
+
+	uint8 ReadUInt8() { uint8 value = *(uint8*)(pBuffer + _rpos); _rpos += sizeof(uint8); return value; }
+	uint32 ReadUInt32() { uint32 value = *(uint32*)(pBuffer + _rpos); _rpos += sizeof(uint32); return value; }
+	void ReadString(char* str) { uint32 len = static_cast<uint32>(strlen((char*)(pBuffer + _rpos))) + 1; memcpy(str, pBuffer + _rpos, len); _rpos += len; }
 
 	uint32 GetWritePosition() { return _wpos; }
 	uint32 GetReadPosition() { return _rpos; }
@@ -296,7 +302,7 @@ public:
 
 	uint32	size;
 	uint16	opcode;
-	uchar*	pBuffer;
+	uchar*  pBuffer;
 	uint32	_wpos;
 	uint32	_rpos;
 	bool	compressed;
@@ -1192,6 +1198,22 @@ struct ServerFlagUpdate_Struct {
 struct ServerZoneStatus_Struct {
 	char  name[64];
 	int16 admin;
+};
+
+struct UCSServerStatus_Struct {
+	uint8 available; // non-zero=true, 0=false
+	union {
+		struct {
+			uint16 port;
+			uint16 unused;
+		};
+		uint32 timestamp;
+	};
+};
+
+struct ServerZoneDropClient_Struct
+{
+	uint32 lsid;
 };
 
 #pragma pack()

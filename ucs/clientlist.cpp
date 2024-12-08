@@ -23,7 +23,6 @@
 #include "../common/races.h"
 #include "../common/classes.h"
 #include "../common/misc_functions.h"
-#include "../common/path_manager.h"
 #include "../common/misc_functions.h"
 
 #include "ucsconfig.h"
@@ -31,23 +30,20 @@
 #include "database.h"
 #include "chatchannel.h"
 #include "worldserver.h"
+#include "../common/path_manager.h"
 
-#include "../common/eqemu_config.h"
-#include "../common/eq_stream_factory.h"
-#include "../common/servertalk.h"
-#include "worldserver.h"
 #include <list>
 #include <vector>
 #include <string>
 #include <cstdlib>
 #include <algorithm>
 
-extern Database database;
+extern UCSDatabase database;
 extern std::string WorldShortName;
 extern ChatChannelList *ChannelList;
 extern Clientlist *g_Clientlist;
 extern uint32 ChatMessagesSent;
-extern WorldServer *worldserver;
+extern WorldServer* worldserver;
 
 int LookupCommand(const char *ChatCommand) {
 
@@ -85,36 +81,36 @@ static void ProcessSetMessageStatus(std::string SetMessageCommand) {
 
 	int Status;
 
-	switch(SetMessageCommand[0]) {
+	switch (SetMessageCommand[0]) {
 
-		case 'R': // READ
-			Status = 3;
-			break;
+	case 'R': // READ
+		Status = 3;
+		break;
 
-		case 'T': // TRASH
-			Status = 4;
-			break;
+	case 'T': // TRASH
+		Status = 4;
+		break;
 
-		default: // DELETE
-			Status = 0;
+	default: // DELETE
+		Status = 0;
 
 	}
 	std::string::size_type NumStart = SetMessageCommand.find_first_of("123456789");
 
-	while(NumStart != std::string::npos) {
+	while (NumStart != std::string::npos) {
 
 		std::string::size_type NumEnd = SetMessageCommand.find_first_of(" ", NumStart);
 
-		if(NumEnd == std::string::npos) {
+		if (NumEnd == std::string::npos) {
 
-			MessageNumber = atoi(SetMessageCommand.substr(NumStart).c_str());
+			MessageNumber = Strings::ToInt(SetMessageCommand.substr(NumStart));
 
 			database.SetMessageStatus(MessageNumber, Status);
 
 			break;
 		}
 
-		MessageNumber = atoi(SetMessageCommand.substr(NumStart, NumEnd-NumStart).c_str());
+		MessageNumber = Strings::ToInt(SetMessageCommand.substr(NumStart, NumEnd - NumStart));
 
 		database.SetMessageStatus(MessageNumber, Status);
 
@@ -193,13 +189,22 @@ static void ProcessCommandIgnore(Client *c, std::string Ignoree) {
 	safe_delete(outapp);
 
 }
-Clientlist::Clientlist(int ChatPort) {
 
-	chatsf = new EQStreamFactory(ChatStream, ChatPort, 60000);
+Clientlist::Clientlist(int ChatPort) {
+	EQStreamManagerInterfaceOptions chat_opts(ChatPort, false, false);
+	chat_opts.opcode_size = 1;
+	chat_opts.daybreak_options.stale_connection_ms = 600000;
+	chat_opts.daybreak_options.resend_delay_ms = RuleI(Network, ResendDelayBaseMS);
+	chat_opts.daybreak_options.resend_delay_factor = RuleR(Network, ResendDelayFactor);
+	chat_opts.daybreak_options.resend_delay_min = RuleI(Network, ResendDelayMinMS);
+	chat_opts.daybreak_options.resend_delay_max = RuleI(Network, ResendDelayMaxMS);
+
+	chatsf = new EQ::Net::EQStreamManager(chat_opts);
 
 	ChatOpMgr = new RegularOpcodeManager;
 
 	const ucsconfig *Config = ucsconfig::get();
+
 
 	std::string opcodes_file = fmt::format("{}/{}", path.GetServerPath(), Config->ChatOpCodesFile);
 
@@ -208,21 +213,18 @@ Clientlist::Clientlist(int ChatPort) {
 		exit(1);
 	}
 
-	if (chatsf->Open()) {
-		LogInfoDetail("Client (UDP) Chat listener started on port [{0}].", ChatPort);
-	}
-	else {
-		LogInfoDetail("Failed to start client (UDP) listener (port [{0}]-4i)", ChatPort);
+	chatsf->OnNewConnection([this](std::shared_ptr<EQ::Net::EQStream> stream) {
+		LogInfo("New Client UDP connection from [{0}] [{1}]", stream->GetRemoteIP(), stream->GetRemotePort());
+		stream->SetOpcodeManager(&ChatOpMgr);
 
-		exit(1);
-	}
+		auto c = new Client(stream);
+		ClientChatConnections.push_back(c);
+	});
 }
 
-Client::Client(std::shared_ptr<EQStream> eqs) {
+Client::Client(std::shared_ptr<EQStreamInterface> eqs) {
 
 	ClientStream = eqs;
-	if (ClientStream != nullptr)
-		ClientStream->PutInUse();
 
 	Announce = false;
 
@@ -235,8 +237,6 @@ Client::Client(std::shared_ptr<EQStream> eqs) {
 	AllowInvites = true;
 	Revoked = false;
 
-	stale = false;
-
 	for (auto &elem : JoinedChannels)
 		elem = nullptr;
 
@@ -248,6 +248,7 @@ Client::Client(std::shared_ptr<EQStream> eqs) {
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 
 	TypeOfConnection = ConnectionTypeUnknown;
+	ClientVersion_ = EQ::versions::ClientVersion::Unknown;
 
 }
 
@@ -272,45 +273,15 @@ Client::~Client() {
 
 void Client::CloseConnection() {
 
-	if (ClientStream != nullptr) {
-		ClientStream->RemoveData();
-		ClientStream->Close();
-		ClientStream->ReleaseFromUse();
-	}
+	ClientStream->RemoveData();
 
-	ClientStream = nullptr;
-}
+	ClientStream->Close();
 
-void Clientlist::CLClearStaleConnections()
-{
-	MClientChatConnections.lock();
-	std::deque<Client*>::iterator Iterator;
-
-	Iterator = ClientChatConnections.begin();
-	while (Iterator != ClientChatConnections.end()) {
-		if ((*Iterator)->GetStale()) {
-			LogInfo("Removing stale connection for [{0}]", (*Iterator)->GetName().c_str());
-
-			if ((*Iterator)->ClientStream != nullptr) {
-				(*Iterator)->CloseConnection();
-			}
-			if ((*Iterator)->ClientStream == nullptr) {
-				safe_delete((*Iterator));
-				Iterator = ClientChatConnections.erase(Iterator);
-			}
-			else {
-				++Iterator;
-			}
-		}
-		else {
-			++Iterator;
-		}
-	}
-	MClientChatConnections.unlock();
+	ClientStream->ReleaseFromUse();
 }
 
 void Clientlist::CheckForStaleConnectionsAll() {
-	LogInfo("Checking for stale connections");
+	LogDebug("Checking for stale connections");
 
 	auto it = ClientChatConnections.begin();
 	while (it != ClientChatConnections.end()) {
@@ -320,68 +291,49 @@ void Clientlist::CheckForStaleConnectionsAll() {
 }
 
 void Clientlist::CheckForStaleConnections(Client *c) {
+	if (!c) {
+		return;
+	}
 
-	if(!c) return;
-
-	std::deque<Client*>::iterator Iterator;
+	std::list<Client*>::iterator Iterator;
 
 	for (Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); ++Iterator) {
 
-		if (((*Iterator) != c) && !(*Iterator)->GetStale() && ((c->GetName() == (*Iterator)->GetName())
+		if (((*Iterator) != c) && ((c->GetName() == (*Iterator)->GetName())
 			&& (c->GetConnectionType() == (*Iterator)->GetConnectionType()))) {
 
-			LogInfo("Flagging old connection as stale for [{0}]", c->GetName().c_str());
-			(*Iterator)->SetStale();
+			LogInfo("Removing old connection for [{}]", c->GetName().c_str());
+
+			struct in_addr in;
+
+			in.s_addr = (*Iterator)->ClientStream->GetRemoteIP();
+
+			LogInfo("Client connection from [{}]:[{}] closed", inet_ntoa(in),
+				ntohs((*Iterator)->ClientStream->GetRemotePort()));
+
+			safe_delete((*Iterator));
+
+			Iterator = ClientChatConnections.erase(Iterator);
 		}
 	}
 }
 
 void Clientlist::Process()
 {
-	std::shared_ptr<EQStream> eqs;
-
-	// Pop sets PutInUse() for the stream.
-	while ((eqs = chatsf->Pop())) {
-		struct in_addr in {};
-		in.s_addr = eqs->GetRemoteIP();
-
-		LogInfo("New Client UDP connection from [{0}]:[{1}]", long2ip(eqs->GetRemoteIP()).c_str(),
-			ntohs(eqs->GetRemotePort()));
-
-		eqs->SetOpcodeManager(&ChatOpMgr);
-
-		auto c = new Client(eqs);
-		MClientChatConnections.lock();
-		ClientChatConnections.push_back(c);
-		MClientChatConnections.unlock();
-	}
-
-	CLClearStaleConnections();
-
-	MClientChatConnections.lock();
-
 	auto it = ClientChatConnections.begin();
 	while (it != ClientChatConnections.end()) {
 		(*it)->AccountUpdate();
-		if ((*it)->GetStale()) {
-			++it;
+		if ((*it)->ClientStream->CheckState(CLOSED)) {
+			struct in_addr in;
+			in.s_addr = (*it)->ClientStream->GetRemoteIP();
+
+			LogInfo("Client connection from [{}]:[{}] closed", inet_ntoa(in),
+				ntohs((*it)->ClientStream->GetRemotePort()));
+
+			safe_delete((*it));
+
+			it = ClientChatConnections.erase(it);
 			continue;
-		}
-		if ((*it)->ClientStream == nullptr) {
-			(*it)->SetStale();
-			++it;
-			continue;
-		}
-		if ((*it)->ClientStream->CheckClosed()) {
-			//(*it)->ClientStream->ReleaseFromUse();
-			(*it)->ClientStream = nullptr;
-			(*it)->SetStale();
-			++it;
-			continue;
-		}
-		else {
-			// this keeps stream open while we are using it.
-			(*it)->ClientStream->PutInUse();
 		}
 
 		EQApplicationPacket *app = nullptr;
@@ -391,17 +343,18 @@ void Clientlist::Process()
 		while (KeyValid && !(*it)->GetForceDisconnect() && (app = (*it)->ClientStream->PopPacket())) {
 			EmuOpcode opcode = app->GetOpcode();
 
+			auto o = (*it)->ClientStream->GetOpcodeManager();
 			LogPacketClientServer(
 				"[{}] [{:#06x}] Size [{}] {}",
 				OpcodeManager::EmuToName(app->GetOpcode()),
-				(*it)->ClientStream->GetOpcodeManager()->EmuToEQ(app->GetOpcode()),
+				o->EmuToEQ(app->GetOpcode()) == 0 ? app->GetProtocolOpcode() : o->EmuToEQ(app->GetOpcode()),
 				app->Size(),
 				(LogSys.IsLogEnabled(Logs::Detail, Logs::PacketClientServer) ? DumpPacketToString(app) : "")
 			);
 
 			switch (opcode) {
 			case OP_ChatLogin: {
-				char *PacketBuffer = (char *)app->pBuffer;
+				char* PacketBuffer = (char*)app->pBuffer + 1;
 				char Chatlist[64];
 				char Key[64];
 				char ConnectionTypeIndicator;
@@ -413,9 +366,8 @@ void Clientlist::Process()
 					KeyValid = false;
 					break;
 				}
-				ConnectionTypeIndicator = VARSTRUCT_DECODE_TYPE(char, PacketBuffer);
 
-				(*it)->SetConnectionType(ConnectionTypeIndicator);
+				(*it)->SetConnectionType('C');
 
 				VARSTRUCT_DECODE_STRING(Key, PacketBuffer);
 
@@ -433,12 +385,12 @@ void Clientlist::Process()
 				LogInfo("Received login for user [{0}] with key [{1}]",
 					Chatlist, Key);
 
-				/*if (!database.VerifyMailKey(CharacterName, (*it)->ClientStream->GetRemoteIP(), Key)) {
-					Log(Logs::Detail, Logs::UCSServer,
-						"Chat Key for %s does not match, closing connection.", Chatlist);
+				if (!database.VerifyMailKey(CharacterName, (*it)->ClientStream->GetRemoteIP(), Key)) {
+					LogInfo(
+						"Chat Key for {} does not match, closing connection.", Chatlist);
 					KeyValid = false;
 					break;
-				}*/
+				}
 
 				(*it)->SetAccountID(database.FindAccount(CharacterName.c_str(), (*it)));
 
@@ -454,8 +406,16 @@ void Clientlist::Process()
 			}
 
 			case OP_Chat: {
-				std::string CommandString = (const char *)app->pBuffer;
-				ProcessOPChatCommand((*it), CommandString);
+				std::string command_string = (const char*)app->pBuffer + 1;
+				bool command_directed = false;
+				if (command_string.empty()) {
+					break;
+				}
+
+				if (Strings::Contains(Strings::ToLower(command_string), "leave")) {
+					command_directed = true;
+				}
+				ProcessOPChatCommand((*it), command_string, command_directed);
 				break;
 			}
 
@@ -467,59 +427,64 @@ void Clientlist::Process()
 			safe_delete(app);
 		}
 		if (!KeyValid || (*it)->GetForceDisconnect()) {
-			LogInfo("Force disconnecting client: [{0}]:[{1}], KeyValid=[{2}], GetForceDisconnect()=[{3}]",
-				long2ip((*it)->ClientStream->GetRemoteIP()).c_str(),
-				ntohs((*it)->ClientStream->GetRemotePort()), KeyValid,
+			struct in_addr in;
+			in.s_addr = (*it)->ClientStream->GetRemoteIP();
+
+			LogInfo("Force disconnecting client: [{}]:[{}], KeyValid=[{}], GetForceDisconnect()=[{}]",
+				inet_ntoa(in), ntohs((*it)->ClientStream->GetRemotePort()), KeyValid,
 				(*it)->GetForceDisconnect());
-			(*it)->SetStale();
+
+			(*it)->ClientStream->Close();
+
+			safe_delete((*it));
+
+			it = ClientChatConnections.erase(it);
+			continue;
+
 		}
-		(*it)->ClientStream->ReleaseFromUse();
+
 		++it;
 	}
-	MClientChatConnections.unlock();
 }
 
-void Clientlist::ProcessOPChatCommand(Client *c, std::string CommandString)
+void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, bool command_directed)
 {
 
-	if(CommandString.length() == 0)
+	if (command_string.length() == 0)
 		return;
 
-	if (!c)
-		return;
-
-	if(isdigit(CommandString[0]))
+	if (isdigit(command_string[0]))
 	{
 
-		c->SendChannelMessageByNumber(CommandString);
+		c->SendChannelMessageByNumber(command_string);
 
 		return;
 	}
 
-	if(CommandString[0] == '#') {
+	if (command_string[0] == '#') {
 
-		c->SendChannelMessage(CommandString);
+		c->SendChannelMessage(command_string);
 
 		return;
 	}
 
 	std::string Command, Parameters;
 
-	std::string::size_type Space = CommandString.find_first_of(" ");
+	std::string::size_type Space = command_string.find_first_of(" ");
 
 	if(Space != std::string::npos) {
 
-		Command = CommandString.substr(0, Space);
+		Command = command_string.substr(0, Space);
 
-		std::string::size_type ParametersStart = CommandString.find_first_not_of(" ", Space);
+		std::string::size_type ParametersStart = command_string.find_first_not_of(" ", Space);
 
 		if(ParametersStart != std::string::npos)
-			Parameters = CommandString.substr(ParametersStart);
+			Parameters = command_string.substr(ParametersStart);
 	}
 	else
-		Command = CommandString;
+		Command = command_string;
 
-	int CommandCode = LookupCommand(Command.c_str());
+	auto CommandCode = LookupCommand(Command.c_str());
 
 	switch(CommandCode) {
 
@@ -612,26 +577,28 @@ void Clientlist::ProcessOPChatCommand(Client *c, std::string CommandString)
 
 		default:
 			c->SendHelp();
-			LogInfo("Unhandled OP_Chat command: [{0}]", CommandString.c_str());
+			LogInfo("Unhandled OP_Chat command: [{0}]", command_string.c_str());
 	}
 }
 
 void Clientlist::CloseAllConnections() {
 
-	std::deque<Client*>::iterator Iterator;
-	MClientChatConnections.lock();
-	for(Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); ++Iterator) {
+	std::list<Client*>::iterator Iterator;
 
-		LogInfo("Removing client [{0}]", (*Iterator)->GetName().c_str());
+	for (Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); ++Iterator) {
+
+		LogInfo("Removing client [{}]", (*Iterator)->GetName().c_str());
+
 		(*Iterator)->CloseConnection();
 	}
-	MClientChatConnections.unlock();
 }
 
 void Client::AddCharacter(int CharID, const char *CharacterName, int Level, int Race, int Class) {
 
 	if(!CharacterName) return;
+
 	LogDebug("Adding character [{0}] with ID [{1}] for [{2}]", CharacterName, CharID, GetName().c_str());
+
 	CharacterEntry NewCharacter;
 	NewCharacter.CharID = CharID;
 	NewCharacter.Name = CharacterName;
@@ -682,22 +649,18 @@ void Client::SendChatlist() {
 	safe_delete(outapp);
 }
 
-Client *Clientlist::FindCharacter(std::string CharacterName) {
+Client *Clientlist::FindCharacter(const std::string& CharacterName) {
 
-	Client* cFound = nullptr;
-	std::deque<Client*>::iterator Iterator;
-	MClientChatConnections.lock();
-	for(Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); ++Iterator) {
+	std::list<Client*>::iterator Iterator;
 
-		if ((*Iterator)->GetName() == CharacterName) {
-			cFound = (*Iterator);
-			break;
-		}
+	for (Iterator = ClientChatConnections.begin(); Iterator != ClientChatConnections.end(); ++Iterator) {
+
+		if ((*Iterator)->GetName() == CharacterName)
+			return ((*Iterator));
 
 	}
-	MClientChatConnections.unlock();
 
-	return (cFound);
+	return nullptr;
 }
 
 void Client::AddToChannelList(ChatChannel *JoinedChannel) {
@@ -1932,7 +1895,7 @@ void Client::SetConnectionType(char c) {
 	}
 }
 
-Client *Clientlist::IsCharacterOnline(std::string CharacterName) {
+Client *Clientlist::IsCharacterOnline(const std::string& CharacterName) {
 
 	// This method is used to determine if the character we are a sending an email to is connected to the mailserver,
 	// so we can send them a new email notification.

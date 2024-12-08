@@ -1,69 +1,46 @@
 #pragma once
+
 #include "../eq_packet.h"
 #include "../eq_stream_intf.h"
 #include "../opcodemgr.h"
 #include "daybreak_connection.h"
 #include <vector>
 #include <deque>
-#include <mutex>
+#include <unordered_map>
+#include <mutex> // for old eqstream
 
 namespace EQ
 {
 	namespace Net
 	{
-		struct EQStreamManagerOptions
-		{
-			EQStreamManagerOptions() {
-				opcode_size = 2;
-			}
-			EQStreamManagerOptions(int port, bool encoded, bool compressed) {
-				opcode_size = 2;
-				//World seems to support both compression and xor zone supports one or the others.
-								//Enforce one or the other in the convienence construct
-								//Login I had trouble getting to recognize compression at all 
-								//but that might be because it was still a bit buggy when i was testing that.
-				if (compressed) {
-					daybreak_options.encode_passes[0] = EncodeCompression;
-				}
-				else if (encoded) {
-					daybreak_options.encode_passes[0] = EncodeXOR;
-				}
-
-				daybreak_options.port = port;
-			}
-			int opcode_size;
-			DaybreakConnectionManagerOptions daybreak_options;
-		};
 		class EQStream;
-		class EQStreamManager
+		class EQStreamManager : public EQStreamManagerInterface
 		{
 		public:
-			EQStreamManager(EQStreamManagerOptions &options);
+			EQStreamManager(const EQStreamManagerInterfaceOptions &options);
 			~EQStreamManager();
 
+			virtual void SetOptions(const EQStreamManagerInterfaceOptions& options);
 			void OnNewConnection(std::function<void(std::shared_ptr<EQStream>)> func) { m_on_new_connection = func; }
 			void OnConnectionStateChange(std::function<void(std::shared_ptr<EQStream>, DbProtocolStatus, DbProtocolStatus)> func) { m_on_connection_state_change = func; }
-
 		private:
-			EQStreamManagerOptions m_options;
 			DaybreakConnectionManager m_daybreak;
 			std::function<void(std::shared_ptr<EQStream>)> m_on_new_connection;
 			std::function<void(std::shared_ptr<EQStream>, DbProtocolStatus, DbProtocolStatus)> m_on_connection_state_change;
 			std::map<std::shared_ptr<DaybreakConnection>, std::shared_ptr<EQStream>> m_streams;
-			
+
 			void DaybreakNewConnection(std::shared_ptr<DaybreakConnection> connection);
 			void DaybreakConnectionStateChange(std::shared_ptr<DaybreakConnection> connection, DbProtocolStatus from, DbProtocolStatus to);
 			void DaybreakPacketRecv(std::shared_ptr<DaybreakConnection> connection, const Packet &p);
 			friend class EQStream;
 		};
+
 		class EQStream : public EQStreamInterface
 		{
 		public:
-			EQStream(EQStreamManager *parent, std::shared_ptr<DaybreakConnection> connection);
+			EQStream(EQStreamManagerInterface *parent, std::shared_ptr<DaybreakConnection> connection);
 			~EQStream();
 
-			uint8 active_users;
-			std::mutex MInUse;
 			virtual void QueuePacket(const EQApplicationPacket *p, bool ack_req = true);
 			virtual void FastQueuePacket(EQApplicationPacket **p, bool ack_req = true);
 			virtual EQApplicationPacket *PopPacket();
@@ -78,26 +55,37 @@ namespace EQ
 			virtual void SetActive(bool val) { }
 			virtual MatchState CheckSignature(const Signature *sig);
 			virtual EQStreamState GetState();
-			virtual bool IsInUse() { bool flag; std::lock_guard<std::mutex> lock(MInUse); flag = (active_users > 0); return flag; }
 			virtual void SetOpcodeManager(OpcodeManager **opm) {
 				m_opcode_manager = opm;
 			}
-
-			virtual OpcodeManager* GetOpcodeManager() const
+			virtual OpcodeManager * GetOpcodeManager() const
 			{
 				return (*m_opcode_manager);
 			};
 
-			virtual std::shared_ptr<EQ::Net::DaybreakConnection> GetRawConnection() const {
-				return m_connection;
-			}
-
+			virtual Stats GetStats() const;
+			virtual void ResetStats();
+			virtual EQStreamManagerInterface* GetManager() const;
 		private:
-			EQStreamManager *m_owner;
+			EQStreamManagerInterface *m_owner;
 			std::shared_ptr<DaybreakConnection> m_connection;
 			OpcodeManager **m_opcode_manager;
 			std::deque<std::unique_ptr<EQ::Net::Packet>> m_packet_queue;
+			std::unordered_map<int, int> m_packet_recv_count;
+			std::unordered_map<int, int> m_packet_sent_count;
 			friend class EQStreamManager;
+
+		public: 
+			// these virtual function is needed to make it work with EQStream / EQOldStream class
+			uint8 active_users;
+			std::mutex MInUse;
+
+			virtual bool IsInUse() { 
+				bool flag; 
+				std::lock_guard<std::mutex> lock(MInUse); 
+				flag = (active_users > 0); 
+				return flag; 
+			}
 		};
 	}
 }

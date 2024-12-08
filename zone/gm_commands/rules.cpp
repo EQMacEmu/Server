@@ -456,7 +456,7 @@ void SendRuleSubCommands(Client *c)
 	c->Message(Chat::White, "Usage: #rules get [Rule] - Get the specified rule's local value");
 	c->Message(
 		Chat::White,
-		"Usage: #rules set [Rule) [Value] - Set the specified rule to the specified value locally only"
+		"Usage: #rules set [Rule] [Value] - Set the specified rule to the specified value locally only"
 	);
 	c->Message(
 		Chat::White,

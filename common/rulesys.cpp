@@ -409,7 +409,7 @@ void RuleManager::_SaveRule(Database *db, RuleType type, uint16 index) {
 		e.rule_value = rule_value;
 		e.notes = rule_notes;
 
-		RuleValuesRepository::UpdateOne(*db, e);
+		RuleValuesRepository::UpdateRule(*db, e);
 		return;
 	}
 

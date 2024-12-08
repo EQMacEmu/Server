@@ -71,6 +71,8 @@ public:
 	void	UpdateClientGuild(uint32 char_id, uint32 guild_id);
 	bool	ActiveConnection(uint32 iAccID);
 	bool	ActiveConnection(uint32 iAccID, uint32 iCharID);
+	bool    IsAccountInGame(uint32 iLSID);
+
 
 	int GetClientCount();
 	void GetClients(const char *zone_name, std::vector<ClientListEntry *> &into);

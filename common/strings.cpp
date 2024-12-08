@@ -131,7 +131,7 @@ std::vector<std::string> Strings::Split(std::string s, std::string delimiter)
 		res.push_back(token);
 	}
 
-	res.push_back(s.substr(pos_start));
+	res.emplace_back(s.substr(pos_start));
 	return res;
 }
 
@@ -992,18 +992,19 @@ uint32 Strings::TimeToSeconds(std::string time_string)
 
 bool Strings::ToBool(std::string bool_string)
 {
-	if (
-		Strings::Contains(bool_string, "true") ||
-		Strings::Contains(bool_string, "y") ||
-		Strings::Contains(bool_string, "yes") ||
-		Strings::Contains(bool_string, "on") ||
-		Strings::Contains(bool_string, "enable") ||
-		Strings::Contains(bool_string, "enabled") ||
-		(Strings::IsNumber(bool_string) && std::stoi(bool_string))
-		) {
-		return true;
+	if (Trim(bool_string).length() > 0) {
+		if (
+			Strings::Contains(bool_string, "true") ||
+			Strings::Contains(bool_string, "y") ||
+			Strings::Contains(bool_string, "yes") ||
+			Strings::Contains(bool_string, "on") ||
+			Strings::Contains(bool_string, "enable") ||
+			Strings::Contains(bool_string, "enabled") ||
+			(Strings::IsNumber(bool_string) && std::stoi(bool_string))
+			) {
+			return true;
+		}
 	}
-
 	return false;
 }
 

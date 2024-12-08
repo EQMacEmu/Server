@@ -58,7 +58,9 @@ public:
 	void SendZoneCountConsole(const char *to, int16 admin, WorldTCPConnection *connection, bool zonepop = false);
 	void SendZoneStatus(const char *to, int16 admin, WorldTCPConnection *connection);
 	void SOPZoneBootup(const char *adminname, uint32 ZoneServerID, const char *zonename, bool iMakeStatic = false);
+	void UpdateUCSServerAvailable(bool ucss_available = true);
 	void WorldShutDown(uint32 time, uint32 interval);
+	void DropClient(uint32 lsid, ZoneServer* ignore_zoneserver);
 
 	ZoneServer *FindByID(uint32 ZoneID);
 	ZoneServer *FindByName(const char *zonename);

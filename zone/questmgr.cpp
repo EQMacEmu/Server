@@ -447,7 +447,7 @@ void QuestManager::settimer(const char *timer_name, int seconds) {
 		++cur;
 	}
 
-	QTimerList.push_back(QuestTimer(seconds * 1000, owner, timer_name));
+	QTimerList.emplace_back(QuestTimer(seconds * 1000, owner, timer_name));
 }
 
 void QuestManager::settimerMS(const char *timer_name, int milliseconds) {
@@ -471,7 +471,7 @@ void QuestManager::settimerMS(const char *timer_name, int milliseconds) {
 		++cur;
 	}
 
-	QTimerList.push_back(QuestTimer(milliseconds, owner, timer_name));
+	QTimerList.emplace_back(QuestTimer(milliseconds, owner, timer_name));
 }
 
 void QuestManager::settimerMS(const char *timer_name, int milliseconds, EQ::ItemInstance *inst) {
@@ -494,7 +494,7 @@ void QuestManager::settimerMS(const char *timer_name, int milliseconds, Mob *mob
 		++cur;
 	}
 
-	QTimerList.push_back(QuestTimer(milliseconds, mob, timer_name));
+	QTimerList.emplace_back(QuestTimer(milliseconds, mob, timer_name));
 }
 
 void QuestManager::stoptimer(const char *timer_name) {
@@ -695,8 +695,8 @@ void QuestManager::resumetimer(const char *timer_name) {
 		++cur;
 	}
 
-	QTimerList.push_back(QuestTimer(duration, owner, timer_name, milliseconds));
-	Log(Logs::General, Logs::Quests, "Creating a new timer and resuming %s for %s with %d ms remaining.", timer_name, owner->GetName(), milliseconds);
+	QTimerList.emplace_back(QuestTimer(duration, owner, timer_name, milliseconds));
+	LogQuests("Creating a new timer and resuming [{}] for [{}] with [{}] ms remaining", timer_name, owner->GetName(), milliseconds);
 	
 }
 
@@ -1295,7 +1295,7 @@ void QuestManager::itemlink(int item_id) {
 void QuestManager::signalwith(int npc_id, int signal_id, int wait_ms, const char* data)
 {
 	if (npc_id < 1000 || npc_id / 1000 == zone->GetZoneID())
-		STimerList.push_back(SignalTimer(wait_ms < 0 ? 0 : wait_ms, npc_id, signal_id, data));
+		STimerList.emplace_back(SignalTimer(wait_ms < 0 ? 0 : wait_ms, npc_id, signal_id, data));
 	else
 		CrossZoneSignalNPCByNPCTypeID(npc_id, signal_id, data);
 }

@@ -51,6 +51,8 @@ public:
 	bool	SetGMInvul(uint32 account_id, bool gminvul);
 	bool	SetGMFlymode(uint32 account_id, uint8 flymode);
 	bool	SetGMIgnoreTells(uint32 account_id, uint8 ignoretells);
+	void	SetMailKey(int CharID, int IPAddress, int MailKey);
+	std::string	GetMailKey(int CharID, bool key_only = false);
 
 	/*
 	* Character InventoryProfile

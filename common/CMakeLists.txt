@@ -373,6 +373,8 @@ SET(common_headers
 	global_define.h
 	guild_base.h
 	guilds.h
+	http/httplib.h
+	http/uri.h
 	inventory_profile.h
 	ipc_mutex.h
 	ip_util.h
@@ -434,9 +436,9 @@ SET(common_headers
 	platform.h
 	json/json.h
 	json/json-forwards.h
-	event/background_task.h
 	event/event_loop.h
 	event/timer.h
+	event/task.h
 	net/console_server.h
 	net/console_server_connection.h
 	net/crc32.h
@@ -472,7 +474,6 @@ SET(common_headers
 )
 
 SOURCE_GROUP(Event FILES
-	event/background_task.h
 	event/event_loop.h
 	event/timer.h
 	event/task.h

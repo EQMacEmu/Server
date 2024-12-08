@@ -396,7 +396,7 @@ int main(int argc, char** argv) {
 				if (!websocker_server_opened && Config->ZonePort != 0) {
 					LogInfo("Websocket Server listener started on address [{}] port [{}]", Config->TelnetIP.c_str(), Config->ZonePort);
 					ws_server = std::make_unique<EQ::Net::WebsocketServer>(Config->TelnetIP, Config->ZonePort);
-					RegisterApiService(ws_server);
+					//RegisterApiService(ws_server);
 					websocker_server_opened = true;
 				}
 

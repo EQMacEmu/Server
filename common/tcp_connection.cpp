@@ -740,7 +740,7 @@ bool TCPConnection::ProcessReceivedData(char* errbuf) {
 					}
 					recvbuf_used--;
 					recvbuf_echo--;
-					memmove(recvbuf, &recvbuf[1], recvbuf_used);
+					memcpy(recvbuf, &recvbuf[1], recvbuf_used);
 					i = -1;
 				} else {
 					line = new char[i+1];
@@ -899,7 +899,7 @@ ThreadReturnType TCPConnection::TCPConnectionLoop(void* tmp) {
 	}
 	TCPConnection* tcpc = (TCPConnection*) tmp;
 #ifndef WIN32
-	Log(Logs::Detail, Logs::TCPConnection, "%s Starting TCPConnectionLoop with thread ID %d", __FUNCTION__, pthread_self());
+	Log(Logs::Detail, Logs::TCP_Connection, "%s Starting TCPConnectionLoop with thread ID %d", __FUNCTION__, pthread_self());
 #endif
 	tcpc->MLoopRunning.lock();
 	while (tcpc->RunLoop()) {
@@ -926,7 +926,7 @@ ThreadReturnType TCPConnection::TCPConnectionLoop(void* tmp) {
 	tcpc->MLoopRunning.unlock();
 
 #ifndef WIN32
-	Log(Logs::Detail, Logs::TCPConnection, "%s Ending TCPConnectionLoop with thread ID %d", __FUNCTION__, pthread_self());
+	Log(Logs::Detail, Logs::TCP_Connection, "%s Ending TCPConnectionLoop with thread ID %d", __FUNCTION__, pthread_self());
 #endif
 
 	THREAD_RETURN(nullptr);

@@ -52,7 +52,9 @@ public:
 			if (m_client) {
 				return m_client->Connected();
 			}
-		} 
+		}
+
+		return false;
 	}
 	bool CanUpdate() { return m_can_account_update; }
 

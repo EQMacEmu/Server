@@ -1010,10 +1010,10 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	*/
 	Client* client = entity_list.GetClientByName(cze->char_name);
 	if (!zone->GetAuth(ip, cze->char_name, &WID, &account_id, &character_id, &admin, lskey, &tellsoff, &versionbit, GetID())) {
-		if (client != 0 && client_state != CLIENT_AUTH_RECEIVED) {
-			Log(Logs::General, Logs::Error, "GetAuth() returned false kicking client");
+		LogClientLogin("[{}] failed zone auth check", cze->char_name);
+		if (nullptr != client && client_state != CLIENT_AUTH_RECEIVED) {
 			client->Save();
-			client->Kick();
+			client->Kick("Failed auth check");
 			return;
 		}
 		else {
@@ -3465,7 +3465,7 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 	if (!corpse->CastToCorpse()->Summon(this, false, true))
 		return;
 
-	DraggedCorpses.push_back(std::pair<std::string, uint16>(cds->CorpseName, corpse->GetID()));
+	DraggedCorpses.emplace_back(std::pair<std::string, uint16>(cds->CorpseName, corpse->GetID()));
 
 	Message_StringID(Chat::DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
 }

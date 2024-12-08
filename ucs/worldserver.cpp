@@ -36,7 +36,8 @@
 extern WorldServer worldserver;
 extern Clientlist *g_Clientlist;
 extern const ucsconfig *Config;
-extern Database database;
+extern UCSDatabase database;
+
 
 WorldServer::WorldServer()
 {

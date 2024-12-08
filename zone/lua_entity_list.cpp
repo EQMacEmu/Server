@@ -318,7 +318,7 @@ Lua_Mob_List Lua_EntityList::GetMobList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_Mob(iter->second));
+		ret.entries.emplace_back(Lua_Mob(iter->second));
 		++iter;
 	}
 
@@ -332,7 +332,7 @@ Lua_Client_List Lua_EntityList::GetClientList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_Client(iter->second));
+		ret.entries.emplace_back(Lua_Client(iter->second));
 		++iter;
 	}
 
@@ -346,7 +346,7 @@ Lua_NPC_List Lua_EntityList::GetNPCList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_NPC(iter->second));
+		ret.entries.emplace_back(Lua_NPC(iter->second));
 		++iter;
 	}
 
@@ -360,7 +360,7 @@ Lua_Corpse_List Lua_EntityList::GetCorpseList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_Corpse(iter->second));
+		ret.entries.emplace_back(Lua_Corpse(iter->second));
 		++iter;
 	}
 
@@ -375,7 +375,7 @@ Lua_Object_List Lua_EntityList::GetObjectList() {
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
 		if (!iter->second->RespawnTimerEnabled())
-			ret.entries.push_back(Lua_Object(iter->second));
+			ret.entries.emplace_back(Lua_Object(iter->second));
 		++iter;
 	}
 
@@ -389,7 +389,7 @@ Lua_Doors_List Lua_EntityList::GetDoorsList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_Door(iter->second));
+		ret.entries.emplace_back(Lua_Door(iter->second));
 		++iter;
 	}
 
@@ -404,7 +404,7 @@ Lua_Spawn_List Lua_EntityList::GetSpawnList() {
 
 	auto iter = t_list.begin();
 	while(iter != t_list.end()) {
-		ret.entries.push_back(Lua_Spawn(*iter));
+		ret.entries.emplace_back(Lua_Spawn(*iter));
 		++iter;
 	}
 

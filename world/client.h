@@ -41,7 +41,7 @@ public:
 	bool	Process();
 	void	SendCharInfo();
 	void	EnterWorld(bool TryBootup = true);
-	void	ZoneUnavail();
+	void	TellClientZoneUnavailable();
 	void	QueuePacket(const EQApplicationPacket* app, bool ack_req = true);
 	void	Clearance(int8 response);
 	void	SendGuildList();
@@ -53,7 +53,7 @@ public:
 	inline uint32		GetIP()				{ return ip; }
 	inline uint16		GetPort()			{ return port; }
 	inline uint32		GetZoneID()			{ return zone_id; }
-	inline uint32		WaitingForBootup()	{ return pwaitingforbootup; }
+	inline uint32		WaitingForBootup()	{ return zone_waiting_for_bootup; }
 	inline const char *	GetAccountName()	{ if (cle) { return cle->AccountName(); } return "NOCLE"; }
 	inline int16		GetAdmin()			{ if (cle) { return cle->Admin(); } return 0; }
 	inline uint32		GetAccountID()		{ if (cle) { return cle->AccountID(); } return 0; }
@@ -77,7 +77,8 @@ private:
 	uint32	zone_id;
 	bool	is_player_zoning;
 	Timer	autobootup_timeout;
-	uint32	pwaitingforbootup;
+	uint32	zone_waiting_for_bootup;
+	bool	enter_world_triggered;
 
 	EQ::versions::ClientVersion m_ClientVersion;
 	uint32 m_ClientVersionBit;
@@ -91,7 +92,6 @@ private:
 	void SetClassLanguages(PlayerProfile_Struct *pp);
 
 	ClientListEntry* cle;
-	Timer	CLE_keepalive_timer;
 	Timer	connect;
 	bool firstlogin;
 	bool seen_character_select;

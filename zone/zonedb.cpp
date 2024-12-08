@@ -1037,8 +1037,12 @@ bool ZoneDatabase::SaveCharacterSkill(uint32 character_id, uint32 skill_id, uint
 	return true;
 }
 
-bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp, ExtendedProfile_Struct* m_epp){
+bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, PlayerProfile_Struct* pp, ExtendedProfile_Struct* m_epp)
+{
+	std::string mail_key = database.GetMailKey(character_id);
+
 	clock_t t = std::clock(); /* Function timer start */
+	
 	std::string query = StringFormat(
 		"REPLACE INTO `character_data` ("
 		" id,                        "
@@ -1097,7 +1101,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		" fatigue,					 "
 		" e_aa_effects,				 "
 		" e_percent_to_aa,			 "
-		" e_expended_aa_spent		 "
+		" e_expended_aa_spent,		 "
+		" mailkey					 "
 		")							 "
 		"VALUES ("
 		"%u,"  // id																" id,                        "
@@ -1156,7 +1161,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		"%i,"	//fatigue					  pp->fatigue							" fatigue					 "
 		"%u,"  // e_aa_effects
 		"%u,"  // e_percent_to_aa
-		"%u"   // e_expended_aa_spent
+		"%u,"	  // e_expended_aa_spent
+		"'%s'" // mailkey					  mail_key
 		")",
 		character_id,					  // " id,                        "
 		account_id,						  // " account_id,                "
@@ -1214,7 +1220,8 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		pp->fatigue,					  // " fatigue					  "
 		m_epp->aa_effects,
 		m_epp->perAA,
-		m_epp->expended_aa
+		m_epp->expended_aa,
+		mail_key.c_str()
 	);
 	auto results = database.QueryDatabase(query);
 	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);

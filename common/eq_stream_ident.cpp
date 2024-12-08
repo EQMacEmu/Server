@@ -295,7 +295,7 @@ void EQStreamIdentifier::AddStream(std::shared_ptr<EQStream> eqs) {
 }
 
 void EQStreamIdentifier::AddOldStream(std::shared_ptr<EQOldStream> eqs) {
-	m_oldstreams.push_back(new OldRecord(eqs));
+	m_oldstreams.emplace_back(new OldRecord(eqs));
 	eqs = nullptr;
 }
 

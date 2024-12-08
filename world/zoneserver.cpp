@@ -42,6 +42,7 @@ extern ClientList client_list;
 extern ZSList zoneserver_list;
 extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
+extern volatile bool UCSServerAvailable_;
 extern UCSConnection UCSLink;
 extern QueryServConnection QSLink;
 void CatchSignal(int sig_num);
@@ -298,7 +299,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 					client_list.GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it) {
 						ClientListEntry *cle = *it;
-						if (cle && cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
+						if (cle && cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
 							// this client is zoning, it may be a member of the group this message was intended for
 							if (!groupLoaded) {
 								// only try to load group member names once
@@ -456,7 +457,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 					client_list.GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it) {
 						ClientListEntry *cle = *it;
-						if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
+						if (cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
 							uint32 raidid, groupid;
 							if (database.GetRaidGroupID(cle->name(), &raidid, &groupid)) {
 								if (raidid == srm->rid && (pack->opcode == ServerOP_RaidSay || groupid == srm->gid)) {
@@ -597,7 +598,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 
 					auto cle = client_list.FindCharacter(scm->deliverto);
 
-					if (cle == 0 || cle->Online() < CLE_Status_Zoning ||
+					if (cle == 0 || cle->Online() < CLE_Status::Zoning ||
 							(cle->TellsOff() && (scm->fromadmin < cle->Admin() || scm->fromadmin < 80))) {
 						// client not found or has tells off
 						if (scm->chan_num == ChatChannel_Tell) {
@@ -610,7 +611,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 							// ideally this would be trimming off the message too, oh well
 							sender->Server()->SendPacket(pack);
 						}
-					} else if (cle->Online() == CLE_Status_Zoning) {
+					} else if (cle->Online() == CLE_Status::Zoning) {
 						if (scm->chan_num == ChatChannel_Tell) {
 							ClientListEntry* sender = client_list.FindCharacter(scm->from);
 							if (cle->TellQueueFull()) {
@@ -658,7 +659,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 						client_list.GetClients("", vec);
 						for (auto it = vec.begin(); it != vec.end(); ++it) {
 							ClientListEntry *cle = *it;
-							if (cle->Online() == CLE_Status_Zoning && !cle->TellQueueFull()) {
+							if (cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
 								// is this client one of the targets of this message?
 								if
 								( 
@@ -1001,7 +1002,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 				auto skp = (ServerKickPlayer_Struct*)pack->pBuffer;
 				ClientListEntry* cle = client_list.FindCLEByAccountID(skp->AccountID);
 				if (cle) {
-					cle->SetOnline(CLE_Status_Offline);
+					cle->SetOnline(CLE_Status::Offline);
 				}
 
 				zoneserver_list.SendPacket(pack);
@@ -1229,8 +1230,9 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 							scs->corpse_id = s->corpse_id;
 							zs = zoneserver_list.FindByZoneID(cle_reply->zone());
 							if (zs) {
+								zs->SendPacket(reply);
 								// Sends packet to owner so they get the success message. If this fails, consent will still occur the owner just won't get a message.
-								Log(Logs::Detail, Logs::WorldServer, "Sent consent packet from player %s to player %s in zone %u.", s->ownername, s->grantname, cle->zone());
+								LogInfo("Sent consent packet from player {} to player {} in zone {}.", s->ownername, s->grantname, cle->zone());
 							}
 							safe_delete(reply);
 						}
@@ -1249,7 +1251,8 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 					scs->corpse_id = s->corpse_id;
 					zs = zoneserver_list.FindByZoneID(s->zone_id);
 					if (zs) {
-						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to send consent response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
+						zs->SendPacket(reply);
+						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: send consent offline response back to player %s in zone %s.", s->ownername, zs->GetZoneName());
 					}
 					else {
 						Log(Logs::Detail, Logs::WorldServer, "ServerOP_Consent: Unable to locate zone record for zone id %u in zoneserver list for ServerOP_Consent_Response operation.", s->zone_id);
@@ -1346,6 +1349,22 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 				loginserverlist.SendAccountUpdate(pack);
 				break;
 			}
+
+			case ServerOP_UCSServerStatusRequest:
+			{
+				auto ucsss = (UCSServerStatus_Struct*)pack->pBuffer;
+				auto zs = zoneserver_list.FindByPort(ucsss->port);
+				if (!zs)
+					break;
+				auto outapp = new ServerPacket(ServerOP_UCSServerStatusReply, sizeof(UCSServerStatus_Struct));
+				ucsss = (UCSServerStatus_Struct*)outapp->pBuffer;
+				ucsss->available = (UCSServerAvailable_ ? 1 : 0);
+				ucsss->timestamp = Timer::GetCurrentTime();
+				zs->SendPacket(outapp);
+				safe_delete(outapp);
+				break;
+			}
+
 			case ServerOP_QSPlayerAARateHourly:
 			case ServerOP_QSPlayerAAPurchase:
 			case ServerOP_QSPlayerTSEvents:
