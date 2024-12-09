@@ -157,9 +157,9 @@ int main() {
 
 	worldserver = new WorldServer;
 
-		// uncomment to simulate timed crash for catching SIGSEV
-//	std::thread crash_test(crash_func);
-//	crash_test.detach();
+	// uncomment to simulate timed crash for catching SIGSEV
+	//	std::thread crash_test(crash_func);
+	//	crash_test.detach();
 
 	auto loop_fn = [&](EQ::Timer* t) {
 		if (keepalive.Check()) {

@@ -451,8 +451,13 @@ RULE_BOOL(Expansion, UseItemExpansionSetting, true, "Disabled focus effect, skil
 RULE_BOOL(Expansion, UseExperienceExpansionSetting, true, "Set ZEM for appropiate expansion setting")
 RULE_CATEGORY_END()
 
+RULE_CATEGORY(Analytics)
+RULE_BOOL(Analytics, CrashReporting, true, "Automatic crash reporting analytics for EQEmu Server developers")
+RULE_CATEGORY_END()
+
 RULE_CATEGORY(Logging)
-RULE_BOOL(Logging, PrintFileFunctionAndLine, true, "Ex: [World Server] [net.cpp::main:309] Loading variables...")
+RULE_BOOL(Logging, PrintFileFunctionAndLine, false, "Ex: [World Server] [net.cpp::main:309] Loading variables...")
+RULE_BOOL(Logging, WorldGMSayLogging, true, "Relay worldserver logging to zone processes via GM say output")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(HotReload)

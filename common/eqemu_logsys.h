@@ -275,6 +275,13 @@ public:
 		uint8 is_category_enabled; /* When any log output in a category > 0, set this to 1 as (Enabled) */
 	};
 
+	struct OriginationInfo {
+		std::string zone_short_name;
+		std::string zone_long_name;
+	};
+
+	OriginationInfo origination_info{};
+
 	/**
 	 * Internally used memory reference for all log settings per category
 	 * These are loaded via DB and have defaults loaded in LoadLogSettingsDefaults

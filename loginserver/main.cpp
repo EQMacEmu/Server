@@ -32,13 +32,15 @@
 #include <stdlib.h>
 #include <string>
 #include <sstream>
+#include <thread>
 
 TimeoutManager timeout_manager;
 LoginServer server;
 EQEmuLogSys LogSys;
 EQCrypto eq_crypto;
-bool run_server = true;
 PathManager path;
+
+bool run_server = true;
 
 void CatchSignal(int sig_num)
 {

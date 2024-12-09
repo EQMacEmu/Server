@@ -244,7 +244,7 @@ Client::Client(std::shared_ptr<EQStreamInterface> eqs) {
 	AttemptedMessages = 0;
 	ForceDisconnect = false;
 
-	AccountGrabUpdateTimer = new Timer(1200000); //check every minute
+	AccountGrabUpdateTimer = new Timer(600000); //check every minute
 	GlobalChatLimiterTimer = new Timer(RuleI(Chat, IntervalDurationMS));
 
 	TypeOfConnection = ConnectionTypeUnknown;

@@ -371,6 +371,20 @@ void EQEmuLogSys::ProcessConsoleMessage(
 			<< " ";
 	}
 
+	if (!origination_info.zone_short_name.empty()) {
+		(!is_error ? std::cout : std::cerr)
+			<<
+			rang::fgB::black
+			<<
+			"-- "
+			<<
+			fmt::format(
+				"[{}] ({})",
+				origination_info.zone_short_name,
+				origination_info.zone_long_name
+			);
+	}
+
 	(!is_error ? std::cout : std::cerr) << rang::style::reset << std::endl;
 
 	m_on_log_console_hook(log_category, message);

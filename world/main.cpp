@@ -75,6 +75,7 @@
 #include "queryserv.h"
 #include "web_interface.h"
 #include "console.h"
+#include "world_boot.h"
 
 #include "world_server_cli.h"
 #include "../common/content/world_content_service.h"
@@ -108,74 +109,11 @@ PathManager         path;
 
 void CatchSignal(int sig_num);
 
-void LoadDatabaseConnections()
+inline void UpdateWindowTitle(std::string new_title)
 {
-	LogInfo(
-			"Connecting to MySQL {0}@{1}:{2}...", 
-			Config->DatabaseUsername.c_str(), 
-			Config->DatabaseHost.c_str(), 
-			Config->DatabasePort
-	);
-	if (!database.Connect(
-			Config->DatabaseHost.c_str(),
-			Config->DatabaseUsername.c_str(),
-			Config->DatabasePassword.c_str(),
-			Config->DatabaseDB.c_str(),
-			Config->DatabasePort
-	)) {
-		LogError("Cannot continue without a database connection.");
-
-		std::exit(1);
-	}
-}
-
-void LoadServerConfig()
-{
-	// Load server configuration
-	LogInfo("Loading server configuration..");
-	if (!WorldConfig::LoadConfig()) {
-		LogError("Loading server configuration failed.");
-		std::exit(1);
-	}
-}
-
-void RegisterLoginservers()
-{
-	// add login server config to list
-	if (Config->LoginCount == 0) {
-		if (Config->LoginHost.length()) {
-			loginserverlist.Add(
-				Config->LoginHost.c_str(), 
-				Config->LoginPort, 
-				Config->LoginAccount.c_str(), 
-				Config->LoginPassword.c_str(), 
-				Config->LoginType
-			);
-			LogInfo("Added loginserver [{0}]:[{1}]", Config->LoginHost.c_str(), Config->LoginPort);
-		}
-	}
-	else {
-		LinkedList<LoginConfig*> loginlist = Config->loginlist;
-		LinkedListIterator<LoginConfig*> iterator(loginlist);
-		iterator.Reset();
-		while (iterator.MoreElements()) {
-			if (iterator.GetData()->LoginHost.length()) {
-				loginserverlist.Add(
-					iterator.GetData()->LoginHost.c_str(),
-					iterator.GetData()->LoginPort,
-					iterator.GetData()->LoginAccount.c_str(),
-					iterator.GetData()->LoginPassword.c_str(),
-					iterator.GetData()->LoginType
-				);
-				LogInfo(
-					"Added loginserver [{0}]:[{1}]",
-					iterator.GetData()->LoginHost.c_str(),
-					iterator.GetData()->LoginPort
-				);
-			}
-			iterator.Advance();
-		}
-	}
+#ifdef _WINDOWS
+	SetConsoleTitle(new_title.c_str());
+#endif
 }
 
 /**
@@ -185,24 +123,20 @@ void RegisterLoginservers()
  * @param argv
  * @return
  */
-
 int main(int argc, char** argv) {
 	RegisterExecutablePlatform(ExePlatformWorld);
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	if (argc > 1) {
-		LogSys.SilenceConsoleLogging();
-		path.LoadPaths();
-		WorldConfig::LoadConfig();
-		RuleManager::Instance()->LoadRules(&database, "default", false);
-		LogSys.EnableConsoleLogging();
-		WorldserverCLI::CommandHandler(argc, argv);
+	if (WorldBoot::HandleCommandInput(argc, argv)) {
+		return 0;
 	}
 
 	path.LoadPaths();
 
-	LoadServerConfig();
+	if (!WorldBoot::LoadServerConfig()) {
+		return 0;
+	}
 
 	Config=WorldConfig::get();
 
@@ -223,113 +157,11 @@ int main(int argc, char** argv) {
 	}
 	#endif
 
-	RegisterLoginservers();
-	LoadDatabaseConnections();
-
-	auto logging = LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
-		->LoadLogDatabaseSettings();
-
-	logging->StartFileLogs();
-
-	LogInfo("Loading variables..");
-	database.LoadVariables();
-
-	std::string hotfix_name;
-	if(database.GetVariable("hotfix_name", hotfix_name)) {
-		if (!hotfix_name.empty()) {
-			LogInfo("Current hotfix in use: [{0}]", hotfix_name.c_str());
-		}
-	}
-
-	guild_mgr.SetDatabase(&database);
-
-	LogInfo("Purging expiring data buckets...");
-	database.PurgeAllDeletedDataBuckets();
-
-	LogInfo("Loading zones..");
-	zone_store.LoadZones(database);
-
-	if (zone_store.GetZones().empty()) {
-		LogError("Failed to load zones data, check your schema for possible errors");
+	WorldBoot::RegisterLoginservers();
+	WorldBoot::LoadDatabaseConnections();
+	if (!WorldBoot::DatabaseLoadRoutines(argc, argv)) {
 		return 1;
 	}
-
-	LogInfo("Clearing groups..");
-	database.ClearGroup();
-	LogInfo("Clearing raids..");
-	database.ClearRaid();
-	database.ClearRaidDetails();
-	LogInfo("Loading items..");
-	if (!database.LoadItems(hotfix_name)) {
-		LogError("Error: Could not load item data. But ignoring");
-	}
-
-	LogInfo("Loading guilds..");
-	guild_mgr.LoadGuilds();
-
-	//rules:
-	{
-		if (!RuleManager::Instance()->UpdateOrphanedRules(&database)) {
-			LogInfo("Failed to process 'Orphaned Rules' update operation.");
-		}
-
-		if (!RuleManager::Instance()->UpdateInjectedRules(&database, "default")) {
-			LogInfo("Failed to process 'Injected Rules' for ruleset 'default' update operation.");
-		}
-
-		std::string tmp;
-		if (database.GetVariable("RuleSet", tmp)) {
-			LogInfo("Loading rule set [{0}]", tmp.c_str());
-			if(!RuleManager::Instance()->LoadRules(&database, tmp.c_str())) {
-				LogInfo("Failed to load ruleset [{0}], falling back to defaults.", tmp.c_str());
-			}
-		} else {
-			if(!RuleManager::Instance()->LoadRules(&database, "default")) {
-				LogInfo("No rule set configured, using default rules");
-			} else {
-				LogInfo("Loaded default rule set 'default'", tmp.c_str());
-			}
-		}
-
-		if (!RuleManager::Instance()->RestoreRuleNotes(&database)) {
-			LogInfo("Failed to process 'Restore Rule Notes' update operation.");
-		}
-	}
-
-	if(RuleB(World, ClearTempMerchantlist)){
-		LogInfo("Clearing temporary merchant lists...");
-		database.ClearMerchantTemp();
-	}
-
-	if(RuleB(World, AdjustRespawnTimes)){
-		LogInfo("Clearing and adjusting boot time spawn timers...");
-		database.AdjustSpawnTimes();
-	}
-
-	LogInfo("Loading EQ time of day..");
-	TimeOfDay_Struct eqTime;
-	time_t realtime;
-	eqTime = database.LoadTime(realtime);
-	zoneserver_list.worldclock.SetCurrentEQTimeOfDay(eqTime,realtime);
-
-	LogInfo("Clearing Saylinks..");
-	database.ClearSayLink();
-
-	LogInfo("Deleted [{0}] stale player corpses from database", database.DeleteStalePlayerCorpses());
-
-	LogInfo("Clearing active accounts...");
-	database.ClearAllActive();
-
-	LogInfo("Clearing consented characters...");
-	database.ClearAllConsented();
-
-	LogInfo("Loading char create info...");
-	database.LoadCharacterCreateAllocations();
-	database.LoadCharacterCreateCombos();
-
-	LogInfo("Initializing [EventScheduler]");
-	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
 
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
@@ -346,18 +178,14 @@ int main(int argc, char** argv) {
 		RegisterConsoleFunctions(console);
 	}
 
-	content_service.SetDatabase(&database)
-		->SetExpansionContext()
-		->ReloadContentFlags();
-
 	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
 
 	std::unique_ptr<EQ::Net::ServertalkServer> server_connection;
 	server_connection = std::make_unique<EQ::Net::ServertalkServer>();
 
 	EQ::Net::ServertalkServerOptions server_opts;
-	server_opts.port = Config->WorldTCPPort;
-	server_opts.ipv6 = false;
+	server_opts.port        = Config->WorldTCPPort;
+	server_opts.ipv6        = false;
 	server_opts.credentials = Config->SharedKey;
 	server_connection->Listen(server_opts);
 	LogInfo("Server (TCP) listener started on port [{}]", Config->WorldTCPPort);
@@ -492,7 +320,7 @@ int main(int argc, char** argv) {
 		}
 	);
 
-	WorldConfig::CheckForPossibleConfigurationIssues();
+	WorldBoot::CheckForPossibleConfigurationIssues();
 
 	if (eqsf.Open()) {
 		LogInfo("Client (UDP) listener started.");
@@ -574,10 +402,14 @@ int main(int argc, char** argv) {
 				}
 			}
 			if (!RuleB(World, UseBannedIPsTable)){
-					LogInfo("New connection from [{0}]:[{1}], processing connection", inet_ntoa(in), ntohs(eqsi->GetRemotePort()));
-					auto client = new Client(eqsi);
-					// @merth: client->zoneattempt=0;
-					client_list.Add(client);
+				LogInfo(
+					"New connection from [{}]:[{}], processing connection",
+					inet_ntoa(in),
+					ntohs(eqsi->GetRemotePort())
+				);
+				auto client = new Client(eqsi);
+				// @merth: client->zoneattempt=0;
+				client_list.Add(client);
 			}
 		}
 
@@ -607,12 +439,17 @@ int main(int argc, char** argv) {
 		zoneserver_list.Process();
 		launcher_list.Process();
 
-		//WILink.Process();
-
 		if (InterserverTimer.Check()) {
 			InterserverTimer.Start();
 			database.ping();
-			// AsyncLoadVariables(dbasync, &database);
+
+			std::string window_title = fmt::format(
+				"World [{}] Clients [{}]",
+				Config->LongName,
+				client_list.GetClientCount()
+			);
+			UpdateWindowTitle(window_title);
+
 			ReconnectCounter++;
 			if (ReconnectCounter >= 12) { // only create thread to reconnect every 10 minutes. previously we were creating a new thread every 10 seconds
 				ReconnectCounter = 0;
@@ -640,17 +477,3 @@ void CatchSignal(int sig_num) {
 	Log(Logs::General, Logs::WorldServer,"Caught signal %d",sig_num);
 	RunLoops = false;
 }
-
-void UpdateWindowTitle(char* iNewTitle) {
-#ifdef _WINDOWS
-	char tmp[500];
-	if (iNewTitle) {
-		snprintf(tmp, sizeof(tmp), "World: %s", iNewTitle);
-	}
-	else {
-		snprintf(tmp, sizeof(tmp), "World");
-	}
-	SetConsoleTitle(tmp);
-#endif
-}
-

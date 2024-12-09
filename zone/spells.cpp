@@ -3141,7 +3141,16 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	}
 
 	// Apply the spell effects and bonuses.
-	if (!spelltar->SpellEffect(this, spell_id, buffslot, clevel, spell_effectiveness))
+	if (spell_id == SPELL_MISTWALKER) // this is coded as a normal self only pet spell, but we're making it into a temporary swarm pet that attacks the caster's target here
+	{
+		if (GetTarget() && (GetTarget()->IsNPC() || GetTarget()->IsClient()))
+		{
+			char pet_name[64];
+			snprintf(pet_name, sizeof(pet_name), "%s`s_pet", GetCleanName());
+			TemporaryPets(spell_id, GetTarget(), pet_name, 2);
+		}
+	}
+	else if (!spelltar->SpellEffect(this, spell_id, buffslot, clevel, spell_effectiveness))
 	{
 		// if SpellEffect() returned false there's a problem applying the effects (invalid spell.)
 		Log(Logs::General, Logs::Spells, "Spell %d could not apply its effects %s -> %s\n", spell_id, GetName(), spelltar->GetName());

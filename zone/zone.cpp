@@ -1060,6 +1060,10 @@ bool Zone::Init(bool is_static) {
 
 	update_range *= update_range;
 
+	// logging origination information
+	LogSys.origination_info.zone_short_name = zone->short_name;
+	LogSys.origination_info.zone_long_name = zone->long_name;
+
 	return true;
 }
 

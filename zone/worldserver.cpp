@@ -1767,6 +1767,13 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 
 			break;
 		}
+		case ServerOP_UCSServerStatusReply:
+		{
+			auto ucsss = (UCSServerStatus_Struct*)pack->pBuffer;
+			zone->SetUCSServerAvailable((ucsss->available != 0), ucsss->timestamp);
+
+			break;
+		}
 		case ServerOP_CZSetEntityVariableByNPCTypeID: {
 			CZSetEntVarByNPCTypeID_Struct* CZM = (CZSetEntVarByNPCTypeID_Struct*)pack->pBuffer;
 			NPC* n = entity_list.GetNPCByNPCTypeID(CZM->npctype_id);

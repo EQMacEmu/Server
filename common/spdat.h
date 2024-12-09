@@ -35,6 +35,7 @@
 #define SPELL_CINDAS_CHARISMATIC_CARILLON 708
 #define SPELL_CASSINDRAS_CHORUS_OF_CLARITY 723
 #define SPELL_RESURRECTION_EFFECTS 756
+#define SPELL_MISTWALKER 759
 #define SPELL_DRAGON_CHARM 841
 #define SPELL_NPC_HARM_TOUCH 929		// this is only used by a single NPC that I can see from logs (Nortlav)
 #define SPELL_MANA_CONVERT 940		// This is the spell used for Manastone (should be restricted to Classi)

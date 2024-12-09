@@ -22,6 +22,7 @@ SET(world_sources
 	world_console_connection.cpp
 	world_server_cli.cpp
 	worlddb.cpp
+	world_boot.cpp
 	zonelist.cpp
 	zoneserver.cpp
 )
@@ -49,6 +50,7 @@ SET(world_headers
 	world_tcp_connection.h
 	world_server_cli.h
 	worlddb.h
+	world_boot.h
 	world_event_scheduler.h
 	zonelist.h
 	zoneserver.h
