@@ -44,7 +44,6 @@ public:
 	bool	CheckAuth(uint32 loginserver_account_id, const char* key_password);
 	bool	CheckAuth(const char* iName, const MD5& iMD5Password);
 	bool	CheckAuth(uint32 id, const char* key, uint32 ip);
-	void	SetOnline(ZoneServer* iZS, CLE_Status iOnline);
 	void	SetOnline(CLE_Status iOnline = CLE_Status::Online);
 	void	SetChar(uint32 iCharID, const char* iCharName);
 	inline CLE_Status Online()		{ return pOnline; }

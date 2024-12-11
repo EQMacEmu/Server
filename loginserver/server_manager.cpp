@@ -36,39 +36,61 @@ ServerManager::ServerManager()
 	opts.port = listen_port;
 	opts.ipv6 = false;
 	m_server_connection->Listen(opts);
-	m_server_connection->OnConnectionIdentified("World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> c) {
-		LogInfo("New world server connection from {0}:{1}", c->Handle()->RemoteIP(), c->Handle()->RemotePort());
 
-		WorldServer* server_entity = GetServerByAddress(c->Handle()->RemoteIP(), c->Handle()->RemotePort());
-		if (server_entity) {
+	LogInfo("Loginserver now listening on port [{0}]", listen_port);
 
-			LogInfo("World server already existed for {0}:{1}, removing existing connection and updating current.",
-				c->Handle()->RemoteIP(), c->Handle()->RemotePort());
-			server_entity->SetConnection(c);
-			server_entity->Reset();
+	m_server_connection->OnConnectionIdentified(
+		"World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> world_connection) {
+			LogInfo(
+				"New World Server connection from {0}:{1}",
+				world_connection->Handle()->RemoteIP(),
+				world_connection->Handle()->RemotePort()
+			);
+				
+			auto iter = m_world_servers.begin();
+			while (iter != m_world_servers.end()) {
+				if ((*iter)->GetConnection()->Handle()->RemoteIP().compare(world_connection->Handle()->RemoteIP()) ==
+					0 &&
+					(*iter)->GetConnection()->Handle()->RemotePort() == world_connection->Handle()->RemotePort()) {
+
+					LogInfo(
+						"World server already existed for {0}:{1}, removing existing connection.",
+						world_connection->Handle()->RemoteIP(),
+						world_connection->Handle()->RemotePort()
+					);
+
+					m_world_servers.erase(iter);
+					break;
+				}
+
+				++iter;
+			}
+
+			m_world_servers.push_back(std::make_unique<WorldServer>(world_connection));
 		}
-		else {
-			m_world_servers.push_back(std::unique_ptr<WorldServer>(new WorldServer(c)));
-		}
+	);
 
-	});
+	m_server_connection->OnConnectionRemoved(
+		"World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> c) {
+			auto iter = m_world_servers.begin();
+			while (iter != m_world_servers.end()) {
+				if ((*iter)->GetConnection()->GetUUID() == c->GetUUID()) {
+					LogInfo(
+						"World server {0} has been disconnected, removing.",
+						(*iter)->GetServerLongName()
+					);
+					m_world_servers.erase(iter);
+					return;
+				}
 
-	m_server_connection->OnConnectionRemoved("World", [this](std::shared_ptr<EQ::Net::ServertalkServerConnection> c) {
-		auto iter = m_world_servers.begin();
-		while (iter != m_world_servers.end()) {
-			if ((*iter)->GetConnection()->Handle() == c->Handle()) {
-				LogInfo("World server {0} has been disconnected, removing.", (*iter)->GetServerLongName().c_str());
-				m_world_servers.erase(iter);
-				return;
+				++iter;
 			}
 		}
-	});
+	);
 }
 
-ServerManager::~ServerManager()
-{
+ServerManager::~ServerManager() = default;
 
-}
 
 WorldServer* ServerManager::GetServerByAddress(const std::string& addr, int port)
 {
@@ -163,11 +185,11 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 
 		ServerListServerFlags_Struct* slsf = (ServerListServerFlags_Struct*)data_ptr;
 		slsf->greenname = 0;
-		if (server.db->GetWorldPreferredStatus((*iter)->GetRuntimeID())) {
+		if (server.db->GetWorldPreferredStatus((*iter)->GetServerId())) {
 			slsf->greenname = 1;
 		}
 		slsf->flags = 0x1;
-		slsf->worldid = (*iter)->GetRuntimeID();
+		slsf->worldid = (*iter)->GetServerId();
 		slsf->usercount = (*iter)->GetStatus();
 		data_ptr += sizeof(ServerListServerFlags_Struct);
 		++iter;
@@ -188,7 +210,7 @@ void ServerManager::SendOldUserToWorldRequest(const char* server_id, unsigned in
 			UsertoWorldRequest_Struct* r = (UsertoWorldRequest_Struct*)outapp.Data();
 
 			//utwr->worldid = (*iter)->GetServerListID(); //This pulls preffered status instead of actual ID? That does not seem right.
-			r->worldid = (*iter)->GetRuntimeID();
+			r->worldid = (*iter)->GetServerId();
 
 			r->lsaccountid = client_account_id;
 			r->ip = ip;

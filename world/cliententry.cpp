@@ -112,13 +112,6 @@ void ClientListEntry::SetChar(uint32 iCharID, const char* iCharName)
 	strn0cpy(pname, iCharName, sizeof(pname));
 }
 
-void ClientListEntry::SetOnline(ZoneServer* iZS, CLE_Status iOnline) 
-{
-	if (iZS == this->Server()) {
-		SetOnline(iOnline);
-	}
-}
-
 void ClientListEntry::SetOnline(CLE_Status iOnline) 
 {
 	LogClientLogin(
@@ -135,19 +128,17 @@ void ClientListEntry::SetOnline(CLE_Status iOnline)
 	else if (iOnline < CLE_Status::Online && pOnline >= CLE_Status::Online) {
 		numplayers--;
 	}
-
-	if (pOnline >= CLE_Status::Zoning && iOnline < CLE_Status::Zoning) {
+		if (iOnline != CLE_Status::Online || pOnline < CLE_Status::Online) {
 		pOnline = iOnline;
+	}
+	if (iOnline < CLE_Status::Zoning) {
 		Camp();
 	}
-
-	if (iOnline != CLE_Status::Online || pOnline < CLE_Status::Online) {
-		pOnline = iOnline;
-	}
-
-	if (pOnline >= CLE_Status::Online)
+	if (pOnline >= CLE_Status::Online) {
 		stale = 0;
+	}
 }
+
 void ClientListEntry::LSUpdate(ZoneServer* iZS)
 {
 	if(WorldConfig::get()->UpdateStats){

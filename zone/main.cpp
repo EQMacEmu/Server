@@ -390,15 +390,15 @@ int main(int argc, char** argv) {
 			frame_time = std::chrono::duration<double>(frame_now - frame_prev).count();
 			frame_prev = frame_now;
 
-				/**
-				* Websocket server
-				*/
-				if (!websocker_server_opened && Config->ZonePort != 0) {
-					LogInfo("Websocket Server listener started on address [{}] port [{}]", Config->TelnetIP.c_str(), Config->ZonePort);
-					ws_server = std::make_unique<EQ::Net::WebsocketServer>(Config->TelnetIP, Config->ZonePort);
-					//RegisterApiService(ws_server);
-					websocker_server_opened = true;
-				}
+			/**
+			* Websocket server
+			*/
+			if (!websocker_server_opened && Config->ZonePort != 0) {
+				LogInfo("Websocket Server listener started on address [{}] port [{}]", Config->TelnetIP.c_str(), Config->ZonePort);
+				ws_server = std::make_unique<EQ::Net::WebsocketServer>(Config->TelnetIP, Config->ZonePort);
+				RegisterApiService(ws_server);
+				websocker_server_opened = true;
+			}
 
 			if (!eqsf.IsOpen() && Config->ZonePort != 0) {
 				LogInfo("Starting EQ Network server on port {} ", Config->ZonePort);

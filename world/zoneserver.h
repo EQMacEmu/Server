@@ -41,7 +41,7 @@ public:
 	void		SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message, ...);
 	void		SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 to_minstatus, uint32 type, const char* message);
 	void		SendKeepAlive();
-	bool		SetZone(uint32 iZoneID, bool iStaticZone = false);
+	bool		SetZone(uint32 in_zone_id, bool in_is_static_zone = false);
 	void		TriggerBootup(uint32 iZoneID = 0, const char* iAdminName = 0, bool iMakeStatic = false);
 	void		Disconnect() { auto handle = tcpc->Handle(); if (handle) { handle->Disconnect(); } }
 	void		IncomingClient(Client* client);
@@ -58,6 +58,7 @@ public:
 	const char*			GetCompileTime() const{ return compiled; }
 	void				SetCompile(char* in_compile){ strcpy(compiled,in_compile); }
 	inline uint32		GetZoneID() const	{ return zone_server_zone_id; }
+	inline bool         IsConnected() const { return tcpc->Handle() ? tcpc->Handle()->IsConnected() : false; }
 	inline std::string	GetIP() const { return tcpc->Handle() ? tcpc->Handle()->RemoteIP() : ""; }
 	inline uint16		GetPort() const { return tcpc->Handle() ? tcpc->Handle()->RemotePort() : 0; }
 	inline const char*	GetCAddress() const	{ return client_address; }

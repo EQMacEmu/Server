@@ -57,23 +57,15 @@ public:
 	void SetConnection(std::shared_ptr<EQ::Net::ServertalkServerConnection> c) { m_connection = c; }
 
 	/**
-	* Gets the runtime id of this server.
-	*/
-	unsigned int GetRuntimeID() const { return m_runtime_id; }
+	 * @return
+	 */
+	unsigned int GetServerId() const { return m_server_id; }
+	void SetServerId(unsigned int id) { m_server_id = id; }
 
 	/**
-	* Sets the runtime id of this server.
-	*/
-	void SetRuntimeID(unsigned int id) { m_runtime_id = id; }
-
-	/**
-	* Gets the long name of the server.
-	*/
+	 * @return
+	 */
 	std::string GetServerLongName() const { return m_long_name; }
-
-	/**
-	* Gets the short name of the server.
-	*/
 	std::string GetServerShortName() const { return m_short_name; }
 
 	/**
@@ -95,6 +87,7 @@ public:
 	* Gets what kind of server this server is (legends, preferred, normal)
 	*/
 	unsigned int GetServerListID() const { return m_server_list_type_id; }
+	WorldServer* SetServerListTypeId(unsigned int in_server_list_id);
 
 	/**
 	* Gets the status of the server.
@@ -121,10 +114,12 @@ public:
 	*/
 	void Handle_LSStatus(ServerLSStatus_Struct *server_login_status);
 
+\
 	/**
 	* Informs world that there is a client incoming with the following data.
 	*/
 	void SendClientAuth(std::string ip, std::string account, std::string key, unsigned int account_id, uint8 version = 0);
+
 
 private:
 	/**
@@ -140,7 +135,7 @@ private:
 	unsigned int m_zones_booted;
 	unsigned int m_players_online;
 	int m_server_status;
-	unsigned int m_runtime_id;
+	unsigned int m_server_id;
 	unsigned int m_server_list_type_id;
 	unsigned int m_server_process_type;
 	std::string m_server_description;

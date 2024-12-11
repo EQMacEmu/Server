@@ -30,7 +30,7 @@ WorldServer::WorldServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> c)
 	m_zones_booted = 0;
 	m_players_online = 0;
 	m_server_status = 0;
-	m_runtime_id = 0;
+	m_server_id = 0;
 	m_server_list_type_id = 0;
 	m_server_process_type = 0;
 	m_is_server_authorized = false;
@@ -53,7 +53,7 @@ void WorldServer::Reset()
 	m_zones_booted = 0;
 	m_players_online = 0;
 	m_server_status = 0;
-	m_runtime_id;
+	m_server_id;
 	m_server_list_type_id = 0;
 	m_server_process_type = 0;
 	m_is_server_authorized = false;
@@ -343,7 +343,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					LogInfo("Server [{0}]([{1}]) successfully logged into account that had no user/password requirement.",
 						m_long_name.c_str(), m_short_name.c_str());
 					m_is_server_authorized = true;
-					SetRuntimeID(s_id);
+					SetServerId(s_id);
 					m_server_list_type_id = s_list_type;
 					m_server_description = s_desc;
 				}
@@ -351,7 +351,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					LogInfo("Server [{0}]({1}) successfully logged in.",
 						m_long_name.c_str(), m_short_name.c_str());
 					m_is_server_authorized = true;
-					SetRuntimeID(s_id);
+					SetServerId(s_id);
 					m_server_list_type_id = s_list_type;
 					m_server_description = s_desc;
 					if(s_trusted) {
@@ -406,7 +406,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 				if(server_account_name.compare(m_account_name) == 0 && server_account_password.compare(m_account_password) == 0) {
 					LogInfo("Server [{0}]([{1}]) successfully logged in.", m_long_name.c_str(), m_short_name.c_str());
 					m_is_server_authorized = true;
-					SetRuntimeID(server_id);
+					SetServerId(server_id);
 					m_server_list_type_id = server_list_type;
 					m_server_description = server_description;
 
@@ -434,7 +434,7 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 					LogInfo("Server  [{0}]([{1}]) did not attempt to log in but unregistered servers are allowed.",
 						m_long_name.c_str(), m_short_name.c_str());
 					m_is_server_authorized = true;
-					SetRuntimeID(server_id);
+					SetServerId(server_id);
 					m_server_list_type_id = 0;
 				}
 			}
@@ -444,13 +444,13 @@ void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
 				m_long_name.c_str(), m_short_name.c_str());
 			if(server.db->CreateWorldRegistration(m_long_name, m_short_name, server_id)) {
 				m_is_server_authorized = true;
-				SetRuntimeID(server_id);
+				SetServerId(server_id);
 				m_server_list_type_id = 0;
 			}
 		}
 	}
 
-	server.db->UpdateWorldRegistration(GetRuntimeID(), m_long_name, GetConnection()->Handle()->RemoteIP());
+	server.db->UpdateWorldRegistration(GetServerId(), m_long_name, GetConnection()->Handle()->RemoteIP());
 
 	if (m_is_server_authorized)
 	{
