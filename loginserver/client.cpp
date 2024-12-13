@@ -94,6 +94,10 @@ bool Client::Process()
 				delete(outapp);
 				break;
 			}
+			case OP_LoginDisconnect: {
+				LogInfo("Client disconnected from the Server");
+				break;
+			}
 			case OP_ServerListRequest: {
 				LogInfo("Server list request received from client {}", GetClientDescription());
 

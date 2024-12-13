@@ -19,7 +19,8 @@ void CheckOldOpcodeFile(const std::string& path) {
 		fprintf(f, "OP_SessionReady=0x5900\n");
 		fprintf(f, "OP_LoginOSX=0x8e00\n");
 		fprintf(f, "OP_LoginPC=0x0100\n");
-		fprintf(f, "P_ClientError=0x0200\n");
+		fprintf(f, "OP_ClientError=0x0200\n");
+		fprintf(f, "OP_LoginDisconnect=0x0500\n");
 		fprintf(f, "OP_ServerListRequest=0x4600\n");
 		fprintf(f, "OP_PlayEverquestRequest=0x4700\n");
 		fprintf(f, "OP_LoginUnknown1=0x4800\n");
