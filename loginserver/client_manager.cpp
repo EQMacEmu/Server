@@ -7,6 +7,30 @@ extern bool run_server;
 #include "../common/eqemu_logsys.h"
 #include "../common/misc.h"
 #include "../common/path_manager.h"
+#include "../common/file.h"
+
+void CheckOldOpcodeFile(const std::string& path) {
+	if (File::Exists(path)) {
+		return;
+	}
+	auto f = fopen(path.c_str(), "w");
+	if (f) {
+		fprintf(f, "#EQEmu Public Login Server OPCodes\n");
+		fprintf(f, "OP_SessionReady=0x5900\n");
+		fprintf(f, "OP_LoginOSX=0x8e00\n");
+		fprintf(f, "OP_LoginPC=0x0100\n");
+		fprintf(f, "P_ClientError=0x0200\n");
+		fprintf(f, "OP_ServerListRequest=0x4600\n");
+		fprintf(f, "OP_PlayEverquestRequest=0x4700\n");
+		fprintf(f, "OP_LoginUnknown1=0x4800\n");
+		fprintf(f, "OP_LoginUnknown2=0x4A00\n");
+		fprintf(f, "OP_LoginAccepted=0x0400\n");
+		fprintf(f, "OP_LoginComplete=0x8800\n");
+		fprintf(f, "OP_ServerName=0x4900\n");
+		fprintf(f, "OP_LoginBanner=0x5200\n");
+		fclose(f);
+	}
+}
 
 ClientManager::ClientManager()
 {
@@ -16,13 +40,12 @@ ClientManager::ClientManager()
 
 	std::string opcodes_path = fmt::format(
 		"{}/{}",
-		path.GetServerPath(),
-		server.config.GetVariableString(
-			"Old",
-			"opcodes",
-			"login_opcodes_oldver.conf"
-		)
+		path.GetOpcodePath(),
+		"login_opcodes_oldver.conf"
 	);
+
+	CheckOldOpcodeFile(opcodes_path);
+
 	if (!old_ops->LoadOpcodes(opcodes_path.c_str())) {
 		LogError("ClientManager fatal error: couldn't load opcodes for Old file [{}].",
 			server.config.GetVariableString("Old", "opcodes", "login_opcodes_oldver.conf"));

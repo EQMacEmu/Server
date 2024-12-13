@@ -120,6 +120,7 @@ void EQEmuConfig::parse_config() {
 	QuestDir = _root["server"]["directories"].get("quests", "quests/").asString();
 	LuaModuleDir = _root["server"]["directories"].get("lua_modules", "quests/lua_modules/").asString();
 	PatchDir = _root["server"]["directories"].get("patches", "./").asString();
+	OpcodeDir = _root["server"]["directories"].get("opcodes", "./").asString();
 	SharedMemDir = _root["server"]["directories"].get("shared_memory", "shared/").asString();
 	LogDir = _root["server"]["directories"].get("logs", "logs/").asString();
 

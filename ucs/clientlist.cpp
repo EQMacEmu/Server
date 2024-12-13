@@ -23,8 +23,7 @@
 #include "../common/races.h"
 #include "../common/classes.h"
 #include "../common/misc_functions.h"
-#include "../common/misc_functions.h"
-
+#include "../common/file.h"
 #include "ucsconfig.h"
 #include "clientlist.h"
 #include "database.h"
@@ -206,7 +205,10 @@ Clientlist::Clientlist(int ChatPort) {
 	const ucsconfig *Config = ucsconfig::get();
 
 
-	std::string opcodes_file = fmt::format("{}/{}", path.GetServerPath(), Config->ChatOpCodesFile);
+	std::string opcodes_file;
+	if (File::Exists(fmt::format("{}/{}", path.GetOpcodePath(), Config->ChatOpCodesFile))) {
+		opcodes_file = fmt::format("{}/{}", path.GetOpcodePath(), Config->ChatOpCodesFile);
+	}
 
 	LogInfo("Loading [{}]", opcodes_file);
 	if (!ChatOpMgr->LoadOpcodes(opcodes_file.c_str())) {
