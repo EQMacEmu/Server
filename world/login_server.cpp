@@ -71,13 +71,12 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	uint16 expansion = 0;
 	database.GetAccountRestriction(id, expansion, mule);
 
-	ServerPacket outpack;
-	outpack.opcode = ServerOP_UsertoWorldResp;
-	outpack.size = sizeof(UsertoWorldResponse_Struct);
-	outpack.pBuffer = new uchar[outpack.size];
-	memset(outpack.pBuffer, 0, outpack.size);
-
-	UsertoWorldResponse_Struct* utwrs = (UsertoWorldResponse_Struct*)outpack.pBuffer;
+	auto outpack = new ServerPacket;
+	outpack->opcode = ServerOP_UsertoWorldResp;
+	outpack->size = sizeof(UsertoWorldResponse_Struct);
+	outpack->pBuffer = new uchar[outpack->size];
+	memset(outpack->pBuffer, 0, outpack->size);
+	UsertoWorldResponse_Struct* utwrs = (UsertoWorldResponse_Struct*)outpack->pBuffer;
 	utwrs->lsaccountid = utwr->lsaccountid;
 	utwrs->ToID = utwr->FromID;
 
@@ -115,7 +114,8 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	}
 
 	utwrs->worldid = utwr->worldid;
-	SendPacket(&outpack);
+	SendPacket(outpack);
+	delete outpack;
 }
 
 void LoginServer::ProcessLSClientAuth(uint16_t opcode, EQ::Net::Packet& p) {
