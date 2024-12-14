@@ -93,8 +93,8 @@ void EQEmuConfig::parse_config() {
 		DisableConfigChecks = true;
 	}
 
-	ChatHost = _root["server"]["chatserver"].get("host", "eqchat.eqemulator.net").asString();
-	ChatPort = Strings::ToUnsignedInt(_root["server"]["chatserver"].get("port", "7778").asString());
+	ChatHost = _root["server"]["ucs"].get("host", "eqchat.eqemulator.net").asString();
+	ChatPort = Strings::ToUnsignedInt(_root["server"]["ucs"].get("port", "7778").asString());
 
 	DatabaseUsername = _root["server"]["database"].get("username", "eq").asString();
 	DatabasePassword = _root["server"]["database"].get("password", "eq").asString();
