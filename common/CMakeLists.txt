@@ -14,6 +14,8 @@ SET(common_sources
 	database.cpp
 	deity.cpp
 	dbcore.cpp
+	discord/discord.cpp
+	discord_manager.cpp
 	emu_constants.cpp
 	emu_limits.cpp
 	emu_opcodes.cpp
@@ -338,6 +340,8 @@ SET(common_headers
 	database_schema.h
 	dbcore.h
 	deity.h
+	discord/discord.h
+	discord_manager.h
 	emu_constants.h
 	emu_limits.h
 	emu_opcodes.h

@@ -123,6 +123,7 @@ namespace Logs {
 		ZonePoints,
 		EqTime,
 		ClientLogin,
+		Discord,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -202,13 +203,16 @@ namespace Logs {
 		"HotReload",
 		"Zone Points",
 		"EqTime",
-		"Client Login"
+		"Client Login",
+		"Discord"
 	};
 }
 
 #include "eqemu_logsys_log_aliases.h"
 
 class Database;
+
+constexpr uint16 MAX_DISCORD_WEBHOOK_ID = 300;
 
 class EQEmuLogSys {
 public:
@@ -272,6 +276,8 @@ public:
 		uint8 log_to_file;
 		uint8 log_to_console;
 		uint8 log_to_gmsay;
+		uint8 log_to_discord;
+		int   discord_webhook_id;
 		uint8 is_category_enabled; /* When any log output in a category > 0, set this to 1 as (Enabled) */
 	};
 
@@ -296,12 +302,20 @@ public:
 		bool log_to_file_enabled;
 		bool log_to_console_enabled;
 		bool log_to_gmsay_enabled;
+		bool log_to_discord_enabled;
 		bool log_enabled;
 	};
 
 	LogEnabled GetLogsEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category);
 	bool IsLogEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category);
 
+	struct DiscordWebhooks {
+		int         id;
+		std::string webhook_name;
+		std::string webhook_url;
+	};
+
+	const DiscordWebhooks* GetDiscordWebhooks() const;
 
 	// gmsay
 	uint16 GetGMSayColorFromCategory(uint16 log_category);
@@ -309,6 +323,12 @@ public:
 	EQEmuLogSys* SetGMSayHandler(const std::function<void(uint16 log_type, const char* func, const std::string&)>& f)
 	{
 		m_on_log_gmsay_hook = f;
+		return this;
+	}
+
+	EQEmuLogSys* SetDiscordHandler(std::function<void(uint16 log_category, int webhook_id, const std::string&)> f)
+	{
+		m_on_log_discord_hook = f;
 		return this;
 	}
 
@@ -338,11 +358,13 @@ private:
 	// reference to database
 	Database* m_database;
 	std::function<void(uint16 log_category, const char* func, const std::string&)> m_on_log_gmsay_hook;
+	std::function<void(uint16 log_category, int webhook_id, const std::string&)>   m_on_log_discord_hook;
 	std::function<void(uint16 log_category, const std::string&)>                   m_on_log_console_hook;
-	bool                                                                           m_file_logs_enabled = false;
-	int                                                                            m_log_platform = 0;
-	std::string                                                                    m_platform_file_name;
-	std::string                                                                    m_log_path;
+	DiscordWebhooks                                                                 m_discord_webhooks[MAX_DISCORD_WEBHOOK_ID]{};
+	bool                                                                            m_file_logs_enabled = false;
+	int                                                                             m_log_platform = 0;
+	std::string                                                                     m_platform_file_name;
+	std::string                                                                     m_log_path;
 
 	void ProcessConsoleMessage(
 		uint16 log_category,

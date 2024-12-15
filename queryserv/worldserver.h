@@ -33,7 +33,7 @@ public:
 	uint16 GetPort() const;
 	bool Connected() const;
 
-	void HandleMessage(uint16 opcode, const EQ::Net::Packet& p);
+	void HandleMessage(uint16 opcode, const EQ::Net::Packet &p);
 private:
 	std::unique_ptr<EQ::Net::ServertalkClient> m_connection;
 

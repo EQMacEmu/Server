@@ -747,10 +747,6 @@ void lua_wear_change(uint32 slot, uint32 texture) {
 	quest_manager.wearchange(slot, texture);
 }
 
-void lua_send_mail(const char *to, const char *from, const char *subject, const char *message) {
-	quest_manager.SendMail(to, from, subject, message);
-}
-
 void lua_cross_zone_signal_client_by_char_id(uint32 player_id, int signal) {
 	quest_manager.CrossZoneSignalPlayerByCharID(player_id, signal);
 }
@@ -1541,7 +1537,6 @@ luabind::scope lua_register_general() {
 		luabind::def("enable_title", &lua_enable_title),
 		luabind::def("remove_title", &lua_remove_title),
 		luabind::def("wear_change", &lua_wear_change),
-		luabind::def("send_mail", &lua_send_mail),
 		luabind::def("cross_zone_signal_client_by_char_id", &lua_cross_zone_signal_client_by_char_id),
 		luabind::def("cross_zone_signal_client_by_name", &lua_cross_zone_signal_client_by_name),
 		luabind::def("cross_zone_message_player_by_name", &lua_cross_zone_message_player_by_name),

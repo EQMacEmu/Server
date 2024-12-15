@@ -2804,4 +2804,34 @@ void Zone::SetUCSServerAvailable(bool ucss_available, uint32 update_timestamp)
 		m_ucss_available = ucss_available;
 }
 
+void Zone::SendDiscordMessage(int webhook_id, const std::string& message)
+{
+	if (worldserver.Connected()) {
+		auto pack = new ServerPacket(ServerOP_DiscordWebhookMessage, sizeof(DiscordWebhookMessage_Struct) + 1);
+		auto* q = (DiscordWebhookMessage_Struct*)pack->pBuffer;
+
+		strn0cpy(q->message, message.c_str(), 2000);
+		q->webhook_id = webhook_id;
+
+		worldserver.SendPacket(pack);
+		safe_delete(pack);
+	}
+}
+void Zone::SendDiscordMessage(const std::string& webhook_name, const std::string& message)
+{
+	bool not_found = true;
+
+	for (int i = 0; i < MAX_DISCORD_WEBHOOK_ID; i++) {
+		auto& w = LogSys.GetDiscordWebhooks()[i];
+		if (w.webhook_name == webhook_name) {
+			SendDiscordMessage(w.id, message + "\n");
+			not_found = false;
+		}
+	}
+
+	if (not_found) {
+		LogDiscord("[SendDiscordMessage] Did not find valid webhook by webhook name [{}]", webhook_name);
+	}
+}
+
 #include "zone_loot.cpp"

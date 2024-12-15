@@ -52,6 +52,7 @@
 #include "worldserver.h"
 #include "zone.h"
 #include "zone_config.h"
+#include "queryserv.h"
 #include "../common/patches/patches.h"
 #include "../common/skill_caps.h"
 
@@ -79,7 +80,7 @@ void WorldServer::Connect()
 	m_connection = std::make_unique<EQ::Net::ServertalkClient>(Config->WorldIP, Config->WorldTCPPort, false, "Zone", Config->SharedKey);
 	m_connection->OnConnect([this](EQ::Net::ServertalkClient* client) {
 		OnConnected();
-		});
+	});
 
 	m_connection->OnMessage(std::bind(&WorldServer::HandleMessage, this, std::placeholders::_1, std::placeholders::_2));
 
@@ -91,14 +92,17 @@ bool WorldServer::SendPacket(ServerPacket* pack)
 	m_connection->SendPacket(pack);
 	return true;
 }
+
 std::string WorldServer::GetIP() const
 {
 	return m_connection->Handle()->RemoteIP();
 }
+
 uint16 WorldServer::GetPort() const
 {
 	return m_connection->Handle()->RemotePort();
 }
+
 bool WorldServer::Connected() const
 {
 	return m_connection->Connected();
@@ -201,6 +205,8 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			else {
 				LogInfo("World assigned Port: [{}] for this zone", sci->port);
 				ZoneConfig::SetZonePort(sci->port);
+
+				LogSys.SetDiscordHandler(&Zone::DiscordWebhookMessageHandler);
 			}
 
 			if (is_zone_loaded) {
@@ -1765,6 +1771,13 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 
 			uint32 Type = pack->ReadUInt32();
 
+			break;
+		}
+		case ServerOP_UCSServerStatusReply: {
+			if (zone && zone->IsLoaded()) {
+				auto ucsss = (UCSServerStatus_Struct*)pack->pBuffer;
+				zone->SetUCSServerAvailable((ucsss->available != 0), ucsss->timestamp);
+			}
 			break;
 		}
 		case ServerOP_CZSetEntityVariableByNPCTypeID: {

@@ -212,7 +212,6 @@ public:
 	void FlyMode(GravityBehavior flymode);
 	uint8 FactionValue();
 	void wearchange(uint8 slot, uint16 texture);
-    void SendMail(const char *to, const char *from, const char *subject, const char *message);
 	uint16 CreateDoor( const char* model, float x, float y, float z, float heading, uint8 opentype, uint16 size);
     int32 GetZoneID(const char *zone);
     const char *GetZoneLongName(const char *zone);

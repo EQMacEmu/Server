@@ -20,26 +20,25 @@
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
 #include "../common/opcodemgr.h"
-#include "../common/eq_stream_factory.h"
 #include "../common/rulesys.h"
 #include "../common/servertalk.h"
 #include "../common/platform.h"
 #include "../common/crash.h"
+#include "../common/strings.h"
 #include "../common/event/event_loop.h"
 #include "../common/timer.h"
-#include "../common/strings.h"
-#include "../common/path_manager.h"
-#include "../common/zone_store.h"
-#include "../common/content/world_content_service.h"
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
+#include "../common/path_manager.h"
+#include "../common/zone_store.h"
+#include "../common/content/world_content_service.h"
 #include <list>
 #include <signal.h>
+#include <thread>
 
 volatile bool RunLoops = true;
 
-TimeoutManager        timeout_manager;
 QSDatabase            database;
 std::string           WorldShortName;
 const queryservconfig *Config;
@@ -47,7 +46,7 @@ WorldServer           *worldserver = 0;
 EQEmuLogSys           LogSys;
 PathManager           path;
 ZoneStore             zone_store;
-WorldContentService   content_service;
+WorldContentService content_service;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 
@@ -83,12 +82,6 @@ int main() {
 		return 1;
 	}
 
-	/* Bootstrap Database updates */
-	if (!database.DBSetup())
-	{
-		return 1;
-	}
-
 	LogSys.SetDatabase(&database)
 		->SetLogPath(path.GetLogPath())
 		->LoadLogDatabaseSettings()
@@ -114,8 +107,6 @@ int main() {
 			EQ::EventLoop::Get().Shutdown();
 			return;
 		}
-		timeout_manager.CheckTimeouts();
-
 	};
 
 	EQ::Timer process_timer(loop_fn);

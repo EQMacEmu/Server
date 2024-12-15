@@ -24,6 +24,8 @@ public:
 		int16_t     log_to_console;
 		int16_t     log_to_file;
 		int16_t     log_to_gmsay;
+		int16_t     log_to_discord;
+		int32_t     discord_webhook_id;
 	};
 
 	static std::string PrimaryKey()
@@ -39,6 +41,8 @@ public:
 			"log_to_console",
 			"log_to_file",
 			"log_to_gmsay",
+			"log_to_discord",
+			"discord_webhook_id",
 		};
 	}
 
@@ -50,6 +54,8 @@ public:
 			"log_to_console",
 			"log_to_file",
 			"log_to_gmsay",
+			"log_to_discord",
+			"discord_webhook_id",
 		};
 	}
 
@@ -95,6 +101,8 @@ public:
 		e.log_to_console           = 0;
 		e.log_to_file              = 0;
 		e.log_to_gmsay             = 0;
+		e.log_to_discord           = 0;
+		e.discord_webhook_id       = 0;
 
 		return e;
 	}
@@ -136,6 +144,8 @@ public:
 			e.log_to_console           = row[2] ? static_cast<int16_t>(atoi(row[2])) : 0;
 			e.log_to_file              = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.log_to_gmsay             = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.log_to_discord           = row[5] ? static_cast<int16_t>(atoi(row[5])) : 0;
+			e.discord_webhook_id       = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
 
 			return e;
 		}
@@ -174,6 +184,8 @@ public:
 		v.push_back(columns[2] + " = " + std::to_string(e.log_to_console));
 		v.push_back(columns[3] + " = " + std::to_string(e.log_to_file));
 		v.push_back(columns[4] + " = " + std::to_string(e.log_to_gmsay));
+		v.push_back(columns[5] + " = " + std::to_string(e.log_to_discord));
+		v.push_back(columns[6] + " = " + std::to_string(e.discord_webhook_id));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -200,6 +212,8 @@ public:
 		v.push_back(std::to_string(e.log_to_console));
 		v.push_back(std::to_string(e.log_to_file));
 		v.push_back(std::to_string(e.log_to_gmsay));
+		v.push_back(std::to_string(e.log_to_discord));
+		v.push_back(std::to_string(e.discord_webhook_id));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -234,6 +248,8 @@ public:
 			v.push_back(std::to_string(e.log_to_console));
 			v.push_back(std::to_string(e.log_to_file));
 			v.push_back(std::to_string(e.log_to_gmsay));
+			v.push_back(std::to_string(e.log_to_discord));
+			v.push_back(std::to_string(e.discord_webhook_id));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}
@@ -272,6 +288,8 @@ public:
 			e.log_to_console           = row[2] ? static_cast<int16_t>(atoi(row[2])) : 0;
 			e.log_to_file              = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.log_to_gmsay             = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.log_to_discord           = row[5] ? static_cast<int16_t>(atoi(row[5])) : 0;
+			e.discord_webhook_id       = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -301,6 +319,8 @@ public:
 			e.log_to_console           = row[2] ? static_cast<int16_t>(atoi(row[2])) : 0;
 			e.log_to_file              = row[3] ? static_cast<int16_t>(atoi(row[3])) : 0;
 			e.log_to_gmsay             = row[4] ? static_cast<int16_t>(atoi(row[4])) : 0;
+			e.log_to_discord           = row[5] ? static_cast<int16_t>(atoi(row[5])) : 0;
+			e.discord_webhook_id       = row[6] ? static_cast<int32_t>(atoi(row[6])) : 0;
 
 			all_entries.push_back(e);
 		}
@@ -380,6 +400,8 @@ public:
 		v.push_back(std::to_string(e.log_to_console));
 		v.push_back(std::to_string(e.log_to_file));
 		v.push_back(std::to_string(e.log_to_gmsay));
+		v.push_back(std::to_string(e.log_to_discord));
+		v.push_back(std::to_string(e.discord_webhook_id));
 
 		auto results = db.QueryDatabase(
 			fmt::format(
@@ -407,6 +429,8 @@ public:
 			v.push_back(std::to_string(e.log_to_console));
 			v.push_back(std::to_string(e.log_to_file));
 			v.push_back(std::to_string(e.log_to_gmsay));
+			v.push_back(std::to_string(e.log_to_discord));
+			v.push_back(std::to_string(e.discord_webhook_id));
 
 			insert_chunks.push_back("(" + Strings::Implode(",", v) + ")");
 		}

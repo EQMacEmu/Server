@@ -25,6 +25,8 @@
 #include "clientlist.h"
 #include "ucsconfig.h"
 #include "database.h"
+#include "../common/discord_manager.h"
+
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -37,7 +39,7 @@ extern WorldServer worldserver;
 extern Clientlist *g_Clientlist;
 extern const ucsconfig *Config;
 extern UCSDatabase database;
-
+extern DiscordManager  discord_manager;
 
 WorldServer::WorldServer()
 {
@@ -60,6 +62,16 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
 			break;
 		}
 		case ServerOP_KeepAlive: {
+			break;
+		}
+		case ServerOP_DiscordWebhookMessage: {
+			auto* q = (DiscordWebhookMessage_Struct*)p.Data();
+
+			discord_manager.QueueWebhookMessage(
+				q->webhook_id,
+				q->message
+			);
+
 			break;
 		}
 		case ServerOP_UCSMessage: {

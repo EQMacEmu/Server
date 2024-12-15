@@ -1360,7 +1360,10 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 			safe_delete(outapp);
 			break;
 		}
-
+		case ServerOP_DiscordWebhookMessage: {
+			UCSLink.SendPacket(pack);
+			break;
+		}
 		case ServerOP_QSPlayerAARateHourly:
 		case ServerOP_QSPlayerAAPurchase:
 		case ServerOP_QSPlayerTSEvents:
@@ -1371,8 +1374,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p) {
 		case ServerOP_QSPlayerLootRecords:
 		case ServerOP_QSSendQuery:
 		case ServerOP_QueryServGeneric:
-		case ServerOP_Speech:
-		case ServerOP_UCSMailMessage: {
+		case ServerOP_Speech: {
 			QSLink.SendPacket(pack);
 			break;
 		}

@@ -22,6 +22,7 @@
 #include "rulesys.h"
 #include "platform.h"
 #include "strings.h"
+#include "repositories/discord_webhooks_repository.h"
 #include "repositories/logsys_categories_repository.h"
 #include "termcolor/rang.hpp"
 
@@ -54,7 +55,7 @@ std::ofstream process_log;
  */
 EQEmuLogSys::EQEmuLogSys()
 {
-	m_on_log_gmsay_hook   = [](uint16 log_type, const char* func, const std::string&) {};
+	m_on_log_gmsay_hook = [](uint16 log_type, const char* func, const std::string&) {};
 	m_on_log_console_hook = [](uint16 log_type, const std::string&) {};
 }
 
@@ -74,6 +75,7 @@ EQEmuLogSys* EQEmuLogSys::LoadLogSettingsDefaults()
 		log_settings[log_category_id].log_to_console = 0;
 		log_settings[log_category_id].log_to_file = 0;
 		log_settings[log_category_id].log_to_gmsay = 0;
+		log_settings[log_category_id].log_to_discord = 0;
 		log_settings[log_category_id].is_category_enabled = 0;
 	}
 
@@ -82,32 +84,34 @@ EQEmuLogSys* EQEmuLogSys::LoadLogSettingsDefaults()
 	/**
 	 * Set Defaults
 	 */
-	log_settings[Logs::Crash].log_to_console       = static_cast<uint8>(Logs::General);
-	log_settings[Logs::MySQLError].log_to_console  = static_cast<uint8>(Logs::General);
-	log_settings[Logs::HotReload].log_to_gmsay     = static_cast<uint8>(Logs::General);
-	log_settings[Logs::HotReload].log_to_console   = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Loot].log_to_gmsay          = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Scheduler].log_to_console   = static_cast<uint8>(Logs::General);
-	log_settings[Logs::QuestErrors].log_to_gmsay   = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Crash].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::MySQLError].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_gmsay = static_cast<uint8>(Logs::General);
+	log_settings[Logs::HotReload].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Loot].log_to_gmsay = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Scheduler].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Discord].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::QuestErrors].log_to_gmsay = static_cast<uint8>(Logs::General);
 	log_settings[Logs::QuestErrors].log_to_console = static_cast<uint8>(Logs::General);
-	log_settings[Logs::EqTime].log_to_console      = static_cast<uint8>(Logs::General);
-	log_settings[Logs::EqTime].log_to_gmsay        = static_cast<uint8>(Logs::General);
+	log_settings[Logs::EqTime].log_to_console = static_cast<uint8>(Logs::General);
+	log_settings[Logs::EqTime].log_to_gmsay = static_cast<uint8>(Logs::General);
 
 	/**
 	 * RFC 5424
 	 */
-	log_settings[Logs::Error].log_to_console   = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Error].log_to_console = static_cast<uint8>(Logs::General);
 	log_settings[Logs::Warning].log_to_console = static_cast<uint8>(Logs::General);
-	log_settings[Logs::Info].log_to_console    = static_cast<uint8>(Logs::General);
+	log_settings[Logs::Info].log_to_console = static_cast<uint8>(Logs::General);
 
 	/**
 	 * Set Category enabled status on defaults
 	 */
 	for (int log_category_id = Logs::AA; log_category_id != Logs::MaxCategoryID; log_category_id++) {
 		const bool log_to_console = log_settings[log_category_id].log_to_console > 0;
-		const bool log_to_file    = log_settings[log_category_id].log_to_file > 0;
-		const bool log_to_gmsay   = log_settings[log_category_id].log_to_gmsay > 0;
-		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay;
+		const bool log_to_file = log_settings[log_category_id].log_to_file > 0;
+		const bool log_to_gmsay = log_settings[log_category_id].log_to_gmsay > 0;
+		const bool log_to_discord = log_settings[log_category_id].log_to_discord > 0;
+		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay || log_to_discord;
 		if (is_category_enabled) {
 			log_settings[log_category_id].is_category_enabled = 1;
 		}
@@ -466,6 +470,9 @@ void EQEmuLogSys::Out(
 			fmt::format("[{}] [{}] {}", GetPlatformName(), Logs::LogCategoryName[log_category], prefix + output_message)
 		);
 	}
+	if (l.log_to_discord_enabled && m_on_log_discord_hook) {
+		m_on_log_discord_hook(log_category, log_settings[log_category].discord_webhook_id, output_message);
+	}
 }
 
 /**
@@ -603,15 +610,19 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 		}
 
 		log_settings[c.log_category_id].log_to_console = static_cast<uint8>(c.log_to_console);
-		log_settings[c.log_category_id].log_to_file    = static_cast<uint8>(c.log_to_file);
-		log_settings[c.log_category_id].log_to_gmsay   = static_cast<uint8>(c.log_to_gmsay);
+		log_settings[c.log_category_id].log_to_file = static_cast<uint8>(c.log_to_file);
+		log_settings[c.log_category_id].log_to_gmsay = static_cast<uint8>(c.log_to_gmsay);
+		log_settings[c.log_category_id].log_to_discord = static_cast<uint8>(c.log_to_discord);
+		log_settings[c.log_category_id].discord_webhook_id = c.discord_webhook_id;
 
 		// Determine if any output method is enabled for the category
 		// and set it to 1 so it can used to check if category is enabled
 		const bool log_to_console = log_settings[c.log_category_id].log_to_console > 0;
-		const bool log_to_file    = log_settings[c.log_category_id].log_to_file > 0;
-		const bool log_to_gmsay   = log_settings[c.log_category_id].log_to_gmsay > 0;
-		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay;
+		const bool log_to_file = log_settings[c.log_category_id].log_to_file > 0;
+		const bool log_to_gmsay = log_settings[c.log_category_id].log_to_gmsay > 0;
+		const bool log_to_discord = log_settings[c.log_category_id].log_to_discord > 0 &&
+			log_settings[c.log_category_id].discord_webhook_id > 0;
+		const bool is_category_enabled = log_to_console || log_to_file || log_to_gmsay || log_to_discord;
 
 		if (is_category_enabled) {
 			log_settings[c.log_category_id].is_category_enabled = 1;
@@ -653,6 +664,7 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 			new_category.log_to_console = log_settings[i].log_to_console;
 			new_category.log_to_gmsay = log_settings[i].log_to_gmsay;
 			new_category.log_to_file = log_settings[i].log_to_file;
+			new_category.log_to_discord = log_settings[i].log_to_discord;
 			db_categories_to_add.emplace_back(new_category);
 		}
 	}
@@ -664,6 +676,14 @@ EQEmuLogSys* EQEmuLogSys::LoadLogDatabaseSettings()
 	}
 
 	LogInfo("Loaded [{}] log categories", categories.size());
+
+	auto webhooks = DiscordWebhooksRepository::GetWhere(*m_database, fmt::format("id < {}", MAX_DISCORD_WEBHOOK_ID));
+	if (!webhooks.empty()) {
+		for (auto& w : webhooks) {
+			m_discord_webhooks[w.id] = { w.id, w.webhook_name, w.webhook_url };
+		}
+		LogInfo("Loaded [{}] Discord webhooks", webhooks.size());
+	}
 
 	// force override this setting
 	log_settings[Logs::Crash].log_to_console = static_cast<uint8>(Logs::General);
@@ -690,6 +710,25 @@ void EQEmuLogSys::InjectTablesIfNotExist()
 		return;
 	}
 
+	// inject discord_webhooks
+	if (!m_database->DoesTableExist("discord_webhooks")) {
+		LogInfo("Creating table [discord_webhooks]");
+		m_database->QueryDatabase(
+			SQL(
+				CREATE TABLE discord_webhooks
+				(
+					id INT auto_increment primary key NULL,
+					webhook_name varchar(100) NULL,
+					webhook_url varchar(255) NULL,
+					created_at DATETIME NULL,
+					deleted_at DATETIME NULL
+				) ENGINE = InnoDB
+				DEFAULT CHARSET = utf8mb4
+				COLLATE = utf8mb4_general_ci;
+			)
+		);
+	}
+
 	// inject logsys_categories
 	if (!m_database->DoesTableExist("logsys_categories")) {
 		LogInfo("Creating table [logsys_categories]");
@@ -710,6 +749,11 @@ void EQEmuLogSys::InjectTablesIfNotExist()
 	}
 }
 
+const EQEmuLogSys::DiscordWebhooks* EQEmuLogSys::GetDiscordWebhooks() const
+{
+	return m_discord_webhooks;
+}
+
 EQEmuLogSys::LogEnabled EQEmuLogSys::GetLogsEnabled(const Logs::DebugLevel& debug_level, const uint16& log_category)
 {
 	auto e = LogEnabled{};
@@ -723,8 +767,13 @@ EQEmuLogSys::LogEnabled EQEmuLogSys::GetLogsEnabled(const Logs::DebugLevel& debu
 		log_category != Logs::LogCategory::Netcode &&
 		(EQEmuLogSys::m_log_platform == EQEmuExePlatform::ExePlatformZone ||
 			EQEmuLogSys::m_log_platform == EQEmuExePlatform::ExePlatformWorld);
+	e.log_to_discord_enabled = EQEmuLogSys::m_log_platform == EQEmuExePlatform::ExePlatformZone &&
+		log_settings[log_category].log_to_discord > 0 &&
+		log_settings[log_category].log_to_discord >= debug_level &&
+		log_settings[log_category].discord_webhook_id > 0 &&
+		log_settings[log_category].discord_webhook_id < MAX_DISCORD_WEBHOOK_ID;
 	e.log_enabled =
-		e.log_to_console_enabled || e.log_to_file_enabled || e.log_to_gmsay_enabled;
+		e.log_to_console_enabled || e.log_to_file_enabled || e.log_to_gmsay_enabled || e.log_to_discord_enabled;
 
 	return e;
 }

@@ -256,6 +256,7 @@ namespace DatabaseSchema {
 			"banned_ips",
 			"bugs",
 			"commands_log",
+			"discord_webhooks",
 			"eventlog",
 			"gm_ips",
 			"hackers",

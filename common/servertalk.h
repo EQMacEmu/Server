@@ -174,7 +174,7 @@
 #define ServerOP_HotReloadQuests 0x4003
 #define ServerOP_QueryServGeneric	0x4004
 #define ServerOP_UCSMessage		0x4005
-#define ServerOP_UCSMailMessage 0x4006
+#define ServerOP_DiscordWebhookMessage 0x4006
 #define ServerOP_UpdateSchedulerEvents 0x4007
 #define ServerOP_UCSServerStatusRequest		0x4008
 #define ServerOP_UCSServerStatusReply		0x4009
@@ -1130,6 +1130,11 @@ struct QSPlayerLootRecords_struct {
 	char item_name[64];
 	int8 charges;
 	MoneyUpdate_Struct money;
+};
+
+struct DiscordWebhookMessage_Struct {
+	uint32 webhook_id;
+	char message[2000];
 };
 
 struct QSGeneralQuery_Struct {

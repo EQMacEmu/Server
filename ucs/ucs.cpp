@@ -41,12 +41,14 @@
 #include "../common/path_manager.h"
 #include "../common/zone_store.h"
 #include "../common/content/world_content_service.h"
+#include "../common/discord_manager.h"
 
 ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
 EQEmuLogSys LogSys;
 UCSDatabase database;
 WorldServer *worldserver = nullptr;
+DiscordManager discord_manager;
 PathManager path;
 ZoneStore zone_store;
 WorldContentService content_service;
@@ -84,6 +86,13 @@ void CatchSignal(int sig_num) {
 		g_Clientlist->CloseAllConnections();
 		LogSys.CloseFileLogs();
 		std::exit(0);
+	}
+}
+
+void DiscordQueueListener() {
+	while (caught_loop == 0) {
+		discord_manager.ProcessMessageQueue();
+		Sleep(100);
 	}
 }
 
@@ -154,6 +163,8 @@ int main() {
 	std::signal(SIGTERM, CatchSignal);
 	std::signal(SIGKILL, CatchSignal);
 	std::signal(SIGSEGV, CatchSignal);
+
+	std::thread(DiscordQueueListener).detach();
 
 	worldserver = new WorldServer;
 

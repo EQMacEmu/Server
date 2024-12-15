@@ -25,11 +25,15 @@ Copyright (C) 2001-2014 EQEMu Development Team (http://eqemulator.net)
 #include "guild_mgr.h"
 
 extern WorldServer worldserver;
-extern QueryServ* QServ;
+extern QueryServ *QServ;
 
-QueryServ::QueryServ() {}
+QueryServ::QueryServ() 
+{
+}
 
-QueryServ::~QueryServ() {}
+QueryServ::~QueryServ() 
+{
+}
 
 void QueryServ::SendQuery(std::string Query)
 {
@@ -43,8 +47,10 @@ void QueryServ::SendQuery(std::string Query)
 void QueryServ::PlayerLogEvent(int Event_Type, int Character_ID, std::string Event_Desc)
 {
 	std::string query = StringFormat(
-		"INSERT INTO `qs_player_events` (event, char_id, event_desc, time) VALUES (%i, %i, '%s', now())",
-		Event_Type, Character_ID, Strings::Escape(Event_Desc).c_str());
+		"INSERT INTO `qs_player_events` (event, char_id, event_desc, time) VALUES(% i, % i, '%s', UNIX_TIMESTAMP(now()))",
+		Event_Type,
+		Character_ID,
+		Strings::Escape(Event_Desc).c_str());
 	SendQuery(query);
 }
 

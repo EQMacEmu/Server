@@ -2320,24 +2320,6 @@ void QuestManager::wearchange(uint8 slot, uint16 texture)
 	}
 }
 
-void QuestManager::SendMail(const char *to, const char *from, const char *subject, const char *message) {
-	if(to == nullptr || from == nullptr || subject == nullptr || message == nullptr) {
-		return;
-	}
-
-	uint32 message_len = strlen(message) + 1;
-	auto pack = new ServerPacket(ServerOP_UCSMailMessage, sizeof(ServerMailMessageHeader_Struct) + message_len);
-	ServerMailMessageHeader_Struct* mail = (ServerMailMessageHeader_Struct*) pack->pBuffer;
-
-	strn0cpy(mail->to, to, 64);
-	strn0cpy(mail->from, from, 64);
-	strn0cpy(mail->subject, subject, 128);
-	strcpy(mail->message, message);
-
-	worldserver.SendPacket(pack);
-	safe_delete(pack);
-}
-
 uint16 QuestManager::CreateDoor(const char* model, float x, float y, float z, float heading, uint8 opentype, uint16 size)
 {
 	uint16 entid = 0; //safety check
