@@ -71,7 +71,6 @@ public:
 
 private:
 	void OnTick(EQ::Timer* t);
-	void OnKeepAlive(EQ::Timer *t);
 	uint32 NextID;
 	uint16 pLockedZones[MaxLockedZones];
 	uint32 CurGroupID;

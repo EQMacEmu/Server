@@ -49,7 +49,6 @@ ZSList::ZSList()
 	memset(pLockedZones, 0, sizeof(pLockedZones));
 
 	m_tick = std::make_unique<EQ::Timer>(5000, true, std::bind(&ZSList::OnTick, this, std::placeholders::_1));
-	m_keepalive = std::make_unique<EQ::Timer>(1000, true, std::bind(&ZSList::OnKeepAlive, this, std::placeholders::_1));
 }
 
 ZSList::~ZSList() {
@@ -764,12 +763,6 @@ void ZSList::OnTick(EQ::Timer* t)
 		out["data"].append(outzone);
 	}
 	web_interface.SendEvent(out);
-}
-
-void ZSList::OnKeepAlive(EQ::Timer *t) {
-	for (auto &zone : zone_server_list) {
-		zone->SendKeepAlive();
-	}
 }
 
 const std::list<std::unique_ptr<ZoneServer>> &ZSList::getZoneServerList() const
