@@ -1166,6 +1166,11 @@ void lua_set_hotzone(bool is_hotzone)
 	zone->SetIsHotzone(is_hotzone);
 }
 
+void lua_discord_send(std::string webhook_name, std::string message)
+{
+	zone->SendDiscordMessage(webhook_name, message);
+}
+
 /**
  * Expansions
  */
@@ -1585,9 +1590,12 @@ luabind::scope lua_register_general() {
 		luabind::def("get_deity_name", &lua_get_deity_name),
 		luabind::def("is_hotzone", (bool(*)(void))& lua_is_hotzone),
 		luabind::def("set_hotzone", (void(*)(bool))& lua_set_hotzone),
-			/**
- * Expansions
- */
+		luabind::def("discord_send", &lua_discord_send),
+		
+		
+		/**
+		* Expansions
+		 */
 		luabind::def("is_classic_enabled", &lua_is_classic_enabled),
 		luabind::def("is_the_ruins_of_kunark_enabled", &lua_is_the_ruins_of_kunark_enabled),
 		luabind::def("is_the_scars_of_velious_enabled", &lua_is_the_scars_of_velious_enabled),
