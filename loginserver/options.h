@@ -129,6 +129,16 @@ public:
 	inline std::string GetLoginSettingTable() const { return loginserver_setting_table; }
 
 	/**
+	* Sets password salt.
+	*/
+	inline void LoginPasswordSalt(std::string t) { login_password_salt = t; }
+
+	/**
+	* Return the value of password salt.
+	*/
+	inline std::string GetLoginPasswordSalt() const { return login_password_salt; }
+
+	/**
 	* Sets whether we are rejecting duplicate servers or not.
 	*/
 	inline void RejectDuplicateServers(bool b) { reject_duplicate_servers = b; }
@@ -161,6 +171,7 @@ private:
 	std::string world_admin_registration_table;
 	std::string world_server_type_table;
 	std::string loginserver_setting_table;
+	std::string login_password_salt;
 };
 
 #endif

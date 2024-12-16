@@ -105,7 +105,7 @@ WorldServer* ServerManager::GetServerByAddress(const std::string& addr, int port
 	return nullptr;
 }
 
-EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
+EQApplicationPacket* ServerManager::CreateServerListPacket(Client* c)
 {
 	unsigned int packet_size = sizeof(ServerList_Struct);
 	unsigned int server_count = 0;
@@ -199,7 +199,7 @@ EQApplicationPacket* ServerManager::CreateOldServerListPacket(Client* c)
 	return outapp;
 }
 
-void ServerManager::SendOldUserToWorldRequest(const char* server_id, unsigned int client_account_id, uint32 ip)
+void ServerManager::SendUserToWorldRequest(const char* server_id, unsigned int client_account_id, uint32 ip)
 {
 	auto iter = m_world_servers.begin();
 	bool found = false;

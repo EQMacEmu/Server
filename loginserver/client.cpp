@@ -254,7 +254,7 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		platform = "PCT";
 		m_client_mac_version = pc;
 	}
-	string userandpass = password;
+	std::string userandpass = m_salt.Salt(password);
 	m_client_status = cs_logged_in;
 	unsigned int d_account_id = 0;
 	string d_pass_hash;
@@ -358,13 +358,13 @@ void Client::Handle_Play(const char* data)
 	}
 
 	if (data) {
-		server.server_manager->SendOldUserToWorldRequest(data, m_account_id, m_connection->GetRemoteIP());
+		server.server_manager->SendUserToWorldRequest(data, m_account_id, m_connection->GetRemoteIP());
 	}
 }
 
 void Client::SendServerListPacket()
 {
-	auto *outapp = server.server_manager->CreateOldServerListPacket(this);
+	auto *outapp = server.server_manager->CreateServerListPacket(this);
 
 	m_connection->QueuePacket(outapp);
 	delete outapp;

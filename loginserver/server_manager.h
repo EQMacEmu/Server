@@ -45,12 +45,12 @@ public:
 	/**
 	* Sends a request to world to see if the client is banned or suspended.
 	*/
-	void SendOldUserToWorldRequest(const char* ServerIP, unsigned int client_account_id, uint32 ip);
+	void SendUserToWorldRequest(const char* ServerIP, unsigned int client_account_id, uint32 ip);
 
 	/**
 	* Creates a server list packet for the older client.
 	*/
-	EQApplicationPacket* CreateOldServerListPacket(Client* c);
+	EQApplicationPacket* CreateServerListPacket(Client* c);
 
 	/**
 	* Checks to see if there is a server exists with this name, ignoring option.
