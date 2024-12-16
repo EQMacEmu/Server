@@ -60,14 +60,21 @@ void LoadDatabaseConnection()
 
 void LoadLogSysDatabaseConnection()
 {
-	LogInfo("LogSys MySQL Database Init.");
-	server.logsys_db = (Database *)new Database(
-		server.config.GetVariableString("logsys_database", "user", "user"),
-		server.config.GetVariableString("logsys_database", "password", "password"),
-		server.config.GetVariableString("logsys_database", "host", "127.0.0.1"),
-		server.config.GetVariableString("logsys_database", "port", "3306"),
-		server.config.GetVariableString("logsys_database", "db", "eqemu")
-	);
+	if (server.config.RawHandle()["logsys_database"].isObject())
+	{
+		LogInfo("LogSys MySQL Database Init.");
+		server.logsys_db = (Database *)new Database(
+			server.config.GetVariableString("logsys_database", "user", "user"),
+			server.config.GetVariableString("logsys_database", "password", "password"),
+			server.config.GetVariableString("logsys_database", "host", "127.0.0.1"),
+			server.config.GetVariableString("logsys_database", "port", "3306"),
+			server.config.GetVariableString("logsys_database", "db", "eqemu")
+		);
+	}
+	else
+	{
+		server.logsys_db = nullptr;
+	}
 }
 
 int main()
@@ -110,7 +117,7 @@ int main()
 		LoadLogSysDatabaseConnection();
 	}
 
-	LogSys.SetDatabase(server.logsys_db)
+	LogSys.SetDatabase(server.logsys_db != nullptr ? server.logsys_db : server.db)
 		->SetLogPath("logs")
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
@@ -131,6 +138,10 @@ int main()
 
 		LogInfo("Database System Shutdown.");
 		delete server.db;
+		if (server.logsys_db != nullptr)
+		{
+			delete server.logsys_db;
+		}
 		return 1;
 	}
 
@@ -145,6 +156,10 @@ int main()
 
 		LogInfo("Database System Shutdown.");
 		delete server.db;
+		if (server.logsys_db != nullptr)
+		{
+			delete server.logsys_db;
+		}
 		return 1;
 	}
 
@@ -185,6 +200,10 @@ int main()
 
 	LogInfo("Database System Shutdown.");
 	delete server.db;
+	if (server.logsys_db != nullptr)
+	{
+		delete server.logsys_db;
+	}
 
 	LogSys.CloseFileLogs();
 
