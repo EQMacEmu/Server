@@ -90,6 +90,7 @@ int main()
 	server.options.WorldAdminRegistrationTable(server.config.GetVariableString("schema", "world_admin_registration_table", "tblServerAdminRegistration"));
 	server.options.WorldServerTypeTable(server.config.GetVariableString("schema", "world_server_type_table", "tblServerListType"));
 	server.options.LoginSettingTable(server.config.GetVariableString("schema", "loginserver_setting_table", "tblloginserversettings"));
+	server.options.LoginPasswordSalt(server.config.GetVariableString("database", "salt", ""));
 
 	/* Create database connection */
 	if (server.config.GetVariableString("database", "subsystem", "MySQL").compare("MySQL") == 0) {
