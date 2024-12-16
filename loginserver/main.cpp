@@ -58,6 +58,18 @@ void LoadDatabaseConnection()
 	);
 }
 
+void LoadLogSysDatabaseConnection()
+{
+	LogInfo("LogSys MySQL Database Init.");
+	server.logsys_db = (Database *)new Database(
+		server.config.GetVariableString("logsys_database", "user", "user"),
+		server.config.GetVariableString("logsys_database", "password", "password"),
+		server.config.GetVariableString("logsys_database", "host", "127.0.0.1"),
+		server.config.GetVariableString("logsys_database", "port", "3306"),
+		server.config.GetVariableString("logsys_database", "db", "eqemu")
+	);
+}
+
 int main()
 {
 	RegisterExecutablePlatform(ExePlatformLogin);
@@ -95,9 +107,10 @@ int main()
 	/* Create database connection */
 	if (server.config.GetVariableString("database", "subsystem", "MySQL").compare("MySQL") == 0) {
 		LoadDatabaseConnection();
+		LoadLogSysDatabaseConnection();
 	}
 
-	LogSys.SetDatabase(server.db)
+	LogSys.SetDatabase(server.logsys_db)
 		->SetLogPath("logs")
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();

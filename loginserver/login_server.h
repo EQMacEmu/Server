@@ -34,6 +34,7 @@ public:
 
 	EQ::JsonConfigFile config;
 	Database *db;
+	Database *logsys_db;
 	Options options;
 	ServerManager *server_manager;
 	ClientManager *client_manager;
