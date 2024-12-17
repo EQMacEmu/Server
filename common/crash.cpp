@@ -226,6 +226,7 @@ void set_exception_handler() {
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
+#include <time.h>
 
 #ifdef __FreeBSD__
 #include <signal.h>
@@ -265,11 +266,28 @@ void print_trace()
 		int fd = open(temp_output_file.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 		dup2(fd, 1); // redirect output to stderr
 		fprintf(stdout, "stack trace for %s pid=%s\n", name_buf, pid_buf);
+		char gcore[512] = "";
+		if (RuleB(Analytics, GenerateCore)) {
+			char hostname[64];
+			gethostname(hostname, 64);
+			hostname[63] = 0;
+			snprintf(gcore, 512, "gcore core.%s.%s.%s.%lu", basename(name_buf), pid_buf, hostname, (unsigned long)time(NULL));
+		}
 		if (uid == 0) {
-			execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", name_buf, pid_buf, NULL);
+			if (strlen(gcore)) {
+				execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", "-ex", gcore, name_buf, pid_buf, NULL);
+			}
+			else {
+				execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", name_buf, pid_buf, NULL);
+			}
 		}
 		else {
-			execlp("sudo", "gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", name_buf, pid_buf, NULL);
+			if (strlen(gcore)) {
+				execlp("sudo", "gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", "-ex", gcore, name_buf, pid_buf, NULL);
+			}
+			else {
+				execlp("sudo", "gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", name_buf, pid_buf, NULL);
+			}
 		}
 
 		close(fd);
@@ -293,7 +311,7 @@ void print_trace()
 		SendCrashReport(crash_report);
 	}
 
-	exit(1);
+	std::quick_exit(1);
 }
 
 // crash is off or an unhandled platform

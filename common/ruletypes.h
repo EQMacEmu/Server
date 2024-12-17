@@ -453,6 +453,7 @@ RULE_CATEGORY_END()
 
 RULE_CATEGORY(Analytics)
 RULE_BOOL(Analytics, CrashReporting, true, "Automatic crash reporting analytics for EQEmu Server developers")
+RULE_BOOL(Analytics, GenerateCore, false, "Generate core dump file when crashes occur")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(Logging)
