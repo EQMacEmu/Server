@@ -490,15 +490,15 @@ bool Client::HandleCharacterCreatePacket(const EQApplicationPacket *app) {
 	return true;
 }
 
-bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app) {
+bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
+{
 	if (GetAccountID() == 0) {
 		Log(Logs::Detail, Logs::WorldServer, "Enter world with no logged in account");
 		eqs->Close();
 		return true;
 	}
 
-	if (GetAdmin() < 0)
-	{
+	if (GetAdmin() < 0)	{
 		Log(Logs::Detail, Logs::WorldServer, "Account banned or suspended.");
 		eqs->Close();
 		return true;
@@ -507,11 +507,13 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app) {
 	//if (RuleI(World, MaxClientsPerIP) >= 0) {
 	//	client_list.GetCLEIP(this->GetIP()); //Check current CLE Entry IPs against incoming connection
 	//}
-	if (GetSessionLimit())
+	if (GetSessionLimit()) {
 		return false;
+	}
 
-	if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(GetAccountID(), GetIP(), GetAdmin(), cle))
+	if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(GetAccountID(), GetIP(), GetAdmin(), cle)) {
 		return false;
+	}
 
 	EnterWorld_Struct *ew = (EnterWorld_Struct *)app->pBuffer;
 	strn0cpy(char_name, ew->name, 64);
@@ -532,9 +534,15 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app) {
 	}
 
 	if (zone_id == 0 || !ZoneName(zone_id)) {
-		// This is to save people in an invalid zone, once it's removed from the DB
-		database.MoveCharacterToZone(char_id, ZoneID("bazaar"));
-		Log(Logs::Detail, Logs::WorldServer, "Zone not found in database zone_id=%i, moving char to bazaar character:%s", zone_id, char_name);
+		if (mule && content_service.IsTheShadowsOfLuclinEnabled()) {
+			// This is to save people in an invalid zone, once it's removed from the DB
+			database.MoveCharacterToZone(char_id, ZoneID("bazaar"));
+			LogInfo("Zone [{}] not found, moving [{}] to Bazaar.", zone_id, char_name);
+		}
+		else {
+			database.MoveCharacterToZone(char_id, ZoneID("arena"));
+			LogInfo("Zone [{}] not found, moving [{}] to Arena.", zone_id, char_name);
+		}
 	}
 
 	if (!is_player_zoning) {
@@ -634,31 +642,30 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app) {
 			}
 		}
 	}
-	if (!is_player_zoning)
-	{
-		auto outapp = new EQApplicationPacket(OP_MOTD);
-		std::string motd = RuleS(World, MOTD);
-		if (!motd.empty()) {
-			outapp->size = motd.length() + 1;
-			outapp->pBuffer = new uchar[outapp->size];
-			memset(outapp->pBuffer, 0, outapp->size);
-			strcpy((char*)outapp->pBuffer, motd.c_str());
-		}
-		else if (database.GetVariable("MOTD", motd)) {
-			outapp->size = motd.length() + 1;
-			outapp->pBuffer = new uchar[outapp->size];
-			memset(outapp->pBuffer, 0, outapp->size);
-			strcpy((char*)outapp->pBuffer, motd.c_str());
-		}
-		else {
-			// Null Message of the Day. :)
-			outapp->size = 1;
-			outapp->pBuffer = new uchar[outapp->size];
-			outapp->pBuffer[0] = 0;
-		}
-		QueuePacket(outapp);
-		safe_delete(outapp);
+
+	auto outapp = new EQApplicationPacket(OP_MOTD);
+	std::string motd = RuleS(World, MOTD);
+	if (!motd.empty()) {
+		outapp->size = motd.length() + 1;
+		outapp->pBuffer = new uchar[outapp->size];
+		memset(outapp->pBuffer, 0, outapp->size);
+		strcpy((char*)outapp->pBuffer, motd.c_str());
 	}
+	else if (database.GetVariable("MOTD", motd)) {
+		outapp->size = motd.length() + 1;
+		outapp->pBuffer = new uchar[outapp->size];
+		memset(outapp->pBuffer, 0, outapp->size);
+		strcpy((char*)outapp->pBuffer, motd.c_str());
+	}
+	else {
+		// Null Message of the Day. :)
+		outapp->size = 1;
+		outapp->pBuffer = new uchar[outapp->size];
+		outapp->pBuffer[0] = 0;
+	}
+
+	QueuePacket(outapp);
+	safe_delete(outapp);
 
 	// set mailkey - used for duration of character session
 	int MailKey = emu_random.Int(1, INT_MAX);

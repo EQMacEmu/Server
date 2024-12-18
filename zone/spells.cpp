@@ -4889,7 +4889,7 @@ void Mob::ResistSpell(Mob* caster, uint16 spell_id, bool isProc)
 			// See http://www.eqemulator.org/forums/showthread.php?t=43370
 			int aggroChance = 90 - caster->GetCHA() / 4;
 
-			if (!zone->random.Roll(aggroChance))
+			if (zone->random.Roll(aggroChance))
 			{
 				AddToHateList(caster, aggro);
 				Log(Logs::Detail, Logs::Spells, "ResistSpell(): Lull critical fail; aggro chance was %i.", aggroChance);

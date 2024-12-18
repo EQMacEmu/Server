@@ -464,6 +464,10 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			break;
 		}
 		case ServerOP_Motd: {
+			if (pack->size != sizeof(ServerMotd_Struct)) {
+				break;
+			}
+
 			ServerMotd_Struct* smotd = (ServerMotd_Struct*) pack->pBuffer;
 			auto outapp = new EQApplicationPacket(OP_MOTD);
 			char tmp[512] = {0};

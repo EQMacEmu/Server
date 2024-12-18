@@ -110,10 +110,10 @@ public:
 		return &rules;
 	}
 
-	static const IntType      InvalidInt = _IntRuleCount;
-	static const RealType     InvalidReal = _RealRuleCount;
-	static const BoolType     InvalidBool = _BoolRuleCount;
-	static const StringType   InvalidString = _StringRuleCount;
+	static const IntType      InvalidInt      = _IntRuleCount;
+	static const RealType     InvalidReal     = _RealRuleCount;
+	static const BoolType     InvalidBool     = _BoolRuleCount;
+	static const StringType   InvalidString   = _StringRuleCount;
 	static const CategoryType InvalidCategory = _CatCount;
 
 	static const uint32 RulesCount = IntRuleCount + RealRuleCount + BoolRuleCount + StringRuleCount;
@@ -183,7 +183,7 @@ private:
 	static int _FindOrCreateRuleset(Database* db, const std::string& rule_set_name);
 	void _SaveRule(Database* db, RuleType type, uint16 index);
 
-	static const char *s_categoryNames[];
+	static const char* s_categoryNames[];
 	typedef struct {
 		std::string       name;
 		CategoryType      category;

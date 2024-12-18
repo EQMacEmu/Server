@@ -113,7 +113,7 @@ public:
 	bool	SetHackerFlag(const char* accountname, const char* charactername, const char* hacked);
 	bool	SetMQDetectionFlag(const char* accountname, const char* charactername, const char* hacked, const char* zone);
 	bool	SetMQDetectionFlag(const char* accountname, const char* charactername, const std::string& hacked, const char* zone);
-	bool	AddToNameFilter(const char* name);
+	bool	AddToNameFilter(std::string name);
 	bool	ReserveName(uint32 account_id, char* name);
 	bool	StoreCharacter(uint32 account_id, PlayerProfile_Struct* pp, EQ::InventoryProfile* inv);
 	bool	DeleteCharacter(char* name);
@@ -127,8 +127,8 @@ public:
 	bool	AddGMIP(char* ip_address, char* name);
 	bool	CheckBannedIPs(std::string login_ip); //Check incoming connection against banned IP table.
 	bool	CheckGMIPs(std::string login_ip, uint32 account_id);
-	bool	CheckNameFilter(const char* name, bool surname = false);
-	bool	CheckUsedName(const char* name, uint32 charid = 0);
+	bool	CheckNameFilter(std::string name, bool surname = false);
+	bool	CheckUsedName(std::string name, uint32 charid = 0);
 	bool	NoRentExpired(const char* name);
 
 	uint32	GetAccountIDByChar(const char* charname, uint32* oCharID = 0);

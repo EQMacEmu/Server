@@ -97,9 +97,9 @@ public:
 	int GetLevel() { if (Characters.size()) return Characters[0].Level; else return 0; }
 	int GetRace() { if (Characters.size()) return Characters[0].Race; else return 999; }
 	int GetClass() { if (Characters.size()) return Characters[0].Class; else return 999; }
-	void JoinChannels(std::string ChannelList);
-	void LeaveChannels(std::string ChannelList);
-	void LeaveAllChannels(bool SendUpdatedChannelList = true);
+	void JoinChannels(std::string& channel_name_list);
+	void LeaveChannels(std::string& channel_name_list);
+	void LeaveAllChannels(bool send_updated_channel_list = true);
 	void AddToChannelList(ChatChannel *JoinedChannel);
 	void RemoveFromChannelList(ChatChannel *JoinedChannel);
 	void SendChannelMessage(std::string Message);
@@ -182,7 +182,7 @@ public:
 	void	CheckForStaleConnectionsAll();
 	void	CheckForStaleConnections(Client* c);
 	Client* IsCharacterOnline(const std::string& CharacterName);
-	void ProcessOPChatCommand(Client* c, std::string command_string, bool command_directed = false);
+	void ProcessOPChatCommand(Client* c, std::string command_string);
 
 private:
 

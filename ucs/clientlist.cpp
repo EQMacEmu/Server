@@ -50,8 +50,9 @@ int LookupCommand(const char *ChatCommand) {
 
 	for(int i = 0; i < CommandEndOfList; i++) {
 
-		if(!strcasecmp(Commands[i].CommandString, ChatCommand))
+		if (!strcasecmp(Commands[i].CommandString, ChatCommand)) {
 			return Commands[i].CommandCode;
+		}
 	}
 
 	return -1;
@@ -417,7 +418,8 @@ void Clientlist::Process()
 				if (Strings::Contains(Strings::ToLower(command_string), "leave")) {
 					command_directed = true;
 				}
-				ProcessOPChatCommand((*it), command_string, command_directed);
+
+				ProcessOPChatCommand((*it), command_string);
 				break;
 			}
 
@@ -449,14 +451,13 @@ void Clientlist::Process()
 	}
 }
 
-void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, bool command_directed)
+void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string)
 {
 
 	if (command_string.length() == 0)
 		return;
 
-	if (isdigit(command_string[0]))
-	{
+	if (isdigit(command_string[0])) {
 
 		c->SendChannelMessageByNumber(command_string);
 
@@ -470,28 +471,30 @@ void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, boo
 		return;
 	}
 
-	std::string Command, Parameters;
+	std::string command, parameters;
 
 	std::string::size_type Space = command_string.find_first_of(" ");
 
 	if(Space != std::string::npos) {
 
-		Command = command_string.substr(0, Space);
+		command = command_string.substr(0, Space);
 
-		std::string::size_type ParametersStart = command_string.find_first_not_of(" ", Space);
+		std::string::size_type parameters_start = command_string.find_first_not_of(" ", Space);
 
-		if(ParametersStart != std::string::npos)
-			Parameters = command_string.substr(ParametersStart);
+		if (parameters_start != std::string::npos) {
+			parameters = command_string.substr(parameters_start);
+		}
 	}
-	else
-		Command = command_string;
+	else {
+		command = command_string;
+	}
 
-	auto CommandCode = LookupCommand(Command.c_str());
+	auto command_code = LookupCommand(command.c_str());
 
-	switch(CommandCode) {
+	switch(command_code) {
 
 		case CommandJoin:
-			c->JoinChannels(Parameters);
+			c->JoinChannels(parameters);
 			break;
 
 		case CommandLeaveAll:
@@ -499,7 +502,7 @@ void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, boo
 			break;
 
 		case CommandLeave:
-			c->LeaveChannels(Parameters);
+			c->LeaveChannels(parameters);
 			break;
 
 		case CommandListAll:
@@ -507,48 +510,48 @@ void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, boo
 			break;
 
 		case CommandList:
-			c->ProcessChannelList(Parameters);
+			c->ProcessChannelList(parameters);
 			break;
 
 		case CommandSet:
 			c->LeaveAllChannels(false);
-			c->JoinChannels(Parameters);
+			c->JoinChannels(parameters);
 			break;
 
 		case CommandAnnounce:
-			c->ToggleAnnounce(Parameters);
+			c->ToggleAnnounce(parameters);
 			break;
 
 		case CommandSetOwner:
-			c->SetChannelOwner(Parameters);
+			c->SetChannelOwner(parameters);
 			break;
 
 		case CommandOPList:
-			c->OPList(Parameters);
+			c->OPList(parameters);
 			break;
 
 		case CommandInvite:
-			c->ChannelInvite(Parameters);
+			c->ChannelInvite(parameters);
 			break;
 
 		case CommandGrant:
-			c->ChannelGrantModerator(Parameters);
+			c->ChannelGrantModerator(parameters);
 			break;
 
 		case CommandModerate:
-			c->ChannelModerate(Parameters);
+			c->ChannelModerate(parameters);
 			break;
 
 		case CommandVoice:
-			c->ChannelGrantVoice(Parameters);
+			c->ChannelGrantVoice(parameters);
 			break;
 
 		case CommandKick:
-			c->ChannelKick(Parameters);
+			c->ChannelKick(parameters);
 			break;
 
 		case CommandPassword:
-			c->SetChannelPassword(Parameters);
+			c->SetChannelPassword(parameters);
 			break;
 
 		case CommandToggleInvites:
@@ -563,18 +566,18 @@ void Clientlist::ProcessOPChatCommand(Client* c, std::string command_string, boo
 			break;
 
 		case CommandSetMessageStatus:
-			LogInfo("Set Message Status, Params: [{0}]", Parameters.c_str());
-			ProcessSetMessageStatus(Parameters);
+			LogInfo("Set Message Status, Params: [{0}]", parameters.c_str());
+			ProcessSetMessageStatus(parameters);
 			break;
 
 		case CommandBuddy:
-			RemoveApostrophes(Parameters);
-			ProcessCommandBuddy(c, Parameters);
+			RemoveApostrophes(parameters);
+			ProcessCommandBuddy(c, parameters);
 			break;
 
 		case CommandIgnorePlayer:
-			RemoveApostrophes(Parameters);
-			ProcessCommandIgnore(c, Parameters);
+			RemoveApostrophes(parameters);
+			ProcessCommandIgnore(c, parameters);
 			break;
 
 		default:
@@ -705,51 +708,52 @@ int Client::ChannelCount() {
 
 }
 
-void Client::JoinChannels(std::string ChannelNameList) {
+void Client::JoinChannels(std::string& channel_name_list) {
 
-	for (auto &elem : ChannelNameList) {
+	for (auto &elem : channel_name_list) {
 		if (elem == '%') {
 			elem = '/';
 		}
 	}
 
-	LogInfo("Client: [{0}] joining channels [{1}]", GetName().c_str(), ChannelNameList.c_str());
+	LogInfo("Client: [{0}] joining channels [{1}]", GetName().c_str(), channel_name_list.c_str());
 
-	int NumberOfChannels = ChannelCount();
+	auto number_of_channels = ChannelCount();
 
-	std::string::size_type CurrentPos = ChannelNameList.find_first_not_of(" ");
+	auto current_pos = channel_name_list.find_first_not_of(" ");
 
-	while(CurrentPos != std::string::npos) {
+	while(current_pos != std::string::npos) {
 
-		if(NumberOfChannels == MAX_JOINED_CHANNELS) {
+		if(number_of_channels == MAX_JOINED_CHANNELS) {
 
 			GeneralChannelMessage("You have joined the maximum number of channels. /leave one before trying to join another.");
 
 			break;
 		}
 
-		std::string::size_type Comma = ChannelNameList.find_first_of(", ", CurrentPos);
+		auto comma = channel_name_list.find_first_of(", ", current_pos);
 
-		if(Comma == std::string::npos) {
+		if(comma == std::string::npos) {
 
-			ChatChannel* JoinedChannel = ChannelList->AddClientToChannel(ChannelNameList.substr(CurrentPos), this);
+			auto* joined_channel = ChannelList->AddClientToChannel(channel_name_list.substr(current_pos), this);
 
-			if(JoinedChannel)
-				AddToChannelList(JoinedChannel);
+			if (joined_channel) {
+				AddToChannelList(joined_channel);
+			}
 
 			break;
 		}
 
-		ChatChannel* JoinedChannel = ChannelList->AddClientToChannel(ChannelNameList.substr(CurrentPos, Comma-CurrentPos), this);
+		auto* joined_channel = ChannelList->AddClientToChannel(channel_name_list.substr(current_pos, comma - current_pos), this);
 
-		if(JoinedChannel) {
+		if(joined_channel) {
 
-			AddToChannelList(JoinedChannel);
+			AddToChannelList(joined_channel);
 
-			NumberOfChannels++;
+			number_of_channels++;
 		}
 
-		CurrentPos = ChannelNameList.find_first_not_of(", ", Comma);
+		current_pos = channel_name_list.find_first_not_of(", ", comma);
 	}
 
 	std::string JoinedChannelsList, ChannelMessage;
@@ -793,8 +797,9 @@ void Client::JoinChannels(std::string ChannelNameList) {
 
 	safe_delete(outapp);
 
-	if(ChannelCount == 0)
+	if (ChannelCount == 0) {
 		ChannelMessage = "You are not on any channels.";
+	}
 
 	outapp = new EQApplicationPacket(OP_ChannelMessage, ChannelMessage.length() + 3);
 
@@ -810,37 +815,40 @@ void Client::JoinChannels(std::string ChannelNameList) {
 	safe_delete(outapp);
 }
 
-void Client::LeaveChannels(std::string ChannelNameList) {
+void Client::LeaveChannels(std::string& channel_name_list) 
+{
 
-	LogInfo("Client: [{0}] leaving channels [{1}]", GetName().c_str(), ChannelNameList.c_str());
+	LogInfo("Client: [{0}] leaving channels [{1}]", GetName().c_str(), channel_name_list.c_str());
 
-	std::string::size_type CurrentPos = 0;
+	auto current_pos = 0;
 
-	while(CurrentPos != std::string::npos) {
+	while(current_pos != std::string::npos) {
 
-		std::string::size_type Comma = ChannelNameList.find_first_of(", ", CurrentPos);
+		std::string::size_type Comma = channel_name_list.find_first_of(", ", current_pos);
 
 		if(Comma == std::string::npos) {
 
-			ChatChannel* JoinedChannel = ChannelList->RemoveClientFromChannel(ChannelNameList.substr(CurrentPos), this);
+			auto* joined_channel = ChannelList->RemoveClientFromChannel(channel_name_list.substr(current_pos), this);
 
-			if(JoinedChannel)
-				RemoveFromChannelList(JoinedChannel);
+			if (joined_channel) {
+				RemoveFromChannelList(joined_channel);
+			}
 
 			break;
 		}
 
-		ChatChannel* JoinedChannel = ChannelList->RemoveClientFromChannel(ChannelNameList.substr(CurrentPos, Comma-CurrentPos), this);
+		auto* joined_channel = ChannelList->RemoveClientFromChannel(channel_name_list.substr(current_pos, Comma- current_pos), this);
 
-		if(JoinedChannel)
-			RemoveFromChannelList(JoinedChannel);
+		if (joined_channel) {
+			RemoveFromChannelList(joined_channel);
+		}
 
-		CurrentPos = ChannelNameList.find_first_not_of(", ", Comma);
+		current_pos = channel_name_list.find_first_not_of(", ", Comma);
 	}
 
-	std::string JoinedChannelsList, ChannelMessage;
+	std::string joined_channels_list, channel_message;
 
-	ChannelMessage = "Channels: ";
+	channel_message = "Channels: ";
 
 	char tmp[200];
 
@@ -852,42 +860,43 @@ void Client::LeaveChannels(std::string ChannelNameList) {
 
 			if(ChannelCount) {
 
-				JoinedChannelsList = JoinedChannelsList + ",";
+				joined_channels_list = joined_channels_list + ",";
 
-				ChannelMessage = ChannelMessage + ",";
+				channel_message = channel_message + ",";
 			}
 
-			JoinedChannelsList = JoinedChannelsList + JoinedChannels[i]->GetName();
+			joined_channels_list = joined_channels_list + JoinedChannels[i]->GetName();
 
 			sprintf(tmp, "%i=%s(%i)", i + 1, JoinedChannels[i]->GetName().c_str(), JoinedChannels[i]->MemberCount(Status));
 
-			ChannelMessage += tmp;
+			channel_message += tmp;
 
 			ChannelCount++;
 		}
 	}
 
-	auto outapp = new EQApplicationPacket(OP_Chat, JoinedChannelsList.length() + 1);
+	auto outapp = new EQApplicationPacket(OP_Chat, joined_channels_list.length() + 1);
 
 	char *PacketBuffer = (char *)outapp->pBuffer;
 
-	sprintf(PacketBuffer, "%s", JoinedChannelsList.c_str());
+	sprintf(PacketBuffer, "%s", joined_channels_list.c_str());
 
 
 	QueuePacket(outapp);
 
 	safe_delete(outapp);
 
-	if(ChannelCount == 0)
-		ChannelMessage = "You are not on any channels.";
+	if (ChannelCount == 0) {
+		channel_message = "You are not on any channels.";
+	}
 
-	outapp = new EQApplicationPacket(OP_ChannelMessage, ChannelMessage.length() + 3);
+	outapp = new EQApplicationPacket(OP_ChannelMessage, channel_message.length() + 3);
 
 	PacketBuffer = (char *)outapp->pBuffer;
 
 	VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, 0x00);
 	VARSTRUCT_ENCODE_TYPE(uint8, PacketBuffer, 0x00);
-	VARSTRUCT_ENCODE_STRING(PacketBuffer, ChannelMessage.c_str());
+	VARSTRUCT_ENCODE_STRING(PacketBuffer, channel_message.c_str());
 
 
 	QueuePacket(outapp);
@@ -895,7 +904,8 @@ void Client::LeaveChannels(std::string ChannelNameList) {
 	safe_delete(outapp);
 }
 
-void Client::LeaveAllChannels(bool SendUpdatedChannelList) {
+void Client::LeaveAllChannels(bool send_updated_channel_list) 
+{
 
 	for (auto &elem : JoinedChannels) {
 
@@ -907,8 +917,9 @@ void Client::LeaveAllChannels(bool SendUpdatedChannelList) {
 		}
 	}
 
-	if(SendUpdatedChannelList)
+	if (send_updated_channel_list) {
 		SendChannelList();
+	}
 }
 
 
@@ -928,16 +939,18 @@ void Client::ProcessChannelList(std::string Input) {
 
 	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
 
-	if(RequiredChannel)
+	if (RequiredChannel) {
 		RequiredChannel->SendChannelMembers(this);
-	else
+	}
+	else {
 		GeneralChannelMessage("Channel " + Input + " not found.");
+	}
 }
 
 
 
-void Client::SendChannelList() {
-
+void Client::SendChannelList() 
+{
 	std::string ChannelMessage;
 
 	ChannelMessage = "Channels: ";
@@ -992,16 +1005,13 @@ void Client::SendChannelMessage(std::string Message)
 
 	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
 
-	if(IsRevoked())
-	{
+	if(IsRevoked()) {
 		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
 		return;
 	}
 
-	if(ChannelName.compare("Newplayers") != 0)
-	{
-		if(GetKarma() < RuleI(Chat, KarmaGlobalChatLimit))
-		{
+	if(ChannelName.compare("Newplayers") != 0) {
+		if(GetKarma() < RuleI(Chat, KarmaGlobalChatLimit)) {
 			CharacterEntry *char_ent = nullptr;
 			for (auto &elem : Characters) {
 				if (elem.Name.compare(GetName()) == 0) {
@@ -1009,10 +1019,8 @@ void Client::SendChannelMessage(std::string Message)
 					break;
 				}
 			}
-			if(char_ent)
-			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
-				{
+			if(char_ent) {
+				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit)) {
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;
 				}
@@ -1021,15 +1029,11 @@ void Client::SendChannelMessage(std::string Message)
 	}
 
 	if(RequiredChannel) {
-		if(RuleB(Chat, EnableAntiSpam))
-		{
+		if(RuleB(Chat, EnableAntiSpam))	{
 			if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin())
-			{
-				if(GlobalChatLimiterTimer)
-				{
-					if(GlobalChatLimiterTimer->Check())
-					{
+				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin()) {
+				if(GlobalChatLimiterTimer) {
+					if(GlobalChatLimiterTimer->Check()) {
 						AttemptedMessages = 0;
 					}
 				}
@@ -1039,43 +1043,41 @@ void Client::SendChannelMessage(std::string Message)
 				int AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
 				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages;
 
-				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
+				if (RuleI(Chat, MinStatusToBypassAntiSpam) <= Status) {
 					AllowedMessages = 10000;
+				}
 
 				AttemptedMessages++;
-				if(AttemptedMessages > AllowedMessages)
-				{
-					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
-					{
+				if(AttemptedMessages > AllowedMessages)	{
+					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick)) {
 						ForceDisconnect = true;
 					}
-					if(GlobalChatLimiterTimer)
-					{
+					if(GlobalChatLimiterTimer) {
 						char TimeLeft[256];
 						sprintf(TimeLeft, "You are currently rate limited, you cannot send more messages for %i seconds.",
 							(GlobalChatLimiterTimer->GetRemainingTime() / 1000));
 						GeneralChannelMessage(TimeLeft);
 					}
-					else
-					{
+					else {
 						GeneralChannelMessage("You are currently rate limited, you cannot send more messages for up to 60 seconds.");
 					}
 				}
-				else
-				{
+				else {
 					RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
 				}
 			}
-			else
+			else {
 				GeneralChannelMessage("Channel " + ChannelName + " is moderated and you have not been granted a voice.");
+			}
 		}
-		else
-		{
-			if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin())
-				RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
-			else
+		else {
+			if (!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+				RequiredChannel->IsModerator(GetName()) || IsChannelAdmin()) {
+				RequiredChannel->SendMessageToChannel(Message.substr(MessageStart + 1), this);
+			}
+			else {
 				GeneralChannelMessage("Channel " + ChannelName + " is moderated and you have not been granted a voice.");
+			}
 		}
 	}
 }
@@ -1084,8 +1086,9 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 
 	std::string::size_type MessageStart = Message.find_first_of(" ");
 
-	if(MessageStart == std::string::npos)
+	if (MessageStart == std::string::npos) {
 		return;
+	}
 
 	int ChannelNumber = atoi(Message.substr(0, MessageStart).c_str());
 
@@ -1105,16 +1108,13 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 		return;
 	}
 
-	if(IsRevoked())
-	{
+	if(IsRevoked())	{
 		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
 		return;
 	}
 
-	if(RequiredChannel->GetName().compare("Newplayers") != 0)
-	{
-		if(GetKarma() < RuleI(Chat, KarmaGlobalChatLimit))
-		{
+	if(RequiredChannel->GetName().compare("Newplayers") != 0) {
+		if(GetKarma() < RuleI(Chat, KarmaGlobalChatLimit)) {
 			CharacterEntry *char_ent = nullptr;
 			for (auto &elem : Characters) {
 				if (elem.Name.compare(GetName()) == 0) {
@@ -1122,10 +1122,8 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 					break;
 				}
 			}
-			if(char_ent)
-			{
-				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))
-				{
+			if(char_ent) {
+				if(char_ent->Level < RuleI(Chat, GlobalChatLevelLimit))	{
 					GeneralChannelMessage("You are either not high enough level or high enough karma to talk in this channel right now.");
 					return;
 				}
@@ -1136,62 +1134,55 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 	Log(Logs::Detail, Logs::UCSServer, "%s tells %s, [%s]", GetName().c_str(), RequiredChannel->GetName().c_str(),
 							Message.substr(MessageStart + 1).c_str());
 
-	if(RuleB(Chat, EnableAntiSpam))
-	{
+	if(RuleB(Chat, EnableAntiSpam))	{
 		if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-			RequiredChannel->IsModerator(GetName()))
-		{
-				if(GlobalChatLimiterTimer)
-				{
-					if(GlobalChatLimiterTimer->Check())
-					{
-						AttemptedMessages = 0;
-					}
-				}
-				else {
+			RequiredChannel->IsModerator(GetName())) {
+			if(GlobalChatLimiterTimer) {
+				if(GlobalChatLimiterTimer->Check())	{
 					AttemptedMessages = 0;
 				}
-				int AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
-				AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages;
-				if(RuleI(Chat, MinStatusToBypassAntiSpam) <= Status)
-					AllowedMessages = 10000;
+			}
+			else {
+				AttemptedMessages = 0;
+			}
+			int AllowedMessages = RuleI(Chat, MinimumMessagesPerInterval) + GetKarma();
+			AllowedMessages = AllowedMessages > RuleI(Chat, MaximumMessagesPerInterval) ? RuleI(Chat, MaximumMessagesPerInterval) : AllowedMessages;
+			if (RuleI(Chat, MinStatusToBypassAntiSpam) <= Status) {
+				AllowedMessages = 10000;
+			}
 
-				AttemptedMessages++;
-				if(AttemptedMessages > AllowedMessages)
-				{
-					if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick))
-					{
-						ForceDisconnect = true;
-					}
-					if(GlobalChatLimiterTimer)
-					{
-						char TimeLeft[256];
-						sprintf(TimeLeft, "You are currently rate limited, you cannot send more messages for %i seconds.",
-							(GlobalChatLimiterTimer->GetRemainingTime() / 1000));
-						GeneralChannelMessage(TimeLeft);
-					}
-					else
-					{
-						GeneralChannelMessage("You are currently rate limited, you cannot send more messages for up to 60 seconds.");
-					}
+			AttemptedMessages++;
+			if(AttemptedMessages > AllowedMessages)	{
+				if(AttemptedMessages > RuleI(Chat, MaxMessagesBeforeKick)) {
+					ForceDisconnect = true;
 				}
-				else
-				{
-					RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+
+				if(GlobalChatLimiterTimer) {
+					char TimeLeft[256];
+					sprintf(TimeLeft, "You are currently rate limited, you cannot send more messages for %i seconds.",
+						(GlobalChatLimiterTimer->GetRemainingTime() / 1000));
+					GeneralChannelMessage(TimeLeft);
 				}
+				else {
+					GeneralChannelMessage("You are currently rate limited, you cannot send more messages for up to 60 seconds.");
+				}
+			}
+			else {
+				RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
+			}
 		}
 		else
 			GeneralChannelMessage("Channel " + RequiredChannel->GetName() + " is moderated and you have not been granted a voice.");
 	}
-	else
-	{
-		if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
-			RequiredChannel->IsModerator(GetName()))
-			RequiredChannel->SendMessageToChannel(Message.substr(MessageStart+1), this);
-		else
+	else {
+		if (!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetName()) || RequiredChannel->IsOwner(GetName()) ||
+			RequiredChannel->IsModerator(GetName())) {
+			RequiredChannel->SendMessageToChannel(Message.substr(MessageStart + 1), this);
+		}
+		else {
 			GeneralChannelMessage("Channel " + RequiredChannel->GetName() + " is moderated and you have not been granted a voice.");
+		}
 	}
-
 }
 
 void Client::SendChannelMessage(std::string ChannelName, std::string Message, Client *Sender) {
@@ -1275,7 +1266,9 @@ void Client::AnnounceLeave(ChatChannel *Channel, Client *c) {
 
 void Client::GeneralChannelMessage(const char *Characters) {
 
-	if(!Characters) return;
+	if (!Characters) {
+		return;
+	}
 
 	std::string Message = Characters;
 

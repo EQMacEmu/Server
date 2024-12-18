@@ -20,7 +20,6 @@
 
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
-#include "../common/misc_functions.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +46,7 @@
 #include "../common/misc_functions.h"
 #include "../common/strings.h"
 #include "chatchannel.h"
+
 
 extern Clientlist *g_Clientlist;
 extern ChatChannelList *ChannelList;
@@ -210,8 +210,8 @@ bool UCSDatabase::GetVariable(const char* varname, char* varvalue, uint16 varval
 	return true;
 }
 
-bool UCSDatabase::LoadChatChannels() {
-
+bool UCSDatabase::LoadChatChannels() 
+{
 	LogInfo("Loading chat channels from the database.");
 
 	const std::string query = "SELECT `name`, `owner`, `password`, `minstatus` FROM `chatchannels`";
@@ -221,35 +221,43 @@ bool UCSDatabase::LoadChatChannels() {
 	}
 
 	for (auto row = results.begin();row != results.end(); ++row) {
-		std::string channelName = row[0];
-		std::string channelOwner = row[1];
-		std::string channelPassword = row[2];
+		std::string channel_name = row[0];
+		std::string channel_owner = row[1];
+		std::string channel_password = row[2];
+		auto channel_min_status = row[3];
 
-		ChannelList->CreateChannel(channelName, channelOwner, channelPassword, true, atoi(row[3]));
+		if (!ChannelList->FindChannel(channel_name)) {
+			ChannelList->CreateChannel(channel_name, channel_owner, channel_password, true, atoi(channel_min_status));
+		}
 	}
 
 	return true;
 }
 
-void UCSDatabase::SetChannelPassword(std::string channelName, std::string password) {
+void UCSDatabase::SetChannelPassword(const std::string& channel_name, const std::string& password)
+{
+	LogInfo("UCSDatabase::SetChannelPassword([{}], [{}])", channel_name.c_str(), password.c_str());
 
-	LogInfo("Database::SetChannelPassword([{0}], [{1}])", channelName.c_str(), password.c_str());
+	std::string query = fmt::format(
+		"UPDATE `chatchannels` SET `password` = '{}' WHERE `name` = '{}'",
+		Strings::Escape(password), Strings::Escape(channel_name));
+	QueryDatabase(query);
+}
 
-	std::string query = StringFormat("UPDATE `chatchannels` SET `password` = '%s' WHERE `name` = '%s'",
-                                    password.c_str(), channelName.c_str());
+void UCSDatabase::SetChannelOwner(const std::string& channel_name, const std::string& owner)
+{
+	LogInfo("Setting channel [{}] owner to [{}]", channel_name, owner);
+
+	std::string query = fmt::format(
+		"UPDATE `chatchannels` SET `owner` = '{}' WHERE `name` = '{}'",
+		Strings::Escape(owner),
+		Strings::Escape(channel_name)
+	);
+
     QueryDatabase(query);
 }
 
-void UCSDatabase::SetChannelOwner(std::string channelName, std::string owner) {
-
-	LogInfo("Database::SetChannelOwner([{0}], [{1}])", channelName.c_str(), owner.c_str());
-
-	std::string query = StringFormat("UPDATE `chatchannels` SET `owner` = '%s' WHERE `name` = '%s'",
-                                    owner.c_str(), channelName.c_str());
-    QueryDatabase(query);
-}
-
-void UCSDatabase::SetMessageStatus(int messageNumber, int status) {
+void UCSDatabase::SetMessageStatus(const int& messageNumber, const int& status) {
 
 	LogInfo("SetMessageStatus [{0}] [{1}]", messageNumber, status);
 
@@ -263,7 +271,7 @@ void UCSDatabase::SetMessageStatus(int messageNumber, int status) {
     QueryDatabase(query);
 }
 
-void UCSDatabase::AddFriendOrIgnore(int charID, int type, std::string name) {
+void UCSDatabase::AddFriendOrIgnore(const int& charID, const int& type, const std::string& name) {
 
     std::string query = StringFormat("INSERT INTO `friends` (`charid`, `type`, `name`) "
                                     "VALUES('%i', %i, '%s')",
@@ -274,7 +282,7 @@ void UCSDatabase::AddFriendOrIgnore(int charID, int type, std::string name) {
 
 }
 
-void UCSDatabase::RemoveFriendOrIgnore(int charID, int type, std::string name) {
+void UCSDatabase::RemoveFriendOrIgnore(const int& charID, const int& type, const std::string& name) {
 
 	std::string query = StringFormat("DELETE FROM `friends` WHERE `charid` = %i "
                                     "AND `type` = %i AND `name` = '%s'",
@@ -288,7 +296,7 @@ void UCSDatabase::RemoveFriendOrIgnore(int charID, int type, std::string name) {
 	}
 }
 
-void UCSDatabase::GetFriendsAndIgnore(int charID, std::vector<std::string> &friends, std::vector<std::string> &ignorees) {
+void UCSDatabase::GetFriendsAndIgnore(const int& charID, std::vector<std::string>& friends, std::vector<std::string>& ignorees) {
 
 	std::string query = StringFormat("select `type`, `name` FROM `friends` WHERE `charid`=%i", charID);
     auto results = QueryDatabase(query);

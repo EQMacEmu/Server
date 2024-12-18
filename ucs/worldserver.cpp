@@ -64,7 +64,10 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
 		case ServerOP_KeepAlive: {
 			break;
 		}
-		case ServerOP_DiscordWebhookMessage: {
+		case ServerOP_ReloadLogs: {
+			LogSys.LoadLogDatabaseSettings();
+			break;
+		}		case ServerOP_DiscordWebhookMessage: {
 			auto* q = (DiscordWebhookMessage_Struct*)p.Data();
 
 			discord_manager.QueueWebhookMessage(

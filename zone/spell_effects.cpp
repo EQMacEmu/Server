@@ -1423,20 +1423,20 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Feign Death");
 #endif
-				//todo, look up spell ID in DB
-				if(spell_id == 2488) //Dook- Lifeburn fix
+				// this effect doesn't work in buffs
+				if (buffslot >= 0)
 					break;
 
 				uint8 chance = spells[spell_id].base[i];
 				if (chance == 1)
 					chance = 87;
 
-				// Death Peace
-				if (spell_id == 1460)
+				if (spell_id == SPELL_DEATH_PEACE)
 					chance = 98;
 
 				if(IsClient()) {
-					if (zone->random.Int(1, 100) > chance) {
+					if (zone->random.Int(1, 100) > chance)
+					{
 						CastToClient()->SetFeigned(false);
 						entity_list.MessageClose_StringID(this, false, 200, 10, STRING_FEIGNFAILED, GetName());
 					}
