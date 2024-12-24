@@ -24,8 +24,11 @@
 #include "../common/net/eqstream.h"
 #include "../common/rulesys.h"
 #include "chatchannel.h"
+#include "database.h"
 #include <list>
 #include <vector>
+
+class UCSDatabase;
 
 #define MAX_JOINED_CHANNELS 10
 
@@ -94,6 +97,7 @@ public:
 	void SendChatlist();
 	inline void QueuePacket(const EQApplicationPacket* p, bool ack_req = true) { ClientStream->QueuePacket(p, ack_req); }
 	std::string GetName() { if(Characters.size()) return Characters[0].Name; else return ""; }
+	std::string GetFQName() { if (Characters.size()) return GetWorldShortName() + "." + Characters[0].Name; else return ""; }
 	int GetLevel() { if (Characters.size()) return Characters[0].Level; else return 0; }
 	int GetRace() { if (Characters.size()) return Characters[0].Race; else return 999; }
 	int GetClass() { if (Characters.size()) return Characters[0].Class; else return 999; }
@@ -141,6 +145,9 @@ public:
 	inline bool CanListAllChannels() { return (Status >= RuleI(Channels, RequiredStatusListAll)); }
 	void SendHelp();
 	inline bool GetForceDisconnect() { return ForceDisconnect; }
+	void SetWorldShortName(std::string wsn) { WorldShortName = wsn; }
+	std::string GetWorldShortName() { return WorldShortName; }
+	UCSDatabase &GetUCSDatabase();
 
 	void SetConnectionType(char c);
 	ConnectionType GetConnectionType() { return TypeOfConnection; }
@@ -160,6 +167,7 @@ private:
 	bool HideMe;
 	bool AllowInvites;
 	bool Revoked;
+	std::string WorldShortName;
 
 	//Anti Spam Stuff
 	Timer *AccountGrabUpdateTimer;
@@ -178,7 +186,7 @@ public:
 	Clientlist(int ChatPort);
 	void	Process();
 	void	CloseAllConnections();
-	Client* FindCharacter(const std::string& CharacterName);
+	Client* FindCharacter(const std::string& FQCharacterName);
 	void	CheckForStaleConnectionsAll();
 	void	CheckForStaleConnections(Client* c);
 	Client* IsCharacterOnline(const std::string& CharacterName);
