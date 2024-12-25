@@ -46,7 +46,7 @@ class WorldServer
 public:
 	WorldServer(WorldServerConfig *config);
 	~WorldServer();
-	void ProcessMessage(uint16 opcode, EQ::Net::Packet&);
+	void ProcessMessage(uint16 opcode, EQ::Net::Packet &);
 
 	UCSDatabase &GetUCSDatabase() { return m_database; }
 	void PingUCSDatabase();

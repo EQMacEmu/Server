@@ -46,6 +46,7 @@ Child of the Mob class.
 #include "string_ids.h"
 #include "worldserver.h"
 #include "queryserv.h"
+#include "../common/events/player_event_logs.h"
 #include <iostream>
 
 extern EntityList entity_list;
@@ -1379,11 +1380,31 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 		args.push_back(inst);
 		args.push_back(this);
 		parse->EventPlayer(EVENT_LOOT, client, export_string, 0, &args);
+
+		if (player_event_logs.IsEventEnabled(PlayerEvent::LOOT_ITEM) && !IsPlayerCorpse()) {
+			auto e = PlayerEvent::LootItemEvent{
+				.item_id = inst->GetItem()->ID,
+				.item_name = inst->GetItem()->Name,
+				.charges = inst->GetCharges(),
+				.npc_id = GetNPCTypeID(),
+				.corpse_name = EntityList::RemoveNumbers(corpse_name)
+			};
+
+			RecordPlayerEventLogWithClient(client, PlayerEvent::LOOT_ITEM, e);
+		}
+
 		parse->EventItem(EVENT_LOOT, client, inst, this, export_string, 0);
 
-		if ((RuleB(Character, EnableDiscoveredItems))) {
-			if (client && !client->GetGM() && !client->IsDiscovered(inst->GetItem()->ID))
-				client->DiscoverItem(inst->GetItem()->ID);
+
+
+		if (
+			!IsPlayerCorpse() &&
+			RuleB(Character, EnableDiscoveredItems) &&
+			client &&
+			!client->GetGM() &&
+			!client->IsDiscovered(inst->GetItem()->ID)
+			) {
+			client->DiscoverItem(inst->GetItem()->ID);
 		}
 
 

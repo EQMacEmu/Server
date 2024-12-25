@@ -23,6 +23,7 @@
 #include "../common/spdat.h"
 #include "../common/strings.h"
 #include "../common/zone_store.h"
+#include "../common/events/player_event_logs.h"
 
 #include "entity.h"
 #include "event_codes.h"
@@ -2487,4 +2488,8 @@ std::string QuestManager::GetEncounter() const {
 
 std::string QuestManager::getdeityname(uint32 deity_id) {
 	return Deity::GetName(deity_id);
+}
+
+void QuestManager::SendPlayerHandinEvent() {
+	return;
 }

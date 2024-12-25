@@ -345,39 +345,6 @@ void QueryServ::QSTradeItems(uint32 from_id, uint32 to_id, uint32 from_slot, uin
 		from_id, from_slot, to_id, to_slot, item_id, charges, bagged, type.c_str());
 	SendQuery(query);
 }
-
-void QueryServ::QSPlayerTrade(QSPlayerLogTrade_Struct* QS)
-{
-	std::string query = StringFormat(
-		"INSERT INTO `qs_player_trade_log` SET "
-		"`char1_id` = '%i', "
-		"`char1_pp` = '%i', "
-		"`char1_gp` = '%i', "
-		"`char1_sp` = '%i', "
-		"`char1_cp` = '%i', "
-		"`char1_items` = '%i', "
-		"`char2_id` = '%i', "
-		"`char2_pp` = '%i', "
-		"`char2_gp` = '%i', "
-		"`char2_sp` = '%i', "
-		"`char2_cp` = '%i', "
-		"`char2_items` = '%i', "
-		"`time` = NOW();",
-		QS->char1_id,
-		QS->char1_money.platinum,
-		QS->char1_money.gold,
-		QS->char1_money.silver,
-		QS->char1_money.copper,
-		QS->char1_count,
-		QS->char2_id,
-		QS->char2_money.platinum,
-		QS->char2_money.gold,
-		QS->char2_money.silver,
-		QS->char2_money.copper,
-		QS->char2_count);
-	SendQuery(query);
-}
-
 void QueryServ::QSLogCommands(Client* c, const char* Command, const char* Arguments, Mob* Target)
 {
 	if (!Target) Target = c->GetTarget();

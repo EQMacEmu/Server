@@ -41,7 +41,8 @@
 #include "../common/path_manager.h"
 #include "../common/zone_store.h"
 #include "../common/content/world_content_service.h"
-#include "../common/discord_manager.h"
+#include "../common/discord/discord_manager.h"
+#include "../common/events/player_event_logs.h"
 
 ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
@@ -51,6 +52,7 @@ WorldServerList *worldserverlist = nullptr;
 DiscordManager discord_manager;
 PathManager path;
 ZoneStore zone_store;
+PlayerEventLogs player_event_logs;
 WorldContentService content_service;
 
 const ucsconfig *Config;
@@ -87,7 +89,7 @@ void CatchSignal(int sig_num) {
 	}
 }
 
-void DiscordQueueListener() {
+void PlayerEventQueueListener() {
 	while (caught_loop == 0) {
 		discord_manager.ProcessMessageQueue();
 		Sleep(100);
@@ -134,6 +136,8 @@ int main() {
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
+	player_event_logs.SetDatabase(&database)->Init();
+
 	char tmp[64];
 
 	if (database.GetVariable("RuleSet", tmp, sizeof(tmp) - 1)) {
@@ -160,7 +164,7 @@ int main() {
 	std::signal(SIGKILL, CatchSignal);
 	std::signal(SIGSEGV, CatchSignal);
 
-	std::thread(DiscordQueueListener).detach();
+	std::thread(PlayerEventQueueListener).detach();
 
 	worldserverlist = new WorldServerList();
 

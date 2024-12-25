@@ -26,7 +26,8 @@
 #include "clientlist.h"
 #include "ucsconfig.h"
 #include "database.h"
-#include "../common/discord_manager.h"
+#include "../common/discord/discord_manager.h"
+#include "../common/events/player_event_logs.h"
 
 #include <iostream>
 #include <string.h>
@@ -142,9 +143,9 @@ WorldServer::~WorldServer()
 {
 }
 
-void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
+void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet &p) {
 	ServerPacket tpack(opcode, p);
-	ServerPacket* pack = &tpack;
+	ServerPacket *pack = &tpack;
 
 	LogNetcode("Received Opcode: {:#04x}", opcode);
 
@@ -157,6 +158,18 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
 		}
 		case ServerOP_ReloadLogs: {
 			LogSys.LoadLogDatabaseSettings();
+			player_event_logs.ReloadSettings();
+			break;
+		}
+		case ServerOP_PlayerEvent: {
+			auto n = PlayerEvent::PlayerEventContainer{};
+			auto s = (ServerSendPlayerEvent_Struct *)pack->pBuffer;
+			EQ::Util::MemoryStreamReader ss(s->cereal_data, s->cereal_size);
+			cereal::BinaryInputArchive archive(ss);
+			archive(n);
+
+			discord_manager.QueuePlayerEventMessage(n);
+
 			break;
 		}		
 		case ServerOP_DiscordWebhookMessage: {
@@ -188,15 +201,15 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
 				break;
 			}
 
-			if(!c) {
+			if (!c) {
 				LogInfo("Client not found");
 				break;
 			}
 
-			if(Message[0] == ';') {
-					c->SendChannelMessageByNumber(Message.substr(1, std::string::npos));
+			if (Message[0] == ';') {
+				c->SendChannelMessageByNumber(Message.substr(1, std::string::npos));
 			}
-			else if(Message[0] == '[') {
+			else if (Message[0] == '[') {
 				g_Clientlist->ProcessOPChatCommand(c, Message.substr(1, std::string::npos));
 			}
 
@@ -207,6 +220,6 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet& p) {
 
 void WorldServer::PingUCSDatabase()
 {
-	if(m_dbping_timer.Check())
+	if (m_dbping_timer.Check())
 		m_database.ping();
 }

@@ -87,6 +87,8 @@ public:
 	static bool EndsWith(const std::string& subject, const std::string& search);
 	static std::string ZoneTime(const uint8 hours, const uint8 minutes);
 
+	static bool SanitizeChatString(std::string &in_string);
+
 	template <typename T>
 	static std::string ImplodePair(const std::string &glue, const std::pair<char, char> &encapsulation, const std::vector<T> &src)
 	{

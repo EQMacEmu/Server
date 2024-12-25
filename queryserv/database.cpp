@@ -46,6 +46,87 @@
 #include "../common/strings.h"
 #include "../common/servertalk.h"
 
+void QSDatabase::AddSpeech(
+	const char *from,
+	const char *to,
+	const char *message,
+	uint16 minstatus,
+	uint32 guilddbid,
+	uint8 type
+)
+{
+
+	auto escapedFrom = new char[strlen(from) * 2 + 1];
+	auto escapedTo = new char[strlen(to) * 2 + 1];
+	auto escapedMessage = new char[strlen(message) * 2 + 1];
+	DoEscapeString(escapedFrom, from, strlen(from));
+	DoEscapeString(escapedTo, to, strlen(to));
+	DoEscapeString(escapedMessage, message, strlen(message));
+
+	std::string query = StringFormat(
+		"INSERT INTO `qs_player_speech` "
+		"SET `from` = '%s', `to` = '%s', `message`='%s', "
+		"`minstatus`='%i', `guilddbid`='%i', `type`='%i'",
+		escapedFrom, escapedTo, escapedMessage, minstatus, guilddbid, type
+	);
+	safe_delete_array(escapedFrom);
+	safe_delete_array(escapedTo);
+	safe_delete_array(escapedMessage);
+	auto results = QueryDatabase(query);
+	if (!results.Success()) {
+		LogInfo("Failed Speech Entry Insert: [{}]", results.ErrorMessage().c_str());
+		LogInfo("[{}]", query.c_str());
+	}
+
+
+}
+
+void QSDatabase::LogPlayerTrade(PlayerLogTrade_Struct *QS, uint32 detailCount)
+{
+
+	std::string query = StringFormat(
+		"INSERT INTO `qs_player_trade_record` SET `time` = NOW(), "
+		"`char1_id` = '%i', `char1_pp` = '%i', `char1_gp` = '%i', "
+		"`char1_sp` = '%i', `char1_cp` = '%i', `char1_items` = '%i', "
+		"`char2_id` = '%i', `char2_pp` = '%i', `char2_gp` = '%i', "
+		"`char2_sp` = '%i', `char2_cp` = '%i', `char2_items` = '%i'",
+		QS->character_1_id, QS->character_1_money.platinum, QS->character_1_money.gold,
+		QS->character_1_money.silver, QS->character_1_money.copper, QS->character_1_item_count,
+		QS->character_2_id, QS->character_2_money.platinum, QS->character_2_money.gold,
+		QS->character_2_money.silver, QS->character_2_money.copper, QS->character_2_item_count
+	);
+	auto        results = QueryDatabase(query);
+	if (!results.Success()) {
+		LogInfo("Failed Trade Log Record Insert: [{}]", results.ErrorMessage().c_str());
+		LogInfo("[{}]", query.c_str());
+	}
+
+	if (detailCount == 0) {
+		return;
+	}
+
+	int lastIndex = results.LastInsertedID();
+
+	for (int i = 0; i < detailCount; i++) {
+		query = StringFormat(
+			"INSERT INTO `qs_player_trade_record_entries` SET `event_id` = '%i', "
+			"`from_id` = '%i', `from_slot` = '%i', `to_id` = '%i', `to_slot` = '%i', "
+			"`item_id` = '%i', `charges` = '%i'",
+			lastIndex, QS->item_entries[i].from_character_id, QS->item_entries[i].from_slot,
+			QS->item_entries[i].to_character_id, QS->item_entries[i].to_slot, QS->item_entries[i].item_id,
+			QS->item_entries[i].charges
+		);
+		results = QueryDatabase(query);
+		if (!results.Success()) {
+			LogInfo("Failed Trade Log Record Entry Insert: [{}]", results.ErrorMessage().c_str());
+			LogInfo("[{}]", query.c_str());
+		}
+
+	}
+
+}
+
+
 void QSDatabase::LogPlayerItemDelete(QSPlayerLogItemDelete_Struct* QS, uint32 items)
 {
 	if (items == 0)

@@ -50,6 +50,7 @@
 #include "worldserver.h"
 #include "zone.h"
 #include "zonedb.h"
+#include "../common/events/player_event_logs.h"
 
 extern QueryServ* QServ;
 extern Zone* zone;
@@ -177,6 +178,8 @@ bool Client::Process() {
 				myraid->DisbandRaidMember(GetName());
 			}
 
+			RecordPlayerEventLog(PlayerEvent::WENT_OFFLINE, PlayerEvent::EmptyEvent{});
+
 			Save();
 			instalog = true;
 			database.ClearAccountActive(this->AccountID());
@@ -189,36 +192,28 @@ bool Client::Process() {
 				BuffFadeByEffect(SE_SpinTarget);
 		}
 
-		if (underwater_timer.Check())
-		{
+		if (underwater_timer.Check()) {
 			if ((IsUnderWater() || GetZoneID() == Zones::THEGREY) && 
 				!spellbonuses.WaterBreathing && !aabonuses.WaterBreathing && !itembonuses.WaterBreathing)
 			{
-				if (m_pp.air_remaining > 0)
-				{
+				if (m_pp.air_remaining > 0)	{
 					--m_pp.air_remaining;
 				}
-				else
-				{
+				else {
 					++drowning;
-					if (!GetGM() && drowning == 12)
-					{
-						database.SetHackerFlag(account_name, name, "Possible underwater breathing hack detected.");
-						//Death(nullptr, 0, SPELL_UNKNOWN, static_cast<EQ::skills::SkillType>(251), Killed_ENV);
+					if (!GetGM() && drowning == 12)	{
+						auto message = "Possible underwater breathing hacked detected";
+						RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = message });
 					}
 				}
 			}
-			else
-			{
+			else {
 				m_pp.air_remaining = CalculateLungCapacity();
 				drowning = 0;
 			}
 		}
 
-		if(!m_CheatDetectMoved)
-		{
-			m_TimeSinceLastPositionCheck = Timer::GetCurrentTime();
-		}
+		cheat_manager.ClientProcess();
 
 		if (bardsong_timer.Check() && bardsong != 0) {
 			//NOTE: this is kinda a heavy-handed check to make sure the mob still exists before
@@ -549,7 +544,7 @@ bool Client::Process() {
 	if (client_state == DISCONNECTED) {
 		OnDisconnect(true);
 		Log(Logs::General, Logs::Error, "Client disconnected (cs=d): %s", GetName());
-		database.SetMQDetectionFlag(this->AccountName(), GetName(), "/MQInstantCamp: Possible instant camp disconnect.", zone->GetShortName());
+		RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = "/MQInstantCamp: Possible instant camp disconnect" });
 		return false;
 	}
 
@@ -670,6 +665,7 @@ void Client::OnDisconnect(bool hard_disconnect) {
 			MyRaid->DisbandRaidMember(GetName());
 
 		parse->EventPlayer(EVENT_DISCONNECT, this, "", 0);
+		RecordPlayerEventLog(PlayerEvent::WENT_OFFLINE, PlayerEvent::EmptyEvent{});
 
 		/* QS: PlayerLogConnectDisconnect */
 		if (RuleB(QueryServ, PlayerLogConnectDisconnect)){
@@ -1256,13 +1252,12 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 			break;
 		}
 		case memSpellMemorize:	{	// memming spell
-			if(HasSpellScribed(memspell->spell_id))
-			{
+			if(HasSpellScribed(memspell->spell_id))	{
 				MemSpell(memspell->spell_id, memspell->slot);
 			}
-			else
-			{
-				database.SetMQDetectionFlag(AccountName(), GetName(), "OP_MemorizeSpell but we don't have this spell scribed...", zone->GetShortName());
+			else {
+				std::string message = fmt::format("OP_MemorizeSpell [{}] but we don't have this spell scribed", memspell->spell_id);
+				RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = message });
 			}
 			break;
 		}
@@ -1367,9 +1362,12 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 			NPC *banker = entity_list.GetClosestBanker(this, distance);
 			if(!banker || distance > USE_NPC_RANGE2)
 			{
-				auto hacked_string = fmt::format("Player tried to make use of a banker(coin move) but {} is non-existant or too far away ( {} units).",
-					banker ? banker->GetName() : "UNKNOWN NPC", distance);
-				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+				auto message = fmt::format(
+					"Player tried to make use of a banker (coin move) but "
+					"banker [{}] is non-existent or too far away [{}] units",
+					banker ? banker->GetName() : "UNKNOWN NPC", distance
+				);
+				RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = message });
 				return;
 			}
 
@@ -1434,11 +1432,13 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		{
 			uint32 distance = 0;
 			NPC *banker = entity_list.GetClosestBanker(this, distance);
-			if(!banker || distance > USE_NPC_RANGE2)
-			{
-				auto hacked_string = fmt::format("Player tried to make use of a banker(coin move) but {} is non-existant or too far away ( {} units).",
-					banker ? banker->GetName() : "UNKNOWN NPC", distance);
-				database.SetMQDetectionFlag(AccountName(), GetName(), hacked_string, zone->GetShortName());
+			if(!banker || distance > USE_NPC_RANGE2) {
+				auto message = fmt::format(
+					"Player tried to make use of a banker(coin move) but "
+					"banker [{}] is non-existent or too far away [{}] units",
+					banker ? banker->GetName() : "UNKNOWN NPC", distance
+				);
+				RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = message });
 				return;
 			}
 			switch(mc->cointype2)

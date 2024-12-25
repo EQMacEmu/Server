@@ -3280,7 +3280,7 @@ bool Mob::DoKnockback(Mob *caster, float pushback, float pushup, bool send_packe
 	{
 		if (IsClient())
 		{
-			CastToClient()->SetKnockBackExemption(true);
+			CastToClient()->cheat_manager.SetExemptStatus(KnockBack, true);
 		}
 		else
 		{
@@ -3328,7 +3328,7 @@ bool Mob::CombatPush(Mob* attacker, float pushback)
 		if(IsClient())
 		{
 			self_update = 1;
-			CastToClient()->SetKnockBackExemption(true);
+			CastToClient()->cheat_manager.SetExemptStatus(KnockBack, true);
 		}
 
 		GMMove(m_Position.x, m_Position.y, m_Position.z, m_Position.w);

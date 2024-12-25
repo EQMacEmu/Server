@@ -31,6 +31,7 @@
 #include "worldserver.h"
 #include "quest_parser_collection.h"
 #include "string_ids.h"
+#include "../common/events/player_event_logs.h"
 
 extern QueryServ* QServ;
 extern WorldServer worldserver;
@@ -560,7 +561,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		//set_aaxp = m_pp.expAA % max_AAXP;
 
 		//figure out how many points were actually gained
-		/*uint32 gained = m_pp.aapoints - last_unspentAA;*/	//unused
+		uint32 gained = m_pp.aapoints - last_unspentAA;	//unused
 
 		//Message(Chat::Yellow, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
@@ -569,6 +570,8 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 			Message_StringID(Chat::Yellow, AA_CAP_REACHED);
 		}
 		
+		RecordPlayerEventLog(PlayerEvent::AA_GAIN, PlayerEvent::AAGainedEvent{ gained });
+
 		/* QS: PlayerLogAARate */
 		if (RuleB(QueryServ, PlayerLogAARate)) {
 			QServ->QSAARate(this->CharacterID(), m_pp.aapoints, last_unspentAA);
@@ -711,7 +714,19 @@ void Client::SetLevel(uint8 set_level, bool command)
 	}
 
 	if(set_level > m_pp.level) {
-		parse->EventPlayer(EVENT_LEVEL_UP, this, "", 0);
+		int levels_gained = (set_level - m_pp.level);
+		const auto export_string = fmt::format("{}", levels_gained);
+		parse->EventPlayer(EVENT_LEVEL_UP, this, export_string, 0);
+		if (player_event_logs.IsEventEnabled(PlayerEvent::LEVEL_GAIN)) {
+			auto e = PlayerEvent::LevelGainedEvent{
+				.from_level = m_pp.level,
+				.to_level = set_level,
+				.levels_gained = levels_gained
+			};
+
+			RecordPlayerEventLog(PlayerEvent::LEVEL_GAIN, e);
+		}
+
 		/* QS: PlayerLogLevels */
 		if (RuleB(QueryServ, PlayerLogLevels)){
 			std::string event_desc = StringFormat("Leveled UP :: to Level:%i from Level:%i in zoneid:%i", set_level, m_pp.level, this->GetZoneID());
@@ -719,6 +734,16 @@ void Client::SetLevel(uint8 set_level, bool command)
 		}
 	}
 	else if (set_level < m_pp.level){
+		int levels_lost = (m_pp.level - set_level);
+		if (player_event_logs.IsEventEnabled(PlayerEvent::LEVEL_LOSS)) {
+			auto e = PlayerEvent::LevelLostEvent{
+				.from_level = m_pp.level,
+				.to_level = set_level,
+				.levels_lost = levels_lost
+			};
+			RecordPlayerEventLog(PlayerEvent::LEVEL_LOSS, e);
+		}
+
 		/* QS: PlayerLogLevels */
 		if (RuleB(QueryServ, PlayerLogLevels)){
 			std::string event_desc = StringFormat("Leveled DOWN :: to Level:%i from Level:%i in zoneid:%i", set_level, m_pp.level, this->GetZoneID());

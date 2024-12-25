@@ -1069,6 +1069,8 @@ bool Zone::Init(bool is_static) {
 
 void Zone::ReloadStaticData() {
 	LogInfo("Reloading Zone Static Data...");
+	entity_list.RemoveAllObjects();
+	entity_list.RemoveAllDoors();
 
 	LogInfo("Reloading static zone points...");
 	zone_point_list.Clear();
@@ -1089,18 +1091,17 @@ void Zone::ReloadStaticData() {
 		LogError("Reloading ground spawns failed. continuing.");
 	}
 
-	entity_list.RemoveAllObjects();
 	LogInfo("Reloading World Objects from DB...");
 	if (!LoadZoneObjects())
 	{
 		LogError("Reloading World Objects failed. continuing.");
 	}
 
-	entity_list.RemoveAllDoors();
 	LoadZoneDoors();
 	entity_list.RespawnAllDoors();
 
 	LogInfo("Reloading NPC Emote Data...");
+	npc_emote_list.clear();
 	LoadNPCEmotes(&npc_emote_list);
 
 	LogInfo("Reloading KeyRing Data...");

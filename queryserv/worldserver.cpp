@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #include "database.h"
 #include "queryservconfig.h"
 #include "worldserver.h"
+#include "../common/events/player_events.h"
+#include "../common/events/player_event_logs.h"
 #include <iomanip>
 #include <iostream>
 #include <stdarg.h>
@@ -87,7 +89,30 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		case 0: {
 			break;
 		}
+		case ServerOP_PlayerEvent: {
+			auto                         n = PlayerEvent::PlayerEventContainer{};
+			auto                         s = (ServerSendPlayerEvent_Struct *)p.Data();
+			EQ::Util::MemoryStreamReader ss(s->cereal_data, s->cereal_size);
+			cereal::BinaryInputArchive   archive(ss);
+			archive(n);
+
+			player_event_logs.AddToQueue(n.player_event_log);
+
+			break;
+		}
 		case ServerOP_KeepAlive: {
+			break;
+		}
+		case ServerOP_Speech: {
+			Server_Speech_Struct *SSS = (Server_Speech_Struct *)p.Data();
+			std::string          tmp1 = SSS->from;
+			std::string          tmp2 = SSS->to;
+			database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
+			break;
+		}
+		case ServerOP_QSPlayerLogTrades: {
+			PlayerLogTrade_Struct *QS = (PlayerLogTrade_Struct *)p.Data();
+			database.LogPlayerTrade(QS, QS->_detail_count);
 			break;
 		}
 		case ServerOP_QSPlayerLogItemDeletes: {

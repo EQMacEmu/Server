@@ -2456,7 +2456,8 @@ void Mob::AI_Event_Engaged(Mob* attacker)
 					if (emoteid != 0 && !IsPet()) {
 						CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::EnterCombat, emoteid, attacker);
 					}
-
+					std::string mob_name = GetCleanName();
+					m_combat_record.Start(mob_name);
 					CastToNPC()->SetCombatEvent(true);
 				}
 			}
@@ -2548,6 +2549,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 				if (emoteid != 0) {
 					CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::LeaveCombat, emoteid);
 				}
+				m_combat_record.Stop();
 				CastToNPC()->SetCombatEvent(false);
 			}
 		}

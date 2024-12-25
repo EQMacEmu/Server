@@ -1149,3 +1149,16 @@ std::string Strings::ZoneTime(const uint8 hours, const uint8 minutes)
 		hours >= 13 ? "PM" : "AM"
 	);
 }
+
+bool Strings::SanitizeChatString(std::string &in_string)
+{
+	std::string result = in_string;
+	if (result.find((char)0x12) != std::string::npos && (result.find('<') != std::string::npos || result.find('>') != std::string::npos)) {
+		std::replace(result.begin(), result.end(), (char)(0x12), ' ');
+		std::replace(result.begin(), result.end(), '<', ' ');
+		std::replace(result.begin(), result.end(), '>', ' '); \
+			return true;
+	}
+
+	return false;
+}

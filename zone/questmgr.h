@@ -226,6 +226,7 @@ public:
 	void SendDebug(const char* message, int level);
 	void ReloadZoneStaticData();
 	std::string getdeityname(uint32 deity_id);
+	void SendPlayerHandinEvent();
 
 	Client *GetInitiator() const;
 	NPC *GetNPC() const;

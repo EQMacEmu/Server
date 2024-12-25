@@ -95,14 +95,14 @@ public:
 	void AddCharacter(int CharID, const char *CharacterName, int Level, int Race, int Class);
 	void ClearCharacters() { Characters.clear(); }
 	void SendChatlist();
-	inline void QueuePacket(const EQApplicationPacket* p, bool ack_req = true) { ClientStream->QueuePacket(p, ack_req); }
-	std::string GetName() { if(Characters.size()) return Characters[0].Name; else return ""; }
+	inline void QueuePacket(const EQApplicationPacket *p, bool ack_req = true) { ClientStream->QueuePacket(p, ack_req); }
+	std::string GetName() { if (Characters.size()) return Characters[0].Name; else return ""; }
 	std::string GetFQName() { if (Characters.size()) return GetWorldShortName() + "." + Characters[0].Name; else return ""; }
 	int GetLevel() { if (Characters.size()) return Characters[0].Level; else return 0; }
 	int GetRace() { if (Characters.size()) return Characters[0].Race; else return 999; }
 	int GetClass() { if (Characters.size()) return Characters[0].Class; else return 999; }
-	void JoinChannels(std::string& channel_name_list);
-	void LeaveChannels(std::string& channel_name_list);
+	void JoinChannels(std::string &channel_name_list);
+	void LeaveChannels(std::string &channel_name_list);
 	void LeaveAllChannels(bool send_updated_channel_list = true);
 	void AddToChannelList(ChatChannel *JoinedChannel);
 	void RemoveFromChannelList(ChatChannel *JoinedChannel);
@@ -186,19 +186,19 @@ public:
 	Clientlist(int ChatPort);
 	void	Process();
 	void	CloseAllConnections();
-	Client* FindCharacter(const std::string& FQCharacterName);
+	Client *FindCharacter(const std::string &FQCharacterName);
 	void	CheckForStaleConnectionsAll();
-	void	CheckForStaleConnections(Client* c);
-	Client* IsCharacterOnline(const std::string& CharacterName);
-	void ProcessOPChatCommand(Client* c, std::string command_string);
+	void	CheckForStaleConnections(Client *c);
+	Client *IsCharacterOnline(const std::string &CharacterName);
+	void ProcessOPChatCommand(Client *c, std::string command_string);
 
 private:
 
-	EQ::Net::EQStreamManager* chatsf;
+	EQ::Net::EQStreamManager *chatsf;
 
-	std::list<Client*> ClientChatConnections;
+	std::list<Client *> ClientChatConnections;
 
-	OpcodeManager* ChatOpMgr;
+	OpcodeManager *ChatOpMgr;
 };
 
 #endif

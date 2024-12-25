@@ -25,6 +25,7 @@
 #include "worldserver.h"
 #include "string_ids.h"
 #include "queryserv.h"
+#include "../common/events/player_event_logs.h"
 
 extern EntityList entity_list;
 extern WorldServer worldserver;
@@ -156,6 +157,18 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 			if (receive_copper || receive_silver || receive_gold || receive_platinum) {
 				member_client->AddMoneyToPP(receive_copper, receive_silver, receive_gold, receive_platinum, true);
 				member_client->Message_StringID(Chat::Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(receive_platinum, receive_gold, receive_silver, receive_copper).c_str());
+			}
+
+			// If logging of player money transactions is enabled, record the transaction.
+			if (player_event_logs.IsEventEnabled(PlayerEvent::SPLIT_MONEY)) {
+				auto e = PlayerEvent::SplitMoneyEvent{
+					.copper = receive_copper,
+					.silver = receive_silver,
+					.gold = receive_gold,
+					.platinum = receive_platinum,
+					.player_money_balance = member_client->GetCarriedMoney(),
+				};
+				RecordPlayerEventLogWithClient(member_client, PlayerEvent::SPLIT_MONEY, e);
 			}
 
 			if (RuleB(QueryServ, PlayerLogMoneyTransactions))

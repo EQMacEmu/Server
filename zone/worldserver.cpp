@@ -55,6 +55,8 @@
 #include "queryserv.h"
 #include "../common/patches/patches.h"
 #include "../common/skill_caps.h"
+#include "queryserv.h"
+#include "../common/events/player_event_logs.h"
 
 extern EntityList entity_list;
 extern Zone* zone;
@@ -1907,6 +1909,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		case ServerOP_ReloadLogs: {
 			zone->SendReloadMessage("Log Settings");
 			LogSys.LoadLogDatabaseSettings();
+			player_event_logs.ReloadSettings();
 			break;
 		}
 		case ServerOP_ReloadLoot: {

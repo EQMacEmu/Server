@@ -30,6 +30,7 @@
 
 #include "../common/repositories/zone_repository.h"
 #include "../common/content/world_content_service.h"
+#include "../common/events/player_event_logs.h"
 
 extern QueryServ* QServ;
 extern WorldServer worldserver;
@@ -86,10 +87,12 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 					//that can be a valid un-zolicited zone request?
 
 					Message(Chat::Red, "Invalid unsolicited zone request.");
-					LogError("Zoning %s: Invalid unsolicited zone request to zone id '%d'.", GetName(), target_zone_id);
-					if (target_zone_id == GetBindZoneID()) {
-						// possible gate to bind hack
-						CheatDetected(MQGate, GetX(), GetY(), GetZ());
+					LogError("Zoning [{}]: Invalid unsolicited zone request to zone id [{}]", GetName(), target_zone_id);
+					if (GetBindZoneID() == target_zone_id) {
+						cheat_manager.CheatDetected(MQGate, glm::vec3(GetX(), GetY(), GetZ()));
+					}
+					else {
+						cheat_manager.CheatDetected(MQZone, glm::vec3(GetX(), GetY(), GetZ()));
 					}
 					SendZoneCancel(zc);
 					return;
@@ -122,10 +125,12 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 			//if we didnt get a zone point, or its to a different zone,
 			//then we assume this is invalid.
 			if(!zone_point || zone_point->target_zone_id != target_zone_id) {
-				Log(Logs::General, Logs::Error, "Zoning %s: Invalid unsolicited zone request to zone id '%d'.", GetName(), target_zone_id);
-				if (zc->zoneID == GetBindZoneID()) {
-					// possible gate to bind hack
-					CheatDetected(MQGate, GetX(), GetY(), GetZ());
+				LogError("Zoning [{}]: Invalid unsolicited zone request to zone id [{}]", GetName(), target_zone_id);
+				if (GetBindZoneID() == target_zone_id) {
+					cheat_manager.CheatDetected(MQGate, glm::vec3(GetX(), GetY(), GetZ()));
+				}
+				else {
+					cheat_manager.CheatDetected(MQZone, glm::vec3(GetX(), GetY(), GetZ()));
 				}
 				SendZoneCancel(zc);
 				return;
@@ -167,6 +172,18 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	if (parse->EventPlayer(EVENT_ZONE, this, export_string, 0) != 0) {
 		SendZoneCancel(zc);
 		return;
+	}
+
+	if (player_event_logs.IsEventEnabled(PlayerEvent::ZONING)) {
+		auto e = PlayerEvent::ZoningEvent{};
+		e.from_zone_long_name = zone->GetLongName();
+		e.from_zone_short_name = zone->GetShortName();
+		e.from_zone_id = zone->GetZoneID();
+		e.to_zone_long_name = ZoneLongName(target_zone_id);
+		e.to_zone_short_name = ZoneName(target_zone_id);
+		e.to_zone_id = target_zone_id;
+
+		RecordPlayerEventLog(PlayerEvent::ZONING, e);
 	}
 
 	//handle circumvention of zone restrictions
@@ -252,11 +269,13 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		//for now, there are no other cases...
 
 		//could not find a valid reason for them to be zoning, stop it.
-		CheatDetected(MQZoneUnknownDest, 0.0, 0.0, 0.0);
-		Log(Logs::General, Logs::Error, "Zoning %s: Invalid unsolicited zone request to zone id '%s'. Not near a zone point.", GetName(), target_zone_name);
-		if (zc->zoneID == GetBindZoneID()) {
-			// possible gate to bind hack
-			CheatDetected(MQGate, GetX(), GetY(), GetZ());
+		cheat_manager.CheatDetected(MQZoneUnknownDest, glm::vec3(0.0, 0.0, 0.0));
+		LogError("Zoning [{}]: Invalid unsolicited zone request to zone id [{}]", GetName(), target_zone_id);
+		if (GetBindZoneID() == target_zone_id) {
+			cheat_manager.CheatDetected(MQGate, glm::vec3(GetX(), GetY(), GetZ()));
+		}
+		else {
+			cheat_manager.CheatDetected(MQZone, glm::vec3(GetX(), GetY(), GetZ()));
 		}
 		SendZoneCancel(zc);
 		return;
@@ -334,7 +353,7 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	//effectively zone them right back to where they were
 	//unless we find a better way to stop the zoning process.
-	SetPortExemption(true);
+	cheat_manager.SetExemptStatus(Port, true);
 	auto outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
 	strcpy(zc2->char_name, zc->char_name);
@@ -355,7 +374,7 @@ void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
 {
 	Log(Logs::General, Logs::Error, "Zone %i is not available because target wasn't found or character insufficent level", zc->zoneID);
 
-	SetPortExemption(true);
+	cheat_manager.SetExemptStatus(Port, true);
 
 	auto outapp = new EQApplicationPacket(OP_ZoneChange, sizeof(ZoneChange_Struct));
 	ZoneChange_Struct *zc2 = (ZoneChange_Struct*)outapp->pBuffer;
@@ -520,7 +539,7 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 	pShortZoneName = ZoneName(zoneID);
 	database.GetZoneLongName(pShortZoneName, &pZoneName);
 
-	SetPortExemption(true);
+	cheat_manager.SetExemptStatus(Port, true);
 
 	if(!pZoneName) {
 		Message(Chat::Red, "Invalid zone number specified");
