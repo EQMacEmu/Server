@@ -1034,6 +1034,8 @@ void Client::SendChannelMessage(std::string Message)
 		}
 	}
 
+	ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
+
 	if(RequiredChannel) {
 		if(RuleB(Chat, EnableAntiSpam))	{
 			if(!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetFQName()) || RequiredChannel->IsOwner(GetFQName()) ||
@@ -1136,6 +1138,8 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 			}
 		}
 	}
+
+	ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
 
 	Log(Logs::Detail, Logs::UCSServer, "%s tells %s, [%s]", GetName().c_str(), RequiredChannel->GetName().c_str(),
 							Message.substr(MessageStart + 1).c_str());

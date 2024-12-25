@@ -340,6 +340,7 @@ RULE_INT ( Chat, IntervalDurationMS, 60000, "")
 RULE_INT ( Chat, KarmaUpdateIntervalMS, 120000, "")
 RULE_INT ( Chat, KarmaGlobalChatLimit, 12, "amount of karma you need to be able to talk in ooc/auction/chat below the level limit")
 RULE_INT ( Chat, GlobalChatLevelLimit, 8, "level limit you need to of reached to talk in ooc/auction/chat if your karma is too low.")
+RULE_STRING( Chat, ChatChannelDiscordRelayConfig, "", "The chat server can relay channel messages to discord in a one-way manner.  This requires URLs to be configured in the discord_webhooks table and configured here.  Format is: Channel1:webhook_id1,Channel2:webhookid2 for example 'General:15,Testing:16'.")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY ( Merchant )

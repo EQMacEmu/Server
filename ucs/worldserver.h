@@ -66,6 +66,7 @@ public:
 	void Process();
 	WorldServer *GetWorldServer(std::string WorldShortName) { return m_worldservers.count(WorldShortName) == 1 ? m_worldservers[WorldShortName] : nullptr; }
 	WorldServer *GetMainWorldServer() { return GetWorldServer(m_mainshortname); }
+	int GetServerCount() { return m_worldservers.size(); }
 
 private:
 	std::string m_mainshortname;

@@ -19,14 +19,20 @@
 
 #include "../common/eqemu_logsys.h"
 #include "../common/strings.h"
+#include "../common/discord_manager.h"
+#include "../common/servertalk.h"
+#include "../common/races.h"
 #include "chatchannel.h"
 #include "clientlist.h"
 #include "database.h"
+#include "worldserver.h"
 #include <cstdlib>
 #include <algorithm>
 
 extern UCSDatabase database;
 extern uint32 ChatMessagesSent;
+extern DiscordManager discord_manager;
+extern WorldServerList worldserverlist;
 
 ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string inPassword, bool inPermanent, int inMinimumStatus) 
 :
@@ -705,4 +711,34 @@ std::string CapitaliseName(std::string inString) {
 	}
 
 	return NormalisedName;
+}
+
+void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *client, const char *message)
+{
+	// expected format for rule Chat::ChatChannelDiscordRelayConfig is Channel1:webhook_id1,Channel2:webhook_id2
+	std::string config_string = RuleS(Chat, ChatChannelDiscordRelayConfig);
+	if (!config_string.empty()) {
+		const auto list = Strings::Split(config_string, ",");
+		for (const auto &channel_config : list) {
+			size_t colon;
+			if ((colon = channel_config.find(":")) != std::string::npos) {
+				std::string channel_name = CapitaliseName(channel_config.substr(0, colon));
+				uint32 webhook_id = atoi(channel_config.substr(colon + 1).c_str());
+
+				if (channel_name.length() > 0 && channel_name.compare(CapitaliseName(channel->GetName())) == 0) {
+					// queue discord webhook
+					DiscordWebhookMessage_Struct q;
+					q.webhook_id = webhook_id;
+					std::string wsn = "";
+					if (worldserverlist.GetServerCount() > 1) // only add the world short name if the UCS is configured with multiple servers
+						wsn = " **" + client->GetWorldShortName() + "**";
+					snprintf(q.message, sizeof(q.message), "**%s** [%d %s %s]%s\n%s", client->GetName().c_str(), client->GetLevel(), GetRaceIDName(client->GetRace()), GetClassIDName(client->GetClass(), 1), wsn.c_str(), message);
+					discord_manager.QueueWebhookMessage(
+						q.webhook_id,
+						q.message
+					);
+				}
+			}
+		}
+	}
 }
