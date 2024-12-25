@@ -62,7 +62,7 @@ void UCSDatabase::GetAccountStatus(Client *client) {
     auto results = QueryDatabase(query);
     if (!results.Success()) {
 		LogMySQLError(
-			"Unable to get account status for character [{0}], error [{1}]", 
+			"Unable to get account status for character [{0}] error [{1}]", 
 			client->GetName().c_str(), 
 			results.ErrorMessage().c_str()
 		);
@@ -85,7 +85,7 @@ void UCSDatabase::GetAccountStatus(Client *client) {
 	client->SetKarma(atoi(row[2]));
 	client->SetRevoked((atoi(row[3])==1?true:false));
 
-	LogDebug("Set account status to [{0}], hideme to [{1}] and karma to [{2}] for [{3}]", client->GetAccountStatus(), client->GetHideMe(), client->GetKarma(), client->GetName().c_str());
+	LogDebug("Set account status to [{0}] hideme to [{1}] and karma to [{2}] for [{3}]", client->GetAccountStatus(), client->GetHideMe(), client->GetKarma(), client->GetName().c_str());
 
 }
 
@@ -162,7 +162,7 @@ bool UCSDatabase::VerifyMailKey(const std::string& characterName, int IPAddress,
 		sprintf(combinedKey, "%s", MailKey.c_str());
 	}
 
-	LogInfo("DB key is [[{}]], Client key is [[{}]]", (row[0] ? row[0] : ""), combinedKey);
+	LogInfo("DB key is [[{}]] Client key is [[{}]]", (row[0] ? row[0] : ""), combinedKey);
 
 	return !strcmp(row[0], combinedKey);
 }

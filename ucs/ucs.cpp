@@ -47,15 +47,13 @@ ChatChannelList *ChannelList;
 Clientlist *g_Clientlist;
 EQEmuLogSys LogSys;
 UCSDatabase database;
-WorldServer *worldserver = nullptr;
+WorldServerList *worldserverlist = nullptr;
 DiscordManager discord_manager;
 PathManager path;
 ZoneStore zone_store;
 WorldContentService content_service;
 
 const ucsconfig *Config;
-
-std::string WorldShortName;
 
 uint32 ChatMessagesSent = 0;
 
@@ -119,8 +117,6 @@ int main() {
 
 	Config = ucsconfig::get(); 
 
-	WorldShortName = Config->ShortName;
-
 	LogInfo("Connecting to MySQL");
 
 	if (!database.Connect(
@@ -166,7 +162,7 @@ int main() {
 
 	std::thread(DiscordQueueListener).detach();
 
-	worldserver = new WorldServer;
+	worldserverlist = new WorldServerList();
 
 	// uncomment to simulate timed crash for catching SIGSEV
 	//	std::thread crash_test(crash_func);
@@ -180,6 +176,7 @@ int main() {
 
 		Timer::SetCurrentTime();
 
+		worldserverlist->Process();
 		g_Clientlist->Process();
 
 		if (ChannelListProcessTimer.Check()) {

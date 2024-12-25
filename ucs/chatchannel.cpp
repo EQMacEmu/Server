@@ -19,14 +19,20 @@
 
 #include "../common/eqemu_logsys.h"
 #include "../common/strings.h"
+#include "../common/discord_manager.h"
+#include "../common/servertalk.h"
+#include "../common/races.h"
 #include "chatchannel.h"
 #include "clientlist.h"
 #include "database.h"
+#include "worldserver.h"
 #include <cstdlib>
 #include <algorithm>
 
 extern UCSDatabase database;
 extern uint32 ChatMessagesSent;
+extern DiscordManager discord_manager;
+extern WorldServerList worldserverlist;
 
 ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string inPassword, bool inPermanent, int inMinimumStatus) 
 :
@@ -45,7 +51,7 @@ ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string in
 	m_moderated = false;
 
 	LogDebug(
-		"New ChatChannel created: Name: [{}], Owner: [{}], Password: [{}], MinStatus: [{}]",
+		"New ChatChannel created: Name: [{}] Owner: [{}] Password: [{}] MinStatus: [{}]",
 		m_name.c_str(),
 		m_owner.c_str(),
 		m_password.c_str(),
@@ -248,7 +254,7 @@ void ChatChannel::AddClient(Client *c) {
 
 	if(IsClientInChannel(c)) {
 
-		LogInfo("Client [{0}] already in channel [{1}]", c->GetName().c_str(), GetName().c_str());
+		LogInfo("Client [{0}] already in channel [{1}]", c->GetFQName().c_str(), GetName().c_str());
 
 		return;
 	}
@@ -257,7 +263,7 @@ void ChatChannel::AddClient(Client *c) {
 
 	int AccountStatus = c->GetAccountStatus();
 
-	LogDebug("Adding [{0}] to channel [{1}]", c->GetName().c_str(), m_name.c_str());
+	LogDebug("Adding [{0}] to channel [{1}]", c->GetFQName().c_str(), m_name.c_str());
 
 	LinkedListIterator<Client*> iterator(m_clients_in_channel);
 
@@ -284,7 +290,7 @@ bool ChatChannel::RemoveClient(Client *c) {
 
 	if(!c) return false;
 
-	LogDebug("Remove client [{0}] from channel [{1}]", c->GetName().c_str(), GetName().c_str());
+	LogDebug("Remove client [{0}] from channel [{1}]", c->GetFQName().c_str(), GetName().c_str());
 
 	bool hide_me = c->GetHideMe();
 
@@ -385,7 +391,10 @@ void ChatChannel::SendChannelMembers(Client *c) {
 		if(MembersInLine > 0)
 			Message += ", ";
 
-		Message += ChannelClient->GetName();
+		if(ChannelClient->GetWorldShortName().compare(c->GetWorldShortName()))
+			Message += ChannelClient->GetFQName();
+		else
+			Message += ChannelClient->GetName();
 
 		MembersInLine++;
 
@@ -425,7 +434,7 @@ void ChatChannel::SendMessageToChannel(const std::string& Message, Client* Sende
 
 		if(channel_client) {
 			LogDebug("Sending message to [{0}] from [{1}]",
-				channel_client->GetName().c_str(), Sender->GetName().c_str());
+				channel_client->GetFQName().c_str(), Sender->GetFQName().c_str());
 
 			channel_client->SendChannelMessage(m_name, Message, Sender);
 		}
@@ -521,7 +530,7 @@ ChatChannel *ChatChannelList::AddClientToChannel(std::string channel_name, Clien
 	ChatChannel* RequiredChannel = FindChannel(normalized_name);
 
 	if (!RequiredChannel) {
-		RequiredChannel = CreateChannel(normalized_name, c->GetName(), password, false, 0);
+		RequiredChannel = CreateChannel(normalized_name, c->GetFQName(), password, false, 0);
 	}
 
 	if (RequiredChannel->GetMinStatus() > c->GetAccountStatus()) {
@@ -537,16 +546,16 @@ ChatChannel *ChatChannelList::AddClientToChannel(std::string channel_name, Clien
 		return nullptr;
 	}
 
-	if (RequiredChannel->IsInvitee(c->GetName())) {
+	if (RequiredChannel->IsInvitee(c->GetFQName())) {
 
 		RequiredChannel->AddClient(c);
 
-		RequiredChannel->RemoveInvitee(c->GetName());
+		RequiredChannel->RemoveInvitee(c->GetFQName());
 
 		return RequiredChannel;
 	}
 
-	if (RequiredChannel->CheckPassword(password) || RequiredChannel->IsOwner(c->GetName()) || RequiredChannel->IsModerator(c->GetName()) ||
+	if (RequiredChannel->CheckPassword(password) || RequiredChannel->IsOwner(c->GetFQName()) || RequiredChannel->IsModerator(c->GetFQName()) ||
 		c->IsChannelAdmin()) {
 
 		RequiredChannel->AddClient(c);
@@ -702,4 +711,34 @@ std::string CapitaliseName(std::string inString) {
 	}
 
 	return NormalisedName;
+}
+
+void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *client, const char *message)
+{
+	// expected format for rule Chat::ChatChannelDiscordRelayConfig is Channel1:webhook_id1,Channel2:webhook_id2
+	std::string config_string = RuleS(Chat, ChatChannelDiscordRelayConfig);
+	if (!config_string.empty()) {
+		const auto list = Strings::Split(config_string, ",");
+		for (const auto &channel_config : list) {
+			size_t colon;
+			if ((colon = channel_config.find(":")) != std::string::npos) {
+				std::string channel_name = CapitaliseName(channel_config.substr(0, colon));
+				uint32 webhook_id = atoi(channel_config.substr(colon + 1).c_str());
+
+				if (channel_name.length() > 0 && channel_name.compare(CapitaliseName(channel->GetName())) == 0) {
+					// queue discord webhook
+					DiscordWebhookMessage_Struct q;
+					q.webhook_id = webhook_id;
+					std::string wsn = "";
+					if (worldserverlist.GetServerCount() > 1) // only add the world short name if the UCS is configured with multiple servers
+						wsn = " **" + client->GetWorldShortName() + "**";
+					snprintf(q.message, sizeof(q.message), "**%s** [%d %s %s]%s\n%s", client->GetName().c_str(), client->GetLevel(), GetRaceIDName(client->GetRace()), GetClassIDName(client->GetClass(), 1), wsn.c_str(), message);
+					discord_manager.QueueWebhookMessage(
+						q.webhook_id,
+						q.message
+					);
+				}
+			}
+		}
+	}
 }
