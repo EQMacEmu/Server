@@ -66,12 +66,11 @@ public:
 	void Process();
 	WorldServer *GetWorldServer(std::string WorldShortName) { return m_worldservers.count(WorldShortName) == 1 ? m_worldservers[WorldShortName] : nullptr; }
 	WorldServer *GetMainWorldServer() { return GetWorldServer(m_mainshortname); }
-	int GetServerCount() { return m_worldservers.size(); }
+	size_t GetServerCount() { return m_worldservers.size(); }
 
 private:
 	std::string m_mainshortname;
 	std::map<std::string, WorldServer *> m_worldservers;
-	std::list<WorldServerConfig *> m_worldconfigs;
 };
 
 #endif

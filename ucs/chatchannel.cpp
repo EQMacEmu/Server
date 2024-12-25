@@ -32,7 +32,7 @@
 extern UCSDatabase database;
 extern uint32 ChatMessagesSent;
 extern DiscordManager discord_manager;
-extern WorldServerList worldserverlist;
+extern WorldServerList *worldserverlist;
 
 ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string inPassword, bool inPermanent, int inMinimumStatus) 
 :
@@ -730,7 +730,7 @@ void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *clie
 					DiscordWebhookMessage_Struct q;
 					q.webhook_id = webhook_id;
 					std::string wsn = "";
-					if (worldserverlist.GetServerCount() > 1) // only add the world short name if the UCS is configured with multiple servers
+					if (worldserverlist->GetServerCount() > 1) // only add the world short name if the UCS is configured with multiple servers
 						wsn = " **" + client->GetWorldShortName() + "**";
 					snprintf(q.message, sizeof(q.message), "**%s** [%d %s %s]%s\n%s", client->GetName().c_str(), client->GetLevel(), GetRaceIDName(client->GetRace()), GetClassIDName(client->GetClass(), 1), wsn.c_str(), message);
 					discord_manager.QueueWebhookMessage(
