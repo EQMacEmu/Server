@@ -1824,7 +1824,7 @@ void Client::Handle_OP_AAAction(const EQApplicationPacket *app)
 	if (strncmp((char *)app->pBuffer, "on ", 3) == 0)
 	{
 		if (m_epp.perAA == 0)
-			Message_StringID(Chat::White, AA_ON); //ON
+			Message_StringID(Chat::White, StringID::AA_ON); //ON
 		m_epp.perAA = atoi((char *)&app->pBuffer[3]);
 		if (m_epp.perAA > 100u)
 			m_epp.perAA = 100u;
@@ -1834,7 +1834,7 @@ void Client::Handle_OP_AAAction(const EQApplicationPacket *app)
 	else if (strcmp((char *)app->pBuffer, "off") == 0)
 	{
 		if (m_epp.perAA > 0)
-			Message_StringID(Chat::White, AA_OFF); //OFF
+			Message_StringID(Chat::White, StringID::AA_OFF); //OFF
 		m_epp.perAA = 0;
 		SendAAStats();
 		SendAATable();
@@ -1875,7 +1875,7 @@ void Client::Handle_OP_AAAction(const EQApplicationPacket *app)
 
 		if (GetBoatNPCID() > 0)
 		{
-			ResetAATimer(activate, TOO_DISTRACTED);
+			ResetAATimer(activate, StringID::TOO_DISTRACTED);
 			return;
 		}
 
@@ -1924,7 +1924,7 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app)
 	if (!IsPoison)
 	{
 		Log(Logs::General, Logs::Skills, "Item %s used to cast spell effect from a poison item was missing from inventory slot %d after casting, or is not a poison! Item type is %d", PoisonItemInstance->GetItem()->Name, ApplyPoisonData->inventorySlot, PoisonItemInstance->GetItem()->ItemType);
-		Message_StringID(Chat::White, ITEM_OUT_OF_CHARGES);
+		Message_StringID(Chat::White, StringID::ITEM_OUT_OF_CHARGES);
 	}
 	else if (GetClass() == Class::Rogue)
 	{
@@ -2121,9 +2121,9 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 		if (npc->CanTalk())
 		{
 			uint8 stringchance = zone->random.Int(0, 1);
-			int stringid = BEG_FAIL1;
+			int stringid = StringID::BEG_FAIL1;
 			if (stringchance == 1)
-				stringid = BEG_FAIL2;
+				stringid = StringID::BEG_FAIL2;
 			npc->Say_StringID(Chat::White, stringid);
 		}
 
@@ -2232,7 +2232,7 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 			}
 
 			if (brs->Amount != 0 && brs->Result != 0)
-				Message_StringID(Chat::White, BEG_SUCCESS, GetName());
+				Message_StringID(Chat::White, StringID::BEG_SUCCESS, GetName());
 		}
 		else
 		{
@@ -2465,12 +2465,12 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 		return;
 	}
 	if (IsAIControlled() && !has_zomm) {
-		this->Message_StringID(Chat::Red, NOT_IN_CONTROL);
+		this->Message_StringID(Chat::Red, StringID::NOT_IN_CONTROL);
 		return;
 	}
 
 	if (castspell->spell_id == SPELL_MANA_CONVERT && RestictedManastoneClick(zone->GetZoneID())) {
-		Message_StringID(Chat::Red, SPELL_DOES_NOT_WORK_HERE);
+		Message_StringID(Chat::Red, StringID::SPELL_DOES_NOT_WORK_HERE);
 		InterruptSpell(castspell->spell_id);
 		return;
 	}
@@ -2480,7 +2480,7 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 	if (IsFeigned())
 	{
 		SetFeigned(false);
-		Message_StringID(Chat::SpellFailure, FEIGN_BROKEN_CAST);
+		Message_StringID(Chat::SpellFailure, StringID::FEIGN_BROKEN_CAST);
 	}
 
 	clicky_override = false;
@@ -2550,7 +2550,7 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 			// Check for Mod Rod recast time.
 			if (castspell->spell_id == SPELL_MODULATION && !p_timers.Expired(&database, pTimerModulation))
 			{
-				InterruptSpell(SPELL_RECAST, Chat::SpellFailure, castspell->spell_id);
+				InterruptSpell(StringID::SPELL_RECAST, Chat::SpellFailure, castspell->spell_id);
 				return;
 			}
 
@@ -3073,12 +3073,12 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 
 		if (GetCorpseCount() < 1)
 		{
-			Message_StringID(Chat::White, NO_CORPSES);
+			Message_StringID(Chat::White, StringID::NO_CORPSES);
 			return;
 		}
 		else if (IsConsented(gname))
 		{
-			Message_StringID(Chat::White, CONSENT_DENIED, c->name);
+			Message_StringID(Chat::White, StringID::CONSENT_DENIED, c->name);
 			char ownername[64];
 			strcpy(ownername, GetName());
 			Consent(0, ownername, c->name, true);
@@ -3107,7 +3107,7 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 		}
 		else 
 		{
-			Message_StringID(Chat::White, CONSENT_YOURSELF);
+			Message_StringID(Chat::White, StringID::CONSENT_YOURSELF);
 			return;
 		}
 	}
@@ -3190,10 +3190,10 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 			min = (ttime / 60000) % 60; // Total seconds / 60 drop .00
 			char val1[20] = { 0 };
 			char val2[20] = { 0 };
-			Message_StringID(Chat::White, CORPSE_DECAY1, ConvertArray(min, val1), ConvertArray(sec, val2));
+			Message_StringID(Chat::White, StringID::CORPSE_DECAY1, ConvertArray(min, val1), ConvertArray(sec, val2));
 		}
 		else {
-			Message_StringID(Chat::White, CORPSE_DECAY_NOW);
+			Message_StringID(Chat::White, StringID::CORPSE_DECAY_NOW);
 		}
 	}
 	else if (tcorpse && tcorpse->IsPlayerCorpse()) {
@@ -3228,7 +3228,7 @@ void Client::Handle_OP_ConsiderCorpse(const EQApplicationPacket *app)
 			hour = 0;
 		}
 		else {
-			Message_StringID(Chat::White, CORPSE_DECAY_NOW);
+			Message_StringID(Chat::White, StringID::CORPSE_DECAY_NOW);
 		}
 	}
 }
@@ -3282,14 +3282,14 @@ void Client::Handle_OP_Consume(const EQApplicationPacket *app)
 		SetHunger(newValue);
 		Log(Logs::Detail, Logs::Inventory, "Eating from slot:%i", (int)pcs->slot);
 		if (!auto_consume) //no message if the client consumed for us
-			entity_list.MessageClose_StringID(this, true, 50, 0, EATING_MESSAGE, GetName(), consume_item->Name);
+			entity_list.MessageClose_StringID(this, true, 50, 0, StringID::EATING_MESSAGE, GetName(), consume_item->Name);
 	}
 	else
 	{
 		SetThirst(newValue);
 		Log(Logs::Detail, Logs::Inventory, "Drinking from slot:%i", (int)pcs->slot);
 		if (!auto_consume) //no message if the client consumed for us
-			entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), consume_item->Name);
+			entity_list.MessageClose_StringID(this, true, 50, 0, StringID::DRINKING_MESSAGE, GetName(), consume_item->Name);
 	}
 
 	//Message(MT_Broadcasts, "Consumed %s from slot %d auto_consume %d amount %d newValue %d", consume_item->Name, pcs->slot, auto_consume, amount, newValue);
@@ -3331,7 +3331,7 @@ void Client::Handle_OP_ControlBoat(const EQApplicationPacket *app)
 			boat->SetTarget(this);
 		}
 		else {
-			this->Message_StringID(Chat::Red, IN_USE);
+			this->Message_StringID(Chat::Red, StringID::IN_USE);
 			return;
 		}
 	}
@@ -3353,7 +3353,7 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 {
 	if (DraggedCorpses.size() >= (unsigned int)RuleI(Character, MaxDraggedCorpses))
 	{
-		Message_StringID(Chat::Red, CORPSEDRAG_LIMIT);
+		Message_StringID(Chat::Red, StringID::CORPSEDRAG_LIMIT);
 		return;
 	}
 
@@ -3371,9 +3371,9 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 	if (c)
 	{
 		if (c == this)
-			Message_StringID(Chat::DefaultText, CORPSEDRAG_ALREADY, corpse->GetCleanName());
+			Message_StringID(Chat::DefaultText, StringID::CORPSEDRAG_ALREADY, corpse->GetCleanName());
 		else
-			Message_StringID(Chat::DefaultText, CORPSEDRAG_SOMEONE_ELSE, corpse->GetCleanName());
+			Message_StringID(Chat::DefaultText, StringID::CORPSEDRAG_SOMEONE_ELSE, corpse->GetCleanName());
 
 		return;
 	}
@@ -3383,7 +3383,7 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 	DraggedCorpses.emplace_back(std::pair<std::string, uint16>(cds->CorpseName, corpse->GetID()));
 
-	Message_StringID(Chat::DefaultText, CORPSEDRAG_BEGIN, cds->CorpseName);
+	Message_StringID(Chat::DefaultText, StringID::CORPSEDRAG_BEGIN, cds->CorpseName);
 }
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
@@ -3531,7 +3531,7 @@ void Client::Handle_OP_DeleteCharge(const EQApplicationPacket *app)
 
 	const EQ::ItemInstance *inst = GetInv().GetItem(alc->from_slot);
 	if (inst && inst->GetItem()->ItemType == EQ::item::ItemTypeAlcohol) {
-		entity_list.MessageClose_StringID(this, true, 50, 0, DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
+		entity_list.MessageClose_StringID(this, true, 50, 0, StringID::DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
 		CheckIncreaseSkill(EQ::skills::SkillAlcoholTolerance, nullptr, zone->skill_difficulty[EQ::skills::SkillAlcoholTolerance].difficulty);
 
 		int16 AlcoholTolerance = GetSkill(EQ::skills::SkillAlcoholTolerance);
@@ -3637,14 +3637,14 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 			if ((zone->random.Int(0, 49) + uskill) >= (zone->random.Int(0, 49) + trap->skill))
 			{
 				success = SKILLUP_SUCCESS;
-				Message_StringID(Chat::Skills, DISARMED_TRAP);
+				Message_StringID(Chat::Skills, StringID::DISARMED_TRAP);
 				trap->disarmed = true;
 				Log(Logs::General, Logs::Traps, "Trap %d is disarmed.", trap->trap_id);
 				trap->UpdateTrap();
 			}
 			else
 			{
-				Message_StringID(Chat::Skills, FAIL_DISARM_DETECTED_TRAP);
+				Message_StringID(Chat::Skills, StringID::FAIL_DISARM_DETECTED_TRAP);
 				if (zone->random.Int(0, 99) < 25) {
 					trap->Trigger(this);
 				}
@@ -3654,12 +3654,12 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 		}
 		else
 		{
-			Message_StringID(Chat::Skills, TRAP_TOO_FAR);
+			Message_StringID(Chat::Skills, StringID::TRAP_TOO_FAR);
 		}
 	}
 	else
 	{
-		Message_StringID(Chat::Skills, TRAP_NOT_DETECTED);
+		Message_StringID(Chat::Skills, StringID::TRAP_NOT_DETECTED);
 	}
 
 	return;
@@ -3676,7 +3676,7 @@ void Client::Handle_OP_Discipline(const EQApplicationPacket *app)
 			char val1[20]={0};
 			char val2[20]={0};
 			Log(Logs::General, Logs::Discs, "Disc %d reuse time not yet met. %d", cds->disc_id, remain);
-			Message_StringID(Chat::Disciplines, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
+			Message_StringID(Chat::Disciplines, StringID::DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
 			return;
 		}
 		else
@@ -3709,14 +3709,14 @@ void Client::Handle_OP_Discipline(const EQApplicationPacket *app)
 			char val1[20]={0};
 			char val2[20]={0};
 			Log(Logs::General, Logs::Discs, "Disc reuse time not yet met. %d", remain);
-			Message_StringID(Chat::Disciplines, DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
+			Message_StringID(Chat::Disciplines, StringID::DISCIPLINE_CANUSEIN, ConvertArray((remain)/60,val1), ConvertArray(remain%60,val2));
 		}
 		else
 		{
 			Log(Logs::General, Logs::Discs, "No disc used and reuse time is met.");
 			auto outapp = new EQApplicationPacket(OP_InterruptCast, sizeof(InterruptCast_Struct));
 			InterruptCast_Struct* ic = (InterruptCast_Struct*)outapp->pBuffer;
-			ic->messageid = DISCIPLINE_RDY;
+			ic->messageid = StringID::DISCIPLINE_RDY;
 			ic->color = Chat::Disciplines;
 			QueuePacket(outapp);
 			safe_delete(outapp);
@@ -3742,7 +3742,7 @@ void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 	initiator->CastToClient()->SetDuelTarget(0);
 	initiator->CastToClient()->SetDueling(false);
 	// inform initiator the duel was declined (the client handles informing the decliner)
-	initiator->CastToClient()->Message_StringID(Chat::White, DUEL_DECLINE, GetName());
+	initiator->CastToClient()->Message_StringID(Chat::White, StringID::DUEL_DECLINE, GetName());
 	return;
 }
 
@@ -3905,7 +3905,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 	}
 	else if (zone->random.Roll0(105) > totalfeign) {
 		SetFeigned(false);
-		entity_list.MessageClose_StringID(this, false, 200, 10, STRING_FEIGNFAILED, GetName());
+		entity_list.MessageClose_StringID(this, false, 200, 10, StringID::STRING_FEIGNFAILED, GetName());
 	}
 	else 
 	{
@@ -3956,13 +3956,13 @@ void Client::Handle_OP_Forage(const EQApplicationPacket *app)
 
 	if (IsSitting())
 	{
-		Message_StringID(Chat::Skills, FORAGE_STANDING);
+		Message_StringID(Chat::Skills, StringID::FORAGE_STANDING);
 		return;
 	}
 
 	if (IsStunned() || IsMezzed() || AutoAttackEnabled())
 	{
-		Message_StringID(Chat::Skills, FORAGE_COMBAT);
+		Message_StringID(Chat::Skills, StringID::FORAGE_COMBAT);
 		return;
 	}
 
@@ -4018,7 +4018,7 @@ void Client::Handle_OP_GMBecomeNPC(const EQApplicationPacket *app)
 		cli->SendAppearancePacket(AppearanceType::NPCName, 1, true);
 		target->SetBecomeNPC(true);
 		target->SetBecomeNPCLevel(bnpc->maxlevel);
-		cli->Message_StringID(Chat::White, TOGGLE_OFF);
+		cli->Message_StringID(Chat::White, StringID::TOGGLE_OFF);
 		target->tellsoff = true;
 		target->UpdateWho();
 	}
@@ -4759,7 +4759,7 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 		if (raid)
 		{
 			if (raid->RaidCount() >= MAX_RAID_MEMBERS && raid != iraid) {
-				Message_StringID(Chat::White, RAID_IS_FULL);
+				Message_StringID(Chat::White, StringID::RAID_IS_FULL);
 				return;
 			}
 			if (iraid && raid != iraid) {
@@ -4771,7 +4771,7 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 
 			if (raid->GroupCount(groupToUse) >= MAX_GROUP_MEMBERS)
 			{
-				Message_StringID(Chat::White, GROUP_IS_FULL);
+				Message_StringID(Chat::White, StringID::GROUP_IS_FULL);
 				return;
 			}
 			else
@@ -4880,7 +4880,7 @@ void Client::Handle_OP_GroupFollow(const EQApplicationPacket *app)
 	else
 	{
 		//Message and invite clear are handled by the client, but just in case.
-		Message_StringID(Chat::Red, CANNOT_JOIN_GROUP, gf->name1);
+		Message_StringID(Chat::Red, StringID::CANNOT_JOIN_GROUP, gf->name1);
 		ClearGroupInvite();
 		return;
 	}
@@ -4906,7 +4906,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 
 	if (Invitee == this)
 	{
-		Message_StringID(Chat::White, GROUP_INVITEE_SELF);
+		Message_StringID(Chat::White, StringID::GROUP_INVITEE_SELF);
 		return;
 	}
 
@@ -4944,11 +4944,11 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 				
 				if (InviterRaid != InviteeRaid || leader)
 				{
-					Message_StringID(Chat::White, ALREADY_IN_GRP_RAID, Invitee->GetName());
+					Message_StringID(Chat::White, StringID::ALREADY_IN_GRP_RAID, Invitee->GetName());
 				}
 				else
 				{
-					Message_StringID(Chat::White, ALREADY_IN_GROUP, Invitee->GetName());
+					Message_StringID(Chat::White, StringID::ALREADY_IN_GROUP, Invitee->GetName());
 				}
 
 				return;
@@ -4963,7 +4963,7 @@ void Client::Handle_OP_GroupInvite2(const EQApplicationPacket *app)
 				QueuePacket(outapp);
 				safe_delete(outapp);
 
-				Invitee->Message_StringID(Chat::White, GROUP_INVITED, GetName());
+				Invitee->Message_StringID(Chat::White, StringID::GROUP_INVITED, GetName());
 			}
 		}
 	}
@@ -5449,24 +5449,24 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 		{
 			if (zone->random.Int(0, 260) < (int)GetSkill(EQ::skills::SkillHide))
 			{
-				Message_StringID(Chat::Skills, EVADE_SUCCESS);
+				Message_StringID(Chat::Skills, StringID::EVADE_SUCCESS);
 				RogueEvade(evadetar);
 				success = SKILLUP_SUCCESS;
 			}
 			else
 			{
-				Message_StringID(Chat::Skills, EVADE_FAIL);
+				Message_StringID(Chat::Skills, StringID::EVADE_FAIL);
 			}
 		}
 		else
 		{
 			if (hidden)
 			{
-				Message_StringID(Chat::Skills, HIDE_SUCCESS);
+				Message_StringID(Chat::Skills, StringID::HIDE_SUCCESS);
 				success = SKILLUP_SUCCESS;
 			}
 			else
-				Message_StringID(Chat::Skills, HIDE_FAIL);
+				Message_StringID(Chat::Skills, StringID::HIDE_FAIL);
 		}
 	}
 
@@ -5787,9 +5787,9 @@ void Client::Handle_OP_ManaChange(const EQApplicationPacket *app)
 	if (app->size == 0) {
 		// i think thats the sign to stop the songs
 		if (IsBardSong(casting_spell_id) || bardsong != 0)
-			InterruptSpell(SONG_ENDS, Chat::SpellFailure, SPELL_UNKNOWN);
+			InterruptSpell(StringID::SONG_ENDS, Chat::SpellFailure, SPELL_UNKNOWN);
 		else
-			InterruptSpell(INTERRUPT_SPELL, Chat::SpellFailure, SPELL_UNKNOWN);
+			InterruptSpell(StringID::INTERRUPT_SPELL, Chat::SpellFailure, SPELL_UNKNOWN);
 
 		return;
 	}
@@ -5849,11 +5849,11 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 
 		if (zone->random.Int(0, 99) < criticalchance){
 			mendhp *= 2;
-			Message_StringID(Chat::LightBlue, MEND_CRITICAL);
+			Message_StringID(Chat::LightBlue, StringID::MEND_CRITICAL);
 		}
 		SetHP(GetHP() + mendhp);
 		SendHPUpdate();
-		Message_StringID(Chat::LightBlue, MEND_SUCCESS);
+		Message_StringID(Chat::LightBlue, StringID::MEND_SUCCESS);
 		success = SKILLUP_SUCCESS;
 	}
 	else {
@@ -5867,10 +5867,10 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 		{
 			SetHP(currenthp > mendhp ? (GetHP() - mendhp) : 1);
 			SendHPUpdate();
-			Message_StringID(Chat::LightBlue, MEND_WORSEN);
+			Message_StringID(Chat::LightBlue, StringID::MEND_WORSEN);
 		}
 		else
-			Message_StringID(Chat::LightBlue, MEND_FAIL);
+			Message_StringID(Chat::LightBlue, StringID::MEND_FAIL);
 	}
 
 	CheckIncreaseSkill(EQ::skills::SkillMend, nullptr, zone->skill_difficulty[EQ::skills::SkillMend].difficulty, success);
@@ -5982,7 +5982,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet && (!GetTarget() || GetTarget() == mypet || (GetTarget() && !GetTarget()->IsPet())))
 		{
 			// Client's pet.
-			mypet->Say_StringID(PET_LEADERIS, GetName());
+			mypet->Say_StringID(StringID::PET_LEADERIS, GetName());
 		}
 		else if (GetTarget() && GetTarget() != mypet && (GetTarget()->IsPet() || GetTarget()->GetPetType() == petOrphan))
 		{
@@ -5993,12 +5993,12 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 				if (Owner != nullptr)
 				{
 					// Somebody else's pet.
-					theirpet->Say_StringID(PET_LEADERIS, Owner->GetCleanName());
+					theirpet->Say_StringID(StringID::PET_LEADERIS, Owner->GetCleanName());
 				}
 				else
 				{
 					// Pet's owner is dead.
-					theirpet->Say_StringID(I_FOLLOW_NOONE);
+					theirpet->Say_StringID(StringID::I_FOLLOW_NOONE);
 				}
 			}
 		}
@@ -6030,14 +6030,14 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (!target)
 			break;
 		if (target->IsMezzed()) {
-			Message_StringID(Chat::White, CANNOT_WAKE, mypet->GetCleanName(), target->GetCleanName());
+			Message_StringID(Chat::White, StringID::CANNOT_WAKE, mypet->GetCleanName(), target->GetCleanName());
 			break;
 		}
 		if (mypet->IsFeared())
 			break; //prevent pet from attacking stuff while feared
 
 		if (!mypet->IsAttackAllowed(target)) {
-			mypet->Say_StringID(NOT_LEGAL_TARGET);
+			mypet->Say_StringID(StringID::NOT_LEGAL_TARGET);
 			break;
 		}
 
@@ -6058,7 +6058,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			else {
 				break;
 			}
-			Message_StringID(Chat::PetResponse, PET_ATTACKING, mypet->GetCleanName(), target->GetCleanName());
+			Message_StringID(Chat::PetResponse, StringID::PET_ATTACKING, mypet->GetCleanName(), target->GetCleanName());
 		}
 		break;
 	}
@@ -6066,7 +6066,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet->IsFeared()) break; //keeps pet running while feared
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-			mypet->Say_StringID(Chat::PetResponse, PET_CALMING);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_CALMING);
 			mypet->WipeHateList();
 			mypet->SetTarget(nullptr);
 			tar_ndx = 20;
@@ -6076,7 +6076,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	case PET_HEALTHREPORT: 
 	{
 		uint8 HP_ratio = static_cast<uint8>(mypet->GetHPRatio());
-		Message_StringID(Chat::PetResponse, PET_REPORT_HP, ConvertArray(HP_ratio, val1));
+		Message_StringID(Chat::PetResponse, StringID::PET_REPORT_HP, ConvertArray(HP_ratio, val1));
 		mypet->ShowBuffList(this);
 		break;
 	}
@@ -6086,7 +6086,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			break;
 		}
 
-		mypet->Say_StringID(Chat::PetResponse, PET_GETLOST_STRING);
+		mypet->Say_StringID(Chat::PetResponse, StringID::PET_GETLOST_STRING);
 		mypet->CastToNPC()->Depop();
 		//mypet->Death(nullptr, 0, SPELL_UNKNOWN, SkillTigerClaw, Killed_ENV);
 
@@ -6099,7 +6099,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			if (mypet->IsNPC()) {
-				mypet->Say_StringID(Chat::PetResponse, PET_GUARDINGLIFE);
+				mypet->Say_StringID(Chat::PetResponse, StringID::PET_GUARDINGLIFE);
 				mypet->SetPetOrder(SPO_Guard);
 				if (!mypet->GetTarget()) // want them to not twitch if they're chasing something down
 					mypet->StopNavigation();
@@ -6115,7 +6115,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
-			mypet->Say_StringID(Chat::PetResponse, PET_FOLLOWING);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_FOLLOWING);
 			mypet->SetPetOrder(SPO_Follow);
 			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
@@ -6125,12 +6125,12 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
 			if(mypet->CastToNPC()->IsTaunting())
 			{
-				Message_StringID(Chat::PetResponse, PET_NO_TAUNT);
+				Message_StringID(Chat::PetResponse, StringID::PET_NO_TAUNT);
 				mypet->CastToNPC()->SetTaunting(false);
 			}
 			else
 			{
-				Message_StringID(Chat::PetResponse, PET_DO_TAUNT);
+				Message_StringID(Chat::PetResponse, StringID::PET_DO_TAUNT);
 				mypet->CastToNPC()->SetTaunting(true);
 			}
 		}
@@ -6138,7 +6138,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 	}
 	case PET_NOTAUNT: {
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-			Message_StringID(Chat::PetResponse, PET_NO_TAUNT);
+			Message_StringID(Chat::PetResponse, StringID::PET_NO_TAUNT);
 			mypet->CastToNPC()->SetTaunting(false);
 		}
 		break;
@@ -6148,7 +6148,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 1) || mypet->GetPetType() != petAnimation) {
 			mypet->SetHeld(false);
-			mypet->Say_StringID(Chat::PetResponse, PET_GUARDME_STRING);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_GUARDME_STRING);
 			mypet->SetPetOrder(SPO_Follow);
 			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
@@ -6158,7 +6158,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-				mypet->Say_StringID(Chat::PetResponse, PET_SIT_STRING);
+				mypet->Say_StringID(Chat::PetResponse, StringID::PET_SIT_STRING);
 				mypet->SetPetOrder(SPO_Sit);
 				if (!mypet->UseBardSpellLogic())	//maybe we can have a bard pet
 					mypet->InterruptSpell(); //No cast 4 u. //i guess the pet should start casting
@@ -6174,7 +6174,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 		if (mypet->IsFeared()) break; //could be exploited like PET_BACKOFF
 
 		if ((mypet->GetPetType() == petAnimation && GetAA(aaAnimationEmpathy) >= 3) || mypet->GetPetType() != petAnimation) {
-			mypet->Say_StringID(Chat::PetResponse, PET_SIT_STRING);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_SIT_STRING);
 			mypet->SetPetOrder(SPO_Follow);
 			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Standing);
 		}
@@ -6213,7 +6213,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			mypet->InterruptSpell();
 			mypet->WipeHateList();
 			mypet->SetTarget(nullptr);
-			mypet->Say_StringID(Chat::PetResponse, PET_CALMING);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_CALMING);
 			mypet->SetPetOrder(SPO_Sit);
 			mypet->SendAppearancePacket(AppearanceType::Animation, Animation::Lying);
 
@@ -6222,7 +6222,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			if (zone->random.Roll(chance))
 				entity_list.RemoveFromNPCTargets(mypet);
 			else
-				entity_list.MessageClose_StringID(this, false, 200, 10, STRING_FEIGNFAILED, mypet->GetCleanName());
+				entity_list.MessageClose_StringID(this, false, 200, 10, StringID::STRING_FEIGNFAILED, mypet->GetCleanName());
 		}
 		break;
 	}
@@ -6231,7 +6231,7 @@ void Client::Handle_OP_PetCommands(const EQApplicationPacket *app)
 			if (mypet->IsFeared())
 				break; //could be exploited like PET_BACKOFF
 
-			mypet->Say_StringID(Chat::PetResponse, PET_ON_HOLD);
+			mypet->Say_StringID(Chat::PetResponse, StringID::PET_ON_HOLD);
 			mypet->SetHeld(true);
 			mypet->WipeHateList();
 			mypet->SetTarget(nullptr);
@@ -6419,21 +6419,21 @@ void Client::Handle_OP_PickPocket(const EQApplicationPacket *app)
 	pick_out->type = 0;
 
 	if (victim == this){
-		Message_StringID(Chat::Skills, STEAL_FROM_SELF);
+		Message_StringID(Chat::Skills, StringID::STEAL_FROM_SELF);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		return;
 	}
 	else if(victim->IsClient() || (victim->GetOwner() && victim->GetOwner()->IsClient()))
 	{
-		Message_StringID(Chat::Skills, STEAL_PLAYERS);
+		Message_StringID(Chat::Skills, StringID::STEAL_PLAYERS);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		return;
 	}
 	else if(victim->IsCorpse())
 	{
-		Message_StringID(Chat::Skills, STEAL_CORPSES);
+		Message_StringID(Chat::Skills, StringID::STEAL_CORPSES);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		return;
@@ -6492,7 +6492,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 
 		if (!leader || !i || i != this) {
 			// send back a failure message back to the invited
-			i->Message_StringID(Chat::DefaultText, CANNOT_JOIN_RAID, ri->leader_name);
+			i->Message_StringID(Chat::DefaultText, StringID::CANNOT_JOIN_RAID, ri->leader_name);
 
 			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
@@ -6514,7 +6514,7 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 		{
 			if (IsRaidGrouped())
 			{
-				i->Message_StringID(Chat::DefaultText, ALREADY_IN_RAID, GetName()); //group failed, must invite members not in raid...
+				i->Message_StringID(Chat::DefaultText, StringID::ALREADY_IN_RAID, GetName()); //group failed, must invite members not in raid...
 				return;
 			}
 			
@@ -6813,7 +6813,7 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 {
 	if (!CanUseReport)
 	{
-		Message_StringID(Chat::System, REPORT_ONCE);
+		Message_StringID(Chat::System, StringID::REPORT_ONCE);
 		return;
 	}
 
@@ -6886,12 +6886,12 @@ void Client::Handle_OP_RequestDuel(const EQApplicationPacket *app)
 	}
 	
 	if (GetID() != ds->duel_target && entity->IsClient() && (entity->CastToClient()->IsDueling() && entity->CastToClient()->GetDuelTarget() != 0)) {
-		Message_StringID(Chat::White, DUEL_CONSIDERING, entity->GetName());
+		Message_StringID(Chat::White, StringID::DUEL_CONSIDERING, entity->GetName());
 		safe_delete(outapp);
 		return;
 	}
 	if (IsDueling()) {
-		Message_StringID(Chat::White, DUEL_INPROGRESS);
+		Message_StringID(Chat::White, StringID::DUEL_INPROGRESS);
 		safe_delete(outapp);
 		return;
 	}
@@ -7058,7 +7058,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 		int uskill = GetSkill(EQ::skills::SkillSenseTraps);
 		if ((zone->random.Int(0, 99) + uskill) >= (zone->random.Int(0, 99) + skill*0.75))
 		{
-			Message_StringID(Chat::Skills, SENSE_TRAP);
+			Message_StringID(Chat::Skills, StringID::SENSE_TRAP);
 
 			if(trap)
 				trap->detected = true;
@@ -7073,7 +7073,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 	}
 	
 	if(success == SKILLUP_FAILURE)
-		Message_StringID(Chat::Skills, DO_NOT_SENSE_TRAP);
+		Message_StringID(Chat::Skills, StringID::DO_NOT_SENSE_TRAP);
 
 	CheckIncreaseSkill(EQ::skills::SkillSenseTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillSenseTraps].difficulty, success);
 }
@@ -7201,31 +7201,31 @@ void Client::Handle_OP_Shielding(const EQApplicationPacket *app)
 	
 	if (!target || !target->IsClient() || target->IsCorpse() || target->CastToClient()->IsDead())
 	{
-		Message_StringID(Chat::White, SHIELD_TARGET_LIVING);
+		Message_StringID(Chat::White, StringID::SHIELD_TARGET_LIVING);
 		return;
 	}
 
 	if (DistanceSquared(GetPosition(), target->GetPosition()) > (15.0f*15.0f))
 	{
-		Message_StringID(Chat::White, TARGET_TOO_FAR);
+		Message_StringID(Chat::White, StringID::TARGET_TOO_FAR);
 		return;
 	}
 
 	if (GetActiveDisc() || target->CastToClient()->GetActiveDisc())
 	{
-		Message_StringID(Chat::White, SHIELD_NO_DISC);
+		Message_StringID(Chat::White, StringID::SHIELD_NO_DISC);
 		return;
 	}
 
 	if (GetShieldTarget() || target->GetShieldTarget())
 	{
-		Message_StringID(Chat::White, ALREADY_SHIELDING_ANOTHER);
+		Message_StringID(Chat::White, StringID::ALREADY_SHIELDING_ANOTHER);
 		return;
 	}
 
 	if (GetShielder() || target->GetShielder())
 	{
-		Message_StringID(Chat::White, ALREADY_SHIELDED);
+		Message_StringID(Chat::White, StringID::ALREADY_SHIELDED);
 		return;
 	}
 	
@@ -7340,7 +7340,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	item = database.GetItem(item_id);
 	if (!item){
 		//error finding item (most likely the item failed the level or faction check.)
-		Message_StringID(Chat::White, ALREADY_SOLD);
+		Message_StringID(Chat::White, StringID::ALREADY_SOLD);
 		entity_list.SendMerchantInventory(tmp, mp->itemslot, true);
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
@@ -7349,7 +7349,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	}
 	if (CheckLoreConflict(item))
 	{
-		Message_StringID(Chat::White, DUPE_LORE_MERCHANT, tmp->GetCleanName());
+		Message_StringID(Chat::White, StringID::DUPE_LORE_MERCHANT, tmp->GetCleanName());
 		QueuePacket(returnapp);
 		safe_delete(returnapp);
 		return;
@@ -7414,7 +7414,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		mpo->price = SinglePrice * mp->quantity + 0.5f;
 	if (mpo->price < 0)
 	{
-		Message_StringID(Chat::White, ALREADY_SOLD);
+		Message_StringID(Chat::White, StringID::ALREADY_SOLD);
 		safe_delete(outapp);
 		safe_delete(inst);
 		QueuePacket(returnapp);
@@ -7765,7 +7765,7 @@ void Client::Handle_OP_ShopRequest(const EQApplicationPacket *app)
 	}
 
 	if (tmp->IsEngaged() || tmp->IsCharmedPet()){
-		this->Message_StringID(Chat::White, MERCHANT_BUSY);
+		this->Message_StringID(Chat::White, StringID::MERCHANT_BUSY);
 		action = 0;
 	}
 
@@ -7838,11 +7838,11 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 	{
 		if (sneaking)
 		{
-			Message_StringID(Chat::Skills, SNEAK_SUCCESS);
+			Message_StringID(Chat::Skills, StringID::SNEAK_SUCCESS);
 		}
 		else 
 		{
-			Message_StringID(Chat::Skills, SNEAK_FAIL);
+			Message_StringID(Chat::Skills, StringID::SNEAK_FAIL);
 		}
 	}
 
@@ -8023,7 +8023,7 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 	Group *group = GetGroup();
 	if (group == nullptr)
 	{
-		Message_StringID(Chat::White, SPLIT_NO_GROUP);
+		Message_StringID(Chat::White, StringID::SPLIT_NO_GROUP);
 		SendClientMoney(split->copper, split->silver, split->gold, split->platinum);
 		return;
 	}
@@ -8032,7 +8032,7 @@ void Client::Handle_OP_Split(const EQApplicationPacket *app)
 		100 * static_cast<uint64>(split->gold) + 1000 * static_cast<uint64>(split->platinum);
 	if (!TakeMoneyFromPP(copper)) 
 	{
-		Message_StringID(Chat::White, SPLIT_FAIL);
+		Message_StringID(Chat::White, StringID::SPLIT_FAIL);
 		SendClientMoney(split->copper, split->silver, split->gold, split->platinum);
 		return;
 	}
@@ -8059,7 +8059,7 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 
 	if (GetLevel() < 20)
 	{
-		Message_StringID(Chat::Yellow, SURNAME_LEVEL);
+		Message_StringID(Chat::Yellow, StringID::SURNAME_LEVEL);
 		return;
 	}
 
@@ -8081,13 +8081,13 @@ void Client::Handle_OP_Surname(const EQApplicationPacket *app)
 	}
 
 	if (strlen(surname->lastname) >= 20) {
-		Message_StringID(Chat::Yellow, SURNAME_TOO_LONG);
+		Message_StringID(Chat::Yellow, StringID::SURNAME_TOO_LONG);
 		return;
 	}
 
 	if (!database.CheckNameFilter(surname->lastname, true))
 	{
-		Message_StringID(Chat::Yellow, SURNAME_REJECTED);
+		Message_StringID(Chat::Yellow, StringID::SURNAME_REJECTED);
 		return;
 	}
 
@@ -8155,7 +8155,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 		{
 			// searched for a target with /target (name), and not found.  Client sends over a new_target == 0
 			// dont do anything else, client keeps track of own current target.
-			Message_StringID(Chat::White, TARGET_NOT_FOUND2);
+			Message_StringID(Chat::White, StringID::TARGET_NOT_FOUND2);
 		} 
 		else
 		{
@@ -8185,7 +8185,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 					//but the client allows this without MQ so you don't flag it
 					if (!cur_tar) 
 					{
-						Message_StringID(Chat::White, TARGET_NOT_FOUND2);
+						Message_StringID(Chat::White, StringID::TARGET_NOT_FOUND2);
 						SendTargetCommand(0);
 						SetTarget(nullptr);
 						pClientSideTarget = 0;
@@ -8199,7 +8199,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			}
 			else
 			{
-				Message_StringID(Chat::White, TARGET_NOT_FOUND2);
+				Message_StringID(Chat::White, StringID::TARGET_NOT_FOUND2);
 				SendTargetCommand(cur_tar ? cur_tar->GetID() : 0);
 				if (!cur_tar) {
 					pClientSideTarget = 0;
@@ -8209,7 +8209,7 @@ void Client::Handle_OP_TargetCommand(const EQApplicationPacket *app)
 			}
 		} else {
 			// no target found
-			Message_StringID(Chat::White, TARGET_NOT_FOUND2);
+			Message_StringID(Chat::White, StringID::TARGET_NOT_FOUND2);
 			SendTargetCommand(cur_tar ? cur_tar->GetID() : 0);
 			if (!cur_tar) {
 				SetTarget(nullptr);
@@ -8361,8 +8361,8 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			trade->state = TradeCompleting;
 
 			if (CheckTradeLoreConflict(other) || other->CheckTradeLoreConflict(this)) {
-				Message_StringID(Chat::Red, TRADE_CANCEL_LORE);
-				other->Message_StringID(Chat::Red, TRADE_CANCEL_LORE);
+				Message_StringID(Chat::Red, StringID::TRADE_CANCEL_LORE);
+				other->Message_StringID(Chat::Red, StringID::TRADE_CANCEL_LORE);
 				this->FinishTrade(this);
 				other->FinishTrade(other);
 				other->trade->Reset();
@@ -8713,9 +8713,9 @@ void Client::Handle_OP_TradeRequest(const EQApplicationPacket *app)
 			|| tradee->CastToClient()->IsFeigned())) {
 			// Other client is in a trade, and its not with us.  So don't send a trade request.
 			// Let the other client know we are interested in a trade.
-			tradee->CastToClient()->Message_StringID(0,TRADE_INTERESTED,GetCleanName());
+			tradee->CastToClient()->Message_StringID(0, StringID::TRADE_INTERESTED,GetCleanName());
 			// Send reply to client that other client is busy
-			Message_StringID(0,TRADE_BUSY,tradee->CastToClient()->GetCleanName());
+			Message_StringID(0, StringID::TRADE_BUSY,tradee->CastToClient()->GetCleanName());
 			FinishTrade(this);
 			trade->Reset();
 			return;
@@ -8813,7 +8813,7 @@ void Client::Handle_OP_TraderShop(const EQApplicationPacket *app)
 		Trader->WithCustomer = true;
 	}
 	else
-		Message_StringID(clientMessageYellow, TRADER_BUSY);
+		Message_StringID(clientMessageYellow, StringID::TRADER_BUSY);
 
 	safe_delete(outapp);
 	return;
@@ -9254,9 +9254,9 @@ void Client::Handle_OP_TradeRefused(const EQApplicationPacket *app)
 			client->trade->Reset();
 		}
 		if (in->type == 98) {
-			client->Message_StringID(Chat::White, TRADE_NOBODY, GetCleanName());
+			client->Message_StringID(Chat::White, StringID::TRADE_NOBODY, GetCleanName());
 		} else if (in->type == 99) {
-			client->Message_StringID(Chat::White, TRADE_GROUP_ONLY, GetCleanName());
+			client->Message_StringID(Chat::White, StringID::TRADE_GROUP_ONLY, GetCleanName());
 		} else {
 			client->QueuePacket(app);
 		}

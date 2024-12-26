@@ -797,7 +797,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 					if (RuleB(NPC, ReturnNonQuestItems)) {
 						DeleteItemInInventory(i);
 						if (npc->CanTalk()) {
-							npc->Say_StringID(zone->random.Int(TRADE_BAD_FACTION1, TRADE_BAD_FACTION4));
+							npc->Say_StringID(zone->random.Int(StringID::TRADE_BAD_FACTION1, StringID::TRADE_BAD_FACTION4));
 						}
 						SummonItem(inst->GetID(), inst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
 						Log(Logs::General, Logs::Trading, "Quest NPC %s is returning %s because the faction check has failed.", npc->GetName(), item->Name);
@@ -850,7 +850,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 								{
 									SummonItem(baginst->GetID(), baginst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
 									if (npc->CanTalk())
-										npc->Say_StringID(NO_NEED_FOR_ITEM, GetName());
+										npc->Say_StringID(StringID::NO_NEED_FOR_ITEM, GetName());
 									Log(Logs::General, Logs::Trading, "Non-Quest NPC %s is returning %s (bag) because it does not require it.", npc->GetName(), bagitem->Name);
 								}
 								else
@@ -885,7 +885,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 					DeleteItemInInventory(i);
 					SummonItem(inst->GetID(), inst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
 					if (npc->CanTalk())
-						npc->Say_StringID(NO_NEED_FOR_ITEM, GetName());
+						npc->Say_StringID(StringID::NO_NEED_FOR_ITEM, GetName());
 					Log(Logs::General, Logs::Trading, "Non-Quest NPC %s is returning %s because it does not require it.", npc->GetName(), item->Name);
 
 				}

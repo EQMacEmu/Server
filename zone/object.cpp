@@ -518,7 +518,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 			auto item = m_inst->GetItem();
 			if(sender->CheckLoreConflict(item))
 			{
-				sender->Message_StringID(Chat::Red, PICK_LORE);
+				sender->Message_StringID(Chat::Red, StringID::PICK_LORE);
 				auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
 				ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
 				loreitem->player_id = click_object->player_id;
@@ -533,7 +533,7 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 					c_inst = m_inst->GetItem(i);
 					if (c_inst && sender->CheckLoreConflict(c_inst->GetItem())) {
 						// we found a lore item in container - so do not allow picking up item.
-						sender->Message_StringID(Chat::Red, PICK_LORE);
+						sender->Message_StringID(Chat::Red, StringID::PICK_LORE);
 						auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
 						ClickObject_Struct* loreitem = (ClickObject_Struct*)outapp->pBuffer;
 						loreitem->player_id = click_object->player_id;

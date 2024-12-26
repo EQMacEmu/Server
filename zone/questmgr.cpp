@@ -1068,7 +1068,7 @@ void QuestManager::givecash(uint32 copper, uint32 silver, uint32 gold, uint32 pl
 		}
 
 		if (initiator) {
-			initiator->Message_StringID(Chat::Green, YOU_RECEIVE_AS_SPLIT, Strings::Money(platinum, gold, silver, copper).c_str());
+			initiator->Message_StringID(Chat::Green, StringID::YOU_RECEIVE_AS_SPLIT, Strings::Money(platinum, gold, silver, copper).c_str());
 		}
 	}
 }

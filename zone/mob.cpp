@@ -2440,7 +2440,7 @@ void Mob::Say(const char *format, ...)
 		talker = this;
 
 	entity_list.MessageClose_StringID(talker, false, RuleI(Range, Say), 10,
-		GENERIC_SAY, GetCleanName(), buf);
+		StringID::GENERIC_SAY, GetCleanName(), buf);
 }
 
 //
@@ -2453,7 +2453,7 @@ void Mob::Say_StringID(uint32 string_id, const char *message3, const char *messa
 	snprintf(string_id_str, 10, "%d", string_id);
 
 	entity_list.MessageClose_StringID(this, false, RuleI(Range, Say), 10,
-		GENERIC_STRINGID_SAY, GetCleanName(), string_id_str, message3, message4, message5,
+		StringID::GENERIC_STRINGID_SAY, GetCleanName(), string_id_str, message3, message4, message5,
 		message6, message7, message8, message9
 	);
 }
@@ -2465,7 +2465,7 @@ void Mob::Say_StringID(uint32 type, uint32 string_id, const char *message3, cons
 	snprintf(string_id_str, 10, "%d", string_id);
 
 	entity_list.MessageClose_StringID(this, false, RuleI(Range, Say), type,
-		GENERIC_STRINGID_SAY, GetCleanName(), string_id_str, message3, message4, message5,
+		StringID::GENERIC_STRINGID_SAY, GetCleanName(), string_id_str, message3, message4, message5,
 		message6, message7, message8, message9
 	);
 }
@@ -2484,7 +2484,7 @@ void Mob::Shout(const char *format, ...)
 		message_type = Chat::White;
 
 	entity_list.Message_StringID(this, false, message_type,
-		GENERIC_SHOUT, GetCleanName(), buf);
+		StringID::GENERIC_SHOUT, GetCleanName(), buf);
 }
 
 void Mob::Emote(const char *format, ...)
@@ -2497,7 +2497,7 @@ void Mob::Emote(const char *format, ...)
 	va_end(ap);
 
 	entity_list.MessageClose_StringID(this, false, RuleI(Range, Emote), 10,
-		GENERIC_EMOTE, GetCleanName(), buf);
+		StringID::GENERIC_EMOTE, GetCleanName(), buf);
 }
 
 const char *Mob::GetCleanName()
@@ -2678,7 +2678,7 @@ bool Mob::ExecWeaponProc(const EQ::ItemInstance *inst, uint16 spell_id, Mob *on)
 
 	if (IsSilenced())
 	{
-		Message_StringID(Chat::SpellFailure, SILENCED_STRING);
+		Message_StringID(Chat::SpellFailure, StringID::SILENCED_STRING);
 		return false;
 	}
 
@@ -5063,7 +5063,7 @@ void Mob::PurgePoison(Client* caster)
 			if (effect_value >= static_cast<int>(buffs[j].counters))
 			{
 				if (caster)
-					caster->Message_StringID(Chat::Spells, TARGET_CURED);
+					caster->Message_StringID(Chat::Spells, StringID::TARGET_CURED);
 				effect_value -= buffs[j].counters;
 				buffs[j].counters = 0;
 				BuffFadeBySlot(j);
@@ -5203,7 +5203,7 @@ void Mob::EndShield()
 {
 	if (GetShieldTarget())
 	{
-		entity_list.MessageClose_StringID(this, false, 100, 0, END_SHIELDING, GetCleanName(), GetShieldTarget()->GetCleanName());
+		entity_list.MessageClose_StringID(this, false, 100, 0, StringID::END_SHIELDING, GetCleanName(), GetShieldTarget()->GetCleanName());
 		GetShieldTarget()->SetShielder(nullptr);
 		SetShieldTarget(nullptr);
 		shield_timer.Disable();
@@ -5254,7 +5254,7 @@ void Mob::StartShield(Mob* mob)
 	if (!mob || mob->IsCorpse())
 		return;
 
-	entity_list.MessageClose_StringID(this, false, 100, 0, START_SHIELDING, mob->GetCleanName(), GetCleanName());
+	entity_list.MessageClose_StringID(this, false, 100, 0, StringID::START_SHIELDING, mob->GetCleanName(), GetCleanName());
 
 	SetShieldTarget(mob);
 	mob->SetShielder(this);

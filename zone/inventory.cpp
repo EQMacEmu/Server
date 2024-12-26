@@ -18,7 +18,7 @@
 
 #include "../common/global_define.h"
 #include "../common/eqemu_logsys.h"
-
+#include "string_ids.h"
 #include "../common/strings.h"
 #include "quest_parser_collection.h"
 #include "worldserver.h"
@@ -447,7 +447,7 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst_in, glm::vec4 coord
 
 	if (message)
 	{
-		Message_StringID(Chat::Yellow, 12904); // DROPPED_ITEM
+		Message_StringID(Chat::Yellow,  StringID::DROPPED_ITEM);
 	}
 
 	// Package as zone object
@@ -637,7 +637,7 @@ bool Client::PushItemOnCursorWithoutQueue(EQ::ItemInstance* inst, bool drop)
 	const EQ::ItemData* item = database.GetItem(inst->GetID());
 	if (item && CheckLoreConflict(item))
 	{
-		Message_StringID(Chat::White, 290); // DUP_LORE
+		Message_StringID(Chat::White, StringID::DUP_LORE);
 		return false;
 	}
 
@@ -1261,7 +1261,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 					safe_delete(outapp);
 
 					m_tradeskill_object->PutItem(EQ::InventoryProfile::CalcBagIdx(src_slot_id), inst);
-					Message_StringID(Chat::White, 290); // DUP_LORE
+					Message_StringID(Chat::White, StringID::DUP_LORE);
 					safe_delete(inst);
 
 					return true;

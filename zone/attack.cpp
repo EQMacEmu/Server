@@ -792,7 +792,7 @@ bool Client::Attack(Mob* other, int hand, int damagePct)
 
 	if(DivineAura() && !GetGM()) {//cant attack while invulnerable unless your a gm
 		Log(Logs::Detail, Logs::Combat, "Attack canceled, Divine Aura is in effect.");
-		Message_StringID(Chat::DefaultText, DIVINE_AURA_NO_ATK);	//You can't attack while invulnerable!
+		Message_StringID(Chat::DefaultText, StringID::DIVINE_AURA_NO_ATK);	//You can't attack while invulnerable!
 		return false;
 	}
 
@@ -1157,7 +1157,7 @@ void Client::Damage(Mob* other, int32 damage, uint16 spell_id, EQ::skills::Skill
 			else
 			{
 				Log(Logs::Detail, Logs::Combat, "Stun Resisted. %d chance.", stun_resist);
-				Message_StringID(Chat::DefaultText, AVOID_STUN);
+				Message_StringID(Chat::DefaultText, StringID::AVOID_STUN);
 			}
 		}
 	}
@@ -1236,7 +1236,7 @@ void Mob::AggroPet(Mob* attacker)
 			pet->AddToHateList(attacker, 1);
 			if (!pet->IsHeld()) {
 				pet->SetTarget(attacker);
-				Message_StringID(Chat::White, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
+				Message_StringID(Chat::White, StringID::PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
 			}
 		}
 	}
@@ -1577,7 +1577,7 @@ bool NPC::Attack(Mob* other, int hand, int damagePct)
 
 	if(IsPet() && GetOwner()->IsClient() && other->IsMezzed()) {
 		RemoveFromHateList(other);
-		GetOwner()->Message_StringID(Chat::Yellow, CANNOT_WAKE, GetCleanName(), other->GetCleanName());
+		GetOwner()->Message_StringID(Chat::Yellow, StringID::CANNOT_WAKE, GetCleanName(), other->GetCleanName());
 		return false;
 	}
 	int damage = 1;
@@ -1588,7 +1588,7 @@ bool NPC::Attack(Mob* other, int hand, int damagePct)
 	//Check that we can attack before we calc heading and face our target
 	if (!IsAttackAllowed(other)) {
 		if (this->GetOwnerID())
-			this->Say_StringID(NOT_LEGAL_TARGET);
+			this->Say_StringID(StringID::NOT_LEGAL_TARGET);
 		if(other) {
 			RemoveFromHateList(other);
 			Log(Logs::Detail, Logs::Combat, "I am not allowed to attack %s", other->GetName());
@@ -3024,7 +3024,7 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 		if (RuleB(Spells, ShowDotDmgMessages) && IsValidSpell(spell_id) && damage > 0 && attacker)
 		{
 			if (attacker->IsClient()) {
-				attacker->Message_StringID(Chat::SpellWornOff, YOUR_HIT_DOT, GetCleanName(), itoa(damage),
+				attacker->Message_StringID(Chat::SpellWornOff, StringID::YOUR_HIT_DOT, GetCleanName(), itoa(damage),
 					spells[spell_id].name);
 			}
 		}
@@ -3177,7 +3177,7 @@ void Mob::GenerateDamagePackets(Mob* attacker, bool FromDamageShield, int32 dama
 				if (attacker != this)
 				{
 					// Send message + OP_Damage (non-melee/spell) to caster. 
-					attacker->Message_StringID(Chat::NonMelee, OTHER_HIT_NONMELEE, GetCleanName(), ConvertArray(damage, val1));
+					attacker->Message_StringID(Chat::NonMelee, StringID::OTHER_HIT_NONMELEE, GetCleanName(), ConvertArray(damage, val1));
 					if (spell_id != SPELL_UNKNOWN && !FromDamageShield)
 					{
 						attacker->CastToClient()->QueuePacket(outapp);
@@ -3275,7 +3275,7 @@ void Mob::GenerateDeathPackets(Mob* killerMob, int32 damage, uint16 spell, uint8
 			char val1[20] = { 0 };
 			if (killerMob != this)
 			{
-				killerMob->Message_StringID(Chat::NonMelee, OTHER_HIT_NONMELEE, GetCleanName(), ConvertArray(damage, val1));
+				killerMob->Message_StringID(Chat::NonMelee, StringID::OTHER_HIT_NONMELEE, GetCleanName(), ConvertArray(damage, val1));
 			}
 		}
 	}
@@ -3363,7 +3363,7 @@ void Mob::HealDamage(uint32 amount, Mob *caster, uint16 spell_id, bool hot)
 	if (acthealed > 0 && !hot) 
 	{
 		// message to target	
-		Message_StringID(Chat::Spells, YOU_HEALED, itoa(acthealed));
+		Message_StringID(Chat::Spells, StringID::YOU_HEALED, itoa(acthealed));
 	}
 
 	if (IsClient())
@@ -3487,11 +3487,11 @@ bool Mob::TryWeaponProc(const EQ::ItemInstance *inst, const EQ::ItemData *weapon
 				{
 					Mob *own = GetOwner();
 					if (own)
-						own->Message_StringID(Chat::Red, PROC_PETTOOLOW);
+						own->Message_StringID(Chat::Red, StringID::PROC_PETTOOLOW);
 				}
 				else
 				{
-					Message_StringID(Chat::Red, PROC_TOOLOW);
+					Message_StringID(Chat::Red, StringID::PROC_TOOLOW);
 				}
 			}
 			else
@@ -3607,11 +3607,11 @@ void Mob::TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBa
 
 				if (GetGender() == Gender::Female) // female
 					entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-						Chat::MeleeCrit, FilterMeleeCrits, FEMALE_SLAYUNDEAD,
+						Chat::MeleeCrit, FilterMeleeCrits, StringID::FEMALE_SLAYUNDEAD,
 						GetCleanName(), itoa(damage));
 				else // males and neuter I guess
 					entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-						Chat::MeleeCrit, FilterMeleeCrits, MALE_SLAYUNDEAD,
+						Chat::MeleeCrit, FilterMeleeCrits, StringID::MALE_SLAYUNDEAD,
 						GetCleanName(), itoa(damage));
 				return;
 			}
@@ -3721,11 +3721,11 @@ void Mob::TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBa
 			if (crip_success)
 			{
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-						Chat::MeleeCrit, FilterMeleeCrits, CRIPPLING_BLOW,
+						Chat::MeleeCrit, FilterMeleeCrits, StringID::CRIPPLING_BLOW,
 						GetCleanName(), itoa(damage));
 				// Crippling blows also have a chance to stun
 				//Kayen: Crippling Blow would cause a chance to interrupt for npcs < 55, with a staggers message.
-				if (defender != nullptr && defender->GetLevel() <= 55 && !defender->GetSpecialAbility(IMMUNE_STUN) && zone->random.Roll(85))
+				if (defender != nullptr && defender->GetLevel() <= 55 && !defender->GetSpecialAbility(StringID::IMMUNE_STUN) && zone->random.Roll(85))
 				{
 					defender->Emote("staggers.");
 					defender->Stun(0, this);
@@ -3734,13 +3734,13 @@ void Mob::TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBa
 			else if (deadlySuccess)
 			{
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-						Chat::MeleeCrit, FilterMeleeCrits, DEADLY_STRIKE,
+						Chat::MeleeCrit, FilterMeleeCrits, StringID::DEADLY_STRIKE,
 						GetCleanName(), itoa(damage));
 			}
 			else
 			{
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-						Chat::MeleeCrit, FilterMeleeCrits, CRITICAL_HIT,
+						Chat::MeleeCrit, FilterMeleeCrits, StringID::CRITICAL_HIT,
 						GetCleanName(), itoa(damage));
 			}
 		}
@@ -3754,21 +3754,21 @@ void Mob::TryCriticalHit(Mob *defender, uint16 skill, int32 &damage, int32 minBa
 			if (skill == EQ::skills::SkillFlyingKick)
 			{
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-					Chat::MeleeCrit, FilterMeleeCrits, THUNDEROUS_KICK,
+					Chat::MeleeCrit, FilterMeleeCrits, StringID::THUNDEROUS_KICK,
 					GetName(), itoa(damage));
 			}
 			else if (skill == EQ::skills::SkillEagleStrike)
 			{
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-					Chat::MeleeCrit, FilterMeleeCrits, ASHEN_CRIT,
+					Chat::MeleeCrit, FilterMeleeCrits, StringID::ASHEN_CRIT,
 					GetName(), defender->GetCleanName());
 			}
 			else if (skill == EQ::skills::SkillDragonPunch)
 			{
-				uint32 stringid = SILENT_FIST_CRIT;
+				uint32 stringid = StringID::SILENT_FIST_CRIT;
 				if (GetRace() == Race::Iksar)
 				{
-					stringid = SILENT_FIST_TAIL;
+					stringid = StringID::SILENT_FIST_TAIL;
 				}
 
 				entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
@@ -3797,7 +3797,7 @@ bool Mob::TryFinishingBlow(Mob *defender, EQ::skills::SkillType skillinuse, uint
 		if (FB_Level && FB_Dmg && (defender->GetLevel() < FB_Level) && (ProcChance >= zone->random.Int(0, 1000)))
 		{
 			entity_list.FilteredMessageClose_StringID(this, false, RuleI(Range, CombatSpecials),
-				Chat::MeleeCrit, FilterMeleeCrits, FINISHING_BLOW, 
+				Chat::MeleeCrit, FilterMeleeCrits, StringID::FINISHING_BLOW,
 				GetName());
 			DoSpecialAttackDamage(defender, skillinuse, 1, FB_Dmg + dmgBonus, 0);
 			return true;

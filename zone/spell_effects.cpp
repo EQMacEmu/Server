@@ -336,7 +336,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				{
 					if (caster == this)
 					{
-						Message_StringID(Chat::SpellFailure, CANNOT_TRANSLOCATE_SELF);
+						Message_StringID(Chat::SpellFailure, StringID::CANNOT_TRANSLOCATE_SELF);
 						break;
 					}
 
@@ -536,7 +536,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				}
 				else if (caster)
 				{
-					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT);
+					caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_NO_EFFECT);
 				}
 				break;
 			}
@@ -561,7 +561,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				// Ignore if spell is beneficial (ex. Harvest)
 				if (IsDetrimentalSpell(spell.id) && (GetSpecialAbility(SpecialAbility::StunImmunity) || GetLevel() > max_level))
 				{
-					caster->Message_StringID(Chat::SpellFailure, IMMUNE_STUN);
+					caster->Message_StringID(Chat::SpellFailure, StringID::IMMUNE_STUN);
 				}
 				else
 				{
@@ -772,7 +772,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							|| (GetZoneID() == Zones::SKYSHRINE && !zone->IsBindArea(GetX(), GetY(), GetZ())))
 						{
 							//Nobody can bind here.
-							Message_StringID(Chat::SpellFailure, CANNOT_BIND);
+							Message_StringID(Chat::SpellFailure, StringID::CANNOT_BIND);
 							break;
 						}
 
@@ -781,7 +781,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							if(caster != this)
 							{
 								//Only the caster can bind here
-								Message_StringID(Chat::SpellFailure, CANNOT_BIND);
+								Message_StringID(Chat::SpellFailure, StringID::CANNOT_BIND);
 								break;
 							}
 							else
@@ -885,7 +885,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				snprintf(effect_desc, _EDLEN, "Cancel Magic: %d", effect_value);
 #endif
 				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
-					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
 
@@ -919,7 +919,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				snprintf(effect_desc, _EDLEN, "Dispel Detrimental: %d", effect_value);
 #endif
 				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
-					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
 
@@ -944,7 +944,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				snprintf(effect_desc, _EDLEN, "Dispel Beneficial: %d", effect_value);
 #endif
 				if(GetSpecialAbility(SpecialAbility::DispellImmunity)){
-					caster->Message_StringID(Chat::SpellFailure, SPELL_NO_EFFECT, spells[spell_id].name);
+					caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_NO_EFFECT, spells[spell_id].name);
 					break;
 				}
 
@@ -1092,7 +1092,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if(GetPet() || entity_list.GetSummonedPetID(this))
 				{
-					Message_StringID(Chat::SpellFailure, ONLY_ONE_PET);
+					Message_StringID(Chat::SpellFailure, StringID::ONLY_ONE_PET);
 				}
 				else
 				{
@@ -1328,7 +1328,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				if(GetSpecialAbility(SpecialAbility::StunImmunity) ||
 					(GetLevel() > max_level && caster && caster->IsClient() && IsNPC()))
 				{
-					caster->Message_StringID(Chat::SpellFailure, IMMUNE_STUN);
+					caster->Message_StringID(Chat::SpellFailure, StringID::IMMUNE_STUN);
 				}
 				else
 				{
@@ -1438,7 +1438,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					if (zone->random.Int(1, 100) > chance)
 					{
 						CastToClient()->SetFeigned(false);
-						entity_list.MessageClose_StringID(this, false, 200, 10, STRING_FEIGNFAILED, GetName());
+						entity_list.MessageClose_StringID(this, false, 200, 10, StringID::STRING_FEIGNFAILED, GetName());
 					}
 					else
 					{
@@ -1600,26 +1600,26 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							Corpse *corpse = entity_list.GetCorpseByOwner(TargetClient);
 							if(corpse) {
 								if(TargetClient == this->CastToClient())
-									caster->Message_StringID(Chat::Spells, SUMMONING_CORPSE, TargetClient->CastToMob()->GetCleanName());
+									caster->Message_StringID(Chat::Spells, StringID::SUMMONING_CORPSE, TargetClient->CastToMob()->GetCleanName());
 								else
-									caster->Message_StringID(Chat::Spells, SUMMONING_CORPSE_OTHER, TargetClient->CastToMob()->GetCleanName());
+									caster->Message_StringID(Chat::Spells, StringID::SUMMONING_CORPSE_OTHER, TargetClient->CastToMob()->GetCleanName());
 
 								corpse->Summon(CastToClient(), true, false);
 							}
 							else {
 								// No corpse found in the zone
-								caster->Message_StringID(Chat::Spells, CORPSE_CANT_SENSE);
+								caster->Message_StringID(Chat::Spells, StringID::CORPSE_CANT_SENSE);
 								this->CastToClient()->SummonItem(spells[spell_id].components[0]);
 							}
 						}
 						else
 						{
-							caster->Message_StringID(Chat::SpellFailure, SPELL_LEVEL_REQ);
+							caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_LEVEL_REQ);
 							this->CastToClient()->SummonItem(spells[spell_id].components[0]);
 						}
 					}
 					else {
-						caster->Message_StringID(Chat::SpellFailure, TARGET_NOT_FOUND);
+						caster->Message_StringID(Chat::SpellFailure, StringID::TARGET_NOT_FOUND);
 						this->CastToClient()->SummonItem(spells[spell_id].components[0]);
 						Log(Logs::General, Logs::Error, "%s attempted to cast spell id %u with spell effect SE_SummonCorpse, but could not cast target into a Client object.", GetCleanName(), spell_id);
 					}
@@ -1686,7 +1686,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							if (buffs[j].counters <= 0)
 							{
 								if (caster)
-									caster->Message_StringID(Chat::Spells, TARGET_CURED);
+									caster->Message_StringID(Chat::Spells, StringID::TARGET_CURED);
 								BuffFadeBySlot(j);
 							}
 						}
@@ -1716,7 +1716,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							if (buffs[j].counters <= 0)
 							{
 								if (caster)
-									caster->Message_StringID(Chat::Spells, TARGET_CURED);
+									caster->Message_StringID(Chat::Spells, StringID::TARGET_CURED);
 								BuffFadeBySlot(j);
 							}
 						}
@@ -1747,7 +1747,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							if (buffs[j].counters <= 0)
 							{
 								if (caster)
-									caster->Message_StringID(Chat::Spells, TARGET_CURED);
+									caster->Message_StringID(Chat::Spells, StringID::TARGET_CURED);
 								BuffFadeBySlot(j);
 							}
 						}
@@ -2031,13 +2031,13 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 			case SE_MassGroupBuff:{
 
 				SetMGB(true);
-				Message_StringID(Chat::Disciplines, MGB_STRING);
+				Message_StringID(Chat::Disciplines, StringID::MGB_STRING);
 				break;
 			}
 
 			case SE_IllusionOther: {
 				SetProjectIllusion(true);
-				Message_StringID(Chat::Spells, PROJECT_ILLUSION);
+				Message_StringID(Chat::Spells, StringID::PROJECT_ILLUSION);
 				break;
 			}
 
@@ -2967,7 +2967,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 				}
 				else if (ticsremaining == 2)
 				{
-					Message_StringID(Chat::SpellFailure, INVIS_BEGIN_BREAK);
+					Message_StringID(Chat::SpellFailure, StringID::INVIS_BEGIN_BREAK);
 				}
 				break;
 			}
@@ -3497,7 +3497,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 				Mob* notify = GetOwner();
 				if (notify)
 				{
-					notify->Message_StringID(Chat::SpellWornOff, PET_SPELL_WORN_OFF, spellname);
+					notify->Message_StringID(Chat::SpellWornOff, StringID::PET_SPELL_WORN_OFF, spellname);
 				}
 			}
 			// Our spell has worn off another NPC or client.
@@ -3505,7 +3505,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 			else if ((p != this && !p->IsPet() && !IsBeneficialSpell(buffs[slot].spellid) && !IsCrowdControlSpell(buffs[slot].spellid))
 				|| detrimental_exception)
 			{
-				p->Message_StringID(Chat::SpellWornOff, SPELL_WORN_OFF, spellname);
+				p->Message_StringID(Chat::SpellWornOff, StringID::SPELL_WORN_OFF, spellname);
 			}
 		}
 	}
@@ -4285,25 +4285,25 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 			uint32 string_id;
 			switch (type) {
 			case focusManaCost: // this might be GROWS_DIM for fail
-				string_id = FLICKERS_PALE_LIGHT;
+				string_id = StringID::FLICKERS_PALE_LIGHT;
 				break;
 			case focusSpellDuration:
-				string_id = SPARKLES;
+				string_id = StringID::SPARKLES;
 				break;
 			case focusImprovedDamage:
 				if (realTotal)
-					string_id = ALIVE_WITH_POWER;
+					string_id = StringID::ALIVE_WITH_POWER;
 				else
-					string_id = SEEMS_DRAINED;
+					string_id = StringID::SEEMS_DRAINED;
 				break;
 			case focusImprovedHeal:
 				if (realTotal)
-					string_id = FEEDS_WITH_POWER;
+					string_id = StringID::FEEDS_WITH_POWER;
 				else
-					string_id = POWER_DRAIN_INTO;
+					string_id = StringID::POWER_DRAIN_INTO;
 				break;
 			default:
-				string_id = BEGINS_TO_GLOW; 
+				string_id = StringID::BEGINS_TO_GLOW;
 				break;
 			}
 			Message_StringID(Chat::Spells, string_id, item_name.c_str());
@@ -4552,9 +4552,9 @@ bool Mob::TryDeathSave() {
 				SetHP((GetHP()+HealAmt));
 
 				if(spellbonuses.DeathSave[0] == 2)
-					entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, DIVINE_INTERVENTION, GetCleanName());
+					entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, StringID::DIVINE_INTERVENTION, GetCleanName());
 				else
-					entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, DEATH_PACT, GetCleanName());
+					entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, StringID::DEATH_PACT, GetCleanName());
 
 				SendHPUpdate();
 				BuffFadeBySlot(buffSlot, true, false);

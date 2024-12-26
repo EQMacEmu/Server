@@ -155,7 +155,7 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 		{
 			if (stun_resist && zone->random.Roll(stun_resist))
 			{
-				defender->Message_StringID(Chat::DefaultText, AVOID_STUN);
+				defender->Message_StringID(Chat::DefaultText, StringID::AVOID_STUN);
 				Log(Logs::Detail, Logs::Combat, "Stun Resisted. %d chance.", stun_resist);
 			}
 			else
@@ -331,7 +331,7 @@ void Client::DoBackstab(Mob* defender)
 	EQ::ItemInstance *wpn = GetInv().GetItem(EQ::invslot::slotPrimary);
 	if (!wpn || (wpn->GetItem()->ItemType != EQ::item::ItemType1HPiercing))
 	{
-		Message_StringID(Chat::Red, BACKSTAB_WEAPON);
+		Message_StringID(Chat::Red, StringID::BACKSTAB_WEAPON);
 		return;
 	}
 
@@ -381,7 +381,7 @@ void Client::DoBackstab(Mob* defender)
 	if (assassinateDmg)
 	{
 		minHit = assassinateDmg;
-		entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, ASSASSINATES, GetName());
+		entity_list.MessageClose_StringID(this, false, 200, Chat::MeleeCrit, StringID::ASSASSINATES, GetName());
 	}
 
 	for (int i = 0; i < stabs; i++)
@@ -781,7 +781,7 @@ void Client::RangedAttack(Mob* other) {
 			Log(Logs::Detail, Logs::Combat, "Ranged attack out of range... client should catch this. (%f > %f).\n", dist, range);
 			if (oor_count > oor_threshold)
 			{
-				Message_StringID(Chat::Red, TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
+				Message_StringID(Chat::Red, StringID::TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
 				return;
 			}
 		}
@@ -1146,7 +1146,7 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 	float dist = DistanceSquaredNoZ(m_Position, GetTarget()->GetPosition());
 	if(dist > range) {
 		Log(Logs::Detail, Logs::Combat, "Throwing attack out of range... client should catch this. (%f > %f).\n", dist, range);
-		Message_StringID(Chat::Red,TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
+		Message_StringID(Chat::Red, StringID::TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
 		return;
 	}
 	else if(dist < (RuleI(Combat, MinRangedAttackDist)*RuleI(Combat, MinRangedAttackDist))){
@@ -1412,7 +1412,7 @@ void NPC::DoClassAttacks(Mob *target)
 
 		if (zone->random.Roll(tauntChance))
 		{
-			this->GetOwner()->Message_StringID(Chat::PetResponse, PET_TAUNTING);
+			this->GetOwner()->Message_StringID(Chat::PetResponse, StringID::PET_TAUNTING);
 			Taunt(target->CastToNPC(), false);
 		}
 	}
@@ -1668,7 +1668,7 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 			who->SetHate(this, topHate + overhate);
 
 		if (!always_succeed && who->CanTalk())		// Area Taunt doesn't make them speak
-			who->Say_StringID(SUCCESSFUL_TAUNT,GetCleanName());
+			who->Say_StringID(StringID::SUCCESSFUL_TAUNT,GetCleanName());
 	}
 //	else{
 	//	Message_StringID(Chat::SpellFailure,FAILED_TAUNT);
@@ -1720,7 +1720,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 
 			if (!IsFacingMob(instillTarget))
 			{
-				Message_StringID(Chat::TooFarAway, CANT_HIT_THEM);
+				Message_StringID(Chat::TooFarAway, StringID::CANT_HIT_THEM);
 				return;
 			}
 
@@ -1742,7 +1742,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 		{
 			// skill check failure
 
-			Message_StringID(Chat::LightBlue, NOT_SCARING);
+			Message_StringID(Chat::LightBlue, StringID::NOT_SCARING);
 			instillDoubtTargetID = 0;
 		}
 	}

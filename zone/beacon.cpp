@@ -356,7 +356,7 @@ bool Beacon::Process()
 							if (Assassinate_Dmg)
 							{
 								weapon_dmg = Assassinate_Dmg;
-								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, ASSASSINATES, caster->GetName());
+								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, StringID::ASSASSINATES, caster->GetName());
 							}
 							else
 							{
@@ -371,7 +371,7 @@ bool Beacon::Process()
 								&& zone->random.Roll(static_cast<double>(caster->GetDEX()) / 3500.0)
 							)
 							{
-								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, FATAL_BOW_SHOT, caster->GetName());
+								entity_list.MessageClose_StringID(caster, false, 200, Chat::MeleeCrit, StringID::FATAL_BOW_SHOT, caster->GetName());
 								weapon_dmg = 32000;
 							}
 							else
@@ -399,7 +399,7 @@ bool Beacon::Process()
 									if (dobonus)
 									{
 										weapon_dmg *= 2;
-										caster->Message_StringID(Chat::MeleeCrit, BOW_DOUBLE_DAMAGE);
+										caster->Message_StringID(Chat::MeleeCrit, StringID::BOW_DOUBLE_DAMAGE);
 									}
 								}
 

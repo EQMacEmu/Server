@@ -1345,7 +1345,7 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 
 	if (client && inst) {
 		if (client->CheckLoreConflict(item)) {
-			client->Message_StringID(0, LOOT_LORE_ERROR);
+			client->Message_StringID(0, StringID::LOOT_LORE_ERROR);
 			SendEndLootErrorPacket(client);
 			ResetLooter();
 			delete inst;
@@ -1450,19 +1450,19 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 
 		if (!IsPlayerCorpse()) 
 		{
-			client->Message_StringID(Chat::Loot, LOOTED_MESSAGE, linker.Link().c_str());
+			client->Message_StringID(Chat::Loot, StringID::LOOTED_MESSAGE, linker.Link().c_str());
 
 			Group *g = client->GetGroup();
 			if (g != nullptr) 
 			{
-				g->GroupMessage_StringID(client, Chat::Loot, OTHER_LOOTED_MESSAGE, client->GetName(), linker.Link().c_str());
+				g->GroupMessage_StringID(client, Chat::Loot, StringID::OTHER_LOOTED_MESSAGE, client->GetName(), linker.Link().c_str());
 			}
 			else
 			{
 				Raid *r = client->GetRaid();
 				if (r != nullptr) 
 				{
-					r->RaidMessage_StringID(client, Chat::Loot, OTHER_LOOTED_MESSAGE, client->GetName(), linker.Link().c_str());
+					r->RaidMessage_StringID(client, Chat::Loot, StringID::OTHER_LOOTED_MESSAGE, client->GetName(), linker.Link().c_str());
 				}
 			}
 		}
@@ -1632,7 +1632,7 @@ bool Corpse::Summon(Client* client, bool spell, bool CheckDistance) {
 			}
 		}
 		if (!consented) {
-			client->Message_StringID(Chat::White, CONSENT_NONE);
+			client->Message_StringID(Chat::White, StringID::CONSENT_NONE);
 			return false;
 		}
 	}
@@ -1643,7 +1643,7 @@ bool Corpse::Summon(Client* client, bool spell, bool CheckDistance) {
 		bool in_range = DistanceSquaredNoZ(m_Position, client->GetPosition()) <= dist2 && fabs(m_Position.z - client->GetPosition().z) < z_dist;
 		if (!in_range)
 		{
-			client->Message_StringID(Chat::White, CORPSE_TOO_FAR);
+			client->Message_StringID(Chat::White, StringID::CORPSE_TOO_FAR);
 			return false;
 		}
 	}

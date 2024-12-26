@@ -329,11 +329,11 @@ bool Client::Process() {
 
 			if (!CombatRange(auto_attack_target))
 			{
-				Message_StringID(Chat::TooFarAway,TARGET_TOO_FAR);
+				Message_StringID(Chat::TooFarAway, StringID::TARGET_TOO_FAR);
 			}
 			else if (auto_attack_target == this)
 			{
-				Message_StringID(Chat::TooFarAway,TRY_ATTACKING_SOMEONE);
+				Message_StringID(Chat::TooFarAway, StringID::TRY_ATTACKING_SOMEONE);
 			}
 			else if (los_status && los_status_facing)
 			{
@@ -355,7 +355,7 @@ bool Client::Process() {
 						{
 							if (zone->random.Int(0, 99) < aabonuses.FlurryChance)
 							{
-								Message_StringID(Chat::Yellow, YOU_FLURRY);
+								Message_StringID(Chat::Yellow, StringID::YOU_FLURRY);
 								Attack(auto_attack_target, EQ::invslot::slotPrimary);
 
 								if (zone->random.Roll(10))							// flurry is usually only +1 swings
@@ -418,14 +418,14 @@ bool Client::Process() {
 		{
 			if (!HasDied() && !IsBerserk() && GetHPRatio() < RuleI(Combat, BerserkerFrenzyStart))
 			{
-				entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_START, GetName());
+				entity_list.MessageClose_StringID(this, false, 200, 0, StringID::BERSERK_START, GetName());
 				berserk = true;
 				CalcBonuses();
 				SendBerserkState(true);
 			}
 			if (IsBerserk() && GetHPRatio() > RuleI(Combat, BerserkerFrenzyEnd))
 			{
-				entity_list.MessageClose_StringID(this, false, 200, 0, BERSERK_END, GetName());
+				entity_list.MessageClose_StringID(this, false, 200, 0, StringID::BERSERK_END, GetName());
 				berserk = false;
 				CalcBonuses();
 				SendBerserkState(false);
@@ -1112,26 +1112,26 @@ void Client::MerchantWelcome(int merchant_id, int npcid)
 		int greet_id = 0;
 		switch (greeting) {
 		case 1:
-			greet_id = MERCHANT_GREETING;
+			greet_id = StringID::MERCHANT_GREETING;
 			break;
 		case 2:
-			greet_id = MERCHANT_HANDY_ITEM1;
+			greet_id = StringID::MERCHANT_HANDY_ITEM1;
 			break;
 		case 3:
-			greet_id = MERCHANT_HANDY_ITEM2;
+			greet_id = StringID::MERCHANT_HANDY_ITEM2;
 			break;
 		case 4:
-			greet_id = MERCHANT_HANDY_ITEM3;
+			greet_id = StringID::MERCHANT_HANDY_ITEM3;
 			break;
 		default:
-			greet_id = MERCHANT_HANDY_ITEM4;
+			greet_id = StringID::MERCHANT_HANDY_ITEM4;
 		}
 		sprintf(handy_id, "%i", greet_id);
 
-		if (greet_id != MERCHANT_GREETING)
-			Message_StringID(Chat::White, GENERIC_STRINGID_SAY, merch->GetCleanName(), handy_id, this->GetName(), handyitem->Name);
+		if (greet_id != StringID::MERCHANT_GREETING)
+			Message_StringID(Chat::White, StringID::GENERIC_STRINGID_SAY, merch->GetCleanName(), handy_id, this->GetName(), handyitem->Name);
 		else
-			Message_StringID(Chat::White, GENERIC_STRINGID_SAY, merch->GetCleanName(), handy_id, this->GetName());
+			Message_StringID(Chat::White, StringID::GENERIC_STRINGID_SAY, merch->GetCleanName(), handy_id, this->GetName());
 	}
 }
 
@@ -1192,7 +1192,7 @@ void Client::OPTGB(const EQApplicationPacket *app)
 
 	uint32 tgb_flag = *(uint32 *)app->pBuffer;
 	if(tgb_flag == 2)
-		Message_StringID(Chat::White, TGB() ? TGB_ON : TGB_OFF);
+		Message_StringID(Chat::White, TGB() ? StringID::TGB_ON : StringID::TGB_OFF);
 	else
 		tgb = tgb_flag;
 }
@@ -1221,7 +1221,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 	)
 	{
 		char val1[20]={0};
-		Message_StringID(Chat::Red,SPELL_LEVEL_TO_LOW,ConvertArray(spells[memspell->spell_id].classes[GetClass()-1],val1),spells[memspell->spell_id].name);
+		Message_StringID(Chat::Red, StringID::SPELL_LEVEL_TO_LOW,ConvertArray(spells[memspell->spell_id].classes[GetClass()-1],val1),spells[memspell->spell_id].name);
 		//Message(Chat::Red, "Unexpected error: Class cant use this spell at your level!");
 		return;
 	}
@@ -1241,12 +1241,12 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 					DeleteItemInInventory(EQ::invslot::slotCursor, 0, true);
 				}
 				else {
-					Message_StringID(Chat::Spells, ABORTED_SCRIBING_SPELL);
+					Message_StringID(Chat::Spells, StringID::ABORTED_SCRIBING_SPELL);
 					SendSpellBarEnable(0); // if we don't send this, the client locks up
 				}
 			}
 			else {
-				Message_StringID(Chat::Spells, ABORTED_SCRIBING_SPELL);
+				Message_StringID(Chat::Spells, StringID::ABORTED_SCRIBING_SPELL);
 				SendSpellBarEnable(0);
 			}
 			break;
@@ -1646,7 +1646,7 @@ void Client::OPGMTraining(const EQApplicationPacket *app)
 	if (factionlvl >= FACTION_APPREHENSIVELY)
 	{
 		gmtrain->success = 0;
-		pTrainer->Say_StringID(0, WONT_SELL_RACE5, itoa(GetRaceStringID()));
+		pTrainer->Say_StringID(0, StringID::WONT_SELL_RACE5, itoa(GetRaceStringID()));
 
 		FastQueuePacket(&outapp);
 		return;
@@ -1794,7 +1794,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			case EQ::skills::SkillJewelryMaking:
 			case EQ::skills::SkillPottery:
 				if(skilllevel >= RuleI(Skills, MaxTrainTradeskills)) {
-					Message_StringID(Chat::Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					Message_StringID(Chat::Red, StringID::MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 					SetSkill(skill, skilllevel, true);
 					return;
 				}
@@ -1805,7 +1805,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			case EQ::skills::SkillSpecializeDivination:
 			case EQ::skills::SkillSpecializeEvocation:
 				if(skilllevel >= RuleI(Skills, MaxTrainSpecializations)) {
-					Message_StringID(Chat::Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					Message_StringID(Chat::Red, StringID::MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 					SetSkill(skill, skilllevel, true);
 					return;
 				}
@@ -1817,7 +1817,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			if (skilllevel >= MaxSkillValue)
 			{
 				// Don't allow training over max skill level
-				Message_StringID(Chat::Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+				Message_StringID(Chat::Red, StringID::MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 				SetSkill(skill, skilllevel, true);
 				return;
 			}
@@ -1828,7 +1828,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 				if (skilllevel >= MaxSpecSkill)
 				{
 					// Restrict specialization training to follow the rules
-					Message_StringID(Chat::Red, MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
+					Message_StringID(Chat::Red, StringID::MORE_SKILLED_THAN_I, pTrainer->GetCleanName());
 					SetSkill(skill, skilllevel, true);
 					return;
 				}

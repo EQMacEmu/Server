@@ -469,7 +469,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 
 	if ((set_exp + set_aaxp) > (m_pp.exp+m_pp.expAA)) {
 		if (isrezzexp) {
-			this->Message_StringID(Chat::Yellow, REZ_REGAIN);
+			this->Message_StringID(Chat::Yellow, StringID::REZ_REGAIN);
 		}
 		else {
 			if (this->IsGrouped() && is_split) {
@@ -477,7 +477,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 					Message(Chat::Yellow, "You gain party experience (with a bonus)!!");
 				}
 				else {
-					this->Message_StringID(Chat::Yellow, GAIN_GROUPXP);
+					this->Message_StringID(Chat::Yellow, StringID::GAIN_GROUPXP);
 				}
 			}
 			else if (IsRaidGrouped() && is_split) {
@@ -485,7 +485,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 					Message(Chat::Yellow, "You gained raid experience (with a bonus)!!");
 				}
 				else {
-					Message_StringID(Chat::Yellow, GAIN_RAIDEXP);
+					Message_StringID(Chat::Yellow, StringID::GAIN_RAIDEXP);
 				}
 			}
 			else {
@@ -493,12 +493,12 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 					this->Message(Chat::Yellow, "You gain experience (with a bonus)!!");
 				}
 				else {
-					this->Message_StringID(Chat::Yellow, GAIN_XP);
+					this->Message_StringID(Chat::Yellow, StringID::GAIN_XP);
 				}
 			}
 
 			if (m_epp.perAA > 0 && GetAAPoints() >= 30) {
-				Message_StringID(Chat::Yellow, AA_POINTS_CAP);
+				Message_StringID(Chat::Yellow, StringID::AA_POINTS_CAP);
 			}
 		}
 	}
@@ -565,9 +565,9 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 
 		//Message(Chat::Yellow, "You have gained %d skill points!!", m_pp.aapoints - last_unspentAA);
 		char val1[20]={0};
-		Message_StringID(Chat::Yellow, GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point! You now have %1 ability point%2.
+		Message_StringID(Chat::Yellow, StringID::GAIN_ABILITY_POINT,ConvertArray(m_pp.aapoints, val1),m_pp.aapoints == 1 ? "" : "(s)");	//You have gained an ability point! You now have %1 ability point%2.
 		if (m_pp.aapoints >= 30) {
-			Message_StringID(Chat::Yellow, AA_CAP_REACHED);
+			Message_StringID(Chat::Yellow, StringID::AA_CAP_REACHED);
 		}
 		
 		RecordPlayerEventLog(PlayerEvent::AA_GAIN, PlayerEvent::AAGainedEvent{ gained });
@@ -617,7 +617,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		char val1[20] = { 0 };
 		if (level_increase)	{
 			if (level_count == 1) {
-				Message_StringID(Chat::Yellow, GAIN_LEVEL, ConvertArray(check_level, val1));
+				Message_StringID(Chat::Yellow, StringID::GAIN_LEVEL, ConvertArray(check_level, val1));
 				/* Message(Chat::Yellow, "You have gained a level! Welcome to level %i!", check_level); */
 			}
 			else {
@@ -625,24 +625,24 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 			}
 
 			if (check_level == RuleI(Character, DeathItemLossLevel)) {
-				Message_StringID(Chat::Yellow, CORPSE_ITEM_LOST);
+				Message_StringID(Chat::Yellow, StringID::CORPSE_ITEM_LOST);
 			}
 
 			if (check_level == RuleI(Character, DeathExpLossLevel)) {
-				Message_StringID(Chat::Yellow, CORPSE_EXP_LOST);
+				Message_StringID(Chat::Yellow, StringID::CORPSE_EXP_LOST);
 			}
 
 			if (check_level == 30) {
 				if (GetClass() == Class::Monk || GetClass() == Class::Beastlord) {
-					Message_StringID(Chat::Yellow, HANDS_MAGIC);
+					Message_StringID(Chat::Yellow, StringID::HANDS_MAGIC);
 				}
 				else if (GetClass() == Class::Warrior) {
-					Message_StringID(Chat::Yellow, GAINED_SHIELD_LEVEL);
+					Message_StringID(Chat::Yellow, StringID::GAINED_SHIELD_LEVEL);
 				}
 			}
 		}
 		else {
-			Message_StringID(Chat::Yellow, LOSE_LEVEL, ConvertArray(check_level, val1));
+			Message_StringID(Chat::Yellow, StringID::LOSE_LEVEL, ConvertArray(check_level, val1));
 			/* Message(Chat::Yellow, "You lost a level! You are now level %i!", check_level); */
 		}
 		SetLevel(check_level);

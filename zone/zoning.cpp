@@ -516,7 +516,7 @@ void Client::ProcessMovePC(uint32 zoneID, float x, float y, float z, float headi
 			break;
 		case SummonPC:
 			if(!GetGM())
-				Message_StringID(Chat::Yellow, BEEN_SUMMONED);
+				Message_StringID(Chat::Yellow, StringID::BEEN_SUMMONED);
 			ZonePC(zoneID, x, y, z, heading, ignorerestrictions, zm);
 			break;
 		case Rewind:
@@ -774,7 +774,7 @@ void Client::Gate()
 }
 
 void NPC::Gate() {
-	entity_list.FilteredMessageClose_StringID(this, true, RuleI(Range,SpellMessages), Chat::SpellCrit, FilterSpellCrits, GATES, GetCleanName());
+	entity_list.FilteredMessageClose_StringID(this, true, RuleI(Range,SpellMessages), Chat::SpellCrit, FilterSpellCrits, StringID::GATES, GetCleanName());
 	
 	if (GetHPRatio() < 25.0f)
 	{
@@ -996,7 +996,7 @@ bool Client::CanBeInZone(uint32 zoneid)
 	bool has_expansion = expansion && m_pp.expansions;
 	if(Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the required expansion (%d ~ %s)!", m_pp.expansions, expansion);
-		Message_StringID(Chat::Red, NO_EXPAN);
+		Message_StringID(Chat::Red, StringID::NO_EXPAN);
 		return(false);
 	}
 

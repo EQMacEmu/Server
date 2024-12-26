@@ -103,7 +103,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 
 	DBTradeskillRecipe_Struct spec;
 	if (!database.GetTradeRecipe(container, c_type, some_id, user->CharacterID(), &spec)) {
-		user->Message_StringID(Chat::Emote,TRADESKILL_NOCOMBINE);
+		user->Message_StringID(Chat::Emote, StringID::TRADESKILL_NOCOMBINE);
 		auto outapp = new EQApplicationPacket(OP_TradeSkillCombine, 0);
 		user->QueuePacket(outapp);
 		safe_delete(outapp);
@@ -297,7 +297,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 		spec->tradeskill, user_skill, spec->trivial, aa_chance, chance, spec->nofail ? "(no fail combine)" : "", roll);
 
 	if (isTrivialCombine) {
-		Message_StringID(Chat::LightBlue, TRADESKILL_TRIVIAL);
+		Message_StringID(Chat::LightBlue, StringID::TRADESKILL_TRIVIAL);
 	}
 
 	const EQ::ItemData* item = nullptr;
@@ -308,7 +308,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			CheckIncreaseTradeskill(true, spec->tradeskill);
 		}
 
-		Message_StringID(Chat::LightBlue, TRADESKILL_SUCCEED, spec->name.c_str());
+		Message_StringID(Chat::LightBlue, StringID::TRADESKILL_SUCCEED, spec->name.c_str());
 
 		Log(Logs::Detail, Logs::Tradeskills, "Combine success");
 
@@ -350,7 +350,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec) {
 			CheckIncreaseTradeskill(false, spec->tradeskill);
 		}
 
-		Message_StringID(Chat::LightBlue,TRADESKILL_FAILED);
+		Message_StringID(Chat::LightBlue, StringID::TRADESKILL_FAILED);
 
 		Log(Logs::Detail, Logs::Tradeskills, "Combine failed");
 			if (this->GetGroup())
