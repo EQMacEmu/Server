@@ -53,6 +53,28 @@ COLLATE='utf8mb3_general_ci'
 ENGINE=InnoDB
 ;
 
+DROP TABLE IF EXISTS `qs_player_trade_record`;
+CREATE TABLE `qs_player_trade_record` (
+	`trade_id` INT(11) NOT NULL AUTO_INCREMENT,
+	`time` TIMESTAMP NULL DEFAULT NULL ON UPDATE current_timestamp(),
+	`char1_id` INT(11) NULL DEFAULT '0',
+	`char1_pp` INT(11) NULL DEFAULT '0',
+	`char1_gp` INT(11) NULL DEFAULT '0',
+	`char1_sp` INT(11) NULL DEFAULT '0',
+	`char1_cp` INT(11) NULL DEFAULT '0',
+	`char1_items` MEDIUMINT(7) NULL DEFAULT '0',
+	`char2_id` INT(11) NULL DEFAULT '0',
+	`char2_pp` INT(11) NULL DEFAULT '0',
+	`char2_gp` INT(11) NULL DEFAULT '0',
+	`char2_sp` INT(11) NULL DEFAULT '0',
+	`char2_cp` INT(11) NULL DEFAULT '0',
+	`char2_items` MEDIUMINT(7) NULL DEFAULT '0',
+	PRIMARY KEY (`trade_id`) USING BTREE
+)
+COLLATE='utf8mb3_general_ci'
+ENGINE=InnoDB
+;
+
 DROP TABLE IF EXISTS `qs_player_trade_record_entries`;
 CREATE TABLE `qs_player_trade_record_entries` (
 	`event_id` INT(11) NULL DEFAULT '0',
