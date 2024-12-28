@@ -442,7 +442,7 @@ void Client::GoFish()
 		DeleteItemInInventory(EQ::invslot::slotPrimary, 0, true);
 	}
 
-	if(CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty), success)
+	if(CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()]), success)
 	{
 		if(title_manager.IsNewTradeSkillTitleAvailable(EQ::skills::SkillFishing, GetRawSkill(EQ::skills::SkillFishing)))
 			NotifyNewTitlesAvailable();
@@ -566,7 +566,7 @@ void Client::ForageItem(bool guarantee) {
 		RecordPlayerEventLog(PlayerEvent::FORAGE_FAILURE, PlayerEvent::EmptyEvent{});
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillForage, nullptr, zone->skill_difficulty[EQ::skills::SkillForage].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillForage, nullptr, zone->skill_difficulty[EQ::skills::SkillForage].difficulty[GetClass()], success);
 
 }
 

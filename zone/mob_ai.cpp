@@ -1003,7 +1003,7 @@ void Client::AI_Process()
 
 					if (GetTarget())
 					{
-						CheckIncreaseSkill(EQ::skills::SkillDoubleAttack, GetTarget(), zone->skill_difficulty[EQ::skills::SkillDoubleAttack].difficulty);
+						CheckIncreaseSkill(EQ::skills::SkillDoubleAttack, GetTarget(), zone->skill_difficulty[EQ::skills::SkillDoubleAttack].difficulty[GetClass()]);
 						if (CheckDoubleAttack())
 						{
 							Attack(GetTarget(), EQ::invslot::slotPrimary);
@@ -1051,7 +1051,7 @@ void Client::AI_Process()
 
 			if (GetTarget() && !IsStunned() && !IsMezzed() && !IsFeigned() && attack_dw_timer.CheckKeepSynchronized() && IsDualWielding())
 			{
-				CheckIncreaseSkill(EQ::skills::SkillDualWield, GetTarget(), zone->skill_difficulty[EQ::skills::SkillDualWield].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillDualWield, GetTarget(), zone->skill_difficulty[EQ::skills::SkillDualWield].difficulty[GetClass()]);
 				if (CheckDualWield())
 				{
 					TryProcs(GetTarget(), EQ::invslot::slotSecondary);

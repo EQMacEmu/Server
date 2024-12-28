@@ -240,7 +240,7 @@ bool Client::Process() {
 		if (bindwound_timer.Check() && bindwound_target_id != 0) {
 			if(BindWound(bindwound_target_id, false))
 			{
-				CheckIncreaseSkill(EQ::skills::SkillBindWound, nullptr, zone->skill_difficulty[EQ::skills::SkillBindWound].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillBindWound, nullptr, zone->skill_difficulty[EQ::skills::SkillBindWound].difficulty[GetClass()]);
 			}
 			else
 			{
@@ -340,7 +340,7 @@ bool Client::Process() {
 				TryProcs(auto_attack_target, EQ::invslot::slotPrimary);
 				Attack(auto_attack_target, EQ::invslot::slotPrimary);
 
-				CheckIncreaseSkill(EQ::skills::SkillDoubleAttack, auto_attack_target, zone->skill_difficulty[EQ::skills::SkillDoubleAttack].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillDoubleAttack, auto_attack_target, zone->skill_difficulty[EQ::skills::SkillDoubleAttack].difficulty[GetClass()]);
 				if (CheckDoubleAttack())
 				{
 					Attack(auto_attack_target, EQ::invslot::slotPrimary);
@@ -399,7 +399,7 @@ bool Client::Process() {
 			}
 			else if (los_status && los_status_facing)
 			{
-				CheckIncreaseSkill(EQ::skills::SkillDualWield, auto_attack_target, zone->skill_difficulty[EQ::skills::SkillDualWield].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillDualWield, auto_attack_target, zone->skill_difficulty[EQ::skills::SkillDualWield].difficulty[GetClass()]);
 				if (CheckDualWield())
 				{
 					TryProcs(auto_attack_target, EQ::invslot::slotSecondary);

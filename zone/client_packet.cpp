@@ -1942,7 +1942,7 @@ void Client::Handle_OP_ApplyPoison(const EQApplicationPacket *app)
 			}
 
 			uint8 success = ApplyPoisonSuccessResult ? SKILLUP_SUCCESS : SKILLUP_FAILURE;
-			CheckIncreaseSkill(EQ::skills::SkillApplyPoison, nullptr, zone->skill_difficulty[EQ::skills::SkillApplyPoison].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillApplyPoison, nullptr, zone->skill_difficulty[EQ::skills::SkillApplyPoison].difficulty[GetClass()], success);
 
 			DeleteItemInInventory(ApplyPoisonData->inventorySlot, 1, true);
 
@@ -2248,7 +2248,7 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	CheckIncreaseSkill(EQ::skills::SkillBegging, nullptr, zone->skill_difficulty[EQ::skills::SkillBegging].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillBegging, nullptr, zone->skill_difficulty[EQ::skills::SkillBegging].difficulty[GetClass()], success);
 }
 
 void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app) 
@@ -3013,7 +3013,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	// they can be swimming on the surface and not be underwater but still should gain skill
 	bool swimming = IsInWater();
 	if (swimming && (m_Delta.x != 0.0f || m_Delta.y != 0.0f) && GetRawSkill(EQ::skills::SkillSwimming) < MaxSkill(EQ::skills::SkillSwimming)) {
-		CheckIncreaseSkill(EQ::skills::SkillSwimming, nullptr, zone->skill_difficulty[EQ::skills::SkillSwimming].difficulty, SKILLUP_FAILURE);
+		CheckIncreaseSkill(EQ::skills::SkillSwimming, nullptr, zone->skill_difficulty[EQ::skills::SkillSwimming].difficulty[GetClass()], SKILLUP_FAILURE);
 	}
 	// The TAKP client has a bug where a levitated horse rider's Z position is always on the floor.  this makes the server think that
 	// the client is running on the ocean floor even though they are levitated above it, and other players see them on the floor too.
@@ -3532,7 +3532,7 @@ void Client::Handle_OP_DeleteCharge(const EQApplicationPacket *app)
 	const EQ::ItemInstance *inst = GetInv().GetItem(alc->from_slot);
 	if (inst && inst->GetItem()->ItemType == EQ::item::ItemTypeAlcohol) {
 		entity_list.MessageClose_StringID(this, true, 50, 0, StringID::DRINKING_MESSAGE, GetName(), inst->GetItem()->Name);
-		CheckIncreaseSkill(EQ::skills::SkillAlcoholTolerance, nullptr, zone->skill_difficulty[EQ::skills::SkillAlcoholTolerance].difficulty);
+		CheckIncreaseSkill(EQ::skills::SkillAlcoholTolerance, nullptr, zone->skill_difficulty[EQ::skills::SkillAlcoholTolerance].difficulty[GetClass()]);
 
 		int16 AlcoholTolerance = GetSkill(EQ::skills::SkillAlcoholTolerance);
 		int16 IntoxicationIncrease;
@@ -3649,7 +3649,7 @@ void Client::Handle_OP_DisarmTraps(const EQApplicationPacket *app)
 					trap->Trigger(this);
 				}
 			}
-			CheckIncreaseSkill(EQ::skills::SkillDisarmTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillDisarmTraps].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillDisarmTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillDisarmTraps].difficulty[GetClass()], success);
 			return;
 		}
 		else
@@ -3918,7 +3918,7 @@ void Client::Handle_OP_FeignDeath(const EQApplicationPacket *app)
 		}
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillFeignDeath, nullptr, zone->skill_difficulty[EQ::skills::SkillFeignDeath].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillFeignDeath, nullptr, zone->skill_difficulty[EQ::skills::SkillFeignDeath].difficulty[GetClass()], success);
 	return;
 }
 
@@ -5470,7 +5470,7 @@ void Client::Handle_OP_Hide(const EQApplicationPacket *app)
 		}
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillHide, nullptr, zone->skill_difficulty[EQ::skills::SkillHide].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillHide, nullptr, zone->skill_difficulty[EQ::skills::SkillHide].difficulty[GetClass()], success);
 
 	Log(Logs::General, Logs::Skills, "Hide setting hide to %d. %s", hidden, !hidden && GetClass() != Class::Rogue ? "Sending to self only..." : "");
 
@@ -5873,7 +5873,7 @@ void Client::Handle_OP_Mend(const EQApplicationPacket *app)
 			Message_StringID(Chat::LightBlue, StringID::MEND_FAIL);
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillMend, nullptr, zone->skill_difficulty[EQ::skills::SkillMend].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillMend, nullptr, zone->skill_difficulty[EQ::skills::SkillMend].difficulty[GetClass()], success);
 	return;
 }
 
@@ -6983,7 +6983,7 @@ void Client::Handle_OP_Sacrifice(const EQApplicationPacket *app)
 void Client::Handle_OP_SafeFallSuccess(const EQApplicationPacket *app)	// bit of a misnomer, sent whenever safe fall is used (success of fail)
 {
 	if (HasSkill(EQ::skills::SkillSafeFall)) //this should only get called if the client has safe fall, but just in case...
-		CheckIncreaseSkill(EQ::skills::SkillSafeFall, nullptr, zone->skill_difficulty[EQ::skills::SkillSafeFall].difficulty); //check for skill up
+		CheckIncreaseSkill(EQ::skills::SkillSafeFall, nullptr, zone->skill_difficulty[EQ::skills::SkillSafeFall].difficulty[GetClass()]); //check for skill up
 }
 
 void Client::Handle_OP_SafePoint(const EQApplicationPacket *app)
@@ -7004,7 +7004,7 @@ void Client::Handle_OP_SaveOnZoneReq(const EQApplicationPacket *app)
 
 void Client::Handle_OP_SenseHeading(const EQApplicationPacket *app)
 {
-	CheckIncreaseSkill(EQ::skills::SkillSenseHeading, nullptr, zone->skill_difficulty[EQ::skills::SkillSenseHeading].difficulty);
+	CheckIncreaseSkill(EQ::skills::SkillSenseHeading, nullptr, zone->skill_difficulty[EQ::skills::SkillSenseHeading].difficulty[GetClass()]);
 	return;
 }
 
@@ -7075,7 +7075,7 @@ void Client::Handle_OP_SenseTraps(const EQApplicationPacket *app)
 	if(success == SKILLUP_FAILURE)
 		Message_StringID(Chat::Skills, StringID::DO_NOT_SENSE_TRAP);
 
-	CheckIncreaseSkill(EQ::skills::SkillSenseTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillSenseTraps].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillSenseTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillSenseTraps].difficulty[GetClass()], success);
 }
 
 void Client::Handle_OP_SetGuildMOTD(const EQApplicationPacket *app)
@@ -7846,7 +7846,7 @@ void Client::Handle_OP_Sneak(const EQApplicationPacket *app)
 		}
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillSneak, nullptr, zone->skill_difficulty[EQ::skills::SkillSneak].difficulty, success);
+	CheckIncreaseSkill(EQ::skills::SkillSneak, nullptr, zone->skill_difficulty[EQ::skills::SkillSneak].difficulty[GetClass()], success);
 
 	SendAppearancePacket(AppearanceType::Sneak, sneaking);
 	Log(Logs::General, Logs::Skills, "Sneak setting sneak to %d.", sneaking);
@@ -8340,7 +8340,7 @@ void Client::Handle_OP_Track(const EQApplicationPacket *app)
 	if (GetSkill(EQ::skills::SkillTracking) == 0)
 		SetSkill(EQ::skills::SkillTracking, 1);
 	else
-		CheckIncreaseSkill(EQ::skills::SkillTracking, nullptr, zone->skill_difficulty[EQ::skills::SkillTracking].difficulty);
+		CheckIncreaseSkill(EQ::skills::SkillTracking, nullptr, zone->skill_difficulty[EQ::skills::SkillTracking].difficulty[GetClass()]);
 
 	return;
 }
@@ -9006,7 +9006,7 @@ void Client::Handle_OP_Disarm(const EQApplicationPacket *app)
 
 	if(disarm_result > 0) {
 		uint8 skillsuccess = disarm_result == 2 ? SKILLUP_SUCCESS : SKILLUP_FAILURE;
-		CheckIncreaseSkill(EQ::skills::SkillDisarm, target, zone->skill_difficulty[EQ::skills::SkillDisarm].difficulty, skillsuccess);
+		CheckIncreaseSkill(EQ::skills::SkillDisarm, target, zone->skill_difficulty[EQ::skills::SkillDisarm].difficulty[GetClass()], skillsuccess);
 	}
 
 	auto outapp = new EQApplicationPacket(OP_Disarm, sizeof(Disarm_Struct));

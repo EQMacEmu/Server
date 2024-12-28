@@ -221,7 +221,7 @@ bool Mob::AvoidanceCheck(Mob* attacker, EQ::skills::SkillType skillinuse)
 	}
 
 	if (IsClient() && attacker->IsNPC())
-		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillDefense, attacker, zone->skill_difficulty[EQ::skills::SkillDefense].difficulty);
+		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillDefense, attacker, zone->skill_difficulty[EQ::skills::SkillDefense].difficulty[GetClass()]);
 
 	Log(Logs::Detail, Logs::Attack, "Miss;  Hit chance was %0.1f%%", hitChance * 100);
 	return false;
@@ -247,7 +247,7 @@ bool Mob::AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack)
 	if (GetSkill(EQ::skills::SkillBlock))
 	{
 		if (IsClient())
-			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBlock, attacker, zone->skill_difficulty[EQ::skills::SkillBlock].difficulty);
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBlock, attacker, zone->skill_difficulty[EQ::skills::SkillBlock].difficulty[GetClass()]);
 
 			// check auto discs ... I guess aa/items too :P
 		if (spellbonuses.IncreaseBlockChance == 10000 || aabonuses.IncreaseBlockChance == 10000 ||
@@ -269,7 +269,7 @@ bool Mob::AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack)
 	if (GetSkill(EQ::skills::SkillParry) && InFront && !isRangedAttack)
 	{
 		if (IsClient())
-			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillParry, attacker, zone->skill_difficulty[EQ::skills::SkillParry].difficulty);
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillParry, attacker, zone->skill_difficulty[EQ::skills::SkillParry].difficulty[GetClass()]);
 
 		// check auto discs ... I guess aa/items too :P
 		if (spellbonuses.ParryChance == 10000 || aabonuses.ParryChance == 10000 || itembonuses.ParryChance == 10000) {
@@ -302,7 +302,7 @@ bool Mob::AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack)
 			}
 			else
 			{
-				CastToClient()->CheckIncreaseSkill(EQ::skills::SkillRiposte, attacker, zone->skill_difficulty[EQ::skills::SkillRiposte].difficulty);
+				CastToClient()->CheckIncreaseSkill(EQ::skills::SkillRiposte, attacker, zone->skill_difficulty[EQ::skills::SkillRiposte].difficulty[GetClass()]);
 			}
 		}
 
@@ -343,7 +343,7 @@ bool Mob::AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack)
 	if (GetSkill(EQ::skills::SkillDodge) && InFront)
 	{
 		if (IsClient())
-			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillDodge, attacker, zone->skill_difficulty[EQ::skills::SkillDodge].difficulty);
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillDodge, attacker, zone->skill_difficulty[EQ::skills::SkillDodge].difficulty[GetClass()]);
 
 		// check auto discs ... I guess aa/items too :P
 		if (spellbonuses.DodgeChance == 10000 || aabonuses.DodgeChance == 10000 || itembonuses.DodgeChance == 10000) {
@@ -994,8 +994,8 @@ bool Client::Attack(Mob* other, int hand, int damagePct)
 			other->TryShielderDamage(this, damage, skillinuse);		// warrior /shield
 			TryCriticalHit(other, skillinuse, damage, baseDamage, damageBonus);
 
-			CheckIncreaseSkill(skillinuse, other, zone->skill_difficulty[skillinuse].difficulty);
-			CheckIncreaseSkill(EQ::skills::SkillOffense, other, zone->skill_difficulty[EQ::skills::SkillOffense].difficulty);
+			CheckIncreaseSkill(skillinuse, other, zone->skill_difficulty[skillinuse].difficulty[GetClass()]);
+			CheckIncreaseSkill(EQ::skills::SkillOffense, other, zone->skill_difficulty[EQ::skills::SkillOffense].difficulty[GetClass()]);
 
 			Log(Logs::Detail, Logs::Combat, "Damage calculated to %d (str %d, skill %d, DMG %d, lv %d)",
 				damage, GetSTR(), GetSkill(skillinuse), baseDamage, mylevel);
@@ -1330,9 +1330,9 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 
 			killedby = Killed_NPC;
 
-			uint32 emoteid = killerMob->GetEmoteID();
-			if(emoteid != 0)
-				killerMob->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::KilledPC,emoteid,this);
+			if (emoteid) {
+				killerMob->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::KilledPC, emoteid, this);
+			}
 		}
 
 		if (killerMob->IsClient() && (dueling || killerMob->CastToClient()->IsDueling())) 
@@ -1762,17 +1762,16 @@ void NPC::Damage(Mob* other, int32 damage, uint16 spell_id, EQ::skills::SkillTyp
 }
 
 // killerMob is the actual Mob who dealt the deathblow.
-bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillType attack_skill, uint8 killedby, bool bufftic) 
+bool NPC::Death(Mob* killer_mob, int32 damage, uint16 spell, EQ::skills::SkillType attack_skill, uint8 killedby, bool bufftic)
 {
-	if (zone->IsIdling())
-	{
-		IdleDeath(killerMob);
+	if (zone->IsIdling()) {
+		IdleDeath(killer_mob);
 		return true;
 	}
 
 	uint16 OrigEntID = this->GetID();
 	// oos is the non-pet Mob who dealt the deathblow. 
-	Mob *oos = nullptr;
+	Mob *owner_or_self = killer_mob ? killer_mob->GetOwnerOrSelf() : nullptr;
 	bool skip_corpse_checks = false;
 	bool ismerchant = class_ == Class::Merchant || MerchantType > 0;
 	bool player_damaged = ds_damage + npc_damage < total_damage;
@@ -1780,82 +1779,72 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	bool xp = false;
 	bool faction = false;
 
-	if(killerMob) 
-	{
-		Log(Logs::General, Logs::Death, "Fatal blow dealt by %s with %d damage, spell %d, skill %d", killerMob->GetName(), damage, spell, attack_skill);
-
-		oos = killerMob->GetOwnerOrSelf();
-
-		std::string export_string = fmt::format(
-			"{} {} {} {}",
-			killerMob ? killerMob->GetID() : 0,
+	if(killer_mob) 	{
+		LogCombat(
+			"Fatal blow dealt by [{}] with [{}] damage, spell [{}], skill [{}]",
+			(killer_mob ? killer_mob->GetName() : "[nullptr]"),
 			damage,
 			spell,
-			static_cast<int>(attack_skill)
-		);		
-		if(parse->EventNPC(EVENT_DEATH, this, oos, export_string, 0) != 0) {
-			if(GetHP() < 0) {
-				SetHP(0);
+			attack_skill
+		);
+
+		if (parse->HasQuestSub(GetNPCTypeID(), EVENT_DEATH)) {
+			const auto &export_string = fmt::format(
+				"{} {} {} {}",
+				killer_mob ? killer_mob->GetID() : 0,
+				damage,
+				spell,
+				static_cast<int>(attack_skill)
+			);
+
+			if (parse->EventNPC(EVENT_DEATH, this, owner_or_self, export_string, 0)) {
+				if (GetHP() < 0) {
+					SetHP(0);
+				}
+
+				return false;
 			}
-			return false;
 		}
 
-		if (oos)
-		{
-			if (oos->IsClient() && GetSpecialAbility(SpecialAbility::PCDeathblowCorpse) && !ismerchant)
+		if (owner_or_self) {
+			if (owner_or_self->IsClient() && GetSpecialAbility(SpecialAbility::PCDeathblowCorpse) && !ismerchant)
 			{
 				skip_corpse_checks = true;
-				Log(Logs::Detail, Logs::Death, "Deathblow dealt by %s, skipping all corpse checks for %s...", oos->GetName(), GetName());
-			}
-
-			if (oos->IsNPC())
-			{
-				parse->EventNPC(EVENT_NPC_SLAY, oos->CastToNPC(), this, "", 0);
-
-				uint32 emoteid = oos->GetEmoteID();
-				if (emoteid != 0)
-					oos->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::KilledNPC, emoteid, this);
+				LogDeathDetail("Deathblow dealt by [{}], skipping all corpse checks for [{}]...", owner_or_self->GetName(), GetName());
 			}
 		}
 	} 
-	else 
-	{
-		std::string export_string = fmt::format(
-			"{} {} {} {}",
-			killerMob ? killerMob->GetID() : 0,
-			damage,
-			spell,
-			static_cast<int>(attack_skill)
-		);
-		if(parse->EventNPC(EVENT_DEATH, this, nullptr, export_string, 0) != 0)
-		{
-			if(GetHP() < 0) 
-			{
-				SetHP(0);
+	else {
+		if (parse->HasQuestSub(GetNPCTypeID(), EVENT_DEATH)) {
+			std::string export_string = fmt::format(
+				"{} {} {} {}",
+				killer_mob ? killer_mob->GetID() : 0,
+				damage,
+				spell,
+				static_cast<int>(attack_skill)
+			);
+
+			if (parse->EventNPC(EVENT_DEATH, this, nullptr, export_string, 0)) {
+				if (GetHP() < 0) {
+					SetHP(0);
+				}
+				return false;
 			}
-			return false;
 		}
 	}
 
-	uint32 emoteid = this->GetEmoteID();
-	if (emoteid != 0)
-		this->DoNPCEmote(EQ::constants::EmoteEventTypes::OnDeath, emoteid, killerMob);
-
 	SetHP(0);
 
-	if (GetPet() && !GetPet()->IsCharmedPet())
-	{
+	if (GetPet() && !GetPet()->IsCharmedPet()) {
 		GetPet()->SetPetType(petOrphan);
 		GetPet()->SetOwnerID(0);
 	}
 
-	if(GetOwner())
-	{
+	if(GetOwner()) {
 		GetOwner()->FadeVoiceGraft();
 	}
 
-	if (GetSwarmOwner())
-	{
+	if (GetSwarmOwner()) {
 		Mob* owner = entity_list.GetMobID(GetSwarmOwner());
 		if (owner)
 			owner->SetTempPetCount(owner->GetTempPetCount() - 1);
@@ -1864,23 +1853,22 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	entity_list.RemoveFromTargets(this);
 	EndShield();
 
-	if(p_depop == true)
+	if (p_depop == true) {
 		return false;
+	}
 
 	SendRealPosition();
 
 	HasAISpellEffects = false;
 
-	GenerateDeathPackets(killerMob, damage, spell, attack_skill, bufftic);
+	GenerateDeathPackets(killer_mob, damage, spell, attack_skill, bufftic);
 
-	if(respawn2) 
-	{
+	if(respawn2) {
 		respawn2->DeathReset(true);
 	}
 
 	// Do faction hits to any player on the hatelist, so long as a player damaged us.
-	if (GetNPCFactionID() > 0 && player_damaged && oos && !oos->IsNPC())
-	{
+	if (GetNPCFactionID() > 0 && player_damaged && owner_or_self && !owner_or_self->IsNPC()) {
 		hate_list.DoFactionHits(GetNPCFactionID(), faction);
 	}
 
@@ -1891,48 +1879,41 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	uint8 force_level = RuleI(AlKabor, LevelCorpsesAlwaysSpawn);
 	bool force_corpse = GetLevel() >= force_level;
 
-	if (oos && oos->IsNPC() && !force_corpse)
-	{
+	if (owner_or_self && owner_or_self->IsNPC() && !force_corpse) {
 		// If the final blow was from a NPC that was not a client pet and the dead mob was below force_level, give the NPC credit so the corpse doesn't spawn.
-		killer = oos;
-		Log(Logs::Detail, Logs::Death, "A NPC got the deathblow. Giving credit to %s.", oos->GetName());
+		killer = owner_or_self;
+		LogDeathDetail("A NPC got the deathblow. Giving credit to [{}].", owner_or_self->GetName());
 	}
-	else if (IsZomm())
-		killer = killerMob;
-	else
-	{
+	else if (IsZomm()) {
+		killer = killer_mob;
+	}
+	else {
 		killer = GetDamageTop(dmg_amt, true, force_corpse);	// returns the top damage dealer or a member of the top group/raid
 
-		if (killer == nullptr)
-		{
-			Log(Logs::Detail, Logs::Death, "Killer of mob could not be determined.  This could indicate a problem");
+		if (killer == nullptr) {
+			LogDeathDetail("Killer of mob could not be determined.  This could indicate a problem");
 		}
-		else
-		{
-			Log(Logs::Detail, Logs::Death, "%s%s was chosen as the top damage killer with %d damage done to %s",
+		else {
+			LogDeathDetail("[{}][{}] was chosen as the top damage killer with [{}] damage done to [{}]",
 				killer->GetName(), killer->GetGroup() || killer->GetRaid() ? "'s group/raid " : "", dmg_amt, GetName());
 		}
 	}
 
 	//give_exp_client is the player who gets XP credit.
 	Client *give_exp_client = nullptr;
-	if (killer && killer->IsClient())
-	{
+	if (killer && killer->IsClient()) {
 		// Make sure the dead NPC should give XP and the player is able to receive it (not a mule)
-		if (IsNPC() && !killer->CastToClient()->IsMule() && !IsPlayerOwned() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && player_damaged)
-		{
+		if (IsNPC() && !killer->CastToClient()->IsMule() && !IsPlayerOwned() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && player_damaged) {
 			give_exp_client = killer->CastToClient();
-			if (give_exp_client)
-			{
-				Log(Logs::Detail, Logs::Death, "%s will receive XP credit.", give_exp_client->GetName());
+			if (give_exp_client) {
+				LogDeathDetail("[{}] will receive XP credit.", give_exp_client->GetName());
 
 				// We hand out XP here.
 				GiveExp(give_exp_client, xp);
 			}
 		}
-		else
-		{
-			Log(Logs::Detail, Logs::Death, "NPC checks failed. No XP for you.");
+		else {
+			LogDeathDetail("NPC checks failed. No XP for you.");
 		}
 
 		if (IsNPC() && ismerchant && RuleB(Merchant, ClearTempList)) {
@@ -1940,90 +1921,95 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 			zone->tmpmerchanttable[GetNPCTypeID()].clear();
 		}
 	}
-	else
-	{
-		Log(Logs::Detail, Logs::Death, "killer is %s. No XP will be given.", killer ? "a NPC" : "null");
+	else {
+		LogDeathDetail("killer is [{}]. No XP will be given.", killer ? "a NPC" : "null");
 	}
 
-	if (skip_corpse_checks || GetSummonerID() || (killer && (killer->IsClient() || killer->IsPlayerOwned())))
-	{
+	if (skip_corpse_checks || GetSummonerID() || (killer && (killer->IsClient() || killer->IsPlayerOwned()))) {
 		// Make sure the dead NPC should leave a corpse.
-		if (IsNPC() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && GetPetType() != petHatelist && (player_damaged || skip_corpse_checks || GetSummonerID()))
-		{
+		if (IsNPC() && (!GetSwarmInfo() || IsZomm()) && !ismerchant && GetPetType() != petHatelist && (player_damaged || skip_corpse_checks || GetSummonerID())) {
 			// Here we create the corpse.
 			DeleteInvalidQuestLoot();
 
-			if (skip_corpse_checks)
-			{
-				killer = oos;
+			if (skip_corpse_checks)	{
+				killer = owner_or_self;
 			}
 
-			Log(Logs::Detail, Logs::Death, "Creating a corpse for %s", killer->GetName());
+			LogDeathDetail("Creating a corpse for [{}]", killer->GetName());
 
 			CreateCorpse(killer, corpse);
 
-			if (IsZomm())
-			{
+			if (IsZomm()) {
 				// Fade the Zomm buff here, or else we'll be attached to the corpse until it fades.
 				uint32 zomm_owner_id = GetSwarmOwner();
 				Mob* zomm_owner = entity_list.GetMob(zomm_owner_id);
-				if (zomm_owner)
+				if (zomm_owner) {
 					zomm_owner->BuffFadeByEffect(SE_EyeOfZomm);
+				}
 			}
 		}
-		else
-		{
-			Log(Logs::General, Logs::Death, "%s should not leave a corpse...", GetName());
+		else {
+			LogDeath("[{}] should not leave a corpse...", GetName());
 		}
 	}
-	else
-	{
-		Log(Logs::Detail, Logs::Death, "Killer is NULL or is a NPC. No corpse will be left.");
+	else {
+		LogDeathDetail("Killer is NULL or is a NPC. No corpse will be left.");
 	}
-
-	
+		
 	hate_list.ReportDmgTotals(this, corpse, xp, faction, dmg_amt);
 	BuffFadeAll();
+
+	if (IsNPC()) {
+		if (emoteid) {
+			DoNPCEmote(EQ::constants::EmoteEventTypes::OnDeath, emoteid, killer_mob);
+		}
+	}
+
+	if (owner_or_self) {
+		if (owner_or_self->IsNPC())	{
+			if (parse->HasQuestSub(owner_or_self->GetNPCTypeID(), EVENT_NPC_SLAY)) {
+				parse->EventNPC(EVENT_NPC_SLAY, owner_or_self->CastToNPC(), this, "", 0);
+			}
+
+			if (emoteid) {
+				owner_or_self->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::KilledNPC, emoteid, this);
+			}
+		}
+	}
 
 	WipeHateList();
 
 	p_depop = true;
-	if(killerMob && killerMob->GetTarget() == this) //we can kill things without having them targeted
-		killerMob->SetTarget(nullptr); //via AE effects and such..
+
+	if (killer_mob && killer_mob->GetTarget() == this) { //we can kill things without having them targeted
+		killer_mob->SetTarget(nullptr);
+	}
 
 	m_combat_record.Stop();
 
-	if (give_exp_client && !IsCorpse()) {
-		const auto &v = give_exp_client->GetRaidOrGroupOrSelf(true);
-		for (const auto &m : v) {
-			m->CastToClient()->RecordKilledNPCEvent(this);
+	if (parse->HasQuestSub(GetNPCTypeID(), EVENT_DEATH_COMPLETE)) {
+		const auto &export_string = fmt::format(
+			"{} {} {} {}",
+			killer ? killer->GetID() : 0,
+			dmg_amt,
+			spell,
+			static_cast<int>(attack_skill)
+		);
 
-			if (parse->HasQuestSub(GetNPCTypeID(), EVENT_KILLED_MERIT)) {
-				parse->EventNPC(EVENT_KILLED_MERIT, this, m, "killed", 0);
-			}
-		}
+		parse->EventNPC(EVENT_DEATH_COMPLETE, this, owner_or_self, export_string, 0);
 	}
 
-	std::string export_string = fmt::format(
-		"{} {} {} {}",
-		killer ? killer->GetID() : 0,
-		dmg_amt,
-		spell,
-		static_cast<int>(attack_skill)
-	);
-	parse->EventNPC(EVENT_DEATH_COMPLETE, this, oos, export_string, 0);
-
 	/* Zone controller process EVENT_DEATH_ZONE (Death events) */
-	if (entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID) && this->GetNPCTypeID() != ZONE_CONTROLLER_NPC_ID)
-	{
-		std::string export_string = fmt::format(
+	if (entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID) && this->GetNPCTypeID() != ZONE_CONTROLLER_NPC_ID) {
+		const auto &export_string = fmt::format(
 			"{} {} {} {} {}",
-			killerMob ? killerMob->GetID() : 0,
+			killer_mob ? killer_mob->GetID() : 0,
 			damage,
 			spell,
 			static_cast<int>(attack_skill),
 			this->GetNPCTypeID()
 		);
+
 		parse->EventNPC(EVENT_DEATH_ZONE, entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID)->CastToNPC(), nullptr, export_string, 0);
 	}
 
@@ -2470,7 +2456,7 @@ void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 
 		//DS causes offense skillups.
 		if (IsClient())
-			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillOffense, attacker, zone->skill_difficulty[EQ::skills::SkillOffense].difficulty, SKILLUP_SUCCESS, true);
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillOffense, attacker, zone->skill_difficulty[EQ::skills::SkillOffense].difficulty[GetClass()], SKILLUP_SUCCESS, true);
 	}
 
 	//Reverse DS. This is basically a DS, but the spell is on the attacker, not the attackee

@@ -1944,8 +1944,8 @@ bool Client::CheckIncreaseSkill(EQ::skills::SkillType skillid, Mob *against_who,
 
 		if(difficulty < 1)
 			difficulty = 1.0f;
-		if(difficulty > 28)
-			difficulty = 28.0f;
+		if(difficulty > 34)
+			difficulty = 34.0f;
 
 		float chance1 = (stat / (difficulty * success)) * skillup_modifier;
 		if(chance1 > 95)
@@ -3154,7 +3154,7 @@ void Client::SendPickPocketResponse(Mob *from, uint32 amt, int type, int16 sloti
 		if(type > PickPocketFailed)
 			success = SKILLUP_SUCCESS;
 
-		CheckIncreaseSkill(EQ::skills::SkillPickPockets, nullptr, zone->skill_difficulty[EQ::skills::SkillPickPockets].difficulty, success);
+		CheckIncreaseSkill(EQ::skills::SkillPickPockets, nullptr, zone->skill_difficulty[EQ::skills::SkillPickPockets].difficulty[GetClass()], success);
 	}
 
 	if(type == PickPocketItem && inst)

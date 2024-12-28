@@ -223,7 +223,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 				sender->CommonBreakInvisible();
 			}
 
-			sender->CheckIncreaseSkill(EQ::skills::SkillDisarmTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillDisarmTraps].difficulty, success);
+			sender->CheckIncreaseSkill(EQ::skills::SkillDisarmTraps, nullptr, zone->skill_difficulty[EQ::skills::SkillDisarmTraps].difficulty[sender->GetClass()], success);
 		} else {
 			sender->CommonBreakInvisible();
 		}
@@ -457,7 +457,7 @@ bool Doors::DoorKeyCheck(Client* sender, uint32& key)
 
 					if (GetLockpick() <= modskill) {
 						if (!IsDoorOpen()) {
-							sender->CheckIncreaseSkill(EQ::skills::SkillPickLock, nullptr, zone->skill_difficulty[EQ::skills::SkillPickLock].difficulty);
+							sender->CheckIncreaseSkill(EQ::skills::SkillPickLock, nullptr, zone->skill_difficulty[EQ::skills::SkillPickLock].difficulty[sender->GetClass()]);
 						}
 						sender->Message_StringID(Chat::LightBlue, StringID::DOORS_SUCCESSFUL_PICK);
 						return true;

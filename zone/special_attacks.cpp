@@ -221,7 +221,7 @@ void Mob::DoBash(Mob* defender)
 	bool shieldBash = false;
 
 	if (is_trained && IsClient() && (GetClass() == Class::Warrior || GetClass() == Class::ShadowKnight || GetClass() == Class::Paladin || GetClass() == Class::Cleric)) {
-		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBash, GetTarget(), zone->skill_difficulty[EQ::skills::SkillBash].difficulty);
+		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBash, GetTarget(), zone->skill_difficulty[EQ::skills::SkillBash].difficulty[GetClass()]);
 
 		EQ::ItemInstance* item = nullptr;
 		item = CastToClient()->GetInv().GetItem(EQ::invslot::slotSecondary);
@@ -262,7 +262,7 @@ void Mob::DoKick(Mob* defender)
 		return;
 
 	if (IsClient())
-		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillKick, GetTarget(), zone->skill_difficulty[EQ::skills::SkillKick].difficulty);
+		CastToClient()->CheckIncreaseSkill(EQ::skills::SkillKick, GetTarget(), zone->skill_difficulty[EQ::skills::SkillKick].difficulty[GetClass()]);
 
 	int base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillKick, GetSkill(EQ::skills::SkillKick));
 	int minDmg = 1;
@@ -354,7 +354,7 @@ void Client::DoBackstab(Mob* defender)
 			stabs = 2;
 	}
 
-	CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBackstab, defender, zone->skill_difficulty[EQ::skills::SkillBackstab].difficulty);
+	CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBackstab, defender, zone->skill_difficulty[EQ::skills::SkillBackstab].difficulty[GetClass()]);
 
 	int minHit = GetLevel();
 	int baseDamage = GetBaseDamage(defender, EQ::invslot::slotPrimary);
@@ -603,7 +603,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 
 	if (IsClient())
 	{
-		CastToClient()->CheckIncreaseSkill(skill_type, other, zone->skill_difficulty[skill_type].difficulty);
+		CastToClient()->CheckIncreaseSkill(skill_type, other, zone->skill_difficulty[skill_type].difficulty[GetClass()]);
 
 		if (damage > 0 && skill_type == EQ::skills::SkillDragonPunch && GetAA(aaDragonPunch) && !fromWus)
 		{
@@ -831,7 +831,7 @@ void Client::RangedAttack(Mob* other) {
 		Log(Logs::Detail, Logs::Combat, "Endless Quiver prevented ammo consumption.");
 	}
 
-	CheckIncreaseSkill(EQ::skills::SkillArchery, GetTarget(), zone->skill_difficulty[EQ::skills::SkillArchery].difficulty);
+	CheckIncreaseSkill(EQ::skills::SkillArchery, GetTarget(), zone->skill_difficulty[EQ::skills::SkillArchery].difficulty[GetClass()]);
 	CommonBreakInvisNoSneak();
 }
 
@@ -1170,7 +1170,7 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 	//Let Handle_OP_DeleteCharge handle the delete, to avoid item desyncs. 
 	//DeleteItemInInventory(ammo_slot, 1, false);
 
-	CheckIncreaseSkill(EQ::skills::SkillThrowing, GetTarget(), zone->skill_difficulty[EQ::skills::SkillThrowing].difficulty);
+	CheckIncreaseSkill(EQ::skills::SkillThrowing, GetTarget(), zone->skill_difficulty[EQ::skills::SkillThrowing].difficulty[GetClass()]);
 	CommonBreakInvisNoSneak();
 }
 
@@ -1635,7 +1635,7 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 		}
 
 		if (IsClient())
-			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillTaunt, who, zone->skill_difficulty[EQ::skills::SkillTaunt].difficulty);
+			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillTaunt, who, zone->skill_difficulty[EQ::skills::SkillTaunt].difficulty[GetClass()]);
 
 		Log(Logs::Detail, Logs::Aggro, "Attempting to Taunt with a chance of %i", tauntChance);
 	}
@@ -1711,7 +1711,7 @@ void Mob::InstillDoubt(Mob *who, int stage)
 			// skill up
 			if (IsClient())
 			{
-				CastToClient()->CheckIncreaseSkill(EQ::skills::SkillIntimidation, instillTarget, zone->skill_difficulty[EQ::skills::SkillIntimidation].difficulty);
+				CastToClient()->CheckIncreaseSkill(EQ::skills::SkillIntimidation, instillTarget, zone->skill_difficulty[EQ::skills::SkillIntimidation].difficulty[GetClass()]);
 			}
 
 			// range check after skill up so can practice on anything if you just want skill points

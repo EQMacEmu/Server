@@ -3711,10 +3711,10 @@ bool ZoneDatabase::SaveSoulboundItems(Client* client, std::list<EQ::ItemInstance
 	return false;
 }
 
-bool ZoneDatabase::UpdateSkillDifficulty(uint16 skillid, float difficulty)
+bool ZoneDatabase::UpdateSkillDifficulty(uint16 skillid, float difficulty, uint8 classid)
 {
 		std::string query = StringFormat("UPDATE skill_difficulty SET difficulty = %0.2f "
-                                    "WHERE skillid = %u;", difficulty, skillid);
+                                    "WHERE skillid = %u and class = %u;", difficulty, skillid, classid);
     auto results = QueryDatabase(query);
 	if (!results.Success())
 		return false;

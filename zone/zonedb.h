@@ -397,7 +397,7 @@ public:
 	uint32	GetZoneFishing(uint32 ZoneID, uint8 skill);
 	bool	EnableRecipe(uint32 recipe_id);
 	bool	DisableRecipe(uint32 recipe_id);
-	bool	UpdateSkillDifficulty(uint16 skillid, float difficulty);
+	bool	UpdateSkillDifficulty(uint16 skillid, float difficulty, uint8 classid);
 
 	/*
 	* Doors

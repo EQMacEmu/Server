@@ -396,7 +396,7 @@ void Client::CheckIncreaseTradeskill(bool isSuccessfulCombine, EQ::skills::Skill
 		return;
 	}
 
-	double tradeDifficulty = zone->skill_difficulty[tradeskill].difficulty;
+	double tradeDifficulty = zone->skill_difficulty[tradeskill].difficulty[GetClass()];
 
 	int tradeStat = 0;
 	if (tradeskill == EQ::skills::SkillFletching || tradeskill == EQ::skills::SkillMakePoison)

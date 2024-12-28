@@ -684,23 +684,23 @@ void Client::CheckSpecializeIncrease(uint16 spell_id) {
 	switch(spells[spell_id].skill) {
 	case EQ::skills::SkillAbjuration:
 		if(GetRawSkill(EQ::skills::SkillSpecializeAbjure) > 0)
-			CheckIncreaseSkill(EQ::skills::SkillSpecializeAbjure, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeAbjure].difficulty);
+			CheckIncreaseSkill(EQ::skills::SkillSpecializeAbjure, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeAbjure].difficulty[GetClass()]);
 		break;
 	case EQ::skills::SkillAlteration:
 		if(GetRawSkill(EQ::skills::SkillSpecializeAlteration) > 0)
-			CheckIncreaseSkill(EQ::skills::SkillSpecializeAlteration, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeAlteration].difficulty);
+			CheckIncreaseSkill(EQ::skills::SkillSpecializeAlteration, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeAlteration].difficulty[GetClass()]);
 		break;
 	case EQ::skills::SkillConjuration:
 		if(GetRawSkill(EQ::skills::SkillSpecializeConjuration) > 0)
-			CheckIncreaseSkill(EQ::skills::SkillSpecializeConjuration, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeConjuration].difficulty);
+			CheckIncreaseSkill(EQ::skills::SkillSpecializeConjuration, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeConjuration].difficulty[GetClass()]);
 		break;
 	case EQ::skills::SkillDivination:
 		if(GetRawSkill(EQ::skills::SkillSpecializeDivination) > 0)
-			CheckIncreaseSkill(EQ::skills::SkillSpecializeDivination, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeDivination].difficulty);
+			CheckIncreaseSkill(EQ::skills::SkillSpecializeDivination, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeDivination].difficulty[GetClass()]);
 		break;
 	case EQ::skills::SkillEvocation:
 		if(GetRawSkill(EQ::skills::SkillSpecializeEvocation) > 0)
-			CheckIncreaseSkill(EQ::skills::SkillSpecializeEvocation, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeEvocation].difficulty);
+			CheckIncreaseSkill(EQ::skills::SkillSpecializeEvocation, nullptr, zone->skill_difficulty[EQ::skills::SkillSpecializeEvocation].difficulty[GetClass()]);
 		break;
 	default:
 		//wtf...
@@ -722,47 +722,47 @@ void Client::CheckSongSkillIncrease(uint16 spell_id){
 	switch(spells[spell_id].skill)
 	{
 	case EQ::skills::SkillSinging:
-		CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty);
+		CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty[GetClass()]);
 		break;
 	case EQ::skills::SkillPercussionInstruments:
 		if(this->itembonuses.percussionMod > 0) {
 			if(GetRawSkill(EQ::skills::SkillPercussionInstruments) > 0)	// no skill increases if not trained in the instrument
-				CheckIncreaseSkill(EQ::skills::SkillPercussionInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillPercussionInstruments].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillPercussionInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillPercussionInstruments].difficulty[GetClass()]);
 			else
 				Message_StringID(Chat::Red, StringID::NO_INSTRUMENT_SKILL);	// tell the client that they need instrument training
 		}
 		else
-			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty[GetClass()], success);
 		break;
 	case EQ::skills::SkillStringedInstruments:
 		if(this->itembonuses.stringedMod > 0) {
 			if(GetRawSkill(EQ::skills::SkillStringedInstruments) > 0)
-				CheckIncreaseSkill(EQ::skills::SkillStringedInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillStringedInstruments].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillStringedInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillStringedInstruments].difficulty[GetClass()]);
 			else
 				Message_StringID(Chat::Red, StringID::NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty[GetClass()], success);
 		break;
 	case EQ::skills::SkillWindInstruments:
 		if(this->itembonuses.windMod > 0) {
 			if(GetRawSkill(EQ::skills::SkillWindInstruments) > 0)
-				CheckIncreaseSkill(EQ::skills::SkillWindInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillWindInstruments].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillWindInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillWindInstruments].difficulty[GetClass()]);
 			else
 				Message_StringID(Chat::Red, StringID::NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty[GetClass()], success);
 		break;
 	case EQ::skills::SkillBrassInstruments:
 		if(this->itembonuses.brassMod > 0) {
 			if(GetRawSkill(EQ::skills::SkillBrassInstruments) > 0)
-				CheckIncreaseSkill(EQ::skills::SkillBrassInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillBrassInstruments].difficulty);
+				CheckIncreaseSkill(EQ::skills::SkillBrassInstruments, nullptr, zone->skill_difficulty[EQ::skills::SkillBrassInstruments].difficulty[GetClass()]);
 			else
 				Message_StringID(Chat::Red, StringID::NO_INSTRUMENT_SKILL);
 		}
 		else
-			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty, success);
+			CheckIncreaseSkill(EQ::skills::SkillSinging, nullptr, zone->skill_difficulty[EQ::skills::SkillSinging].difficulty[GetClass()], success);
 		break;
 	default:
 		break;
@@ -1372,7 +1372,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 		if(slot < CastingSlot::MaxGems)
 		{
 			// increased chance of gaining channel skill if you regained concentration
-			float chan_skill = zone->skill_difficulty[EQ::skills::SkillChanneling].difficulty;
+			float chan_skill = zone->skill_difficulty[EQ::skills::SkillChanneling].difficulty[c->GetClass()];
 			float final_diff = regain_conc ? chan_skill : chan_skill+2;
 			uint8 success = regain_conc ? SKILLUP_SUCCESS : SKILLUP_FAILURE;
 			c->CheckIncreaseSkill(EQ::skills::SkillChanneling, nullptr, final_diff, success);
@@ -2234,7 +2234,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 		}
 		else
 		{
-			c->CheckIncreaseSkill(spells[spell_id].skill, nullptr, zone->skill_difficulty[spells[spell_id].skill].difficulty);
+			c->CheckIncreaseSkill(spells[spell_id].skill, nullptr, zone->skill_difficulty[spells[spell_id].skill].difficulty[c->GetClass()]);
 			c->CheckSpecializeIncrease(spell_id);
 		}
 	}
