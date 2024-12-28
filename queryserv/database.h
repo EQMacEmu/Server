@@ -41,7 +41,6 @@ class QSDatabase : public Database {
 public:
 
 	void AddSpeech(const char *from, const char *to, const char *message, uint16 minstatus, uint32 guilddbid, uint8 type);
-	void LogPlayerTrade(PlayerLogTrade_Struct *QS, uint32 DetailCount);
 
 	void LogPlayerAARateHourly(QSPlayerAARateHourly_Struct* QS, uint32 items);
 	void LogPlayerAAPurchase(QSPlayerAAPurchase_Struct* QS, uint32 items);

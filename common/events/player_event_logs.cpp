@@ -223,8 +223,8 @@ std::string PlayerEventLogs::GetDiscordWebhookUrlFromEventType(int32_t event_typ
 
 // GM_COMMAND           | [x] Implemented Formatter
 // ZONING               | [x] Implemented Formatter
-// AA_GAIN              | [x] Implemented Formatter
-// AA_PURCHASE          | [x] Implemented Formatter
+// AA_GAIN              | [] Implemented Formatter
+// AA_PURCHASE          | [] Implemented Formatter
 // FORAGE_SUCCESS       | [x] Implemented Formatter
 // FORAGE_FAILURE       | [x] Implemented Formatter
 // FISH_SUCCESS         | [x] Implemented Formatter
@@ -244,9 +244,9 @@ std::string PlayerEventLogs::GetDiscordWebhookUrlFromEventType(int32_t event_typ
 // GROUNDSPAWN_PICKUP   | [x] Implemented Formatter
 // NPC_HANDIN           | [x] Implemented Formatter
 // SKILL_UP             | [x] Implemented Formatter
-// TASK_ACCEPT          | [x] Implemented Formatter
-// TASK_UPDATE          | [x] Implemented Formatter
-// TASK_COMPLETE        | [x] Implemented Formatter
+// TASK_ACCEPT          | [] Implemented Formatter
+// TASK_UPDATE          | [] Implemented Formatter
+// TASK_COMPLETE        | [] Implemented Formatter
 // TRADE                | [] Implemented Formatter
 // GIVE_ITEM            | [] Implemented Formatter
 // SAY                  | [x] Implemented Formatter

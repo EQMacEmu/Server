@@ -8369,44 +8369,20 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 				trade->Reset();
 			}
 			else  {
-				other->PlayerTradeEventLog(other->trade, trade);
-
 				// start QS code
 				if (RuleB(QueryServ, PlayerLogTrades)) {
-					PlayerLogTrade_Struct event_entry;
-					std::list<void *> event_details;
-
-					memset(&event_entry, 0, sizeof(PlayerLogTrade_Struct));
+					QSPlayerLogTrade_Struct event_entry;
+					memset(&event_entry, 0, sizeof(QSPlayerLogTrade_Struct));
 
 					// Perform actual trade
-					FinishTrade(other, true, &event_entry, &event_details);
-					other->FinishTrade(this, false, &event_entry, &event_details);
+					this->FinishTrade(other, true, &event_entry);
+					other->FinishTrade(this, false, &event_entry);
 
-					event_entry._detail_count = event_details.size();
+					QSPlayerLogTrade_Struct *QS = new struct QSPlayerLogTrade_Struct;
+					memcpy(QS, &event_entry, sizeof(QSPlayerLogTrade_Struct));
 
-					auto qs_pack = new ServerPacket(
-						ServerOP_QSPlayerLogTrades,
-						sizeof(PlayerLogTrade_Struct) +
-						(sizeof(PlayerLogTradeItemsEntry_Struct) * event_entry._detail_count));
-					PlayerLogTrade_Struct *qs_buf = (PlayerLogTrade_Struct *)qs_pack->pBuffer;
-
-					memcpy(qs_buf, &event_entry, sizeof(PlayerLogTrade_Struct));
-
-					int offset = 0;
-
-					for (auto iter = event_details.begin(); iter != event_details.end();
-						++iter, ++offset) {
-						PlayerLogTradeItemsEntry_Struct *detail = reinterpret_cast<PlayerLogTradeItemsEntry_Struct *>(*iter);
-						qs_buf->item_entries[offset] = *detail;
-						safe_delete(detail);
-					}
-
-					event_details.clear();
-
-					if (worldserver.Connected())
-						worldserver.SendPacket(qs_pack);
-
-					safe_delete(qs_pack);
+					QServ->QSPlayerTrade(QS);
+					safe_delete(QS);
 					// end QS code
 				}
 				else {
@@ -9276,4 +9252,33 @@ void Client::Handle_OP_SpellTextMessage(const EQApplicationPacket *app)
 	//char *spell_emote_msg = (char *)(app->pBuffer + 2);
 
 	entity_list.QueueCloseClients(this, app, true, 200.0);
+}
+
+struct RecordKillCheck {
+	PlayerEvent::EventType event;
+	bool                   check;
+};
+
+void Client::RecordKilledNPCEvent(NPC *n)
+{
+	bool is_named = Strings::Contains(n->GetName(), "#") && !n->IsRaidTarget();
+
+	std::vector<RecordKillCheck> checks = {
+		RecordKillCheck{.event = PlayerEvent::KILLED_NPC, .check = true},
+		RecordKillCheck{.event = PlayerEvent::KILLED_NAMED_NPC, .check = is_named},
+		RecordKillCheck{.event = PlayerEvent::KILLED_RAID_NPC, .check = n->IsRaidTarget()},
+	};
+
+	for (auto &c : checks) {
+		if (c.check && player_event_logs.IsEventEnabled(c.event)) {
+			auto e = PlayerEvent::KilledNPCEvent{
+				.npc_id = n->GetNPCTypeID(),
+				.npc_name = n->GetCleanName(),
+				.combat_time_seconds = static_cast<uint32>(n->GetCombatRecord().TimeInCombat()),
+				.total_damage_per_second_taken = static_cast<uint64>(n->GetCombatRecord().GetDamageReceivedPerSecond()),
+				.total_heal_per_second_taken = static_cast<uint64>(n->GetCombatRecord().GetHealedReceivedPerSecond()),
+			};
+			RecordPlayerEventLog(c.event, e);
+		}
+	}
 }

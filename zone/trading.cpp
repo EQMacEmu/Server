@@ -325,42 +325,22 @@ void Client::ResetTrade() {
 	}
 }
 
-void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, std::list<void *> *event_details)
+void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry)
 {
+	bool qs_log = false;
 	uint16 item_count = 0;
-
 	if (tradingWith && tradingWith->IsClient()) {
-		Client                *other = tradingWith->CastToClient();
-		PlayerLogTrade_Struct *qs_audit = nullptr;
-		bool qs_log = false;
+		Client *other = tradingWith->CastToClient();
 
 		if (other) {
-			LogTrading("Finishing trade with client [{}]", other->GetName());
+			Log(Logs::Detail, Logs::Trading, "%s is finishing trade with client %s", GetName(), other->GetName());
 
 			this->AddMoneyToPP(other->trade->cp, other->trade->sp, other->trade->gp, other->trade->pp, true);
 
-			// step 0: pre-processing
 			// QS code
-			if (RuleB(QueryServ, PlayerLogTrades) && event_entry && event_details) {
-				qs_audit = (PlayerLogTrade_Struct *)event_entry;
+			if (RuleB(QueryServ, PlayerLogTrades))
+			{
 				qs_log = true;
-
-				if (finalizer) {
-					qs_audit->character_2_id = character_id;
-
-					qs_audit->character_2_money.platinum = trade->pp;
-					qs_audit->character_2_money.gold = trade->gp;
-					qs_audit->character_2_money.silver = trade->sp;
-					qs_audit->character_2_money.copper = trade->cp;
-				}
-				else {
-					qs_audit->character_1_id = character_id;
-
-					qs_audit->character_1_money.platinum = trade->pp;
-					qs_audit->character_1_money.gold = trade->gp;
-					qs_audit->character_1_money.silver = trade->sp;
-					qs_audit->character_1_money.copper = trade->cp;
-				}
 			}
 
 			// step 1: process bags
@@ -369,33 +349,21 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 				bool dropitem = false;
 
 				if (inst && inst->IsClassBag()) {
-					LogTrading("Giving container [{}] ([{}]) in slot [{}] to [{}]", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
+					Log(Logs::Detail, Logs::Trading, "Giving container %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
 
 					if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
 						int16 free_slot = other->GetInv().FindFreeSlotForTradeItem(inst);
 
-						if (free_slot != INVALID_INDEX)	{
-							if (other->PutItemInInventory(free_slot, *inst, true)) {
-								LogTrading("Container [{}] ([{}]) successfully transferred, deleting from trade slot [{}]", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot);
+						if (free_slot != INVALID_INDEX)
+						{
+							if (other->PutItemInInventory(free_slot, *inst, true))
+							{
+								Log(Logs::Detail, Logs::Trading, "Container %s (%d) successfully transferred, deleting from trade slot %d.", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot);
 
-								if (qs_log) {
-									auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-									detail->from_character_id = character_id;
-									detail->from_slot = trade_slot;
-									detail->to_character_id = other->CharacterID();
-									detail->to_slot = free_slot;
-									detail->item_id = inst->GetID();
-									detail->charges = inst->GetCharges();
-
-									event_details->push_back(detail);
-
-									if (finalizer)
-										qs_audit->character_2_item_count += detail->charges;
-									else
-										qs_audit->character_1_item_count += detail->charges;
-
-									//QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, free_slot, inst->GetID(), inst->GetCharges(), false);
+								if (qs_log)
+								{
+									QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, free_slot, inst->GetID(), inst->GetCharges(), false);
+									++item_count;
 								}
 
 								// step 1a: process items in bags
@@ -407,77 +375,68 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 									const EQ::ItemInstance *inst = m_inv[trade_bag_slot];
 
 									if (inst) {
-										LogTrading("Giving item in container [{}] ([{}]) in slot [{}] to[{}]", inst->GetItem()->Name, inst->GetItem()->ID, trade_bag_slot, other->GetName());
+										Log(Logs::Detail, Logs::Trading, "Giving item in container %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, trade_bag_slot, other->GetName());
 
-										if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
+										if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this)
+										{
 											int16 free_bag_slot = other->GetInv().CalcSlotId(free_slot, bagidx);
-											LogTradingDetail("Free slot is: [{}]. Slot bag is in: [{}] Index is: [{}]", free_bag_slot, free_slot, bagidx);
-											if (free_bag_slot != INVALID_INDEX)	{
-												if (other->PutItemInInventory(free_bag_slot, *inst, true)) {
-													LogTrading("Container item [{}] ([{}]) successfully transferred, deleting from trade slot [{}].", inst->GetItem()->Name, inst->GetItem()->ID, trade_bag_slot);
+											Log(Logs::Detail, Logs::Trading, "Free slot is: %i. Slot bag is in: %i Index is: %i", free_bag_slot, free_slot, bagidx);
+											if (free_bag_slot != INVALID_INDEX)
+											{
+												if (other->PutItemInInventory(free_bag_slot, *inst, true))
+												{
+													Log(Logs::Detail, Logs::Trading, "Container item %s (%d) successfully transferred, deleting from trade slot %d.", inst->GetItem()->Name, inst->GetItem()->ID, trade_bag_slot);
 
-													if (qs_log)	{
-														auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-														detail->from_character_id = character_id;
-														detail->from_slot = EQ::InventoryProfile::CalcSlotId(trade_bag_slot, bagidx);
-														detail->to_character_id = other->CharacterID();
-														detail->to_slot = EQ::InventoryProfile::CalcSlotId(free_bag_slot, bagidx);
-														detail->item_id = inst->GetID();
-														detail->charges = inst->GetCharges();
-
-														event_details->push_back(detail);
-
-														if (finalizer)
-															qs_audit->character_2_item_count += detail->charges;
-														else
-															qs_audit->character_1_item_count += detail->charges;
-
-														//QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_bag_slot, free_bag_slot, inst->GetID(), inst->GetCharges(), true);
+													if (qs_log)
+													{
+														QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_bag_slot, free_bag_slot, inst->GetID(), inst->GetCharges(), true);
+														++item_count;
 													}
 												}
 
 												else {
-													LogTrading("Transfer of container item [{}] ([{}]) to [{}] failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+													Log(Logs::Detail, Logs::Trading, "Transfer of container item %s (%d) to %s failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
 													dropitem = true;
 												}
 											}
 											else {
-												LogTrading("{}'s inventory is full, returning container item [{}] ([{}]) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
+												Log(Logs::Detail, Logs::Trading, "%s's inventory is full, returning container item %s (%d) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
 												dropitem = true;
 											}
 										}
 										else
 										{
-											LogTrading("Container item [{}] ([{}]) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
+											Log(Logs::Detail, Logs::Trading, "Container item %s (%d) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
 											PushItemOnCursor(*inst, true);
 										}
 										DeleteItemInInventory(trade_bag_slot);
 									}
-									if (dropitem) {
+									if (dropitem)
+									{
 										other->CreateGroundObject(inst, glm::vec4(other->GetX(), other->GetY(), other->GetZ(), 0), RuleI(Groundspawns, FullInvDecayTime), true);
 									}
 									bagidx++;
 								}
 							}
 							else {
-								LogTrading("Transfer of container [{}] ([{}]) to [{}] failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+								Log(Logs::Detail, Logs::Trading, "Transfer of container %s (%d) to %s failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
 								dropitem = true;
 							}
 						}
 						else {
-							LogTrading("{}'s inventory is full, returning container [{}] ([{}]) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
+							Log(Logs::Detail, Logs::Trading, "%s's inventory is full, returning container %s (%d) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
 							dropitem = true;
 						}
 					}
 					else {
-						LogTrading("Container [{}] ([{}]) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
+						Log(Logs::Detail, Logs::Trading, "Container %s (%d) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
 						PushItemOnCursor(*inst, true);
 					}
 
 					DeleteItemInInventory(trade_slot);
 				}
-				if (dropitem) {
+				if (dropitem)
+				{
 					other->CreateGroundObject(inst, glm::vec4(other->GetX(), other->GetY(), other->GetZ(), 0), RuleI(Groundspawns, FullInvDecayTime), true);
 				}
 			}
@@ -500,7 +459,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 							break;
 
 						if (partial_inst->GetID() != inst->GetID()) {
-							LogTrading("[CLIENT] Client::ResetTrade() - an incompatible location reference was returned by Inventory::FindFreeSlotForTradeItem()");
+							Log(Logs::Detail, Logs::Trading, "[CLIENT] Client::ResetTrade() - an incompatible location reference was returned by Inventory::FindFreeSlotForTradeItem()");
 							break;
 						}
 
@@ -518,34 +477,21 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 							inst->SetCharges(0);
 						}
 
-						LogTrading("Transferring partial stack [{}] ([{}]) in slot [{}] to [{}]", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
+						Log(Logs::Detail, Logs::Trading, "Transferring partial stack %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
 
-						if (other->PutItemInInventory(partial_slot, *partial_inst, true)) {
-							LogTrading("Partial stack [{}] ([{}]) successfully transferred, deleting [{}] charges from trade slot.",
+						if (other->PutItemInInventory(partial_slot, *partial_inst, true))
+						{
+							Log(Logs::Detail, Logs::Trading, "Partial stack %s (%d) successfully transferred, deleting %i charges from trade slot.",
 								inst->GetItem()->Name, inst->GetItem()->ID, (old_charges - inst->GetCharges()));
 
-							if (qs_log)	{
-								auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-								detail->from_character_id = character_id;
-								detail->from_slot = trade_slot;
-								detail->to_character_id = other->CharacterID();
-								detail->to_slot = partial_slot;
-								detail->item_id = partial_inst->GetID();
-								detail->charges = partial_inst->GetCharges();
-
-								event_details->push_back(detail);
-
-								if (finalizer)
-									qs_audit->character_2_item_count += detail->charges;
-								else
-									qs_audit->character_1_item_count += detail->charges;
-
-								//QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, partial_slot, partial_inst->GetID(), partial_inst->GetCharges(), false);
+							if (qs_log)
+							{
+								QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, partial_slot, partial_inst->GetID(), partial_inst->GetCharges(), false);
+								++item_count;
 							}
 						}
 						else {
-							LogTrading("Transfer of partial stack [{}] ([{}]) to [{}] failed, returning [{}] charges to trade slot.",
+							Log(Logs::Detail, Logs::Trading, "Transfer of partial stack %s (%d) to %s failed, returning %i charges to trade slot.",
 								inst->GetItem()->Name, inst->GetItem()->ID, other->GetName(), (old_charges - inst->GetCharges()));
 
 							inst->SetCharges(old_charges);
@@ -589,19 +535,6 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 							inst->SetCharges(0);
 						}
 
-						if (qs_log) {
-							auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-							detail->from_character_id = character_id;
-							detail->from_slot = trade_slot;
-							detail->to_character_id = character_id;
-							detail->to_slot = bias_slot;
-							detail->item_id = bias_inst->GetID();
-							detail->charges = (old_charges - inst->GetCharges());
-							
-							event_details->push_back(detail);
-						}
-
 						if (inst->GetCharges() == 0) {
 							DeleteItemInInventory(trade_slot);
 							break;
@@ -616,76 +549,64 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 				bool dropitem = false;
 
 				if (inst) {
-					LogTrading("Giving item [{}] ([{}]) in slot [{}] to [{}]", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
+					Log(Logs::Detail, Logs::Trading, "Giving item %s (%d) in slot %d to %s", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot, other->GetName());
 
 					if (inst->GetItem()->NoDrop != 0 || Admin() >= RuleI(Character, MinStatusForNoDropExemptions) || RuleI(World, FVNoDropFlag) == 1 || other == this) {
 						int16 free_slot = other->GetInv().FindFreeSlotForTradeItem(inst);
 
 						if (free_slot != INVALID_INDEX) {
-							if (other->PutItemInInventory(free_slot, *inst, true)) {
-								LogTrading("Item [{}] ([{}]) successfully transferred, deleting from trade slot [{}].", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot);
-								if (qs_log) {
-									auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-									detail->from_character_id = character_id;
-									detail->from_slot = trade_slot;
-									detail->to_character_id = other->CharacterID();
-									detail->to_slot = free_slot;
-									detail->item_id = inst->GetID();
-									detail->charges = inst->GetCharges();
-									
-									event_details->push_back(detail);
-
-									if (finalizer)
-										qs_audit->character_2_item_count += detail->charges;
-									else
-										qs_audit->character_1_item_count += detail->charges;
-
-									// 'step 3' should never really see containers..but, just in case...
-									for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; (sub_slot <= EQ::invbag::SLOT_END); ++sub_slot) { // this is to catch ALL items
-										const EQ::ItemInstance *bag_inst = inst->GetItem(sub_slot);
-
-										if (bag_inst) {
-											detail = new PlayerLogTradeItemsEntry_Struct;
-
-											detail->from_character_id = character_id;
-											detail->from_slot = trade_slot;
-											detail->to_character_id = other->CharacterID();
-											detail->to_slot = free_slot;
-											detail->item_id = bag_inst->GetID();
-											detail->charges = bag_inst->GetCharges();
-											
-											event_details->push_back(detail);
-
-											if (finalizer)
-												qs_audit->character_2_item_count += detail->charges;
-											else
-												qs_audit->character_1_item_count += detail->charges;
-										}
-									}
-
-									//QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, free_slot, inst->GetID(), inst->GetCharges(), false);
+							if (other->PutItemInInventory(free_slot, *inst, true))
+							{
+								Log(Logs::Detail, Logs::Trading, "Item %s (%d) successfully transferred, deleting from trade slot %d.", inst->GetItem()->Name, inst->GetItem()->ID, trade_slot);
+								if (qs_log)
+								{
+									QServ->QSTradeItems(this->character_id, other->CharacterID(), trade_slot, free_slot, inst->GetID(), inst->GetCharges(), false);
+									++item_count;
 								}
 							}
 							else {
-								LogTrading("Transfer of Item [{}] ([{}]) to [{}] failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
+								Log(Logs::Detail, Logs::Trading, "Transfer of Item %s (%d) to %s failed, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID, other->GetName());
 								dropitem = true;
 							}
 						}
 						else {
-							LogTrading("{}'s inventory is full, returning item [{}] ([{}]) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
+							Log(Logs::Detail, Logs::Trading, "%s's inventory is full, returning item %s (%d) to giver.", other->GetName(), inst->GetItem()->Name, inst->GetItem()->ID);
 							dropitem = true;
 						}
 					}
 					else {
-						LogTrading("Item [{}] ([{}]) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
+						Log(Logs::Detail, Logs::Trading, "Item %s (%d) is NoDrop, returning to giver.", inst->GetItem()->Name, inst->GetItem()->ID);
 						PushItemOnCursor(*inst, true);
 					}
 
 					DeleteItemInInventory(trade_slot);
 				}
-				if (dropitem){
+				if (dropitem)
+				{
 					other->CreateGroundObject(inst, glm::vec4(other->GetX(), other->GetY(), other->GetZ(), 0), RuleI(Groundspawns, FullInvDecayTime), true);
+				}
+			}
+
+			if (qs_log && event_entry)
+			{
+				QSPlayerLogTrade_Struct *qs_audit = (QSPlayerLogTrade_Struct *)event_entry;
+				if (finalizer)
+				{
+					qs_audit->char2_id = this->character_id;
+					qs_audit->char2_money.platinum = this->trade->pp;
+					qs_audit->char2_money.gold = this->trade->gp;
+					qs_audit->char2_money.silver = this->trade->sp;
+					qs_audit->char2_money.copper = this->trade->cp;
+					qs_audit->char2_count = item_count;
+				}
+				else
+				{
+					qs_audit->char1_id = this->character_id;
+					qs_audit->char1_money.platinum = this->trade->pp;
+					qs_audit->char1_money.gold = this->trade->gp;
+					qs_audit->char1_money.silver = this->trade->sp;
+					qs_audit->char1_money.copper = this->trade->cp;
+					qs_audit->char1_count = item_count;
 				}
 			}
 
@@ -694,78 +615,18 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 	}
 	else if (tradingWith && tradingWith->IsNPC())
 	{
-		NPC *npc = nullptr;
+		NPC *npc = tradingWith->CastToNPC();
 
 		if (!npc)
 			return;
 
-		NPCHandinEventLog(trade, tradingWith->CastToNPC());
-
-		QSPlayerLogHandin_Struct *qs_audit = nullptr;
-		bool qs_log = false;
+		bool badfaction = false;
 
 		// QS code
-		if (RuleB(QueryServ, PlayerLogTrades) && event_entry && event_details) {
-			// Currently provides only basic functionality. Calling method will also
-			// need to be modified before item returns and rewards can be logged.
-			qs_audit = (QSPlayerLogHandin_Struct *)event_entry;
+		if (RuleB(QueryServ, PlayerLogTrades))
+		{
 			qs_log = true;
-
-			qs_audit->quest_id = 0;
-			qs_audit->char_id = character_id;
-			qs_audit->char_money.platinum = trade->pp;
-			qs_audit->char_money.gold = trade->gp;
-			qs_audit->char_money.silver = trade->sp;
-			qs_audit->char_money.copper = trade->cp;
-			qs_audit->char_count = 0;
-			qs_audit->npc_id = tradingWith->GetNPCTypeID();
-			qs_audit->npc_money.platinum = 0;
-			qs_audit->npc_money.gold = 0;
-			qs_audit->npc_money.silver = 0;
-			qs_audit->npc_money.copper = 0;
-			qs_audit->npc_count = 0;
 		}
-
-		if (qs_log) { // This can be incorporated below when revisions are made
-			for (int16 trade_slot = EQ::invslot::TRADE_BEGIN; trade_slot <= EQ::invslot::TRADE_NPC_END; ++trade_slot) {
-				const EQ::ItemInstance *trade_inst = m_inv[trade_slot];
-
-				if (trade_inst) {
-					auto detail = new QSHandinItems_Struct;
-
-					strcpy(detail->action_type, "HANDIN");
-
-					detail->char_slot = trade_slot;
-					detail->item_id = trade_inst->GetID();
-					detail->charges = (!trade_inst->IsStackable() ? 1 : trade_inst->GetCharges());
-					
-
-					event_details->push_back(detail);
-					qs_audit->char_count += detail->charges;
-
-					if (trade_inst->IsClassBag()) {
-						for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; sub_slot < trade_inst->GetItem()->BagSlots; ++sub_slot) {
-							const EQ::ItemInstance *trade_baginst = trade_inst->GetItem(sub_slot);
-
-							if (trade_baginst) {
-								detail = new QSHandinItems_Struct;
-
-								strcpy(detail->action_type, "HANDIN");
-
-								detail->char_slot = EQ::InventoryProfile::CalcSlotId(trade_slot, sub_slot);
-								detail->item_id = trade_baginst->GetID();
-								detail->charges = (!trade_inst->IsStackable() ? 1 : trade_inst->GetCharges());
-								
-								event_details->push_back(detail);
-								qs_audit->char_count += detail->charges;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		bool badfaction = false;
 
 		bool quest_npc = false;
 		if (parse->HasQuestSub(tradingWith->GetNPCTypeID(), EVENT_TRADE)) {
@@ -787,18 +648,20 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 			}
 
 			const EQ::ItemData *item = inst->GetItem();
-			if (npc->GetSpecialAbility(SpecialAbility::BadFactionBlockHandin) && item && quest_npc == true && !GetGM()) {
+			if (npc->GetSpecialAbility(SpecialAbility::BadFactionBlockHandin) && item && quest_npc == true && !GetGM())
+			{
 				int primaryfaction = npc->GetPrimaryFaction();
 				int factionlvl = GetFactionLevel(CharacterID(), GetRace(), GetClass(), GetDeity(), primaryfaction, tradingWith);
 
-				if (factionlvl >= FACTION_THREATENINGLY) {
+				if (factionlvl >= FACTION_THREATENINGLY)
+				{
 					badfaction = true;
 
-					if (RuleB(NPC, ReturnNonQuestItems)) {
+					if (RuleB(NPC, ReturnNonQuestItems))
+					{
 						DeleteItemInInventory(i);
-						if (npc->CanTalk()) {
+						if (npc->CanTalk())
 							npc->Say_StringID(zone->random.Int(StringID::TRADE_BAD_FACTION1, StringID::TRADE_BAD_FACTION4));
-						}
 						SummonItem(inst->GetID(), inst->GetCharges(), EQ::legacy::SLOT_QUEST, true);
 						Log(Logs::General, Logs::Trading, "Quest NPC %s is returning %s because the faction check has failed.", npc->GetName(), item->Name);
 
@@ -900,38 +763,19 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 				}
 			}
 
-			if (!badfaction && qs_log) {
-				auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-				detail->from_character_id = character_id;
-				detail->from_slot = i;
-				detail->to_character_id = npc->GetNPCTypeID();
-				detail->to_slot = 0;
-				detail->item_id = inst->GetID();
-				detail->charges = inst->GetCharges();
-
-				event_details->push_back(detail);
-
-				//QServ->QSTradeItems(this->character_id, npc->GetNPCTypeID(), i, 0, inst->GetID(), inst->GetCharges(), false, false);
-				//++item_count;
-				if (inst->IsClassBag()) {
+			if (!badfaction && qs_log)
+			{
+				QServ->QSTradeItems(this->character_id, npc->GetNPCTypeID(), i, 0, inst->GetID(), inst->GetCharges(), false, false);
+				++item_count;
+				if (inst->IsClassBag())
+				{
 					for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; (sub_slot <= EQ::invbag::SLOT_END); ++sub_slot)
 					{
 						const EQ::ItemInstance *bag_inst = inst->GetItem(sub_slot);
-						if (bag_inst) {
-							auto detail = new PlayerLogTradeItemsEntry_Struct;
-
-							detail->from_character_id = character_id;
-							detail->from_slot = m_inv.CalcSlotId(i, sub_slot);
-							detail->to_character_id = npc->GetNPCTypeID();
-							detail->to_slot = 0;
-							detail->item_id = bag_inst->GetID();
-							detail->charges = bag_inst->GetCharges();
-
-							event_details->push_back(detail);
-
-							//QServ->QSTradeItems(this->character_id, npc->GetNPCTypeID(), m_inv.CalcSlotId(i, sub_slot), 0, bag_inst->GetID(), bag_inst->GetCharges(), true, false);
-							//++item_count;
+						if (bag_inst)
+						{
+							QServ->QSTradeItems(this->character_id, npc->GetNPCTypeID(), m_inv.CalcSlotId(i, sub_slot), 0, bag_inst->GetID(), bag_inst->GetCharges(), true, false);
+							++item_count;
 						}
 					}
 				}
@@ -940,6 +784,22 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 
 		if (!badfaction)
 		{
+			if (qs_log)
+			{
+				QSPlayerLogHandin_Struct *qs_struct = new struct QSPlayerLogHandin_Struct;
+
+				qs_struct->char_id = character_id;
+				qs_struct->char_money.platinum = trade->pp;
+				qs_struct->char_money.gold = trade->gp;
+				qs_struct->char_money.silver = trade->sp;
+				qs_struct->char_money.copper = trade->cp;
+				qs_struct->char_count = item_count;
+				qs_struct->npc_id = npc->GetNPCTypeID();
+
+				QServ->QSHandinItems(qs_struct);
+				safe_delete(qs_struct);
+			}
+
 			char temp1[100] = { 0 };
 			char temp2[100] = { 0 };
 			snprintf(temp1, 100, "copper.%d", tradingWith->GetNPCTypeID());
@@ -961,10 +821,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 				database.SaveInventory(CharacterID(), nullptr, i);
 			}
 
-			if (parse->HasQuestSub(tradingWith->GetNPCTypeID(), EVENT_TRADE)) {
-				
-				parse->EventNPC(EVENT_TRADE, tradingWith->CastToNPC(), this, "", 0, &item_list);
-			}
+			parse->EventNPC(EVENT_TRADE, tradingWith->CastToNPC(), this, "", 0, &item_list);
 
 			for (int i = 0; i < 4; ++i) {
 				if (insts[i]) {
@@ -974,6 +831,7 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry, st
 		}
 	}
 }
+
 
 
 bool Client::CheckTradeLoreConflict(Client* other)

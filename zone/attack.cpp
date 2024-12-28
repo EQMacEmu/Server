@@ -1841,20 +1841,6 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	if (emoteid != 0)
 		this->DoNPCEmote(EQ::constants::EmoteEventTypes::OnDeath, emoteid, killerMob);
 
-	/* Zone controller process EVENT_DEATH_ZONE (Death events) */
-	if (entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID) && this->GetNPCTypeID() != ZONE_CONTROLLER_NPC_ID)
-	{
-		std::string export_string = fmt::format(
-			"{} {} {} {} {}",
-			killerMob ? killerMob->GetID() : 0,
-			damage,
-			spell,
-			static_cast<int>(attack_skill),
-			this->GetNPCTypeID()
-		);
-		parse->EventNPC(EVENT_DEATH_ZONE, entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID)->CastToNPC(), nullptr, export_string, 0);
-	}
-
 	SetHP(0);
 
 	if (GetPet() && !GetPet()->IsCharmedPet())
@@ -2005,6 +1991,19 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 	if(killerMob && killerMob->GetTarget() == this) //we can kill things without having them targeted
 		killerMob->SetTarget(nullptr); //via AE effects and such..
 
+	m_combat_record.Stop();
+
+	if (give_exp_client && !IsCorpse()) {
+		const auto &v = give_exp_client->GetRaidOrGroupOrSelf(true);
+		for (const auto &m : v) {
+			m->CastToClient()->RecordKilledNPCEvent(this);
+
+			if (parse->HasQuestSub(GetNPCTypeID(), EVENT_KILLED_MERIT)) {
+				parse->EventNPC(EVENT_KILLED_MERIT, this, m, "killed", 0);
+			}
+		}
+	}
+
 	std::string export_string = fmt::format(
 		"{} {} {} {}",
 		killer ? killer->GetID() : 0,
@@ -2013,7 +2012,20 @@ bool NPC::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::SkillTyp
 		static_cast<int>(attack_skill)
 	);
 	parse->EventNPC(EVENT_DEATH_COMPLETE, this, oos, export_string, 0);
-	m_combat_record.Stop();
+
+	/* Zone controller process EVENT_DEATH_ZONE (Death events) */
+	if (entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID) && this->GetNPCTypeID() != ZONE_CONTROLLER_NPC_ID)
+	{
+		std::string export_string = fmt::format(
+			"{} {} {} {} {}",
+			killerMob ? killerMob->GetID() : 0,
+			damage,
+			spell,
+			static_cast<int>(attack_skill),
+			this->GetNPCTypeID()
+		);
+		parse->EventNPC(EVENT_DEATH_ZONE, entity_list.GetNPCByNPCTypeID(ZONE_CONTROLLER_NPC_ID)->CastToNPC(), nullptr, export_string, 0);
+	}
 
 	return true;
 }
@@ -2169,8 +2181,8 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 
 void NPC::GiveExp(Client* give_exp_client, bool &xp)
 {
-	Group *kg = entity_list.GetGroupByClient(give_exp_client);
-	Raid *kr = entity_list.GetRaidByClient(give_exp_client);
+	Group *killer_group = entity_list.GetGroupByClient(give_exp_client);
+	Raid *killer_raid = entity_list.GetRaidByClient(give_exp_client);
 
 	int32 finalxp = static_cast<int32>(GetBaseEXP());
 
@@ -2178,38 +2190,31 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 		xp = true;
 
 	bool always_log = GetLevel() >= RuleI(QueryServ, LevelAlwaysLogKills);
-	if (kr)
-	{
-		if (kr->GetID() == raid_fte)
-		{
+	if (killer_raid) {
+		if (killer_raid->GetID() == raid_fte) {
 			fte_charid = 0;
 		}
 
-		kr->SplitExp(finalxp, this);
+		killer_raid->SplitExp(finalxp, this);
 
 		/* Send the EVENT_KILLED_MERIT event for all raid members */
 		std::list<uint32>charids;
-		for (int i = 0; i < MAX_RAID_MEMBERS; i++)
-		{
-			if (kr->members[i].member != nullptr && kr->members[i].member->IsClient() && IsOnHatelist(kr->members[i].member))
+		for (int i = 0; i < MAX_RAID_MEMBERS; i++) {
+			if (killer_raid->members[i].member != nullptr && killer_raid->members[i].member->IsClient() && IsOnHatelist(killer_raid->members[i].member))
 			{ // If Group Member is Client
-				Client *c = kr->members[i].member;
-				parse->EventNPC(EVENT_KILLED_MERIT, this, c, "killed", 0);
+				Client *c = killer_raid->members[i].member;
 
 				charids.push_back(c->CharacterID());
 
 				// In case the player joined the raid after engaging, or they wiped.
-				if (fte_charid != 0 && fte_charid == c->CharacterID())
-				{
+				if (fte_charid != 0 && fte_charid == c->CharacterID()) {
 					fte_charid = 0;
 				}
 			}
 		}
 
-		if (fte_charid != 0 || always_log)
-		{
-			if (fte_charid != 0 && !ValidateFTE())
-			{
+		if (fte_charid != 0 || always_log) {
+			if (fte_charid != 0 && !ValidateFTE()) {
 				fte_charid = 0;
 			}
 
@@ -2219,39 +2224,31 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 		}
 		charids.clear();
 	}
-	else if (give_exp_client->IsGrouped() && kg != nullptr)
-	{
-		kg->SplitExp(finalxp, this);
+	else if (give_exp_client->IsGrouped() && killer_group != nullptr) {
+		killer_group->SplitExp(finalxp, this);
 
-		if (kg->GetID() == group_fte)
-		{
+		if (killer_group->GetID() == group_fte) {
 			fte_charid = 0;
 		}
 
 		/* Send the EVENT_KILLED_MERIT event and update kill tasks
 		* for all group members */
 		std::list<uint32>charids;
-		for (int i = 0; i < MAX_GROUP_MEMBERS; i++)
-		{
-			if (kg->members[i] != nullptr && kg->members[i]->IsClient() && IsOnHatelist(kg->members[i]))
-			{ // If Group Member is Client
-				Client *c = kg->members[i]->CastToClient();
-				parse->EventNPC(EVENT_KILLED_MERIT, this, c, "killed", 0);
+		for (int i = 0; i < MAX_GROUP_MEMBERS; i++) {
+			if (killer_group->members[i] != nullptr && killer_group->members[i]->IsClient() && IsOnHatelist(killer_group->members[i])) { // If Group Member is Client
+				Client *c = killer_group->members[i]->CastToClient();
 
 				charids.push_back(c->CharacterID());
 
 				// In case the player joined the group after engaging, or they wiped.
-				if (fte_charid != 0 && fte_charid == c->CharacterID())
-				{
+				if (fte_charid != 0 && fte_charid == c->CharacterID()) {
 					fte_charid = 0;
 				}
 			}
 		}
 
-		if (fte_charid != 0 || always_log)
-		{
-			if (fte_charid != 0 && !ValidateFTE())
-			{
+		if (fte_charid != 0 || always_log) {
+			if (fte_charid != 0 && !ValidateFTE()) {
 				fte_charid = 0;
 			}
 
@@ -2261,34 +2258,27 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 		}
 		charids.clear();
 	}
-	else
-	{
+	else {
 		int conlevel = give_exp_client->GetLevelCon(GetLevel());
-		if (conlevel != CON_GREEN || IsZomm())
-		{
+		if (conlevel != CON_GREEN || IsZomm()) {
 			give_exp_client->AddEXP((finalxp), conlevel, this);
 		}
-		else
-		{
+		else {
 			xp = false;
 		}
 		/* Send the EVENT_KILLED_MERIT event */
-		parse->EventNPC(EVENT_KILLED_MERIT, this, give_exp_client, "killed", 0);
 
 		// QueryServ Logging - Solo
 		std::list<uint32>charids;
 		Client *c = give_exp_client;
 		charids.push_back(c->CharacterID());
 
-		if (fte_charid == c->CharacterID())
-		{
+		if (fte_charid == c->CharacterID()) {
 			fte_charid = 0;
 		}
 		
-		if (fte_charid != 0 || always_log)
-		{
-			if (fte_charid != 0 && !ValidateFTE())
-			{
+		if (fte_charid != 0 || always_log) {
+			if (fte_charid != 0 && !ValidateFTE()) {
 				fte_charid = 0;
 			}
 

@@ -110,11 +110,6 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			database.AddSpeech(tmp1.c_str(), tmp2.c_str(), SSS->message, SSS->minstatus, SSS->guilddbid, SSS->type);
 			break;
 		}
-		case ServerOP_QSPlayerLogTrades: {
-			PlayerLogTrade_Struct *QS = (PlayerLogTrade_Struct *)p.Data();
-			database.LogPlayerTrade(QS, QS->_detail_count);
-			break;
-		}
 		case ServerOP_QSPlayerLogItemDeletes: {
 			if (p.Length() < sizeof(QSPlayerLogItemDelete_Struct)) {
 				LogInfoDetail("Received malformed ServerOP_QSPlayerLogItemDeletes");

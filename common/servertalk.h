@@ -210,21 +210,11 @@
 #define ServerOP_ReloadFactions 0x4124
 #define ServerOP_ReloadSkillCaps 0x4125
 
-/**
- * QueryServer
- */
-#define ServerOP_QSPlayerLogTrades 0x5000
-#define ServerOP_QSPlayerLogHandins 0x5001
-#define ServerOP_QSPlayerLogNPCKills 0x5002
-#define ServerOP_QSPlayerLogDeletes 0x5003
-#define ServerOP_QSPlayerLogMoves 0x5004
-#define ServerOP_QSPlayerLogMerchantTransactions 0x5005
-#define ServerOP_QSSendQuery 0x5006
-#define ServerOP_QSPlayerDropItem 0x5007
-
 /* Query Server OP Codes */
 #define ServerOP_QSPlayerLogItemDeletes				0x5013
 #define ServerOP_QSPlayerLogItemMoves				0x5014
+#define ServerOP_QSPlayerLogMerchantTransactions	0x5015
+#define ServerOP_QSSendQuery						0x5016
 #define ServerOP_CZSignalNPC						0x5017
 #define ServerOP_CZSetEntityVariableByNPCTypeID		0x5018
 #define ServerOP_QSPlayerAARateHourly				0x5019
@@ -232,7 +222,6 @@
 #define ServerOP_QSPlayerTSEvents					0x5022
 #define ServerOP_QSPlayerQGlobalUpdates				0x5023
 #define ServerOP_QSPlayerLootRecords				0x5024
-
 // player events
 #define ServerOP_PlayerEvent 0x5100
 
@@ -1007,44 +996,22 @@ struct CZClientSignalByName_Struct {
 	uint32 data;
 };
 
-struct PlayerLogTradeItemsEntry_Struct {
-	uint32 from_character_id;
-	uint16 from_slot;
-	uint32 to_character_id;
-	uint16 to_slot;
-	uint32 item_id;
-	uint16 charges;
-};
-
-struct PlayerLogTrade_Struct {
-	uint32                          character_1_id;
-	MoneyUpdate_Struct              character_1_money;
-	uint16                          character_1_item_count;
-	uint32                          character_2_id;
-	MoneyUpdate_Struct              character_2_money;
-	uint16                          character_2_item_count;
-	uint16                          _detail_count;
-	PlayerLogTradeItemsEntry_Struct item_entries[0];
-};
-
-struct QSHandinItems_Struct {
-	char action_type[7]; // handin, return or reward
-	uint16 char_slot;
-	uint32 item_id;
-	uint16 charges;
+struct QSPlayerLogTrade_Struct {
+	uint32				char1_id;
+	MoneyUpdate_Struct	char1_money;
+	uint16				char1_count;
+	uint32				char2_id;
+	MoneyUpdate_Struct	char2_money;
+	uint16				char2_count;
 };
 
 struct QSPlayerLogHandin_Struct {
-	uint32				 quest_id;
-	uint32				 char_id;
-	MoneyUpdate_Struct	 char_money;
-	uint16				 char_count;
-	uint32				 npc_id;
-	MoneyUpdate_Struct	 npc_money;
-	uint16               npc_count;
-	uint16               _detail_count;
-	QSHandinItems_Struct items[0];
+	uint32				char_id;
+	MoneyUpdate_Struct	char_money;
+	uint16				char_count;
+	uint32				npc_id;
 };
+
 
 struct QSPlayerLogNPCKillSub_Struct{
 	uint32 NPCID;

@@ -190,6 +190,8 @@ public:
 	int GetHandToHandDelay();
 	uint16 GetWeaponEffectID(int slot = EQ::invslot::slotPrimary);
 
+	std::vector<Mob *> GetRaidOrGroupOrSelf(bool clients_only = false);
+
 	float GetQuiverHaste();
 	int	GetHasteCap();
 
@@ -245,8 +247,7 @@ public:
 	void FinishTrade(
 		Mob *with,
 		bool finalizer = false,
-		void *event_entry = nullptr,
-		std::list<void *> *event_details = nullptr
+		void *event_entry = nullptr
 	);
 	void	SendZonePoints();
 
@@ -1318,8 +1319,6 @@ private:
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
 	int8 last_fatigue;
-	void PlayerTradeEventLog(Trade *t, Trade *t2);
-	void NPCHandinEventLog(Trade *t, NPC *n);
 };
 
 #endif
