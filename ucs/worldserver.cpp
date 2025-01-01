@@ -72,7 +72,9 @@ WorldServerList::WorldServerList()
 	Json::Value *ucs = nullptr;;
 	if (c.isMember("server"))
 	{
-		if (c["server"].isMember("ucs"))
+		if (c["server"].isMember("ucsmultiserver"))
+			ucs = &c["server"]["ucsmultiserver"];
+		else if (c["server"].isMember("ucs"))
 			ucs = &c["server"]["ucs"];
 		else if (c["server"].isMember("chatserver"))
 			ucs = &c["server"]["chatserver"];
