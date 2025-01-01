@@ -713,6 +713,63 @@ std::string CapitaliseName(std::string inString) {
 	return NormalisedName;
 }
 
+int32	EncodeDiscordChatItemLinkMsg(char *Parms, char *Msg, char **Ret) {
+	int32 MsgLen = strlen(Msg);
+	bool in_link = false;
+	std::string itemid = "";
+	int32 item_count = 0;
+	std::string New = Parms;
+	char Temp[12];
+	bool finished_link = false;
+
+	for (int32 i = 0; i < MsgLen; i++) {
+		if (finished_link) {
+			finished_link = false;
+			if (Msg[i] != 0x20)
+				New.append(" ");
+		}
+		if (Msg[i] == 0x12) {
+			if (in_link) {
+				// we finished an item link
+				// "](https://www.takproject.net/allaclone/item.php?id="
+				New.append("](https://www.takproject.net/allaclone/item.php?id=");
+				New.append(itemid);
+				New.append(")");
+				finished_link = true;
+				in_link = false;
+				itemid = "";
+				item_count = 0;
+			}
+			else {
+				// beginning a new item link
+				New.append("["); // "["
+				in_link = true;
+			}
+		}
+		else {
+			if (in_link) {
+				if (item_count < 7) {
+					item_count++;
+					if (Msg[i] >= 48 && Msg[i] < 58) { // 0-9
+						itemid.push_back(Msg[i]);
+					}
+				}
+				else {
+					New.push_back(Msg[i]);
+				}
+			}
+			else {
+				New.push_back(Msg[i]);
+			}
+		}
+	}
+
+	*Ret = new char[New.length() + 1];
+	strcpy(*Ret, New.c_str());
+
+	return New.length();
+}
+
 void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *client, const char *message)
 {
 	// expected format for rule Chat::ChatChannelDiscordRelayConfig is Channel1:webhook_id1,Channel2:webhook_id2
@@ -733,10 +790,13 @@ void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *clie
 					if (worldserverlist->GetServerCount() > 1) // only add the world short name if the UCS is configured with multiple servers
 						wsn = " **" + client->GetWorldShortName() + "**";
 					snprintf(q.message, sizeof(q.message), "**%s** [%d %s %s]%s\n%s", client->GetName().c_str(), client->GetLevel(), GetRaceIDName(client->GetRace()), GetClassIDName(client->GetClass(), 1), wsn.c_str(), message);
+					char *discordFormattedMessage = 0;
+					EncodeDiscordChatItemLinkMsg("", q.message, &discordFormattedMessage);
 					discord_manager.QueueWebhookMessage(
 						q.webhook_id,
-						q.message
+						discordFormattedMessage
 					);
+					safe_delete_array(discordFormattedMessage);
 				}
 			}
 		}
