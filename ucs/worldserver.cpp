@@ -66,15 +66,13 @@ WorldServerList::WorldServerList()
 	char str[50];
 	int worlds = 0;
 	auto jsconf = EQ::JsonConfigFile::Load(
-		fmt::format("{}/eqemu_config.json", path.GetServerPath())
+		fmt::format("{}/ucs_multiserver.json", path.GetServerPath())
 	);
 	auto c = jsconf.RawHandle();
 	Json::Value *ucs = nullptr;;
 	if (c.isMember("server"))
 	{
-		if (c["server"].isMember("ucsmultiserver"))
-			ucs = &c["server"]["ucsmultiserver"];
-		else if (c["server"].isMember("ucs"))
+		if (c["server"].isMember("ucs"))
 			ucs = &c["server"]["ucs"];
 		else if (c["server"].isMember("chatserver"))
 			ucs = &c["server"]["chatserver"];
