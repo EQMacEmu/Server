@@ -518,6 +518,7 @@ public:
 	uint32 GetHateAmount(Mob* tmob, bool include_bonus = true) { return hate_list.GetEntHate(tmob, include_bonus);}
 	uint32 GetDamageAmount(Mob* tmob, bool combine_pet_dmg = false) { return hate_list.GetEntDamage(tmob, combine_pet_dmg);}
 	Mob* GetHateTop() { return hate_list.GetTop();}
+	Mob *GetDamageTopSingleMob(int32 &return_dmg) { return hate_list.GetDamageTopSingleMob(return_dmg); }
 	Mob* GetDamageTop(int32& return_dmg, bool combine_pet_dmg = false, bool clients_only = false) { return hate_list.GetDamageTop(return_dmg, combine_pet_dmg, clients_only); }
 	Mob* GetHateRandom() { return hate_list.GetRandom();}
 	Client* GetHateRandomClient(int32 max_dist = 0) { return hate_list.GetRandomClient(max_dist); }
