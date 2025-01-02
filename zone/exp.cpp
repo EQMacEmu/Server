@@ -173,7 +173,7 @@ float Mob::GetBaseEXP()
 		basexp = 0;
 		Log(Logs::General, Logs::EQMac, "%s was completely damaged by a damage shield/NPC. No XP for you one year.", GetName());
 	}
-	else if(player_damage == 0)
+	else if(player_damage == 0 && content_service.IsTheShadowsOfLuclinEnabled())
 	{
 		basexp *= 0.25f;
 		Log(Logs::General, Logs::EQMac, "%s was not damaged by a player. Exp reduced to 25 percent of normal", GetName());
@@ -310,6 +310,22 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		{
 			Log(Logs::Detail, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
 			add_exp *= reduction_mult;
+		}
+	}
+
+	if (RuleB(Expansion, EnablePetExperienceSplit) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (killed_mob && !HasGroup() && !is_split)	{
+			int32 damage_amount = 0;
+			Mob *top_damager = killed_mob->GetDamageTop(damage_amount, false, false);
+			if (top_damager) {
+				if (top_damager->IsPet()) {
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f) {
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet takes 50% of experience value.", killed_mob->GetCleanName());
+						add_exp = (float)add_exp * 0.5f;
+					}
+				}
+			}
 		}
 	}
 
@@ -1033,6 +1049,24 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 						gs.weighted_levels += cmember->GetLevel();
 					}
 					Log(Logs::Detail, Logs::Group, "%s was added to close_membercount", cmember->GetName());
+				}
+			}
+		}
+	}
+
+	if (RuleB(Expansion, EnablePetExperienceSplit) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (killed_mob) {
+			int32 damage_amount = 0;
+			Mob *top_damager = killed_mob->GetDamageTopSingleMob(damage_amount);
+			if (top_damager) {
+				if (top_damager->IsPet()) {
+					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
+					if (pet_dmg_pct > 0.5f) {
+						++gs.membercount;
+						++gs.close_membercount;
+						gs.weighted_levels += top_damager->GetLevel();
+						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
+					}
 				}
 			}
 		}
