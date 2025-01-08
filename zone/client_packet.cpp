@@ -8369,6 +8369,8 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 				trade->Reset();
 			}
 			else  {
+				other->PlayerTradeEventLog(other->trade, trade);
+
 				// start QS code
 				if (RuleB(QueryServ, PlayerLogTrades)) {
 					QSPlayerLogTrade_Struct event_entry;

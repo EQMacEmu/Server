@@ -277,6 +277,7 @@ public:
 	/* New PP Save Functions */
 	bool SaveCurrency(){ return database.SaveCharacterCurrency(this->CharacterID(), &m_pp); }
 	bool SaveAA();
+	bool SaveCharacterMageloStats();
 
 	inline bool ClientDataLoaded() const { return client_data_loaded; }
 	inline bool Connected() const { return (client_state == CLIENT_CONNECTED); }
@@ -1307,6 +1308,9 @@ private:
 	bool InterrogateInventory_error(int16 head, int16 index, const EQ::ItemInstance* inst, const EQ::ItemInstance* parent, int depth);
 
 	void UpdateZoneChangeCount(uint32 zoneid);
+
+	void PlayerTradeEventLog(Trade *t, Trade *t2);
+	void NPCHandinEventLog(Trade *t, NPC *n);
 
 	bool clicky_override; // On AK, clickies with 0 casttime did not enforce any restrictions (level, regeant consumption, etc) 
 	uint8 active_disc;
