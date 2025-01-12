@@ -248,7 +248,7 @@ public:
 		uint32 inventory_slot = 0xFFFFFFFF, int16 resist_adjust = 0, bool isproc = false, bool isrecourse=false, int recourse_level=-1);
 	virtual bool SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect = false,
 		bool use_resist_adjust = false, int16 resist_adjust = 0, bool isproc = false, uint16 ae_caster_id = 0, bool isrecourse=false, int spell_level=-1);
-	virtual bool SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_level, float partial = 100);
+	virtual bool SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_level, float partial, bool current_buff_refresh);
 	virtual bool DetermineSpellTargets(uint16 spell_id, Mob *&spell_target, Mob *&ae_center,
 		CastAction_type &CastAction, bool isproc = false, EQ::spells::CastingSlot slot = EQ::spells::CastingSlot::Item);
 	virtual bool CheckFizzle(uint16 spell_id);
@@ -1054,7 +1054,6 @@ protected:
 	uint32 scalerate;
 	Buffs_Struct *buffs;
 	uint32 current_buff_count;
-	bool current_buff_refresh;
 	StatBonuses itembonuses;
 	StatBonuses spellbonuses;
 	StatBonuses aabonuses;

@@ -394,7 +394,6 @@ Mob::Mob(const char* in_name,
 	npc_damage = 0;
 	gm_damage = 0;
 	PacifyImmune = false;
-	current_buff_refresh = false;
 	temporary_pets_effect = nullptr;
 	best_z_fail_count = 0;
 

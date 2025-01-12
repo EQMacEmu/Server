@@ -3048,6 +3048,18 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 	// Figure out a slot for the buff.
 	Mob *buff_target = IsBindSightSpell(spell_id) ? this : spelltar;
 	int buffslot = -1, clevel = action_level;
+
+	// this is for suppressing mem blur on mez refresh https://www.takproject.net/forums/index.php?threads/mez-and-memblur-2.33569/
+	bool current_buff_refresh = false;
+	if (IsBuffSpell(spell_id))
+	{
+		for (int i = 0; i < GetMaxBuffSlots(); i++)
+		{
+			if (buff_target->buffs[i].spellid == spell_id && buff_target->buffs[i].casterid != 0 && buff_target->buffs[i].casterid == GetID())
+				current_buff_refresh = true;
+		}
+	}
+
 	if (IsBuffSpell(spell_id) && !buff_target->AssignBuffSlot(this, spell_id, buffslot, clevel, action_packet))
 	{
 		// if AssignBuffSlot returned false there's a problem applying the spell. It's most likely a buff that can't stack.
@@ -3168,7 +3180,7 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 			TemporaryPets(spell_id, GetTarget(), pet_name, 2);
 		}
 	}
-	else if (!spelltar->SpellEffect(this, spell_id, buffslot, clevel, spell_effectiveness))
+	else if (!spelltar->SpellEffect(this, spell_id, buffslot, clevel, spell_effectiveness, current_buff_refresh))
 	{
 		// if SpellEffect() returned false there's a problem applying the effects (invalid spell.)
 		Log(Logs::General, Logs::Spells, "Spell %d could not apply its effects %s -> %s\n", spell_id, GetName(), spelltar->GetName());

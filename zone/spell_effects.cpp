@@ -45,7 +45,7 @@ extern WorldServer worldserver;
 
 // the spell can still fail here, if the buff can't stack
 // in this case false will be returned, true otherwise
-bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_level, float partial)
+bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_level, float partial, bool current_buff_refresh)
 {
 	int effect, effect_value, i;
 	EQ::ItemInstance *SummonedItem = nullptr;
@@ -1258,13 +1258,10 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #ifdef SPELL_EFFECT_SPAM
 				snprintf(effect_desc, _EDLEN, "Memory Blur: %d", effect_value);
 #endif
-				if (IsMezSpell(spell_id))
+				if (IsMezSpell(spell_id) && current_buff_refresh)
 				{
-					if (current_buff_refresh)
-					{
-						Log(Logs::General, Logs::Spells, "Spell %d cast on %s is a mez the entity is already debuffed with. Skipping Mem Blur component.", spell_id, GetName());
-						break;
-					}
+					Log(Logs::General, Logs::Spells, "Spell %d cast on %s is a mez the entity is already debuffed with. Skipping Mem Blur component.", spell_id, GetName());
+					break;
 				}
 
 				int wipechance = spells[spell_id].base[i];
@@ -2251,8 +2248,6 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 		c->PushItemOnCursorWithoutQueue(SummonedItem);
 		safe_delete(SummonedItem);
 	}
-
-	current_buff_refresh = false;
 
 	return true;
 }
