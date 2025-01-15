@@ -6954,8 +6954,7 @@ void Client::NPCHandinEventLog(Trade *t, NPC *n)
 					if (
 						item_data.size() == 3 &&
 						Strings::IsNumber(item_data[0]) &&
-						Strings::IsNumber(item_data[1]) &&
-						Strings::IsNumber(item_data[2])
+						Strings::IsNumber(item_data[1])
 						) {
 						const uint32 item_id = Strings::ToUnsignedInt(item_data[0]);
 						if (item_id != 0) {
@@ -6979,8 +6978,7 @@ void Client::NPCHandinEventLog(Trade *t, NPC *n)
 				if (
 					item_data.size() == 3 &&
 					Strings::IsNumber(item_data[0]) &&
-					Strings::IsNumber(item_data[1]) &&
-					Strings::IsNumber(item_data[2])
+					Strings::IsNumber(item_data[1])
 					) {
 					const uint32 item_id = Strings::ToUnsignedInt(item_data[0]);
 					const auto *item = database.GetItem(item_id);
@@ -7017,8 +7015,7 @@ void Client::NPCHandinEventLog(Trade *t, NPC *n)
 					if (
 						item_data.size() == 3 &&
 						Strings::IsNumber(item_data[0]) &&
-						Strings::IsNumber(item_data[1]) &&
-						Strings::IsNumber(item_data[2])
+						Strings::IsNumber(item_data[1])
 						) {
 						const uint32 item_id = Strings::ToUnsignedInt(item_data[0]);
 						const auto *item = database.GetItem(item_id);
@@ -7040,8 +7037,7 @@ void Client::NPCHandinEventLog(Trade *t, NPC *n)
 				if (
 					item_data.size() == 3 &&
 					Strings::IsNumber(item_data[0]) &&
-					Strings::IsNumber(item_data[1]) &&
-					Strings::IsNumber(item_data[2])
+					Strings::IsNumber(item_data[1])
 					) {
 					const uint32 item_id = Strings::ToUnsignedInt(item_data[0]);
 					const auto *item = database.GetItem(item_id);

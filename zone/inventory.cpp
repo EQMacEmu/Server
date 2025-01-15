@@ -163,10 +163,20 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 
 	// make sure the item exists
 	if(item == nullptr) {
-		Message(Chat::Red, "Item %u does not exist.", item_id);
-		Log(Logs::Detail, Logs::Inventory, "Player %s on account %s attempted to create an item with an invalid id.\n(Item: %u)\n",
-			GetName(), account_name, item_id);
-
+		Message(
+			Chat::Red,
+			fmt::format(
+				"Item {} does not exist.",
+				item_id
+			).c_str()
+		);
+		LogInventory(
+			"Player [{}] on account [{}] attempted to create an item with an invalid id.\n"
+			"(Item [{}])\n",
+			GetName(), 
+			account_name, 
+			item_id
+		);
 		return false;
 	} 
 	// check that there is not a lore conflict between base item and existing inventory
@@ -187,9 +197,15 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 	// check to make sure we are a GM if the item is GM-only
 	else if(item->GMFlag == -1 && this->Admin() < RuleI(GM, MinStatusToUseGMItem)) {
 		Message(Chat::Red, "You are not a GM or do not have the status to summon this item.");
-		Log(Logs::Detail, Logs::Inventory, "Player %s on account %s attempted to create a GM-only item with a status of %i.\n(Item: %u, GMFlag: %u)\n",
-			GetName(), account_name, this->Admin(), item->ID, item->GMFlag);
-
+		LogInventory(
+			"Player [{}] on account [{}] attempted to create a GM-only item with a status of [{}].\n"
+			"Item: [{}], GMFlag: [{}].\n",
+			GetName(), 
+			account_name, 
+			this->Admin(), 
+			item->ID, 
+			item->GMFlag
+		);
 		return false;
 	}
 
@@ -199,30 +215,23 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 
 	// validation passed..so, set the quantity and create the actual item
 
-	if(quantity < 0)
-	{
+	if(quantity < 0) {
 		quantity = 1;
 	}
-	else if (quantity == 0)
-	{
-		if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Normal)
-		{ 
+	else if (quantity == 0) {
+		if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Normal) { 
 			quantity = 1;
 		}
-		else if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges)
-		{
+		else if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges) {
 			if(!force_charges)
 				quantity = item->MaxCharges;
 		}
-		else if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Stacked)
-		{
+		else if(database.ItemQuantityType(item_id) == EQ::item::Quantity_Stacked) {
 			//If no value is set coming from a quest method, only summon a single item.
-			if(to_slot == EQ::legacy::SLOT_QUEST)
-			{
+			if(to_slot == EQ::legacy::SLOT_QUEST) {
 				quantity = 1;
 			}
-			else
-			{
+			else {
 				quantity = item->StackSize;
 			}
 		}
@@ -234,8 +243,13 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 	if(inst == nullptr) {
 		Message(Chat::Red, "An unknown server error has occurred and your item was not created.");
 		// this goes to logfile since this is a major error
-		Log(Logs::General, Logs::Error, "Player %s on account %s encountered an unknown item creation error.\n(Item: %u)\n",
-			GetName(), account_name, item->ID);
+		LogError(
+			"Player [{}] on account [{}] encountered an unknown item creation error.\n"
+			"Item: [{}]\n",
+			GetName(), 
+			account_name, 
+			item->ID
+		);
 
 		return false;
 	}
@@ -254,29 +268,23 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 	}
 
 	//We're coming from a quest method.
-	if(to_slot == EQ::legacy::SLOT_QUEST)
-	{
+	if(to_slot == EQ::legacy::SLOT_QUEST) {
 		bool stacking = TryStacking(inst);
 		//If we were able to stack, there is no need to continue on as we're set.
-		if(stacking)
-		{
+		if(stacking) {
 			safe_delete(inst);
 			return true;
 		}
-		else
-		{
+		else {
 			bool bag = false;
-			if(inst->IsType(EQ::item::ItemClassBag))
-			{
+			if(inst->IsType(EQ::item::ItemClassBag)) {
 				bag = true;
 			}
 			to_slot = m_inv.FindFreeSlot(bag, true, item->Size);
 
 			//make sure we are not completely full...
-			if(to_slot == EQ::invslot::slotCursor || to_slot == INVALID_INDEX)
-			{
-				if (inst->GetItem()->NoDrop == 0)
-				{
+			if(to_slot == EQ::invslot::slotCursor || to_slot == INVALID_INDEX) {
+				if (inst->GetItem()->NoDrop == 0) {
 					//If it's no drop, force it to the cursor. This carries the risk of deletion if the player already has this item on their cursor
 					// or if the cursor queue is full. But in this situation, we have little other recourse.
 					PushItemOnCursorWithoutQueue(inst);
@@ -284,14 +292,23 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 					safe_delete(inst);
 					return true;
 				}
-				else if(m_inv.GetItem(EQ::invslot::slotCursor) != nullptr || to_slot == INVALID_INDEX)
-				{
+				else if(m_inv.GetItem(EQ::invslot::slotCursor) != nullptr || to_slot == INVALID_INDEX) {
 					CreateGroundObject(inst, glm::vec4(GetX(), GetY(), GetZ(), 0), RuleI(Groundspawns, FullInvDecayTime), true);
 					safe_delete(inst);
 					return true;
 				}
 			}
 		}
+	}
+
+	if (player_event_logs.IsEventEnabled(PlayerEvent::ITEM_CREATION)) {
+		auto e = PlayerEvent::ItemCreationEvent{};
+		e.item_id = item->ID;
+		e.item_name = item->Name;
+		e.to_slot = to_slot;
+		e.charges = quantity;
+
+		RecordPlayerEventLog(PlayerEvent::ITEM_CREATION, e);
 	}
 
 	if (to_slot == EQ::invslot::slotCursor) {

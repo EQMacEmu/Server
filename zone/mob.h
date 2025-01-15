@@ -411,6 +411,18 @@ public:
 	inline virtual int32 GetMaxDR() const { return 255; }
 	inline virtual int32 GetMaxCR() const { return 255; }
 	inline virtual int32 GetMaxFR() const { return 255; }
+	void SetSTR(int32 STR);
+	void SetSTA(int32 STA);
+	void SetDEX(int32 DEX);
+	void SetAGI(int32 AGI);
+	void SetINT(int32 INT);
+	void SetWIS(int32 WIS);
+	void SetCHA(int32 CHA);
+	void SetMR(int32 MR);
+	void SetFR(int32 FR);
+	void SetDR(int32 DR);
+	void SetPR(int32 PR);
+	void SetCR(int32 CR);
 	inline int32 GetHP() const { return cur_hp; }
 	inline int32 GetMaxHP() const { return max_hp; }
 	virtual int32 CalcMaxHP(bool unbuffed = false);
@@ -1211,6 +1223,12 @@ protected:
 	bool pseudo_rooted;
 	glm::vec3 last_dest;
 
+	CombatRecord m_combat_record{};
+public:
+	const CombatRecord &GetCombatRecord() const;
+
+protected:
+
 	// Bind wound
 	Timer bindwound_timer;
 	uint16 bindwound_target_id;
@@ -1309,9 +1327,7 @@ protected:
 	uint16 instillDoubtTargetID;
 	Timer instillDoubtStageTimer;
 
-	CombatRecord m_combat_record{};
-public:
-	const CombatRecord &GetCombatRecord() const;
+
 
 private:
 
