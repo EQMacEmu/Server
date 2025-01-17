@@ -3051,11 +3051,11 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 
 	// this is for suppressing mem blur on mez refresh https://www.takproject.net/forums/index.php?threads/mez-and-memblur-2.33569/
 	bool current_buff_refresh = false;
-	if (IsBuffSpell(spell_id))
+	if (IsBuffSpell(spell_id) && buff_target && (buff_target->IsNPC() || buff_target->IsClient()))
 	{
 		for (int i = 0; i < GetMaxBuffSlots(); i++)
 		{
-			if (buff_target->buffs[i].spellid == spell_id && buff_target->buffs[i].casterid != 0 && buff_target->buffs[i].casterid == GetID())
+			if (buff_target->buffs && buff_target->buffs[i].spellid == spell_id && buff_target->buffs[i].casterid != 0 && buff_target->buffs[i].casterid == GetID())
 				current_buff_refresh = true;
 		}
 	}
