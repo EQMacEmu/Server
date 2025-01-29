@@ -1982,77 +1982,34 @@ void Client::RemoveNoRent(bool client_update)
 }
 
 // Two new methods to alleviate perpetual login desyncs
-void Client::RemoveDuplicateLore(bool client_update) {
-	int16 slot_id = 0;
-
+void Client::RemoveDuplicateLore() {
 	// equipment
-	for(auto slot_id = EQ::invslot::EQUIPMENT_BEGIN; slot_id <= EQ::invslot::EQUIPMENT_END; ++slot_id) {
-		auto inst = m_inv.PopItem(slot_id);
-		if (inst == nullptr) { continue;}
-		if(CheckLoreConflict(inst->GetItem())) {
-			Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
-			database.SaveInventory(character_id, nullptr, slot_id);
+	for(auto slot_id : GetInventorySlots()) {
+		// slot gets handled in a queue
+		if (slot_id == EQ::invslot::slotCursor) {
+			continue;
 		}
-		else {
-			m_inv.PutItem(slot_id, *inst);
-		}
-		safe_delete(inst);
-	}
 
-	// general
-	for (auto slot_id = EQ::invslot::GENERAL_BEGIN; slot_id <= EQ::invslot::GENERAL_END; ++slot_id) {
+		// temporarily move the item off of the slot
 		auto inst = m_inv.PopItem(slot_id);
-		if (inst == nullptr) { continue; }
+		if (!inst) {
+			continue;
+		}
+
 		if (CheckLoreConflict(inst->GetItem())) {
-			Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
+			LogError(
+				"Lore Duplication Error | Deleting [{}] ({}) from slot [{}] client [{}]",
+				inst->GetItem()->Name,
+				inst->GetItem()->ID,
+				slot_id,
+				GetCleanName()
+			);
 			database.SaveInventory(character_id, nullptr, slot_id);
+			safe_delete(inst);
 		}
-		else {
-			m_inv.PutItem(slot_id, *inst);
-		}
-		safe_delete(inst);
-	}
 
-	// containers
-	for(auto slot_id = EQ::invbag::GENERAL_BAGS_BEGIN; slot_id <= EQ::invbag::CURSOR_BAG_END; ++slot_id) {
-		auto inst = m_inv.PopItem(slot_id);
-		if (inst == nullptr) { continue; }
-		if(CheckLoreConflict(inst->GetItem())) {
-			Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
-			database.SaveInventory(character_id, nullptr, slot_id);
-		}
-		else {
-			m_inv.PutItem(slot_id, *inst);
-		}
-		safe_delete(inst);
-	}
-
-	// bank
-	for(auto slot_id = EQ::invslot::BANK_BEGIN; slot_id <= EQ::invslot::BANK_END; ++slot_id) {
-		auto inst = m_inv.PopItem(slot_id);
-		if (inst == nullptr) { continue; }
-		if(CheckLoreConflict(inst->GetItem())) {
-			Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
-			database.SaveInventory(character_id, nullptr, slot_id);
-		}
-		else {
-			m_inv.PutItem(slot_id, *inst);
-		}
-		safe_delete(inst);
-	}
-
-	// bank containers
-	for(auto slot_id = EQ::invbag::BANK_BAGS_BEGIN; slot_id <= EQ::invbag::BANK_BAGS_END; ++slot_id) {
-		auto inst = m_inv.PopItem(slot_id);
-		if (inst == nullptr) { continue; }
-		if(CheckLoreConflict(inst->GetItem())) {
-			Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from slot %i", inst->GetItem()->Name, slot_id);
-			database.SaveInventory(character_id, nullptr, slot_id);
-		}
-		else {
-			m_inv.PutItem(slot_id, *inst);
-		}
-		safe_delete(inst);
+		// if no lore conflict, put the item back in the slot
+		m_inv.PushItem(slot_id, inst);
 	}
 
 	// cursor & limbo
@@ -2062,15 +2019,24 @@ void Client::RemoveDuplicateLore(bool client_update) {
 
 		while (!m_inv.CursorEmpty()) {
 			auto inst = m_inv.PopItem(EQ::invslot::slotCursor);
-			if (inst == nullptr) { continue; }
+			if (!inst) { 
+				continue; 
+			}
 			local_1.push_back(inst);
 		}
 
-		for (auto iter = local_1.begin(); iter != local_1.end(); ++iter) {
-			auto inst = *iter;
-			if (inst == nullptr) { continue; }
+		for (auto inst : local_1) {
+			if (!inst) { 
+				continue; 
+			}
+
 			if (CheckLoreConflict(inst->GetItem())) {
-				Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from `Limbo`", inst->GetItem()->Name);
+				LogError(
+					"Lore Duplication Error | Deleting [{}] ({}) from `Limbo` client [{}]",
+					inst->GetItem()->Name,
+					inst->GetItem()->ID,
+					GetCleanName()
+				);
 				safe_delete(inst);
 			}
 			else {
@@ -2079,8 +2045,10 @@ void Client::RemoveDuplicateLore(bool client_update) {
 		}
 		local_1.clear();
 
-		for (auto iter = local_2.begin(); iter != local_2.end(); ++iter) {
-			auto inst = *iter;
+		for (auto inst : local_2) {
+			if (!inst) {
+				continue;
+			}
 			if ((inst->GetItem()->Lore[0] != '*' && inst->GetItem()->Lore[0] != '#') ||
 				((inst->GetItem()->Lore[0] == '*') && (m_inv.HasItem(inst->GetID(), 0, invWhereCursor) == INVALID_INDEX)) ||
 				((inst->GetItem()->Lore[0] == '#') && (m_inv.HasArtifactItem() == INVALID_INDEX))) {
@@ -2088,7 +2056,12 @@ void Client::RemoveDuplicateLore(bool client_update) {
 				m_inv.PushCursor(*inst);
 			}
 			else {
-				Log(Logs::Detail, Logs::Inventory, "Lore Duplication Error: Deleting %s from `Limbo`", inst->GetItem()->Name);
+				LogError(
+					"Lore Duplication Error | Deleting [{}] ({}) from `Limbo` client [{}]",
+					inst->GetItem()->Name,
+					inst->GetItem()->ID,
+					GetCleanName()
+				);
 			}
 
 			safe_delete(inst);

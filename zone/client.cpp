@@ -1733,15 +1733,13 @@ void Client::Stand() {
 void Client::ChangeLastName(const char* in_lastname) {
 	memset(m_pp.last_name, 0, sizeof(m_pp.last_name));
 	strn0cpy(m_pp.last_name, in_lastname, sizeof(m_pp.last_name));
+	strn0cpy(lastname, m_pp.last_name, sizeof(lastname));
 	auto outapp = new EQApplicationPacket(OP_GMLastName, sizeof(GMLastName_Struct));
 	GMLastName_Struct* gmn = (GMLastName_Struct*)outapp->pBuffer;
 	strcpy(gmn->name, name);
 	strcpy(gmn->gmname, name);
 	strcpy(gmn->lastname, in_lastname);
-	gmn->unknown[0]=1;
-	gmn->unknown[1]=1;
-	gmn->unknown[2]=1;
-	gmn->unknown[3]=1;
+	gmn->response = 1;
 	entity_list.QueueClients(this, outapp, false);
 	// Send name update packet here... once know what it is
 	safe_delete(outapp);
@@ -7190,4 +7188,27 @@ std::vector<Mob *> Client::GetRaidOrGroupOrSelf(bool clients_only)
 	}
 
 	return v;
+}
+
+const std::vector<int16> &Client::GetInventorySlots()
+{
+	static const std::vector<std::pair<int16, int16>> slots = {
+		{EQ::invslot::POSSESSIONS_BEGIN,     EQ::invslot::POSSESSIONS_END},
+		{EQ::invbag::GENERAL_BAGS_BEGIN,     EQ::invbag::GENERAL_BAGS_END},
+		{EQ::invbag::CURSOR_BAG_BEGIN,       EQ::invbag::CURSOR_BAG_END},
+		{EQ::invslot::BANK_BEGIN,            EQ::invslot::BANK_END},
+		{EQ::invbag::BANK_BAGS_BEGIN,        EQ::invbag::BANK_BAGS_END},
+	};
+
+	static std::vector<int16> slot_ids;
+
+	if (slot_ids.empty()) {
+		for (const auto &[begin, end] : slots) {
+			for (int16 slot_id = begin; slot_id <= end; ++slot_id) {
+				slot_ids.emplace_back(slot_id);
+			}
+		}
+	}
+
+	return slot_ids;
 }

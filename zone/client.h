@@ -296,6 +296,7 @@ public:
 	inline ExtendedProfile_Struct& GetEPP() { return m_epp; }
 	inline EQ::InventoryProfile& GetInv() { return m_inv; }
 	inline const EQ::InventoryProfile& GetInv() const { return m_inv; }
+	const std::vector<int16> &GetInventorySlots();
 	inline PetInfo* GetPetInfo(uint16 pet) { return (pet==1)?&m_suspendedminion:&m_petinfo; }
 
 	bool CheckAccess(int16 iDBLevel, int16 iDefaultLevel);
@@ -767,7 +768,7 @@ public:
 	bool DecreaseByID(uint32 type, uint8 amt);
 	void Escape(); //AA Escape
 	void RemoveNoRent(bool client_update = true);
-	void RemoveDuplicateLore(bool client_update = true);
+	void RemoveDuplicateLore();
 	void MoveSlotNotAllowed(bool client_update = true);
 	virtual void RangedAttack(Mob* other);
 	virtual void ThrowingAttack(Mob* other, bool CanDoubleAttack = false);
@@ -782,7 +783,7 @@ public:
 	void LoadZoneFlags(LinkedList<ZoneFlags_Struct*>* ZoneFlags);
 
 	bool CanFish();
-	void GoFish();
+	void GoFish(bool guarantee = false, bool use_bait = true);
 	void ForageItem(bool guarantee = false);
 	//Calculate vendor price modifier based on CHA: (reverse==merchant buying)
 	float CalcPriceMod(Mob* other = 0, bool reverse = false);

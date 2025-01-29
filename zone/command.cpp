@@ -133,9 +133,11 @@ int command_init(void)
 		command_add("falltest", "[+Z] sends you to your current loc plus the Z specified.", AccountStatus::GMImpossible, command_falltest) ||
 		command_add("fillbuffs", "Casts 15 buffs on the target for testing.", AccountStatus::QuestTroupe, command_fillbuffs) ||
 		command_add("find", "Search command used to find various things", AccountStatus::Guide, command_find) ||
+		command_add("fish", "Fish for an item", AccountStatus::QuestTroupe, command_fish) ||
 		command_add("fixmob", "[race|gender|texture|helm|face|hair|haircolor|beard|beardcolor|heritage|tattoo|detail] [next|prev] - Manipulate appearance of your target.", AccountStatus::GMImpossible, command_fixmob) ||
 		command_add("flagedit", "Edit zone flags on your target.", AccountStatus::GMMgmt, command_flagedit) ||
 		command_add("fleeinfo", "Gives info about whether a NPC will flee or not, using the command issuer as top hate.", AccountStatus::QuestTroupe, command_fleeinfo) ||
+		command_add("forage", "Forage an item", AccountStatus::QuestTroupe, command_forage) ||
 
 		command_add("giveitem", "[itemid] [charges] - Summon an item onto your target's cursor. Charges are optional.", AccountStatus::GMLeadAdmin, command_giveitem) ||
 		command_add("givemoney", "[pp] [gp] [sp] [cp] - Gives specified amount of money to the target player.", AccountStatus::GMLeadAdmin, command_givemoney) ||
@@ -851,9 +853,11 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/falltest.cpp"
 #include "gm_commands/fillbuffs.cpp"
 #include "gm_commands/find.cpp"
+#include "gm_commands/fish.cpp"
 #include "gm_commands/fixmob.cpp"
 #include "gm_commands/flagedit.cpp"
 #include "gm_commands/fleeinfo.cpp"
+#include "gm_commands/forage.cpp"
 #include "gm_commands/giveitem.cpp"
 #include "gm_commands/givemoney.cpp"
 #include "gm_commands/giveplayerfaction.cpp"

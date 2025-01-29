@@ -441,6 +441,7 @@ RULE_INT(Expansion, CurrentExpansion, -1, "The current expansion enabled for the
 RULE_BOOL(Expansion, UseItemExpansionSetting, true, "Disabled focus effect, skill mod, bane, and level rec/req on items for appropiate expansion setting")
 RULE_BOOL(Expansion, UseExperienceExpansionSetting, true, "Set ZEM for appropiate expansion setting")
 RULE_BOOL(Expansion, EnablePetExperienceSplit, true, "Accurate from Classic Launch until Luclin.Enables pet experience weights in groups(or 50 % if solo) if a single pet deals more than 50 % damage to a target out of all contributing damage.")
+RULE_BOOL(Expansion, SetClassicTradeskillCap, true, "During Classic until late Kunark, this should remain 200.")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(Analytics)

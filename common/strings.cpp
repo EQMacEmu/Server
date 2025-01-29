@@ -327,6 +327,16 @@ std::string Strings::Replace(std::string subject, const std::string &search, con
 	return subject;
 }
 
+std::string Strings::Repeat(std::string s, int n)
+{
+	std::string s1 = s;
+	for (int i = 1; i < n; i++) {
+		s += s1;
+	}
+
+	return s;
+}
+
 void ParseAccountString(const std::string& s, std::string &account, std::string &loginserver)
 {
 	auto split = Strings::Split(s, ':');
