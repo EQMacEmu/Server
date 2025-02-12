@@ -3842,6 +3842,15 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		}
 	}
 
+	if (RuleB(Expansion, EnableSpellSixLevelRule) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		//Prathun's post just says If target is an NPC and caster is far below target's level, set level modifier to 1000.
+		if (caster) {
+			if (IsNPC() && GetLevel() >= std::max(caster->GetLevel() + 7, (int)(caster->GetLevel() * 1.25f))) {
+				level_mod = 1000;
+			}
+		}
+	}
+
 	bool use_classic_resists = !content_service.IsThePlanesOfPowerEnabled();
 
 	//Add our level, resist and -spell resist modifier to our roll chance

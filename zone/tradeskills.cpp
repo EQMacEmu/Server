@@ -809,7 +809,7 @@ bool Client::CanIncreaseTradeskill(EQ::skills::SkillType tradeskill) {
 		return false;
 	}
 		
-	if (RuleB(Expansion, SetClassicTradeskillCap) && !content_service.IsTheScarsOfVeliousEnabled() && rawskill > 200) {
+	if (RuleB(Expansion, SetClassicTradeskillCap) && !content_service.IsTheScarsOfVeliousEnabled() && rawskill >= 200) {
 			return false;
 	}
 

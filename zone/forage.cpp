@@ -378,6 +378,8 @@ void Client::GoFish(bool guarantee, bool use_bait)
 				success = SKILLUP_SUCCESS;
 			}
 
+			CheckItemDiscoverability(inst->GetID());
+
 			if(inst) {
 				std::vector<std::any> args;
 				args.push_back(inst);
@@ -532,6 +534,8 @@ void Client::ForageItem(bool guarantee) {
 				safe_delete(inst);
 				inst = m_inv.GetItem(EQ::invslot::slotCursor);
 			}
+
+			CheckItemDiscoverability(inst->GetID());
 
 			if(inst) {
 				std::vector<std::any> args;

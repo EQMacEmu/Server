@@ -320,10 +320,7 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 	safe_delete(inst);
 
 	// discover item
-	if((RuleB(Character, EnableDiscoveredItems)) && !GetGM()) {
-		if(!IsDiscovered(item_id))
-			DiscoverItem(item_id);
-	}
+	CheckItemDiscoverability(item_id);
 
 	return true;
 }

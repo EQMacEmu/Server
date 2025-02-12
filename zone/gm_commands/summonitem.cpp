@@ -56,7 +56,7 @@ void command_summonitem(Client *c, const Seperator *sep)
 		return;
 	}
 
-	if (arguments >= 2 && sep->IsNumber(2)) {
+	if (arguments < 2 || sep->IsNumber(2)) {
 		if(item && database.ItemQuantityType(item_id) == EQ::item::Quantity_Charges) {
 			charges = item->MaxCharges;
 		}

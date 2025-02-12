@@ -57,7 +57,6 @@
 #include "zone.h"
 #include "queryserv.h"
 #include "command.h"
-#include "zone_config.h"
 #include "titles.h"
 #include "guild_mgr.h"
 #include "quest_parser_collection.h"
@@ -89,10 +88,10 @@
 
 extern volatile bool is_zone_loaded;
 
-#include "zone_event_scheduler.h"
 #include "../common/file.h"
 #include "../common/path_manager.h"
 #include "../common/events/player_event_logs.h"
+#include "zone_cli.h"
 
 EntityList  entity_list;
 WorldServer worldserver;
@@ -128,7 +127,12 @@ int main(int argc, char** argv) {
 	RegisterExecutablePlatform(ExePlatformZone); 
 	LogSys.LoadLogSettingsDefaults();
 	
-	set_exception_handler(); 
+	set_exception_handler();
+
+	// silence logging if we ran a command
+	if (ZoneCLI::RanConsoleCommand(argc, argv)) {
+		LogSys.SilenceConsoleLogging();
+	}
 
 	path.LoadPaths();
 
@@ -141,71 +145,78 @@ int main(int argc, char** argv) {
 	}
 	Config = ZoneConfig::get();
 
+	// static zone booting
 	const char *zone_name;
 	std::string z_name;
-	if(argc == 4) {
-		worldserver.SetLauncherName(argv[2]);
-		auto zone_port = Strings::Split(argv[1], ':');
+	if (!ZoneCLI::RanSidecarCommand(argc, argv)) {
+		if (argc == 4) {
+			worldserver.SetLauncherName(argv[2]);
+			auto zone_port = Strings::Split(argv[1], ':');
 
-		if(!zone_port.empty()) {
-			z_name = zone_port[0];
-		}
+			if (!zone_port.empty()) {
+				z_name = zone_port[0];
+			}
 
-		if(zone_port.size() > 1) {
-			std::string p_name = zone_port[1];
-			Config->SetZonePort(atoi(p_name.c_str()));
-		}
+			if (zone_port.size() > 1) {
+				std::string p_name = zone_port[1];
+				Config->SetZonePort(atoi(p_name.c_str()));
+			}
 
-		worldserver.SetLaunchedName(z_name.c_str());
-		if(strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
-			zone_name = ".";
+			worldserver.SetLaunchedName(z_name.c_str());
+			if (strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
+				zone_name = ".";
+			}
+			else {
+				zone_name = z_name.c_str();
+			}
 		}
+		else if (argc == 3) {
+			worldserver.SetLauncherName(argv[2]);
+			auto zone_port = Strings::Split(argv[1], ':');
+
+			if (!zone_port.empty()) {
+				z_name = zone_port[0];
+			}
+
+			if (zone_port.size() > 1) {
+				std::string p_name = zone_port[1];
+				Config->SetZonePort(atoi(p_name.c_str()));
+			}
+
+			worldserver.SetLaunchedName(z_name.c_str());
+			if (strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
+				zone_name = ".";
+			}
+			else {
+				zone_name = z_name.c_str();
+			}
+		}
+		else if (argc == 2) {
+			worldserver.SetLauncherName("NONE");
+			auto zone_port = Strings::Split(argv[1], ':');
+
+			if(!zone_port.empty()) {
+				z_name = zone_port[0];
+			}
+
+			if(zone_port.size() > 1) {
+				std::string p_name = zone_port[1];
+				Config->SetZonePort(atoi(p_name.c_str()));
+			}
+
+			worldserver.SetLaunchedName(z_name.c_str());
+			if(strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
+				zone_name = ".";
+			}
+			else {
+				zone_name = z_name.c_str();
+			}
+		} 
 		else {
-			zone_name = z_name.c_str();
-		}
-	} else if(argc == 3) {
-		worldserver.SetLauncherName(argv[2]);
-		auto zone_port = Strings::Split(argv[1], ':');
-
-		if(!zone_port.empty()) {
-			z_name = zone_port[0];
-		}
-
-		if(zone_port.size() > 1) {
-			std::string p_name = zone_port[1];
-			Config->SetZonePort(atoi(p_name.c_str()));
-		}
-
-		worldserver.SetLaunchedName(z_name.c_str());
-		if(strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
 			zone_name = ".";
-		} else {
-			zone_name = z_name.c_str();
+			worldserver.SetLaunchedName(".");
+			worldserver.SetLauncherName("NONE");
 		}
-	} else if (argc == 2) {
-		worldserver.SetLauncherName("NONE");
-		auto zone_port = Strings::Split(argv[1], ':');
-
-		if(!zone_port.empty()) {
-			z_name = zone_port[0];
-		}
-
-		if(zone_port.size() > 1) {
-			std::string p_name = zone_port[1];
-			Config->SetZonePort(atoi(p_name.c_str()));
-		}
-
-		worldserver.SetLaunchedName(z_name.c_str());
-		if(strncmp(z_name.c_str(), "dynamic_", 8) == 0) {
-			zone_name = ".";
-		}
-		else {
-			zone_name = z_name.c_str();
-		}
-	} else {
-		zone_name = ".";
-		worldserver.SetLaunchedName(".");
-		worldserver.SetLauncherName("NONE");
 	}
 
 	LogInfo("Connecting to MySQL...");
@@ -236,6 +247,12 @@ int main(int argc, char** argv) {
 				LogInfo("Loaded default rule set 'Default'");
 			}
 		}
+	}
+
+	// command handler
+	if (ZoneCLI::RanConsoleCommand(argc, argv) && !ZoneCLI::RanSidecarCommand(argc, argv)) {
+		LogSys.EnableConsoleLogging();
+		ZoneCLI::CommandHandler(argc, argv);
 	}
 
 	LogSys.SetDatabase(&database)
@@ -324,7 +341,6 @@ int main(int argc, char** argv) {
 		LogInfo("Loaded [{}] commands loaded", Strings::Commify(std::to_string(retval)));
 	}
 
-
 	content_service.SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();
@@ -343,6 +359,11 @@ int main(int argc, char** argv) {
 
 	worldserver.Connect();
 	worldserver.SetScheduler(&event_scheduler);
+
+	// sidecar command handler
+	if (ZoneCLI::RanConsoleCommand(argc, argv) && ZoneCLI::RanSidecarCommand(argc, argv)) {
+		ZoneCLI::CommandHandler(argc, argv);
+	}
 
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	Timer RemoteCallProcessTimer(5000);

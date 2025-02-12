@@ -7552,9 +7552,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 		RecordPlayerEventLog(PlayerEvent::MERCHANT_PURCHASE, e);
 	}
 
-	if (RuleB(Character, EnableDiscoveredItems) && !GetGM() && !IsDiscovered(item_id)) {
-		DiscoverItem(item_id);
-	}
+	CheckItemDiscoverability(item->ID);
 
 	t1.stop();
 	return;

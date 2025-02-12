@@ -640,6 +640,9 @@ void NPC::AddLootDrop(
 
 	m_loot_items.push_back(item);
 
+	if (IsRecordLootStats()) {
+		m_rolled_items.emplace_back(item->item_id);
+	}
 
 	if (wearchange && outapp) {
 		entity_list.QueueClients(this, outapp);

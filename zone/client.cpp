@@ -3416,17 +3416,31 @@ bool Client::GetPickPocketSlot(EQ::ItemInstance* inst, int16& freeslotid)
 	return false;
 }
 
-bool Client::IsDiscovered(uint32 item_id) {
-	const auto &l = DiscoveredItemsRepository::GetWhere(
-		database,
-		fmt::format(
-			"item_id = {}",
+bool Client::IsDiscovered(uint32 item_id) 
+{
+	if (
+		std::find(
+			zone->discovered_items.begin(),
+			zone->discovered_items.end(),
 			item_id
-		)
-	);
-	if (l.empty()) {
-        return false;
-    }
+		) != zone->discovered_items.end()
+		) {
+		return true;
+	}
+
+	if (
+		DiscoveredItemsRepository::GetWhere(
+			database,
+			fmt::format(
+				"`item_id` = {} LIMIT 1",
+				item_id
+			)
+		).empty()
+		) {
+		return false;
+	}
+
+	zone->discovered_items.emplace_back(item_id);
 
 	return true;
 }
@@ -3441,8 +3455,6 @@ void Client::DiscoverItem(uint32 item_id) {
 
 	auto d = DiscoveredItemsRepository::InsertOne(database, e);
 
-	parse->EventPlayer(EVENT_DISCOVER_ITEM, this, "", item_id);
-
 	if (player_event_logs.IsEventEnabled(PlayerEvent::DISCOVER_ITEM)) {
 		const auto *item = database.GetItem(item_id);
 
@@ -3451,6 +3463,14 @@ void Client::DiscoverItem(uint32 item_id) {
 			.item_name = item->Name,
 		};
 		RecordPlayerEventLog(PlayerEvent::DISCOVER_ITEM, e);
+
+	}
+
+	if (parse->PlayerHasQuestSub(EVENT_DISCOVER_ITEM)) {
+		auto *item = database.CreateItem(item_id);
+		std::vector<std::any> args = { item };
+
+		parse->EventPlayer(EVENT_DISCOVER_ITEM, this, "", item_id, &args);
 	}
 }
 
@@ -7211,4 +7231,25 @@ const std::vector<int16> &Client::GetInventorySlots()
 	}
 
 	return slot_ids;
+}
+
+void Client::CheckItemDiscoverability(uint32 item_id)
+{
+	if (!RuleB(Character, EnableDiscoveredItems) || IsDiscovered(item_id)) {
+		return;
+	}
+
+	if (GetGM()) {
+		const std::string &item_link = database.CreateItemLink(item_id);
+		Message(
+			Chat::White,
+			fmt::format(
+				"Your GM flag prevents {} from being added to discovered items.",
+				item_link
+			).c_str()
+		);
+		return;
+	}
+
+	DiscoverItem(item_id);
 }

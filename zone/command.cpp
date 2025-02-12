@@ -171,6 +171,7 @@ int command_init(void)
 		command_add("loc", "Print out your or your target's current location and heading.", AccountStatus::Player, command_loc) ||
 		command_add("logs", "Manage anything to do with logs.", AccountStatus::GMCoder, command_logs) ||
 		command_add("logtest", "Performs log performance testing.", AccountStatus::GMImpossible, command_logtest) ||
+		command_add("lootsim", "[npc_type_id] [loottable_id] [iterations] - Runs benchmark simulations using real loot logic to report numbers and data", AccountStatus::GMImpossible, command_lootsim) ||
 
 		command_add("makepet", "[level] [class] [race] [texture] - Make a pet.", AccountStatus::QuestMaster, command_makepet) ||
 		command_add("manaburn", "Use AA Wizard class skill manaburn on target.", AccountStatus::GMAreas, command_manaburn) ||
@@ -883,6 +884,7 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/loc.cpp"
 #include "gm_commands/logs.cpp"
 #include "gm_commands/logtest.cpp"
+#include "gm_commands/lootsim.cpp"
 #include "gm_commands/makepet.cpp"
 #include "gm_commands/manaburn.cpp"
 #include "gm_commands/manastat.cpp"
