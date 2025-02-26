@@ -107,6 +107,9 @@ EQEmuLogSys         LogSys;
 WebInterfaceList    web_interface;
 WorldContentService content_service;
 PathManager         path;
+std::unordered_set<uint32> ipWhitelist;
+std::mutex		ipMutex;
+bool bSkipFactoryAuth = false;
 PlayerEventLogs     player_event_logs;
 
 void CatchSignal(int sig_num);
@@ -359,24 +362,14 @@ int main(int argc, char** argv) {
 		//give the stream identifier a chance to do its work....
 		stream_identifier.Process();
 
-		int i = 5;
-		//check the factory for any new incoming streams.
-		while ((eqs = eqsf.Pop())) {
-			//pull the stream out of the factory and give it to the stream identifier
-			//which will figure out what patch they are running, and set up the dynamic
-			//structures and opcodes for that patch.
-			struct in_addr	in{};
-			in.s_addr = eqs->GetRemoteIP();
-			LogInfo("New connection from {0}:{1}", inet_ntoa(in),ntohs(eqs->GetRemotePort()));
-			stream_identifier.AddStream(eqs);	//takes the stream
-			i++;
-			if (i == 5)
-				break;
-		}
+		int i = 0;
+		auto mSeconds = std::chrono::milliseconds(RuleI(Network, MaxTimeSpentProcessingConns));
+		auto endTime = std::chrono::high_resolution_clock::now();
 
-		i = 0;
 		//check the factory for any new incoming streams.
-		while ((eqos = eqsf.PopOld())) {
+		endTime = std::chrono::high_resolution_clock::now() + std::chrono::duration_cast<std::chrono::nanoseconds>(mSeconds);
+		//check the factory for any new incoming streams.
+		while (std::chrono::high_resolution_clock::now() <= endTime && (eqos = eqsf.PopOld())) {
 			//pull the stream out of the factory and give it to the stream identifier
 			//which will figure out what patch they are running, and set up the dynamic
 			//structures and opcodes for that patch.
@@ -385,8 +378,6 @@ int main(int argc, char** argv) {
 			LogInfo("New connection from {0}:{1}", inet_ntoa(in), ntohs(eqos->GetRemotePort()));
 			stream_identifier.AddOldStream(eqos);	//takes the stream
 			i++;
-			if (i == 5)
-				break;
 		}
 
 		//check the stream identifier for any now-identified streams

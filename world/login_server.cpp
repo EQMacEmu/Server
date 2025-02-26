@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <iomanip>
 #include <stdlib.h>
+#include <mutex>
 #include "../common/version.h"
 #include "../common/servertalk.h"
 #include "../common/misc_functions.h"
@@ -42,6 +43,8 @@ extern ClientList    client_list;
 extern uint32        numzones;
 extern uint32        numplayers;
 extern volatile bool RunLoops;
+extern std::mutex ipMutex;
+extern std::unordered_set<uint32> ipWhitelist;
 
 LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account, const char* Password, uint8 Type)
 {
@@ -112,6 +115,10 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 		if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(id, utwr->ip, status))
 			utwrs->response = -5;
 	}
+
+	ipMutex.lock();
+	ipWhitelist.insert(utwr->ip);
+	ipMutex.unlock();
 
 	utwrs->worldid = utwr->worldid;
 	SendPacket(outpack);

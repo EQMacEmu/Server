@@ -142,7 +142,7 @@ namespace EQ
 			DaybreakConnection(DaybreakConnectionManager *owner, const std::string &endpoint, int port);
 			~DaybreakConnection();
 
-			const std::string& RemoteEndpoint() const { return m_endpoint; }
+			const std::string &RemoteEndpoint() const { return m_endpoint; }
 			int RemotePort() const { return m_port; }
 
 			void Close();
@@ -155,9 +155,9 @@ namespace EQ
 			size_t GetRollingPing() const { return m_rolling_ping; }
 			DbProtocolStatus GetStatus() const { return m_status; }
 
-			const DaybreakEncodeType* GetEncodePasses() const { return m_encode_passes; }
-			const DaybreakConnectionManager* GetManager() const { return m_owner; }
-			DaybreakConnectionManager* GetManager() { return m_owner; }
+			const DaybreakEncodeType *GetEncodePasses() const { return m_encode_passes; }
+			const DaybreakConnectionManager *GetManager() const { return m_owner; }
+			DaybreakConnectionManager *GetManager() { return m_owner; }
 		private:
 			DaybreakConnectionManager *m_owner;
 			std::string m_endpoint;
@@ -181,6 +181,11 @@ namespace EQ
 			Timestamp m_close_time;
 			double m_outgoing_budget;
 
+			// resend tracking
+			size_t m_resend_packets_sent = 0;
+			size_t m_resend_bytes_sent = 0;
+			bool m_acked_since_last_resend = false;
+
 			struct DaybreakSentPacket
 			{
 				DynamicPacket packet;
@@ -201,7 +206,7 @@ namespace EQ
 
 				uint16_t sequence_in;
 				uint16_t sequence_out;
-				std::map<uint16_t, Packet*> packet_queue;
+				std::map<uint16_t, Packet *> packet_queue;
 
 				DynamicPacket fragment_packet;
 				uint32_t fragment_current_bytes;
@@ -311,9 +316,9 @@ namespace EQ
 			void OnNewConnection(std::function<void(std::shared_ptr<DaybreakConnection>)> func) { m_on_new_connection = func; }
 			void OnConnectionStateChange(std::function<void(std::shared_ptr<DaybreakConnection>, DbProtocolStatus, DbProtocolStatus)> func) { m_on_connection_state_change = func; }
 			void OnPacketRecv(std::function<void(std::shared_ptr<DaybreakConnection>, const Packet &)> func) { m_on_packet_recv = func; }
-			void OnErrorMessage(std::function<void(const std::string&)> func) { m_on_error_message = func; }
+			void OnErrorMessage(std::function<void(const std::string &)> func) { m_on_error_message = func; }
 
-			DaybreakConnectionManagerOptions& GetOptions() { return m_options; }
+			DaybreakConnectionManagerOptions &GetOptions() { return m_options; }
 		private:
 			void Attach(uv_loop_t *loop);
 			void Detach();
@@ -325,8 +330,8 @@ namespace EQ
 			DaybreakConnectionManagerOptions m_options;
 			std::function<void(std::shared_ptr<DaybreakConnection>)> m_on_new_connection;
 			std::function<void(std::shared_ptr<DaybreakConnection>, DbProtocolStatus, DbProtocolStatus)> m_on_connection_state_change;
-			std::function<void(std::shared_ptr<DaybreakConnection>, const Packet&)> m_on_packet_recv;
-			std::function<void(const std::string&)> m_on_error_message;
+			std::function<void(std::shared_ptr<DaybreakConnection>, const Packet &)> m_on_packet_recv;
+			std::function<void(const std::string &)> m_on_error_message;
 			std::map<std::pair<std::string, int>, std::shared_ptr<DaybreakConnection>> m_connections;
 
 			void ProcessPacket(const std::string &endpoint, int port, const char *data, size_t size);

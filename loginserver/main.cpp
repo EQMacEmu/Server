@@ -33,6 +33,12 @@
 #include <string>
 #include <sstream>
 #include <thread>
+#include <mutex>
+#include <unordered_set>
+
+std::unordered_set<uint32> ipWhitelist;
+std::mutex		ipMutex;
+bool bSkipFactoryAuth = true;
 
 TimeoutManager timeout_manager;
 LoginServer server;
@@ -181,6 +187,10 @@ int main()
 			return;
 		}
 		
+		ipMutex.lock();
+		ipWhitelist.clear();
+		ipMutex.unlock();
+
 		server.client_manager->Process();
 		timeout_manager.CheckTimeouts();
 	};

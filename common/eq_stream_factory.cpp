@@ -17,9 +17,14 @@
 #include <iostream>
 #include <fcntl.h>
 #include <atomic>
+#include <unordered_set>
+#include <unordered_map>
 
 #include "op_codes.h"
 
+extern std::unordered_set<uint32> ipWhitelist;
+extern std::mutex ipMutex;
+extern bool bSkipFactoryAuth;
 static std::atomic_bool s_checkTimeoutRunning;
 
 EQStreamFactory::EQStreamFactory(EQStreamType type, int port, uint32 timeout)
@@ -106,7 +111,7 @@ bool EQStreamFactory::Open()
 		return false;
 	}
 
-	if (bind(sock, (struct sockaddr *) &address, sizeof(address)) < 0) {
+	if (bind(sock, (struct sockaddr *)&address, sizeof(address)) < 0) {
 		close(sock);
 		sock = -1;
 		return false;
@@ -208,7 +213,7 @@ void EQStreamFactory::ReaderLoop()
 
 		if (FD_ISSET(sock, &readset)) {
 #ifdef _WINDOWS
-			if ((length = recvfrom(sock, (char*)buffer, sizeof(buffer), 0, (struct sockaddr*)&from, (int *)&socklen)) < 2)
+			if ((length = recvfrom(sock, (char *)buffer, sizeof(buffer), 0, (struct sockaddr *)&from, (int *)&socklen)) < 2)
 #else
 			if ((length = recvfrom(sock, buffer, 2048, 0, (struct sockaddr *)&from, (socklen_t *)&socklen)) < 2)
 #endif
@@ -217,7 +222,17 @@ void EQStreamFactory::ReaderLoop()
 			}
 			else {
 				auto streamKey = std::make_pair(from.sin_addr.s_addr, from.sin_port);
+				bool bFound = false;
 
+				if (!bSkipFactoryAuth)
+				{
+					ipMutex.lock();
+					bFound = ipWhitelist.find(from.sin_addr.s_addr) == ipWhitelist.end() ? false : true;
+					ipMutex.unlock();
+
+					if (!bFound)
+						continue;
+				}
 				std::unique_lock<std::mutex> streams_lock(MStreams, std::defer_lock);
 				std::unique_lock<std::mutex> old_streams_lock(MOldStreams, std::defer_lock);
 				std::lock(streams_lock, old_streams_lock); //lock both mutexes (in order to avoid deadlock)
@@ -236,6 +251,7 @@ void EQStreamFactory::ReaderLoop()
 						RecvBuffer data = RecvBuffer(true, length, buffer, streamKey, from);
 						ProcessLoopOld(data, oldstream_iter);
 					}
+					//}
 				}
 				else {
 					if (hasNewStream) {
@@ -254,10 +270,10 @@ void EQStreamFactory::ReaderLoop()
 	}
 }
 
-void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer, EQStreamIterator iterator)
+void EQStreamFactory::ProcessLoopNew(const RecvBuffer &recvBuffer, EQStreamIterator iterator)
 {
-	const auto& from = recvBuffer.From();
-	const auto& length = recvBuffer.Length();
+	const auto &from = recvBuffer.From();
+	const auto &length = recvBuffer.Length();
 	const auto buffer = recvBuffer.Buffer();
 
 	if (recvBuffer.IsNew()) {
@@ -290,10 +306,10 @@ void EQStreamFactory::ProcessLoopNew(const RecvBuffer& recvBuffer, EQStreamItera
 	}
 }
 
-void EQStreamFactory::ProcessLoopOld(const RecvBuffer& recvBuffer, EQOldStreamIterator iterator)
+void EQStreamFactory::ProcessLoopOld(const RecvBuffer &recvBuffer, EQOldStreamIterator iterator)
 {
-	const auto& from = recvBuffer.From();
-	const auto& length = recvBuffer.Length();
+	const auto &from = recvBuffer.From();
+	const auto &length = recvBuffer.Length();
 	auto buffer = recvBuffer.Buffer();
 
 	if (recvBuffer.IsNew()) {
@@ -518,7 +534,6 @@ void EQStreamFactory::WriterLoopOld() {
 			std::unique_lock<std::mutex> writer_work_lock(MWriterRunningOld);
 			WriterWorkOld.wait(writer_work_lock);
 		}
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }

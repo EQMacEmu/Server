@@ -41,7 +41,7 @@ void EQ::Net::DaybreakConnectionManager::Attach(uv_loop_t *loop)
 		auto update_rate = (uint64_t)(1000.0 / m_options.tic_rate_hertz);
 
 		uv_timer_start(&m_timer, [](uv_timer_t *handle) {
-			DaybreakConnectionManager *c = (DaybreakConnectionManager*)handle->data;
+			DaybreakConnectionManager *c = (DaybreakConnectionManager *)handle->data;
 			c->UpdateDataBudget();
 			c->Process();
 			c->ProcessResend();
@@ -54,21 +54,21 @@ void EQ::Net::DaybreakConnectionManager::Attach(uv_loop_t *loop)
 		int rc = uv_udp_bind(&m_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
 
 		rc = uv_udp_recv_start(&m_socket,
-			[](uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
+			[](uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 			buf->base = new char[suggested_size];
 			memset(buf->base, 0, suggested_size);
 			buf->len = suggested_size;
 		},
-			[](uv_udp_t* handle, ssize_t nread, const uv_buf_t* buf, const struct sockaddr* addr, unsigned flags) {
-			DaybreakConnectionManager *c = (DaybreakConnectionManager*)handle->data;
+			[](uv_udp_t *handle, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr, unsigned flags) {
+			DaybreakConnectionManager *c = (DaybreakConnectionManager *)handle->data;
 			if (nread < 0 || addr == nullptr) {
 				delete[] buf->base;
 				return;
 			}
 
 			char endpoint[16];
-			uv_ip4_name((const sockaddr_in*)addr, endpoint, 16);
-			auto port = ntohs(((const sockaddr_in*)addr)->sin_port);
+			uv_ip4_name((const sockaddr_in *)addr, endpoint, 16);
+			auto port = ntohs(((const sockaddr_in *)addr)->sin_port);
 			c->ProcessPacket(endpoint, port, buf->base, nread);
 			delete[] buf->base;
 		});
@@ -138,26 +138,26 @@ void EQ::Net::DaybreakConnectionManager::Process()
 
 		switch (status)
 		{
-			case StatusConnecting: {
+		case StatusConnecting: {
+			auto time_since_last_send = std::chrono::duration_cast<std::chrono::milliseconds>(now - connection->m_last_send);
+			if ((size_t)time_since_last_send.count() > m_options.connect_delay_ms) {
+				connection->SendConnect();
+			}
+			break;
+		}
+		case StatusConnected: {
+			if (m_options.keepalive_delay_ms != 0) {
 				auto time_since_last_send = std::chrono::duration_cast<std::chrono::milliseconds>(now - connection->m_last_send);
-				if ((size_t)time_since_last_send.count() > m_options.connect_delay_ms) {
-					connection->SendConnect();
-				}
-				break;
-			}
-			case StatusConnected: {
-				if (m_options.keepalive_delay_ms != 0) {
-					auto time_since_last_send = std::chrono::duration_cast<std::chrono::milliseconds>(now - connection->m_last_send);
-					if ((size_t)time_since_last_send.count() > m_options.keepalive_delay_ms) {
-						connection->SendKeepAlive();
-					}
+				if ((size_t)time_since_last_send.count() > m_options.keepalive_delay_ms) {
+					connection->SendKeepAlive();
 				}
 			}
-			case StatusDisconnecting:
-				connection->Process();
-				break;
-			default:
-				break;
+		}
+		case StatusDisconnecting:
+			connection->Process();
+			break;
+		default:
+			break;
 		}
 
 		iter++;
@@ -192,12 +192,12 @@ void EQ::Net::DaybreakConnectionManager::ProcessResend()
 
 		switch (status)
 		{
-			case StatusConnected:
-			case StatusDisconnecting:
-				connection->ProcessResend();
-				break;
-			default:
-				break;
+		case StatusConnected:
+		case StatusDisconnecting:
+			connection->ProcessResend();
+			break;
+		default:
+			break;
 		}
 
 		iter++;
@@ -220,12 +220,12 @@ void EQ::Net::DaybreakConnectionManager::ProcessPacket(const std::string &endpoi
 	try {
 		auto connection = FindConnectionByEndpoint(endpoint, port);
 		if (connection) {
-			StaticPacket p((void*)data, size);
+			StaticPacket p((void *)data, size);
 			connection->ProcessPacket(p);
 		}
 		else {
 			if (data[0] == 0 && data[1] == OP_SessionRequest) {
-				StaticPacket p((void*)data, size);
+				StaticPacket p((void *)data, size);
 				auto request = p.GetSerialize<DaybreakConnect>(0);
 
 				connection = std::shared_ptr<DaybreakConnection>(new DaybreakConnection(this, request, endpoint, port));
@@ -279,9 +279,9 @@ void EQ::Net::DaybreakConnectionManager::SendDisconnect(const std::string &addr,
 	memcpy(data, out.Data(), out.Length());
 	send_buffers[0] = uv_buf_init(data, out.Length());
 	send_req->data = send_buffers[0].base;
-	int ret = uv_udp_send(send_req, &m_socket, send_buffers, 1, (sockaddr*)&send_addr,
-		[](uv_udp_send_t* req, int status) {
-		delete[](char*)req->data;
+	int ret = uv_udp_send(send_req, &m_socket, send_buffers, 1, (sockaddr *)&send_addr,
+		[](uv_udp_send_t *req, int status) {
+		delete[](char *)req->data;
 		delete req;
 	});
 }
@@ -366,7 +366,7 @@ void EQ::Net::DaybreakConnection::QueuePacket(Packet &p, int stream)
 
 void EQ::Net::DaybreakConnection::QueuePacket(Packet &p, int stream, bool reliable)
 {
-	if (*(char*)p.Data() == 0) {
+	if (*(char *)p.Data() == 0) {
 		DynamicPacket packet;
 		packet.PutUInt8(0, 0);
 		packet.PutPacket(1, p);
@@ -443,20 +443,20 @@ void EQ::Net::DaybreakConnection::ProcessPacket(Packet &p)
 
 			for (int i = 1; i >= 0; --i) {
 				switch (m_encode_passes[i]) {
-					case EncodeCompression:
-						if(temp.GetInt8(0) == 0)
-							Decompress(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
-						else
-							Decompress(temp, 1, temp.Length() - 1);
-						break;
-					case EncodeXOR:
-						if (temp.GetInt8(0) == 0)
-							Decode(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
-						else
-							Decode(temp, 1, temp.Length() - 1);
-						break;
-					default:
-						break;
+				case EncodeCompression:
+					if (temp.GetInt8(0) == 0)
+						Decompress(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
+					else
+						Decompress(temp, 1, temp.Length() - 1);
+					break;
+				case EncodeXOR:
+					if (temp.GetInt8(0) == 0)
+						Decode(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
+					else
+						Decode(temp, 1, temp.Length() - 1);
+					break;
+				default:
+					break;
 				}
 			}
 
@@ -468,14 +468,14 @@ void EQ::Net::DaybreakConnection::ProcessPacket(Packet &p)
 
 			for (int i = 1; i >= 0; --i) {
 				switch (m_encode_passes[i]) {
-					case EncodeXOR:
-						if (temp.GetInt8(0) == 0)
-							Decode(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
-						else
-							Decode(temp, 1, temp.Length() - 1);
-						break;
-					default:
-						break;
+				case EncodeXOR:
+					if (temp.GetInt8(0) == 0)
+						Decode(temp, DaybreakHeader::size(), temp.Length() - DaybreakHeader::size());
+					else
+						Decode(temp, 1, temp.Length() - 1);
+					break;
+				default:
+					break;
 				}
 			}
 
@@ -539,302 +539,302 @@ void EQ::Net::DaybreakConnection::ProcessDecodedPacket(const Packet &p)
 		}
 
 		switch (p.GetInt8(1)) {
-			case OP_Combined: {
-				if (m_status == StatusDisconnecting) {
-					SendDisconnect();
+		case OP_Combined: {
+			if (m_status == StatusDisconnecting) {
+				SendDisconnect();
+				return;
+			}
+
+			char *current = (char *)p.Data() + 2;
+			char *end = (char *)p.Data() + p.Length();
+			while (current < end) {
+				uint8_t subpacket_length = *(uint8_t *)current;
+				current += 1;
+
+				if (end < current + subpacket_length) {
 					return;
 				}
 
-				char *current = (char*)p.Data() + 2;
-				char *end = (char*)p.Data() + p.Length();
-				while (current < end) {
-					uint8_t subpacket_length = *(uint8_t*)current;
+				ProcessDecodedPacket(StaticPacket(current, subpacket_length));
+				current += subpacket_length;
+			}
+			break;
+		}
+
+		case OP_AppCombined:
+		{
+			if (m_status == StatusDisconnecting) {
+				SendDisconnect();
+				return;
+			}
+
+			uint8_t *current = (uint8_t *)p.Data() + 2;
+			uint8_t *end = (uint8_t *)p.Data() + p.Length();
+
+			while (current < end) {
+				uint32_t subpacket_length = 0;
+				if (*current == 0xFF)
+				{
+					if (end < current + 3) {
+						throw std::out_of_range("Error in OP_AppCombined, end < current + 3");
+					}
+
+					if (*(current + 1) == 0xFF && *(current + 2) == 0xFF) {
+						if (end < current + 7) {
+							throw std::out_of_range("Error in OP_AppCombined, end < current + 7");
+						}
+
+						subpacket_length = (uint32_t)(
+							(*(current + 3) << 24) |
+							(*(current + 4) << 16) |
+							(*(current + 5) << 8) |
+							(*(current + 6))
+							);
+						current += 7;
+					}
+					else {
+						subpacket_length = (uint32_t)(
+							(*(current + 1) << 8) |
+							(*(current + 2))
+							);
+						current += 3;
+					}
+				}
+				else {
+					subpacket_length = (uint32_t)((*(current + 0)));
 					current += 1;
-
-					if (end < current + subpacket_length) {
-						return;
-					}
-
-					ProcessDecodedPacket(StaticPacket(current, subpacket_length));
-					current += subpacket_length;
 				}
-				break;
+
+				ProcessDecodedPacket(StaticPacket(current, subpacket_length));
+				current += subpacket_length;
 			}
 
-			case OP_AppCombined:
-			{
-				if (m_status == StatusDisconnecting) {
-					SendDisconnect();
+			break;
+		}
+
+		case OP_SessionRequest:
+		{
+			if (m_status == StatusConnected) {
+				auto request = p.GetSerialize<DaybreakConnect>(0);
+
+				if (NetworkToHost(request.connect_code) != m_connect_code) {
 					return;
 				}
 
-				uint8_t *current = (uint8_t*)p.Data() + 2;
-				uint8_t *end = (uint8_t*)p.Data() + p.Length();
+				DaybreakConnectReply reply;
+				reply.zero = 0;
+				reply.opcode = OP_SessionResponse;
+				reply.connect_code = HostToNetwork(m_connect_code);
+				reply.encode_key = HostToNetwork(m_encode_key);
+				reply.crc_bytes = m_crc_bytes;
+				reply.max_packet_size = HostToNetwork(m_max_packet_size);
+				reply.encode_pass1 = m_encode_passes[0];
+				reply.encode_pass2 = m_encode_passes[1];
+				DynamicPacket p;
+				p.PutSerialize(0, reply);
+				InternalSend(p);
 
-				while (current < end) {
-					uint32_t subpacket_length = 0;
-					if (*current == 0xFF)
-					{
-						if (end < current + 3) {
-							throw std::out_of_range("Error in OP_AppCombined, end < current + 3");
-						}
-
-						if (*(current + 1) == 0xFF && *(current + 2) == 0xFF) {
-							if (end < current + 7) {
-								throw std::out_of_range("Error in OP_AppCombined, end < current + 7");
-							}
-
-							subpacket_length = (uint32_t)(
-								(*(current + 3) << 24) |
-								(*(current + 4) << 16) |
-								(*(current + 5) << 8) |
-								(*(current + 6))
-								);
-							current += 7;
-						}
-						else {
-							subpacket_length = (uint32_t)(
-								(*(current + 1) << 8) |
-								(*(current + 2))
-								);
-							current += 3;
-						}
-					}
-					else {
-						subpacket_length = (uint32_t)((*(current + 0)));
-						current += 1;
-					}
-
-					ProcessDecodedPacket(StaticPacket(current, subpacket_length));
-					current += subpacket_length;
-				}
-
-				break;
+				LogNetcode("[OP_SessionRequest] Session [{}] started with encode key [{}]", m_connect_code, HostToNetwork(m_encode_key));
 			}
 
-			case OP_SessionRequest:
-			{
-				if (m_status == StatusConnected) {
-					auto request = p.GetSerialize<DaybreakConnect>(0);
+			break;
+		}
 
-					if (NetworkToHost(request.connect_code) != m_connect_code) {
-						return;
-					}
+		case OP_SessionResponse:
+		{
+			if (m_status == StatusConnecting) {
+				auto reply = p.GetSerialize<DaybreakConnectReply>(0);
 
-					DaybreakConnectReply reply;
-					reply.zero = 0;
-					reply.opcode = OP_SessionResponse;
-					reply.connect_code = HostToNetwork(m_connect_code);
-					reply.encode_key = HostToNetwork(m_encode_key);
-					reply.crc_bytes = m_crc_bytes;
-					reply.max_packet_size = HostToNetwork(m_max_packet_size);
-					reply.encode_pass1 = m_encode_passes[0];
-					reply.encode_pass2 = m_encode_passes[1];
-					DynamicPacket p;
-					p.PutSerialize(0, reply);
-					InternalSend(p);
+				if (m_connect_code == reply.connect_code) {
+					m_encode_key = reply.encode_key;
+					m_crc_bytes = reply.crc_bytes;
+					m_encode_passes[0] = (DaybreakEncodeType)reply.encode_pass1;
+					m_encode_passes[1] = (DaybreakEncodeType)reply.encode_pass2;
+					m_max_packet_size = reply.max_packet_size;
+					ChangeStatus(StatusConnected);
 
-					LogNetcode("[OP_SessionRequest] Session [{}] started with encode key [{}]", m_connect_code, HostToNetwork(m_encode_key));
+					LogNetcode(
+						"[OP_SessionResponse] Session [{}] refresh with encode key [{}]",
+						m_connect_code,
+						HostToNetwork(m_encode_key)
+					);
 				}
+			}
+			break;
+		}
 
-				break;
+		case OP_Packet:
+		case OP_Packet2:
+		case OP_Packet3:
+		case OP_Packet4:
+		{
+			if (m_status == StatusDisconnecting) {
+				SendDisconnect();
+				return;
 			}
 
-			case OP_SessionResponse:
-			{
-				if (m_status == StatusConnecting) {
-					auto reply = p.GetSerialize<DaybreakConnectReply>(0);
+			auto header = p.GetSerialize<DaybreakReliableHeader>(0);
+			auto sequence = NetworkToHost(header.sequence);
+			auto stream_id = header.opcode - OP_Packet;
+			auto stream = &m_streams[stream_id];
 
-					if (m_connect_code == reply.connect_code) {
-						m_encode_key = reply.encode_key;
-						m_crc_bytes = reply.crc_bytes;
-						m_encode_passes[0] = (DaybreakEncodeType)reply.encode_pass1;
-						m_encode_passes[1] = (DaybreakEncodeType)reply.encode_pass2;
-						m_max_packet_size = reply.max_packet_size;
-						ChangeStatus(StatusConnected);
-
-						LogNetcode(
-							"[OP_SessionResponse] Session [{}] refresh with encode key [{}]",
-							m_connect_code,
-							HostToNetwork(m_encode_key)
-						);
-					}
-				}
-				break;
+			auto order = CompareSequence(stream->sequence_in, sequence);
+			if (order == SequenceFuture) {
+				SendOutOfOrderAck(stream_id, sequence);
+				AddToQueue(stream_id, sequence, p);
+			}
+			else if (order == SequencePast) {
+				SendAck(stream_id, stream->sequence_in - 1);
+			}
+			else {
+				RemoveFromQueue(stream_id, sequence);
+				SendAck(stream_id, stream->sequence_in);
+				stream->sequence_in++;
+				StaticPacket next((char *)p.Data() + DaybreakReliableHeader::size(), p.Length() - DaybreakReliableHeader::size());
+				ProcessDecodedPacket(next);
 			}
 
-			case OP_Packet:
-			case OP_Packet2:
-			case OP_Packet3:
-			case OP_Packet4:
-			{
-				if (m_status == StatusDisconnecting) {
-					SendDisconnect();
-					return;
-				}
+			break;
+		}
 
-				auto header = p.GetSerialize<DaybreakReliableHeader>(0);
-				auto sequence = NetworkToHost(header.sequence);
-				auto stream_id = header.opcode - OP_Packet;
-				auto stream = &m_streams[stream_id];
+		case OP_Fragment:
+		case OP_Fragment2:
+		case OP_Fragment3:
+		case OP_Fragment4:
+		{
+			auto header = p.GetSerialize<DaybreakReliableHeader>(0);
+			auto sequence = NetworkToHost(header.sequence);
+			auto stream_id = header.opcode - OP_Fragment;
+			auto stream = &m_streams[stream_id];
 
-				auto order = CompareSequence(stream->sequence_in, sequence);
-				if (order == SequenceFuture) {
-					SendOutOfOrderAck(stream_id, sequence);
-					AddToQueue(stream_id, sequence, p);
-				}
-				else if (order == SequencePast) {
-					SendAck(stream_id, stream->sequence_in - 1);
+			auto order = CompareSequence(stream->sequence_in, sequence);
+
+			if (order == SequenceFuture) {
+				SendOutOfOrderAck(stream_id, sequence);
+				AddToQueue(stream_id, sequence, p);
+			}
+			else if (order == SequencePast) {
+				SendAck(stream_id, stream->sequence_in - 1);
+			}
+			else {
+				RemoveFromQueue(stream_id, sequence);
+				SendAck(stream_id, stream->sequence_in);
+				stream->sequence_in++;
+
+				if (stream->fragment_total_bytes == 0) {
+					auto fragheader = p.GetSerialize<DaybreakReliableFragmentHeader>(0);
+					stream->fragment_total_bytes = NetworkToHost(fragheader.total_size);
+					stream->fragment_current_bytes = 0;
+					stream->fragment_packet.Reserve(stream->fragment_total_bytes);
+					stream->fragment_packet.PutData(
+						stream->fragment_current_bytes,
+						(char *)p.Data() + DaybreakReliableFragmentHeader::size(), p.Length() - DaybreakReliableFragmentHeader::size());
+
+					stream->fragment_current_bytes += (uint32_t)(p.Length() - DaybreakReliableFragmentHeader::size());
 				}
 				else {
-					RemoveFromQueue(stream_id, sequence);
-					SendAck(stream_id, stream->sequence_in);
-					stream->sequence_in++;
-					StaticPacket next((char*)p.Data() + DaybreakReliableHeader::size(), p.Length() - DaybreakReliableHeader::size());
-					ProcessDecodedPacket(next);
-				}
+					stream->fragment_packet.PutData(
+						stream->fragment_current_bytes,
+						(char *)p.Data() + DaybreakReliableHeader::size(), p.Length() - DaybreakReliableHeader::size());
 
-				break;
-			}
+					stream->fragment_current_bytes += (uint32_t)(p.Length() - DaybreakReliableHeader::size());
 
-			case OP_Fragment:
-			case OP_Fragment2:
-			case OP_Fragment3:
-			case OP_Fragment4:
-			{
-				auto header = p.GetSerialize<DaybreakReliableHeader>(0);
-				auto sequence = NetworkToHost(header.sequence);
-				auto stream_id = header.opcode - OP_Fragment;
-				auto stream = &m_streams[stream_id];
-
-				auto order = CompareSequence(stream->sequence_in, sequence);
-
-				if (order == SequenceFuture) {
-					SendOutOfOrderAck(stream_id, sequence);
-					AddToQueue(stream_id, sequence, p);
-				}
-				else if (order == SequencePast) {
-					SendAck(stream_id, stream->sequence_in - 1);
-				}
-				else {
-					RemoveFromQueue(stream_id, sequence);
-					SendAck(stream_id, stream->sequence_in);
-					stream->sequence_in++;
-
-					if (stream->fragment_total_bytes == 0) {
-						auto fragheader = p.GetSerialize<DaybreakReliableFragmentHeader>(0);
-						stream->fragment_total_bytes = NetworkToHost(fragheader.total_size);
+					if (stream->fragment_current_bytes >= stream->fragment_total_bytes) {
+						ProcessDecodedPacket(stream->fragment_packet);
+						stream->fragment_packet.Clear();
+						stream->fragment_total_bytes = 0;
 						stream->fragment_current_bytes = 0;
-						stream->fragment_packet.Reserve(stream->fragment_total_bytes);
-						stream->fragment_packet.PutData(
-							stream->fragment_current_bytes,
-							(char*)p.Data() + DaybreakReliableFragmentHeader::size(), p.Length() - DaybreakReliableFragmentHeader::size());
-
-						stream->fragment_current_bytes += (uint32_t)(p.Length() - DaybreakReliableFragmentHeader::size());
-					}
-					else {
-						stream->fragment_packet.PutData(
-							stream->fragment_current_bytes,
-							(char*)p.Data() + DaybreakReliableHeader::size(), p.Length() - DaybreakReliableHeader::size());
-
-						stream->fragment_current_bytes += (uint32_t)(p.Length() - DaybreakReliableHeader::size());
-
-						if (stream->fragment_current_bytes >= stream->fragment_total_bytes) {
-							ProcessDecodedPacket(stream->fragment_packet);
-							stream->fragment_packet.Clear();
-							stream->fragment_total_bytes = 0;
-							stream->fragment_current_bytes = 0;
-						}
 					}
 				}
-
-				break;
 			}
 
-			case OP_Ack:
-			case OP_Ack2:
-			case OP_Ack3:
-			case OP_Ack4:
-			{
-				auto header = p.GetSerialize<DaybreakReliableHeader>(0);
-				auto sequence = NetworkToHost(header.sequence);
-				auto stream_id = header.opcode - OP_Ack;
-				Ack(stream_id, sequence);
-				break;
+			break;
+		}
+
+		case OP_Ack:
+		case OP_Ack2:
+		case OP_Ack3:
+		case OP_Ack4:
+		{
+			auto header = p.GetSerialize<DaybreakReliableHeader>(0);
+			auto sequence = NetworkToHost(header.sequence);
+			auto stream_id = header.opcode - OP_Ack;
+			Ack(stream_id, sequence);
+			break;
+		}
+
+		case OP_OutOfOrderAck:
+		case OP_OutOfOrderAck2:
+		case OP_OutOfOrderAck3:
+		case OP_OutOfOrderAck4:
+		{
+			auto header = p.GetSerialize<DaybreakReliableHeader>(0);
+			auto sequence = NetworkToHost(header.sequence);
+			auto stream_id = header.opcode - OP_OutOfOrderAck;
+			OutOfOrderAck(stream_id, sequence);
+			break;
+		}
+
+		case OP_SessionDisconnect:
+		{
+			if (m_status == StatusConnected || m_status == StatusDisconnecting) {
+				FlushBuffer();
+				SendDisconnect();
 			}
 
-			case OP_OutOfOrderAck:
-			case OP_OutOfOrderAck2:
-			case OP_OutOfOrderAck3:
-			case OP_OutOfOrderAck4:
-			{
-				auto header = p.GetSerialize<DaybreakReliableHeader>(0);
-				auto sequence = NetworkToHost(header.sequence);
-				auto stream_id = header.opcode - OP_OutOfOrderAck;
-				OutOfOrderAck(stream_id, sequence);
-				break;
-			}
+			LogNetcode(
+				"[OP_SessionDisconnect] Session [{}] disconnect with encode key [{}]",
+				m_connect_code,
+				HostToNetwork(m_encode_key)
+			);
 
-			case OP_SessionDisconnect:
-			{
-				if (m_status == StatusConnected || m_status == StatusDisconnecting) {
-					FlushBuffer();
-					SendDisconnect();
-				}
+			ChangeStatus(StatusDisconnecting);
+			break;
+		}
 
-				LogNetcode(
-					"[OP_SessionDisconnect] Session [{}] disconnect with encode key [{}]",
-					m_connect_code,
-					HostToNetwork(m_encode_key)
-				);
+		case OP_Padding:
+		{
+			auto self = m_self.lock();
+			if (m_owner->m_on_packet_recv && self) {
+				m_owner->m_on_packet_recv(self, StaticPacket((char *)p.Data() + 1, p.Length() - 1));
+			}
+			break;
+		}
+		case OP_SessionStatRequest:
+		{
+			auto request = p.GetSerialize<DaybreakSessionStatRequest>(0);
+			m_stats.sync_remote_sent_packets = EQ::Net::NetworkToHost(request.packets_sent);
+			m_stats.sync_remote_recv_packets = EQ::Net::NetworkToHost(request.packets_recv);
+			m_stats.sync_sent_packets = m_stats.sent_packets;
+			m_stats.sync_recv_packets = m_stats.recv_packets;
 
-				ChangeStatus(StatusDisconnecting);
-				break;
+			DaybreakSessionStatResponse response;
+			response.zero = 0;
+			response.opcode = OP_SessionStatResponse;
+			response.timestamp = request.timestamp;
+			response.our_timestamp = EQ::Net::HostToNetwork(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+			response.client_sent = request.packets_sent;
+			response.client_recv = request.packets_recv;
+			response.server_sent = EQ::Net::HostToNetwork(m_stats.sent_packets);
+			response.server_recv = EQ::Net::HostToNetwork(m_stats.recv_packets);
+			DynamicPacket out;
+			out.PutSerialize(0, response);
+			InternalSend(out);
+			break;
+		}
+		case OP_SessionStatResponse: {
+			auto response = p.GetSerialize<DaybreakSessionStatResponse>(0);
+			m_stats.sync_remote_sent_packets = EQ::Net::NetworkToHost(response.server_sent);
+			m_stats.sync_remote_recv_packets = EQ::Net::NetworkToHost(response.server_recv);
+			m_stats.sync_sent_packets = m_stats.sent_packets;
+			m_stats.sync_recv_packets = m_stats.recv_packets;
+			break;
+		}
+		default:
+			if (m_owner->m_on_error_message) {
+				m_owner->m_on_error_message(fmt::format("Unhandled opcode {0:#x}", p.GetInt8(1)));
 			}
-
-			case OP_Padding:
-			{
-				auto self = m_self.lock();
-				if (m_owner->m_on_packet_recv && self) {
-					m_owner->m_on_packet_recv(self, StaticPacket((char*)p.Data() + 1, p.Length() - 1));
-				}
-				break;
-			}
-			case OP_SessionStatRequest:
-			{
-				auto request = p.GetSerialize<DaybreakSessionStatRequest>(0);
-				m_stats.sync_remote_sent_packets = EQ::Net::NetworkToHost(request.packets_sent);
-				m_stats.sync_remote_recv_packets = EQ::Net::NetworkToHost(request.packets_recv);
-				m_stats.sync_sent_packets = m_stats.sent_packets;
-				m_stats.sync_recv_packets = m_stats.recv_packets;
-
-				DaybreakSessionStatResponse response;
-				response.zero = 0;
-				response.opcode = OP_SessionStatResponse;
-				response.timestamp = request.timestamp;
-				response.our_timestamp = EQ::Net::HostToNetwork(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
-				response.client_sent = request.packets_sent;
-				response.client_recv = request.packets_recv;
-				response.server_sent = EQ::Net::HostToNetwork(m_stats.sent_packets);
-				response.server_recv = EQ::Net::HostToNetwork(m_stats.recv_packets);
-				DynamicPacket out;
-				out.PutSerialize(0, response);
-				InternalSend(out);
-				break;
-			}
-			case OP_SessionStatResponse: {
-				auto response = p.GetSerialize<DaybreakSessionStatResponse>(0);
-				m_stats.sync_remote_sent_packets = EQ::Net::NetworkToHost(response.server_sent);
-				m_stats.sync_remote_recv_packets = EQ::Net::NetworkToHost(response.server_recv);
-				m_stats.sync_sent_packets = m_stats.sent_packets;
-				m_stats.sync_recv_packets = m_stats.recv_packets;
-				break;
-			}
-			default:
-				if (m_owner->m_on_error_message) {
-					m_owner->m_on_error_message(fmt::format("Unhandled opcode {0:#x}", p.GetInt8(1)));
-				}
-				break;
+			break;
 		}
 	}
 	else {
@@ -856,20 +856,20 @@ bool EQ::Net::DaybreakConnection::ValidateCRC(Packet &p)
 		return false;
 	}
 
-	char *data = (char*)p.Data();
+	char *data = (char *)p.Data();
 	int calculated = 0;
 	int actual = 0;
 	switch (m_crc_bytes) {
-		case 2:
-			actual = NetworkToHost(*(int16_t*)&data[p.Length() - (size_t)m_crc_bytes]) & 0xffff;
-			calculated = Crc32(data, (int)(p.Length() - (size_t)m_crc_bytes), m_encode_key) & 0xffff;
-			break;
-		case 4:
-			actual = NetworkToHost(*(int32_t*)&data[p.Length() - (size_t)m_crc_bytes]);
-			calculated = Crc32(data, (int)(p.Length() - (size_t)m_crc_bytes), m_encode_key);
-			break;
-		default:
-			return false;
+	case 2:
+		actual = NetworkToHost(*(int16_t *)&data[p.Length() - (size_t)m_crc_bytes]) & 0xffff;
+		calculated = Crc32(data, (int)(p.Length() - (size_t)m_crc_bytes), m_encode_key) & 0xffff;
+		break;
+	case 4:
+		actual = NetworkToHost(*(int32_t *)&data[p.Length() - (size_t)m_crc_bytes]);
+		calculated = Crc32(data, (int)(p.Length() - (size_t)m_crc_bytes), m_encode_key);
+		break;
+	default:
+		return false;
 	}
 
 	if (actual == calculated) {
@@ -887,14 +887,14 @@ void EQ::Net::DaybreakConnection::AppendCRC(Packet &p)
 
 	int calculated = 0;
 	switch (m_crc_bytes) {
-		case 2:
-			calculated = Crc32(p.Data(), (int)p.Length(), m_encode_key) & 0xffff;
-			p.PutInt16(p.Length(), EQ::Net::HostToNetwork((int16_t)calculated));
-			break;
-		case 4:
-			calculated = Crc32(p.Data(), (int)p.Length(), m_encode_key);
-			p.PutInt32(p.Length(), EQ::Net::HostToNetwork(calculated));
-			break;
+	case 2:
+		calculated = Crc32(p.Data(), (int)p.Length(), m_encode_key) & 0xffff;
+		p.PutInt16(p.Length(), EQ::Net::HostToNetwork((int16_t)calculated));
+		break;
+	case 4:
+		calculated = Crc32(p.Data(), (int)p.Length(), m_encode_key);
+		p.PutInt32(p.Length(), EQ::Net::HostToNetwork(calculated));
+		break;
 	}
 }
 
@@ -931,14 +931,14 @@ bool EQ::Net::DaybreakConnection::PacketCanBeEncoded(Packet &p) const
 void EQ::Net::DaybreakConnection::Decode(Packet &p, size_t offset, size_t length)
 {
 	int key = m_encode_key;
-	char *buffer = (char*)p.Data() + offset;
+	char *buffer = (char *)p.Data() + offset;
 
 	size_t i = 0;
 	for (i = 0; i + 4 <= length; i += 4)
 	{
-		int pt = (*(int*)&buffer[i]) ^ (key);
-		key = (*(int*)&buffer[i]);
-		*(int*)&buffer[i] = pt;
+		int pt = (*(int *)&buffer[i]) ^ (key);
+		key = (*(int *)&buffer[i]);
+		*(int *)&buffer[i] = pt;
 	}
 
 	unsigned char KC = key & 0xFF;
@@ -951,14 +951,14 @@ void EQ::Net::DaybreakConnection::Decode(Packet &p, size_t offset, size_t length
 void EQ::Net::DaybreakConnection::Encode(Packet &p, size_t offset, size_t length)
 {
 	int key = m_encode_key;
-	char *buffer = (char*)p.Data() + offset;
+	char *buffer = (char *)p.Data() + offset;
 
 	size_t i = 0;
 	for (i = 0; i + 4 <= length; i += 4)
 	{
-		int pt = (*(int*)&buffer[i]) ^ (key);
+		int pt = (*(int *)&buffer[i]) ^ (key);
 		key = pt;
-		*(int*)&buffer[i] = pt;
+		*(int *)&buffer[i] = pt;
 	}
 
 	unsigned char KC = key & 0xFF;
@@ -968,7 +968,7 @@ void EQ::Net::DaybreakConnection::Encode(Packet &p, size_t offset, size_t length
 	}
 }
 
-uint32_t Inflate(const uint8_t* in, uint32_t in_len, uint8_t* out, uint32_t out_len) {
+uint32_t Inflate(const uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len) {
 	if (!in) {
 		return 0;
 	}
@@ -1007,7 +1007,7 @@ uint32_t Inflate(const uint8_t* in, uint32_t in_len, uint8_t* out, uint32_t out_
 	}
 }
 
-uint32_t Deflate(const uint8_t* in, uint32_t in_len, uint8_t* out, uint32_t out_len) {
+uint32_t Deflate(const uint8_t *in, uint32_t in_len, uint8_t *out, uint32_t out_len) {
 	if (!in) {
 		return 0;
 	}
@@ -1044,7 +1044,7 @@ void EQ::Net::DaybreakConnection::Decompress(Packet &p, size_t offset, size_t le
 	}
 
 	static uint8_t new_buffer[4096];
-	uint8_t *buffer = (uint8_t*)p.Data() + offset;
+	uint8_t *buffer = (uint8_t *)p.Data() + offset;
 	uint32_t new_length = 0;
 
 	if (buffer[0] == 0x5a) {
@@ -1065,7 +1065,7 @@ void EQ::Net::DaybreakConnection::Decompress(Packet &p, size_t offset, size_t le
 void EQ::Net::DaybreakConnection::Compress(Packet &p, size_t offset, size_t length)
 {
 	uint8_t new_buffer[2048] = { 0 };
-	uint8_t *buffer = (uint8_t*)p.Data() + offset;
+	uint8_t *buffer = (uint8_t *)p.Data() + offset;
 	uint32_t new_length = 0;
 	bool send_uncompressed = true;
 
@@ -1091,70 +1091,109 @@ void EQ::Net::DaybreakConnection::ProcessResend()
 	}
 }
 
+// observed client receive window is 300 packets, 140KB
+constexpr size_t MAX_CLIENT_RECV_PACKETS_PER_WINDOW = 300;
+constexpr size_t MAX_CLIENT_RECV_BYTES_PER_WINDOW = 140 * 1024;
+
 void EQ::Net::DaybreakConnection::ProcessResend(int stream)
 {
 	if (m_status == DbProtocolStatus::StatusDisconnected) {
 		return;
 	}
 
-	auto resends = 0;
-	auto now = Clock::now();
-	auto s = &m_streams[stream];
-	for (auto &entry : s->sent_packets) {
-		auto time_since_last_send = std::chrono::duration_cast<std::chrono::milliseconds>(now - entry.second.last_sent);
-		if (entry.second.times_resent == 0) {
-			if ((size_t)time_since_last_send.count() > entry.second.resend_delay) {
-				auto &p = entry.second.packet;
-				if (p.Length() >= DaybreakHeader::size()) {
-					if (p.GetInt8(0) == 0 && p.GetInt8(1) >= OP_Fragment && p.GetInt8(1) <= OP_Fragment4) {
-						m_stats.resent_fragments++;
-					}
-					else {
-						m_stats.resent_full++;
-					}
-				}
-				else {
-					m_stats.resent_full++;
-				}
-				m_stats.resent_packets++;
+	if (m_streams[stream].sent_packets.empty()) {
+		return;
+	}
 
-				InternalBufferedSend(p);
-				entry.second.last_sent = now;
-				entry.second.times_resent++;
-				entry.second.resend_delay = EQ::Clamp(entry.second.resend_delay * 2, m_owner->m_options.resend_delay_min, m_owner->m_options.resend_delay_max);
-				resends++;
+	m_resend_packets_sent = 0;
+	m_resend_bytes_sent = 0;
+
+	auto now = Clock::now(); // Current time
+	auto s = &m_streams[stream];
+
+	// Get a reference resend delay (assume first packet represents the typical case)
+	if (!s->sent_packets.empty()) {
+		// Check if the first packet has timed out
+		auto &first_packet = s->sent_packets.begin()->second;
+		auto time_since_first_sent = std::chrono::duration_cast<std::chrono::milliseconds>(now - first_packet.first_sent).count();
+
+		// make sure that the first_packet in the list first_sent time is within the resend_delay and now
+		// if it is not, then we need to resend all packets in the list
+		if (time_since_first_sent <= first_packet.resend_delay && !m_acked_since_last_resend) {
+			LogNetcodeDetail(
+				"Not resending packets for stream [{}] time since first sent [{}] resend delay [{}] m_acked_since_last_resend [{}]",
+				stream,
+				time_since_first_sent,
+				first_packet.resend_delay,
+				m_acked_since_last_resend
+			);
+			return;
+		}
+
+		if (time_since_first_sent >= m_owner->m_options.resend_timeout) {
+			Close();
+			return;
+		}
+	}
+
+	if (LogSys.IsLogEnabled(Logs::Detail, Logs::Netcode)) {
+		size_t    total_size = 0;
+		for (auto &e : s->sent_packets) {
+			total_size += e.second.packet.Length();
+		}
+
+		LogNetcodeDetail(
+			"Resending packets for stream [{}] packet count [{}] total packet size [{}] m_acked_since_last_resend [{}]",
+			stream,
+			s->sent_packets.size(),
+			total_size,
+			m_acked_since_last_resend
+		);
+	}
+
+	for (auto &e : s->sent_packets) {
+		if (m_resend_packets_sent >= MAX_CLIENT_RECV_PACKETS_PER_WINDOW ||
+			m_resend_bytes_sent >= MAX_CLIENT_RECV_BYTES_PER_WINDOW) {
+			LogNetcodeDetail(
+				"Stopping resend because we hit thresholds m_resend_packets_sent [{}] max [{}] m_resend_bytes_sent [{}] max [{}]",
+				m_resend_packets_sent,
+				MAX_CLIENT_RECV_PACKETS_PER_WINDOW,
+				m_resend_bytes_sent,
+				MAX_CLIENT_RECV_BYTES_PER_WINDOW
+			);
+			break;
+		}
+
+		auto &sp = e.second;
+		auto &p = sp.packet;
+		if (p.Length() >= DaybreakHeader::size()) {
+			if (p.GetInt8(0) == 0 && p.GetInt8(1) >= OP_Fragment && p.GetInt8(1) <= OP_Fragment4) {
+				m_stats.resent_fragments++;
+			}
+			else {
+				m_stats.resent_full++;
 			}
 		}
 		else {
-			auto time_since_first_sent = std::chrono::duration_cast<std::chrono::milliseconds>(now - entry.second.first_sent);
-			if (time_since_first_sent.count() >= m_owner->m_options.resend_timeout) {
-				Close();
-				return;
-			}
-
-			if ((size_t)time_since_last_send.count() > entry.second.resend_delay) {
-				auto &p = entry.second.packet;
-				if (p.Length() >= DaybreakHeader::size()) {
-					if (p.GetInt8(0) == 0 && p.GetInt8(1) >= OP_Fragment && p.GetInt8(1) <= OP_Fragment4) {
-						m_stats.resent_fragments++;
-					}
-					else {
-						m_stats.resent_full++;
-					}
-				}
-				else {
-					m_stats.resent_full++;
-				}
-				m_stats.resent_packets++;
-
-				InternalBufferedSend(p);
-				entry.second.last_sent = now;
-				entry.second.times_resent++;
-				entry.second.resend_delay = EQ::Clamp(entry.second.resend_delay * 2, m_owner->m_options.resend_delay_min, m_owner->m_options.resend_delay_max);
-				resends++;
-			}
+			m_stats.resent_full++;
 		}
+		m_stats.resent_packets++;
+
+		// Resend the packet
+		InternalBufferedSend(p);
+
+		m_resend_packets_sent++;
+		m_resend_bytes_sent += p.Length();
+		sp.last_sent = now;
+		sp.times_resent++;
+		sp.resend_delay = EQ::Clamp(
+			sp.resend_delay * 2,
+			m_owner->m_options.resend_delay_min,
+			m_owner->m_options.resend_delay_max
+		);
 	}
+
+	m_acked_since_last_resend = false;
 }
 
 void EQ::Net::DaybreakConnection::Ack(int stream, uint16_t seq)
@@ -1175,6 +1214,7 @@ void EQ::Net::DaybreakConnection::Ack(int stream, uint16_t seq)
 			m_rolling_ping = (m_rolling_ping * 2 + round_time) / 3;
 
 			iter = s->sent_packets.erase(iter);
+			m_acked_since_last_resend = true;
 		}
 		else {
 			++iter;
@@ -1308,8 +1348,8 @@ void EQ::Net::DaybreakConnection::InternalSend(Packet &p)
 
 	m_last_send = Clock::now();
 
-	auto send_func = [](uv_udp_send_t* req, int status) {
-		delete[](char*)req->data;
+	auto send_func = [](uv_udp_send_t *req, int status) {
+		delete[](char *)req->data;
 		delete req;
 	};
 
@@ -1355,12 +1395,12 @@ void EQ::Net::DaybreakConnection::InternalSend(Packet &p)
 		m_stats.sent_bytes += out.Length();
 		m_stats.sent_packets++;
 		if (m_owner->m_options.simulated_out_packet_loss && m_owner->m_options.simulated_out_packet_loss >= m_owner->m_rand.Int(0, 100)) {
-			delete[](char*)send_req->data;
+			delete[](char *)send_req->data;
 			delete send_req;
 			return;
 		}
 
-		uv_udp_send(send_req, &m_owner->m_socket, send_buffers, 1, (sockaddr*)&send_addr, send_func);
+		uv_udp_send(send_req, &m_owner->m_socket, send_buffers, 1, (sockaddr *)&send_addr, send_func);
 		return;
 	}
 
@@ -1380,12 +1420,12 @@ void EQ::Net::DaybreakConnection::InternalSend(Packet &p)
 	m_stats.sent_packets++;
 
 	if (m_owner->m_options.simulated_out_packet_loss && m_owner->m_options.simulated_out_packet_loss >= m_owner->m_rand.Int(0, 100)) {
-		delete[](char*)send_req->data;
+		delete[](char *)send_req->data;
 		delete send_req;
 		return;
 	}
 
-	uv_udp_send(send_req, &m_owner->m_socket, send_buffers, 1, (sockaddr*)&send_addr, send_func);
+	uv_udp_send(send_req, &m_owner->m_socket, send_buffers, 1, (sockaddr *)&send_addr, send_func);
 }
 
 void EQ::Net::DaybreakConnection::InternalQueuePacket(Packet &p, int stream_id, bool reliable)
@@ -1415,7 +1455,7 @@ void EQ::Net::DaybreakConnection::InternalQueuePacket(Packet &p, int stream_id, 
 		size_t sublen = m_max_packet_size - m_crc_bytes - DaybreakReliableFragmentHeader::size() - 1; // -1 for compress flag
 		DynamicPacket first_packet;
 		first_packet.PutSerialize(0, first_header);
-		first_packet.PutData(DaybreakReliableFragmentHeader::size(), (char*)p.Data() + used, sublen);
+		first_packet.PutData(DaybreakReliableFragmentHeader::size(), (char *)p.Data() + used, sublen);
 		used += sublen;
 
 		DaybreakSentPacket sent;
@@ -1442,11 +1482,11 @@ void EQ::Net::DaybreakConnection::InternalQueuePacket(Packet &p, int stream_id, 
 			packet.PutSerialize(0, header);
 
 			if (left > max_raw_size) {
-				packet.PutData(DaybreakReliableHeader::size(), (char*)p.Data() + used, max_raw_size);
+				packet.PutData(DaybreakReliableHeader::size(), (char *)p.Data() + used, max_raw_size);
 				used += max_raw_size;
 			}
 			else {
-				packet.PutData(DaybreakReliableHeader::size(), (char*)p.Data() + used, left);
+				packet.PutData(DaybreakReliableHeader::size(), (char *)p.Data() + used, left);
 				used += left;
 			}
 
