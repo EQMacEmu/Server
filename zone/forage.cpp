@@ -535,8 +535,6 @@ void Client::ForageItem(bool guarantee) {
 				inst = m_inv.GetItem(EQ::invslot::slotCursor);
 			}
 
-			CheckItemDiscoverability(inst->GetID());
-
 			if(inst) {
 				std::vector<std::any> args;
 				args.push_back(inst);
