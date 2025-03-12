@@ -368,7 +368,6 @@ RULE_INT(Network, ResendDelayBaseMS, 100, "Base delay for resending data in EQSt
 RULE_REAL(Network, ResendDelayFactor, 1.5, "Multiplier for the base delay when resending data in EQStreamManager")
 RULE_INT(Network, ResendDelayMinMS, 300, "Minimum timespan between two send retries (milliseconds)")
 RULE_INT(Network, ResendDelayMaxMS, 5000, "Maximum timespan between two send retries (milliseconds)")
-RULE_INT(Network, MaxTimeSpentProcessingConns, 100, "")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( QueryServ )

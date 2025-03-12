@@ -51,9 +51,6 @@ UCSDatabase database;
 WorldServerList *worldserverlist = nullptr;
 DiscordManager discord_manager;
 PathManager path;
-std::unordered_set<uint32> ipWhitelist;
-std::mutex		ipMutex;
-bool bSkipFactoryAuth = true;
 ZoneStore zone_store;
 PlayerEventLogs player_event_logs;
 WorldContentService content_service;
@@ -182,10 +179,6 @@ int main() {
 		}
 
 		Timer::SetCurrentTime();
-
-		ipMutex.lock();
-		ipWhitelist.clear();
-		ipMutex.unlock();
 
 		worldserverlist->Process();
 		g_Clientlist->Process();
