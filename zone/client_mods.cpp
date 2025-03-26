@@ -1708,6 +1708,10 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	uint32 effectmod = 10;	// base mod - 100% effectiveness
 
 	/*
+	20250318 solar
+	The below note is incorrect - puretone does not stack with worn instrument mods but replaces it.
+	---
+
 	From Ravenwing:
 
 	Puretone should stack with your instrument mod.
@@ -1726,6 +1730,7 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	As a side note on bard arithmetic, the way mods are described in the spell data (puretone = 2.8) is rather counterintuitive. 
 	Puretone alone will put the mod at 2.8, or 280% of the base value, but Puretone + Epic (1.8, or 180%) adds up to 3.6 or 360%, not 4.6. 
 	The bard's base value of 1.0 seems to be included in every mod. I usually think of puretone as +1.8, the epic as +0.8, and so forth.
+
 	*/
 
 	if (GetSkill(spells[spell_id].skill) > 0)	// no mods if the skill isn't trained
@@ -1733,39 +1738,26 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 		switch (spells[spell_id].skill)
 		{
 			case EQ::skills::SkillPercussionInstruments:
-				if (itembonuses.percussionMod > 10)
-					effectmod += itembonuses.percussionMod - 10;	// instruments have the 10 already added
-				if (spellbonuses.percussionMod > 10)
-					effectmod += spellbonuses.percussionMod - 10;	// puretone has the 10 already added
+				// spellbonuses here is the puretone discipline, its value is 28 already including the base 10 amount
+				// itembonuses is the worn item instrument bonus, including the base 10 amount
+				effectmod = std::max(effectmod, std::max(itembonuses.percussionMod, spellbonuses.percussionMod));
 				effectmod += aabonuses.percussionMod;
 				break;
 			case EQ::skills::SkillStringedInstruments:
-				if (itembonuses.stringedMod > 10)
-					effectmod += itembonuses.stringedMod - 10;
-				if (spellbonuses.stringedMod > 10)
-					effectmod += spellbonuses.stringedMod - 10;
+				effectmod = std::max(effectmod, std::max(itembonuses.stringedMod, spellbonuses.stringedMod));
 				effectmod += aabonuses.stringedMod;
 				break;
 			case EQ::skills::SkillWindInstruments:
-				if (itembonuses.windMod > 10)
-					effectmod += itembonuses.windMod - 10;
-				if (spellbonuses.windMod > 10)
-					effectmod += spellbonuses.windMod - 10;
+				effectmod = std::max(effectmod, std::max(itembonuses.windMod, spellbonuses.windMod));
 				effectmod += aabonuses.windMod;
 				break;
 			case EQ::skills::SkillBrassInstruments:
-				if (itembonuses.brassMod > 10)
-					effectmod += itembonuses.brassMod - 10;
-				if (spellbonuses.brassMod > 10)
-					effectmod += spellbonuses.brassMod - 10;
+				effectmod = std::max(effectmod, std::max(itembonuses.brassMod, spellbonuses.brassMod));
 				effectmod += aabonuses.brassMod;
 				break;
 			case EQ::skills::SkillSinging:
-				if (itembonuses.singingMod > 10)
-					effectmod += itembonuses.singingMod - 10;
-				if (spellbonuses.singingMod > 10)
-					effectmod += spellbonuses.singingMod - 10;
-				effectmod += aabonuses.singingMod + spellbonuses.Amplification;	// Amplification is only for singing
+				effectmod = std::max(effectmod, std::max(itembonuses.singingMod, spellbonuses.singingMod));
+				effectmod += aabonuses.singingMod + std::min(28u, spellbonuses.Amplification);	// Amplification bonus is only for singing, capped to 28 but the best combo is Harmonize (9) + Amplification (2) anyway
 				break;
 			default:
 				effectmod = 10;
@@ -1791,6 +1783,14 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	if (spell_id == SPELL_CINDAS_CHARISMATIC_CARILLON || spell_id == SPELL_CASSINDRAS_CHANT_OF_CLARITY || spell_id == SPELL_CASSINDRAS_CHORUS_OF_CLARITY)
 	{
 		effectmod = 10;
+		Log(Logs::General, Logs::Spells, "Overriding instrument mod for song %d to %d", spell_id, effectmod);
+	}
+
+	// selos mod is capped but movement speed is capped in the client as well so this doesn't matter much
+	if (GetSpellEffectIndex(spell_id, SE_MovementSpeed) != -1)
+	{
+		if (effectmod > 28)
+			effectmod = 28;
 		Log(Logs::General, Logs::Spells, "Overriding instrument mod for song %d to %d", spell_id, effectmod);
 	}
 		

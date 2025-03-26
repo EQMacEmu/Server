@@ -218,7 +218,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		id=atoi(name);
 
 	if (loginserverlist.Connected() == false && !is_player_zoning) {
-		Log(Logs::Detail, Logs::WorldServer,"Error: Login server login while not connected to login server.");
+		LogInfo("Error: Login server login while not connected to login server.");
 		return false;
 	}
 
@@ -245,9 +245,9 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 			m_ClientVersionBit = EQ::versions::ClientVersion::Unused;
 		}
 
-		Log(Logs::Detail, Logs::WorldServer, "ClientVersionBit is: %i", m_ClientVersionBit);
-		Log(Logs::Detail, Logs::WorldServer,"Logged in. Mode=%s", is_player_zoning ? "(Zoning)" : "(CharSel)");
-		Log(Logs::Detail, Logs::WorldServer, "LS Account #%d", cle->LSID());
+		LogInfo("ClientVersionBit is: [{}]", m_ClientVersionBit);
+		LogInfo("Logged in. Mode= [{}]", is_player_zoning ? "(Zoning)" : "(CharSel)");
+		LogInfo("LS Account #[{}]", cle->LSID());
 
 		const WorldConfig *Config=WorldConfig::get();
 
@@ -278,7 +278,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 			database.GetLiveCharByLSID(id, char_name);
 			char_id = database.GetCharacterInfo(char_name, &tmpaccid, &zone_id);
 			if (char_id == 0 || tmpaccid != GetAccountID()) {
-				Log(Logs::Detail, Logs::WorldServer, "Could not get CharInfo for '%s'", char_name);
+				LogInfo("Could not get CharInfo for '[{}]'", char_name);
 				eqs->Close();
 				return true;
 			}
@@ -295,7 +295,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 	}
 	else {
 		// TODO: Find out how to tell the client wrong username/password
-		Log(Logs::Detail, Logs::WorldServer,"Bad/Expired session key '%s'",name);
+		LogInfo("Bad/Expired session key '[{}]'",name);
 		return false;
 	}
 
@@ -309,7 +309,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 bool Client::HandleNameApprovalPacket(const EQApplicationPacket *app)
 {
 	if(app->Size() != sizeof(NameApproval_Struct)) {
-		Log(Logs::General, Logs::Error, "Wrong size: HandleNameApprovalPacket, size=%i, expected %i", app->size, sizeof(NameApproval_Struct));
+		LogError("Wrong size: HandleNameApprovalPacket, size= [{}], expected [{}]", app->size, sizeof(NameApproval_Struct));
 		return false;
 	}
 
@@ -465,11 +465,11 @@ bool Client::HandleGenerateRandomNamePacket(const EQApplicationPacket *app) {
 
 bool Client::HandleCharacterCreatePacket(const EQApplicationPacket *app) {
 	if (GetAccountID() == 0) {
-		Log(Logs::Detail, Logs::WorldServer,"Account ID not set; unable to create character.");
+		LogInfo("Account ID not set; unable to create character.");
 		return false;
 	}
 	else if (app->size != sizeof(CharCreate_Struct)) {
-		Log(Logs::Detail, Logs::WorldServer,"Wrong size on OP_CharacterCreate. Got: %d, Expected: %d",app->size,sizeof(CharCreate_Struct));
+		LogInfo("Wrong size on OP_CharacterCreate. Got: [{}], Expected: [{}]",app->size,sizeof(CharCreate_Struct));
 		DumpPacket(app);
 		// the previous behavior was essentially returning true here
 		// but that seems a bit odd to me.
@@ -495,13 +495,13 @@ bool Client::HandleCharacterCreatePacket(const EQApplicationPacket *app) {
 bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 {
 	if (GetAccountID() == 0) {
-		Log(Logs::Detail, Logs::WorldServer, "Enter world with no logged in account");
+		LogInfo( "Enter world with no logged in account");
 		eqs->Close();
 		return true;
 	}
 
 	if (GetAdmin() < 0)	{
-		Log(Logs::Detail, Logs::WorldServer, "Account banned or suspended.");
+		LogInfo( "Account banned or suspended.");
 		eqs->Close();
 		return true;
 	}
@@ -523,14 +523,14 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 	uint32 tmpaccid = 0;
 	char_id = database.GetCharacterInfo(char_name, &tmpaccid, &zone_id);
 	if (char_id == 0 || tmpaccid != GetAccountID()) {
-		Log(Logs::Detail, Logs::WorldServer, "Could not get CharInfo for '%s'", char_name);
+		LogInfo( "Could not get CharInfo for '[{}]'", char_name);
 		eqs->Close();
 		return true;
 	}
 
 	// Make sure this account owns this character
 	if (tmpaccid != GetAccountID()) {
-		Log(Logs::Detail, Logs::WorldServer, "This account does not own the character named '%s'", char_name);
+		LogInfo( "This account does not own the character named '[{}]'", char_name);
 		eqs->Close();
 		return true;
 	}
@@ -623,7 +623,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 			}
 		}
 		else {
-			Log(Logs::Detail, Logs::WorldServer, "Not pZoning clearing groupid for:%s", char_name);
+			LogInfo( "Not pZoning clearing groupid for:%s", char_name);
 			database.SetGroupID(char_name, 0, charid, GetAccountID());
 			database.SetFirstLogon(charid, 1);
 		} */
@@ -704,14 +704,14 @@ bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 	uint32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
 	uint32 level = database.GetLevelByChar((char*)app->pBuffer);
 	if(char_acct_id == GetAccountID()) {
-		Log(Logs::Detail, Logs::WorldServer,"Delete character: %s",app->pBuffer);
-		if(level >= 30)
-		{
+		if(level >= 30) {
 			database.MarkCharacterDeleted((char *)app->pBuffer);
+			LogInfo("Backing up and marking as deleted character: [{}]", (char *)app->pBuffer);
 		}
-		else
-		{
+		else {
 			database.DeleteCharacter((char *)app->pBuffer);
+			LogInfo("Delete character: [{}]", (char *)app->pBuffer);
+
 		}
 		SendCharInfo();
 	}
@@ -726,7 +726,7 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 
 	if (app->size != sizeof(Checksum_Struct)) 
 	{
-		Log(Logs::Detail, Logs::WorldServer, "Checksum packet is BAD!");
+		LogInfo( "Checksum packet is BAD!");
 		return false;
 	}
 
@@ -736,22 +736,18 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	if(GetClientVersionBit() == EQ::versions::ClientVersionBit::bit_MacPC)
 	{
 		//Pristine spell file. 
-		if(checksum == 8148330249184697)
-		{
-			Log(Logs::Detail, Logs::WorldServer, "Original Spell Checksum is GOOD!");
+		if(checksum == 8148330249184697) {
+			LogInfo( "Original Spell Checksum is GOOD!");
 		}
 		//Hobart's updated file.
-		else if(checksum == 8148329455921329)
-		{
-			Log(Logs::Detail, Logs::WorldServer, "Updated Spell Checksum is GOOD!");
+		else if(checksum == 8148329455921329) {
+			LogInfo( "Updated Spell Checksum is GOOD!");
 		}
-		else if(checksum == 29639760219562021)
-		{
-			Log(Logs::Detail, Logs::WorldServer, "Exe Checksum is GOOD!");
+		else if(checksum == 29639760219562021) {
+			LogInfo( "Exe Checksum is GOOD!");
 		}
-		else
-		{
-			Log(Logs::Detail, Logs::WorldServer, "Checksum is BAD!");
+		else {
+			LogInfo( "Checksum is BAD!");
 			return false;
 		}
 	}
@@ -763,16 +759,17 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 	EmuOpcode opcode = app->GetOpcode();
 
+	auto o = eqs->GetOpcodeManager();
 	LogPacketClientServer(
 		"[{}] [{:#06x}] Size [{}] {}",
 		OpcodeManager::EmuToName(app->GetOpcode()),
-		eqs->GetOpcodeManager()->EmuToEQ(app->GetOpcode()),
+		o->EmuToEQ(app->GetOpcode()) == 0 ? app->GetProtocolOpcode() : o->EmuToEQ(app->GetOpcode()),
 		app->Size(),
 		(LogSys.IsLogEnabled(Logs::Detail, Logs::PacketClientServer) ? DumpPacketToString(app) : "")
 	);
 
 	if (!eqs->CheckState(ESTABLISHED)) {
-		Log(Logs::Detail, Logs::WorldServer,"Client disconnected (net inactive on send)");
+		LogInfo("Client disconnected (net inactive on send)");
 		return false;
 	}
 
@@ -864,7 +861,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 bool Client::Process() {
 	bool ret = true;
 	//bool sendguilds = true;
-	sockaddr_in to;
+	sockaddr_in to = {};
 
 	memset((char *) &to, 0, sizeof(to));
 	to.sin_family = AF_INET;
@@ -872,9 +869,10 @@ bool Client::Process() {
 	to.sin_addr.s_addr = ip;
 
 	if (autobootup_timeout.Check()) {
-		Log(Logs::Detail, Logs::WorldServer, "Zone bootup timer expired, bootup failed or too slow.");
+		LogInfo( "Zone bootup timer expired, bootup failed or too slow.");
 		TellClientZoneUnavailable();
 	}
+
 	if(connect.Check()){
 		//SendGuildList();// Send OPCode: OP_GuildsList
 		SendApproveWorld();
@@ -906,7 +904,7 @@ bool Client::Process() {
 			loginserverlist.SendPacket(pack);
 			safe_delete(pack);
 		}
-		Log(Logs::Detail, Logs::WorldServer,"Client disconnected (not active in process)");
+		LogInfo("Client disconnected (not active in process)");
 		return false;
 	}
 
@@ -920,6 +918,7 @@ void Client::EnterWorld(bool TryBootup) {
 	ZoneServer* zone_server = nullptr;
 	zone_server = zoneserver_list.FindByZoneID(zone_id);
 
+	const char *zone_name = ZoneName(zone_id, true);
 	if (zone_server) {
 		if (false == enter_world_triggered) {
 			//Drop any clients we own in other zones.
@@ -933,7 +932,7 @@ void Client::EnterWorld(bool TryBootup) {
 	else
 	{
 		if (TryBootup && !RuleB(World, DontBootDynamics)) {
-			LogInfo("Attempting autobootup of [{}]", zone_id);
+			LogInfo("Attempting autobootup of [{}] [{}]", zone_name, zone_id);
 			autobootup_timeout.Start();
 			zone_waiting_for_bootup = zoneserver_list.TriggerBootup(zone_id);
 			if (zone_waiting_for_bootup == 0) {
@@ -943,7 +942,7 @@ void Client::EnterWorld(bool TryBootup) {
 			return;
 		}
 		else {
-			LogInfo("Requested zone [{}] is not running.", zone_id);
+			LogInfo("Requested zone [{}] is not running.", zone_name);
 			TellClientZoneUnavailable();
 			return;
 		}
@@ -965,7 +964,13 @@ void Client::EnterWorld(bool TryBootup) {
 	database.CharacterJoin(char_id, char_name);
 	database.UpdateLiveChar(char_name, GetAccountID());
 
-	LogInfo("{} [{}]", seen_character_select ? "Zoning from character select" : "Zoning to", zone_id);
+	LogInfo(
+		"({}) [{}] [{}] (Zone ID [{}]) ",
+		char_name,
+		(seen_character_select ? "Zoning from character select" : "Zoning to"),
+		zone_name,
+		zone_id
+	);
 
 	if (seen_character_select) {
 		auto pack = new ServerPacket;
@@ -994,9 +999,9 @@ void Client::Clearance(int8 response)
 	{
 		if (zs == 0)
 		{
-			Log(Logs::Detail, Logs::WorldServer,"Unable to find zoneserver in Client::Clearance!!");
+			LogInfo("Unable to find zoneserver in Client::Clearance!!");
 		} else {
-			Log(Logs::Detail, Logs::WorldServer, "Invalid response %d in Client::Clearance", response);
+			LogInfo( "Invalid response [{}] in Client::Clearance", response);
 		}
 
 		TellClientZoneUnavailable();
@@ -1004,20 +1009,20 @@ void Client::Clearance(int8 response)
 	}
 
 	if (zs->GetCAddress() == nullptr) {
-		Log(Logs::Detail, Logs::WorldServer, "Unable to do zs->GetCAddress() in Client::Clearance!!");
+		LogInfo( "Unable to do zs->GetCAddress() in Client::Clearance!!");
 		TellClientZoneUnavailable();
 		return;
 	}
 
 	if (zone_id == 0) {
-		Log(Logs::Detail, Logs::WorldServer, "zoneID is nullptr in Client::Clearance!!");
+		LogInfo( "zoneID is nullptr in Client::Clearance!!");
 		TellClientZoneUnavailable();
 		return;
 	}
 
 	const char* zonename = ZoneName(zone_id);
 	if (zonename == 0) {
-		Log(Logs::Detail, Logs::WorldServer, "zonename is nullptr in Client::Clearance!!");
+		LogInfo( "zonename is nullptr in Client::Clearance!!");
 		TellClientZoneUnavailable();
 		return;
 	}
@@ -1026,20 +1031,25 @@ void Client::Clearance(int8 response)
 	auto outapp = new EQApplicationPacket(OP_ZoneServerInfo, sizeof(ZoneServerInfo_Struct));
 	ZoneServerInfo_Struct* zsi = (ZoneServerInfo_Struct*)outapp->pBuffer;
 
-	const char *zs_addr = nullptr;
+	std::string zs_addr;
 	if(cle && cle->IsLocalClient()) {
 		const char *local_addr = zs->GetCLocalAddress();
 
 		if(local_addr[0]) {
 			zs_addr = local_addr;
 		} else {
-			
-			if (strcmp(zs->GetIP().c_str(), "127.0.0.1") == 0)
+			zs_addr = zs->GetIP();
+
+			if (zs_addr.empty()) {
+				zs_addr = WorldConfig::get()->LocalAddress;
+			}
+
+			if (zs_addr == "127.0.0.1")
 			{
-				Log(Logs::Detail, Logs::WorldServer, "Local zone address was %s, setting local address to: %s", zs_addr, WorldConfig::get()->LocalAddress.c_str());
+				LogInfo( "Local zone address was [{}], setting local address to: [{}]", zs_addr, WorldConfig::get()->LocalAddress.c_str());
 				zs_addr = WorldConfig::get()->LocalAddress.c_str();
 			} else {
-				Log(Logs::Detail, Logs::WorldServer, "Local zone address %s", zs_addr);
+				LogInfo( "Local zone address [{}]", zs_addr);
 			}
 		}
 
@@ -1052,14 +1062,13 @@ void Client::Clearance(int8 response)
 		}
 	}
 
-	strcpy(zsi->ip, zs_addr);
+	strcpy(zsi->ip, zs_addr.c_str());
 	zsi->port =ntohs(zs->GetCPort());
-	Log(Logs::Detail, Logs::WorldServer,"Sending client to zone %s (%d) at %s:%d",zonename, zone_id,zsi->ip,zsi->port);
+	LogInfo("Sending client to zone [{}] ([{}] at [{}]:[{}]", zonename, zone_id, zsi->ip, zsi->port);
 	QueuePacket(outapp);
 	safe_delete(outapp);
 
-	if (cle)
-	{
+	if (cle) {
 		autobootup_timeout.Disable();
 		cle->SetOnline(CLE_Status::Zoning);
 	}
@@ -1087,7 +1096,8 @@ void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req) {
 	eqs->QueuePacket(app, ack_req);
 }
 
-void Client::SendGuildList() {
+void Client::SendGuildList() 
+{
 	auto outapp = new EQApplicationPacket(OP_GuildsList);
 
 	//ask the guild manager to build us a nice guild list packet
@@ -1115,77 +1125,104 @@ void Client::SendApproveWorld()
 
 bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 {
-	if (!RuleB(Character, CanCreate))
+	if (!RuleB(Character, CanCreate)) {
 		return false;
+	}
 
 	uint8 limit = mule ? RuleI(World, MuleToonLimit) : 8; //Mule accounts are limited by their rule, everybody else gets 8.
-	if(charcount >= limit)
-	{
-		Log(Logs::General, Logs::WorldServer, "%s already has %d characters. OPCharCreate returning false.", name, charcount);
+	if(charcount >= limit) {
+		LogInfo("[{}] already has [{}] characters. OPCharCreate returning false.", name, charcount);
 		return false;
 	}
 
 	PlayerProfile_Struct pp;
 	EQ::InventoryProfile inv;
+
 	time_t bday = time(nullptr);
 	uint32 i;
 	in_addr in;
 
-	int stats_sum = cc->STR + cc->STA + cc->AGI + cc->DEX + cc->WIS + cc->INT + cc->CHA;
+	const uint32 stats_sum = (
+		cc->AGI +
+		cc->CHA +
+		cc->DEX +
+		cc->INT +
+		cc->STA +
+		cc->STR +
+		cc->WIS
+	);
 
 	in.s_addr = GetIP();
 
 	if(cc->face == 0 && cc->oldface > 0)
 		cc->face = cc->oldface;
 
-	Log(Logs::Detail, Logs::WorldServer, "Character creation request from %s LS#%d (%s:%d) : ", GetCLE()->LSName(), GetCLE()->LSID(), inet_ntoa(in), GetPort());
-	Log(Logs::Detail, Logs::WorldServer, "Name: %s", name);
-	Log(Logs::Detail, Logs::WorldServer, "Race: %d  Class: %d  Gender: %d  Deity: %d  Start zone: %d",
-		cc->race, cc->class_, cc->gender, cc->deity, cc->start_zone);
-	Log(Logs::Detail, Logs::WorldServer, "STR  STA  AGI  DEX  WIS  INT  CHA    Total");
-	Log(Logs::Detail, Logs::WorldServer, "%3d  %3d  %3d  %3d  %3d  %3d  %3d     %3d",
-		cc->STR, cc->STA, cc->AGI, cc->DEX, cc->WIS, cc->INT, cc->CHA,
-		stats_sum);
-	Log(Logs::Detail, Logs::WorldServer, "Face: %d  Eye colors: %d %d", cc->face, cc->eyecolor1, cc->eyecolor2);
-	Log(Logs::Detail, Logs::WorldServer, "Hairstyle: %d  Haircolor: %d", cc->hairstyle, cc->haircolor);
-	Log(Logs::Detail, Logs::WorldServer, "Beard: %d  Beardcolor: %d", cc->beard, cc->beardcolor);
+	LogInfo(
+		"Character creation request from [{}] LS [{}] ([{}]:[{}]) : ", 
+		GetCLE()->LSName(), 
+		GetCLE()->LSID(), 
+		inet_ntoa(in), 
+		GetPort()
+	);
+	LogInfo("Name: [{}]", name);
+	LogInfo("Race: [{}]  Class: [{}]  Gender: [{}]  Deity: [{}]  Start zone: [{}]",
+		cc->race,
+		cc->class_,
+		cc->gender,
+		cc->deity,
+		cc->start_zone
+	);
+	LogInfo(
+		"AGI [{}] CHA [{}] DEX [{}] INT [{}] STA [{}] STR [{}] WIS [{}] Total [{}]",
+		cc->AGI,
+		cc->CHA,
+		cc->DEX,
+		cc->INT,
+		cc->STA,
+		cc->STR,
+		cc->WIS,
+		stats_sum
+	);
+	LogInfo("Face: [{}]  Eye colors: [{}] [{}]", cc->face, cc->eyecolor1, cc->eyecolor2);
+	LogInfo("Hairstyle: [{}]  Haircolor: [{}]", cc->hairstyle, cc->haircolor);
+	LogInfo("Beard: [{}]  Beardcolor: [{}]", cc->beard, cc->beardcolor);
 
 	/* Validate the char creation struct */
 		if(!Client::CheckCharCreateInfo(cc)) {
-			Log(Logs::Detail, Logs::WorldServer,"CheckCharCreateInfo did not validate the request (bad race/class/stats)");
+			LogInfo("CheckCharCreateInfo did not validate the request (bad race/class/stats)");
 			return false;
 		}
 	/* Convert incoming cc_s to the new PlayerProfile_Struct */
 	memset(&pp, 0, sizeof(PlayerProfile_Struct));	// start building the profile
 
-	strn0cpy(pp.name, name, 63);
+	strn0cpy(pp.name, name, sizeof(pp.name));
 
-	pp.race				= cc->race;
-	pp.class_			= cc->class_;
-	pp.gender			= cc->gender;
-	pp.deity			= cc->deity;
-	pp.STR				= cc->STR;
-	pp.STA				= cc->STA;
-	pp.AGI				= cc->AGI;
-	pp.DEX				= cc->DEX;
-	pp.WIS				= cc->WIS;
-	pp.INT				= cc->INT;
-	pp.CHA				= cc->CHA;
-	pp.face				= cc->face;
-	pp.eyecolor1		= cc->eyecolor1;
-	pp.eyecolor2		= cc->eyecolor2;
-	pp.hairstyle		= cc->hairstyle;
-	pp.haircolor		= cc->haircolor;
-	pp.beard			= cc->beard;
-	pp.beardcolor		= cc->beardcolor;
-	pp.birthday		= bday;
-	pp.lastlogin	= bday;
-	pp.level			= 1;
-	pp.points			= 5;
-	pp.cur_hp			= 1000; // 1k hp during dev only
+	pp.race         = cc->race;
+	pp.class_       = cc->class_;
+	pp.gender       = cc->gender;
+	pp.deity        = cc->deity;
+	pp.STR          = cc->STR;
+	pp.STA          = cc->STA;
+	pp.AGI          = cc->AGI;
+	pp.DEX          = cc->DEX;
+	pp.WIS          = cc->WIS;
+	pp.INT          = cc->INT;
+	pp.CHA          = cc->CHA;
+	pp.face         = cc->face;
+	pp.eyecolor1    = cc->eyecolor1;
+	pp.eyecolor2    = cc->eyecolor2;
+	pp.hairstyle    = cc->hairstyle;
+	pp.haircolor    = cc->haircolor;
+	pp.beard        = cc->beard;
+	pp.beardcolor   = cc->beardcolor;
+	pp.birthday     = bday;
+	pp.lastlogin    = bday;
+	pp.level        = 1;
+	pp.points       = 5;
+	pp.cur_hp       = 1000; // 1k hp during dev only
 	pp.hunger_level = 4500;
 	pp.thirst_level = 4500;
-	pp.fatigue = 0;
+	pp.fatigue      = 0;
 
 	/* Set Racial and Class specific language and skills */
 	SetRacialLanguages(&pp);
@@ -1209,12 +1246,12 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	std::string startzone;
 	if(database.GetVariable("startzone", startzone))
 	{
-		Log(Logs::Detail, Logs::WorldServer,"Found 'startzone' variable setting: %s", startzone.c_str());
+		LogInfo("Found 'startzone' variable setting: [{}]", startzone);
 		pp.zone_id = ZoneID(startzone.c_str());
 		if(pp.zone_id)
 			database.GetSafePoints(ZoneName(pp.zone_id), &pp.x, &pp.y, &pp.z);
 		else
-			Log(Logs::Detail, Logs::WorldServer,"Error getting zone id for '%s'", startzone.c_str());
+			LogInfo("Error getting zone id for '[{}]'", startzone);
 	}
 	else	// otherwise use normal starting zone logic
 	{
@@ -1244,9 +1281,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	// set starting city location to the initial bind point
 	pp.binds[4] = pp.binds[0];
 
-	//Log(Logs::Detail, Logs::WorldServer, "Current location: %s  %0.2f, %0.2f, %0.2f, %0.2f",
+	//LogInfo( "Current location: %s  %0.2f, %0.2f, %0.2f, %0.2f",
 	//	database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z, pp.heading);
-	//Log(Logs::Detail, Logs::WorldServer, "Bind location: %s  %0.2f, %0.2f, %0.2f",
+	//LogInfo( "Bind location: %s  %0.2f, %0.2f, %0.2f",
 	//	database.GetZoneName(pp.binds[0].zoneId), pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
 
 	/* Starting Items inventory */
@@ -1255,10 +1292,10 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	// now we give the pp and the inv we made to StoreCharacter
 	// to see if we can store it
 	if (!database.StoreCharacter(GetAccountID(), &pp, &inv)) {
-		Log(Logs::Detail, Logs::WorldServer,"Character creation failed: %s", pp.name);
+		LogInfo("Character creation failed: [{}]", pp.name);
 		return false;
 	}
-	Log(Logs::Detail, Logs::WorldServer,"Character creation successful: %s", pp.name);
+	LogInfo("Character creation successful: [{}]", pp.name);
 	++charcount;
 	return true;
 }
@@ -1269,7 +1306,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 	if (!cc)
 		return false;
 
-	Log(Logs::Detail, Logs::WorldServer, "Validating char creation info...");
+	LogInfo( "Validating char creation info...");
 
 	int currentExpansions = GetExpansion(); // Get expansion value from account table
 
@@ -1290,7 +1327,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 	}
 
 	if (!found) {
-		Log(Logs::Detail, Logs::WorldServer, "Could not find class/race/deity/start_zone combination");
+		LogInfo( "Could not find class/race/deity/start_zone combination");
 		return false;
 	}
 
@@ -1306,7 +1343,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 	}
 
 	if (!found) {
-		Log(Logs::Detail, Logs::WorldServer, "Could not find starting stats for selected character combo, cannot verify stats");
+		LogInfo( "Could not find starting stats for selected character combo, cannot verify stats");
 		return false;
 	}
 
@@ -1319,37 +1356,37 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 		allocation.DefaultPointAllocation[6];
 
 	if (cc->STR > allocation.BaseStats[0] + max_stats || cc->STR < allocation.BaseStats[0]) {
-		Log(Logs::Detail, Logs::WorldServer, "Strength out of range");
+		LogInfo( "Strength out of range");
 		return false;
 	}
 
 	if (cc->DEX > allocation.BaseStats[1] + max_stats || cc->DEX < allocation.BaseStats[1]) {
-		Log(Logs::Detail, Logs::WorldServer, "Dexterity out of range");
+		LogInfo( "Dexterity out of range");
 		return false;
 	}
 
 	if (cc->AGI > allocation.BaseStats[2] + max_stats || cc->AGI < allocation.BaseStats[2]) {
-		Log(Logs::Detail, Logs::WorldServer, "Agility out of range");
+		LogInfo( "Agility out of range");
 		return false;
 	}
 
 	if (cc->STA > allocation.BaseStats[3] + max_stats || cc->STA < allocation.BaseStats[3]) {
-		Log(Logs::Detail, Logs::WorldServer, "Stamina out of range");
+		LogInfo( "Stamina out of range");
 		return false;
 	}
 
 	if (cc->INT > allocation.BaseStats[4] + max_stats || cc->INT < allocation.BaseStats[4]) {
-		Log(Logs::Detail, Logs::WorldServer, "Intelligence out of range");
+		LogInfo( "Intelligence out of range");
 		return false;
 	}
 
 	if (cc->WIS > allocation.BaseStats[5] + max_stats || cc->WIS < allocation.BaseStats[5]) {
-		Log(Logs::Detail, Logs::WorldServer, "Wisdom out of range");
+		LogInfo( "Wisdom out of range");
 		return false;
 	}
 
 	if (cc->CHA > allocation.BaseStats[6] + max_stats || cc->CHA < allocation.BaseStats[6]) {
-		Log(Logs::Detail, Logs::WorldServer, "Charisma out of range");
+		LogInfo( "Charisma out of range");
 		return false;
 	}
 
@@ -1362,7 +1399,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 	current_stats += cc->WIS - allocation.BaseStats[5];
 	current_stats += cc->CHA - allocation.BaseStats[6];
 	if (current_stats > max_stats) {
-		Log(Logs::Detail, Logs::WorldServer, "Current Stats > Maximum Stats");
+		LogInfo( "Current Stats > Maximum Stats");
 		return false;
 	}
 
@@ -1546,7 +1583,7 @@ bool Client::GetSessionLimit()
 	{
 		if(client_list.CheckAccountActive(cle->AccountID()) && cle->Online() != CLE_Status::Zoning)
 		{
-			Log(Logs::Detail, Logs::WorldServer,"Account %d attempted to login with an active player in the world.", cle->AccountID());
+			LogInfo("Account [{}] attempted to login with an active player in the world.", cle->AccountID());
 			return true;
 		}
 		else

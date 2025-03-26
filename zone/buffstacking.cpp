@@ -929,7 +929,7 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	if (IsBardSong(spell_id) && caster)
 	{
 		int mod = caster->GetInstrumentMod(spell_id);
-		if (mod > 10)
+		if (mod > 10 && !isdisc)
 			buffs[emptyslot].instrumentmod = mod;
 	}
 

@@ -3034,7 +3034,7 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 	static auto lastpos = glm::vec4();
 	float dist_moved = Distance(m_Position, lastpos);
 	lastpos = m_Position;
-	Message(MT_Shout, "PositionUpdate for %s(%d): loc: %d,%d,%d,%d delta: %1.3f,%1.3f,%1.3f,%d anim: %d, dist %0.2f", GetName(), ppu->spawn_id, ppu->x_pos, ppu->y_pos, ppu->z_pos, ppu->heading, ppu->delta_yzx.GetX(), ppu->delta_yzx.GetY(), ppu->delta_yzx.GetZ(), ppu->delta_heading, ppu->anim_type, dist_moved);
+	Message(Chat::Shout, "PositionUpdate for %s(%d): loc: %d,%d,%d,%d delta: %1.3f,%1.3f,%1.3f,%d anim: %d, dist %0.2f", GetName(), ppu->spawn_id, ppu->x_pos, ppu->y_pos, ppu->z_pos, ppu->heading, ppu->delta_yzx.GetX(), ppu->delta_yzx.GetY(), ppu->delta_yzx.GetZ(), ppu->delta_heading, ppu->anim_type, dist_moved);
 #endif
 
 	return;

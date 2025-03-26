@@ -367,7 +367,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				zoneserver_list.SendPacket(pack); //bounce it to all zones
 			}
 			else {
-				LogInfo("Character {} is not found, group ownership will not be transferred.", sgls->leader_name);
+				LogInfo("Character [{}] is not found, group ownership will not be transferred.", sgls->leader_name);
 			}
 
 			break;
@@ -724,10 +724,10 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			auto sRezz = (RezzPlayer_Struct*) pack->pBuffer;
 			if (zoneserver_list.SendPacket(pack)) {
-				LogInfo("Sent Rez packet for {}", sRezz->rez.your_name);
+				LogInfo("Sent Rez packet for [{}]",sRezz->rez.your_name);
 			}
 			else {
-				LogInfo("Could not send Rez packet for {}", sRezz->rez.your_name);
+				LogInfo("Could not send Rez packet for [{}]",sRezz->rez.your_name);
 			}
 			break;
 		}

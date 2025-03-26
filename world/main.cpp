@@ -483,6 +483,6 @@ int main(int argc, char** argv) {
 }
 
 void CatchSignal(int sig_num) {
-	Log(Logs::General, Logs::WorldServer,"Caught signal %d",sig_num);
+	LogInfo("Caught signal [{}]",sig_num);
 	RunLoops = false;
 }

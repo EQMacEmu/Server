@@ -84,7 +84,7 @@ bool ClientList::ActiveConnection(uint32 account_id) {
 		if (iterator.GetData()->AccountID() == account_id && iterator.GetData()->Online() > CLE_Status::Offline) {
 			struct in_addr in;
 			in.s_addr = iterator.GetData()->GetIP();
-			Log(Logs::Detail, Logs::WorldServer,"Client with account %d exists on %s", iterator.GetData()->AccountID(), inet_ntoa(in));
+			LogInfo("Client with account [{}] exists on [{}]", iterator.GetData()->AccountID(), inet_ntoa(in));
 			return true;
 		}
 		iterator.Advance();
@@ -100,7 +100,7 @@ bool ClientList::ActiveConnection(uint32 account_id, uint32 character_id) {
 		if (iterator.GetData()->AccountID() == account_id && iterator.GetData()->CharID() == character_id && iterator.GetData()->Online() > CLE_Status::CharSelect) {
 			struct in_addr in;
 			in.s_addr = iterator.GetData()->GetIP();
-			Log(Logs::Detail, Logs::WorldServer, "Client with account %d exists on %s", iterator.GetData()->AccountID(), inet_ntoa(in));
+			LogInfo( "Client with account [{}] exists on [{}]", iterator.GetData()->AccountID(), inet_ntoa(in));
 			return true;
 		}
 		iterator.Advance();
@@ -160,7 +160,7 @@ bool ClientList::EnforceSessionLimit(uint32 iLSAccountID) {
 
 			if (CharacterCount > (RuleI(World, AccountSessionLimit)))
 			{
-				Log(Logs::Detail, Logs::WorldServer,"LSAccount %d has a CharacterCount of: %d.", iLSAccountID, CharacterCount);
+				LogInfo("LSAccount [{}] has a CharacterCount of: [{}].", iLSAccountID, CharacterCount);
 				return true;
 			}
 		}
@@ -465,7 +465,7 @@ void ClientList::CLCheckStale() {
 		if (iterator.GetData()->CheckStale()) {
 			struct in_addr in;
 			in.s_addr = iterator.GetData()->GetIP();
-			Log(Logs::Detail, Logs::WorldServer,"Removing stale client on account %d from %s", iterator.GetData()->AccountID(), inet_ntoa(in));
+			LogInfo("Removing stale client on account [{}] from [{}]", iterator.GetData()->AccountID(), inet_ntoa(in));
 			uint32 accountid = iterator.GetData()->AccountID();
 			iterator.RemoveCurrent();
 			if(!ActiveConnection(accountid))
@@ -578,7 +578,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 
 	if(!from)
 	{
-		Log(Logs::Detail, Logs::WorldServer,"Invalid client. FromID=%i GuildID=%i", FromID, GuildID);
+		LogInfo("Invalid client. FromID = [{}] GuildID = [{}]", FromID, GuildID);
 		return;
 	}
 
@@ -887,7 +887,7 @@ void ClientList::SendWhoAll(uint32 fromid,const char* to, int16 admin, Who_All_S
 	}
 	catch(...)
 	{
-		Log(Logs::Detail, Logs::WorldServer, "Unknown error in world's SendWhoAll (probably mem error), ignoring... Player id is: %i, Name is: %s", fromid, to);
+		LogInfo( "Unknown error in world's SendWhoAll (probably mem error), ignoring... Player id is: [{}], Name is: [{}]", fromid, to);
 		return;
 	}
 }
@@ -1034,7 +1034,7 @@ void ClientList::SendFriendsWho(ServerFriendsWho_Struct *FriendsWho, WorldTCPCon
 		safe_delete(pack2);
 	}
 	catch(...){
-		Log(Logs::Detail, Logs::WorldServer,"Unknown error in world's SendFriendsWho (probably mem error), ignoring...");
+		LogInfo("Unknown error in world's SendFriendsWho (probably mem error), ignoring...");
 		return;
 	}
 }
@@ -1230,7 +1230,6 @@ Client* ClientList::FindByAccountID(uint32 account_id) {
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-		Log(Logs::Detail, Logs::WorldServer, "ClientList[0x%08x]::FindByAccountID(%p) iterator.GetData()[%p]", this, account_id, iterator.GetData());
 		if (iterator.GetData()->GetAccountID() == account_id) {
 			Client* tmp = iterator.GetData();
 			return tmp;
@@ -1245,7 +1244,6 @@ Client* ClientList::FindByName(char* charname) {
 
 	iterator.Reset();
 	while(iterator.MoreElements()) {
-		Log(Logs::Detail, Logs::WorldServer, "ClientList[0x%08x]::FindByName(\"%s\") iterator.GetData()[%p]", this, charname, iterator.GetData());
 		if (iterator.GetData()->GetCharName() == charname) {
 			Client* tmp = iterator.GetData();
 			return tmp;

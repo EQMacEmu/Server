@@ -293,7 +293,7 @@ void ClientListEntry::Camp(ZoneServer* iZS)
 	if (!client_list.ActiveConnection(paccountid, pcharid)) {
 		database.ClearAccountActive(paccountid);
 		// remove from groups
-		Log(Logs::Detail, Logs::WorldServer, "Camp() Removing from groups: %s", this->pname);
+		LogInfo("Camp() Removing from groups: [{}]", this->pname);
 
 		uint32 groupid = database.GetGroupID(this->pname);
 		if (groupid > 0) {

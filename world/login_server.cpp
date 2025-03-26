@@ -339,7 +339,7 @@ void LoginServer::SendAccountUpdate(ServerPacket* pack)
 
 	auto* ls_account_update = (ServerLSAccountUpdate_Struct*)pack->pBuffer;
 	if (CanUpdate()) {
-		Log(Logs::Detail, Logs::WorldServer, "Sending ServerOP_LSAccountUpdate packet to loginserver: %s:%d", m_loginserver_address, m_loginserver_port);
+		LogInfo("Sending ServerOP_LSAccountUpdate packet to loginserver: [{}]:[{}]", m_loginserver_address, m_loginserver_port);
 		strn0cpy(ls_account_update->worldaccount, m_login_account.c_str(), 30);
 		strn0cpy(ls_account_update->worldpassword, m_login_password.c_str(), 30);
 		SendPacket(pack);
