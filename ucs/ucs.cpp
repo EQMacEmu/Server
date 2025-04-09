@@ -159,11 +159,6 @@ int main() {
 
 	database.LoadChatChannels();
 
-	std::signal(SIGINT, CatchSignal);
-	std::signal(SIGTERM, CatchSignal);
-	std::signal(SIGKILL, CatchSignal);
-	std::signal(SIGSEGV, CatchSignal);
-
 	std::thread(PlayerEventQueueListener).detach();
 
 	worldserverlist = new WorldServerList();

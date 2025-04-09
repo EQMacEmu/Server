@@ -999,7 +999,6 @@ void Client::SendChannelList()
 
 void Client::SendChannelMessage(std::string Message)
 {
-
 	std::string::size_type MessageStart = Message.find_first_of(" ");
 
 	if (MessageStart == std::string::npos)
@@ -1007,9 +1006,13 @@ void Client::SendChannelMessage(std::string Message)
 
 	std::string ChannelName = Message.substr(1, MessageStart - 1);
 
-	LogInfo("[{0}] tells [{1}], [[{2}]]", GetName().c_str(), ChannelName.c_str(), Message.substr(MessageStart + 1).c_str());
+	LogInfo("[{}] tells [{}], [[{}]]", GetName(), ChannelName, Message.substr(MessageStart + 1));
 
 	ChatChannel *RequiredChannel = ChannelList->FindChannel(ChannelName);
+	if (RequiredChannel == nullptr) {	// channel not found
+		GeneralChannelMessage("Channel not found.");
+		return;
+	}
 
 	if (IsRevoked()) {
 		GeneralChannelMessage("You are Revoked, you cannot chat in global channels.");
@@ -1034,9 +1037,9 @@ void Client::SendChannelMessage(std::string Message)
 		}
 	}
 
-	ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
-
 	if (RequiredChannel) {
+		ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
+
 		if (RuleB(Chat, EnableAntiSpam)) {
 			if (!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetFQName()) || RequiredChannel->IsOwner(GetFQName()) ||
 				RequiredChannel->IsModerator(GetFQName()) || IsChannelAdmin()) {

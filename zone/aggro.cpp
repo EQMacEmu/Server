@@ -1709,8 +1709,8 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 		combinedHate = (combinedHate * hateMult) / 100;
 	}
 
-	// spells on 'belly caster' NPCs do no hate if outside of melee range unless spell has no resist check
-	if (spells[spell_id].resisttype != RESIST_NONE && target->GetSpecialAbility(SpecialAbility::CastingFromRangeImmunity) && !CombatRange(target))
+	// spells on 'belly caster' NPCs do no hate if outside of melee range
+	if (target->GetSpecialAbility(SpecialAbility::CastingFromRangeImmunity) && !CombatRange(target))
 		return 0;
 
 	return combinedHate;
