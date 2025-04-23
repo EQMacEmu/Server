@@ -309,13 +309,13 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	}
 
     if (results.RowCount() == 0) {
-		LogStatus("{}: No start_zones entry in database, character create is rejected", in_pp->name);
+		LogInfo("{}: No start_zones entry in database, character create is rejected", in_pp->name);
 		// character creation will be rejected however the client message will be name rejected choose another.
 		// This is an optional to use for min expansion server side rather than setting it client side.
 		return false;
     }
     else {
-		LogStatus("{}: Found starting location in start_zones", in_pp->name);
+		LogInfo("{}: Found starting location in start_zones", in_pp->name);
 		auto row = results.begin();
 		in_pp->x = atof(row[0]);
 		in_pp->y = atof(row[1]);

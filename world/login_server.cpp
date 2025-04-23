@@ -63,7 +63,7 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	const WorldConfig* Config = WorldConfig::get();
 	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
 
-	UsertoWorldRequest_Struct* utwr = (UsertoWorldRequest_Struct*)p.Data();
+	UsertoWorldRequest* utwr = (UsertoWorldRequest*)p.Data();
 	uint32                     id = database.GetAccountIDFromLSID(utwr->lsaccountid);
 	int16                      status = database.CheckStatus(id);
 	
@@ -73,10 +73,10 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 
 	auto outpack = new ServerPacket;
 	outpack->opcode = ServerOP_UsertoWorldResp;
-	outpack->size = sizeof(UsertoWorldResponse_Struct);
+	outpack->size = sizeof(UsertoWorldResponse);
 	outpack->pBuffer = new uchar[outpack->size];
 	memset(outpack->pBuffer, 0, outpack->size);
-	UsertoWorldResponse_Struct* utwrs = (UsertoWorldResponse_Struct*)outpack->pBuffer;
+	UsertoWorldResponse* utwrs = (UsertoWorldResponse*)outpack->pBuffer;
 	utwrs->lsaccountid = utwr->lsaccountid;
 	utwrs->ToID = utwr->FromID;
 
@@ -123,9 +123,9 @@ void LoginServer::ProcessLSClientAuth(uint16_t opcode, EQ::Net::Packet& p) {
 	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
 
 	try {
-		auto slsca = p.GetSerialize<ClientAuth_Struct>(0);
+		auto slsca = p.GetSerialize<ClientAuth>(0);
 
-		client_list.CLEAdd(slsca.loginserver_account_id, slsca.account_name, slsca.key, slsca.is_world_admin, slsca.ip, slsca.is_client_from_local_network, slsca.version);
+		client_list.CLEAdd(slsca.loginserver_account_id, slsca.account_name, slsca.key, slsca.is_world_admin, slsca.ip_address, slsca.is_client_from_local_network, slsca.version);
 	}
 	catch (std::exception& ex) {
 		LogError("Error parsing LSClientAuth packet from world.\n{0}", ex.what());
@@ -273,26 +273,26 @@ void LoginServer::SendNewInfo() {
 
 	auto pack = new ServerPacket;
 	pack->opcode = ServerOP_NewLSInfo;
-	pack->size = sizeof(ServerNewLSInfo_Struct);
+	pack->size = sizeof(LoginserverNewWorldRequest);
 	pack->pBuffer = new uchar[pack->size];
 	memset(pack->pBuffer, 0, pack->size);
-	ServerNewLSInfo_Struct* l = (ServerNewLSInfo_Struct*)pack->pBuffer;
-	strcpy(l->protocolversion, EQEMU_PROTOCOL_VERSION);
-	strcpy(l->serverversion, LOGIN_VERSION);
-	strcpy(l->name, Config->LongName.c_str());
-	strcpy(l->shortname, Config->ShortName.c_str());
-	strn0cpy(l->account, m_login_account.c_str(), 30);
-	strn0cpy(l->password, m_login_password.c_str(), 30);
+	LoginserverNewWorldRequest * lsi = (LoginserverNewWorldRequest *) pack->pBuffer;
+	strcpy(lsi->protocolversion, EQEMU_PROTOCOL_VERSION);
+	strcpy(lsi->serverversion, LOGIN_VERSION);
+	strcpy(lsi->name, Config->LongName.c_str());
+	strcpy(lsi->shortname, Config->ShortName.c_str());
+	strn0cpy(lsi->account, m_login_account.c_str(), 30);
+	strn0cpy(lsi->password, m_login_password.c_str(), 30);
 	if (Config->WorldAddress.length()) {
-		strcpy(l->remote_address, Config->WorldAddress.c_str());
+		strcpy(lsi->remote_address, Config->WorldAddress.c_str());
 	}
 	if (Config->LocalAddress.length()) {
-		strcpy(l->local_address, Config->LocalAddress.c_str());
+		strcpy(lsi->local_address, Config->LocalAddress.c_str());
 	}
 	else {
 		auto local_addr = m_is_legacy ? m_legacy_client->Handle()->LocalIP() : m_client->Handle()->LocalIP();
-		strcpy(l->local_address, local_addr.c_str());
-		WorldConfig::SetLocalAddress(l->local_address);
+		strcpy(lsi->local_address, local_addr.c_str());
+		WorldConfig::SetLocalAddress(lsi->local_address);
 	}
 
 	SendPacket(pack);

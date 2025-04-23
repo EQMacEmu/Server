@@ -74,7 +74,7 @@ namespace Logs {
 		Spawns,
 		Spells,
 		Status, // deprecated
-		TCPConnection,
+		TCPConnection, // deprecated
 		Tasks,
 		Tradeskills,
 		Trading,
@@ -128,6 +128,8 @@ namespace Logs {
 		Cheat,
 		PlayerEvents,
 		HTTP,
+		NetClient,
+		NetTCP,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -159,7 +161,7 @@ namespace Logs {
 		"Spawns",
 		"Spells",
 		"Status (Deprecated)",
-		"TCP Connection",
+		"TCP Connection (Deprecated)",
 		"Tasks",
 		"Tradeskills",
 		"Trading",
@@ -212,7 +214,9 @@ namespace Logs {
 		"CombatRecord",
 		"Cheat",
 		"PlayerEvents",
-		"HTTP"
+		"HTTP",
+		"Net Server <-> Client",
+		"Net TCP"
 	};
 }
 

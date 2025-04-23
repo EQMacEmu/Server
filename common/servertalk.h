@@ -473,7 +473,7 @@ struct ServerLSInfo_Struct {
 	uint8	servertype;				// 0=world, 1=chat, 2=login, 3=MeshLogin
 };
 
-struct ServerNewLSInfo_Struct {
+struct LoginserverNewWorldRequest {
 	char	name[201];	// name the worldserver wants
 	char	shortname[50];	// shortname the worldserver wants
 	char	remote_address[125];	// DNS address of the server
@@ -538,13 +538,13 @@ struct ServerLSPlayerZoneChange_Struct {
 	uint32 to; // 0 = world
 };
 
-struct ClientAuth_Struct {
+struct ClientAuth {
 	uint32	loginserver_account_id;	// ID# in login server's db
 	char	account_name[30];		// username in login server's db
 	char	key[30];		// the Key the client will present
 	uint8	lsadmin;		// login server admin level
 	int16	is_world_admin;		// login's suggested worldadmin level setting for this user, up to the world if they want to obey it
-	uint32	ip;
+	uint32	ip_address;
 	uint8	is_client_from_local_network;			// 1 if the client is from the local network
 	uint8	version;		// Client version if Mac
 	char	forum_name[31];
@@ -552,7 +552,17 @@ struct ClientAuth_Struct {
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
-		ar(loginserver_account_id, account_name, key, lsadmin, is_world_admin, ip, is_client_from_local_network, version, forum_name);
+		ar(
+			loginserver_account_id, 
+			account_name, 
+			key, 
+			lsadmin, 
+			is_world_admin, 
+			ip_address, 
+			is_client_from_local_network, 
+			version, 
+			forum_name
+		);
 	}
 };
 
@@ -689,7 +699,7 @@ struct ServerSyncWorldList_Struct {
 	bool	placeholder;
 };
 
-struct UsertoWorldRequest_Struct {
+struct UsertoWorldRequest {
 	uint32	lsaccountid;
 	uint32	worldid;
 	uint32  ip;
@@ -699,7 +709,7 @@ struct UsertoWorldRequest_Struct {
 	char	forum_name[31];
 };
 
-struct UsertoWorldResponse_Struct {
+struct UsertoWorldResponse {
 	uint32	lsaccountid;
 	uint32	worldid;
 	int8	response; // -3) World Full, -2) Banned, -1) Suspended, 0) Denied, 1) Allowed

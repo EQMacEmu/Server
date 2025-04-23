@@ -107,7 +107,7 @@ public:
 	/**
 	* Takes the info struct we received from world and processes it.
 	*/
-	void Handle_NewLSInfo(ServerNewLSInfo_Struct* inew_world_server_info_packet);
+	void Handle_NewLSInfo(LoginserverNewWorldRequest * i);
 
 	/**
 	* Takes the status struct we received from world and processes it.

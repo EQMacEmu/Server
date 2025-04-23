@@ -62,7 +62,8 @@ void WorldServer::Reset()
 
 void WorldServer::ProcessNewLSInfo(uint16_t opcode, const EQ::Net::Packet& p)
 {
-	if (p.Length() < sizeof(ServerNewLSInfo_Struct)) {
+	if (p.Length() < sizeof(LoginserverNewWorldRequest))
+	{
 		LogError("Received application packet from server that had opcode ServerOP_NewLSInfo, "
 			"but was too small. Discarded to avoid buffer overrun.");
 		return;;
@@ -70,7 +71,7 @@ void WorldServer::ProcessNewLSInfo(uint16_t opcode, const EQ::Net::Packet& p)
 
 	LogInfo("New Login Info Recieved.");
 
-	ServerNewLSInfo_Struct* info = (ServerNewLSInfo_Struct*)p.Data();
+	LoginserverNewWorldRequest * info = (LoginserverNewWorldRequest *)p.Data();
 	Handle_NewLSInfo(info);
 }
 
@@ -94,18 +95,20 @@ void WorldServer::ProcessLSStatus(uint16_t opcode, const EQ::Net::Packet& p)
 
 void WorldServer::ProcessUsertoWorldResp(uint16_t opcode, const EQ::Net::Packet& p)
 {
-	if (p.Length() < sizeof(UsertoWorldResponse_Struct)) {
-		LogError("Recieved application packet from server that had opcode ServerOP_UsertoWorldResp, "
+	if (p.Length() < sizeof(UsertoWorldResponse))
+	{
+		LogError("Received application packet from server that had opcode ServerOP_UsertoWorldResp, "
 			"but was too small. Discarded to avoid buffer overrun.");
 		return;
 	}
 
 	LogInfo("User-To-World Response received.");
 
-	auto* user_to_world_response = (UsertoWorldResponse_Struct*)p.Data();
+	UsertoWorldResponse*user_to_world_response = (UsertoWorldResponse*)p.Data();
 	LogInfo("Trying to find client with user id of [{0}].", user_to_world_response->lsaccountid);
 	Client* c = server.client_manager->GetClient(user_to_world_response->lsaccountid);
-	if (c && c->GetClientVersion() == cv_old) {
+	if (c && (c->GetClientVersion() == cv_old))
+	{
 		in_addr in{};
 		in.s_addr = c->GetConnection()->GetRemoteIP();
 		std::string client_addr = inet_ntoa(in);
@@ -230,7 +233,7 @@ void WorldServer::ProcessLSAccountUpdate(uint16_t opcode, const EQ::Net::Packet&
 	}
 }
 
-void WorldServer::Handle_NewLSInfo(ServerNewLSInfo_Struct* i)
+void WorldServer::Handle_NewLSInfo(LoginserverNewWorldRequest *i)
 {
 	if(m_is_server_logged_in) {
 		LogError("WorldServer::Handle_NewLSInfo called but the login server was already marked as logged in, aborting.");
@@ -467,17 +470,17 @@ void WorldServer::Handle_LSStatus(ServerLSStatus_Struct *s)
 
 void WorldServer::SendClientAuth(std::string ip, std::string account, std::string key, unsigned int account_id, uint8 version)
 {
-	auto outapp = new ServerPacket(ServerOP_LSClientAuth, sizeof(ClientAuth_Struct));
-	ClientAuth_Struct* client_auth = (ClientAuth_Struct*)outapp->pBuffer;
+	auto outapp = new ServerPacket(ServerOP_LSClientAuth, sizeof(ClientAuth));
+	ClientAuth* client_auth = (ClientAuth*)outapp->pBuffer;
 
 	client_auth->loginserver_account_id = account_id;
 	strncpy(client_auth->account_name, account.c_str(), account.size() > 30 ? 30 : account.size());
 	strncpy(client_auth->key, key.c_str(), 10);
 	client_auth->lsadmin = 0;
 	client_auth->is_world_admin = 0;
-	client_auth->ip = inet_addr(ip.c_str());
+	client_auth->ip_address = inet_addr(ip.c_str());
 	client_auth->version = version;
-
+	
 	std::string client_address(ip);
 	std::string world_address(m_connection->Handle()->RemoteIP());
 

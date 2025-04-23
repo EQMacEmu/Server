@@ -206,14 +206,14 @@ void ServerManager::SendUserToWorldRequest(const char* server_id, unsigned int c
 	while (iter != m_world_servers.end()) {
 		if ((*iter)->GetRemoteIP() == server_id || (*iter)->GetLocalIP() == server_id) {
 			EQ::Net::DynamicPacket outapp;
-			outapp.Resize(sizeof(UsertoWorldRequest_Struct));
-			UsertoWorldRequest_Struct* r = (UsertoWorldRequest_Struct*)outapp.Data();
+			outapp.Resize(sizeof(UsertoWorldRequest));
+			UsertoWorldRequest* utwr = (UsertoWorldRequest*)outapp.Data();
 
 			//utwr->worldid = (*iter)->GetServerListID(); //This pulls preffered status instead of actual ID? That does not seem right.
-			r->worldid = (*iter)->GetServerId();
+			utwr->worldid = (*iter)->GetServerId();
 
-			r->lsaccountid = client_account_id;
-			r->ip = ip;
+			utwr->lsaccountid = client_account_id;
+			utwr->ip = ip;
 			(*iter)->GetConnection()->Send(ServerOP_UsertoWorldReq, outapp);
 			found = true;
 
