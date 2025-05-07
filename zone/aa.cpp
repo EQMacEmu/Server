@@ -483,7 +483,7 @@ NPC *Mob::CreateTemporaryPet(const NPCType *npc_type, uint32 pet_duration_second
 	return swarm_pet_npc;
 }
 
-void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, uint32 duration_override, bool followme, bool sticktarg)
+void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, uint32 duration_override, bool followme, bool sticktarg, const char *pettype_override)
 {
 	//It might not be a bad idea to put these into the database, eventually..
 
@@ -495,11 +495,13 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 		return;
 	}
 
+	const char *pettype = pettype_override ? pettype_override : spells[spell_id].teleport_zone;
+
 	PetRecord record;
-	if (!database.GetPetEntry(spells[spell_id].teleport_zone, &record))
+	if (!database.GetPetEntry(pettype, &record))
 	{
 		LogError("Unknown swarm pet spell id: {}, check pets table", spell_id);
-		Message(Chat::Red, "Unable to find data for pet %s", spells[spell_id].teleport_zone);
+		Message(Chat::Red, "Unable to find data for pet %s", pettype);
 		return;
 	}
 
@@ -538,7 +540,7 @@ void Mob::TemporaryPets(uint16 spell_id, Mob *targ, const char *name_override, u
 	pet->sticktarg = sticktarg;
 
 	// Wake The Dead
-	if (!strcmp(spells[spell_id].teleport_zone, "animateDead"))
+	if (!strcmp(pettype, "animateDead"))
 	{
 		Corpse* corpse;
 		

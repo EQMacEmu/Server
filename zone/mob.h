@@ -641,7 +641,7 @@ public:
 	inline void Silence(bool newval) { silenced = newval; }
 	inline void Amnesia(bool newval) { amnesiad = newval; }
 	NPC *CreateTemporaryPet(const NPCType* npc_type, uint32 pet_duration_seconds, uint32 target_id, bool followme, bool sticktarg, glm::vec4 position);
-	void TemporaryPets(uint16 spell_id, Mob *target, const char *name_override = nullptr, uint32 duration_override = 0, bool followme=true, bool sticktarg=false);
+	void TemporaryPets(uint16 spell_id, Mob *target, const char *name_override = nullptr, uint32 duration_override = 0, bool followme=true, bool sticktarg=false, const char *pettype_override = nullptr);
 	void CopyWakeCorpse(NPCType *make_npc, Corpse *CorpseToUse);
 	void Spin();
 	void Kill();

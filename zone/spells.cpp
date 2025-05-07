@@ -3180,6 +3180,17 @@ bool Mob::SpellOnTarget(uint16 spell_id, Mob* spelltar, bool reflect, bool use_r
 			TemporaryPets(spell_id, GetTarget(), pet_name, 2);
 		}
 	}
+	else if (spell_id == SPELL_TIME_STRIKE) // Hammer of the Timeweaver proc
+	{
+		// Because this is normally a damage spell that we're overriding the behavior for, the OP_Damage packet that generates the spell message won't be sent above.
+		// This is ok, because these don't generate a message anyway.
+		if (GetTarget() && (GetTarget()->IsNPC() || GetTarget()->IsClient()))
+		{
+			char pet_name[64];
+			snprintf(pet_name, sizeof(pet_name), "%s`s_pet", GetCleanName());
+			TemporaryPets(spell_id, GetTarget(), pet_name, 2, true, false, "SwarmPet811");
+		}
+	}
 	else if (!spelltar->SpellEffect(this, spell_id, buffslot, clevel, spell_effectiveness, current_buff_refresh))
 	{
 		// if SpellEffect() returned false there's a problem applying the effects (invalid spell.)

@@ -583,6 +583,12 @@ bool IsPartialCapableSpell(uint16 spell_id)
 
 bool IsResistableSpell(uint16 spell_id)
 {
+	// this spell has custom behavior on TAKP
+	if (spell_id == SPELL_TIME_STRIKE)
+	{
+		return false;
+	}
+
 	// for now only detrimental spells are resistable. later on i will
 	// add specific exceptions for the beneficial spells that are resistable
 	// Torven: dispels do not have a MR check; they have a different check that is entirely level based
