@@ -1166,3 +1166,36 @@ bool Strings::SanitizeChatString(std::string &in_string)
 
 	return false;
 }
+
+std::string Strings::Slugify(const std::string &input, const std::string &separator) {
+	std::string slug;
+	bool last_was_hyphen = false;
+
+	for (char c : input) {
+		if (std::isalnum(c)) {
+			slug += std::tolower(c);
+			last_was_hyphen = false;
+		}
+		else if (c == ' ' || c == '_' || c == '-') {
+			if (!last_was_hyphen && !slug.empty()) {
+				slug += separator;
+				last_was_hyphen = true;
+			}
+		}
+	}
+
+	// Remove trailing hyphen if present
+	if (!slug.empty() && slug.back() == '-') {
+		slug.pop_back();
+	}
+
+	return slug;
+}
+
+bool Strings::IsValidJson(const std::string &json)
+{
+	rapidjson::Document    doc;
+	rapidjson::ParseResult result = doc.Parse(json.c_str());
+
+	return result;
+}

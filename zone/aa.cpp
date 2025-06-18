@@ -871,12 +871,6 @@ void Client::BuyAA(AA_Action* action)
 			strncpy(aa_type, "Ranked", 8);
 		}
 
-		/* QS: Player_Log_AA_Purchases */
-		if (RuleB(QueryServ, PlayerLogAAPurchases))
-		{
-			QServ->QSAAPurchases(this->CharacterID(), this->GetZoneID(), aa_type, aa2->name, aa2->id, real_cost);
-		}
-
 		SendAAStats();
 
 		CalcBonuses();

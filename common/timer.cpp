@@ -131,6 +131,19 @@ void Timer::Start(uint32 duration, bool ChangeResetTimer)
 	enabled = true;
 }
 
+/* This timer updates the timer without restarting it */
+void Timer::SetTimer(uint32 duration) {
+	/* If we were disabled before => restart the timer */
+	if (!enabled) {
+		TriggerTime = current_time;
+		enabled = true;
+	}
+	if (duration != 0) {
+		TriggerTime = duration;
+		TriggerEra = duration;
+	}
+}
+
 uint32 Timer::GetRemainingTime() const {
 	if (enabled)
 	{

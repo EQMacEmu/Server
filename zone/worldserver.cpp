@@ -58,14 +58,15 @@
 #include "queryserv.h"
 #include "../common/events/player_event_logs.h"
 
-extern EntityList entity_list;
-extern Zone* zone;
-extern volatile bool is_zone_loaded;
-extern void Shutdown();
-extern WorldServer worldserver;
-extern PetitionList petition_list;
-extern uint32 numclients;
-extern QuestParserCollection* parse;
+extern EntityList           entity_list;
+extern Zone                 *zone;
+extern volatile bool        is_zone_loaded;
+extern void                 Shutdown();
+extern WorldServer           worldserver;
+extern PetitionList          petition_list;
+extern uint32                numclients;
+extern QuestParserCollection *parse;
+extern QueryServ             *QServ;
 
 WorldServer::WorldServer()
 {

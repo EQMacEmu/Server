@@ -1,16 +1,20 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 SET(qserv_sources
-	database.cpp
-	queryserv.cpp
-	queryservconfig.cpp
-	worldserver.cpp
+    database.cpp
+    queryserv.cpp
+    queryservconfig.cpp
+    worldserver.cpp
+    zonelist.cpp
+    zoneserver.cpp
 )
 
 SET(qserv_headers
-	database.h
-	queryservconfig.h
-	worldserver.h
+    database.h
+    queryservconfig.h
+    worldserver.h
+    zonelist.h
+    zoneserver.h
 )
 
 ADD_EXECUTABLE(queryserv ${qserv_sources} ${qserv_headers})

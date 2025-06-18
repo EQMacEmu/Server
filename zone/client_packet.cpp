@@ -637,11 +637,6 @@ void Client::CompleteConnect()
 	if (firstlogon == 1){
 		parse->EventPlayer(EVENT_CONNECT, this, "", 0);
 		RecordPlayerEventLog(PlayerEvent::WENT_ONLINE, PlayerEvent::EmptyEvent{});
-		/* QS: PlayerLogConnectDisconnect */
-		if (RuleB(QueryServ, PlayerLogConnectDisconnect)){
-			std::string event_desc = StringFormat("Connect :: Logged into zoneid:%i", this->GetZoneID());
-			QServ->PlayerLogEvent(Player_Log_Connect_State, this->CharacterID(), event_desc);
-		}
 
 		/**
 		* Update last login since this doesn't get updated until a late save later so we can update online status
@@ -2502,9 +2497,6 @@ void Client::Handle_OP_CastSpell(const EQApplicationPacket *app)
 
 	if (Admin() > 20 && GetGM() && IsValidSpell(castspell->spell_id)) {
 		Mob* SpellTarget = entity_list.GetMob(castspell->target_id);
-		char szArguments[512];
-		sprintf(szArguments, "ID %i (%s), Slot %i, InvSlot %i", castspell->spell_id, spells[castspell->spell_id].name, castspell->slot, castspell->inventoryslot);
-		QServ->QSLogCommands(this, "spell", szArguments, SpellTarget);
 	}
 
 
@@ -4094,7 +4086,6 @@ void Client::Handle_OP_GMFind(const EQApplicationPacket *app)
 	}
 	//Break down incoming
 	GMSummon_Struct* request = (GMSummon_Struct*)app->pBuffer;
-	QServ->QSLogCommands(this, "/find", request->charname);
 	//Create a new outgoing
 	auto outapp = new EQApplicationPacket(OP_GMFind, sizeof(GMSummon_Struct));
 	GMSummon_Struct* foundplayer = (GMSummon_Struct*)outapp->pBuffer;
@@ -4128,8 +4119,6 @@ void Client::Handle_OP_GMGoto(const EQApplicationPacket *app)
 		return;
 	}
 	GMSummon_Struct* gmg = (GMSummon_Struct*)app->pBuffer;
-
-	QServ->QSLogCommands(this, "/goto", gmg->charname);
 
 	Mob* gt = entity_list.GetMob(gmg->charname);
 	if (gt != nullptr) {
@@ -4165,11 +4154,7 @@ void Client::Handle_OP_GMHideMe(const EQApplicationPacket *app)
 	Message(Chat::Red, "#: %i, %i", sa->type, sa->parameter);
 	SetHideMe(!sa->parameter);
 
-	char szArg[5];
-	sprintf(szArg, "%i", sa->parameter);
-	QServ->QSLogCommands(this, "/hideme", szArg);
 	return;
-
 }
 
 void Client::Handle_OP_GMKick(const EQApplicationPacket *app)
@@ -4219,7 +4204,6 @@ void Client::Handle_OP_GMKill(const EQApplicationPacket *app)
 	Mob* obj = entity_list.GetMob(gmk->name);
 	Client* client = entity_list.GetClientByName(gmk->name);
 	if (obj != 0) {
-		QServ->QSLogCommands(this, "/kill", gmk->name);
 		if (client != 0) {
 			entity_list.QueueClients(this, app);
 		}
@@ -4400,8 +4384,6 @@ void Client::Handle_OP_GMServers(const EQApplicationPacket *app)
 		return;
 	}
 
-	QServ->QSLogCommands(this, "/server", 0);
-
 	auto pack = new ServerPacket(ServerOP_ZoneStatus, sizeof(ServerZoneStatus_Struct));
 
 	auto z = (ServerZoneStatus_Struct*)pack->pBuffer;
@@ -4447,9 +4429,6 @@ void Client::Handle_OP_GMToggle(const EQApplicationPacket *app)
 	}
 	UpdateWho();
 
-	char szArg[5];
-	sprintf(szArg, "%i", ts->toggle);
-	QServ->QSLogCommands(this, "/toggle", szArg);
 	return;
 }
 
@@ -4526,9 +4505,6 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 	QueuePacket(outapp);
 	safe_delete(outapp);
 
-	char szArg[5];
-	sprintf(szArg, "%i", gmzr->zone_id);
-	QServ->QSLogCommands(this, "/zone", szArg);
 	return;
 }
 
@@ -4546,10 +4522,6 @@ void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 
 	uint32 zonereq = *((uint32 *)app->pBuffer);
 	GoToSafeCoords(zonereq);
-
-	char szArg[5];
-	sprintf(szArg, "%i", zonereq);
-	QServ->QSLogCommands(this, "/zone2", szArg);
 
 	return;
 }
@@ -7241,8 +7213,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			sizeof(Merchant_Sell_Struct), app->size);
 		return;
 	}
-	RDTSC_Timer t1;
-	t1.start();
+	
 	Merchant_Sell_Struct* mp = (Merchant_Sell_Struct*)app->pBuffer;
 #if EQDEBUG >= 11
 	Log(Logs::General, Logs:Trading, "%s, purchase item..", GetName());
@@ -7522,19 +7493,6 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			entity_list.SendMerchantInventory(tmp);
 		}
 	}
-	safe_delete(inst);
-	safe_delete(outapp);
-	safe_delete(returnapp);
-
-	// start QS code
-	// stacking purchases not supported at this time - entire process will need some work to catch them properly
-	if (RuleB(QueryServ, PlayerLogMerchantTransactions))
-	{
-		QServ->QSMerchantTransactions(character_id, zone->GetZoneID(), freeslotid == INVALID_INDEX ? 0 : freeslotid,
-			item->ID, mpo->quantity, tmp->CastToNPC()->MerchantType, 0, 0, 0, 0, 1,
-			mpo->price / 1000, (mpo->price / 100) % 10, (mpo->price / 10) % 10, mpo->price % 10, 0);
-	}
-	// end QS code
 
 	if (player_event_logs.IsEventEnabled(PlayerEvent::MERCHANT_PURCHASE)) {
 		auto e = PlayerEvent::MerchantPurchaseEvent{
@@ -7545,17 +7503,16 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 			.item_name = item->Name,
 			.charges = static_cast<int16>(mpo->quantity),
 			.cost = mpo->price,
-			.alternate_currency_id = 0,
 			.player_money_balance = GetCarriedMoney(),
-			.player_currency_balance = 0,
 		};
 		RecordPlayerEventLog(PlayerEvent::MERCHANT_PURCHASE, e);
 	}
 
 	CheckItemDiscoverability(item->ID);
 
-	t1.stop();
-	return;
+	safe_delete(inst);
+	safe_delete(outapp);
+	safe_delete(returnapp);
 }
 
 void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app) 
@@ -7649,15 +7606,6 @@ void Client::Handle_OP_ShopPlayerSell(const EQApplicationPacket *app)
 
 		safe_delete(inst2);
 	}
-
-	// start QS code
-	if (RuleB(QueryServ, PlayerLogMerchantTransactions))
-	{
-		QServ->QSMerchantTransactions(character_id, zone->GetZoneID(), mp->itemslot,
-			itemid, charges, vendor->CastToNPC()->MerchantType, price / 1000, (price / 100) % 10,
-			(price / 10) % 10, price % 10, 0, 0, 0, 0, 0, 1);
-	}
-	// end QS code
 
 	if (player_event_logs.IsEventEnabled(PlayerEvent::MERCHANT_SELL)) {
 		auto e = PlayerEvent::MerchantSellEvent{
@@ -8379,26 +8327,8 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 			else  {
 				other->PlayerTradeEventLog(other->trade, trade);
 
-				// start QS code
-				if (RuleB(QueryServ, PlayerLogTrades)) {
-					QSPlayerLogTrade_Struct event_entry;
-					memset(&event_entry, 0, sizeof(QSPlayerLogTrade_Struct));
-
-					// Perform actual trade
-					this->FinishTrade(other, true, &event_entry);
-					other->FinishTrade(this, false, &event_entry);
-
-					QSPlayerLogTrade_Struct *QS = new struct QSPlayerLogTrade_Struct;
-					memcpy(QS, &event_entry, sizeof(QSPlayerLogTrade_Struct));
-
-					QServ->QSPlayerTrade(QS);
-					safe_delete(QS);
-					// end QS code
-				}
-				else {
-					FinishTrade(other);
-					other->FinishTrade(this);
-				}
+				FinishTrade(other);
+				other->FinishTrade(this);
 
 				other->trade->Reset();
 				trade->Reset();
@@ -8412,8 +8342,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 	// Trading with a Mob object that is not a Client.
 	else if (with) {
 
-		if(with->IsNPC() && with->IsEngaged())
-		{
+		if(with->IsNPC() && with->IsEngaged()) {
 			SendCancelTrade(with);
 			Log(Logs::General, Logs::Trading, "Cancelled in-progress trade due to %s being in combat.", with->GetCleanName());
 			return;
@@ -8427,8 +8356,7 @@ void Client::Handle_OP_TradeAcceptClick(const EQApplicationPacket *app)
 		QueuePacket(outapp);
 		safe_delete(outapp);
 
-		if (with->IsNPC()) 
-		{
+		if (with->IsNPC()) {
 			FinishTrade(with->CastToNPC());
 		}
 		trade->Reset();
@@ -9271,6 +9199,11 @@ struct RecordKillCheck {
 
 void Client::RecordKilledNPCEvent(NPC *n)
 {
+	if (!n) {
+		LogError("NPC passed was invalid.");
+		return;
+	}
+
 	bool is_named = Strings::Contains(n->GetName(), "#") && !n->IsRaidTarget();
 
 	std::vector<RecordKillCheck> checks = {

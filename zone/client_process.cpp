@@ -666,12 +666,6 @@ void Client::OnDisconnect(bool hard_disconnect) {
 
 		parse->EventPlayer(EVENT_DISCONNECT, this, "", 0);
 		RecordPlayerEventLog(PlayerEvent::WENT_OFFLINE, PlayerEvent::EmptyEvent{});
-
-		/* QS: PlayerLogConnectDisconnect */
-		if (RuleB(QueryServ, PlayerLogConnectDisconnect)){
-			std::string event_desc = StringFormat("Disconnect :: in zoneid:%i", this->GetZoneID());
-			QServ->PlayerLogEvent(Player_Log_Connect_State, this->CharacterID(), event_desc);
-		}
 	}
 
 	Mob *Other = trade->With();
@@ -1574,42 +1568,6 @@ void Client::OPMoveCoin(const EQApplicationPacket* app)
 		safe_delete(outapp);
 	}
 
-	if (RuleB(QueryServ, PlayerLogMoneyTransactions))
-	{
-		if (mc->to_slot == -1 || mc->to_slot == 3 || 
-			(RuleB(QueryServ, PlayerLogBankTransactions) && (mc->to_slot == 2 || mc->from_slot == 2)))
-		{
-			uint32 ToCharID = 0;
-			uint32 ToNPC = 0;
-			uint32 amount = amount_to_take;
-			int32 slot = mc->to_slot;
-			if (mc->to_slot == 2 || mc->from_slot == 2)
-			{
-				amount = mc->amount;
-				if (mc->from_slot == 2)
-				{
-					slot = 99;
-				}
-			}
-			else if (mc->to_slot == 3)
-			{
-				amount = amount_to_add;
-				if (trader)
-				{
-					if (trader->IsClient())
-					{
-						ToCharID = trader->CastToClient()->CharacterID();
-					}
-					else if (trader->IsNPC())
-					{
-						ToNPC = trader->GetNPCTypeID();
-					}
-				}
-			}
-			QServ->QSCoinMove(CharacterID(), ToCharID, ToNPC, slot, amount, mc->cointype2);
-		}
-	}
-
 	SaveCurrency();
 	RecalcWeight();
 }
@@ -1869,7 +1827,6 @@ void Client::OPGMSummon(const EQApplicationPacket *app)
 		{
 			return;
 		}
-		QServ->QSLogCommands(this, "/summon", gms->charname);
 		if(st)
 		{
 			if(st->IsClient())

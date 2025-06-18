@@ -38,6 +38,7 @@ public:
 	void Enable();
 	void Disable();
 	void Start(uint32 duration = 0, bool ChangeResetTimer = true);
+	void SetTimer(uint32 duration = 0);
 	uint32 GetRemainingTime() const;
 	void Trigger();
 	void Reset();

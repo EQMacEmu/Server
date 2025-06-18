@@ -4,6 +4,7 @@
 #include <string>
 #include <cereal/cereal.hpp>
 #include "../types.h"
+#include "../rulesys.h"
 #include "../repositories/player_event_logs_repository.h"
 
 namespace PlayerEvent {
@@ -56,6 +57,7 @@ namespace PlayerEvent {
 		KILLED_NAMED_NPC,
 		KILLED_RAID_NPC,
 		ITEM_CREATION,
+		SPEECH,
 		MAX // dont remove
 	};
 
@@ -112,7 +114,8 @@ namespace PlayerEvent {
 		"Killed NPC",
 		"Killed Named NPC",
 		"Killed Raid NPC",
-		"Item Creation"
+		"Item Creation",
+		"Player Speech"
 	};
 
 	// Generic struct used by all events
@@ -207,22 +210,22 @@ namespace PlayerEvent {
 	};
 
 	// used in Trade event
-	struct TradeItem {
-		int64       item_id;
-		std::string item_name;
-		int32       slot;
-
+	//struct TradeItem {
+	//	int64       item_id;
+	//	std::string item_name;
+	//	int32       slot;
+	//
 		// cereal
-		template<class Archive>
-		void serialize(Archive &ar)
-		{
-			ar(
-				CEREAL_NVP(item_id),
-				CEREAL_NVP(item_name),
-				CEREAL_NVP(slot)
-			);
-		}
-	};
+	//	template<class Archive>
+	//	void serialize(Archive &ar)
+	//	{
+	//		ar(
+	//			CEREAL_NVP(item_id),
+	//			CEREAL_NVP(item_name),
+	//			CEREAL_NVP(slot)
+	//		);
+	//	}
+	//};
 
 	// used in Trade event
 	class TradeItemEntry {
@@ -232,6 +235,7 @@ namespace PlayerEvent {
 		std::string item_name;
 		uint16      charges;
 		bool        in_bag;
+
 
 		// cereal
 		template<class Archive>
@@ -903,30 +907,74 @@ namespace PlayerEvent {
 			);
 		}
 	};
+
+	struct PlayerSpeech {
+		std::string to;
+		std::string from;
+		uint32      guild_id;
+		int16       min_status;
+		uint32      type;
+		std::string message;
+
+		template<class Archive>
+		void serialize(Archive &ar)
+		{
+			ar(
+				CEREAL_NVP(to),
+				CEREAL_NVP(from),
+				CEREAL_NVP(guild_id),
+				CEREAL_NVP(min_status),
+				CEREAL_NVP(type),
+				CEREAL_NVP(message)
+			);
+		}
+	};
 }
 
 #endif //EQEMU_PLAYER_EVENTS_H
 
 #define RecordPlayerEventLog(event_type, event_data) do {\
     if (player_event_logs.IsEventEnabled(event_type)) {\
-        worldserver.SendPacket(\
-            player_event_logs.RecordEvent(\
-                event_type,\
-                GetPlayerEvent(),\
-                event_data\
-            ).get()\
-        );\
+        if (RuleB(Logging, PlayerEventsQSProcess)) {\
+            QServ->SendPacket(\
+                player_event_logs.RecordEvent(\
+                    event_type,\
+                    GetPlayerEvent(),\
+                    event_data\
+                ).get()\
+            );\
+        }                                                                                                          \
+        else {                                                                                                     \
+            worldserver.SendPacket(\
+                player_event_logs.RecordEvent(\
+                    event_type,\
+                    GetPlayerEvent(),\
+                    event_data\
+                ).get()\
+            );\
+        }\
     }\
 } while (0)
 
 #define RecordPlayerEventLogWithClient(c, event_type, event_data) do {\
     if (player_event_logs.IsEventEnabled(event_type)) {\
-        worldserver.SendPacket(\
-            player_event_logs.RecordEvent(\
-                event_type,\
-                (c)->GetPlayerEvent(),\
-                event_data\
-            ).get()\
-        );\
+        if (RuleB(Logging, PlayerEventsQSProcess)) {\
+            QServ->SendPacket(\
+                player_event_logs.RecordEvent(\
+                    event_type,\
+                    (c)->GetPlayerEvent(),\
+                    event_data\
+                ).get()\
+            );\
+        }\
+        else {\
+            worldserver.SendPacket(\
+                player_event_logs.RecordEvent(\
+                    event_type,\
+                    (c)->GetPlayerEvent(),\
+                    event_data\
+                ).get()\
+            );\
+        }\
     }\
 } while (0)

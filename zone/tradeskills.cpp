@@ -315,12 +315,6 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 
 		Log(Logs::Detail, Logs::Tradeskills, "Combine success");
 
-		/* QS: Player_Log_Trade_Skill_Events */
-		if (RuleB(QueryServ, PlayerLogTradeSkillEvents))
-		{
-			QServ->QSTSEvents(this->CharacterID(), this->GetZoneID(), "Success", spec->recipe_id, spec->tradeskill, spec->trivial, chance);
-		}
-
 		itr = spec->onsuccess.begin();
 		while(itr != spec->onsuccess.end() && !spec->quest) 
 		{
@@ -361,13 +355,6 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 			entity_list.MessageGroup(this,true, Chat::Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == Gender::Male ? "his" : this->GetGender() == Gender::Female ? "her" : "its");
 
 		}
-
-		/* QS: Player_Log_Trade_Skill_Events */
-		if (RuleB(QueryServ, PlayerLogTradeSkillEvents))
-		{
-			QServ->QSTSEvents(this->CharacterID(), this->GetZoneID(), "Failed", spec->recipe_id, spec->tradeskill, spec->trivial, chance);
-		}
-
 
 		itr = spec->onfail.begin();
 		while(itr != spec->onfail.end()) 

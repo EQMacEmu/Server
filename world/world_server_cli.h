@@ -15,6 +15,7 @@ public:
 	static void DatabaseDump(int argc, char **argv, argh::parser &cmd, std::string &description);
 	static void TestCommand(int argc, char **argv, argh::parser &cmd, std::string &description);
 	static void ExpansionTestCommand(int argc, char **argv, argh::parser &cmd, std::string &description);
+	static void EtlGetSettings(int argc, char **argv, argh::parser &cmd, std::string &description);
 };
 
 

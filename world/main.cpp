@@ -168,6 +168,9 @@ int main(int argc, char** argv) {
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
 
+	Timer player_event_log_process(1000);
+	player_event_log_process.Start(1000);
+
 	// global loads
 	LogInfo("Loading launcher list..");
 	launcher_list.LoadList();
@@ -346,7 +349,9 @@ int main(int argc, char** argv) {
 	EQStreamInterface *eqsi;
 
 	Timer player_event_process_timer(1000);
-	player_event_logs.SetDatabase(&database)->Init();
+	if (player_event_logs.LoadDatabaseConnection()) {
+		player_event_logs.Init();
+	}
 
 	auto loop_fn = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
@@ -423,7 +428,7 @@ int main(int argc, char** argv) {
 		client_list.Process();
 		
 		if (player_event_process_timer.Check()) {
-			player_event_logs.Process();
+			std::jthread event_thread(&PlayerEventLogs::Process, &player_event_logs);
 		}
 
 		if(EQTimeTimer.Check()) {
@@ -447,6 +452,12 @@ int main(int argc, char** argv) {
 		timeout_manager.CheckTimeouts();
 		zoneserver_list.Process();
 		launcher_list.Process();
+
+		if (!RuleB(Logging, PlayerEventsQSProcess)) {
+			if (player_event_log_process.Check()) {
+				player_event_logs.Process();
+			}
+		}
 
 		if (InterserverTimer.Check()) {
 			InterserverTimer.Start();

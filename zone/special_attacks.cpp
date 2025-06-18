@@ -552,7 +552,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 			skill_type = EQ::skills::SkillDragonPunch;
 			base = EQ::skills::GetSkillBaseDamage(EQ::skills::SkillDragonPunch, GetSkill(EQ::skills::SkillDragonPunch));
 			itemslot = EQ::invslot::slotHands;
-			anim_type = DoAnimation::Slam;
+			anim_type = DoAnimation::TigerClaw;
 			reuse = TailRakeReuseTime;
 			break;
 		}

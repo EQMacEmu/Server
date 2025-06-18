@@ -26,6 +26,7 @@ void WorldserverCLI::CommandHandler(int argc, char **argv)
 	function_map["database:dump"]               = &WorldserverCLI::DatabaseDump;
 	function_map["test:test"]                   = &WorldserverCLI::TestCommand;
 	function_map["test:expansion"]              = &WorldserverCLI::ExpansionTestCommand;
+	function_map["etl:settings"]                = &WorldserverCLI::EtlGetSettings;
 
 	EQEmuCommand::HandleMenu(function_map, cmd, argc, argv);
 }
@@ -37,3 +38,4 @@ void WorldserverCLI::CommandHandler(int argc, char **argv)
 #include "cli/test.cpp"
 #include "cli/test_expansion.cpp"
 #include "cli/version.cpp"
+#include "cli/etl_get_settings.cpp"

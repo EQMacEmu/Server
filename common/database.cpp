@@ -2256,3 +2256,20 @@ bool Database::NoRentExpired(const char* name) {
 
 	return (seconds>1800);
 }
+
+uint64_t Database::GetNextTableId(const std::string &table_name)
+{
+	auto results = QueryDatabase(fmt::format("SHOW TABLE STATUS LIKE '{}'", table_name));
+
+	for (auto row : results) {
+		for (int row_index = 0; row_index < results.ColumnCount(); row_index++) {
+			std::string field_name = Strings::ToLower(results.FieldName(row_index));
+			if (field_name == "auto_increment") {
+				std::string value = row[row_index] ? row[row_index] : "null";
+				return Strings::ToUnsignedBigInt(value, 1);
+			}
+		}
+	}
+
+	return 1;
+}

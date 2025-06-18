@@ -1395,17 +1395,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			UCSLink.SendPacket(pack);
 			break;
 		}
-		case ServerOP_QSPlayerAARateHourly:
-		case ServerOP_QSPlayerAAPurchase:
-		case ServerOP_QSPlayerTSEvents:
-		case ServerOP_QSPlayerQGlobalUpdates:
-		case ServerOP_QSPlayerLogItemDeletes:
-		case ServerOP_QSPlayerLogItemMoves:
-		case ServerOP_QSPlayerLogMerchantTransactions:
-		case ServerOP_QSPlayerLootRecords:
-		case ServerOP_QSSendQuery:
-		case ServerOP_QueryServGeneric:
-		case ServerOP_Speech: {
+		case ServerOP_QueryServGeneric:{
 			QSLink.SendPacket(pack);
 			break;
 		}

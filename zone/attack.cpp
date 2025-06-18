@@ -1537,17 +1537,6 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 		GoToDeath();
 	}
 
-	/* QS: PlayerLogDeaths */
-	if (RuleB(QueryServ, PlayerLogDeaths))
-	{
-		std::string killer_name = "NONE";
-		if (killerMob)
-		{
-			killer_name = killerMob->GetCleanName();
-		}
-		QServ->QSDeathBy(this->CharacterID(), this->GetZoneID(), killer_name, spell, damage, killedby);
-	}
-
 	if (player_event_logs.IsEventEnabled(PlayerEvent::DEATH)) {
 		auto e = PlayerEvent::DeathEvent{
 			.killer_id = killerMob ? static_cast<uint32>(killerMob->GetID()) : static_cast<uint32>(0),
@@ -2237,8 +2226,6 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 			}
 
 			Log(Logs::Detail, Logs::Death, "Raid kill %s a killsteal.", fte_charid != 0 ? "is" : "is not");
-			// QueryServ Logging - Raid Kills
-			QServ->QSNPCKills(GetNPCTypeID(), GetZoneID(), 2, charids, fte_charid);
 		}
 		charids.clear();
 	}
@@ -2271,8 +2258,6 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 			}
 
 			Log(Logs::Detail, Logs::Death, "Group kill %s a killsteal.", fte_charid != 0 ? "is" : "is not");
-			// QueryServ Logging - Raid Kills
-			QServ->QSNPCKills(GetNPCTypeID(), GetZoneID(), 2, charids, fte_charid);
 		}
 		charids.clear();
 	}
@@ -2301,7 +2286,6 @@ void NPC::GiveExp(Client* give_exp_client, bool &xp)
 			}
 
 			Log(Logs::Detail, Logs::Death, "Solo kill %s a killsteal.", fte_charid != 0 ? "is" : "is not");
-			QServ->QSNPCKills(GetNPCTypeID(), GetZoneID(), 0, charids, fte_charid);
 		}
 		charids.clear();
 	}

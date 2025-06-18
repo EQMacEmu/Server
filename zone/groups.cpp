@@ -170,13 +170,6 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 				};
 				RecordPlayerEventLogWithClient(member_client, PlayerEvent::SPLIT_MONEY, e);
 			}
-
-			if (RuleB(QueryServ, PlayerLogMoneyTransactions))
-			{
-				uint32 fromid = splitter ? splitter->CharacterID() : 0;
-				uint32 copper = (platinum_split * 1000) + (gold_split * 100) + (silver_split * 10) + copper_split;
-				QServ->QSCoinMove(fromid, members[i]->CastToClient()->CharacterID(), 0, 100, copper);
-			}
 		}
 	}
 }

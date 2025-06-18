@@ -25,6 +25,7 @@
 #include "zonedb.h"
 #include "../common/events/player_event_logs.h"
 #include "../common/repositories/character_corpse_items_repository.h"
+#include "queryserv.h"
 
 extern WorldServer worldserver;
 extern QueryServ* QServ;
@@ -303,10 +304,10 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 
 	if (player_event_logs.IsEventEnabled(PlayerEvent::ITEM_CREATION)) {
 		auto e = PlayerEvent::ItemCreationEvent{};
-		e.item_id = item->ID;
+		e.item_id   = item->ID;
 		e.item_name = item->Name;
-		e.to_slot = to_slot;
-		e.charges = quantity;
+		e.to_slot   = to_slot;
+		e.charges   = quantity;
 
 		RecordPlayerEventLog(PlayerEvent::ITEM_CREATION, e);
 	}
@@ -358,10 +359,10 @@ void Client::DropItem(int16 slot_id)
 
 		if (player_event_logs.IsEventEnabled(PlayerEvent::DROPPED_ITEM)) {
 			auto e = PlayerEvent::DroppedItemEvent{
-				.item_id = inst->GetID(),
+				.item_id   = inst->GetID(),
 				.item_name = inst->GetItem()->Name,
-				.slot_id = slot_id,
-				.charges = (uint32)inst->GetCharges()
+				.slot_id   = slot_id,
+				.charges   = (uint32)inst->GetCharges()
 			};
 			RecordPlayerEventLog(PlayerEvent::DROPPED_ITEM, e);
 		}
@@ -411,7 +412,6 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst_in, glm::vec4 coord
 	if (inst->GetItem()->NoDrop == 0)
 	{
 		auto msg = fmt::format("Dropped item is NODROP. Deleting. ({} {})", inst->GetCharges(), inst->GetItem()->Name);
-		QServ->QSItemDesyncs(CharacterID(), msg.c_str(), GetZoneID());
 		Message(Chat::Red, msg.c_str());
 		if (inst->IsType(EQ::item::ItemClassBag))
 		{
@@ -421,7 +421,6 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst_in, glm::vec4 coord
 				if (bag_inst)
 				{
 					msg = fmt::format("Dropped bag was NODROP. Deleting contents. ({} {})", bag_inst->GetCharges(), bag_inst->GetItem()->Name);
-					QServ->QSItemDesyncs(CharacterID(), msg.c_str(), GetZoneID());
 					Message(Chat::Red, msg.c_str());
 				}
 			}
@@ -439,22 +438,6 @@ void Client::CreateGroundObject(const EQ::ItemInstance* inst_in, glm::vec4 coord
 				auto msg = fmt::format("Dropped bag contains item that is NODROP. Deleting. ({} {})", bag_inst->GetCharges(), bag_inst->GetItem()->Name);
 				Message(Chat::Red, msg.c_str());
 				inst->DeleteItem(sub_slot);
-			}
-		}
-	}
-
-	if (RuleB(QueryServ, PlayerLogGroundSpawn) && inst)
-	{
-		QServ->QSGroundSpawn(CharacterID(), inst->GetID(), inst->GetCharges(), 0, GetZoneID(), true, message);
-		if (inst->IsType(EQ::item::ItemClassBag))
-		{
-			for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; (sub_slot <= EQ::invbag::SLOT_END); ++sub_slot)
-			{
-				const EQ::ItemInstance* bag_inst = inst->GetItem(sub_slot);
-				if (bag_inst)
-				{
-					QServ->QSGroundSpawn(CharacterID(), bag_inst->GetID(), bag_inst->GetCharges(), inst->GetID(), GetZoneID(), true, message);
-				}
 			}
 		}
 	}
@@ -518,46 +501,6 @@ void Client::DeleteItemInInventory(int16 slot_id, int8 quantity, bool client_upd
 		}
 		return;
 	}
-
-	// start QS code
-	if(RuleB(QueryServ, PlayerLogDeletes)) {
-		uint16 delete_count = 0;
-
-		if(m_inv[slot_id]) { delete_count += m_inv.GetItem(slot_id)->GetTotalItemCount(); }
-
-		auto pack = new ServerPacket(ServerOP_QSPlayerLogItemDeletes, sizeof(QSPlayerLogItemDelete_Struct) * delete_count);
-		QSPlayerLogItemDelete_Struct* QS = (QSPlayerLogItemDelete_Struct*)pack->pBuffer;
-
-		QS->char_id = character_id;
-		QS->stack_size = quantity;
-		QS->char_count = delete_count;
-
-		QS->char_slot = slot_id;
-		QS->item_id = m_inv[slot_id]->GetID();
-		QS->charges = m_inv[slot_id]->GetCharges();
-
-		if(m_inv[slot_id]->IsType(EQ::item::ItemClassBag)) {
-			for(uint8 bag_idx = EQ::invbag::SLOT_BEGIN; bag_idx < m_inv[slot_id]->GetItem()->BagSlots; bag_idx++) {
-				EQ::ItemInstance* bagitem = m_inv[slot_id]->GetItem(bag_idx);
-
-				if(bagitem) {
-					int16 bagslot_id = EQ::InventoryProfile::CalcSlotId(slot_id, bag_idx);
-					QS++;
-					QS->char_id = character_id;
-					QS->stack_size = quantity;
-					QS->char_count = delete_count;
-
-					QS->char_slot = bagslot_id;
-					QS->item_id = bagitem->GetID();
-					QS->charges = bagitem->GetCharges();
-				}
-			}
-		}
-
-		if(worldserver.Connected()) { worldserver.SendPacket(pack); }
-		safe_delete(pack);
-	}
-	// end QS code
 
 	bool isDeleted = m_inv.DeleteItem(slot_id, quantity);
 
@@ -1079,14 +1022,12 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 	// This could be expounded upon at some point to let the server know that
 	// the client has moved a buffered cursor item onto the active cursor -U
 	if (move_in->from_slot == move_in->to_slot) { // Item summon, no further processing needed
-		if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
 		return true;
 	}
 
 	if (move_in->to_slot == (uint32)INVALID_INDEX) {
 		if (move_in->from_slot == (uint32)EQ::invslot::slotCursor) {
 			Log(Logs::Detail, Logs::Inventory, "Client destroyed item from cursor slot %d", move_in->from_slot);
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
 
 			EQ::ItemInstance *inst = m_inv.GetItem(EQ::invslot::slotCursor);
 			if(inst) {
@@ -1097,10 +1038,10 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 
 			if (player_event_logs.IsEventEnabled(PlayerEvent::ITEM_DESTROY)) {
 				auto e = PlayerEvent::DestroyItemEvent{
-					.item_id = inst->GetItem()->ID,
+					.item_id   = inst->GetItem()->ID,
 					.item_name = inst->GetItem()->Name,
-					.charges = inst->GetCharges(),
-					.reason = "Client destroy cursor",
+					.charges   = inst->GetCharges(),
+					.reason    = "Client destroy cursor",
 				};
 
 				RecordPlayerEventLog(PlayerEvent::ITEM_DESTROY, e);
@@ -1110,7 +1051,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		}
 		else {
 			Log(Logs::Detail, Logs::Inventory, "Deleted item from slot %d as a result of an inventory container tradeskill combine.", move_in->from_slot);
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
 			DeleteItemInInventory(move_in->from_slot);
 			return true; // Item deletetion
 		}
@@ -1144,7 +1084,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				Kick();	// Kicking player to avoid item loss do to client and server inventories not being sync'd
 				std::string error = "Banker error.";
 				Log(Logs::General, Logs::Inventory, error.c_str());
-				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
 				return false;
 			}
 		}
@@ -1163,7 +1102,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		{
 			std::string error = "Insufficent number in stack.";
 			Log(Logs::General, Logs::Inventory, error.c_str());
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
 			return false;
 		}
 	}
@@ -1215,7 +1153,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			{
 				sprintf(error, "Recursive SwapItem call failed due to non-existent destination item (sourceslot: %i, destslot: %i)", src_slot_id, dst_slot_id);
 				Log(Logs::General, Logs::Inventory, error);
-				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 				return false;
 			}
 			else
@@ -1225,7 +1162,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		{
 			sprintf(error, "Source slot is invalid and Recursive SwapItem call failed. (sourceslot: %i, destslot: %i) Item in source slot may have been deleted without sending the client an update.", src_slot_id, dst_slot_id); 
 			Log(Logs::General, Logs::Inventory, error);
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 			return false;
 		}
 	}
@@ -1239,7 +1175,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			sprintf(error, "Player %s on account %s attempted to create a GM-only item with a status of %i.\n(Item: %u, GMFlag: %u)\n",
 				GetName(), account_name, this->Admin(), src_inst->GetID(), src_inst->GetItem()->GMFlag);
 			Log(Logs::General, Logs::Inventory, error);
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 			DeleteItemInInventory(src_slot_id,1,true);
 			return false;
 		}
@@ -1253,7 +1188,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		WorldKick();
 		std::string error = "A no drop item was placed into a trade slot. Rejecting.";
 		Log(Logs::General, Logs::Inventory, error.c_str());
-		if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
 		return false;
 	}
 
@@ -1286,8 +1220,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 					safe_delete(inst);
 				}
 			}
-
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in, true); } // QS Audit
 
 			return true;
 		}
@@ -1356,8 +1288,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			} else
 				database.SaveInventory(character_id, m_inv[src_slot_id], src_slot_id);
 
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in, true); } // QS Audit
-
 			return true;
 		}
 	}
@@ -1368,7 +1298,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			Kick();
 			std::string error = "Trading item not on cursor.";
 			Log(Logs::General, Logs::Inventory, error.c_str());
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
 			return false;
 		}
 		if (with && trade->state != TradeNone && trade->state != Requesting) 
@@ -1379,13 +1308,11 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				Message(Chat::Red, "Error: Cursor item not located on server!");
 				std::string error = "Error: Cursor item not located on server!";
 				Log(Logs::General, Logs::Inventory, error.c_str());
-				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
 				return false;
 			}
 
 			if(with->IsNPC() && with->IsEngaged())
 			{
-				if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
 				trade->AddEntity(dst_slot_id, move_in->number_in_stack);
 
 				SendCancelTrade(with);
@@ -1395,14 +1322,10 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 
 			// Add cursor item to trade bucket
 			// Also sends trade information to other client of trade session
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
-
 			trade->AddEntity(dst_slot_id, move_in->number_in_stack);
 
 			return true;
 		} else {
-			if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in); } // QS Audit
-			
 			if (src_inst) {
 				int new_charges = 0;
 				if (!dst_inst) {
@@ -1457,7 +1380,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		if(src_inst && !src_inst->IsStackable()) {
 			sprintf(error, "Move from %d to %d with stack size %d. %s is not a stackable item. (charname: %s)", src_slot_id, dst_slot_id, move_in->number_in_stack, src_inst->GetItem()->Name, GetName());
 			Log(Logs::General, Logs::Inventory, error);
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 			return false;
 		}
 
@@ -1465,7 +1387,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			if(src_inst->GetID() != dst_inst->GetID()) {
 				sprintf(error, "Move from %d to %d with stack size %d. Incompatible item types: %d != %d", src_slot_id, dst_slot_id, move_in->number_in_stack, src_inst->GetID(), dst_inst->GetID());
 				Log(Logs::General, Logs::Inventory, error);
-				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 				return false;
 			}
 			if(dst_inst->GetCharges() < dst_inst->GetItem()->StackSize) {
@@ -1491,7 +1412,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			} else {
 				sprintf(error, "Move from %d to %d with stack size %d. Exceeds dest maximum stack size: %d/%d", src_slot_id, dst_slot_id, move_in->number_in_stack, (src_inst->GetCharges()+dst_inst->GetCharges()), dst_inst->GetItem()->StackSize);
 				Log(Logs::General, Logs::Inventory, error);
-				if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 				return false;
 			}
 		
@@ -1507,7 +1427,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				if(!m_inv.SwapItem(src_slot_id, dst_slot_id)) { 
 					sprintf(error, "Could not move entire stack from %d to %d with stack size %d. Dest empty.", src_slot_id, dst_slot_id, move_in->number_in_stack);
 					Log(Logs::General, Logs::Inventory, error);
-					if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 					return false; 
 				}
 				Log(Logs::Detail, Logs::Inventory, "Move entire stack from %d to %d with stack size %d. Dest empty.", src_slot_id, dst_slot_id, move_in->number_in_stack);
@@ -1530,7 +1449,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		if(!m_inv.SwapItem(src_slot_id, dst_slot_id)) {
 			sprintf(error, "Destination slot is not valid for item %s from slot %d to slot %d", src_inst->GetItem()->Name, src_slot_id, dst_slot_id);
 			Log(Logs::General, Logs::Inventory, error);
-			if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error, GetZoneID()); }
 			return false;
 		}
 		Log(Logs::Detail, Logs::Inventory, "Moving entire item from slot %d to slot %d", src_slot_id, dst_slot_id);
@@ -1621,8 +1539,6 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 			}
 		}
 	}
-
-	if(RuleB(QueryServ, PlayerLogMoves)) { QSSwapItemAuditor(move_in, true); } // QS Audit
 
 	// Step 8: Re-calc stats
 	CalcBonuses();
@@ -1731,8 +1647,7 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 
 	if(resync)
 	{
-		std::string error = "Item successfully resycned.";
-		if (RuleB(QueryServ, PlayerLogItemDesyncs)) { QServ->QSItemDesyncs(CharacterID(), error.c_str(), GetZoneID()); }
+		Message(Chat::Red, "Item successfully resycned.");
 	}
 
 	if (Admin() < 10)
@@ -1740,83 +1655,6 @@ void Client::SwapItemResync(MoveItem_Struct* move_slots) {
 		Message(Chat::Red, "Disconnecting to avoid item loss, please relog.");
 		Kick();
 	}
-}
-
-void Client::QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call) {
-	int16 from_slot_id = static_cast<int16>(move_in->from_slot);
-	int16 to_slot_id	= static_cast<int16>(move_in->to_slot);
-	int16 move_amount	= static_cast<int16>(move_in->number_in_stack);
-
-	if(!m_inv[from_slot_id] && !m_inv[to_slot_id]) { return; }
-
-	uint16 move_count = 0;
-
-	if(m_inv[from_slot_id]) { move_count += m_inv[from_slot_id]->GetTotalItemCount(); }
-	if(to_slot_id != from_slot_id) { if(m_inv[to_slot_id]) { move_count += m_inv[to_slot_id]->GetTotalItemCount(); } }
-
-	auto pack = new ServerPacket(ServerOP_QSPlayerLogItemMoves, sizeof(QSPlayerLogItemMove_Struct) + (sizeof(QSMoveItems_Struct) * move_count));
-	QSPlayerLogItemMove_Struct* QS = (QSPlayerLogItemMove_Struct*)pack->pBuffer;
-
-	QS->char_id = character_id;
-	QS->stack_size = move_amount;
-	QS->char_count = move_count;
-	QS->postaction = postaction_call;
-	QS->from_slot = from_slot_id;
-	QS->to_slot = to_slot_id;
-
-	move_count = 0;
-
-	const EQ::ItemInstance* from_inst = m_inv[postaction_call?to_slot_id:from_slot_id];
-
-	if(from_inst) {
-		QS->items[move_count].from_slot = from_slot_id;
-		QS->items[move_count].to_slot = to_slot_id;
-		QS->items[move_count].item_id = from_inst->GetID();
-		QS->items[move_count++].charges = from_inst->GetCharges();
-
-		if(from_inst->IsType(EQ::item::ItemClassBag)) {
-			for(uint8 bag_idx = EQ::invbag::SLOT_BEGIN; bag_idx < from_inst->GetItem()->BagSlots; bag_idx++) {
-				const EQ::ItemInstance* from_baginst = from_inst->GetItem(bag_idx);
-
-				if(from_baginst) {
-					QS->items[move_count].from_slot = EQ::InventoryProfile::CalcSlotId(from_slot_id, bag_idx);
-					QS->items[move_count].to_slot = EQ::InventoryProfile::CalcSlotId(to_slot_id, bag_idx);
-					QS->items[move_count].item_id = from_baginst->GetID();
-					QS->items[move_count++].charges = from_baginst->GetCharges();
-				}
-			}
-		}
-	}
-
-	if(to_slot_id != from_slot_id) {
-		const EQ::ItemInstance* to_inst = m_inv[postaction_call?from_slot_id:to_slot_id];
-
-		if(to_inst) {
-			QS->items[move_count].from_slot = to_slot_id;
-			QS->items[move_count].to_slot = from_slot_id;
-			QS->items[move_count].item_id = to_inst->GetID();
-			QS->items[move_count++].charges = to_inst->GetCharges();
-
-			if(to_inst->IsType(EQ::item::ItemClassBag)) {
-				for(uint8 bag_idx = EQ::invbag::SLOT_BEGIN; bag_idx < to_inst->GetItem()->BagSlots; bag_idx++) {
-					const EQ::ItemInstance* to_baginst = to_inst->GetItem(bag_idx);
-
-					if(to_baginst) {
-						QS->items[move_count].from_slot = EQ::InventoryProfile::CalcSlotId(to_slot_id, bag_idx);
-						QS->items[move_count].to_slot = EQ::InventoryProfile::CalcSlotId(from_slot_id, bag_idx);
-						QS->items[move_count].item_id = to_baginst->GetID();
-						QS->items[move_count++].charges = to_baginst->GetCharges();
-					}
-				}
-			}
-		}
-	}
-
-	if(move_count && worldserver.Connected()) {
-		worldserver.SendPacket(pack);
-	}
-
-	safe_delete(pack);
 }
 
 bool Client::DecreaseByID(uint32 type, uint8 amt) {
@@ -1994,6 +1832,16 @@ void Client::RemoveDuplicateLore() {
 		}
 
 		if (CheckLoreConflict(inst->GetItem())) {
+			if (player_event_logs.IsEventEnabled(PlayerEvent::ITEM_DESTROY)) {
+				auto e = PlayerEvent::DestroyItemEvent{
+					.item_id = inst->GetItem()->ID,
+					.item_name = inst->GetItem()->Name,
+					.charges = inst->GetCharges(),
+					.reason = "Duplicate lore item",
+				};
+				RecordPlayerEventLog(PlayerEvent::ITEM_DESTROY, e);
+			}
+
 			LogError(
 				"Lore Duplication Error | Deleting [{}] ({}) from slot [{}] client [{}]",
 				inst->GetItem()->Name,
@@ -2028,6 +1876,16 @@ void Client::RemoveDuplicateLore() {
 			}
 
 			if (CheckLoreConflict(inst->GetItem())) {
+				if (player_event_logs.IsEventEnabled(PlayerEvent::ITEM_DESTROY)) {
+					auto e = PlayerEvent::DestroyItemEvent{
+						.item_id   = inst->GetItem()->ID,
+						.item_name = inst->GetItem()->Name,
+						.charges   = inst->GetCharges(),
+						.reason    = "Duplicate lore item",
+					};
+					RecordPlayerEventLog(PlayerEvent::ITEM_DESTROY, e);
+				}
+
 				LogError(
 					"Lore Duplication Error | Deleting [{}] ({}) from `Limbo` client [{}]",
 					inst->GetItem()->Name,

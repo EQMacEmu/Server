@@ -730,7 +730,6 @@ public:
 	void	DeleteItemInInventory(int16 slot_id, int8 quantity = 0, bool client_update = false, bool update_db = true);
 	bool	SwapItem(MoveItem_Struct* move_in);
 	void	SwapItemResync(MoveItem_Struct* move_slots);
-	void	QSSwapItemAuditor(MoveItem_Struct* move_in, bool postaction_call = false);
 	void	PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, LootItem** bag_item_data = 0);
 	bool	AutoPutLootInInventory(EQ::ItemInstance& inst, bool try_worn = false, bool try_cursor = true, LootItem** bag_item_data = 0);
 	bool	SummonItem(uint32 item_id, int8 quantity = -1, uint16 to_slot = EQ::invslot::slotCursor, bool force_charges = false);

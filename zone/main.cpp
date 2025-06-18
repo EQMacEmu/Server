@@ -357,6 +357,8 @@ int main(int argc, char** argv) {
 	LogInfo("Loading quests");
 	parse->ReloadQuests();
 
+	QServ->CheckForConnectState();
+
 	worldserver.Connect();
 	worldserver.SetScheduler(&event_scheduler);
 
@@ -514,7 +516,11 @@ int main(int argc, char** argv) {
 				if (quest_timers.Check()) {
 					quest_manager.Process();
 				}
+
 			}
+
+			QServ->CheckForConnectState();
+
 			if (InterserverTimer.Check()) {
 				InterserverTimer.Start();
 				database.ping();
@@ -558,6 +564,8 @@ int main(int argc, char** argv) {
 	safe_delete(parse);
 	LogInfo("Proper zone shutdown complete.");
 	LogSys.CloseFileLogs();
+
+	safe_delete(QServ);
 
 	return 0;
 }

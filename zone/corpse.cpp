@@ -48,11 +48,12 @@ Child of the Mob class.
 #include "queryserv.h"
 #include "../common/events/player_event_logs.h"
 #include <iostream>
+#include "queryserv.h"
 
-extern EntityList entity_list;
-extern Zone* zone;
+extern EntityList  entity_list;
+extern Zone        *zone;
 extern WorldServer worldserver;
-extern QueryServ* QServ;
+extern QueryServ   *QServ;
 
 void Corpse::SendEndLootErrorPacket(Client* client) {
 	auto outapp = new EQApplicationPacket(OP_LootComplete, 0);
@@ -1153,11 +1154,6 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				d->platinum		= 0;
 				Group *cgroup = client->GetGroup();
 				cgroup->SplitMoney(GetCopper(), GetSilver(), GetGold(), GetPlatinum(), client);
-				/* QS: Player_Log_Looting */
-				if (RuleB(QueryServ, PlayerLogLoot))
-				{
-					QServ->QSLootRecords(client->CharacterID(), corpse_name, "CASH-SPLIT", client->GetZoneID(), 0, "null", 0, GetPlatinum(), GetGold(), GetSilver(), GetCopper());
-				}
 			}
 			else {
 				d->copper = this->GetCopper();
@@ -1165,11 +1161,6 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 				d->gold = this->GetGold();
 				d->platinum = this->GetPlatinum();
 				client->AddMoneyToPP(GetCopper(), GetSilver(), GetGold(), GetPlatinum(), false);
-				/* QS: Player_Log_Looting */
-				if (RuleB(QueryServ, PlayerLogLoot))
-				{
-					QServ->QSLootRecords(client->CharacterID(), corpse_name, "CASH", client->GetZoneID(), 0, "null", 0, GetPlatinum(), GetGold(), GetSilver(), GetCopper());
-				}
 			}
 
 			RemoveCash();
@@ -1462,12 +1453,6 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 		SendEndLootErrorPacket(client);
 		safe_delete(inst);
 		return;
-	}
-
-	/* QS: Player_Log_Looting */
-	if (RuleB(QueryServ, PlayerLogLoot))
-	{
-		QServ->QSLootRecords(client->CharacterID(), corpse_name, "ITEM", client->GetZoneID(), item->ID, item->Name, inst->GetCharges(), GetPlatinum(), GetGold(), GetSilver(), GetCopper());
 	}
 
 	safe_delete(inst);

@@ -89,6 +89,7 @@ Copyright (C) 2001-2002 EQEMu Development Team (http://eqemu.org)
 
 #include <assert.h>
 #include <math.h>
+#include "queryserv.h"
 
 #ifndef WIN32
 	#include <stdlib.h>
@@ -104,10 +105,11 @@ Copyright (C) 2001-2002 EQEMu Development Team (http://eqemu.org)
 #include "mob.h"
 
 
-extern Zone* zone;
+extern Zone          *zone;
 extern volatile bool is_zone_loaded;
-extern WorldServer worldserver;
-extern FastMath g_Math;
+extern WorldServer   worldserver;
+extern FastMath      g_Math;
+extern QueryServ     *QServ;
 
 using EQ::spells::CastingSlot;
 

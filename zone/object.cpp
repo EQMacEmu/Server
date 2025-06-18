@@ -39,10 +39,10 @@ const char DEFAULT_OBJECT_NAME[] = "IT63_ACTORDEF";
 const char DEFAULT_OBJECT_NAME_SUFFIX[] = "_ACTORDEF";
 
 
-extern Zone* zone;
-extern EntityList entity_list;
+extern Zone        *zone;
+extern EntityList  entity_list;
 extern WorldServer worldserver;
-extern QueryServ* QServ;
+extern QueryServ   *QServ;
 
 // Loading object from database
 Object::Object(uint32 id, uint32 type, uint32 icon, const Object_Struct& object, const EQ::ItemInstance* inst)
@@ -569,23 +569,6 @@ bool Object::HandleClick(Client* sender, const ClickObject_Struct* click_object)
 				if (curitem && curitem->IsType(EQ::item::ItemClassBag))
 				{
 					database.LoadWorldContainer(m_id, curitem);
-				}
-
-				if (RuleB(QueryServ, PlayerLogGroundSpawn) && m_inst)
-				{
-					QServ->QSGroundSpawn(sender->CharacterID(), m_inst->GetID(), m_inst->GetCharges(), 0, sender->GetZoneID(), false);
-					if (m_inst->IsType(EQ::item::ItemClassBag))
-					{
-						for (uint8 sub_slot = EQ::invbag::SLOT_BEGIN; (sub_slot <= EQ::invbag::SLOT_END); ++sub_slot)
-						{
-							const EQ::ItemInstance* bag_inst = m_inst->GetItem(sub_slot);
-							if (bag_inst)
-							{
-								sender->PutItemInInventory(EQ::invbag::CURSOR_BAG_BEGIN + sub_slot, *bag_inst, false);
-								QServ->QSGroundSpawn(sender->CharacterID(), bag_inst->GetID(), bag_inst->GetCharges(), m_inst->GetID(), sender->GetZoneID(), false);
-							}
-						}
-					}
 				}
 			}
 

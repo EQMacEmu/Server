@@ -214,36 +214,6 @@ namespace DatabaseSchema {
 	}
 
 	/**
-	 * Gets QueryServer tables
-	 *
-	 * @return
-	 */
-	static std::vector<std::string> GetQueryServerTables()
-	{
-		return {
-			"qs_merchant_transaction_log",
-			"qs_player_aa_purchase_log",
-			"qs_player_aa_rate_hourly",
-			"qs_player_coin_move_log",
-			"qs_player_events",
-			"qs_player_ground_spawns_log",
-			"qs_player_handin_log",
-			"qs_player_item_delete_log",
-			"qs_player_item_desyncs_log",
-			"qs_player_item_move_log",
-			"qs_player_killed_by_log",
-			"qs_player_loot_records_log",
-			"qs_player_npc_kill_log",
-			"qs_player_qglobal_updates_log",
-			"qs_player_speech",
-			"qs_player_trade_items_log",
-			"qs_player_trade_log",
-			"qs_player_ts_event_log",
-			"qs_trader_audit",
-		};
-	}
-
-	/**
 	* Gets state tables
 	 * Tables that keep track of server state
 	 *
@@ -273,8 +243,20 @@ namespace DatabaseSchema {
 			"respawn_times",
 			"saylink",
 			"server_scheduled_events",
+			"player_event_aa_purchase",
+			"player_event_killed_npc",
+			"player_event_killed_named_npc",
+			"player_event_killed_raid_npc",
 			"player_event_log_settings",
-			"player_event_logs"
+			"player_event_logs",
+			"player_event_loot_items",
+			"player_event_merchant_purchase",
+			"player_event_merchant_sell",
+			"player_event_npc_handin",
+			"player_event_npc_handin_entries",
+			"player_event_speech",
+			"player_event_trade",
+			"player_event_trade_entries",
 			"webdata_character",
 			"webdata_servers"
 		};

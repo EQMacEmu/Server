@@ -12,7 +12,6 @@ void WorldserverCLI::DatabaseDump(int argc, char** argv, argh::parser& cmd, std:
 		"--player-tables",
 		"--state-tables",
 		"--system-tables",
-		"--query-serv-tables",
 		"--table-structure-only",
 		"--table-lock",
 		"--dump-path=",
@@ -40,7 +39,6 @@ void WorldserverCLI::DatabaseDump(int argc, char** argv, argh::parser& cmd, std:
 	s->SetDumpPlayerTables(cmd[{"--player-tables"}] || dump_all);
 	s->SetDumpStateTables(cmd[{"--state-tables"}] || dump_all);
 	s->SetDumpSystemTables(cmd[{"--system-tables"}] || dump_all);
-	s->SetDumpQueryServerTables(cmd[{"--query-serv-tables"}] || dump_all);
 	s->SetDumpAllTables(dump_all);
 	s->SetDumpWithNoData(cmd[{"--table-structure-only"}]);
 	s->SetDumpTableLock(cmd[{"--table-lock"}]);

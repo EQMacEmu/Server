@@ -587,12 +587,6 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 		}
 		
 		RecordPlayerEventLog(PlayerEvent::AA_GAIN, PlayerEvent::AAGainedEvent{ gained });
-
-		/* QS: PlayerLogAARate */
-		if (RuleB(QueryServ, PlayerLogAARate)) {
-			QServ->QSAARate(this->CharacterID(), m_pp.aapoints, last_unspentAA);
-		}
-		//Message(Chat::Yellow, "You now have %d skill points available to spend.", m_pp.aapoints);
 	}
 
 	uint8 max_level = RuleI(Character, MaxExpLevel) + 1;
@@ -742,12 +736,6 @@ void Client::SetLevel(uint8 set_level, bool command)
 
 			RecordPlayerEventLog(PlayerEvent::LEVEL_GAIN, e);
 		}
-
-		/* QS: PlayerLogLevels */
-		if (RuleB(QueryServ, PlayerLogLevels)){
-			std::string event_desc = StringFormat("Leveled UP :: to Level:%i from Level:%i in zoneid:%i", set_level, m_pp.level, this->GetZoneID());
-			QServ->PlayerLogEvent(Player_Log_Levels, this->CharacterID(), event_desc); 
-		}
 	}
 	else if (set_level < m_pp.level){
 		int levels_lost = (m_pp.level - set_level);
@@ -758,12 +746,6 @@ void Client::SetLevel(uint8 set_level, bool command)
 				.levels_lost = levels_lost
 			};
 			RecordPlayerEventLog(PlayerEvent::LEVEL_LOSS, e);
-		}
-
-		/* QS: PlayerLogLevels */
-		if (RuleB(QueryServ, PlayerLogLevels)){
-			std::string event_desc = StringFormat("Leveled DOWN :: to Level:%i from Level:%i in zoneid:%i", set_level, m_pp.level, this->GetZoneID());
-			QServ->PlayerLogEvent(Player_Log_Levels, this->CharacterID(), event_desc);
 		}
 	}
 

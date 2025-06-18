@@ -1000,34 +1000,21 @@ void Client::ChannelMessageReceived(uint8 chan_num, uint8 language, uint8 lang_s
 		}
 	}
 
-	/* Logs Player Chat */
-	if (RuleB(QueryServ, PlayerLogChat)) {
-		auto pack = new ServerPacket(ServerOP_Speech, sizeof(Server_Speech_Struct) + strlen(message) + 1);
-		Server_Speech_Struct* sem = (Server_Speech_Struct*) pack->pBuffer;
+	if (player_event_logs.IsEventEnabled(PlayerEvent::EventType::SPEECH)) {
+		PlayerEvent::PlayerSpeech e{};
+		std::string msg = message;
+		if (!msg.empty() && msg.at(0) != '#' && msg.at(0) != '^') {
+			e.message = message;
+			e.min_status = Admin();
+			e.type = chan_num;
+			e.to = targetname;
+			e.from = GetCleanName();
+			if (chan_num == ChatChannel_Guild) {
+				e.guild_id = GuildID();
+			}
 
-		if(chan_num == ChatChannel_Guild)
-			sem->guilddbid = GuildID();
-		else
-			sem->guilddbid = 0;
-
-		strcpy(sem->message, message);
-		sem->minstatus = this->Admin();
-		sem->type = chan_num;
-		if (targetname != 0)
-		{
-			strncpy(sem->to, targetname, 64);
-			sem->to[63] = 0;
+			RecordPlayerEventLog(PlayerEvent::SPEECH, e);
 		}
-
-		if (GetName() != 0)
-		{
-			strncpy(sem->from, GetName(), 64);
-			sem->from[63] = 0;
-		}
-
-		if(worldserver.Connected())
-			worldserver.SendPacket(pack);
-		safe_delete(pack);
 	}
 
 	// Garble the message based on drunkness, except for OOC and GM
@@ -6876,15 +6863,14 @@ void Client::PlayerTradeEventLog(Trade *t, Trade *t2)
 					for (uint8 j = EQ::invbag::SLOT_BEGIN; j <= EQ::invbag::SLOT_END; j++) {
 						inst = trader->GetInv().GetItem(i, j);
 						if (inst) {
-							t_entries.emplace_back(
-								PlayerEvent::TradeItemEntry{
-									.slot = j,
-									.item_id = inst->GetItem()->ID,
-									.item_name = inst->GetItem()->Name,
-									.charges = static_cast<uint16>(inst->GetCharges()),
-									.in_bag = true,
+							t_entries.emplace_back(PlayerEvent::TradeItemEntry{
+								.slot = j,
+								.item_id = inst->GetItem()->ID,
+								.item_name = inst->GetItem()->Name,
+								.charges = static_cast<uint16>(inst->GetCharges()),
+								.in_bag = true,
 								}
-							);
+								);
 						}
 					}
 				}
@@ -6898,13 +6884,12 @@ void Client::PlayerTradeEventLog(Trade *t, Trade *t2)
 		for (uint16 i = EQ::invslot::TRADE_BEGIN; i <= EQ::invslot::TRADE_END; i++) {
 			const EQ::ItemInstance *inst = trader2->GetInv().GetItem(i);
 			if (inst) {
-				t2_entries.emplace_back(
-					PlayerEvent::TradeItemEntry{
-						.slot = i,
-						.item_id = inst->GetItem()->ID,
-						.item_name = inst->GetItem()->Name,
-						.charges = static_cast<uint16>(inst->GetCharges()),
-						.in_bag = false,
+				t2_entries.emplace_back(PlayerEvent::TradeItemEntry{
+					.slot = i,
+					.item_id = inst->GetItem()->ID,
+					.item_name = inst->GetItem()->Name,
+					.charges = static_cast<uint16>(inst->GetCharges()),
+					.in_bag = false,
 					}
 				);
 
@@ -6912,13 +6897,12 @@ void Client::PlayerTradeEventLog(Trade *t, Trade *t2)
 					for (uint8 j = EQ::invbag::SLOT_BEGIN; j <= EQ::invbag::SLOT_END; j++) {
 						inst = trader2->GetInv().GetItem(i, j);
 						if (inst) {
-							t2_entries.emplace_back(
-								PlayerEvent::TradeItemEntry{
-									.slot = j,
-									.item_id = inst->GetItem()->ID,
-									.item_name = inst->GetItem()->Name,
-									.charges = static_cast<uint16>(inst->GetCharges()),
-									.in_bag = true,
+							t2_entries.emplace_back(PlayerEvent::TradeItemEntry{
+								.slot = j,
+								.item_id = inst->GetItem()->ID,
+								.item_name = inst->GetItem()->Name,
+								.charges = static_cast<uint16>(inst->GetCharges()),
+								.in_bag = true,
 								}
 							);
 						}
@@ -6940,6 +6924,7 @@ void Client::PlayerTradeEventLog(Trade *t, Trade *t2)
 	};
 
 	RecordPlayerEventLogWithClient(trader, PlayerEvent::TRADE, e);
+	//Not sure the usefulness of sending the same data twice??
 	RecordPlayerEventLogWithClient(trader2, PlayerEvent::TRADE, e);
 }
 

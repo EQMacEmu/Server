@@ -209,8 +209,6 @@ int command_init(void)
 		command_add("profanity", "Manage censored language.", AccountStatus::GMLeadAdmin, command_profanity) ||
 		command_add("push", "[pushback] [pushup] - Pushes the target the specified amount.", AccountStatus::GMImpossible, command_push) ||
 
-		command_add("qtest", "QueryServ testing command.", AccountStatus::GMTester, command_qtest) ||
-
 		command_add("raidloot", "LEADER|GROUPLEADER|SELECTED|ALL - Sets your raid loot settings if you have permission to do so.", 1, command_raidloot) ||
 		command_add("randtest", "Perform a sampling of random number generation", AccountStatus::GMImpossible, command_randtest) ||
 		command_add("randomfeatures", "Temporarily randomizes the Facial Features of your target.", AccountStatus::GMCoder, command_randomfeatures) ||
@@ -529,7 +527,6 @@ int command_realdispatch(Client* c, std::string message, bool ignore_status)
 	}
 
 	if (cur->admin >= COMMANDS_LOGGING_MIN_STATUS) {
-		QServ->QSLogCommands(c, sep.arg[0], (char *)sep.argplus[1]);
 		LogCommands(
 			"[{}] ([{}]) used command: [{}] (target=[{}])",
 			c->GetName(),
@@ -916,7 +913,6 @@ void command_clearsaylink(Client *c, const Seperator *sep) {
 #include "gm_commands/playsound.cpp"
 #include "gm_commands/profanity.cpp"
 #include "gm_commands/push.cpp"
-#include "gm_commands/qtest.cpp"
 #include "gm_commands/raidloot.cpp"
 #include "gm_commands/randomfeatures.cpp"
 #include "gm_commands/randtest.cpp"

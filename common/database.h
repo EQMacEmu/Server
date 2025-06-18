@@ -223,6 +223,8 @@ public:
 	uint8   GetZoneRandomLoc(uint32 zoneid);
 	void	PurgeAllDeletedDataBuckets();
 
+	uint64_t GetNextTableId(const std::string &table_name);
+
 private:
 
 	Mutex Mvarcache;

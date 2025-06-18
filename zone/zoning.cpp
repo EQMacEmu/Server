@@ -399,12 +399,6 @@ void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, 
 
 	SendLogoutPackets();
 
-	/* QS: PlayerLogZone */
-	if (RuleB(QueryServ, PlayerLogZone)){
-		std::string event_desc = StringFormat("Zoning :: zoneid:%u x:%4.2f y:%4.2f z:%4.2f h:%4.2f zonemode:%d from zoneid:%u", zone_id, dest_x, dest_y, dest_z, dest_h, zone_mode, this->GetZoneID());
-		QServ->PlayerLogEvent(Player_Log_Zoning, this->CharacterID(), event_desc);
-	}
-
 	// fade charmed pets
 	Mob* mypet = GetPet();
 	if (mypet && mypet->IsCharmedPet())
