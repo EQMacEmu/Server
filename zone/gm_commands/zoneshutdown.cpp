@@ -10,11 +10,11 @@ void command_zoneshutdown(Client *c, const Seperator *sep){
 	else {
 		auto pack = new ServerPacket(ServerOP_ZoneShutdown, sizeof(ServerZoneStateChange_struct));
 		ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *)pack->pBuffer;
-		strcpy(s->adminname, c->GetName());
+		strcpy(s->admin_name, c->GetName());
 		if (sep->arg[1][0] >= '0' && sep->arg[1][0] <= '9')
-			s->ZoneServerID = atoi(sep->arg[1]);
+			s->zone_server_id = atoi(sep->arg[1]);
 		else
-			s->zoneid = ZoneID(sep->arg[1]);
+			s->zone_id = ZoneID(sep->arg[1]);
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 	}

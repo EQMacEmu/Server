@@ -2234,42 +2234,6 @@ void Zone::LoadSkillDifficulty()
 	}
 }
 
-void Zone::ReloadWorld(uint8 global_repop){
-	entity_list.ClearAreas();
-	parse->ReloadQuests();
-
-	if (global_repop) {
-		if (global_repop == ReloadWorld::ForceRepop) {
-			zone->ClearSpawnTimers();
-		}
-		zone->Repop();
-	}
-
-	worldserver.SendEmoteMessage(
-		0,
-		0,
-		AccountStatus::GMAdmin,
-		Chat::Yellow,
-		fmt::format(
-			"Quests reloaded {} for {}.",
-			(
-				global_repop ?
-				(
-					global_repop == ReloadWorld::Repop ?
-					"and repopped NPCs " :
-					"and forcefully repopped NPCs "
-					) :
-				""
-				),
-			fmt::format(
-				"{} ({})",
-				GetLongName(),
-				GetZoneID()
-			)
-		).c_str()
-	);
-}
-
 void Zone::ClearSpawnTimers()
 {
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
@@ -2783,8 +2747,6 @@ std::string Zone::GetZoneDescription()
 
 void Zone::SendReloadMessage(std::string reload_type)
 {
-	LogInfo("Reloaded [{}]", reload_type);
-
 	worldserver.SendEmoteMessage(
 		0,
 		0,

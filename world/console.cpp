@@ -551,20 +551,20 @@ void ConsoleZoneShutdown(
 		memset(pack->pBuffer, 0, sizeof(ServerZoneStateChange_struct));
 		ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct*)pack->pBuffer;
 		pack->opcode = ServerOP_ZoneShutdown;
-		strcpy(s->adminname, tmpname);
+		strcpy(s->admin_name, tmpname);
 		if (Strings::IsNumber(args[0])) {
-			s->ZoneServerID = atoi(args[0].c_str());
+			s->zone_server_id = atoi(args[0].c_str());
 		}
 		else {
-			s->zoneid = ZoneID(args[0].c_str());
+			s->zone_id = ZoneID(args[0].c_str());
 		}
 
 		ZoneServer* zs = 0;
-		if (s->ZoneServerID != 0) {
-			zs = zoneserver_list.FindByID(s->ZoneServerID);
+		if (s->zone_server_id != 0) {
+			zs = zoneserver_list.FindByID(s->zone_server_id);
 		}
-		else if (s->zoneid != 0) {
-			zs = zoneserver_list.FindByName(ZoneName(s->zoneid));
+		else if (s->zone_id != 0) {
+			zs = zoneserver_list.FindByName(ZoneName(s->zone_id));
 		}
 		else {
 			connection->SendLine("Error: ZoneShutdown: neither ID nor name specified");
@@ -855,11 +855,7 @@ void ConsoleReloadWorld(
 )
 {
 	connection->SendLine("Reloading World...");
-	auto pack = new ServerPacket(ServerOP_ReloadWorld, sizeof(ReloadWorld_Struct));
-	ReloadWorld_Struct* RW = (ReloadWorld_Struct*)pack->pBuffer;
-	//RW->Option = 1;
-	zoneserver_list.SendPacket(pack);
-	safe_delete(pack);
+	zoneserver_list.SendServerReload(ServerReload::Type::WorldRepop, nullptr);
 }
 
 /**

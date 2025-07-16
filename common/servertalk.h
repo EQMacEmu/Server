@@ -183,32 +183,7 @@
 #define ServerOP_UCSServerStatusRequest		0x4008
 #define ServerOP_UCSServerStatusReply		0x4009
 
-#define ServerOP_ReloadAAData 0x4100
-#define ServerOP_ReloadBlockedSpells 0x4101
-#define ServerOP_ReloadCommands 0x4102
-#define ServerOP_ReloadContentFlags 0x4103
-#define ServerOP_ReloadDoors 0x4104
-#define ServerOP_ReloadGroundSpawns 0x4105
-#define ServerOP_ReloadLevelEXPMods 0x4106
-#define ServerOP_ReloadLogs 0x4107
-#define ServerOP_ReloadMerchants 0x4108
-#define ServerOP_ReloadNPCEmotes 0x4109
-#define ServerOP_ReloadObjects 0x4110
-#define ServerOP_ReloadOpcodes 0x4111
-#define ServerOP_ReloadRules 0x4112
-#define ServerOP_ReloadSkills 0x4113
-#define ServerOP_ReloadStaticZoneData 0x4114
-#define ServerOP_ReloadTitles 0x4115
-#define ServerOP_ReloadTraps 0x4116
-#define ServerOP_ReloadVariables 0x4117
-#define ServerOP_ReloadWorld 0x4118
-#define ServerOP_ReloadZonePoints 0x4119
-#define ServerOP_ReloadZoneData 0x4120
-#define ServerOP_ReloadLoot 0x4121
-#define ServerOP_ReloadNPCSpells 0x4122
-#define ServerOP_ReloadKeyRings 0x4123
-#define ServerOP_ReloadFactions 0x4124
-#define ServerOP_ReloadSkillCaps 0x4125
+#define ServerOP_ServerReloadRequest 0x4100
 
 #define ServerOP_CZSignalNPC						0x5017
 #define ServerOP_CZSetEntityVariableByNPCTypeID		0x5018
@@ -216,6 +191,7 @@
 // player events
 #define ServerOP_QSSendQuery 0x5000
 #define ServerOP_PlayerEvent 0x5100
+#define ServerOP_SendPlayerEventSettings 0x5101
 
 enum {
 	UserToWorldStatusWorldUnavail    = 0,
@@ -307,10 +283,10 @@ struct SPackSendQueue {
 };
 
 struct ServerZoneStateChange_struct {
-	uint32 ZoneServerID;
-	char adminname[64];
-	uint32 zoneid;
-	bool makestatic;
+	uint32 zone_server_id;
+	char   admin_name[64];
+	uint32 zone_id;
+	bool   is_static;;
 };
 
 struct ServerDownZoneBoot_struct {

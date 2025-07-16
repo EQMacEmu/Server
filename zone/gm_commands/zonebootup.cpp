@@ -21,10 +21,10 @@ void command_zonebootup(Client *c, const Seperator *sep)
 	{
 		auto pack = new ServerPacket(ServerOP_ZoneBootup, sizeof(ServerZoneStateChange_struct));
 		ServerZoneStateChange_struct* s = (ServerZoneStateChange_struct *)pack->pBuffer;
-		s->ZoneServerID = atoi(sep->arg[2]);
-		strcpy(s->adminname, c->GetName());
-		s->zoneid = ZoneID(sep->arg[1]);
-		s->makestatic = true;
+		s->zone_server_id = atoi(sep->arg[2]);
+		strcpy(s->admin_name, c->GetName());
+		s->zone_id = ZoneID(sep->arg[1]);
+		s->is_static = true;
 		worldserver.SendPacket(pack);
 		safe_delete(pack);
 		c->Message(Chat::White, "Zonebootup completed.");

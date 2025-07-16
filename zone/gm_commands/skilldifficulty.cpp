@@ -48,18 +48,14 @@ void command_skilldifficulty(Client *c, const Seperator *sep)
 				float difficulty = atof(sep->arg[3]);
 				uint8 classid = atoi(sep->arg[4]);
 				database.UpdateSkillDifficulty(skillid, difficulty, classid);
-				auto pack = new ServerPacket(ServerOP_ReloadSkills, 0);
-				worldserver.SendPacket(pack);
-				safe_delete(pack);
+				worldserver.SendReload(ServerReload::Type::SkillCaps);
 				c->Message(Chat::White, "Set skill %d to difficulty %0.2f for class %u and reloaded all zones.", skillid, difficulty, classid);
 			}
 
 		}
 		else if (strcasecmp(sep->arg[1], "reload") == 0)
 		{
-			auto pack = new ServerPacket(ServerOP_ReloadSkills, 0);
-			worldserver.SendPacket(pack);
-			safe_delete(pack);
+			worldserver.SendReload(ServerReload::Type::SkillCaps);
 			c->Message(Chat::White, "Reloaded skills in all zones.");
 		}
 		else if (strcasecmp(sep->arg[1], "values") == 0)

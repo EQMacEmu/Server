@@ -19,8 +19,9 @@
 #define WORLDSERVER_H
 
 #include "../common/eq_packet_structs.h"
-#include "zone_event_scheduler.h"
 #include "../common/net/servertalk_client_connection.h"
+#include "zone_event_scheduler.h"
+#include "../common/server_reload_types.h"
 
 class ServerPacket;
 class EQApplicationPacket;
@@ -31,6 +32,7 @@ public:
 	WorldServer();
 	~WorldServer();
 
+	void Process();
 	void Connect();
 	bool SendPacket(ServerPacket* pack);
 	std::string GetIP() const;
@@ -52,6 +54,9 @@ public:
 
 	void RequestTellQueue(const char *who);
 
+	void QueueReload(ServerReload::Request r);
+	void ProcessReload(const ServerReload::Request &request);
+
 private:
 	virtual void OnConnected();
 
@@ -67,9 +72,15 @@ private:
 	std::unique_ptr<EQ::Timer> m_keepalive;
 
 	ZoneEventScheduler *m_zone_scheduler;
+
+	// server reload queue
+	std::unique_ptr<EQ::Timer>           m_process_timer;
+	std::mutex                           m_reload_mutex = {};
+	std::map<int, ServerReload::Request> m_reload_queue = {};
 public:
 	ZoneEventScheduler *GetScheduler() const;
 	void SetScheduler(ZoneEventScheduler *scheduler);
+	void SendReload(ServerReload::Type type, bool is_global = true);
 };
 #endif
 

@@ -20,7 +20,6 @@
 #include "zonelist.h"
 #include "zoneserver.h"
 #include "worlddb.h"
-#include "ucs.h"
 #include "world_config.h"
 #include "../common/json/json.h"
 #include "../common/event_sub.h"
@@ -29,6 +28,12 @@
 #include "../common/strings.h"
 #include "../common/random.h"
 #include "../common/zone_store.h"
+#include "../common/events/player_event_logs.h"
+#include "../common/patches/patches.h"
+#include "../common/skill_caps.h"
+#include "../common/content/world_content_service.h"
+#include "world_boot.h"
+#include "ucs.h"
 #include "queryserv.h"
 
 
@@ -112,7 +117,26 @@ void ZSList::Process() {
 		CatchSignal(2);
 	}
 	if(reminder && reminder->Check() && shutdowntimer){
-		SendEmoteMessage(0, 0, AccountStatus::Player, Chat::Yellow , fmt::format("[SYSTEM] World coming down in {} minutes.", ((shutdowntimer->GetRemainingTime() / 1000) / 60)).c_str());
+		SendEmoteMessage(
+			0, 
+			0, 
+			AccountStatus::Player, 
+			Chat::Yellow , 
+			fmt::format(
+				"[SYSTEM] World coming down in {} minutes.", 
+				((shutdowntimer->GetRemainingTime() / 1000) / 60)
+			).c_str()
+		);
+	}
+
+	if (!m_queued_reloads.empty()) {
+		m_queued_reloads_mutex.lock();
+		for (auto &type : m_queued_reloads) {
+			LogInfo("Sending reload of type [{}] to zones", ServerReload::GetName(type));
+			SendServerReload(type, nullptr);
+		}
+		m_queued_reloads.clear();
+		m_queued_reloads_mutex.unlock();
 	}
 }
 
@@ -785,4 +809,83 @@ void ZSList::UpdateUCSServerAvailable(bool ucss_available) {
 	else {
 		SendEmoteMessage(0, 0, AccountStatus::Player, Chat::ChatChannel, "The Universal Chat service is temporarily unavailable. You will be notified when it is restored.");
 	}
+}
+
+void ZSList::SendServerReload(ServerReload::Type type, uchar *packet)
+{
+	static auto pack = ServerPacket(ServerOP_ServerReloadRequest, sizeof(ServerReload::Request));
+	auto        r = (ServerReload::Request *)pack.pBuffer;
+
+	// Copy the packet data if it exists
+	if (packet) {
+		memcpy(pack.pBuffer, packet, sizeof(ServerReload::Request));
+	}
+
+	r->type = type;
+	r->requires_zone_booted = true;
+
+	LogInfo("Sending reload to all zones for type [{}]", ServerReload::GetName(type));
+
+	static const std::unordered_set<ServerReload::Type> no_zone_boot_required = {
+		ServerReload::Type::Opcodes,
+		ServerReload::Type::Rules,
+		ServerReload::Type::ContentFlags,
+		ServerReload::Type::Logs,
+		ServerReload::Type::Commands,
+		ServerReload::Type::WorldRepop
+	};
+
+	// Set requires_zone_booted flag before executing reload logic
+	if (no_zone_boot_required.contains(type)) {
+		r->requires_zone_booted = false;
+	}
+
+	// reload at the world level
+	if (type == ServerReload::Type::Opcodes) {
+		ReloadAllPatches();
+	}
+	else if (type == ServerReload::Type::Rules) {
+		RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset(), true);
+	}
+	else if (type == ServerReload::Type::SkillCaps) {
+		skill_caps.ReloadSkillCaps();
+	}
+	else if (type == ServerReload::Type::ContentFlags) {
+		content_service.SetExpansionContext()->ReloadContentFlags();
+	}
+	else if (type == ServerReload::Type::Logs) {
+		LogSys.LoadLogDatabaseSettings();
+		player_event_logs.ReloadSettings();
+		UCSLink.SendPacket(&pack);
+		QSLink.SendPacket(&pack);
+	}
+
+	// Send the packet to all zones with staggered delays
+	// to prevent all zones from reloading at the same time
+	// and causing a massive spike in CPU usage
+	// This is especially important for large servers
+	// with many zones
+	// we reload 10 zones every second
+	int counter = 0;
+
+	for (auto &z : zone_server_list) {
+		bool is_local = r->zone_server_id != 0;
+
+		// if the zone reload is local to a specific zone
+		if (r->zone_server_id != 0 && r->zone_server_id != z->GetID()) {
+			continue;
+		}
+
+		// if the reload is local, we don't need to stagger the reloads
+		r->reload_at_unix = is_local ? 0 : (std::time(nullptr) + 1) + (counter / 10);
+		z->SendPacket(&pack);
+		++counter;
+	}
+}
+
+void ZSList::QueueServerReload(ServerReload::Type &type)
+{
+	m_queued_reloads_mutex.lock();
+	m_queued_reloads.emplace_back(type);
+	m_queued_reloads_mutex.unlock();
 }

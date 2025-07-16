@@ -39,6 +39,7 @@
 #include "../common/zone_store.h"
 #include "../common/patches/patches.h"
 #include "../common/skill_caps.h"
+#include "../common/server_reload_types.h"
 
 extern ClientList client_list;
 extern ZSList zoneserver_list;
@@ -835,18 +836,18 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		case ServerOP_ZoneShutdown: {
 			auto s = (ServerZoneStateChange_struct*) pack->pBuffer;
 			ZoneServer *zs = 0;
-			if (s->ZoneServerID) {
-				zs = zoneserver_list.FindByID(s->ZoneServerID);
+			if (s->zone_server_id) {
+				zs = zoneserver_list.FindByID(s->zone_server_id);
 			}
-			else if (s->zoneid) {
-				zs = zoneserver_list.FindByName(ZoneName(s->zoneid));
+			else if (s->zone_id) {
+				zs = zoneserver_list.FindByName(ZoneName(s->zone_id));
 			}
 			else {
-				zoneserver_list.SendEmoteMessage(s->adminname, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: neither ID nor name specified");
+				zoneserver_list.SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: neither ID nor name specified");
 			}
 
 			if (!zs) {
-				zoneserver_list.SendEmoteMessage(s->adminname, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: zoneserver not found");
+				zoneserver_list.SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: zoneserver not found");
 			}
 			else {
 				zs->SendPacket(pack);
@@ -856,14 +857,14 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_ZoneBootup: {
 			auto s = (ServerZoneStateChange_struct*) pack->pBuffer;
-			uint32 ZoneServerID = s->ZoneServerID;
+			uint32 ZoneServerID = s->zone_server_id;
 			if (ZoneServerID == 0) {
 				ZoneServerID = zoneserver_list.GetAvailableZoneID();
 				if (ZoneServerID == 0) {
 					break;
 				}
 			}
-			zoneserver_list.SOPZoneBootup(s->adminname, ZoneServerID, ZoneName(s->zoneid), s->makestatic);
+			zoneserver_list.SOPZoneBootup(s->admin_name, ZoneServerID, ZoneName(s->zone_id), s->is_static);
 			break;
 		}
 		case ServerOP_ZoneStatus: {
@@ -1399,11 +1400,6 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			QSLink.SendPacket(pack);
 			break;
 		}
-		case ServerOP_ReloadOpcodes: {
-			ReloadAllPatches();
-			zoneserver_list.SendPacket(pack);
-			break;
-		}
 		case ServerOP_CZMessagePlayer:
 		case ServerOP_CZSignalClient:
 		case ServerOP_CZSignalClientByName:
@@ -1413,26 +1409,6 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		case ServerOP_ItemStatus:
 		case ServerOP_KillPlayer:
 		case ServerOP_OOCMute:
-		case ServerOP_ReloadAAData:
-		case ServerOP_ReloadBlockedSpells:
-		case ServerOP_ReloadCommands:
-		case ServerOP_ReloadDoors:
-		case ServerOP_ReloadFactions:
-		case ServerOP_ReloadGroundSpawns:
-		case ServerOP_ReloadLevelEXPMods:
-		case ServerOP_ReloadLoot:
-		case ServerOP_ReloadKeyRings:
-		case ServerOP_ReloadMerchants:
-		case ServerOP_ReloadNPCEmotes:
-		case ServerOP_ReloadNPCSpells:
-		case ServerOP_ReloadObjects:
-		case ServerOP_ReloadSkills:
-		case ServerOP_ReloadStaticZoneData:
-		case ServerOP_ReloadTitles:
-		case ServerOP_ReloadTraps:
-		case ServerOP_ReloadWorld:
-		case ServerOP_ReloadZonePoints:
-		case ServerOP_ReloadZoneData:
 		case ServerOP_SpawnStatusChange:
 		case ServerOP_UpdateSpawn:
 		case ServerOP_Weather:
@@ -1440,31 +1416,9 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			zoneserver_list.SendPacket(pack);
 			break;
 		}
-		case ServerOP_ReloadLogs: {
-			zoneserver_list.SendPacket(pack);
-			UCSLink.SendPacket(pack);
-			LogSys.LoadLogDatabaseSettings();
-			player_event_logs.ReloadSettings();
-			break;
-		}
-		case ServerOP_ReloadRules: {
-			zoneserver_list.SendPacket(pack);
-			RuleManager::Instance()->LoadRules(&database, "default");
-			break;
-		}
-		case ServerOP_ReloadContentFlags: {
-			zoneserver_list.SendPacket(pack);
-			content_service.SetExpansionContext()->ReloadContentFlags();
-			break;
-		}
-		case ServerOP_ReloadVariables:
-		{
-			database.LoadVariables();
-			break;
-		}
-		case ServerOP_ReloadSkillCaps: {
-			zoneserver_list.SendPacket(pack);
-			skill_caps.ReloadSkillCaps();
+		case ServerOP_ServerReloadRequest: {
+			auto o = (ServerReload::Request *)pack->pBuffer;
+			zoneserver_list.SendServerReload((ServerReload::Type)o->type, pack->pBuffer);
 			break;
 		}
 		case ServerOP_CZSignalNPC: {
@@ -1632,16 +1586,16 @@ void ZoneServer::TriggerBootup(uint32 iZoneID, const char* adminname, bool iMake
 
 	auto pack = new ServerPacket(ServerOP_ZoneBootup, sizeof(ServerZoneStateChange_struct));
 	auto* s = (ServerZoneStateChange_struct*)pack->pBuffer;
-	s->ZoneServerID = zone_server_id;
+	s->zone_server_id = zone_server_id;
 	if (adminname != 0)
-		strcpy(s->adminname, adminname);
+		strcpy(s->admin_name, adminname);
 
 	if (iZoneID == 0)
-		s->zoneid = this->GetZoneID();
+		s->zone_id = this->GetZoneID();
 	else
-		s->zoneid = iZoneID;
+		s->zone_id = iZoneID;
 
-	s->makestatic = iMakeStatic;
+	s->is_static = iMakeStatic;
 	SendPacket(pack);
 	delete pack;
 	LSBootUpdate(iZoneID);

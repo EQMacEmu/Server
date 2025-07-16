@@ -222,7 +222,6 @@ public:
 	void ClearNPCEmotes(std::vector<NPC_Emote_Struct*>* NPCEmoteList);
 	void LoadNPCEmotes(std::vector<NPC_Emote_Struct*>* NPCEmoteList);
 	void LoadKeyRingData(LinkedList<KeyRing_Data_Struct*>* KeyRingDataList);
-	void ReloadWorld(uint8 global_repop);
 	void ClearSpawnTimers();
 	bool IsQuestHotReloadQueued() const;
 	void SetQuestHotReloadQueued(bool in_quest_hot_reload_queued);
@@ -409,6 +408,9 @@ public:
 	NpcFactionRepository::NpcFaction* GetNPCFaction(const uint32 npc_faction_id);
 	std::vector<NpcFactionEntriesRepository::NpcFactionEntries> GetNPCFactionEntries(const uint32 npc_faction_id) const;
 
+	inline void SetZoneServerId(uint32 id) { m_zone_server_id = id; }
+	inline uint32 GetZoneServerId() const { return m_zone_server_id; }
+
 private:
 	uint32	zoneid;
 	char*	short_name;
@@ -475,6 +477,8 @@ private:
 	// Factions
 	std::vector<NpcFactionRepository::NpcFaction>                 m_npc_factions = { };
 	std::vector<NpcFactionEntriesRepository::NpcFactionEntries>   m_npc_faction_entries = { };
+
+	uint32_t m_zone_server_id = 0;
 
 };
 

@@ -11,6 +11,7 @@
 #include "worldserver.h"
 #include "../common/events/player_events.h"
 #include "../common/events/player_event_logs.h"
+#include "../common/server_reload_types.h"
 #include <iomanip>
 #include <iostream>
 #include <stdarg.h>
@@ -19,9 +20,12 @@
 #include <string.h>
 #include <time.h>
 
+#include "zonelist.h"
+
 extern WorldServer            worldserver;
 extern const queryservconfig *Config;
 extern QSDatabase            qs_database;
+extern ZSList                zs_list;
 
 WorldServer::WorldServer()
 {
@@ -70,9 +74,14 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		case 0: {
 			break;
 		}
-		case ServerOP_ReloadLogs: {
-			LogSys.LoadLogDatabaseSettings();
-			player_event_logs.ReloadSettings();
+		case ServerOP_ServerReloadRequest: {
+			auto o = (ServerReload::Request *)p.Data();
+			if (o->type == ServerReload::Type::Logs) {
+				LogSys.LoadLogDatabaseSettings();
+				player_event_logs.ReloadSettings();
+				zs_list.SendPlayerEventLogSettings();
+			}
+
 			break;
 		}
 		case ServerOP_QueryServGeneric: {
