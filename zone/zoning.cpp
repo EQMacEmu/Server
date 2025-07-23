@@ -149,17 +149,25 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	}
 
 	/* Load up the Safe Coordinates, restrictions and verify the zone name*/
-	float safe_x, safe_y, safe_z, safe_heading;
-	int16 minstatus = 0;
-	uint8 minlevel = 0, expansion = 0;
-	char flag_needed[128];
-	if(!database.GetSafePoints(target_zone_name, &safe_x, &safe_y, &safe_z, &safe_heading, &minstatus, &minlevel, flag_needed, &expansion)) {
-		//invalid zone...
+	auto zone_data = GetZone(ZoneID(target_zone_name));
+	if (!zone_data) {
 		Message(Chat::Red, "Invalid target zone while getting safe points.");
 		Log(Logs::General, Logs::Error, "Zoning %s: Unable to get safe coordinates for zone '%s'.", GetName(), target_zone_name);
 		SendZoneCancel(zc);
 		return;
 	}
+
+	float safe_x, safe_y, safe_z, safe_heading;
+	int16 min_status = AccountStatus::Player;
+	uint8 min_level = 0;
+
+	LogInfo("[Handle_OP_ZoneChange] Loaded zone flag [{}]", zone_data->flag_needed);
+
+	safe_x = zone_data->safe_x;
+	safe_y = zone_data->safe_y;
+	safe_z = zone_data->safe_z;
+	min_status = zone_data->min_status;
+	min_level = zone_data->min_level;
 
 	if (target_zone_id == Zones::AIRPLANE)
 		BuffFadeAll(true);
@@ -291,13 +299,19 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 	//not sure when we would use ZONE_ERROR_NOTREADY
 	
 	//enforce min status and level
-	if (!ignorerestrictions && (Admin() < minstatus || GetLevel() < minlevel)) {
+	if (!ignorerestrictions && (Admin() < min_status || GetLevel() < zone_data->min_level)) {
 		zoning_message = ZoningMessage::ZoneNoExperience;
 	}
 
-	if(!ignorerestrictions && flag_needed[0] != '\0') {
+	if(!ignorerestrictions && !zone_data->flag_needed.empty()) {
 		//the flag needed string is not empty, meaning a flag is required.
 		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) {
+			LogInfo(
+				"Client [{}] does not have the proper flag to enter [{}] ({})",
+				GetCleanName(),
+				ZoneName(target_zone_id),
+				target_zone_id
+			);
 			Message(Chat::Red, "You do not have the flag to enter %s.", target_zone_name);
 			zoning_message = ZoningMessage::ZoneNoExperience;
 		}
@@ -531,7 +545,10 @@ void Client::ZonePC(uint32 zoneID, float x, float y, float z, float heading, uin
 	char* pZoneName = nullptr;
 
 	pShortZoneName = ZoneName(zoneID);
-	database.GetZoneLongName(pShortZoneName, &pZoneName);
+	auto zd = GetZone(zoneID);
+	if (zd) {
+		pZoneName = strcpy(new char[strlen(zd->long_name.c_str()) + 1], zd->long_name.c_str());
+	}
 
 	cheat_manager.SetExemptStatus(Port, true);
 
@@ -924,24 +941,17 @@ void Client::SendZoneFlagInfo(Client *to) {
 		ZoneFlags_Struct* zfs = iterator.GetData();
 		uint32 zoneid = zfs->zoneid;
 
-		const char *short_name = ZoneName(zoneid);
+		const char *zone_short_name = ZoneName(zoneid);
+		std::string zone_long_name = ZoneLongName(zoneid);
 
-		char *long_name = nullptr;
-		database.GetZoneLongName(short_name, &long_name);
-		if(long_name == nullptr)
-			long_name = empty;
-
-		float safe_x, safe_y, safe_z, safe_heading;
-		int16 minstatus = 0;
-		uint8 minlevel = 0;
 		char flag_name[128];
-		if(!database.GetSafePoints(short_name, &safe_x, &safe_y, &safe_z, &safe_heading, &minstatus, &minlevel, flag_name)) {
+
+		auto z = GetZone(zoneid);
+		if (!z) {
 			strcpy(flag_name, "(ERROR GETTING NAME)");
 		}
 
-		to->Message(Chat::White, "Has Flag %s for zone %s (%d,%s)", flag_name, long_name, zoneid, short_name);
-		if(long_name != empty)
-			delete[] long_name;
+		to->Message(Chat::White, "Has Flag %s for zone %s (%d,%s)", flag_name, zone_long_name, zoneid, zone_short_name);
 
 		iterator.Advance();
 	}
@@ -954,7 +964,7 @@ bool Client::CanBeInZone(uint32 zoneid)
 	//the zone
 
 	if(Admin() >= RuleI(GM, MinStatusToZoneAnywhere))
-		return(true);
+		return true;
 
 	// If zoneid is 0, then we are just checking the current zone. In that case the player has already been allowed 
 	// to zone, and we're checking if we should boot them to bazaar.
@@ -962,36 +972,36 @@ bool Client::CanBeInZone(uint32 zoneid)
 	uint32 target_zone_id = zoneid > 0 ? zoneid : zone->GetZoneID();
 
 	float safe_x, safe_y, safe_z, safe_heading;
-	int16 minstatus = 0;
-	uint8 minlevel = 0, expansion = 0;
-	char flag_needed[128];
-	if(!database.GetSafePoints(target_zone_name, &safe_x, &safe_y, &safe_z, &safe_heading, &minstatus, &minlevel, flag_needed, &expansion)) {
-		//this should not happen...
-		Log(Logs::Detail, Logs::Character, "[CLIENT] Unable to query zone info for ourself '%s'", target_zone_name);
-		return(false);
+	int16 min_status = 0;
+	uint8 min_level = 0;
+
+	auto z = GetZone(ZoneID(target_zone_name));
+	if(!z) {
+		return false;
 	}
 
-	if(GetLevel() < minlevel) {
-		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet min level requirement (%d < %d)!", GetLevel(), minlevel);
-		return(false);
+	safe_x = z->safe_x;
+	safe_y = z->safe_y;
+	safe_z = z->safe_z;
+	safe_heading = z->safe_heading;
+	min_status = z->min_status;
+	min_level = z->min_level;
+
+	if(GetLevel() < min_level) {
+		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet min level requirement (%d < %d)!", GetLevel(), min_level);
+		return false;
 	}
-	if(Admin() < minstatus) {
-		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet min status requirement (%d < %d)!", Admin(), minstatus);
-		return(false);
+	if(Admin() < min_status) {
+		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not meet min status requirement (%d < %d)!", Admin(), min_status);
+		return false;
 	}
 
-	if(flag_needed[0] != '\0') {
+	if(!z->flag_needed.empty()) {
 		//the flag needed string is not empty, meaning a flag is required.
 		if(Admin() < minStatusToIgnoreZoneFlags && !HasZoneFlag(target_zone_id)) {
-			Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the flag to be in this zone (%s)!", flag_needed);
-			return(false);
+			LogInfo("Character [{}] does not have the flag to be in this zone [{}]!", GetCleanName(), z->flag_needed);
+			return false;
 		}
-	}
-	bool has_expansion = expansion && m_pp.expansions;
-	if(Admin() < minStatusToIgnoreZoneFlags && expansion > ClassicEQ && !has_expansion) {
-		Log(Logs::Detail, Logs::Character, "[CLIENT] Character does not have the required expansion (%d ~ %s)!", m_pp.expansions, expansion);
-		Message_StringID(Chat::Red, StringID::NO_EXPAN);
-		return(false);
 	}
 
 	if (Admin() < minStatusToIgnoreZoneFlags && IsMule() && 
@@ -999,10 +1009,10 @@ bool Client::CanBeInZone(uint32 zoneid)
 	{
 		Log(Logs::Detail, Logs::Character, "[CLIENT] Character is a mule and cannot leave Bazaar/Nexus/PoK!");
 		Message(Chat::Red, "Trader accounts may not leave Bazaar, Plane of Knowledge, or Nexus!");
-		return(false);
+		return false;
 	}
 
-	return(true);
+	return true;
 }
 
 void Client::UpdateZoneChangeCount(uint32 zoneID)

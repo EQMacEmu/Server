@@ -424,7 +424,6 @@ public:
 	uint32 CountAAEffects();
 
 	/* Zone related */
-	bool	GetZoneCFG(uint32 zoneid, NewZone_Struct *data, bool &can_bind, bool &can_combat, bool &can_levitate, bool &can_castoutdoor, bool& is_hotzone, bool &is_city, uint8 &zone_type, int &ruleset, char **map_filename, bool &can_bind_others, bool &skip_los, bool &drag_aggro, bool &can_castdungeon, uint16 &pull_limit);
 	bool	SaveZoneCFG(uint32 zoneid, NewZone_Struct* zd);
 	bool	LoadStaticZonePoints(LinkedList<ZonePoint*>* zone_point_list,const char* zonename);
 	bool		UpdateZoneSafeCoords(const char* zonename, const glm::vec3& location);

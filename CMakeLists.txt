@@ -16,9 +16,23 @@ SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+OPTION(EQEMU_BUILD_STATIC "Build with static linking" OFF)
 OPTION(EQEMU_BUILD_PCH "Build with precompiled headers (Windows)" ON)
 
+IF (EQEMU_BUILD_STATIC)
+	SET(BUILD_SHARED_LIBS OFF)
+	SET(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".a")
+	MESSAGE(STATUS "Building with static linking")
+	SET(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+ENDIF(EQEMU_BUILD_STATIC)
+
+# Requires libgoogle-perftools-dev google-perftools packages for linux (debian)
+IF(EQEMU_ADD_PROFILER)
+	SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed,-lprofiler,--as-needed")
+ENDIF(EQEMU_ADD_PROFILER)
+
 IF(MSVC)
+	add_compile_options(/bigobj)
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
 	ADD_DEFINITIONS(-DNOMINMAX)
 	ADD_DEFINITIONS(-DCRASH_LOGGING)
@@ -296,6 +310,10 @@ ELSE()
 	SET(ZLIB_LIBRARY_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/libs/zlibng")
 ENDIF()
 
+IF (EQEMU_BUILD_STATIC)
+	SET(ZLIB_LIBRARY_LIBS libz.a)
+ENDIF(EQEMU_BUILD_STATIC)
+
 MESSAGE(STATUS "")
 MESSAGE(STATUS "**************************************************")
 MESSAGE(STATUS "* Library Usage                                  *")
@@ -309,6 +327,8 @@ MESSAGE(STATUS "**************************************************")
 
 #setup server libs and headers
 SET(SERVER_LIBS common ${DATABASE_LIBRARY_LIBS} ${ZLIB_LIBRARY_LIBS} ${Boost_LIBRARIES} uv_a fmt RecastNavigation::Detour)
+
+set(FMT_HEADER_ONLY OFF)
 
 INCLUDE_DIRECTORIES(SYSTEM "${DATABASE_LIBRARY_INCLUDE}")
 INCLUDE_DIRECTORIES(SYSTEM "${ZLIB_LIBRARY_INCLUDE}")
@@ -342,7 +362,7 @@ IF(LUA_LIBRARY_ENABLED)
 	
 	IF(EQEMU_BUILD_LUA)
 		ADD_DEFINITIONS(-DLUA_EQEMU)
-		SET(SERVER_LIBS ${SERVER_LIBS} ${LUA_LIBRARY_LIBS})
+		SET(ZONE_LIBS ${LUA_LIBRARY_LIBS})
 		INCLUDE_DIRECTORIES(SYSTEM "${LUA_LIBRARY_INCLUDE}")
 		
 		OPTION(EQEMU_SANITIZE_LUA_LIBS "Sanitize Lua Libraries (Remove OS and IO standard libraries from being able to run)." ON)
@@ -366,6 +386,8 @@ IF(UNIX)
 		SET(SERVER_LIBS ${SERVER_LIBS} "uuid")
 	ENDIF()
 ENDIF()
+
+SET(ZONE_LIBS ${ZONE_LIBS} ${SERVER_LIBS})
 
 IF(EQEMU_BUILD_LOGIN AND NOT TLS_LIBRARY_ENABLED)
 	MESSAGE(FATAL_ERROR "Login server requires a TLS Library to build.")

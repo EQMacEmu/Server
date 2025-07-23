@@ -93,50 +93,64 @@ void EQEmuConfig::parse_config() {
 		DisableConfigChecks = true;
 	}
 
-	ChatHost = _root["server"]["ucs"].get("host", "eqchat.eqemulator.net").asString();
-	ChatPort = Strings::ToUnsignedInt(_root["server"]["ucs"].get("port", "7778").asString());
+	ChatHost           = _root["server"]["ucs"].get("host", "eqchat.eqemulator.net").asString();
+	ChatPort           = Strings::ToUnsignedInt(_root["server"]["ucs"].get("port", "7778").asString());
 
-	DatabaseUsername = _root["server"]["database"].get("username", "eq").asString();
-	DatabasePassword = _root["server"]["database"].get("password", "eq").asString();
-	DatabaseHost = _root["server"]["database"].get("host", "localhost").asString();
-	DatabasePort = Strings::ToUnsignedInt(_root["server"]["database"].get("port", "3306").asString());
-	DatabaseDB = _root["server"]["database"].get("db", "eq").asString();
+	DatabaseUsername   = _root["server"]["database"].get("username", "eq").asString();
+	DatabasePassword   = _root["server"]["database"].get("password", "eq").asString();
+	DatabaseHost       = _root["server"]["database"].get("host", "localhost").asString();
+	DatabasePort       = Strings::ToUnsignedInt(_root["server"]["database"].get("port", "3306").asString());
+	DatabaseDB         = _root["server"]["database"].get("db", "eq").asString();
 
-	QSDatabaseHost = _root["server"]["qsdatabase"].get("host", "localhost").asString();
-	QSDatabasePort = Strings::ToUnsignedInt(_root["server"]["qsdatabase"].get("port", "3306").asString());
+	QSDatabaseHost     = _root["server"]["qsdatabase"].get("host", "localhost").asString();
+	QSDatabasePort     = Strings::ToUnsignedInt(_root["server"]["qsdatabase"].get("port", "3306").asString());
 	QSDatabaseUsername = _root["server"]["qsdatabase"].get("username", "eq").asString();
 	QSDatabasePassword = _root["server"]["qsdatabase"].get("password", "eq").asString();
-	QSDatabaseDB = _root["server"]["qsdatabase"].get("db", "eq").asString();
-	QSHost = _root["server"]["queryserver"].get("host", "localhost").asString();
-	QSPort = Strings::ToUnsignedInt(_root["server"]["queryserver"].get("port", "9500").asString());
+	QSDatabaseDB       = _root["server"]["qsdatabase"].get("db", "eq").asString();
+	QSHost             = _root["server"]["queryserver"].get("host", "localhost").asString();
+	QSPort             = Strings::ToUnsignedInt(_root["server"]["queryserver"].get("port", "9500").asString());
 
-	DefaultStatus = Strings::ToUnsignedInt(_root["server"]["zones"].get("defaultstatus", "0").asString());
-	ZonePortLow = Strings::ToUnsignedInt(_root["server"]["zones"]["ports"].get("low", "7000").asString());
-	ZonePortHigh = Strings::ToUnsignedInt(_root["server"]["zones"]["ports"].get("high", "7999").asString());
+	DefaultStatus      = Strings::ToUnsignedInt(_root["server"]["zones"].get("defaultstatus", "0").asString());
+	ZonePortLow        = Strings::ToUnsignedInt(_root["server"]["zones"]["ports"].get("low", "7000").asString());
+	ZonePortHigh       = Strings::ToUnsignedInt(_root["server"]["zones"]["ports"].get("high", "7999").asString());
 
-	SpellsFile = _root["server"]["files"].get("spells", "spells_us.txt").asString();
-	OpCodesFile = _root["server"]["files"].get("opcodes", "opcodes.conf").asString();
-	ChatOpCodesFile = _root["server"]["files"].get("chat_opcodes", "chat_opcodes.conf").asString();
+	SpellsFile         = _root["server"]["files"].get("spells", "spells_us.txt").asString();
+	OpCodesFile        = _root["server"]["files"].get("opcodes", "opcodes.conf").asString();
+	ChatOpCodesFile    = _root["server"]["files"].get("chat_opcodes", "chat_opcodes.conf").asString();
 
-	MapDir = _root["server"]["directories"].get("maps", "Maps/").asString();
-	QuestDir = _root["server"]["directories"].get("quests", "quests/").asString();
-	LuaModuleDir = _root["server"]["directories"].get("lua_modules", "quests/lua_modules/").asString();
-	PatchDir = _root["server"]["directories"].get("patches", "./").asString();
-	OpcodeDir = _root["server"]["directories"].get("opcodes", "./").asString();
-	SharedMemDir = _root["server"]["directories"].get("shared_memory", "shared/").asString();
-	LogDir = _root["server"]["directories"].get("logs", "logs/").asString();
+	MapDir             = _root["server"]["directories"].get("maps", "Maps/").asString();
+	QuestDir           = _root["server"]["directories"].get("quests", "quests/").asString();
+	LuaModuleDir       = _root["server"]["directories"].get("lua_modules", "quests/lua_modules/").asString();
+	PatchDir           = _root["server"]["directories"].get("patches", "./").asString();
+	OpcodeDir          = _root["server"]["directories"].get("opcodes", "./").asString();
+	SharedMemDir       = _root["server"]["directories"].get("shared_memory", "shared/").asString();
+	LogDir             = _root["server"]["directories"].get("logs", "logs/").asString();
 
-	LogPrefix = _root["server"]["launcher"].get("logprefix", "logs/zone-").asString();
-	LogSuffix = _root["server"]["launcher"].get("logsuffix", ".log").asString();
+	auto load_paths = [&](const std::string &key, std::vector<std::string> &target) {
+		const auto &paths = _root["server"]["directories"][key];
+		if (paths.isArray()) {
+			for (const auto &dir : paths) {
+				if (dir.isString()) {
+					target.push_back(dir.asString());
+				}
+			}
+		}
+	};
 
-	RestartWait = Strings::ToInt(_root["server"]["launcher"]["timers"].get("restart", "10000").asString());
-	TerminateWait = Strings::ToInt(_root["server"]["launcher"]["timers"].get("reterminate", "10000").asString());
-	InitialBootWait = Strings::ToInt(_root["server"]["launcher"]["timers"].get("initial", "20000").asString());
-	ZoneBootInterval = Strings::ToInt(_root["server"]["launcher"]["timers"].get("interval", "2000").asString());
+	load_paths("quest_paths", m_quest_directories);
+	load_paths("lua_module_paths", m_lua_module_directories);
+
+	LogPrefix          = _root["server"]["launcher"].get("logprefix", "logs/zone-").asString();
+	LogSuffix          = _root["server"]["launcher"].get("logsuffix", ".log").asString();
+
+	RestartWait        = Strings::ToInt(_root["server"]["launcher"]["timers"].get("restart", "10000").asString());
+	TerminateWait      = Strings::ToInt(_root["server"]["launcher"]["timers"].get("reterminate", "10000").asString());
+	InitialBootWait    = Strings::ToInt(_root["server"]["launcher"]["timers"].get("initial", "20000").asString());
+	ZoneBootInterval   = Strings::ToInt(_root["server"]["launcher"]["timers"].get("interval", "2000").asString());
 #ifdef WIN32
-	ZoneExe = _root["server"]["launcher"].get("exe", "zone.exe").asString();
+	ZoneExe            = _root["server"]["launcher"].get("exe", "zone.exe").asString();
 #else
-	ZoneExe = _root["server"]["launcher"].get("exe", "./zone").asString();
+	ZoneExe            = _root["server"]["launcher"].get("exe", "./zone").asString();
 #endif
 
 }

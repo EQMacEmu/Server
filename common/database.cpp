@@ -247,7 +247,7 @@ int16 Database::CheckExemption(uint32 account_id)
 uint32 Database::CreateAccount(const char* name, const char* password, int16 status, uint32 lsaccount_id) {
 	std::string query;
 
-	uint8 expansions = status >= 100 ? AllEQ : RuleI(Character, DefaultExpansions);
+	uint8 expansions = status >= 100 ? 15 : RuleI(Character, DefaultExpansions);
 	if (password)
 		query = StringFormat("INSERT INTO account SET name='%s', password='%s', status=%i, lsaccount_id=%i, expansion=%i, time_creation=UNIX_TIMESTAMP();",name,password,status, lsaccount_id, expansions);
 	else
@@ -1025,99 +1025,6 @@ bool Database::SetVariable(const std::string& varname, const std::string &varval
 		return false;
 
 	LoadVariables(); // refresh cache
-	return true;
-}
-
-// Get zone starting points from DB
-bool Database::GetSafePoints(const char* short_name, float* safe_x, float* safe_y, float* safe_z, float* safe_heading, int16* minstatus, uint8* minlevel, char *flag_needed, uint8* expansion) {
-	
-	if (short_name == nullptr)
-		return false;
-
-	std::string query = StringFormat("SELECT safe_x, safe_y, safe_z, safe_heading, min_status, min_level, flag_needed, expansion FROM zone WHERE short_name='%s'", short_name);
-	auto results = QueryDatabase(query);
-
-	if (!results.Success())
-		return false;
-
-	if (results.RowCount() == 0)
-		return false;
-
-	auto row = results.begin();
-
-	if (safe_x != nullptr)
-		*safe_x = atof(row[0]);
-	if (safe_y != nullptr)
-		*safe_y = atof(row[1]);
-	if (safe_z != nullptr)
-		*safe_z = atof(row[2]);
-	if (safe_heading != nullptr)
-		*safe_heading = atof(row[3]);
-	if (minstatus != nullptr)
-		*minstatus = atoi(row[4]);
-	if (minlevel != nullptr)
-		*minlevel = atoi(row[5]);
-	if (flag_needed != nullptr)
-		strcpy(flag_needed, row[6]);
-	if(expansion != nullptr)
-	{
-		uint8 zone_expansion = atoi(row[7]);
-		if(zone_expansion == 1)
-			*expansion = KunarkEQ;
-
-		else if(zone_expansion == 2)
-			*expansion = VeliousEQ;
-
-		else if(zone_expansion == 3)
-			*expansion = LuclinEQ;
-
-		else if(zone_expansion == 4)
-			*expansion = PlanesEQ;
-
-		else
-			*expansion = ClassicEQ;
-	}
-
-	return true;
-}
-
-bool Database::GetZoneLongName(const char* short_name, char** long_name, char* file_name, float* safe_x, float* safe_y, float* safe_z, uint32* graveyard_id, uint16* graveyard_time, uint32* maxclients) {
-	
-	std::string query = StringFormat("SELECT long_name, file_name, safe_x, safe_y, safe_z, graveyard_id, graveyard_time, maxclients FROM zone WHERE short_name='%s'", short_name);
-	auto results = QueryDatabase(query);
-
-	if (!results.Success()) {
-		return false;
-	}
-
-	if (results.RowCount() == 0)
-		return false;
-
-	auto row = results.begin();
-
-	if (long_name != nullptr)
-		*long_name = strcpy(new char[strlen(row[0])+1], row[0]);
-
-	if (file_name != nullptr) {
-		if (row[1] == nullptr)
-			strcpy(file_name, short_name);
-		else
-			strcpy(file_name, row[1]);
-	}
-
-	if (safe_x != nullptr)
-		*safe_x = atof(row[2]);
-	if (safe_y != nullptr)
-		*safe_y = atof(row[3]);
-	if (safe_z != nullptr)
-		*safe_z = atof(row[4]);
-	if (graveyard_id != nullptr)
-		*graveyard_id = atoi(row[5]);
-	if (graveyard_time != nullptr)
-		*graveyard_time = atoi(row[6]);
-	if (maxclients != nullptr)
-		*maxclients = atoi(row[7]);
-
 	return true;
 }
 

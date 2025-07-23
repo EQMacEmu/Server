@@ -2090,7 +2090,7 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 	}
 
 	// this is so we don't have to make duplicate types; some mob types are 48-52 and only the 51-52s should summon
-	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && zone->GetZoneExpansion() < LuclinEQ) {
+	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && !content_service.IsTheShadowsOfLuclinEnabled()) {
 		return false;
 	}
 

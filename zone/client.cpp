@@ -6279,6 +6279,7 @@ void Client::ShowDevToolsMenu()
 	 */
 	menu_show += Saylink::Silent("#showzonepoints", "Zone Points");
 	menu_show += " | " + Saylink::Silent("#showzonegloballoot", "Zone Global Loot");
+	menu_show += " | " + Saylink::Silent("#show content_flags", "Content Flags");
 
 	/**
 	 * Reload
@@ -6303,14 +6304,6 @@ void Client::ShowDevToolsMenu()
 	Message(
 		Chat::White,
 		fmt::format(
-			"Current Expansion | {}",
-			content_service.GetCurrentExpansionName()
-		).c_str()
-	);
-
-	Message(
-		Chat::White,
-		fmt::format(
 			"Show Menu | {}",
 			Saylink::Silent("#devtools")
 		).c_str()
@@ -6319,7 +6312,7 @@ void Client::ShowDevToolsMenu()
 	Message(
 		Chat::White,
 		fmt::format(
-			"Toggle | {}",
+			"Toggle Menu | {}",
 			menu_toggle
 		).c_str()
 	);
@@ -6357,6 +6350,33 @@ void Client::ShowDevToolsMenu()
 			help_link
 		).c_str()
 	);
+
+	SendChatLineBreak();
+
+	Message(
+		Chat::White,
+		fmt::format(
+			"Current Expansion | {} ({})",
+			content_service.GetCurrentExpansionName(),
+			content_service.GetCurrentExpansion()
+		).c_str()
+	);
+
+	auto z = GetZone(zone->GetZoneID());
+
+	if (z) {
+		Message(
+			Chat::White,
+			fmt::format(
+				"Current Zone | [{}] ({}) min/max expansion ({}/{}) content_flags [{}]",
+				z->short_name,
+				z->long_name,
+				z->min_expansion,
+				z->max_expansion,
+				z->content_flags
+			).c_str()
+		);
+	}
 
 	SendChatLineBreak();
 }

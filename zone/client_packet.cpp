@@ -663,21 +663,15 @@ void Client::CompleteConnect()
 
 	//enforce some rules..
 	if (!CanBeInZone()) {
-		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
-		if (m_pp.expansions & LuclinEQ)
-		{
+		LogInfo("[CLIENT] Kicking char from zone, not allowed here");
+		if (content_service.IsTheShadowsOfLuclinEnabled() && IsMule()) {
 			GoToSafeCoords(ZoneID("bazaar"));
 		}
-		else
-		{
-			// Mules by their very nature require access to at least Luclin. Set that here.
-			if (IsMule())
-			{
-				m_pp.expansions = m_pp.expansions + LuclinEQ;
-				database.SetExpansion(AccountName(), m_pp.expansions);
-				GoToSafeCoords(ZoneID("bazaar"));
+		else {
+			if (IsMule()) {
+				Kick();
+				return;
 			}
-
 			GoToSafeCoords(ZoneID("arena"));
 		}
 		return;
@@ -4457,9 +4451,10 @@ void Client::Handle_OP_GMTrainSkill(const EQApplicationPacket *app)
 void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 {
 	if (app->size != sizeof(GMZoneRequest_Struct)) {
-		std::cout << "Wrong size on OP_GMZoneRequest. Got: " << app->size << ", Expected: " << sizeof(GMZoneRequest_Struct) << std::endl;
+		LogError("Wrong size on OP_GMZoneRequest. Got:[{}] Expected:[{}]", sizeof(GMZoneRequest_Struct), app->size);
 		return;
 	}
+
 	if (this->Admin() < minStatusToBeGM) {
 		Message(Chat::Red, "Your account has been reported for hacking.");
 		RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = "Used /zone" });
@@ -4469,20 +4464,31 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 	auto *gmzr = (GMZoneRequest_Struct*)app->pBuffer;
 	float target_x = -1, target_y = -1, target_z = -1, target_heading;
 
-	int16 minstatus = 0;
-	uint8 minlevel = 0;
+	int16 min_status = AccountStatus::Player;
+	uint8 min_level = 0;
 	char target_zone[32];
-	uint16 zid = gmzr->zone_id;
-	if (gmzr->zone_id == 0)
-		zid = zonesummon_id;
-	const char * zname = ZoneName(zid);
-	if (zname == nullptr)
+	uint16 zone_id = gmzr->zone_id;
+	if (gmzr->zone_id == 0) {
+		zone_id = zonesummon_id;
+	}
+
+	const char *zone_short_name = ZoneName(zone_id);
+	if (zone_short_name == nullptr) {
 		target_zone[0] = 0;
-	else
-		strcpy(target_zone, zname);
+	}
+	else {
+		strcpy(target_zone, zone_short_name);
+	}
 
 	// this both loads the safe points and does a sanity check on zone name
-	if (!database.GetSafePoints(target_zone, &target_x, &target_y, &target_z, &target_heading, &minstatus, &minlevel)) {
+	auto z = GetZone(target_zone);
+	if (z) {
+		target_x       = z->safe_x;
+		target_y       = z->safe_y;
+		target_z       = z->safe_z;
+		target_heading = z->safe_heading;
+	}
+	else {
 		target_zone[0] = 0;
 	}
 
@@ -4490,15 +4496,16 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 	auto *gmzr2 = (GMZoneRequest_Struct*)outapp->pBuffer;
 	strcpy(gmzr2->charname, this->GetName());
 	gmzr2->zone_id = gmzr->zone_id;
-	gmzr2->x = target_x;
-	gmzr2->y = target_y;
-	gmzr2->z = target_z;
+	gmzr2->x       = target_x;
+	gmzr2->y       = target_y;
+	gmzr2->z       = target_z;
 	gmzr2->heading = target_heading;
-	// Next line stolen from ZoneChange as well... - This gives us a nicer message than the normal "zone is down" message...
-	if (target_zone[0] != 0 && admin >= minstatus && GetLevel() >= minlevel)
+
+	if (target_zone[0] != 0 && admin >= min_status && GetLevel() >= min_level) {
 		gmzr2->success = 1;
+	}
 	else {
-		std::cout << "GetZoneSafeCoords failed. zoneid = " << gmzr->zone_id << "; czone = " << zone->GetZoneID() << std::endl;
+		LogError("GetZoneSafeCoords failed. Zone ID [{}] Current Zone [{}]", gmzr->zone_id, zone->GetZoneID());
 		gmzr2->success = 0;
 	}
 
@@ -4510,13 +4517,14 @@ void Client::Handle_OP_GMZoneRequest(const EQApplicationPacket *app)
 
 void Client::Handle_OP_GMZoneRequest2(const EQApplicationPacket *app)
 {
+	if (app->size < sizeof(uint32)) {
+		LogError("OP size error: OP_GMZoneRequest2 expected:[{}] got:[{}]", sizeof(uint32), app->size);
+		return;
+	}
+
 	if (this->Admin() < minStatusToBeGM) {
 		Message(Chat::Red, "Your account has been reported for hacking.");
 		RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = "Used /zone" });
-		return;
-	}
-	if (app->size < sizeof(uint32)) {
-		Log(Logs::General, Logs::Error, "OP size error: OP_GMZoneRequest2 expected:%i got:%i", sizeof(uint32), app->size);
 		return;
 	}
 

@@ -14,7 +14,6 @@ SET(zone_sources
 	client_packet.cpp
 	client_process.cpp
 	combat_record.cpp
-	command.cpp
 	corpse.cpp
 	data_bucket.cpp
 	doors.cpp
@@ -32,28 +31,6 @@ SET(zone_sources
 	horse.cpp
 	inventory.cpp
 	loot.cpp
-	lua_bit.cpp
-	lua_corpse.cpp
-	lua_client.cpp
-	lua_door.cpp
-	lua_encounter.cpp
-	lua_entity.cpp
-	lua_entity_list.cpp
-	lua_general.cpp
-	lua_group.cpp
-	lua_hate_list.cpp
-	lua_inventory.cpp
-	lua_item.cpp
-	lua_iteminst.cpp
-	lua_mob.cpp
-	lua_npc.cpp
-	lua_object.cpp
-	lua_packet.cpp
-	lua_parser.cpp
-	lua_parser_events.cpp
-	lua_raid.cpp
-	lua_spawn.cpp
-	lua_spell.cpp
 	main.cpp
 	map.cpp
 	mob.cpp
@@ -186,14 +163,214 @@ SET(zone_headers
 	zone_reload.h
 )
 
+# lua unity build_command
+set(lua_sources
+	lua_bit.cpp
+	lua_corpse.cpp
+	lua_client.cpp
+	lua_door.cpp
+	lua_encounter.cpp
+	lua_entity.cpp
+	lua_entity_list.cpp
+	lua_general.cpp
+	lua_group.cpp
+	lua_hate_list.cpp
+	lua_inventory.cpp
+	lua_item.cpp
+	lua_iteminst.cpp
+	lua_mob.cpp
+	lua_npc.cpp
+	lua_object.cpp
+	lua_packet.cpp
+	lua_parser.cpp
+	lua_parser_events.cpp
+	lua_raid.cpp
+	lua_spawn.cpp
+	lua_spell.cpp
+)
+
+add_library(lua_zone STATIC ${lua_sources})
+set_target_properties(lua_zone PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 8)
+
+# gm commands
+set(gm_command_sources
+    command.cpp
+    gm_commands/advnpcspawn.cpp
+    gm_commands/aggrozone.cpp
+    gm_commands/ai.cpp
+    gm_commands/altactivate.cpp
+    gm_commands/appearance.cpp
+    gm_commands/attack.cpp
+    gm_commands/attackentity.cpp
+    gm_commands/ban.cpp
+    gm_commands/beard.cpp
+    gm_commands/beardcolor.cpp
+    gm_commands/bestz.cpp
+    gm_commands/boatinfo.cpp
+    gm_commands/bug.cpp
+    gm_commands/castspell.cpp
+    gm_commands/chat.cpp
+    gm_commands/chattest.cpp
+    gm_commands/cleartimers.cpp
+    gm_commands/connectworldserver.cpp
+    gm_commands/corpse.cpp
+    gm_commands/crashtest.cpp
+    gm_commands/d1.cpp
+    gm_commands/damage.cpp
+    gm_commands/damagetotals.cpp
+    gm_commands/dbspawn2.cpp
+    gm_commands/delacct.cpp
+    gm_commands/deletegraveyard.cpp
+    gm_commands/depop.cpp
+    gm_commands/depopzone.cpp
+    gm_commands/disablerecipe.cpp
+    gm_commands/doanim.cpp
+    gm_commands/emote.cpp
+    gm_commands/enablerecipe.cpp
+    gm_commands/equipitem.cpp
+    gm_commands/expansion.cpp
+    gm_commands/face.cpp
+    gm_commands/falltest.cpp
+    gm_commands/fillbuffs.cpp
+    gm_commands/find.cpp
+    gm_commands/fish.cpp
+    gm_commands/fixmob.cpp
+    gm_commands/flagedit.cpp
+    gm_commands/fleeinfo.cpp
+    gm_commands/forage.cpp
+    gm_commands/giveitem.cpp
+    gm_commands/givemoney.cpp
+    gm_commands/giveplayerfaction.cpp
+    gm_commands/gmdamage.cpp
+    gm_commands/goto.cpp
+    gm_commands/grid.cpp
+    gm_commands/guild.cpp
+    gm_commands/guildapprove.cpp
+    gm_commands/guildcreate.cpp
+    gm_commands/guildlist.cpp
+    gm_commands/hair.cpp
+    gm_commands/haircolor.cpp
+    gm_commands/helm.cpp
+    gm_commands/interrogateinv.cpp
+    gm_commands/interrupt.cpp
+    gm_commands/ipban.cpp
+    gm_commands/iteminfo.cpp
+    gm_commands/keyring.cpp
+    gm_commands/kick.cpp
+    gm_commands/kill.cpp
+    gm_commands/list.cpp
+    gm_commands/listnpcs.cpp
+    gm_commands/loc.cpp
+    gm_commands/logs.cpp
+    gm_commands/logtest.cpp
+    gm_commands/lootsim.cpp
+    gm_commands/makepet.cpp
+    gm_commands/manaburn.cpp
+    gm_commands/manastat.cpp
+    gm_commands/memspell.cpp
+    gm_commands/merchantcloseshop.cpp
+    gm_commands/merchantopenshop.cpp
+    gm_commands/modifynpcstat.cpp
+    gm_commands/movechar.cpp
+    gm_commands/mule.cpp
+    gm_commands/mysql.cpp
+    gm_commands/mysqltest.cpp
+    gm_commands/mystats.cpp
+    gm_commands/npccast.cpp
+    gm_commands/npcedit.cpp
+    gm_commands/npcemote.cpp
+    gm_commands/npcloot.cpp
+    gm_commands/npcsay.cpp
+    gm_commands/npcshout.cpp
+    gm_commands/npcspawn.cpp
+    gm_commands/npctypecache.cpp
+    gm_commands/npctypespawn.cpp
+    gm_commands/nukebuffs.cpp
+    gm_commands/nukeitem.cpp
+    gm_commands/numauths.cpp
+    gm_commands/optest.cpp
+    gm_commands/path.cpp
+    gm_commands/petition.cpp
+    gm_commands/pf.cpp
+    gm_commands/playsound.cpp
+    gm_commands/profanity.cpp
+    gm_commands/push.cpp
+    gm_commands/raidloot.cpp
+    gm_commands/randomfeatures.cpp
+    gm_commands/randtest.cpp
+    gm_commands/refreshgroup.cpp
+    gm_commands/reload.cpp
+    gm_commands/repop.cpp
+    gm_commands/repopclose.cpp
+    gm_commands/resetaa.cpp
+    gm_commands/resetboat.cpp
+    gm_commands/revoke.cpp
+    gm_commands/rewind.cpp
+    gm_commands/rules.cpp
+    gm_commands/save.cpp
+    gm_commands/scribespell.cpp
+    gm_commands/scribespells.cpp
+    gm_commands/sendop.cpp
+    gm_commands/sendzonespawns.cpp
+    gm_commands/serversidename.cpp
+    gm_commands/set.cpp
+    gm_commands/setgraveyard.cpp
+    gm_commands/setgreed.cpp
+    gm_commands/showbonusstats.cpp
+    gm_commands/showfilters.cpp
+    gm_commands/show.cpp
+    gm_commands/showhelm.cpp
+    gm_commands/showpetspell.cpp
+    gm_commands/showregen.cpp
+    gm_commands/showtraderitems.cpp
+    gm_commands/shutdown.cpp
+    gm_commands/size.cpp
+    gm_commands/skilldifficulty.cpp
+    gm_commands/spawn.cpp
+    gm_commands/spawnfix.cpp
+    gm_commands/spellinfo.cpp
+    gm_commands/starve.cpp
+    gm_commands/stun.cpp
+    gm_commands/summon.cpp
+    gm_commands/summonitem.cpp
+    gm_commands/suspend.cpp
+    gm_commands/synctod.cpp
+    gm_commands/testcommand.cpp
+    gm_commands/testspawn.cpp
+    gm_commands/undeletechar.cpp
+    gm_commands/underworld.cpp
+    gm_commands/unmemspell.cpp
+    gm_commands/unmemspells.cpp
+    gm_commands/unscribespell.cpp
+    gm_commands/unscribespells.cpp
+    gm_commands/viewplayerfaction.cpp
+    gm_commands/wc.cpp
+    gm_commands/worldshutdown.cpp
+    gm_commands/wp.cpp
+    gm_commands/wpadd.cpp
+    gm_commands/xpinfo.cpp
+    gm_commands/zone.cpp
+    gm_commands/zonebootup.cpp
+    gm_commands/zoneshutdown.cpp
+    gm_commands/zonespawn.cpp
+    gm_commands/zopp.cpp
+    gm_commands/zsave.cpp
+    gm_commands/zuwcoords.cpp
+)
+add_library(gm_commands_zone STATIC ${gm_command_sources})
+set_target_properties(gm_commands_zone PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 32)
+
 IF(EQEMU_DEPOP_INVALIDATES_CACHE)
 	ADD_DEFINITIONS(-DDEPOP_INVALIDATES_NPC_TYPES_CACHE)
 ENDIF(EQEMU_DEPOP_INVALIDATES_CACHE)
 
+# zone combine sources and headers
 ADD_EXECUTABLE(zone ${zone_sources} ${zone_headers})
 
+# binary output directory
 INSTALL(TARGETS zone RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+# precompile headers
 IF (WIN32 AND EQEMU_BUILD_PCH)
     TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/pch/pch.h)
     TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/types.h ../common/eqemu_logsys.h ../common/eqemu_logsys_log_aliases.h ../common/features.h ../common/global_define.h)
@@ -202,6 +379,13 @@ ENDIF()
 
 ADD_DEFINITIONS(-DZONE)
 
-TARGET_LINK_LIBRARIES(zone ${SERVER_LIBS})
+# link lua_zone unity build against luabind
+target_link_libraries(lua_zone PRIVATE luabind)
+if (EQEMU_BUILD_STATIC AND LUA_LIBRARY)
+    target_link_libraries(zone PRIVATE ${LUA_LIBRARY})
+endif()
+
+# link zone against common libraries
+target_link_libraries(zone PRIVATE ${ZONE_LIBS} lua_zone gm_commands_zone)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)

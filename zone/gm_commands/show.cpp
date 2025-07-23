@@ -2,6 +2,7 @@
 #include "show/aggro.cpp"
 #include "show/buffs.cpp"
 #include "show/client_version_summary.cpp"
+#include "show/content_flags.cpp"
 #include "show/distance.cpp"
 #include "show/emotes.cpp"
 #include "show/field_of_view.cpp"
@@ -47,6 +48,7 @@ void command_show(Client *c, const Seperator *sep)
 		Cmd{.cmd = "aggro", .u = "aggro [Distance] [-v] (-v is verbose Faction Information)", .fn = ShowAggro, .a = {"#aggro"}},
 		Cmd{.cmd = "buffs", .u = "buffs", .fn = ShowBuffs, .a = {"#showbuffs"}},
 		Cmd{.cmd = "client_version_summary", .u = "client_version_summary", .fn = ShowClientVersionSummary, .a = {"#cvs"}},
+		Cmd{.cmd = "content_flags", .u = "content_flags", .fn = ShowContentFlags, .a = {"#showcontentflags"}},
 		Cmd{.cmd = "distance", .u = "distance", .fn = ShowDistance, .a = {"#distance"}},
 		Cmd{.cmd = "emotes", .u = "emotes", .fn = ShowEmotes, .a = {"#emoteview"}},
 		Cmd{.cmd = "field_of_view", .u = "field_of_view", .fn = ShowFieldOfView, .a = {"#fov"}},

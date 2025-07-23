@@ -172,21 +172,22 @@
 #define ServerOP_DoZoneCommand		0x3003
 #define ServerOP_BootDownZones		0x3004
 
-#define ServerOP_CZMessagePlayer 0x4000
-#define ServerOP_CZSignalClient 0x4001
-#define ServerOP_CZSignalClientByName 0x4002
-#define ServerOP_HotReloadQuests 0x4003
-#define ServerOP_QueryServGeneric	0x4004
-#define ServerOP_UCSMessage		0x4005
-#define ServerOP_DiscordWebhookMessage 0x4006
-#define ServerOP_UpdateSchedulerEvents 0x4007
-#define ServerOP_UCSServerStatusRequest		0x4008
-#define ServerOP_UCSServerStatusReply		0x4009
+#define ServerOP_HotReloadQuests 0x4000
+#define ServerOP_QueryServGeneric	0x4001
+#define ServerOP_UCSMessage		0x4002
+#define ServerOP_DiscordWebhookMessage 0x4003
+#define ServerOP_UpdateSchedulerEvents 0x4004
+#define ServerOP_UCSServerStatusRequest		0x4005
+#define ServerOP_UCSServerStatusReply		0x4006
 
 #define ServerOP_ServerReloadRequest 0x4100
 
 #define ServerOP_CZSignalNPC						0x5017
 #define ServerOP_CZSetEntityVariableByNPCTypeID		0x5018
+#define ServerOP_CZMessagePlayer 0x5019
+#define ServerOP_CZSignalClient 0x5020
+#define ServerOP_CZSignalClientByName 0x5021
+
 
 // player events
 #define ServerOP_QSSendQuery 0x5000

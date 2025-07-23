@@ -10,7 +10,7 @@
 
 class DiscordManager {
 public:
-	void QueueWebhookMessage(uint32 webhook_id, const std::string& message);
+	void QueueWebhookMessage(uint32 webhook_id, const std::string &message);
 	void ProcessMessageQueue();
 	void QueuePlayerEventMessage(const PlayerEvent::PlayerEventContainer &e);
 private:

@@ -1,4 +1,5 @@
 #include "../../client.h"
+#include "../../command.h"
 
 void FindSpell(Client *c, const Seperator *sep)
 {

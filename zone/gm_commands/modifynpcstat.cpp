@@ -1,57 +1,5 @@
 #include "../client.h"
 
-void command_modifynpcstat(Client *c, const Seperator *sep)
-{
-	auto arguments = sep->argnum;
-	if (!arguments) {
-		c->Message(Chat::White, "Usage: #modifynpcstat [Stat] [Value]");
-		ListModifyNPCStatMap(c);
-		return;
-	}
-
-	if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
-		c->Message(Chat::White, "You must target an NPC to use this command.");
-		return;
-	}
-
-	auto target = c->GetTarget()->CastToNPC();
-
-	std::string stat = sep->arg[1];
-	std::string value = sep->arg[2] ? sep->arg[2] : "";
-
-	auto stat_description = GetModifyNPCStatDescription(stat);
-	if (!stat_description.length()) {
-		c->Message(
-			Chat::White,
-			fmt::format(
-				"Stat '{}' does not exist.",
-				stat
-			).c_str()
-		);
-		return;
-	}
-
-	target->ModifyNPCStat(stat, value);
-
-	c->Message(
-		Chat::White,
-		fmt::format(
-			"Stat Modified | Target: {}",
-			c->GetTargetDescription(target)
-		).c_str()
-	);
-
-	c->Message(
-		Chat::White,
-		fmt::format(
-			"Stat Modified | Stat: {} ({}) Value: {}",
-			GetModifyNPCStatDescription(stat),
-			stat,
-			value
-		).c_str()
-	);
-}
-
 std::map<std::string, std::string> GetModifyNPCStatMap()
 {
 	std::map<std::string, std::string> identifiers_map = {
@@ -121,4 +69,56 @@ void ListModifyNPCStatMap(Client* c)
 			).c_str()
 		);
 	}
+}
+
+void command_modifynpcstat(Client *c, const Seperator *sep)
+{
+	auto arguments = sep->argnum;
+	if (!arguments) {
+		c->Message(Chat::White, "Usage: #modifynpcstat [Stat] [Value]");
+		ListModifyNPCStatMap(c);
+		return;
+	}
+
+	if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
+		c->Message(Chat::White, "You must target an NPC to use this command.");
+		return;
+	}
+
+	auto target = c->GetTarget()->CastToNPC();
+
+	std::string stat = sep->arg[1];
+	std::string value = sep->arg[2] ? sep->arg[2] : "";
+
+	auto stat_description = GetModifyNPCStatDescription(stat);
+	if (!stat_description.length()) {
+		c->Message(
+			Chat::White,
+			fmt::format(
+				"Stat '{}' does not exist.",
+				stat
+			).c_str()
+		);
+		return;
+	}
+
+	target->ModifyNPCStat(stat, value);
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"Stat Modified | Target: {}",
+			c->GetTargetDescription(target)
+		).c_str()
+	);
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"Stat Modified | Stat: {} ({}) Value: {}",
+			GetModifyNPCStatDescription(stat),
+			stat,
+			value
+		).c_str()
+	);
 }

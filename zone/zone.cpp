@@ -77,8 +77,6 @@ extern uint32 numclients;
 extern WorldServer worldserver;
 extern Zone* zone;
 
-Mutex MZoneShutdown;
-
 volatile bool is_zone_loaded = false;
 Zone* zone = 0;
 
@@ -833,12 +831,31 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	m_max_clients = 0;
 	pQueuedMerchantsWorkID = 0;
 	pvpzone = false;
-	if(database.GetServerType() == 1)
+	if (database.GetServerType() == 1) {
 		pvpzone = true;
+	}
 
-	database.GetZoneLongName(short_name, &long_name, file_name, &m_safe_point.x, &m_safe_point.y, &m_safe_point.z, &m_graveyard_id, &m_graveyard_timer, &m_max_clients);
-	if(graveyard_id() > 0)
-	{
+	auto z = GetZone(ZoneID(short_name));
+	if (z) {
+		long_name = strcpy(new char[strlen(z->long_name.c_str()) + 1], z->long_name.c_str());
+
+		m_safe_point.x = z->safe_x;
+		m_safe_point.y = z->safe_y;
+		m_safe_point.z = z->safe_z;
+		m_safe_point.w = z->safe_heading;
+		m_graveyard_id = z->graveyard_id;
+		m_graveyard_timer = z->graveyard_time;
+		m_max_clients = z->maxclients;
+
+		if (z->file_name.empty()) {
+			strcpy(file_name, short_name);
+		}
+		else {
+			strcpy(file_name, z->file_name.c_str());
+		}
+	}
+
+	if(graveyard_id() > 0) {
 		LogInfo("Graveyard ID is {}.", graveyard_id());
 		bool GraveYardLoaded = database.GetZoneGraveyard(graveyard_id(), &m_graveyard_zoneid, &m_graveyard.x, &m_graveyard.y, &m_graveyard.z, &m_graveyard.w);
 		if (GraveYardLoaded)
@@ -1120,15 +1137,125 @@ void Zone::ReloadStaticData() {
 
 bool Zone::LoadZoneCFG(const char* filename)
 {
-	memset(&newzone_data, 0, sizeof(NewZone_Struct));
+	auto z = zone_store.GetZone(ZoneID(filename));
 
-	safe_delete_array(map_name);
-
-	if (!database.GetZoneCFG(ZoneID(filename), &newzone_data, can_bind,
-		can_combat, can_levitate, can_castoutdoor, is_hotzone, is_city, zone_type, default_ruleset, &map_name, can_bind_others, skip_los, drag_aggro, can_castdungeon, pull_limit))
-	{
-		LogError("Error loading the Zone Config.");
+	if (!z) {
+		LogError("[LoadZoneCFG] Failed to load zone data for [{}]", filename);
 		return false;
+	}
+
+	memset(&newzone_data, 0, sizeof(NewZone_Struct));
+	map_name             = nullptr;
+	map_name             = new char[100];
+	newzone_data.zone_id = zoneid;
+
+	strcpy(map_name, "default");
+
+	newzone_data.ztype = z->ztype;
+	zone_type = newzone_data.ztype;
+
+	// fog:red
+	newzone_data.fog_red[0] = z->fog_red;
+	newzone_data.fog_red[1] = z->fog_red2;
+	newzone_data.fog_red[2] = z->fog_red3;
+	newzone_data.fog_red[3] = z->fog_red4;
+
+	// fog:blue
+	newzone_data.fog_blue[0] = z->fog_blue;
+	newzone_data.fog_blue[1] = z->fog_blue2;
+	newzone_data.fog_blue[2] = z->fog_blue3;
+	newzone_data.fog_blue[3] = z->fog_blue4;
+
+	// fog:green
+	newzone_data.fog_green[0] = z->fog_green;
+	newzone_data.fog_green[1] = z->fog_green2;
+	newzone_data.fog_green[2] = z->fog_green3;
+	newzone_data.fog_green[3] = z->fog_green4;
+
+	// fog:minclip
+	newzone_data.fog_minclip[0] = z->fog_minclip;
+	newzone_data.fog_minclip[1] = z->fog_minclip2;
+	newzone_data.fog_minclip[2] = z->fog_minclip3;
+	newzone_data.fog_minclip[3] = z->fog_minclip4;
+
+	// fog:maxclip
+	newzone_data.fog_maxclip[0] = z->fog_maxclip;
+	newzone_data.fog_maxclip[1] = z->fog_maxclip2;
+	newzone_data.fog_maxclip[2] = z->fog_maxclip3;
+	newzone_data.fog_maxclip[3] = z->fog_maxclip4;
+
+	// rain_chance
+	newzone_data.rain_chance[0] = z->rain_chance1;
+	newzone_data.rain_chance[1] = z->rain_chance2;
+	newzone_data.rain_chance[2] = z->rain_chance3;
+	newzone_data.rain_chance[3] = z->rain_chance4;
+
+	// rain_duration
+	newzone_data.rain_duration[0] = z->rain_duration1;
+	newzone_data.rain_duration[1] = z->rain_duration2;
+	newzone_data.rain_duration[2] = z->rain_duration3;
+	newzone_data.rain_duration[3] = z->rain_duration4;
+
+	// snow_chance
+	newzone_data.snow_chance[0] = z->snow_chance1;
+	newzone_data.snow_chance[1] = z->snow_chance2;
+	newzone_data.snow_chance[2] = z->snow_chance3;
+	newzone_data.snow_chance[3] = z->snow_chance4;
+
+	// snow_duration
+	newzone_data.snow_duration[0] = z->snow_duration1;
+	newzone_data.snow_duration[1] = z->snow_duration2;
+	newzone_data.snow_duration[2] = z->snow_duration3;
+	newzone_data.snow_duration[3] = z->snow_duration4;
+
+	// misc
+	newzone_data.fog_density         = z->fog_density;
+	newzone_data.sky                 = z->sky;
+	newzone_data.zone_exp_multiplier = z->zone_exp_multiplier;
+	newzone_data.safe_x              = z->safe_x;
+	newzone_data.safe_y              = z->safe_y;
+	newzone_data.safe_z              = z->safe_z;
+	newzone_data.underworld          = z->underworld;
+	newzone_data.minclip             = z->minclip;
+	newzone_data.maxclip             = z->maxclip;
+	newzone_data.time_type           = z->time_type;
+	newzone_data.gravity             = z->gravity;
+	newzone_data.SuspendBuffs        = z->suspendbuffs;
+	newzone_data.max_z               = z->max_z;
+	newzone_data.graveyard_time      = z->graveyard_time;
+	newzone_data.never_idle          = z->never_idle != 0;
+	newzone_data.skylock             = z->skylock;
+	newzone_data.normal_music_day    = z->music;
+
+	// These never change in packet
+	newzone_data.normal_music_night  = 0;
+	newzone_data.water_music         = 4;
+
+	// local attributes
+	can_bind        = z->canbind != 0;
+	is_city         = z->canbind == 2;
+	can_bind_others = z->canbind == 3;
+	can_combat      = z->cancombat != 0;
+	can_levitate    = z->canlevitate  != 0;
+	can_castoutdoor = z->castoutdoor != 0;
+	is_hotzone      = z->hotzone != 0;
+	default_ruleset = z->ruleset;
+	m_graveyard_id  = z->graveyard_id;
+	m_max_clients   = z->maxclients;
+	pull_limit      = z->pull_limit;
+	skip_los        = z->skip_los != 0;
+
+	// safe coordinates
+	m_safe_point.x = z->safe_x;
+	m_safe_point.y = z->safe_y;
+	m_safe_point.z = z->safe_z;
+	m_safe_point.w = z->safe_heading;
+
+	if (!z->map_file_name.empty()) {
+		strcpy(map_name, z->map_file_name.c_str());
+	}
+	else {
+		strcpy(map_name, z->short_name.c_str());
 	}
 
 	//overwrite with our internal variables
@@ -1136,7 +1263,12 @@ bool Zone::LoadZoneCFG(const char* filename)
 	strcpy(newzone_data.zone_long_name, GetLongName());
 	strcpy(newzone_data.zone_short_name2, GetShortName());
 
-	LogInfo("Successfully loaded Zone Config.");
+	LogInfo(
+		"Successfully loaded zone headers for zone [{}] long_name [{}]",
+		GetShortName(),
+		GetLongName()
+	);
+
 	return true;
 }
 

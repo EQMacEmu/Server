@@ -1907,8 +1907,7 @@ bool Mob::SpellFinished(uint16 spell_id, Mob *spell_target, CastingSlot slot, ui
 		return false;
 	}
 
-	if (spell_target && spell_id == SPELL_CAZIC_TOUCH && IsNPC() && zone->GetZoneExpansion() != PlanesEQ)
-	{
+	if (spell_target && spell_id == SPELL_CAZIC_TOUCH && IsNPC() && !content_service.IsThePlanesOfPowerEnabled()) {
 		Shout("%s!",spell_target->name);
 	}
 
@@ -3864,51 +3863,45 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		}
 	}
 
-	bool use_classic_resists = !content_service.IsThePlanesOfPowerEnabled();	// mimic resists in the eras before Sept 4 2002
-	bool no_partial = false;
+	bool use_classic_resists = RuleB(Expansion, EnableClassicResistSystem) && !content_service.IsThePlanesOfPowerEnabled();	// mimic resists in the eras before Sept 4 2002
 
 	//Add our level, resist and -spell resist modifier to our roll chance
 	resist_chance += target_resist;
 	resist_chance += level_mod;
 
-	if (use_classic_resists && IsClient())
-	{
+	if (use_classic_resists && IsClient()) {
+		if (resist_chance > 200 && spells[spell_id].targettype == ST_Tap) {
+			resist_chance = 200;
+		}
+
 		if (caster->IsNPC()) {
-			if (spell_id == 837 || spell_id == 843 || spell_id == 844) {
-				// Stun Breath, Immolating Breath, Ceticious Cloud; these were not given a -mod in the revamp for some reason
-				resist_modifier = -150;
+			if (spell_id == 837) {
+				// Stun Breath
+				resist_modifier = -50;
 			}
 
-			if (resist_modifier == -100 && ((spell_id >= 1468 && spell_id <= 1488) || (spell_id >= 2157 && spell_id <= 2162))) {
-				// CHA -4 spells; weaker lure than -6.  Mostly ToV spells, including bosses.  Some VT spells
-				no_partial = true;
-				resist_modifier = -70;
+			if (spell_id == 843) {
+				// Immolating Breath
+				resist_modifier = -100;
 			}
-			else if (resist_modifier == -150 || (resist_modifier == -200 && spell_id >= 1949 && spell_id <= 2131 && spells[spell_id].targettype != ST_Tap)) {
-				// CHA -6; Raid boss spells (many dragon AoEs; Luclin stuff too)
-				no_partial = true;
-				resist_chance += 20;
-				resist_modifier = -110; // Kunark decompiles show a 45% cap and nothing I've found makes me think it changed later
 
-				if (spell_id == 837 && zone->GetZoneID() == Zones::VEESHAN)
-					resist_modifier = -50; // making Stun Breath easier to resist in VP because we don't have LOS enabled in the zone; is also Zlandicar spell
-			}
-			else if (resist_modifier == -300) {
-				// CHA -5 lures.  nearly unresistable
-				no_partial = true;
-				resist_modifier = -170;
-			}
-			else if (resist_chance > 0)
-			{
-				// classic resists for non-lures were more potent because a 0-99 roll was used back then
-				resist_chance = resist_chance * 3 / 2;
-
-				if (spell_id == 1492)	// Thunder Blast
-					no_partial = true;
+			if (resist_modifier == -150) {
+				// dragon aoes
+				resist_modifier = -100;
 			}
 		}
+
+		int hardcap = 350;
+		if (!content_service.IsTheScarsOfVeliousEnabled()) {
+			hardcap = 250;
+		}
+
+		if (resist_chance > hardcap) {
+			resist_chance = hardcap;
+		}
+
 		if (resist_chance > 200) {
-			resist_chance = 200;	// classic had low resist caps
+			resist_chance = 200 + (resist_chance - 200) / 2;
 		}
 	}
 
@@ -3928,7 +3921,6 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 
 	if (tick_save) {
 		// See http://www.eqemulator.org/forums/showthread.php?t=43370
-		// For classic accuracy these values would have to be doubled if using the 0-200 roll
 		if (IsCharmSpell(spell_id)) {
 			if (resist_chance < RuleI(Spells, CharmMinResist)) {	// this value is 5 for non-custom servers
 				resist_chance = RuleI(Spells, CharmMinResist);
@@ -3954,7 +3946,7 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		}
 
 		uint8 hp_percent = (uint8)((float)GetHP() / (float)GetMaxHP() * 100.0f);
-		if(target_level > 20 && hp_percent < 10) {
+		if (target_level > 20 && hp_percent < 10) {
 			return 0;
 		}
 	}
@@ -3969,50 +3961,22 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 		}
 	}
 
-	// this DID apply to tick saves in classic but it would enrage people to apply it on the emus (huge charm nerf)
-	if (use_classic_resists && !tick_save && spells[spell_id].ResistDiff > -300							// exclude unresistables (rapture, dictate etc) and wiz lures
-		&& !IsLifetapSpell(spell_id) && (!IsPartialCapableSpell(spell_id) || !IsDOTSpell(spell_id)))	// exclude druid dots, necro fire dots
-	{	// these floors are doubled here because of the 0-200 roll
-		if (IsNPC())
-		{
-			if (leveldiff > -11 && target_level > 14 && resist_chance < 20) {	// ten levels under the caster or higher unless it's a newbie mob
-				resist_chance = 20;
-			}
-			else if (leveldiff < -20 || target_level < 15) {		// deep greens and newbie mobs
-				if (resist_chance < 4)
-					resist_chance = 4;
-			}
-			else if (resist_chance < 10) {
-				resist_chance = 10;		// everything in between
-			}
-		}
-		else {
-			if (resist_chance < 4 && resist_modifier == 0) {
-				resist_chance = 4;	// in classic there was a 2% minimum chance to resist non-lure spells and a 1% minimum chance for spells to land on players
-			}
-			else if (resist_chance > 198) {
-				resist_chance = 198;
-			}
-		}
-	}
-
 	//Finally our roll
 	int roll = zone->random.Int(0, 200);
 	Log(Logs::Detail, Logs::Spells, "CheckResistSpell(): Spell: %d roll %i > resist_chance %i", spell_id, roll, resist_chance);
-	if(roll > resist_chance) {
+	if (roll > resist_chance) {
 		return 100;
 	}
 	else {
-		if((!IsPartialCapableSpell(spell_id) || no_partial) || resist_chance == 0) {
+		if (!IsPartialCapableSpell(spell_id) || resist_chance == 0) {
 			return 0;
 		}
 		else {
+			if (use_classic_resists && resist_chance > 200 && IsClient()) {
+				resist_chance = 200;
+			}
 
 			int partial_modifier = ((150 * (resist_chance - roll)) / resist_chance);
-
-			if (use_classic_resists && IsClient()) {
-				partial_modifier = (resist_chance * 100 + roll * -100) / resist_chance;
-			}
 
 			if (IsNPC()) {
 				if (target_level > caster_level && target_level >= 17 && (caster_level <= 50 || use_classic_resists)) {
@@ -4020,24 +3984,24 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 				}
 
 				if (target_level >= 30 && (caster_level <= 50 || use_classic_resists)) {
-					partial_modifier += (target_level - 25);
+					partial_modifier += (caster_level - 25);
 				}
 
-				if(target_level < 15) {
+				if (target_level < 15) {
 					partial_modifier -= 5;
 				}
 			}
 
-			if(caster->IsNPC()) {
-				if((target_level - caster_level) >= 20) {
+			if (caster->IsNPC()) {
+				if ((target_level - caster_level) >= 20) {
 					partial_modifier += (int)((target_level - caster_level) * 1.5);
 				}
 			}
-			
-			if(partial_modifier <= 0) {
+
+			if (partial_modifier <= 0) {
 				return 100;
 			}
-			else if(partial_modifier >= 100) {
+			else if (partial_modifier >= 100) {
 				return 0;
 			}
 

@@ -58,7 +58,7 @@ namespace ServerReload {
 		"NPC Spells",
 		"Objects",
 		"Opcodes",
-		"Quests",
+		"Quest",
 		"Quests With Timer (Resets timer events)",
 		"Rules",
 		"Skill Caps",

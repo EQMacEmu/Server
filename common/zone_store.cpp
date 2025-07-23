@@ -24,13 +24,18 @@
 ZoneStore::ZoneStore() = default;
 ZoneStore::~ZoneStore() = default;
 
-void ZoneStore::LoadZones(Database& db)
+// cache record of zones for fast successive retrieval
+void ZoneStore::LoadZones(Database &db)
 {
 	m_zones = ZoneRepository::All(db);
 
-	LogInfo("[ZoneStore] Loaded [{}] zones", m_zones.size());
+	LogInfo("Loaded [{}] zones", m_zones.size());
 }
 
+/**
+ * @param in_zone_name
+ * @return
+ */
 uint32 ZoneStore::GetZoneID(const char *in_zone_name)
 {
 	if (in_zone_name == nullptr) {
@@ -42,20 +47,31 @@ uint32 ZoneStore::GetZoneID(const char *in_zone_name)
 	return GetZoneID(zone_name);
 }
 
+/**
+ * @param zone_name
+ * @return
+ */
 uint32 ZoneStore::GetZoneID(std::string zone_name)
 {
-	for (auto &z: m_zones) {
+	for (auto &z : m_zones) {
 		if (z.short_name == zone_name) {
 			return z.zoneidnumber;
 		}
 	}
 
+	LogInfo("Failed to get zone_name [{}]", zone_name);
+
 	return 0;
 }
 
+/**
+ * @param zone_id
+ * @param error_unknown
+ * @return
+ */
 const char *ZoneStore::GetZoneName(uint32 zone_id, bool error_unknown)
 {
-	for (auto &z: m_zones) {
+	for (auto &z : m_zones) {
 		if (z.zoneidnumber == zone_id) {
 			return z.short_name.c_str();
 		}
@@ -68,9 +84,14 @@ const char *ZoneStore::GetZoneName(uint32 zone_id, bool error_unknown)
 	return nullptr;
 }
 
-const char* ZoneStore::GetZoneLongName(uint32 zone_id, bool error_unknown)
+/**
+ * @param zone_id
+ * @param error_unknown
+ * @return
+ */
+const char *ZoneStore::GetZoneLongName(uint32 zone_id, bool error_unknown)
 {
-	for (auto& z : m_zones) {
+	for (auto &z : m_zones) {
 		if (z.zoneidnumber == zone_id) {
 			return z.long_name.c_str();
 		}
@@ -83,28 +104,44 @@ const char* ZoneStore::GetZoneLongName(uint32 zone_id, bool error_unknown)
 	return nullptr;
 }
 
+/**
+ * @param zone_id
+ * @return
+ */
 std::string ZoneStore::GetZoneName(uint32 zone_id)
 {
-	for (auto &z: m_zones) {
+	for (auto &z : m_zones) {
 		if (z.zoneidnumber == zone_id) {
 			return z.short_name;
 		}
 	}
 
-	return std::string();
+	LogInfo("Failed to get zone long name by zone_id [{}]", zone_id);
+
+	return {};
 }
 
+/**
+ * @param zone_id
+ * @return
+ */
 std::string ZoneStore::GetZoneLongName(uint32 zone_id)
 {
-	for (auto& z : m_zones) {
+	for (auto &z : m_zones) {
 		if (z.zoneidnumber == zone_id) {
 			return z.long_name;
 		}
 	}
 
+	LogInfo("Failed to get zone long name by zone_id [{}]", zone_id);
+
 	return {};
 }
 
+/**
+ * @param zone_id
+ * @return
+ */
 ZoneRepository::Zone* ZoneStore::GetZone(uint32 zone_id)
 {
 	for (auto& z : m_zones) {
@@ -113,12 +150,31 @@ ZoneRepository::Zone* ZoneStore::GetZone(uint32 zone_id)
 		}
 	}
 
+	LogInfo("Failed to get zone by zone_id [{}]", zone_id);
+
 	return nullptr;
 }
 
-ZoneRepository::Zone* ZoneStore::GetZone(const char* in_zone_name)
+/**
+ * @param in_zone_name
+ * @return
+ */
+ZoneRepository::Zone *ZoneStore::GetZone(const char *in_zone_name)
 {
-	for (auto& z : m_zones) {
+	for (auto &z : m_zones) {
+		if (z.short_name == in_zone_name) {
+			return &z;
+		}
+	}
+
+	LogInfo("Failed to get zone by zone_name [{}]", in_zone_name);
+
+	return nullptr;
+}
+
+ZoneRepository::Zone *ZoneStore::GetZone(const std::string &in_zone_name)
+{
+	for (auto &z : m_zones) {
 		if (z.short_name == in_zone_name) {
 			return &z;
 		}

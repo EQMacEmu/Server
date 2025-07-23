@@ -1,5 +1,6 @@
 #include "../client.h"
 #include "../corpse.h"
+#include "../string_ids.h"
 
 void command_save(Client *c, const Seperator *sep)
 {

@@ -4307,7 +4307,7 @@ int Mob::GetOffense(EQ::skills::SkillType skill)
 		strOffense = mobLevel / 2 + 1;
 	} else {
 		strOffense = mobLevel * 2 - 40;
-		if (!isSummonedPet && zone->GetZoneExpansion() == PlanesEQ) {
+		if (!isSummonedPet && content_service.IsThePlanesOfPowerEnabled()) {
 			strOffense += 20;
 		}
 
@@ -4483,7 +4483,7 @@ int Mob::GetMitigation()
 		}
 		else
 		{
-			if (zone->GetZoneExpansion() == PlanesEQ)
+			if (content_service.IsThePlanesOfPowerEnabled())
 				mit = 200;
 			else
 				mit = GetLevel() * 41 / 10 - 15;

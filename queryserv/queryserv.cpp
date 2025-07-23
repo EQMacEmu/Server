@@ -127,30 +127,30 @@ int main() {
 
 	server_connection->OnConnectionIdentified(
 		"Zone", [&console](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		numzones++;
-		zs_list.Add(new ZoneServer(connection, console.get()));
+			numzones++;
+			zs_list.Add(new ZoneServer(connection, console.get()));
 
-		LogInfo(
-			"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
-			connection->Handle()->RemoteIP(),
-			connection->Handle()->RemotePort(),
-			connection->GetUUID(),
-			numzones
-		);
-	}
+			LogInfo(
+				"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
+				connection->Handle()->RemoteIP(),
+				connection->Handle()->RemotePort(),
+				connection->GetUUID(),
+				numzones
+			);
+		}
 	);
 
 	server_connection->OnConnectionRemoved(
 		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
-		numzones--;
-		zs_list.Remove(connection->GetUUID());
+			numzones--;
+			zs_list.Remove(connection->GetUUID());
 
-		LogInfo(
-			"Removed Zone Server connection from [{}] total zone_count [{}]",
-			connection->GetUUID(),
-			numzones
-		);
-	}
+			LogInfo(
+				"Removed Zone Server connection from [{}] total zone_count [{}]",
+				connection->GetUUID(),
+				numzones
+			);
+		}
 	);
 
 	/* Initial Connection to Worldserver */

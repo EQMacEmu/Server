@@ -9,75 +9,68 @@
 
 constexpr int MAX_RETRIES = 10;
 
-void Discord::SendWebhookMessage(const std::string& message, const std::string& webhook_url)
+void Discord::SendWebhookMessage(const std::string &message, const std::string &webhook_url)
 {
-    // validate
-    if (!ValidateWebhookUrl(webhook_url)) {
-        return;
-    }
+	if (!ValidateWebhookUrl(webhook_url)) {
+		return;
+	}
 
-    // split
-    auto s = Strings::Split(webhook_url, '/');
+	// split
+	auto s = Strings::Split(webhook_url, '/');
 
-    // url
-    std::string base_url = fmt::format("{}//{}", s[0], s[2]);
-    std::string endpoint = Strings::Replace(webhook_url, base_url, "");
+	// url
+	std::string base_url = fmt::format("{}//{}", s[0], s[2]);
+	std::string endpoint = Strings::Replace(webhook_url, base_url, "");
 
-    // client
-    try {
-        httplib::Client cli(base_url);
-        cli.set_connection_timeout(0, 15000000); // 15 sec
-        cli.set_read_timeout(15, 0); // 15 seconds
-        cli.set_write_timeout(15, 0); // 15 seconds
+	// client
+	httplib::Client cli(base_url);
+	cli.set_connection_timeout(0, 15000000); // 15 sec
+	cli.set_read_timeout(15, 0); // 15 seconds
+	cli.set_write_timeout(15, 0); // 15 seconds
 
-        // payload
-        Json::Value p;
-        p["content"] = message;
-        std::stringstream payload;
-        payload << p;
+	// payload
+	Json::Value p;
+	p["content"] = message;
+	std::stringstream payload;
+	payload << p;
 
-        bool retry = true;
-        int  retries = 0;
-        int  retry_timer = 1000;
-        while (retry) {
-            if (auto res = cli.Post(endpoint, payload.str(), "application/json")) {
-                if (res->status != 200 && res->status != 204) {
-                    LogError("[Discord Client] Code [{}] Error [{}]", res->status, res->body);
-                }
-                if (res->status == 429) {
-                    if (!res->body.empty()) {
-                        std::stringstream ss(res->body);
-                        Json::Value       response;
+	bool retry = true;
+	int  retries = 0;
+	int  retry_timer = 1000;
+	while (retry) {
+		if (auto res = cli.Post(endpoint, payload.str(), "application/json")) {
+			if (res->status != 200 && res->status != 204) {
+				LogError("[Discord Client] Code [{}] Error [{}]", res->status, res->body);
+			}
+			if (res->status == 429) {
+				if (!res->body.empty()) {
+					std::stringstream ss(res->body);
+					Json::Value       response;
 
-                        try {
-                            ss >> response;
-                        }
-                        catch (std::exception const& ex) {
-                            LogDiscord("JSON serialization failure [{}] via [{}]", ex.what(), res->body);
-                        }
+					try {
+						ss >> response;
+					}
+					catch (std::exception const &ex) {
+						LogDiscord("JSON serialization failure [{}] via [{}]", ex.what(), res->body);
+					}
 
-                        retry_timer = Strings::ToInt(response["retry_after"].asString()) + 500;
-                    }
+					retry_timer = Strings::ToInt(response["retry_after"].asString()) + 500;
+				}
 
-                    LogDiscord("Rate limited... retrying message in [{}ms]", retry_timer);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(retry_timer + 500));
-                }
-                if (res->status == 204) {
-                    retry = false;
-                }
-                if (retries > MAX_RETRIES) {
-                    LogDiscord("Retries exceeded for message [{}]", message);
-                    retry = false;
-                }
+				LogDiscord("Rate limited... retrying message in [{}ms]", retry_timer);
+				std::this_thread::sleep_for(std::chrono::milliseconds(retry_timer + 500));
+			}
+			if (res->status == 204) {
+				retry = false;
+			}
+			if (retries > MAX_RETRIES) {
+				LogDiscord("Retries exceeded for message [{}]", message);
+				retry = false;
+			}
 
-                retries++;
-            }
-        }
-    }
-    catch (std::exception const& ex) {
-        LogInfo("Client creation failure [{}]", ex.what());
-        return;
-    }
+			retries++;
+		}
+	}
 }
 
 void Discord::SendPlayerEventMessage(
@@ -100,9 +93,6 @@ void Discord::SendPlayerEventMessage(
 	cli.set_connection_timeout(0, 15000000); // 15 sec
 	cli.set_read_timeout(15, 0); // 15 seconds
 	cli.set_write_timeout(15, 0); // 15 seconds
-	httplib::Headers headers = {
-		{"Content-Type", "application/json"}
-	};
 
 	std::string payload = PlayerEventLogs::GetDiscordPayloadFromEvent(e);
 	if (payload.empty()) {
@@ -129,7 +119,7 @@ void Discord::SendPlayerEventMessage(
 						LogDiscord("JSON serialization failure [{}] via [{}]", ex.what(), res->body);
 					}
 
-					retry_timer = std::stoi(response["retry_after"].asString()) + 500;
+					retry_timer = Strings::ToInt(response["retry_after"].asString()) + 500;
 				}
 
 				LogDiscord("Rate limited... retrying message in [{}ms]", retry_timer);
@@ -148,7 +138,7 @@ void Discord::SendPlayerEventMessage(
 	}
 }
 
-std::string Discord::FormatDiscordMessage(uint16 category_id, const std::string& message)
+std::string Discord::FormatDiscordMessage(uint16 category_id, const std::string &message)
 {
 	if (category_id == Logs::LogCategory::MySQLQuery) {
 		return fmt::format("```sql\n{}\n```", message);
@@ -157,7 +147,7 @@ std::string Discord::FormatDiscordMessage(uint16 category_id, const std::string&
 	return message + "\n";
 }
 
-bool Discord::ValidateWebhookUrl(const std::string& webhook_url)
+bool Discord::ValidateWebhookUrl(const std::string &webhook_url)
 {
 	// validate
 	if (webhook_url.empty()) {

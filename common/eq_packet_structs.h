@@ -354,9 +354,8 @@ struct NewZone_Struct {
 	/*0692*/	uint8	unknown692[8];
 	/*0700*/	float	fog_density;
 	/*0704*/	uint32	SuspendBuffs;
-	/*0708*/	uint8	expansion;
-	/*0709*/	bool	never_idle;
-	/*0710*/
+	/*0708*/	bool	never_idle;
+	/*0709*/
 };
 
 /*

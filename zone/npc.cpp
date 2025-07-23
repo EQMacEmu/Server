@@ -42,6 +42,7 @@
 #include "zone.h"
 #include "water_map.h"
 #include "quest_parser_collection.h"
+#include "worldserver.h"
 
 #include <glm/gtx/projection.hpp>
 
@@ -64,6 +65,7 @@ extern volatile bool is_zone_loaded;
 extern EntityList entity_list;
 extern FastMath g_Math;
 extern SkillCaps skill_caps;
+extern WorldServer worldserver;
 
 NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& position, GravityBehavior iflymode, bool IsCorpse)
 	: Mob(
@@ -303,8 +305,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 		skillLevel = std::min(level * 5, 210);
 
 	uint16 weaponSkill = skillLevel;
-	if (zone->GetZoneExpansion() == PlanesEQ)
-	{
+	if (content_service.IsThePlanesOfPowerEnabled()) {
 		if (level > 50)
 			weaponSkill = 250 + level;
 		else

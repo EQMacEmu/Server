@@ -2322,12 +2322,7 @@ int32 QuestManager::GetZoneID(const char *zone) {
 }
 
 const char* QuestManager::GetZoneLongName(const char *zone) {
-	char *long_name;
-	database.GetZoneLongName(zone, &long_name);
-	std::string ln = long_name;
-	safe_delete_array(long_name);
-
-	return ln.c_str();
+	return ZoneLongName(ZoneID(zone));
 }
 
 void QuestManager::CrossZoneSignalNPCByNPCTypeID(uint32 npctype_id, int num, const char* data){

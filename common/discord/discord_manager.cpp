@@ -18,7 +18,7 @@ void DiscordManager::ProcessMessageQueue()
 	}
 
 	webhook_queue_lock.lock();
-	for (auto &q: webhook_message_queue) {
+	for (auto &q : webhook_message_queue) {
 		LogDiscord("Processing [{}] messages in queue for webhook ID [{}]...", q.second.size(), q.first);
 
 		if (q.first >= MAX_DISCORD_WEBHOOK_ID) {
@@ -26,10 +26,10 @@ void DiscordManager::ProcessMessageQueue()
 			continue;
 		}
 
-		auto        webhook  = LogSys.GetDiscordWebhooks()[q.first];
+		auto        webhook = LogSys.GetDiscordWebhooks()[q.first];
 		std::string message;
 
-		for (auto& m : q.second) {
+		for (auto &m : q.second) {
 			// next message would become too large
 			bool next_message_too_large = ((int)m.length() + (int)message.length()) > MAX_MESSAGE_LENGTH;
 			if (next_message_too_large) {
@@ -54,7 +54,6 @@ void DiscordManager::ProcessMessageQueue()
 				message.clear();
 			}
 		}
-
 		// final flush
 		if (!message.empty()) {
 			Discord::SendWebhookMessage(

@@ -671,17 +671,6 @@ enum Boats
 	pirate_runners_skiff = 843 //Shuttle iceclad-nro
 };
 
-// Values are bitwise, so we can compare with the expansion field in account.
-enum Expansions
-{
-	ClassicEQ = 0,
-	KunarkEQ = 1,
-	VeliousEQ = 2,
-	LuclinEQ = 4,
-	PlanesEQ = 8,
-	AllEQ = 15
-};
-
 static const uint32 MAX_SPELL_DB_ID_VAL = 65535;
 
 enum ChatChannelNames : uint16

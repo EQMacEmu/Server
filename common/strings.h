@@ -88,6 +88,8 @@ public:
 	static bool BeginsWith(const std::string& subject, const std::string& search);
 	static bool EndsWith(const std::string& subject, const std::string& search);
 	static std::string ZoneTime(const uint8 hours, const uint8 minutes);
+	static std::string Slugify(const std::string &input, const std::string &separator = "-");
+	static bool IsValidJson(const std::string &json);
 
 	static bool SanitizeChatString(std::string &in_string);
 
@@ -109,9 +111,6 @@ public:
 
 		return output;
 	}
-
-	static std::string Slugify(const std::string &input, const std::string &separator = "-");
-	static bool IsValidJson(const std::string &json);
 };
 
 const std::string StringFormat(const char *format, ...);

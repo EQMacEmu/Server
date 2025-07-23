@@ -24,8 +24,7 @@
 #include <fstream>
 #include <fmt/format.h>
 
-struct LoginConfig 
-{
+struct LoginConfig {
 	std::string LoginHost;
 	std::string LoginAccount;
 	std::string LoginPassword;
@@ -110,13 +109,35 @@ class EQEmuConfig
 		uint16 ZonePortLow;
 		uint16 ZonePortHigh;
 		uint8 DefaultStatus;
+
+		std::vector<std::string> GetQuestDirectories() const
+		{
+			return m_quest_directories;
+		}
+
+		std::vector<std::string> GetPluginsDirectories() const
+		{
+			return m_plugin_directories;
+		}
+
+		std::vector<std::string> GetLuaModuleDirectories() const
+		{
+			return m_lua_module_directories;
+		}
+
 		//	uint16 DynamicCount;
 		//	map<string,uint16> StaticZones;
+
 	protected:
 		static EQEmuConfig *_config;
 		Json::Value _root;
 		static std::string ConfigFile;
 
+		std::vector<std::string> m_quest_directories = {};
+		std::vector<std::string> m_plugin_directories = {};
+		std::vector<std::string> m_lua_module_directories = {};
+
+	protected:
 		void parse_config();
 
 		EQEmuConfig() 

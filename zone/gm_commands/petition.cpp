@@ -1,4 +1,5 @@
 #include "../client.h"
+#include "../guild_mgr.h"
 
 void command_petition(Client *c, const Seperator *sep)
 {

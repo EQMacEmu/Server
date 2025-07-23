@@ -1248,10 +1248,17 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	{
 		LogInfo("Found 'startzone' variable setting: [{}]", startzone);
 		pp.zone_id = ZoneID(startzone.c_str());
-		if(pp.zone_id)
-			database.GetSafePoints(ZoneName(pp.zone_id), &pp.x, &pp.y, &pp.z);
-		else
+		if (pp.zone_id) {
+			auto z = GetZone(pp.zone_id);
+			if (z) {
+				pp.x = z->safe_x;
+				pp.y = z->safe_y;
+				pp.z = z->safe_z;
+			}
+		}
+		else {
 			LogInfo("Error getting zone id for '[{}]'", startzone);
+		}
 	}
 	else	// otherwise use normal starting zone logic
 	{

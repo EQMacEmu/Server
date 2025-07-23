@@ -304,7 +304,7 @@ void NPC::DoBackstab(Mob* defender)
 			base = 5;
 		if (base > 220)
 			base = 220;
-		if (zone->GetZoneExpansion() == PlanesEQ)	// PoP NPCs had unusually low backstab damage
+		if (content_service.IsThePlanesOfPowerEnabled())	// PoP NPCs had unusually low backstab damage
 			base = base * 2 / 3;
 	}
 

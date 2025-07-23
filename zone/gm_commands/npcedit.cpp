@@ -1,6 +1,111 @@
 #include "../client.h"
 #include "../../common/repositories/npc_types_repository.h"
 
+void SendNPCEditSubCommands(Client *c)
+{
+	c->Message(Chat::White, "Usage: #npcedit name [Name] - Sets an NPC's Name");
+	c->Message(Chat::White, "Usage: #npcedit lastname [Last Name] - Sets an NPC's Last Name");
+	c->Message(Chat::White, "Usage: #npcedit level [Level] - Sets an NPC's Level");
+	c->Message(Chat::White, "Usage: #npcedit maxlevel [Max Level] - Sets an NPC's Maximum Level");
+	c->Message(Chat::White, "Usage: #npcedit race [Race ID] - Sets an NPC's Race");
+	c->Message(Chat::White, "Usage: #npcedit class [Class ID] - Sets an NPC's Class");
+	c->Message(Chat::White, "Usage: #npcedit bodytype [Body Type ID] - Sets an NPC's Bodytype");
+	c->Message(Chat::White, "Usage: #npcedit hp [HP] - Sets an NPC's HP");
+	c->Message(Chat::White, "Usage: #npcedit mana [Mana] - Sets an NPC's Mana");
+	c->Message(Chat::White, "Usage: #npcedit gender [Gender ID] - Sets an NPC's Gender");
+	c->Message(Chat::White, "Usage: #npcedit texture [Texture] - Sets an NPC's Texture");
+	c->Message(Chat::White, "Usage: #npcedit helmtexture [Helmet Texture] - Sets an NPC's Helmet Texture");
+	c->Message(Chat::White, "Usage: #npcedit armtexture [Texture] - Sets an NPC's Arm Texture");
+	c->Message(Chat::White, "Usage: #npcedit bracertexture [Texture] - Sets an NPC's Bracer Texture");
+	c->Message(Chat::White, "Usage: #npcedit handtexture [Texture] - Sets an NPC's Hand Texture");
+	c->Message(Chat::White, "Usage: #npcedit legtexture [Texture] - Sets an NPC's Leg Texture");
+	c->Message(Chat::White, "Usage: #npcedit feettexture [Texture] - Sets an NPC's Feet Texture");
+	c->Message(Chat::White, "Usage: #npcedit size [Size] - Sets an NPC's Size");
+	c->Message(Chat::White, "Usage: #npcedit hpregen [HP Regen] - Sets an NPC's HP Regen Rate Per Tick");
+	c->Message(Chat::White, "Usage: #npcedit combathpregen [Combat HP Regen] - Sets an NPC's Combat HP Regen Rate Per Tick");
+	c->Message(Chat::White, "Usage: #npcedit manaregen [Mana Regen] - Sets an NPC's Mana Regen Rate Per Tick");
+	c->Message(Chat::White, "Usage: #npcedit combatmanaregen [Combat Mana Regen] - Sets an NPC's Combat Mana Regen Rate Per Tick");
+	c->Message(Chat::White, "Usage: #npcedit loottable [Loottable ID] - Sets an NPC's Loottable ID");
+	c->Message(Chat::White, "Usage: #npcedit merchantid [Merchant ID] - Sets an NPC's Merchant ID");
+	c->Message(Chat::White, "Usage: #npcedit spell [Spell List ID] - Sets an NPC's Spells List ID");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit npc_spells_effects_id [Spell Effects ID] - Sets an NPC's Spell Effects ID"
+	);
+	c->Message(Chat::White, "Usage: #npcedit faction [Faction ID] - Sets an NPC's Faction ID");
+	c->Message(Chat::White, "Usage: #npcedit special_abilities [Special Abilities] - Sets an NPC's Special Abilities");
+	c->Message(Chat::White, "Usage: #npcedit damage [Minimum] [Maximum] - Sets an NPC's Damage");
+	c->Message(Chat::White, "Usage: #npcedit aggroradius [Radius] - Sets an NPC's Aggro Radius");
+	c->Message(Chat::White, "Usage: #npcedit assistradius [Radius] - Sets an NPC's Assist Radius");
+	c->Message(Chat::White, "Usage: #npcedit runspeed [Run Speed] - Sets an NPC's Run Speed");
+	c->Message(Chat::White, "Usage: #npcedit agi [Agility] - Sets an NPC's Agility");
+	c->Message(Chat::White, "Usage: #npcedit cha [Charisma] - Sets an NPC's Charisma");
+	c->Message(Chat::White, "Usage: #npcedit dex [Dexterity] - Sets an NPC's Dexterity");;
+	c->Message(Chat::White, "Usage: #npcedit int [Intelligence] - Sets an NPC's Intelligence");
+	c->Message(Chat::White, "Usage: #npcedit sta [Stamina] - Sets an NPC's Stamina");
+	c->Message(Chat::White, "Usage: #npcedit str [Strength] - Sets an NPC's Strength");
+	c->Message(Chat::White, "Usage: #npcedit wis {Widsom] - Sets an NPC's Wisdom");
+	c->Message(Chat::White, "Usage: #npcedit mr [Resistance] - Sets an NPC's Magic Resistance");
+	c->Message(Chat::White, "Usage: #npcedit pr [Resistance] - Sets an NPC's Poison Resistance");
+	c->Message(Chat::White, "Usage: #npcedit dr [Resistance] - Sets an NPC's Disease Resistance");
+	c->Message(Chat::White, "Usage: #npcedit fr [Resistance] - Sets an NPC's Fire Resistance");
+	c->Message(Chat::White, "Usage: #npcedit cr [Resistance] - Sets an NPC's Cold Resistance");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit seeinvis [Flag] - Sets an NPC's See Invisible Flag [0 = Cannot See Invisible, 1 = Can See Invisible]"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit seeinvisundead [Flag] - Sets an NPC's See Invisible vs. Undead Flag  [0 = Cannot See Invisible vs. Undead, 1 = Can See Invisible vs. Undead]"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit seesneak [Flag] - Sets an NPC's ability to see through sneak Flag [0 = Cannot See Sneak, 1 = Can See Sneak] ");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit seeimprovedhide [Flag] - Sets an NPC's See Improved Hide Flag [0 = Cannot See Improved Hide, 1 = Can See Improved Hide]"
+	);
+	c->Message(Chat::White, "Usage: #npcedit ac [Armor Class] - Sets an NPC's Armor Class");
+	c->Message(Chat::White, "Usage: #npcedit atk [Attack] - Sets an NPC's Attack");
+	c->Message(Chat::White, "Usage: #npcedit accuracy [Accuracy] - Sets an NPC's Accuracy");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit npcaggro [Flag] - Sets an NPC's NPC Aggro Flag [0 = Aggro NPCs Off, 1 = Aggro NPCs On]"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit qglobal [Flag] - Sets an NPC's Quest Global Flag [0 = Quest Globals Off, 1 = Quest Globals On]"
+	);
+	c->Message(Chat::White, "Usage: #npcedit spawn_limit [Limit] - Sets an NPC's Spawn Limit Counter");
+	c->Message(Chat::White, "Usage: #npcedit attackdelay [Attack Delay] - Sets an NPC's Attack Delay");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit weapon [Primary Model] [Secondary Model] - Sets an NPC's Primary and Secondary Weapon Model"
+	);
+	c->Message(Chat::White, "Usage: #npcedit featuresave - Saves an NPC's current facial features to the database");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit color [Red] [Green] [Blue] - Sets an NPC's Red, Green, and Blue armor tint"
+	);
+	c->Message(Chat::White, "Usage: #npcedit armortint_id [Armor Tint ID] - Sets an NPC's Armor Tint ID");
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit setanimation [Animation ID] - Sets an NPC's Animation on Spawn (Stored in spawn2 table)"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit scalerate [Scale Rate] - Sets an NPC's Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit spellscale [Scale Rate] - Sets an NPC's Spell Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
+	);
+	c->Message(
+		Chat::White,
+		"Usage: #npcedit healscale [Scale Rate] - Sets an NPC's Heal Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
+	);
+}
+
 void command_npcedit(Client *c, const Seperator *sep)
 {
 	if (!c->GetTarget() || !c->GetTarget()->IsNPC()) {
@@ -1084,109 +1189,4 @@ void command_npcedit(Client *c, const Seperator *sep)
 	}
 
 	c->Message(Chat::White, d.c_str());
-}
-
-void SendNPCEditSubCommands(Client* c)
-{
-	c->Message(Chat::White, "Usage: #npcedit name [Name] - Sets an NPC's Name");
-	c->Message(Chat::White, "Usage: #npcedit lastname [Last Name] - Sets an NPC's Last Name");
-	c->Message(Chat::White, "Usage: #npcedit level [Level] - Sets an NPC's Level");
-	c->Message(Chat::White, "Usage: #npcedit maxlevel [Max Level] - Sets an NPC's Maximum Level");
-	c->Message(Chat::White, "Usage: #npcedit race [Race ID] - Sets an NPC's Race");
-	c->Message(Chat::White, "Usage: #npcedit class [Class ID] - Sets an NPC's Class");
-	c->Message(Chat::White, "Usage: #npcedit bodytype [Body Type ID] - Sets an NPC's Bodytype");
-	c->Message(Chat::White, "Usage: #npcedit hp [HP] - Sets an NPC's HP");
-	c->Message(Chat::White, "Usage: #npcedit mana [Mana] - Sets an NPC's Mana");
-	c->Message(Chat::White, "Usage: #npcedit gender [Gender ID] - Sets an NPC's Gender");
-	c->Message(Chat::White, "Usage: #npcedit texture [Texture] - Sets an NPC's Texture");
-	c->Message(Chat::White, "Usage: #npcedit helmtexture [Helmet Texture] - Sets an NPC's Helmet Texture");
-	c->Message(Chat::White, "Usage: #npcedit armtexture [Texture] - Sets an NPC's Arm Texture");
-	c->Message(Chat::White, "Usage: #npcedit bracertexture [Texture] - Sets an NPC's Bracer Texture");
-	c->Message(Chat::White, "Usage: #npcedit handtexture [Texture] - Sets an NPC's Hand Texture");
-	c->Message(Chat::White, "Usage: #npcedit legtexture [Texture] - Sets an NPC's Leg Texture");
-	c->Message(Chat::White, "Usage: #npcedit feettexture [Texture] - Sets an NPC's Feet Texture");
-	c->Message(Chat::White, "Usage: #npcedit size [Size] - Sets an NPC's Size");
-	c->Message(Chat::White, "Usage: #npcedit hpregen [HP Regen] - Sets an NPC's HP Regen Rate Per Tick");
-	c->Message(Chat::White, "Usage: #npcedit combathpregen [Combat HP Regen] - Sets an NPC's Combat HP Regen Rate Per Tick");
-	c->Message(Chat::White, "Usage: #npcedit manaregen [Mana Regen] - Sets an NPC's Mana Regen Rate Per Tick");
-	c->Message(Chat::White, "Usage: #npcedit combatmanaregen [Combat Mana Regen] - Sets an NPC's Combat Mana Regen Rate Per Tick");
-	c->Message(Chat::White, "Usage: #npcedit loottable [Loottable ID] - Sets an NPC's Loottable ID");
-	c->Message(Chat::White, "Usage: #npcedit merchantid [Merchant ID] - Sets an NPC's Merchant ID");
-	c->Message(Chat::White, "Usage: #npcedit spell [Spell List ID] - Sets an NPC's Spells List ID");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit npc_spells_effects_id [Spell Effects ID] - Sets an NPC's Spell Effects ID"
-	);
-	c->Message(Chat::White, "Usage: #npcedit faction [Faction ID] - Sets an NPC's Faction ID");
-	c->Message(Chat::White, "Usage: #npcedit special_abilities [Special Abilities] - Sets an NPC's Special Abilities");
-	c->Message(Chat::White, "Usage: #npcedit damage [Minimum] [Maximum] - Sets an NPC's Damage");
-	c->Message(Chat::White, "Usage: #npcedit aggroradius [Radius] - Sets an NPC's Aggro Radius");
-	c->Message(Chat::White, "Usage: #npcedit assistradius [Radius] - Sets an NPC's Assist Radius");
-	c->Message(Chat::White, "Usage: #npcedit runspeed [Run Speed] - Sets an NPC's Run Speed");
-	c->Message(Chat::White, "Usage: #npcedit agi [Agility] - Sets an NPC's Agility");
-	c->Message(Chat::White, "Usage: #npcedit cha [Charisma] - Sets an NPC's Charisma");
-	c->Message(Chat::White, "Usage: #npcedit dex [Dexterity] - Sets an NPC's Dexterity");;
-	c->Message(Chat::White, "Usage: #npcedit int [Intelligence] - Sets an NPC's Intelligence");
-	c->Message(Chat::White, "Usage: #npcedit sta [Stamina] - Sets an NPC's Stamina");
-	c->Message(Chat::White, "Usage: #npcedit str [Strength] - Sets an NPC's Strength");
-	c->Message(Chat::White, "Usage: #npcedit wis {Widsom] - Sets an NPC's Wisdom");
-	c->Message(Chat::White, "Usage: #npcedit mr [Resistance] - Sets an NPC's Magic Resistance");
-	c->Message(Chat::White, "Usage: #npcedit pr [Resistance] - Sets an NPC's Poison Resistance");
-	c->Message(Chat::White, "Usage: #npcedit dr [Resistance] - Sets an NPC's Disease Resistance");
-	c->Message(Chat::White, "Usage: #npcedit fr [Resistance] - Sets an NPC's Fire Resistance");
-	c->Message(Chat::White, "Usage: #npcedit cr [Resistance] - Sets an NPC's Cold Resistance");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit seeinvis [Flag] - Sets an NPC's See Invisible Flag [0 = Cannot See Invisible, 1 = Can See Invisible]"
-	);
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit seeinvisundead [Flag] - Sets an NPC's See Invisible vs. Undead Flag  [0 = Cannot See Invisible vs. Undead, 1 = Can See Invisible vs. Undead]"
-	);
-	c->Message(
-		Chat::White, 
-		"Usage: #npcedit seesneak [Flag] - Sets an NPC's ability to see through sneak Flag [0 = Cannot See Sneak, 1 = Can See Sneak] ");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit seeimprovedhide [Flag] - Sets an NPC's See Improved Hide Flag [0 = Cannot See Improved Hide, 1 = Can See Improved Hide]"
-	);
-	c->Message(Chat::White, "Usage: #npcedit ac [Armor Class] - Sets an NPC's Armor Class");
-	c->Message(Chat::White, "Usage: #npcedit atk [Attack] - Sets an NPC's Attack");
-	c->Message(Chat::White, "Usage: #npcedit accuracy [Accuracy] - Sets an NPC's Accuracy");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit npcaggro [Flag] - Sets an NPC's NPC Aggro Flag [0 = Aggro NPCs Off, 1 = Aggro NPCs On]"
-	);
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit qglobal [Flag] - Sets an NPC's Quest Global Flag [0 = Quest Globals Off, 1 = Quest Globals On]"
-	);
-	c->Message(Chat::White, "Usage: #npcedit spawn_limit [Limit] - Sets an NPC's Spawn Limit Counter");
-	c->Message(Chat::White, "Usage: #npcedit attackdelay [Attack Delay] - Sets an NPC's Attack Delay");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit weapon [Primary Model] [Secondary Model] - Sets an NPC's Primary and Secondary Weapon Model"
-	);
-	c->Message(Chat::White, "Usage: #npcedit featuresave - Saves an NPC's current facial features to the database");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit color [Red] [Green] [Blue] - Sets an NPC's Red, Green, and Blue armor tint"
-	);
-	c->Message(Chat::White, "Usage: #npcedit armortint_id [Armor Tint ID] - Sets an NPC's Armor Tint ID");
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit setanimation [Animation ID] - Sets an NPC's Animation on Spawn (Stored in spawn2 table)"
-	);
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit scalerate [Scale Rate] - Sets an NPC's Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
-	);
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit spellscale [Scale Rate] - Sets an NPC's Spell Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
-	);
-	c->Message(
-		Chat::White,
-		"Usage: #npcedit healscale [Scale Rate] - Sets an NPC's Heal Scaling Rate [50 = 50%, 100 = 100%, 200 = 200%]"
-	);
 }

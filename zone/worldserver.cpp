@@ -87,6 +87,7 @@ void WorldServer::Process()
 			if (it->second.reload_at_unix < std::time(nullptr)) {
 				ProcessReload(it->second);
 				it = m_reload_queue.erase(it);
+				break;
 			}
 			else {
 				++it;
@@ -1866,7 +1867,21 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			if (request_zone_short_name == local_zone_short_name || request_zone_short_name == "all") {
 				zone->SetQuestHotReloadQueued(true);
 			}
+			else if (request_zone_short_name == "all") {
+				std::string reload_quest_saylink = Saylink::Silent("#reload quest", "Locally");
+				std::string reload_world_saylink = Saylink::Silent("#reload world 1", "Globally");
+				for (const auto &[client_id, client] : entity_list.GetClientList()) {
+					if (client->Admin() < AccountStatus::ApprenticeGuide) {
+						continue;
+					}
 
+					client->Message(Chat::Yellow, fmt::format(
+						"A quest, plugin, or global script has changed. Reload: [{}] [{}]",
+						reload_quest_saylink,
+						reload_world_saylink
+					).c_str());
+				}
+			}
 			break;
 		}
 		case ServerOP_ServerReloadRequest:
@@ -2214,16 +2229,20 @@ void WorldServer::ProcessReload(const ServerReload::Request &request)
 		break;
 
 	case ServerReload::Type::WorldRepop:
-		entity_list.ClearAreas();
 		parse->ReloadQuests();
-		zone->Repop();
+		if (zone && zone->IsLoaded()) {
+			entity_list.ClearAreas();
+			zone->Repop();
+		}
 		break;
 
 	case ServerReload::Type::WorldWithRespawn:
-		entity_list.ClearAreas();
 		parse->ReloadQuests();
-		zone->Repop();
-		zone->ClearSpawnTimers();
+		if (zone && zone->IsLoaded()) {
+			entity_list.ClearAreas();
+			zone->Repop();
+			zone->ClearSpawnTimers();
+		}
 		break;
 
 	case ServerReload::Type::ZonePoints:

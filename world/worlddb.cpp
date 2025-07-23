@@ -117,7 +117,13 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 				/* If a bind_id is specified, make them start there */
 				if (atoi(row_d[1]) != 0) {
 					pp.binds[4].zoneId = (uint32)atoi(row_d[1]);
-					GetSafePoints(ZoneName(pp.binds[4].zoneId), &pp.binds[4].x, &pp.binds[4].y, &pp.binds[4].z, &pp.binds[4].heading);
+					auto z = GetZone(pp.binds[4].zoneId);
+					if (z) {
+						pp.binds[4].x = z->safe_x;
+						pp.binds[4].y = z->safe_y;
+						pp.binds[4].z = z->safe_z;
+						pp.binds[4].heading = z->safe_heading;
+					}
 				}
 				/* Otherwise, use the zone and coordinates given */
 				else {
@@ -126,7 +132,15 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 					float y = atof(row_d[3]);
 					float z = atof(row_d[4]);
 					float heading = atof(row_d[5]);
-					if (x == 0 && y == 0 && z == 0 && heading == 0){ GetSafePoints(ZoneName(pp.binds[4].zoneId), &x, &y, &z, &heading); }
+					if (x == 0 && y == 0 && z == 0 && heading == 0){ 
+						auto zone = GetZone(pp.binds[4].zoneId);
+						if (zone) {
+							x       = zone->safe_x;
+							y       = zone->safe_y;
+							z       = zone->safe_z;
+							heading = zone->safe_heading;
+						}
+					}
 					pp.binds[4].x = x; 
 					pp.binds[4].y = y; 
 					pp.binds[4].z = z; 
@@ -328,11 +342,25 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		in_pp->binds[0].z = atoi(row[7]);
 	}
 
-	if(in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0 && in_pp->heading == 0)
-		database.GetSafePoints(ZoneName(in_pp->zone_id), &in_pp->x, &in_pp->y, &in_pp->z, &in_pp->heading);
+	if (in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0 && in_pp->heading == 0) {
+		auto zone = GetZone(in_pp->zone_id);
+		if (zone) {
+			in_pp->x = zone->safe_x;
+			in_pp->y = zone->safe_y;
+			in_pp->z = zone->safe_z;
+			in_pp->heading = zone->safe_heading;
+		}
+	}
 
-	if(in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0 && in_pp->binds[0].heading == 0)
-		database.GetSafePoints(ZoneName(in_pp->binds[0].zoneId), &in_pp->binds[0].x, &in_pp->binds[0].y, &in_pp->binds[0].z, &in_pp->binds[0].heading);
+	if (in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0 && in_pp->binds[0].heading == 0) {
+		auto zone = GetZone(in_pp->binds[0].zoneId);
+		if (zone) {
+			in_pp->binds[0].x = zone->safe_x;
+			in_pp->binds[0].y = zone->safe_y;
+			in_pp->binds[0].z = zone->safe_z;
+			in_pp->binds[0].heading = zone->safe_heading;
+		}
+	}
 
 	return true;
 }

@@ -832,7 +832,10 @@ void ZSList::SendServerReload(ServerReload::Type type, uchar *packet)
 		ServerReload::Type::ContentFlags,
 		ServerReload::Type::Logs,
 		ServerReload::Type::Commands,
-		ServerReload::Type::WorldRepop
+		ServerReload::Type::Quests,
+		ServerReload::Type::QuestsTimerReset,
+		ServerReload::Type::WorldRepop,
+		ServerReload::Type::WorldWithRespawn
 	};
 
 	// Set requires_zone_booted flag before executing reload logic

@@ -1,4 +1,5 @@
 #include "../../client.h"
+#include "../../command.h"
 
 void FindNPCType(Client *c, const Seperator *sep)
 {

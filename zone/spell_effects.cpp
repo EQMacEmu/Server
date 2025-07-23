@@ -2560,14 +2560,17 @@ snare has both of them negative, yet their range should work the same:
 				result = ubase + (caster_level * formula);
 				
 				// Sony hardcoded a HT damage bonus
-				if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH)
+				if (content_service.IsTheScarsOfVeliousEnabled())
 				{
-					if (caster_level > 40)		// HT damage starts increasing by 30 per level at level 41
+					if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH)
 					{
-						int htBonus = 20 * caster_level - 40;
-						if (htBonus > 400)		// scale goes back to +10 per level at level 60
-							htBonus = 400;
-						result += htBonus;
+						if (caster_level > 40)		// HT damage starts increasing by 30 per level at level 41
+						{
+							int htBonus = 20 * caster_level - 40;
+							if (htBonus > 400)		// scale goes back to +10 per level at level 60
+								htBonus = 400;
+							result += htBonus;
+						}
 					}
 				}
 			}
