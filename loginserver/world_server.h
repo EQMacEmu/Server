@@ -132,7 +132,7 @@ public:
 
 private:
 	bool RuleB_Get(const std::string& rule_name, bool default_value);
-
+	
 	/**
 	* Packet processing functions:
 	*/
@@ -164,4 +164,3 @@ private:
 };
 
 #endif
-

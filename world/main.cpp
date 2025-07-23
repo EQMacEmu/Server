@@ -60,6 +60,7 @@
 
 #include <sys/sem.h>
 #include <thread>
+#include <sys/stat.h>  // For mkdir
 
 #endif
 
@@ -85,6 +86,7 @@
 #include "../common/events/player_event_logs.h"
 #include "../common/skill_caps.h"
 #include "../common/ip_util.h"
+#include "world_queue.h"
 
 SkillCaps           skill_caps;
 ZoneStore           zone_store;
@@ -108,6 +110,8 @@ WebInterfaceList    web_interface;
 WorldContentService content_service;
 PathManager         path;
 PlayerEventLogs     player_event_logs;
+QueueManager        queue_manager;
+bool                database_ready = false; 
 
 void CatchSignal(int sig_num);
 
@@ -170,6 +174,8 @@ int main(int argc, char** argv) {
 
 	Timer player_event_log_process(1000);
 	player_event_log_process.Start(1000);
+	Timer QueueManagerTimer(3000);
+	QueueManagerTimer.Start();
 
 	// global loads
 	LogInfo("Loading launcher list..");
@@ -466,7 +472,7 @@ int main(int argc, char** argv) {
 			std::string window_title = fmt::format(
 				"World [{}] Clients [{}]",
 				Config->LongName,
-				client_list.GetClientCount()
+				GetWorldPop()
 			);
 			UpdateWindowTitle(window_title);
 

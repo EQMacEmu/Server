@@ -458,6 +458,7 @@ SET(common_headers
 	servertalk.h
 	queue_packets.h
 	server_reload_types.h
+	queue_packets.h
 	sha1.h
 	shareddb.h
 	skills.h

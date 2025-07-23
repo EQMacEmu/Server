@@ -148,7 +148,7 @@ public:
 		m_queue_server_id = server_id; 
 		m_queue_position = position; 
 	}
-
+	
 	uint32 GetQueueServerID() const { return m_queue_server_id; }
 	uint32 GetQueuePosition() const { return m_queue_position; }
 	
