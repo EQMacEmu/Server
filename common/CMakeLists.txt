@@ -456,6 +456,7 @@ SET(common_headers
 	server_event_scheduler.h
 	serverinfo.h
 	servertalk.h
+	queue_packets.h
 	server_reload_types.h
 	sha1.h
 	shareddb.h
