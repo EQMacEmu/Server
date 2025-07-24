@@ -328,7 +328,7 @@ bool QueueManager::EvaluateConnectionRequest(const ConnectionRequest& request, u
 			// Add to queue for this server
 			{
 				// Use the client key from the login server request (passed via forum_name field)
-				std::string client_key = request.forum_name ? request.forum_name : "";
+				std::string client_key = request.client_key ? request.client_key : "";
 				
 				AddToQueue(
 					request.world_account_id,        // world_account_id (primary key)
@@ -856,6 +856,7 @@ void QueueManager::RestoreQueueFromDatabase()
 		entry.from_id = 0;
 		entry.ip_str = "";
 		entry.forum_name = "";
+		entry.authorized_client_key = "";
 		
 		// Use vector push_back instead of map indexing (consistent with vector declaration)
 		m_queued_clients.push_back(entry);
