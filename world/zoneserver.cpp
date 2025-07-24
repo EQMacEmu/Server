@@ -39,6 +39,7 @@
 #include "../common/zone_store.h"
 #include "../common/patches/patches.h"
 #include "../common/skill_caps.h"
+#include "world_queue.h"  // For queue_manager global
 #include "../common/server_reload_types.h"
 
 extern ClientList client_list;
@@ -1031,6 +1032,8 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			ClientListEntry* cle = client_list.FindCLEByAccountID(skp->AccountID);
 			if (cle) {
 				cle->SetOnline(CLE_Status::Offline);
+				LogInfo("Removing account reservation for kicked account [{}]", cle->AccountID());
+				queue_manager.m_account_rez_mgr.RemoveRez(cle->AccountID());
 			}
 
 			zoneserver_list.SendPacket(pack);
