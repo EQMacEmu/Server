@@ -39,9 +39,12 @@
 
 extern ZSList        zoneserver_list;
 extern ClientList    client_list;
-extern uint32        numzones;
-extern uint32        numplayers;
 extern volatile bool RunLoops;
+extern std::mutex ipMutex;
+extern std::unordered_set<uint32> ipWhitelist;
+
+// Global pointer for other files to access the primary LoginServer instance
+LoginServer* loginserver = nullptr;
 
 LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account, const char* Password, uint8 Type)
 {
@@ -51,11 +54,20 @@ LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account
 	m_login_password = Password;
 	m_can_account_update = false;
 	m_is_legacy = Type == 1;
+	
+	// Set global pointer to first LoginServer instance for other files to access
+	if (!loginserver) {
+		loginserver = this;
+	}
+	
 	Connect();
 }
 
 LoginServer::~LoginServer() {
-
+	// Clear global pointer if it was pointing to this instance
+	if (loginserver == this) {
+		loginserver = nullptr;
+	}
 }
 
 void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
@@ -92,7 +104,7 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	}
 
 	int32 x = Config->MaxClients;
-	if ((int32)numplayers >= x && x != -1 && x != 255 && status < 80)
+	if ((int32)client_list.GetClientCount() >= x && x != -1 && x != 255 && status < 80)
 		utwrs->response = -3;
 
 	if (status == -1)
@@ -309,13 +321,13 @@ void LoginServer::SendStatus() {
 
 	if (WorldConfig::get()->Locked)
 		lss->status = -2;
-	else if (numzones <= 0)
+	else if (zoneserver_list.GetZoneCount() <= 0)
 		lss->status = -1;
 	else
-		lss->status = numplayers > 0 ? numplayers : 0;
+		lss->status = client_list.GetClientCount() > 0 ? client_list.GetClientCount() : 0;
 
-	lss->num_zones = numzones;
-	lss->num_players = numplayers;
+	lss->num_zones = zoneserver_list.GetZoneCount();
+	lss->num_players = client_list.GetClientCount();
 	SendPacket(pack);
 	delete pack;
 }
