@@ -9,8 +9,10 @@
 #include "../common/rulesys.h"  // For RuleB and RuleI macros
 #include "../common/ip_util.h"  // For IpUtil::IsIpInPrivateRfc1918
 #include <fmt/format.h>
-#include <arpa/inet.h>
 
+#ifndef _WINDOWS
+#include <arpa/inet.h>
+#endif
 extern LoginServer* loginserver; 
 extern WorldDatabase database;  
 extern ClientList client_list;  
@@ -201,13 +203,13 @@ void QueueManager::UpdateQueuePositions()
 	}
 	
 	// Check if queue is manually frozen via rule
-	if (RuleB(AlKabor, FreezeQueue)) {
+	if (RuleB(World, FreezeQueue)) {
 		QueueDebugLog(2, "Queue updates frozen by rule - [{}] players remain queued with frozen positions", m_queued_clients.size());
 		return;
 	}
 	
 	// Get server capacity for capacity decisions
-	uint32 max_capacity = RuleI(AlKabor, PlayerPopulationCap);
+	uint32 max_capacity = RuleI(World, MaxPlayersOnline);
 	uint32 current_population = EffectivePopulation();
 	
 	// Calculate available slots for auto-connects
@@ -285,7 +287,7 @@ bool QueueManager::EvaluateConnectionRequest(const ConnectionRequest& request, u
 		decision = QueueDecisionOutcome::QueueToggle;
 	}
 	// 3. Check GM bypass rules - this is where we override world server's decision
-	else if (RuleB(AlKabor, QueueBypassGMLevel) && request.status >= 80) {
+	else if (RuleB(World, QueueBypassGMLevel) && request.status >= QuestTroupe) {
 		QueueDebugLog(1, "QueueManager - GM_BYPASS: Account [{}] (status: {}) overriding world server capacity decision", 
 			request.account_id, request.status);
 		decision = QueueDecisionOutcome::GMBypass;
@@ -809,7 +811,7 @@ void QueueManager::ProcessAdvancementTimer()
 void QueueManager::RestoreQueueFromDatabase()
 {
 	// Check if queue persistence is enabled
-	if (!RuleB(AlKabor, EnableQueuePersistence)) {
+	if (!RuleB(World, EnableQueuePersistence)) {
 		QueueDebugLog(2, "Queue persistence disabled - clearing old queue entries for world server [{}]", m_world_server_id);
 		auto clear_query = fmt::format("DELETE FROM tblLoginQueue WHERE world_server_id = {}", m_world_server_id);
 		database.QueryDatabase(clear_query);  // Use global database

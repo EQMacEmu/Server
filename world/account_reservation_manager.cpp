@@ -22,7 +22,7 @@ void AccountRezMgr::AddRez(uint32 account_id, uint32 ip_address, uint32 grace_pe
 	extern bool database_ready;
 	if (grace_period_seconds == 0) {
 		if (database_ready) {
-			grace_period_seconds = RuleI(Quarm, DefaultGracePeriod);
+			grace_period_seconds = RuleI(World, DefaultGracePeriod);
 		} else {
 			QueueDebugLog(1, "Database not ready - using default grace period for account [{}]", account_id);
 			grace_period_seconds = 60;
@@ -154,11 +154,11 @@ std::string AccountRezMgr::AccountToString(uint32 account_id) const {
 }
 
 bool AccountRezMgr::ShouldPerformCleanup() const {
-	return (time(nullptr) - m_last_cleanup) >= RuleI(Quarm, IPCleanupInterval);
+	return (time(nullptr) - m_last_cleanup) >= RuleI(World, IPCleanupInterval);
 }
 
 bool AccountRezMgr::ShouldPerformDatabaseSync() const {
-	return (time(nullptr) - m_last_database_sync) >= RuleI(Quarm, IPDatabaseSyncInterval);
+	return (time(nullptr) - m_last_database_sync) >= RuleI(World, IPDatabaseSyncInterval);
 }
 
 bool AccountRezMgr::IsAccountInGraceWhitelist(uint32 account_id) {
