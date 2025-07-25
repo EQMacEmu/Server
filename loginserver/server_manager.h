@@ -45,7 +45,7 @@ public:
 	/**
 	* Sends a request to world to see if the client is banned or suspended.
 	*/
-	void SendUserToWorldRequest(const char* ServerIP, unsigned int client_account_id, uint32 ip);
+	void SendUserToWorldRequest(const char* ServerIP, unsigned int client_account_id, uint32 ip, bool is_auto_connect = false, const std::string& client_key = "");
 
 	/**
 	* Creates a server list packet for the older client.
@@ -61,6 +61,11 @@ public:
 	* Destroys a server with this name, ignoring option.
 	*/
 	void DestroyServerByName(std::string l_name, std::string s_name, WorldServer *ignore = nullptr);
+
+	/**
+	* Removes a player from all world server queues when they disconnect
+	*/
+	void RemovePlayerFromAllQueues(uint32 ls_account_id);
 
 private:
 	/**

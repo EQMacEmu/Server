@@ -1,6 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 SET(world_sources
+	account_reservation_manager.cpp
 	client.cpp
 	cliententry.cpp
 	clientlist.cpp
@@ -20,6 +21,7 @@ SET(world_sources
 	world_event_scheduler.cpp
 	world_config.cpp
 	world_console_connection.cpp
+	world_queue.cpp
 	world_server_cli.cpp
 	worlddb.cpp
 	world_boot.cpp
@@ -28,6 +30,7 @@ SET(world_sources
 )
 
 SET(world_headers
+	account_reservation_manager.h
 	client.h
 	cliententry.h
 	clientlist.h
@@ -47,6 +50,7 @@ SET(world_headers
 	wguild_mgr.h
 	world_config.h
 	world_console_connection.h
+	world_queue.h
 	world_tcp_connection.h
 	world_server_cli.h
 	worlddb.h

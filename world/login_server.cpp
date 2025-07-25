@@ -28,6 +28,7 @@
 #include "../common/packet_dump.h"
 #include "../common/strings.h"
 #include "../common/eqemu_logsys.h"
+#include "../common/queue_packets.h"  // For ServerOP_RemoveFromQueue and ServerQueueRemoval_Struct
 #include "login_server.h"
 #include "login_server_list.h"
 #include "zoneserver.h"
@@ -36,12 +37,16 @@
 #include "clientlist.h"
 #include "cliententry.h"
 #include "world_config.h"
+#include "world_queue.h"  // For queue_manager and QueueDebugLog
 
 extern ZSList        zoneserver_list;
 extern ClientList    client_list;
-extern uint32        numzones;
-extern uint32        numplayers;
 extern volatile bool RunLoops;
+extern std::mutex ipMutex;
+extern std::unordered_set<uint32> ipWhitelist;
+
+// Global pointer for other files to access the primary LoginServer instance
+LoginServer* loginserver = nullptr;
 
 LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account, const char* Password, uint8 Type)
 {
@@ -51,11 +56,20 @@ LoginServer::LoginServer(const char* iAddress, uint16 iPort, const char* Account
 	m_login_password = Password;
 	m_can_account_update = false;
 	m_is_legacy = Type == 1;
+	
+	// Set global pointer to first LoginServer instance for other files to access
+	if (!loginserver) {
+		loginserver = this;
+	}
+	
 	Connect();
 }
 
 LoginServer::~LoginServer() {
-
+	// Clear global pointer if it was pointing to this instance
+	if (loginserver == this) {
+		loginserver = nullptr;
+	}
 }
 
 void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
@@ -92,7 +106,7 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	}
 
 	int32 x = Config->MaxClients;
-	if ((int32)numplayers >= x && x != -1 && x != 255 && status < 80)
+	if ((int32)client_list.GetClientCount() >= x && x != -1 && x != 255 && status < 80)
 		utwrs->response = -3;
 
 	if (status == -1)
@@ -168,6 +182,35 @@ void LoginServer::ProcessLSAccountUpdate(uint16_t opcode, EQ::Net::Packet& p) {
 	m_can_account_update = true;
 }
 
+void LoginServer::ProcessQueueRemoval(uint16_t opcode, EQ::Net::Packet& p) {
+	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
+
+	if (p.Length() < sizeof(ServerQueueRemoval_Struct)) {
+		LogError("Invalid ServerOP_RemoveFromQueue packet size. Expected: {}, Got: {}", 
+			sizeof(ServerQueueRemoval_Struct), p.Length());
+		return;
+	}
+
+	auto removal = (ServerQueueRemoval_Struct*)p.Data();
+	if (removal->ls_account_id == 0) {
+		LogError("Invalid ls_account_id (0) in ServerOP_RemoveFromQueue packet");
+		return;
+	}
+
+	// Convert LS account ID to world account ID
+	uint32 world_account_id = database.GetAccountIDFromLSID(removal->ls_account_id);
+	if (world_account_id == 0) {
+		QueueDebugLog(1, "No world account found for LS account {}", removal->ls_account_id);
+		return;
+	}
+
+	QueueDebugLog(1, "Processing queue removal for LS account {} (world account {})", 
+		removal->ls_account_id, world_account_id);
+
+	// Remove from queue using the global queue_manager
+	queue_manager.RemoveFromQueue(world_account_id);
+}
+
 bool LoginServer::Connect() {
 
 	char errbuf[1024];
@@ -219,6 +262,7 @@ bool LoginServer::Connect() {
 		m_legacy_client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
 		m_legacy_client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
 		m_legacy_client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
+		m_legacy_client->OnMessage(ServerOP_RemoveFromQueue, std::bind(&LoginServer::ProcessQueueRemoval, this, std::placeholders::_1, std::placeholders::_2));
 	}
 	else {
 		m_client.reset(new EQ::Net::ServertalkClient(m_loginserver_address, m_loginserver_port, false, "World", ""));
@@ -244,6 +288,7 @@ bool LoginServer::Connect() {
 		m_client->OnMessage(ServerOP_SystemwideMessage, std::bind(&LoginServer::ProcessSystemwideMessage, this, std::placeholders::_1, std::placeholders::_2));
 		m_client->OnMessage(ServerOP_LSRemoteAddr, std::bind(&LoginServer::ProcessLSRemoteAddr, this, std::placeholders::_1, std::placeholders::_2));
 		m_client->OnMessage(ServerOP_LSAccountUpdate, std::bind(&LoginServer::ProcessLSAccountUpdate, this, std::placeholders::_1, std::placeholders::_2));
+		m_client->OnMessage(ServerOP_RemoveFromQueue, std::bind(&LoginServer::ProcessQueueRemoval, this, std::placeholders::_1, std::placeholders::_2));
 	}
 	return true;
 }
@@ -309,13 +354,13 @@ void LoginServer::SendStatus() {
 
 	if (WorldConfig::get()->Locked)
 		lss->status = -2;
-	else if (numzones <= 0)
+	else if (zoneserver_list.GetZoneCount() <= 0)
 		lss->status = -1;
 	else
-		lss->status = numplayers > 0 ? numplayers : 0;
+		lss->status = client_list.GetClientCount() > 0 ? client_list.GetClientCount() : 0;
 
-	lss->num_zones = numzones;
-	lss->num_players = numplayers;
+	lss->num_zones = zoneserver_list.GetZoneCount();
+	lss->num_players = client_list.GetClientCount();
 	SendPacket(pack);
 	delete pack;
 }

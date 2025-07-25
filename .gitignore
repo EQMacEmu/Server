@@ -30,7 +30,7 @@ log/
 logs/
 vcpkg/
 perl/
-
+compile_commands.json
 .idea/*
 *cbp
 

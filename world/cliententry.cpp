@@ -28,7 +28,6 @@
 #include "../common/guilds.h"
 #include "../common/strings.h"
 
-extern uint32 numplayers;
 extern LoginServerList loginserverlist;
 extern ZSList zoneserver_list;
 extern ClientList		client_list;
@@ -96,7 +95,7 @@ ClientListEntry::ClientListEntry(uint32 in_id, ZoneServer *iZS, ServerClientList
 ClientListEntry::~ClientListEntry()
 {
 	if (RunLoops) {
-		Camp(); // updates zoneserver's numplayers
+		Camp(); // updates zoneserver population tracking
 		client_list.RemoveCLEReferances(this);
 	}
 	SetOnline(CLE_Status::Offline);
@@ -123,12 +122,12 @@ void ClientListEntry::SetOnline(CLE_Status iOnline)
 	);
 
 	if (iOnline >= CLE_Status::Online && pOnline < CLE_Status::Online) {
-		numplayers++;
+		// Population tracking now handled by queue system
 	}
 	else if (iOnline < CLE_Status::Online && pOnline >= CLE_Status::Online) {
-		numplayers--;
+		// Population tracking now handled by queue system  
 	}
-		if (iOnline != CLE_Status::Online || pOnline < CLE_Status::Online) {
+	if (iOnline != CLE_Status::Online || pOnline < CLE_Status::Online) {
 		pOnline = iOnline;
 	}
 	if (iOnline < CLE_Status::Zoning) {
