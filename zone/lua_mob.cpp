@@ -159,22 +159,22 @@ void Lua_Mob::DoAnim(int anim_num) {
 	self->DoAnim(animation);
 }
 
-void Lua_Mob::DoAnim(int anim_num, int type) {
+void Lua_Mob::DoAnim(int anim_num, float speed) { // type is ignored
 	Lua_Safe_Call_Void();
 	DoAnimation animation = static_cast<DoAnimation>(anim_num);
-	self->DoAnim(animation, type);
+	self->DoAnim(animation, speed);
 }
 
-void Lua_Mob::DoAnim(int anim_num, int type, bool ackreq) {
+void Lua_Mob::DoAnim(int anim_num, float speed, bool ackreq) { // type is ignored
 	Lua_Safe_Call_Void();
 	DoAnimation animation = static_cast<DoAnimation>(anim_num);
-	self->DoAnim(animation, type, ackreq);
+	self->DoAnim(animation, speed, ackreq);
 }
 
-void Lua_Mob::DoAnim(int anim_num, int type, bool ackreq, int filter) {
+void Lua_Mob::DoAnim(int anim_num, float speed, bool ackreq, int filter) { // type is ignored
 	Lua_Safe_Call_Void();
 	DoAnimation animation = static_cast<DoAnimation>(anim_num);
-	self->DoAnim(animation, type, ackreq, static_cast<eqFilterType>(filter));
+	self->DoAnim(animation, speed, ackreq, static_cast<eqFilterType>(filter));
 }
 
 void Lua_Mob::ChangeSize(double in_size) {
@@ -1734,9 +1734,9 @@ luabind::scope lua_register_mob() {
 		.def("GetLevelCon", (uint32(Lua_Mob::*)(int,int))&Lua_Mob::GetLevelCon)
 		.def("SetHP", &Lua_Mob::SetHP)
 		.def("DoAnim", (void(Lua_Mob::*)(int))&Lua_Mob::DoAnim)
-		.def("DoAnim", (void(Lua_Mob::*)(int,int))&Lua_Mob::DoAnim)
-		.def("DoAnim", (void(Lua_Mob::*)(int,int,bool))&Lua_Mob::DoAnim)
-		.def("DoAnim", (void(Lua_Mob::*)(int,int,bool,int))&Lua_Mob::DoAnim)
+		.def("DoAnim", (void(Lua_Mob::*)(int,float))&Lua_Mob::DoAnim)
+		.def("DoAnim", (void(Lua_Mob::*)(int,float,bool))&Lua_Mob::DoAnim)
+		.def("DoAnim", (void(Lua_Mob::*)(int,float,bool,int))&Lua_Mob::DoAnim)
 		.def("ChangeSize", (void(Lua_Mob::*)(double))&Lua_Mob::ChangeSize)
 		.def("ChangeSize", (void(Lua_Mob::*)(double,bool))&Lua_Mob::ChangeSize)
 		.def("GMMove", (void(Lua_Mob::*)(double,double,double))&Lua_Mob::GMMove)

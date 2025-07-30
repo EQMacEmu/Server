@@ -190,24 +190,16 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 	string username;
 	string password;
 	string platform;
-	bool allowedClient = 1;
+	bool allowedClient = true;
 
-	std::string allowOSX = server.db->LoginSettings("allow_OSX");
-	std::string allowPC = server.db->LoginSettings("allow_PC");
-	std::string allowPCT = server.db->LoginSettings("allow_PCT");
-
-	std::transform(allowOSX.begin(), allowOSX.end(), allowOSX.begin(), ::toupper);
-	std::transform(allowPC.begin(), allowPC.end(), allowPC.begin(), ::toupper);
-	std::transform(allowPCT.begin(), allowPCT.end(), allowPCT.begin(), ::toupper);
-
-	if (client == "OSX" && allowOSX != "TRUE") {
-		allowedClient = 0;
+	if (client == "OSX" && !server.options.IsIntelClientAllowed()) {
+		allowedClient = false;
 	}
-	else if (client == "PC" && allowPC != "TRUE") {
-		allowedClient = 0;
+	else if (client == "PC" && !server.options.IsPcClientAllowed()) {
+		allowedClient = false;
 	}
-	else if (client == "PCT" && allowPCT != "TRUE")	{
-		allowedClient = 0;
+	else if (client == "PCT" && !server.options.IsTicketClientAllowed())	{
+		allowedClient = false;
 	}
 
 	if (!allowedClient)	{
@@ -372,9 +364,9 @@ void Client::SendServerListPacket()
 
 void Client::Handle_Banner(unsigned int size)
 {
-	std::string ticker = "Welcome to EQMacEmu";
-	if (server.db->CheckExtraSettings("ticker")) {
-		ticker = server.db->LoginSettings("ticker");
+	std::string ticker = server.options.GetBannerTicker();
+	if (server.options.GetBannerTicker().empty()) {
+		ticker = "Welcome to EQMacEmu";
 	}
 
 	auto outapp = new EQApplicationPacket(OP_LoginBanner);

@@ -39,6 +39,7 @@ LoginServer server;
 EQEmuLogSys LogSys;
 EQCrypto eq_crypto;
 PathManager path;
+Database database;
 
 bool run_server = true;
 
@@ -77,26 +78,23 @@ void LoadLogSysDatabaseConnection()
 	}
 }
 
-int main()
+void LoadServerConfig()
 {
-	RegisterExecutablePlatform(ExePlatformLogin);
-	LogSys.LoadLogSettingsDefaults();
-	set_exception_handler();
-	LogInfo("Logging System Init.");
-
-	LogSys.log_settings[Logs::Error].log_to_console = Logs::General;
-
-	path.LoadPaths();
-
 	server.config = EQ::JsonConfigFile::Load(
 		fmt::format("{}/login.json", path.GetServerPath())
 	);
 	LogInfo("Config System Init.");
 
-	server.options.AutoCreateAccounts(server.config.GetVariableBool("account", "auto_create_accounts", true));
 	server.options.RejectDuplicateServers(server.config.GetVariableBool("worldservers", "reject_duplicate_servers", false));
+	server.options.AllowUnregistered(server.config.GetVariableBool("worldservers", "unregistered_allowed", true));
+	server.options.SetShowPlayerCount(server.config.GetVariableBool("worldservers", "show_player_count", false));
+	server.options.BannerTicker(server.config.GetVariableString("worldservers", "ticker", ""));
+	server.options.AllowPcClient(server.config.GetVariableBool("worldservers", "pc_client_allowed", true));
+	server.options.AllowIntelClient(server.config.GetVariableBool("worldservers", "intel_client_allowed", true));
+	server.options.AllowTicketClient(server.config.GetVariableBool("worldservers", "ticket_client_allowed", true));
 
-	server.options.AllowUnregistered(server.config.GetVariableBool("security", "unregistered_allowed", true));
+	server.options.AutoCreateAccounts(server.config.GetVariableBool("account", "auto_create_accounts", true));
+
 	server.options.AllowTokenLogin(server.config.GetVariableBool("security", "allow_token_login", false));
 	server.options.AllowPasswordLogin(server.config.GetVariableBool("security", "allow_password_login", true));
 	server.options.EncryptionMode(server.config.GetVariableInt("security", "mode", 5));
@@ -108,8 +106,21 @@ int main()
 	server.options.WorldRegistrationTable(server.config.GetVariableString("schema", "world_registration_table", "tblWorldServerRegistration"));
 	server.options.WorldAdminRegistrationTable(server.config.GetVariableString("schema", "world_admin_registration_table", "tblServerAdminRegistration"));
 	server.options.WorldServerTypeTable(server.config.GetVariableString("schema", "world_server_type_table", "tblServerListType"));
-	server.options.LoginSettingTable(server.config.GetVariableString("schema", "loginserver_setting_table", "tblloginserversettings"));
 	server.options.LoginPasswordSalt(server.config.GetVariableString("database", "salt", ""));
+}
+
+int main()
+{
+	RegisterExecutablePlatform(ExePlatformLogin);
+	LogSys.LoadLogSettingsDefaults();
+	set_exception_handler();
+	LogInfo("Logging System Init.");
+
+	LogSys.log_settings[Logs::Error].log_to_console = Logs::General;
+
+	path.LoadPaths();
+
+	LoadServerConfig();
 
 	/* Create database connection */
 	if (server.config.GetVariableString("database", "subsystem", "MySQL").compare("MySQL") == 0) {
@@ -173,8 +184,28 @@ int main()
 
 	LogInfo("Server Started.");
 	
+	LogInfo("[Config] [Account] auto_create_accounts: [{}]", server.options.CanAutoCreateAccounts());
+	LogInfo("[Config] [WorldServer] reject_duplicate_servers: [{}]", server.options.IsRejectingDuplicateServers());
+	LogInfo("[Config] [WorldServer] unregistered_allowed: [{}]", server.options.IsUnregisteredAllowed());
+	LogInfo("[Config] [WorldServer] show_player_count: [{}]", server.options.IsShowPlayerCountEnabled());
+	LogInfo("[Config] [WorldServer] ticker: [{}]", server.options.GetBannerTicker());
+	LogInfo("[Config] [WorldServer] pc_client_allowed: [{}]", server.options.IsPcClientAllowed());
+	LogInfo("[Config] [WorldServer] intel_client_allowed: [{}]", server.options.IsIntelClientAllowed());
+	LogInfo("[Config] [WorldServer] ticket_client_allowed: [{}]", server.options.IsTicketClientAllowed());
+	LogInfo("[Config] [Security] mode: [{}]", server.options.GetEncryptionMode());
+	LogInfo("[Config] [Security] allow_token_login: [{}]", server.options.IsTokenLoginAllowed());
+	LogInfo("[Config] [Security] allow_token_login: [{}]", server.options.IsPasswordLoginAllowed());
+
+	Timer keepalive(INTERSERVER_TIMER); // does auto-reconnect
+
 	auto loop_fun = [&](EQ::Timer* t) {
 		Timer::SetCurrentTime();
+
+		if (keepalive.Check()) {
+			keepalive.Start();
+			database.ping();
+		}
+
 		
 		if (!run_server) {
 			EQ::EventLoop::Get().Shutdown();
@@ -209,4 +240,3 @@ int main()
 
 	return 0;
 }
-

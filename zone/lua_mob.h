@@ -62,9 +62,9 @@ public:
 	uint32 GetLevelCon(int my, int other);
 	void SetHP(int hp);
 	void DoAnim(int anim_num);
-	void DoAnim(int anim_num, int type);
-	void DoAnim(int anim_num, int type, bool ackreq);
-	void DoAnim(int anim_num, int type, bool ackreq, int filter);
+	void DoAnim(int anim_num, float speed);
+	void DoAnim(int anim_num, float speed, bool ackreq);
+	void DoAnim(int anim_num, float speed, bool ackreq, int filter);
 	void ChangeSize(double in_size);
 	void ChangeSize(double in_size, bool no_restriction);
 	void GMMove(double x, double y, double z);

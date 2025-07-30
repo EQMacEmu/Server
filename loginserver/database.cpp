@@ -295,23 +295,6 @@ bool Database::CreateWorldRegistration(std::string long_name, std::string short_
 	return true;
 }
 
-bool Database::GetLoginSettings(std::string type, std::string value)
-{
-	auto query = fmt::format(
-		"SELECT * FROM {0} ",
-		server.options.GetLoginSettingTable()
-	);
-
-	auto results = QueryDatabase(query);
-
-	auto row = results.begin();
-
-	type = row[0];
-	value = row[1];
-
-	return true;
-}
-
 bool Database::GetWorldPreferredStatus(int id)
 {
 	auto query = fmt::format("SELECT ServerListTypeID FROM {} WHERE ServerID = {} ",
@@ -324,81 +307,5 @@ bool Database::GetWorldPreferredStatus(int id)
 	{
 		return false;
 	}
-	return true;
-}
-
-std::string Database::LoginSettings(std::string type)
-{
-	std::string query;
-	std::string value;
-
-	query = fmt::format(
-		"SELECT * FROM {0} "
-		"WHERE "
-		"type = '{1}' ",
-		server.options.GetLoginSettingTable(),
-		type
-	);
-
-	auto results = QueryDatabase(query);
-
-	if (!results.Success())
-	{
-		LogError("LoadServerSettings Mysql query return no results: {0}", query);
-	}
-	auto row = results.begin();
-	if (row[1] != nullptr)
-	{
-		value = row[1];
-	}
-	return value.c_str();
-}
-
-bool Database::CheckSettings(int type)
-{
-	if (type == 1)
-	{
-		auto query = fmt::format("SHOW TABLES LIKE '{}' ", server.options.GetLoginSettingTable());
-
-		auto results = QueryDatabase(query);
-
-		if (!results.Success()) {
-			return false;
-		}
-		LogInfo("tblloginserversettings exists sending continue.");
-	}
-	else if (type == 2)
-	{
-		auto query = fmt::format("SELECT * FROM {} ", server.options.GetLoginSettingTable());
-
-		auto results = QueryDatabase(query);
-
-		if (!results.Success()) {
-			return false;
-		}
-		LogInfo("tblloginserversettings entries exist sending continue.");
-	}
-	else
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool Database::CheckExtraSettings(std::string type)
-{
-	LogInfo("Entered CheckExtraSettings using type: [{0}].", type.c_str());
-
-	auto query = fmt::format("SELECT * FROM `{0}` WHERE `type` = '{1}';", server.options.GetLoginSettingTable(), type);
-
-	auto check_results = QueryDatabase(query);
-
-	if (!check_results.Success()) {
-		return false;
-	}
-
-	LogInfo("CheckExtraSettings type: [{0}] exists.", type);
-
 	return true;
 }

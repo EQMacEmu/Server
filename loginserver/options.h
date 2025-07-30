@@ -22,156 +22,74 @@
  * Collects options on one object, because having a bunch of global variables floating around is
  * really ugly and just a little dangerous.
  */
-class Options
-{
+class Options {
 public:
-	/**
-	* Constructor, sets the default options.
-	*/
 	Options() :
-		allow_unregistered(true),
-		encryption_mode(5),
-		local_network("127.0.0.1"),
-		network_ip("127.0.0.1"),
-		reject_duplicate_servers(false),
-		allow_password_login(true),
-		allow_token_login(false),
-		auto_create_accounts(false) { }
+		m_allow_unregistered(true),
+		m_encryption_mode(5),
+		m_local_network("127.0.0.1"),
+		m_network_ip("127.0.0.1"),
+		m_reject_duplicate_servers(false),
+		m_allow_password_login(true),
+		m_allow_token_login(false),
+		m_auto_create_accounts(false) { }
 
-	/**
-	* Sets allow_unregistered.
-	*/
-	inline void AllowUnregistered(bool b) { allow_unregistered = b; }
-
-	/**
-	* Returns the value of allow_unregistered.
-	*/
-	inline bool IsUnregisteredAllowed() const { return allow_unregistered; }
-
-	/**
-	* Sets encryption_mode.
-	*/
-	inline void EncryptionMode(int m) { encryption_mode = m; }
-
-	/**
-	* Returns the value of encryption_mode.
-	*/
-	inline int GetEncryptionMode() const { return encryption_mode; }
-
-	/**
-	* Sets local_network.
-	*/
-	inline void LocalNetwork(std::string n) { local_network = n; }
-
-	/**
-	* Sets local_network.
-	*/
-	inline void NetworkIP(std::string n) { network_ip = n; }
-
-	/**
-	* Return the value of local_network.
-	*/
-	inline std::string GetLocalNetwork() const { return local_network; }
-
-	/**
-	* Return the value of local_network.
-	*/
-	inline std::string GetNetworkIP() const { return network_ip; }
-
-	/**
-	* Sets account table.
-	*/
-	inline void AccountTable(std::string t) { account_table = t; }
-
-	/**
-	* Return the value of local_network.
-	*/
-	inline std::string GetAccountTable() const { return account_table; }
-
-	/**
-	* Sets world account table.
-	*/
-	inline void WorldRegistrationTable(std::string t) { world_registration_table = t; }
-
-	/**
-	* Return the value of world account table.
-	*/
-	inline std::string GetWorldRegistrationTable() const { return world_registration_table; }
-
-	/**
-	* Sets world admin account table.
-	*/
-	inline void WorldAdminRegistrationTable(std::string t) { world_admin_registration_table = t; }
-
-	/**
-	* Return the value of world admin account table.
-	*/
-	inline std::string GetWorldAdminRegistrationTable() const { return world_admin_registration_table; }
-
-	/**
-	* Sets world server type table.
-	*/
-	inline void WorldServerTypeTable(std::string t) { world_server_type_table = t; }
-
-	/**
-	* Return the value of world admin account table.
-	*/
-	inline std::string GetWorldServerTypeTable() const { return world_server_type_table; }
-
-	/**
-	* Sets world server type table.
-	*/
-	inline void LoginSettingTable(std::string t) { loginserver_setting_table = t; }
-
-	/**
-	* Return the value of world admin account table.
-	*/
-	inline std::string GetLoginSettingTable() const { return loginserver_setting_table; }
-
-	/**
-	* Sets password salt.
-	*/
-	inline void LoginPasswordSalt(std::string t) { login_password_salt = t; }
-
-	/**
-	* Return the value of password salt.
-	*/
-	inline std::string GetLoginPasswordSalt() const { return login_password_salt; }
-
-	/**
-	* Sets whether we are rejecting duplicate servers or not.
-	*/
-	inline void RejectDuplicateServers(bool b) { reject_duplicate_servers = b; }
-
-	/**
-	* Returns whether we are rejecting duplicate servers or not.
-	*/
-	inline bool IsRejectingDuplicateServers() { return reject_duplicate_servers; }
-
-	inline void AllowTokenLogin(bool b) { allow_token_login = b; }
-	inline bool IsTokenLoginAllowed() const { return allow_token_login; }
-
-	inline void AllowPasswordLogin(bool b) { allow_password_login = b; }
-	inline bool IsPasswordLoginAllowed() const { return allow_password_login; }
-
-	inline void AutoCreateAccounts(bool b) { auto_create_accounts = b; }
-	inline bool CanAutoCreateAccounts() const { return auto_create_accounts; }
+	inline void AllowUnregistered(bool b) { m_allow_unregistered = b; }
+	inline bool IsUnregisteredAllowed() const { return m_allow_unregistered; }
+	inline void EncryptionMode(int m) { m_encryption_mode = m; }
+	inline int GetEncryptionMode() const { return m_encryption_mode; }
+	inline void LocalNetwork(std::string n) { m_local_network = n; }
+	inline void NetworkIP(std::string n) { m_network_ip = n; }
+	inline std::string GetLocalNetwork() const { return m_local_network; }
+	inline std::string GetNetworkIP() const { return m_network_ip; }
+	inline void AccountTable(std::string t) { m_account_table = t; }
+	inline std::string GetAccountTable() const { return m_account_table; }
+	inline void WorldRegistrationTable(std::string t) { m_world_registration_table = t; }
+	inline std::string GetWorldRegistrationTable() const { return m_world_registration_table; }
+	inline void WorldAdminRegistrationTable(std::string t) { m_world_admin_registration_table = t; }
+	inline std::string GetWorldAdminRegistrationTable() const { return m_world_admin_registration_table; }
+	inline void WorldServerTypeTable(std::string t) { m_world_server_type_table = t; }
+	inline std::string GetWorldServerTypeTable() const { return m_world_server_type_table; }
+	inline void LoginPasswordSalt(std::string t) { m_login_password_salt = t; }
+	inline std::string GetLoginPasswordSalt() const { return m_login_password_salt; }
+	inline void RejectDuplicateServers(bool b) { m_reject_duplicate_servers = b; }
+	inline bool IsRejectingDuplicateServers() { return m_reject_duplicate_servers; }
+	inline void AllowTokenLogin(bool b) { m_allow_token_login = b; }
+	inline bool IsTokenLoginAllowed() const { return m_allow_token_login; }
+	inline void AllowPasswordLogin(bool b) { m_allow_password_login = b; }
+	inline bool IsPasswordLoginAllowed() const { return m_allow_password_login; }
+	inline void AutoCreateAccounts(bool b) { m_auto_create_accounts = b; }
+	inline bool AllowPcClient(bool b) { return m_allow_pc_client = b; }
+	inline bool IsPcClientAllowed() const { return m_allow_pc_client; }
+	inline bool AllowIntelClient(bool b) { return m_allow_intel_client = b; }
+	inline bool IsIntelClientAllowed() const { return m_allow_intel_client; }
+	inline bool AllowTicketClient(bool b) { return m_allow_ticket_client = b; }
+	inline bool IsTicketClientAllowed() const { return m_allow_ticket_client; }
+	inline bool CanAutoCreateAccounts() const { return m_auto_create_accounts; }
+	inline bool IsShowPlayerCountEnabled() const { return m_show_player_count; }
+	inline void SetShowPlayerCount(bool show_player_count) { m_show_player_count = show_player_count; }
+	inline std::string GetBannerTicker() const { return m_banner_ticker; }
+	inline void BannerTicker(std::string t) { m_banner_ticker = t; }
 
 private:
-	bool allow_unregistered;
-	bool reject_duplicate_servers;
-	bool allow_token_login;
-	bool allow_password_login;
-	bool auto_create_accounts;
-	int encryption_mode;
-	std::string local_network;
-	std::string network_ip;
-	std::string account_table;
-	std::string world_registration_table;
-	std::string world_admin_registration_table;
-	std::string world_server_type_table;
-	std::string loginserver_setting_table;
-	std::string login_password_salt;
+	bool        m_allow_unregistered;
+	bool        m_reject_duplicate_servers;
+	bool        m_allow_token_login;
+	bool        m_allow_password_login;
+	bool        m_auto_create_accounts;
+	bool        m_show_player_count;
+	bool        m_allow_pc_client;
+	bool        m_allow_intel_client;
+	bool        m_allow_ticket_client;
+	int         m_encryption_mode;
+	std::string m_local_network;
+	std::string m_network_ip;
+	std::string m_account_table;
+	std::string m_world_registration_table;
+	std::string m_world_admin_registration_table;
+	std::string m_world_server_type_table;
+	std::string m_login_password_salt;
+	std::string m_banner_ticker;
 };
 
 #endif

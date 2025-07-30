@@ -1036,24 +1036,6 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 		}
 	}
 
-	if (RuleB(Expansion, EnablePetExperienceSplit) && !content_service.IsTheShadowsOfLuclinEnabled()) {
-		if (killed_mob) {
-			int32 damage_amount = 0;
-			Mob *top_damager = killed_mob->GetDamageTopSingleMob(damage_amount);
-			if (top_damager) {
-				if (top_damager->IsPet()) {
-					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
-					if (pet_dmg_pct > 0.5f) {
-						++gs.membercount;
-						++gs.close_membercount;
-						gs.weighted_levels += top_damager->GetLevel();
-						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50 percent by a single pet. Pet was added to group experience weights.", killed_mob->GetCleanName());
-					}
-				}
-			}
-		}
-	}
-
 	if (gs.close_membercount == 0)
 		return false;
 

@@ -189,7 +189,7 @@ public:
 	//Appearance
 	virtual void SendWearChange(uint8 material_slot, Client* sendto = nullptr, bool skip_if_zero = false, bool update_textures = false, bool illusioned = false);
 	virtual void WearChange(uint8 material_slot, uint16 texture, uint32 color, Client* sendto = nullptr);
-	void DoAnim(DoAnimation animnum, int type = 0, bool ackreq = false, eqFilterType filter = FilterNone);
+	void DoAnim(DoAnimation animnum, float speed = 1.0f, bool ackreq = false, eqFilterType filter = FilterNone);
 	void ProjectileAnimation(Mob* to, int item_id, bool IsItem = false, float speed = 0,
 		float angle = 0, float tilt = 0, float arc = 0, EQ::skills::SkillType skillInUse = EQ::skills::Skill1HBlunt);
 	void ChangeSize(float in_size, bool bNoRestriction = false);

@@ -162,7 +162,7 @@ bool Mob::AttackAnimation(EQ::skills::SkillType &skillinuse, int Hand, const EQ:
 	if (Hand == EQ::invslot::slotSecondary)	// DW anim
 		type = DoAnimation::DualWield;
 
-	DoAnim(type, 0, false);
+	DoAnim(type);
 
 	return true;
 }

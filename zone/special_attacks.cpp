@@ -85,7 +85,7 @@ int Mob::DoSpecialAttackDamage(Mob *defender, EQ::skills::SkillType skill, int b
 	}
 
 	if (animation_type != DoAnimation::None) {
-		DoAnim(animation_type, 0, false);
+		DoAnim(animation_type);
 	}
 
 	defender->AddToHateList(this, hate, 0);

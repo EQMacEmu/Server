@@ -1886,10 +1886,12 @@ void Client::Handle_OP_Animation(const EQApplicationPacket *app)
 	}
 
 	Animation_Struct *s = (Animation_Struct *)app->pBuffer;
-
-	//might verify spawn ID, but it wouldent affect anything
-	DoAnimation action = static_cast<DoAnimation>(s->action);
-	DoAnim(action, s->value);
+	if (s->entity_id == GetID()) {
+		// relay the packet but don't send it back to the client that sent it
+		// they don't expect their own anim to be echoed and they already played the animation track when sending this to us
+		// this client requested animation is used for socials and the intimidation skill
+		entity_list.QueueCloseClients(this, app, true, RuleI(Range, Anims), 0, false, eqFilterType::FilterNone);
+	}
 
 	return;
 }

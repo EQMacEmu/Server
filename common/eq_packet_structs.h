@@ -897,13 +897,12 @@ struct RequestClientZoneChange_Struct {
 };
 
 struct Animation_Struct {
-/*00*/	uint16 spawnid;
-/*02*/	uint16 target;
-/*04*/	uint8  action;
-/*05*/  uint8  value;
-/*06*/	uint32 unknown06;
-/*10*/	uint16 unknown10; // 80 3F
+	/*00*/	uint16 entity_id;
+	/*02*/	char _pad02[2]; // eq structs contain alignment padding
+	/*04*/	int32 animation_id;
+	/*08*/  float speed;
 };
+
 
 // solar: this is what causes the caster to animate and the target to
 // get the particle effects around them when a spell is cast

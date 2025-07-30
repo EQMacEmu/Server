@@ -145,10 +145,8 @@ EQApplicationPacket* ServerManager::CreateServerListPacket(Client* c)
 	ServerList_Struct* sl = (ServerList_Struct*)outapp->pBuffer;
 	sl->numservers = server_count;
 	uint8 showcount = 0x0;
-	if (server.db->CheckExtraSettings("pop_count"))	{
-		if (server.db->LoginSettings("pop_count") == "1") {
+	if (server.options.IsShowPlayerCountEnabled()) {
 			showcount = 0xFF;
-		}
 	}
 	sl->showusercount = showcount;
 
