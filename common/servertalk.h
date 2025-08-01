@@ -674,6 +674,7 @@ struct UsertoWorldRequest {
 	uint32	ToID;
 	char	IPAddr[64];
 	char	forum_name[31];
+	char	client_key[31];
 };
 
 struct UsertoWorldResponse {
