@@ -73,9 +73,6 @@ struct ItemData;
 #define ASSIST_RANGE		250 // range for /assist
 #define MAX_SPECIALIZED_SKILL 50
 
-#define BUFFSTACKING_PATCH_V2 2 // Buff Stacking Patch + 6 Buff Song Window (Requires New UI)
-#define BUFFSTACKING_PATCH_V1 1 // Buff Stacking Patch only (Old UI)
-
 constexpr int SONG_WINDOW_BUFF_SLOTS = 6; // Buffstacking patch enables song window support
 constexpr int CLIENT_MAX_BUFF_SLOTS = (15 + SONG_WINDOW_BUFF_SLOTS);
 constexpr int CLIENT_TOTAL_BUFF_SLOTS = (15 + SONG_WINDOW_BUFF_SLOTS + 1); // add 1 for disc slot
@@ -1343,6 +1340,9 @@ private:
 	
 	bool m_buff_stacking_patch = false; // Flag for whether the client has a buffstacking patch installed. See Handle_OP_SpawnAppearance for how this is negotiated.
 	uint8 m_song_window_slots = 0; // If buffstacking patch is on, this is the number of song window slots available
+	
+	uint16 m_dll_version = 0; // Sent by newer versions of the eqgame.dll when connecting to a zone.
+	bool m_old_feature_detected = false; // If set before ConnectComplete() automatically notifies the client with an out-of-date message.
 };
 
 #endif

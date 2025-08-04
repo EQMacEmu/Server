@@ -194,6 +194,10 @@ RULE_BOOL (AlKabor, BlockProjectileWalls, true, "AK behavior is true.  If an NPC
 RULE_BOOL (AlKabor, GreenmistHack, true, "Greenmist recourse didn't work on AK.  The spell data is messed up so it's not properly fixable without modifying the client.  This enables a partial workaround that is not AKurate but provides some benefit to players using this weapon.")
 RULE_CATEGORY_END()
 
+RULE_CATEGORY(Quarm)
+RULE_INT(Quarm, WarnDllVersionBelow, 1, "Sends a Client-out-of-date warning message to clients below this dll version.")
+RULE_CATEGORY_END()
+
 RULE_CATEGORY( Map )
 //enable these to help prevent mob hopping when they are pathing
 RULE_BOOL ( Map, FixPathingZWhenLoading, true, "increases zone boot times a bit to reduce hopping.")

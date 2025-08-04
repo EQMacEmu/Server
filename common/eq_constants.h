@@ -59,7 +59,10 @@ namespace AppearanceType {
 
 // Feature Flag IDs used by the above ClientDllFeature/ClientZealFeature handshake messages.
 namespace ClientFeature {
-	constexpr uint16 BuffStackingPatchHandshake = 1;
+	constexpr uint16 BuffStackingPatchHandshakeV1 = 1; // Deprecated. Sent by the initial/beta version of the eqgame.dll
+	constexpr uint16 BuffStackingPatchWithSongWindowHandshake = 2; // Sent by the official/stable release of the eqgame.dll (New UI users)
+	constexpr uint16 BuffStackingPatchWithoutSongWindowHandshake = 3; // Sent by the official/stable release of the eqgame.dll (Old UI users)
+	constexpr uint16 CodeVersion = 4; // Sent by eqgame.dll, provides its DLL_VERSION value to the server. Could theoretically be used by Zeal too if desired.
 }
 
 // solar: Animations for AnimationType:Animation

@@ -664,6 +664,11 @@ void Client::CompleteConnect()
 	SendToBoat(true);
 	worldserver.RequestTellQueue(GetName());
 
+	if (m_dll_version < RuleI(Quarm, WarnDllVersionBelow) || m_old_feature_detected)
+	{
+		Message(Chat::Red, "You are running on an older version of the client. Please run the patcher or manually download the server files.");
+	}
+	
 	//enforce some rules..
 	if (!CanBeInZone()) {
 		Log(Logs::Detail, Logs::Status, "[CLIENT] Kicking char from zone, not allowed here");
@@ -954,39 +959,60 @@ void Client::Handle_Connect_OP_SpawnAppearance(const EQApplicationPacket *app)
 		uint32 feature_value = sa->parameter & 0xFFFFu; // feature value is encoded in the lo-word of SpawnAppearance->parameter.
 
 		switch (feature_id) {
-			// -----------------------------------------------------------------------------------------------------------------------------------
-			// Any unknown feature is ignored.
-			// -----------------------------------------------------------------------------------------------------------------------------------
-		default:
-			return;
-			// -----------------------------------------------------------------------------------------------------------------------------------
-			// Buff Stacking Patch - Client can enable a patch to fix its broken buffstacking code, but the server must mirror it's logic.
-			// If they both agree to turn on this patch, the server will respond to the client with the feature enabled.
-			// See buffstacking.cpp for where this is mirrored on the server.
-			// * Handshake Type: Client initiates the request when zoning, server responds.
-			// -----------------------------------------------------------------------------------------------------------------------------------
-		case ClientFeature::BuffStackingPatchHandshake: // == 1
+		default: // Unknown message
 		{
-			if (!RuleB(Spells, AllowBuffstackingPatch)) {
-				feature_value = 0; // Feature disabled
+			return; // no response
+		}
+		case ClientFeature::CodeVersion: // Client is telling us its version
+		{
+			if (sa->type == AppearanceType::ClientDllMessage)
+				m_dll_version = feature_value;
+			return; // no response
+		}
+		case ClientFeature::BuffStackingPatchHandshakeV1: // Deprecated handshake of older eqgame.dll's buffstacking patch, no longer supported
+		{
+			m_old_feature_detected = true; // Tells the user their eqgame.dll is out of date
+			return; // no response
+		}
+		case ClientFeature::BuffStackingPatchWithSongWindowHandshake: // Enables BuffStacking + Song Window (NewUI Uesrs)
+		{
+			if (!RuleB(Spells, AllowBuffstackingPatch))
+			{
+				feature_value = 0;
+				SetBuffStackingPatch(false);
+				SetSongWindowSlots(0);
 			}
-			else if (feature_value == 0 || feature_value == 0xFFFF) {
-				feature_value = 0; // Disabled
+			else if (feature_value >= 1)
+			{
+				feature_value = 1;
+				SetBuffStackingPatch(true);
+				SetSongWindowSlots(SONG_WINDOW_BUFF_SLOTS);
 			}
-			else if (feature_value >= BUFFSTACKING_PATCH_V2) {
-				send_response |= feature_value > BUFFSTACKING_PATCH_V2;
-				feature_value = BUFFSTACKING_PATCH_V2;
+			else
+			{
+				feature_value = 0;
+				SetBuffStackingPatch(false);
+				SetSongWindowSlots(0);
 			}
-			// Handshake complete, set the flags
-			if (feature_value == BUFFSTACKING_PATCH_V2) {
-				SetBuffStackingPatch(true); // New buffstacking logic
-				SetSongWindowSlots(SONG_WINDOW_BUFF_SLOTS); // 6 song window slots
+			break;
+		}
+		case ClientFeature::BuffStackingPatchWithoutSongWindowHandshake: // Enables BuffStacking, but no Song Window (OldUI Users)
+		{
+			if (!RuleB(Spells, AllowBuffstackingPatch))
+			{
+				feature_value = 0;
+				SetBuffStackingPatch(false);
+				SetSongWindowSlots(0);
 			}
-			else if (feature_value == BUFFSTACKING_PATCH_V1) {
-				SetBuffStackingPatch(true); // New buffstacking logic
-				SetSongWindowSlots(0); // No song window slots
+			else if (feature_value >= 1)
+			{
+				feature_value = 1;
+				SetBuffStackingPatch(true);
+				SetSongWindowSlots(0);
 			}
-			else {
+			else
+			{
+				feature_value = 0;
 				SetBuffStackingPatch(false);
 				SetSongWindowSlots(0);
 			}
