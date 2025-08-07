@@ -187,6 +187,10 @@ RULE_BOOL (AlKabor, BlockProjectileWalls, true, "AK behavior is true.  If an NPC
 RULE_BOOL (AlKabor, GreenmistHack, true, "Greenmist recourse didn't work on AK.  The spell data is messed up so it's not properly fixable without modifying the client.  This enables a partial workaround that is not AKurate but provides some benefit to players using this weapon.")
 RULE_CATEGORY_END()
 
+RULE_CATEGORY(Quarm)
+RULE_INT(Quarm, WarnDllVersionBelow, 1, "Sends a Client-out-of-date warning message to clients below this dll version.")
+RULE_CATEGORY_END()
+
 RULE_CATEGORY( Map )
 //enable these to help prevent mob hopping when they are pathing
 RULE_BOOL ( Map, FixPathingZWhenLoading, true, "increases zone boot times a bit to reduce hopping.")
@@ -260,6 +264,7 @@ RULE_INT ( Spells, SpellRecoveryTimer, 2500, "Begins when a cast is complete, an
 RULE_BOOL ( Spells, JamFestAAOnlyAffectsBard, true, "Bard Jam Fest AA only worked on bards themselves but was changed after AK's era.  Changing this to false will put the client stats out of sync with the server.")
 RULE_BOOL ( Spells, ReducePacifyDuration, false, "AK and the eqmac client have 60 tick Pacify (spell 45) duration.  This rule reduces the duration to 7 ticks without desyncing the cast bar and focus effects for custom servers that want this.")
 RULE_BOOL(Spells, ShowDotDmgMessages, false, "Enables LoY-era DoT damage messages. Disabled by default since this didn't exist on Al'Kabor.")
+RULE_BOOL( Spells, AllowBuffstackingPatch, true, "Allows the client/server to negotiate using the patched buffstacking logic in eqgame.dll. Both sides exchange a handshake to safely enable the patch.")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( Combat )

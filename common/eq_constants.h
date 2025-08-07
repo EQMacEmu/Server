@@ -50,6 +50,19 @@ namespace AppearanceType {
 	constexpr uint32 SetType      = 30; // 0 = PC, 1 = NPC, 2 = Corpse
 	constexpr uint32 NPCName      = 31; // Change PC name color to NPC name color
 	constexpr uint32 DamageState  = 44; // The damage state of a destructible object (0 through 10) plays sound IDs, most only have 2 or 4 states though
+
+	// Used to exchange feature flags between the client and server. See Handle_Connect_OP_SpawnAppearance.
+	// Each codebase should use a uqniue AppearanceType so they can process their own set of messages without consuming each other's messages.
+	constexpr uint32 ClientDllMessage = 256;
+	constexpr uint32 ClientZealMessage = 257;
+}
+
+// Feature Flag IDs used by the above ClientDllFeature/ClientZealFeature handshake messages.
+namespace ClientFeature {
+	constexpr uint16 BuffStackingPatchHandshakeV1 = 1; // Deprecated. Sent by the initial/beta version of the eqgame.dll
+	constexpr uint16 BuffStackingPatchWithSongWindowHandshake = 2; // Sent by the official/stable release of the eqgame.dll (New UI users)
+	constexpr uint16 BuffStackingPatchWithoutSongWindowHandshake = 3; // Sent by the official/stable release of the eqgame.dll (Old UI users)
+	constexpr uint16 CodeVersion = 4; // Sent by eqgame.dll, provides its DLL_VERSION value to the server. Could theoretically be used by Zeal too if desired.
 }
 
 // solar: Animations for AnimationType:Animation

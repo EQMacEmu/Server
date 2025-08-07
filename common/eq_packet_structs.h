@@ -794,6 +794,7 @@ struct PlayerProfile_Struct
 				uint32				timeentitledonaccount;
 				bool				mule;
 				bool				showhelm;
+				struct	SpellBuff_Struct	buffs_ext[BUFF_COUNT];
 };
 
 
