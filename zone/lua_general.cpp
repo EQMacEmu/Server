@@ -1114,14 +1114,16 @@ std::string lua_get_encounter() {
 }
 
 void lua_debug(std::string message) {
-	Log(Logs::General, Logs::QuestDebug, message.c_str());
+	LogQuestDebug("{}", message);
 }
 
 void lua_debug(std::string message, int level) {
-	if (level < Logs::General || level > Logs::Detail)
-		return;
-
-	Log(static_cast<Logs::DebugLevel>(level), Logs::QuestDebug, message.c_str());
+	if (level <= Logs::General) {
+		LogQuestDebug("{}", message);
+	}
+	else {
+		LogQuestDebugDetail("{}", message);
+	}
 }
 
 void lua_map_opcodes() {
@@ -1181,51 +1183,51 @@ void lua_send_player_handin_event()
  */
 
 bool lua_is_classic_enabled() {
-	return content_service.IsClassicEnabled();
+	return WorldContentService::Instance()->IsClassicEnabled();
 }
 
 bool lua_is_the_ruins_of_kunark_enabled() {
-	return content_service.IsTheRuinsOfKunarkEnabled();
+	return WorldContentService::Instance()->IsTheRuinsOfKunarkEnabled();
 }
 
 bool lua_is_the_scars_of_velious_enabled() {
-	return content_service.IsTheScarsOfVeliousEnabled();
+	return WorldContentService::Instance()->IsTheScarsOfVeliousEnabled();
 }
 
 bool lua_is_the_shadows_of_luclin_enabled() {
-	return content_service.IsTheShadowsOfLuclinEnabled();
+	return WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled();
 }
 
 bool lua_is_the_planes_of_power_enabled() {
-	return content_service.IsThePlanesOfPowerEnabled();
+	return WorldContentService::Instance()->IsThePlanesOfPowerEnabled();
 }
 
 bool lua_is_current_expansion_classic() {
-	return content_service.IsCurrentExpansionClassic();
+	return WorldContentService::Instance()->IsCurrentExpansionClassic();
 }
 
 bool lua_is_current_expansion_the_ruins_of_kunark() {
-	return content_service.IsCurrentExpansionTheRuinsOfKunark();
+	return WorldContentService::Instance()->IsCurrentExpansionTheRuinsOfKunark();
 }
 
 bool lua_is_current_expansion_the_scars_of_velious() {
-	return content_service.IsCurrentExpansionTheScarsOfVelious();
+	return WorldContentService::Instance()->IsCurrentExpansionTheScarsOfVelious();
 }
 
 bool lua_is_current_expansion_the_shadows_of_luclin() {
-	return content_service.IsCurrentExpansionTheShadowsOfLuclin();
+	return WorldContentService::Instance()->IsCurrentExpansionTheShadowsOfLuclin();
 }
 
 bool lua_is_current_expansion_the_planes_of_power() {
-	return content_service.IsCurrentExpansionThePlanesOfPower();
+	return WorldContentService::Instance()->IsCurrentExpansionThePlanesOfPower();
 }
 
 bool lua_is_content_flag_enabled(std::string content_flag) {
-	return content_service.IsContentFlagEnabled(content_flag);
+	return WorldContentService::Instance()->IsContentFlagEnabled(content_flag);
 }
 
 void lua_set_content_flag(std::string flag_name, bool enabled) {
-	content_service.SetContentFlag(flag_name, enabled);
+	WorldContentService::Instance()->SetContentFlag(flag_name, enabled);
 }
 
 double lua_clock() {
@@ -1802,33 +1804,6 @@ luabind::scope lua_register_appearance() {
 			luabind::value("Crouching", static_cast<int>(eaCrouching)),
 			luabind::value("Dead", static_cast<int>(eaDead)),
 			luabind::value("Looting", static_cast<int>(eaLooting))
-		];
-}
-
-luabind::scope lua_register_rules_const() {
-	return luabind::class_<Rule>("Rule")
-		.enum_("constants")
-		[
-#define RULE_INT(cat, rule, default_value, notes) \
-		luabind::value(#rule, RuleManager::Int__##rule),
-#include "../common/ruletypes.h"
-			luabind::value("_IntRuleCount", RuleManager::_IntRuleCount),
-#undef RULE_INT
-#define RULE_REAL(cat, rule, default_value, notes) \
-		luabind::value(#rule, RuleManager::Real__##rule),
-#include "../common/ruletypes.h"
-			luabind::value("_RealRuleCount", RuleManager::_RealRuleCount),
-#undef RULE_REAL
-#define RULE_BOOL(cat, rule, default_value, notes) \
-		luabind::value(#rule, RuleManager::Bool__##rule),
-#include "../common/ruletypes.h"
-			luabind::value("_BoolRuleCount", RuleManager::_BoolRuleCount),
-#undef RULE_BOOL
-#define RULE_STRING(cat, rule, default_value, notes) \
-		luabind::value(#rule, RuleManager::String__##rule),
-#include "../common/ruletypes.h"
-			luabind::value("_StringRuleCount", RuleManager::_StringRuleCount)
-#undef RULE_STRING
 		];
 }
 

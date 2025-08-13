@@ -934,10 +934,10 @@ namespace PlayerEvent {
 #endif //EQEMU_PLAYER_EVENTS_H
 
 #define RecordPlayerEventLog(event_type, event_data) do {\
-    if (player_event_logs.IsEventEnabled(event_type)) {\
+    if (PlayerEventLogs::Instance()->IsEventEnabled(event_type)) {\
         if (RuleB(Logging, PlayerEventsQSProcess)) {\
             QServ->SendPacket(\
-                player_event_logs.RecordEvent(\
+                PlayerEventLogs::Instance()->RecordEvent(\
                     event_type,\
                     GetPlayerEvent(),\
                     event_data\
@@ -946,7 +946,7 @@ namespace PlayerEvent {
         }                                                                                                          \
         else {                                                                                                     \
             worldserver.SendPacket(\
-                player_event_logs.RecordEvent(\
+                PlayerEventLogs::Instance()->RecordEvent(\
                     event_type,\
                     GetPlayerEvent(),\
                     event_data\
@@ -957,10 +957,10 @@ namespace PlayerEvent {
 } while (0)
 
 #define RecordPlayerEventLogWithClient(c, event_type, event_data) do {\
-    if (player_event_logs.IsEventEnabled(event_type)) {\
+    if (PlayerEventLogs::Instance()->IsEventEnabled(event_type)) {\
         if (RuleB(Logging, PlayerEventsQSProcess)) {\
             QServ->SendPacket(\
-                player_event_logs.RecordEvent(\
+                PlayerEventLogs::Instance()->RecordEvent(\
                     event_type,\
                     (c)->GetPlayerEvent(),\
                     event_data\
@@ -969,7 +969,7 @@ namespace PlayerEvent {
         }\
         else {\
             worldserver.SendPacket(\
-                player_event_logs.RecordEvent(\
+                PlayerEventLogs::Instance()->RecordEvent(\
                     event_type,\
                     (c)->GetPlayerEvent(),\
                     event_data\

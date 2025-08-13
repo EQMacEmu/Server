@@ -235,7 +235,7 @@ void WorldDatabase::GetCharSelectInfo(uint32 account_id, CharacterSelect_Struct*
 			}
 		}
 		else {
-			Log(Logs::General, Logs::Inventory, "Error loading inventory for %s\n", cs->name[char_num]);
+			LogInventory("Error loading inventory for [{}]", cs->name[char_num]);
 		}
 		safe_delete(inv);
 
@@ -296,8 +296,8 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	if(!in_pp || !in_cc)
 		return false;
 
-	if (mule && content_service.IsTheShadowsOfLuclinEnabled()) {
-		Log(Logs::General, Logs::Status, "%s: Starting mule character in Bazaar", in_pp->name);
+	if (mule && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
+		LogInfo("[{}]: Starting mule character in Bazaar", in_pp->name);
 		in_pp->x = in_pp->binds[0].x = 140;
 		in_pp->y = in_pp->binds[0].y = -821;
 		in_pp->z = in_pp->binds[0].z = 5;
@@ -392,9 +392,9 @@ void WorldDatabase::SetMailKey(int CharID, int IPAddress, int MailKey) {
     std::string query = StringFormat("UPDATE character_data SET mailkey = '%s' WHERE id = '%i'",
                                     MailKeyString, CharID);
     auto results = QueryDatabase(query);
-	if (!results.Success())
-		Log(Logs::General, Logs::Error, "WorldDatabase::SetMailKey(%i, %s) : %s", CharID, MailKeyString, results.ErrorMessage().c_str());
-
+	if (!results.Success()) {
+		LogError("WorldDatabase::SetMailKey([{}], [{}]) : [{}]", CharID, MailKeyString, results.ErrorMessage().c_str());
+	}
 }
 
 bool WorldDatabase::GetCharacterLevel(const char *name, int &level)
@@ -502,7 +502,7 @@ bool WorldDatabase::GITInfo()
 		auto results2 = QueryDatabase(check_query2);
 		if (!results2.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error creating git-HEAD-hash field.");
+			LogError("Error creating git-HEAD-hash field.");
 			return false;
 		}
 	}
@@ -514,7 +514,7 @@ bool WorldDatabase::GITInfo()
 		auto results4 = QueryDatabase(check_query4);
 		if (!results4.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error creating git-BRANCH field.");
+			LogError("Error creating git-BRANCH field.");
 			return false;
 		}
 	}
@@ -550,7 +550,7 @@ bool WorldDatabase::GITInfo()
 		auto resultshash = QueryDatabase(queryhash);
 		if (!resultshash.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error entering hash to variables.");
+			LogError("Error entering hash to variables.");
 			fclose(fhash);
 			return false;
 		}
@@ -575,7 +575,7 @@ bool WorldDatabase::GITInfo()
 		auto resultsbranch = QueryDatabase(querybranch);
 		if (!resultsbranch.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error entering branch to variables.");
+			LogError("Error entering branch to variables.");
 			fclose(fbranch);
 			return false;
 		}
@@ -604,7 +604,7 @@ bool WorldDatabase::GITInfo()
 		auto resultshash = QueryDatabase(queryhash);
 		if (!resultshash.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error entering hash to variables.");
+			LogError("Error entering hash to variables.");
 			free(buf);
 			fflush(fhash);
 			return false;
@@ -632,7 +632,7 @@ bool WorldDatabase::GITInfo()
 		auto resultsbranch = QueryDatabase(querybranch);
 		if (!resultsbranch.Success())
 		{
-			Log(Logs::Detail, Logs::Error, "Error entering branch to variables.");
+			LogError("Error entering branch to variables.");
 			free(buf2);
 			fflush(fbranch);
 			return false;

@@ -527,7 +527,7 @@ void PathfinderNavmesh::Load(const std::string &path)
 			m_impl->nav_mesh->addTile(data, data_size, DT_TILE_FREE_DATA, tile_ref, 0);
 		}
 
-		Log(Logs::General, Logs::Pathing, "Loaded Navmesh V[{0}] file [{1}]", version, path.c_str());
+		LogPathing("Loaded Navmesh V[{0}] file [{1}]", version, path);
 	}
 }
 

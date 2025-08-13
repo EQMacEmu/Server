@@ -28,6 +28,12 @@ public:
 	bool	CanUpdate();
 	size_t GetServerCount() const { return m_list.size(); }
 
+	static LoginServerList *Instance()
+	{
+		static LoginServerList instance;
+		return &instance;
+	}
+
 protected:
 	std::list<std::unique_ptr<LoginServer>> m_list;
 };

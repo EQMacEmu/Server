@@ -32,7 +32,7 @@ extern WorldServer worldserver;
 extern volatile bool is_zone_loaded;
 
 void ZoneGuildManager::SendGuildRefresh(uint32 guild_id, bool name, bool motd, bool rank, bool relation) {
-	Log(Logs::Detail, Logs::Guilds, "Sending guild refresh for %d to world, changes: name=%d, motd=%d, rank=d, relation=%d", guild_id, name, motd, rank, relation);
+	LogGuilds("Sending guild refresh for [{}] to world, changes: name=[{}], motd=[{}], rank=d, relation=[{}]", guild_id, name, motd, rank, relation);
 	auto pack = new ServerPacket(ServerOP_RefreshGuild, sizeof(ServerGuildRefresh_Struct));
 	ServerGuildRefresh_Struct *s = (ServerGuildRefresh_Struct *) pack->pBuffer;
 	s->guild_id = guild_id;
@@ -46,7 +46,7 @@ void ZoneGuildManager::SendGuildRefresh(uint32 guild_id, bool name, bool motd, b
 
 void ZoneGuildManager::SendCharRefresh(uint32 old_guild_id, uint32 guild_id, uint32 charid) {
 	if(guild_id == 0) {
-		Log(Logs::Detail, Logs::Guilds, "Guild lookup for char %d when sending char refresh.", charid);
+		LogGuilds("Guild lookup for char [{}] when sending char refresh", charid);
 
 		CharGuildInfo gci;
 		if(!GetCharInfo(charid, gci)) {
@@ -56,7 +56,7 @@ void ZoneGuildManager::SendCharRefresh(uint32 old_guild_id, uint32 guild_id, uin
 		}
 	}
 
-	Log(Logs::Detail, Logs::Guilds, "Sending char refresh for %d from guild %d to world", charid, guild_id);
+	LogGuilds("Sending char refresh for [{}] from guild [{}] to world", charid, guild_id);
 
 	auto pack = new ServerPacket(ServerOP_GuildCharRefresh, sizeof(ServerGuildCharRefresh_Struct));
 	ServerGuildCharRefresh_Struct *s = (ServerGuildCharRefresh_Struct *) pack->pBuffer;
@@ -89,7 +89,7 @@ void ZoneGuildManager::SendRankUpdate(uint32 CharID)
 }
 
 void ZoneGuildManager::SendGuildDelete(uint32 guild_id) {
-	Log(Logs::Detail, Logs::Guilds, "Sending guild delete for guild %d to world", guild_id);
+	LogGuilds("Sending guild delete for guild [{}] to world", guild_id);
 	auto pack = new ServerPacket(ServerOP_DeleteGuild, sizeof(ServerGuildID_Struct));
 	ServerGuildID_Struct *s = (ServerGuildID_Struct *) pack->pBuffer;
 	s->guild_id = guild_id;
@@ -354,14 +354,22 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 	switch(pack->opcode) {
 	case ServerOP_RefreshGuild: {
 		if(pack->size != sizeof(ServerGuildRefresh_Struct)) {
-			Log(Logs::General, Logs::Error, "Received ServerOP_RefreshGuild of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildRefresh_Struct));
+			LogError("Received ServerOP_RefreshGuild of incorrect size [{}], expected [{}]",
+				pack->size,
+				sizeof(ServerGuildRefresh_Struct));
 			return;
 		}
 		ServerGuildRefresh_Struct *s = (ServerGuildRefresh_Struct *) pack->pBuffer;
 
-		Log(Logs::Detail, Logs::Guilds, "Received guild refresh from world for %d, changes: name=%d, motd=%d, rank=%d, relation=%d", s->guild_id, s->name_change, s->motd_change, s->rank_change, s->relation_change);
+		LogDebug(
+			"Received guild refresh from world for guild id [{}] changes: name=[{}] motd=[{}] rank=[{}] relation=[{}]",
+			s->guild_id,
+			s->name_change,
+			s->motd_change,
+			s->rank_change,
+			s->relation_change
+		);
 
-		//reload all the guild details from the database.
 		RefreshGuild(s->guild_id);
 
 		if(s->motd_change) {
@@ -388,35 +396,45 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 
 	case ServerOP_GuildCharRefresh: {
 		if(pack->size != sizeof(ServerGuildCharRefresh_Struct)) {
-			Log(Logs::General, Logs::Error, "Received ServerOP_RefreshGuild of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildCharRefresh_Struct));
+			LogError("Received ServerOP_RefreshGuild of incorrect size [{}], expected [{}]",
+				pack->size,
+				sizeof(ServerGuildCharRefresh_Struct)
+			);
 			return;
 		}
 		ServerGuildCharRefresh_Struct *s = (ServerGuildCharRefresh_Struct *) pack->pBuffer;
-
-		Log(Logs::Detail, Logs::Guilds, "Received guild member refresh from world for char %d from guild %d", s->char_id, s->guild_id);
+		LogDebug("Received guild member refresh from world for char [{}] from guild [{}]",
+			s->char_id,
+			s->guild_id
+		);
+		RefreshGuild(s->guild_id);
 
 		Client *c = entity_list.GetClientByCharID(s->char_id);
 
-		if(c != nullptr) {
+		if(c) {
 			//this reloads the char's guild info from the database and sends appearance updates
 			c->RefreshGuildInfo();
 		}
 
-		if(c != nullptr && s->guild_id != GUILD_NONE) {
-			//char is in zone, and has changed into a new guild, send MOTD.
-			c->SendGuildMOTD();
+		if (s->guild_id == GUILD_NONE) {
+			if (c) {
+				c->SendGuildMOTD();
+			}
 		}
 		break;
 	}
 
 	case ServerOP_DeleteGuild: {
 		if(pack->size != sizeof(ServerGuildID_Struct)) {
-			Log(Logs::General, Logs::Error, "Received ServerOP_DeleteGuild of incorrect size %d, expected %d", pack->size, sizeof(ServerGuildID_Struct));
+			LogError("Received ServerOP_DeleteGuild of incorrect size [{}], expected [{}]",
+				pack->size,
+				sizeof(ServerGuildID_Struct)
+			);
 			return;
 		}
 		ServerGuildID_Struct *s = (ServerGuildID_Struct *) pack->pBuffer;
 
-		Log(Logs::Detail, Logs::Guilds, "Received guild delete from world for guild %d", s->guild_id);
+		LogGuilds("Received guild delete from world for guild [{}]", s->guild_id);
 
 		//clear all the guild tags.
 		entity_list.RefreshAllGuildInfo(s->guild_id);
@@ -440,12 +458,11 @@ void ZoneGuildManager::ProcessWorldPacket(ServerPacket *pack) {
 			uint32 Count = VARSTRUCT_DECODE_TYPE(uint32, Buffer);
 			Client *c = entity_list.GetClientByCharID(FromID);
 
-			if (!c || !c->IsInAGuild())
-			{
-				Log(Logs::Detail, Logs::Guilds,"Invalid Client or not in guild. ID=%i", FromID);
+			if (!c || !c->IsInAGuild()) {
+				LogGuilds("Invalid Client or not in guild. ID=[{}]", FromID);
 				break;
 			}
-			Log(Logs::Detail, Logs::Guilds,"Processing ServerOP_OnlineGuildMembersResponse");
+			LogGuilds("Processing ServerOP_OnlineGuildMembersResponse");
 		}
 		break;
 	}
@@ -661,10 +678,10 @@ void GuildApproval::GuildApproved()
 	pet->SetPetitionText(petitext);
 	pet->SetZone(zone->GetZoneID());
 	pet->SetUrgency(0);
-	petition_list.AddPetition(pet);
+	PetitionList::Instance()->AddPetition(pet);
 	database.InsertPetitionToDB(pet);
-	petition_list.UpdateGMQueue();
-	petition_list.UpdateZoneListQueue();
+	PetitionList::Instance()->UpdateGMQueue();
+	PetitionList::Instance()->UpdateZoneListQueue();
 	worldserver.SendEmoteMessage(0, 0, 80, 15, "%s has made a petition. #%i", owner->CastToClient()->GetName(), pet->GetID());
 	auto pack = new ServerPacket;
 	pack->opcode = ServerOP_RefreshGuild;

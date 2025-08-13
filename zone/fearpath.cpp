@@ -70,6 +70,8 @@ int Mob::GetFleeRatio(Mob* other)
 		}
 	}
 
+	LogFlee("Mob [{}] using combat flee gray flee_ratio [{}]", GetCleanName(), fleeRatio);
+
 	return fleeRatio;
 }
 
@@ -77,34 +79,51 @@ int Mob::GetFleeRatio(Mob* other)
 void Mob::CheckFlee() 
 {
 
-	if (IsPet() || IsCasting() || (IsNPC() && CastToNPC()->IsUnderwaterOnly()))
+	if (IsPet() || IsCasting() || (IsNPC() && CastToNPC()->IsUnderwaterOnly())) {
 		return;
+	}
 
 	//if were already fleeing, we only need to check speed.  Speed changes will trigger pathing updates.
-	if (flee_mode && curfp) {
+	if (flee_mode && currently_fleeing) {
 		float flee_speed = GetFearSpeed();
-		if (flee_speed < 0.1f)
+		if (flee_speed < 0.1f) {
 			flee_speed = 0.0f;
+		}
+
 		SetRunAnimation(flee_speed);
+
 		if (IsMoving() && flee_speed < 0.1f)
 			StopNavigation();
 		return;
 	}
 
 	//dont bother if we are immune to fleeing
-	if(GetSpecialAbility(SpecialAbility::FleeingImmunity))
+	if (GetSpecialAbility(SpecialAbility::FleeingImmunity)) {
+		LogFleeDetail("Mob [{}] is immune to fleeing via special ability", GetCleanName());
 		return;
+	}
 	
 	//see if were possibly hurt enough
 	float ratio = GetHPRatio();
 	float fleeratio = static_cast<float>(GetFleeRatio());
 
-	if(ratio > fleeratio)
+	bool mob_has_low_enough_health_to_flee = ratio > fleeratio;
+	if (mob_has_low_enough_health_to_flee) {
+		if (IsEngaged()) {
+			LogFleeDetail(
+				"Mob [{}] does not have low enough health to flee | hp_ratio [{}] flee_ratio [{}]",
+				GetCleanName(),
+				ratio,
+				fleeratio
+			);
+		}
 		return;
+	}
 
 	// hp cap so 1 million hp NPCs don't flee with 200,000 hp left
-	if (!GetSpecialAbility(SpecialAbility::FleePercent) && GetHP() > 15000)
+	if (!GetSpecialAbility(SpecialAbility::FleePercent) && GetHP() > 15000) {
 		return;
+	}
 
 	//we might be hurt enough, check con now..
 	Mob *hate_top = GetHateTop();
@@ -122,9 +141,16 @@ void Mob::CheckFlee()
 	if (RuleB(Combat, FleeIfNotAlone) ||
 		GetSpecialAbility(SpecialAbility::AlwaysFlee) ||
 		(GetSpecialAbility(SpecialAbility::AlwaysFleeLowCon) && hate_top->GetLevelCon(GetLevel()) == CON_GREEN) ||
-		(!RuleB(Combat, FleeIfNotAlone) && entity_list.FleeAllyCount(hate_top, this) == 0)
-		)
-	{
+		(!RuleB(Combat, FleeIfNotAlone) && 
+		entity_list.FleeAllyCount(hate_top, this) == 0)) {
+
+		LogFlee(
+			"Passed all checks to flee | Mob [{}] hp_ratio [{}] flee_ratio [{}]",
+			GetCleanName(),
+			ratio,
+			fleeratio
+		);
+
 		StartFleeing();
 	}
 }
@@ -139,7 +165,7 @@ void Mob::StopFleeing()
 	//see if we are legitimately feared or blind now
 	if (!IsFearedNoFlee() && !IsBlind())
 	{
-		curfp = false;
+		currently_fleeing = false;
 		StopNavigation();
 	}
 }
@@ -153,7 +179,7 @@ void Mob::FleeInfo(Mob* client)
 
 	int allycount = entity_list.FleeAllyCount(client, this);
 
-	if (flee_mode && curfp)
+	if (flee_mode && currently_fleeing)
 	{
 		wontflee = true;
 		reason = "NPC is already fleeing!";
@@ -209,13 +235,13 @@ void Mob::ProcessFlee()
 	// Stop flee if we've become a pet after we began fleeing.
 	if (flee_mode && (GetSpecialAbility(SpecialAbility::FleeingImmunity) || IsCharmedPet()) && !IsFearedNoFlee() && !IsBlind())
 	{
-		curfp = false;
+		currently_fleeing = false;
 		return;
 	}
 
 	bool dying = GetHPRatio() < GetFleeRatio();
 	// We have stopped fleeing for an unknown reason (couldn't find a node is possible) restart.
-	if (flee_mode && !curfp)
+	if (flee_mode && !currently_fleeing)
 	{
 		if(dying)
 			StartFleeing();
@@ -242,7 +268,7 @@ void Mob::CalculateNewFearpoint()
 		if (zone->random.Roll(roll))
 		{
 			m_FearWalkTarget = glm::vec3(GetTarget()->GetPosition());
-			curfp = true;
+			currently_fleeing = true;
 			return;
 		}
 	}
@@ -282,14 +308,14 @@ void Mob::CalculateNewFearpoint()
 				// size 2 route usually means FindPath() bugged out.  sometimes it returns locs outside the geometry
 				if (CheckLosFN(Node.x, Node.y, Node.z, 6.0))
 				{
-					Log(Logs::Detail, Logs::Pathing, "Direct route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+					LogPathingDetail("Direct route to fearpoint [{:.1f}], [{:.1f}], [{:.1f}] calculated for [{}]", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
 					m_FearWalkTarget = last_good_loc;
-					curfp = true;
+					currently_fleeing = true;
 					return;
 				}
 				else
 				{
-					Log(Logs::Detail, Logs::Pathing, "FindRoute() returned single hop route to destination without LOS: %0.1f, %0.1f, %0.1f for %s", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
+					LogPathingDetail("FindRoute() returned single hop route to destination without LOS: [{:.1f}], [{:.1f}], [{:.1f}] for [{}]", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName());
 				}
 				// use fallback logic if LOS fails
 			}
@@ -333,12 +359,12 @@ void Mob::CalculateNewFearpoint()
 				if (have_los || route_count > 2)
 				{
 					if (have_los)
-						Log(Logs::Detail, Logs::Pathing, "Route to fearpoint %0.1f, %0.1f, %0.1f calculated for %s; route size: %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_size);
+						LogPathingDetail("Route to fearpoint [{:.1f}], [{:.1f}], [{:.1f}] calculated for [{}]; route size: [{}]", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_size);
 					else
-						Log(Logs::Detail, Logs::Pathing, "Using truncated route to fearpoint %0.1f, %0.1f, %0.1f for %s; node count: %i; route size %i", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_count, route_size);
+						LogPathingDetail("Using truncated route to fearpoint [{:.1f}], [{:.1f}], [{:.1f}] for [{}]; node count: [{}]; route size [{}]", last_good_loc.x, last_good_loc.y, last_good_loc.z, GetName(), route_count, route_size);
 
 					m_FearWalkTarget = last_good_loc;
-					curfp = true;
+					currently_fleeing = true;
 					return;
 				}
 			}
@@ -354,7 +380,7 @@ void Mob::CalculateNewFearpoint()
 
 	int loop = 0;
 	float ranx, rany, ranz;
-	curfp = false;
+	currently_fleeing = false;
 	glm::vec3 myloc(GetX(), GetY(), GetZ());
 	glm::vec3 myceil = myloc;
 	float ceil = zone->zonemap->FindCeiling(myloc, &myceil);
@@ -386,7 +412,7 @@ void Mob::CalculateNewFearpoint()
 		if (stay_inliquid || levitating || (loop > 50 && inliquid)) {
 			if (zone->zonemap->CheckLoS(myloc, newloc)) {
 				ranz = GetZ();
-				curfp = true;
+				currently_fleeing = true;
 				break;
 			}
 		}
@@ -403,14 +429,14 @@ void Mob::CalculateNewFearpoint()
 		float fdist = ranz - GetZ();
 		if (fdist >= -50 && fdist <= 50 && CheckCoordLosNoZLeaps(GetX(), GetY(), GetZ(), ranx, rany, ranz))
 		{
-			curfp = true;
+			currently_fleeing = true;
 			break;
 		}
 	}
-	if (curfp)
+	if (currently_fleeing)
 	{
 		m_FearWalkTarget = glm::vec3(ranx, rany, ranz);
-		Log(Logs::Detail, Logs::Pathing, "Non-pathed fearpoint %0.1f, %0.1f, %0.1f selected for %s", ranx, rany, ranz, GetName());
+		LogPathingDetail("Non-pathed fearpoint [{:.1f}], [{:.1f}], [{:.1f}] selected for [{}]", ranx, rany, ranz, GetName());
 	}
 }
 

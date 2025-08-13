@@ -49,7 +49,7 @@ void Client::SendGuildMOTD(bool GetGuildMOTDReply) {
 
 	}
 
-	Log(Logs::Detail, Logs::Guilds, "Sending OP_GuildMOTD of length %d", outapp->size);
+	LogGuilds("Sending OP_GuildMOTD of length [{}]", outapp->size);
 
 	FastQueuePacket(&outapp);
 }
@@ -58,10 +58,10 @@ void Client::SendGuildSpawnAppearance() {
 	if (!IsInAGuild()) {
 		// clear guildtag
 		SendAppearancePacket(AppearanceType::GuildID, GUILD_NONE);
-		Log(Logs::Detail, Logs::Guilds, "Sending spawn appearance for no guild tag.");
+		LogGuilds("Sending spawn appearance for no guild tag.");
 	} else {
 		uint8 rank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), CharacterID());
-		Log(Logs::Detail, Logs::Guilds, "Sending spawn appearance for guild %d at rank %d", GuildID(), rank);
+		LogGuilds("Sending spawn appearance for guild [{}] at rank [{}]", GuildID(), rank);
 		SendAppearancePacket(AppearanceType::GuildID, GuildID());
 		SendAppearancePacket(AppearanceType::GuildRank, rank);
 	}
@@ -75,12 +75,12 @@ void Client::SendGuildList() {
 	outapp->pBuffer = guild_mgr.MakeOldGuildList(outapp->size);
 
 	if(outapp->pBuffer == nullptr) {
-		Log(Logs::Detail, Logs::Guilds, "Unable to make guild list!");
+		LogGuilds("Unable to make guild list!");
 		safe_delete(outapp);
 		return;
 	}
 
-	Log(Logs::Detail, Logs::Guilds, "Sending OP_GuildsList of length %d", outapp->size);
+	LogGuilds("Sending OP_GuildsList of length [{}]", outapp->size);
 
 	FastQueuePacket(&outapp);
 }
@@ -94,7 +94,7 @@ void Client::SendPlayerGuild() {
 		
 	if(guild_mgr.GetGuildNameByID(guid,tmp))
 	{
-		Log(Logs::Detail, Logs::Guilds, "SendPlayerGuild(): GUID: %d Name: %s", guid, tmp.c_str());
+		LogGuilds("SendPlayerGuild(): GUID: [{}] Name: [{}]", guid, tmp.c_str());
 		gu->guildID=guid;
 		memcpy(gu->entry.name,tmp.c_str(),64);
 		gu->entry.guildID=guid;
@@ -109,7 +109,7 @@ void Client::SendPlayerGuild() {
 	gu->entry.unknown1=0xFFFFFFFF;
 	gu->entry.unknown3=0xFFFFFFFF;
 
-	Log(Logs::Detail, Logs::Guilds, "Sending OP_GuildAdded of length %d guildID %d", outapp->size, gu->entry.guildID);
+	LogGuilds("Sending OP_GuildAdded of length [{}] guildID [{}]", outapp->size, gu->entry.guildID);
 
 	FastQueuePacket(&outapp);
 }
@@ -123,7 +123,7 @@ void Client::RefreshGuildInfo()
 
 	CharGuildInfo info;
 	if(!guild_mgr.GetCharInfo(CharacterID(), info)) {
-		Log(Logs::Detail, Logs::Guilds, "Unable to obtain guild char info for %s (%d)", GetName(), CharacterID());
+		LogGuilds("Unable to obtain guild char info for [{}] ([{}])", GetName(), CharacterID());
 		return;
 	}
 

@@ -49,7 +49,7 @@ float Mob::GetBaseEXP()
 		zemmod = zone->newzone_data.zone_exp_multiplier * 100;
 	}
 
-	if (RuleB(Expansion, UseExperienceExpansionSetting) && !content_service.IsThePlanesOfPowerEnabled()) {
+	if (RuleB(Expansion, UseExperienceExpansionSetting) && !WorldContentService::Instance()->IsThePlanesOfPowerEnabled()) {
 		// Base ZEM from Classic to Luclin
 		if (zone->GetZoneID() == Zones::BEFALLEN ||
 			zone->GetZoneID() == Zones::BLACKBURROW ||
@@ -95,7 +95,7 @@ float Mob::GetBaseEXP()
 		}
 
 		// Velious Era ZEM modification
-		if (content_service.IsTheScarsOfVeliousEnabled()) {
+		if (WorldContentService::Instance()->IsTheScarsOfVeliousEnabled()) {
 			if (zone->GetZoneID() == Zones::LAKEOFILLOMEN) {
 				zemmod = 75.0f;
 			}
@@ -123,7 +123,7 @@ float Mob::GetBaseEXP()
 		}
 
 		// Luclin era ZEM modification.  Not confirmed - Needs more info
-		if (content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			// low level zone bonus.
 			if (zone->GetZoneID() == Zones::BLACKBURROW ||
 				zone->GetZoneID() == Zones::BEFALLEN ||
@@ -165,18 +165,18 @@ float Mob::GetBaseEXP()
 	float basexp = exp * (zemmod + hotzonexp) * server_bonus * npc_pct;
 	float logged_xp = basexp;
 
-	Log(Logs::General, Logs::EQMac, "Starting base exp is mob_level(%i)^2 * ZEM(%.0f) * server_bonus(%.2f) * npc_pct(%.2f) = %.0f exp", 
+	LogEQMac("Starting base exp is mob_level([{}])^2 * ZEM([{:.0f}]) * server_bonus([{:.2f}]) * npc_pct([{:.2f}]) = [{:.0f}] exp", 
 		level, zemmod, server_bonus, npc_pct, basexp);
 
 	if (ds_damage + npc_damage >= total_damage)
 	{
 		basexp = 0;
-		Log(Logs::General, Logs::EQMac, "%s was completely damaged by a damage shield/NPC. No XP for you one year.", GetName());
+		LogEQMac("[{}] was completely damaged by a damage shield/NPC. No XP for you one year.", GetName());
 	}
-	else if(player_damage == 0 && content_service.IsTheShadowsOfLuclinEnabled())
+	else if(player_damage == 0 && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled())
 	{
 		basexp *= 0.25f;
-		Log(Logs::General, Logs::EQMac, "%s was not damaged by a player. Exp reduced to 25 percent of normal", GetName());
+		LogEQMac("[{}] was not damaged by a player. Exp reduced to 25 percent of normal", GetName());
 	}
 	else if(dire_pet_damage > 0)
 	{
@@ -193,7 +193,7 @@ float Mob::GetBaseEXP()
 			basexp *= reduced_pct;
 		}
 
-		Log(Logs::General, Logs::EQMac, "%s was %0.1f percent damaged by a dire charmed pet (%d/%d). Exp gained is %0.1f percent of normal", 
+		LogEQMac("[{}] was [{:.1f}] percent damaged by a dire charmed pet ([{}]/[{}]). Exp gained is [{:.1f}] percent of normal", 
 			GetName(), pet_dmg_pct * 100.0f, dire_pet_damage, total_damage, reduced_pct * 100.0f);
 	}
 
@@ -308,12 +308,12 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 		float reduction_mult = killed_mob->CastToNPC()->GetPBAoEReduction(GetLevel());
 		if (reduction_mult < 1.0)
 		{
-			Log(Logs::Detail, Logs::EQMac, "Experience reduced to %0.2f percent due to PBAoE reduction.", reduction_mult*100.0);
+			LogEQMacDetail("Experience reduced to [{:.2f}] percent due to PBAoE reduction.", reduction_mult*100.0);
 			add_exp *= reduction_mult;
 		}
 	}
 
-	if (RuleB(Expansion, EnablePetExperienceSplit) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+	if (RuleB(Expansion, EnablePetExperienceSplit) && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 		if (killed_mob && !HasGroup() && !is_split)	{
 			int32 damage_amount = 0;
 			Mob *top_damager = killed_mob->GetDamageTop(damage_amount, false, false);
@@ -321,7 +321,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 				if (top_damager->IsPet()) {
 					float pet_dmg_pct = static_cast<float>(damage_amount) / killed_mob->total_damage;
 					if (pet_dmg_pct > 0.5f) {
-						Log(Logs::General, Logs::EQMac, "%s was damaged more than 50% by a single pet. Pet takes 50% of experience value.", killed_mob->GetCleanName());
+						LogEQMac("[{}] was damaged more than 50% by a single pet. Pet takes 50% of experience value.", killed_mob->GetCleanName());
 						add_exp = (float)add_exp * 0.5f;
 					}
 				}
@@ -375,7 +375,7 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	if (add_exp > xp_cap)
 	{
 		add_exp = xp_cap;
-		Log(Logs::Detail, Logs::EQMac, "Exp capped to 12.5 percent of level exp");
+		LogEQMacDetail("Exp capped to 12.5 percent of level exp");
 	}
 
 	if (killed_mob->IsZomm())
@@ -386,9 +386,9 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	}
 
 	if (add_aaxp)
-		Log(Logs::Detail, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  AARule: %0.2f  Race: %0.2f", lb_mult, hbm, mlm, con_mult, totalmod, aa_mult, race_mult);
+		LogEQMacDetail("[Exp Multipliers] Light Blue: [{:.2f}]  HBM: [{:.3f}]  MLM: [{:.3f}]  ConRule: [{:.2f}]  ExpRule: [{:.2f}]  AARule: [{:.2f}]  Race: [{:.2f}]", lb_mult, hbm, mlm, con_mult, totalmod, aa_mult, race_mult);
 	else
-		Log(Logs::Detail, Logs::EQMac, "[Exp Multipliers] Light Blue: %0.2f  HBM: %0.3f  MLM: %0.3f  ConRule: %0.2f  ExpRule: %0.2f  Class: %0.4f", lb_mult, hbm, mlm, con_mult, totalmod, class_mult);
+		LogEQMacDetail("[Exp Multipliers] Light Blue: [{:.2f}]  HBM: [{:.3f}]  MLM: [{:.3f}]  ConRule: [{:.2f}]  ExpRule: [{:.2f}]  Class: [{:.4f}]", lb_mult, hbm, mlm, con_mult, totalmod, class_mult);
 
 	uint32 new_exp = GetEXP() + add_exp;
 	uint32 old_aaexp = GetAAXP();
@@ -474,7 +474,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	if(IsMule())
 		return;
 
-	Log(Logs::Detail, Logs::None, "Attempting to Set Exp for %s (XP: %u, AAXP: %u, Rez: %s, Split: %s)", 
+	LogInfo("Attempting to Set Exp for [{}] (XP: [{}], AAXP: [{}], Rez: [{}], Split: [{}])",
 		this->GetCleanName(), set_exp, set_aaxp, isrezzexp ? "true" : "false", is_split ? "true" : "false");
 	//max_AAXP = GetEXPForLevel(52) - GetEXPForLevel(51);	//GetEXPForLevel() doesn't depend on class/race, just level, so it shouldn't change between Clients
 	max_AAXP = GetEXPForLevel(0, true);	//this may be redundant since we're doing this in Client::FinishConnState2()
@@ -567,7 +567,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 
 		//figure out how many AA points we get from the exp were setting
 		m_pp.aapoints = set_aaxp / max_AAXP;
-		Log(Logs::Detail, Logs::None, "Calculating additional AA Points from AAXP for %s: %u / %u = %.1f points", this->GetCleanName(), set_aaxp, max_AAXP, (float)set_aaxp / (float)max_AAXP);
+		LogInfo("Calculating additional AA Points from AAXP for [{}]: [{}] / [{}] = [{:.1f}] points", this->GetCleanName(), set_aaxp, max_AAXP, (float)set_aaxp / (float)max_AAXP);
 
 		//get remainder exp points, set in PP below
 		set_aaxp = set_aaxp - (max_AAXP * m_pp.aapoints);
@@ -681,7 +681,7 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 void Client::SetLevel(uint8 set_level, bool command)
 {
 	if (GetEXPForLevel(set_level) == 0xFFFFFFFF) {
-		Log(Logs::General, Logs::Error, "Client::SetLevel() GetEXPForLevel(%i) = 0xFFFFFFFF", set_level);
+		LogError("Client::SetLevel() GetEXPForLevel([{}]) = 0xFFFFFFFF", set_level);
 		return;
 	}
 
@@ -727,7 +727,7 @@ void Client::SetLevel(uint8 set_level, bool command)
 		int levels_gained = (set_level - m_pp.level);
 		const auto export_string = fmt::format("{}", levels_gained);
 		parse->EventPlayer(EVENT_LEVEL_UP, this, export_string, 0);
-		if (player_event_logs.IsEventEnabled(PlayerEvent::LEVEL_GAIN)) {
+		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::LEVEL_GAIN)) {
 			auto e = PlayerEvent::LevelGainedEvent{
 				.from_level = m_pp.level,
 				.to_level = set_level,
@@ -739,7 +739,7 @@ void Client::SetLevel(uint8 set_level, bool command)
 	}
 	else if (set_level < m_pp.level){
 		int levels_lost = (m_pp.level - set_level);
-		if (player_event_logs.IsEventEnabled(PlayerEvent::LEVEL_LOSS)) {
+		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::LEVEL_LOSS)) {
 			auto e = PlayerEvent::LevelLostEvent{
 				.from_level = m_pp.level,
 				.to_level = set_level,
@@ -764,7 +764,7 @@ void Client::SetLevel(uint8 set_level, bool command)
 	safe_delete(outapp);
 	this->SendAppearancePacket(AppearanceType::WhoLevel, set_level); // who level change
 
-	Log(Logs::General, Logs::Normal, "Setting Level for %s to %i", GetName(), set_level);
+	LogInfo("Setting Level for [{}] to [{}]", GetName(), set_level);
 
 	CalcBonuses();
 
@@ -962,7 +962,7 @@ void Group::SplitExp(uint32 exp, Mob* killed_mob)
 	}
 
 	float groupexp = (static_cast<float>(exp) * groupmod) * RuleR(Character, GroupExpMultiplier);
-	Log(Logs::Detail, Logs::Group, "Group Base XP: %d GroupMod: %0.2f Final XP: %0.2f", exp, groupmod, groupexp);
+	LogGroupDetail("Group Base XP: [{}] GroupMod: [{:.2f}] Final XP: [{:.2f}]", exp, groupmod, groupexp);
 
 	// 6th member is free in the split under mid-Ykesha+ era rules, but not on AK or under classic rules
 	if (!RuleB(AlKabor, Count6thGroupMember) && gs.close_membercount == 6)
@@ -997,11 +997,11 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 
 		if (gs.max_green_level < 1)
 		{
-			Log(Logs::Detail, Logs::Group, "Nobody qualifies for XP. Returning...");
+			LogGroupDetail("Nobody qualifies for XP. Returning...");
 			return false;
 		}
 
-		Log(Logs::Detail, Logs::Group, "Max green level was set to %d", gs.max_green_level);
+		LogGroupDetail("Max green level was set to [{}]", gs.max_green_level);
 	}
 
 	for (int i = 0; i < MAX_GROUP_MEMBERS; ++i)
@@ -1030,7 +1030,7 @@ bool Group::ProcessGroupSplit(Mob* killed_mob, struct GroupExpSplit_Struct& gs, 
 					{
 						gs.weighted_levels += cmember->GetLevel();
 					}
-					Log(Logs::Detail, Logs::Group, "%s was added to close_membercount", cmember->GetName());
+					LogGroupDetail("[{}] was added to close_membercount", cmember->GetName());
 				}
 			}
 		}
@@ -1070,27 +1070,27 @@ void Group::GiveGroupSplitExp(Mob* killed_mob, uint8 maxlevel, int16 weighted_le
 							if (conlevel == CON_GREEN)
 								local_conlevel = Mob::GetLevelCon(cmember->GetLevel(), killed_mob->GetLevel());
 
-							Log(Logs::Detail, Logs::Group, "%s splits %0.2f with the rest of the group. Their share: %0.2f (%0.2f PERCENT)  weighted_levels: %i;  close_count: %i", cmember->GetName(), groupexp, splitgroupxp, split_percent * 100, weighted_levels, close_count);
+							LogGroupDetail("[{}] splits [{:.2f}] with the rest of the group. Their share: [{:.2f}] ([{:.2f}] PERCENT)  weighted_levels: [{}];  close_count: [{}]", cmember->GetName(), groupexp, splitgroupxp, split_percent * 100, weighted_levels, close_count);
 							cmember->AddEXP(static_cast<uint32>(splitgroupxp), local_conlevel, killed_mob, weighted_levels/close_count, close_count == 1 ? false : true);
 						}
 						else
 						{
-							Log(Logs::Detail, Logs::Group, "%s is too low in level to gain XP from this group.", cmember->GetName());
+							LogGroupDetail("[{}] is too low in level to gain XP from this group.", cmember->GetName());
 						}
 					}
 					else
 					{
-						Log(Logs::Detail, Logs::Group, "%s is green to %s. They won't receive group XP.", killed_mob->GetName(), cmember->GetName());
+						LogGroupDetail("[{}] is green to [{}]. They won't receive group XP.", killed_mob->GetName(), cmember->GetName());
 					}
 				}
 				else
 				{
-					Log(Logs::Detail, Logs::Group, "%s is out of physical range. They won't receive group XP.", cmember->GetName());
+					LogGroupDetail("[{}] is out of physical range. They won't receive group XP.", cmember->GetName());
 				}
 			}
 			else 
 			{
-				Log(Logs::Detail, Logs::Group, "%s is not in the zone. They won't receive group XP.", cmember->GetName());
+				LogGroupDetail("[{}] is not in the zone. They won't receive group XP.", cmember->GetName());
 			}
 		}
 	}
@@ -1142,7 +1142,7 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 			{
 				if(membercount != 0)
 				{
-					Log(Logs::Detail, Logs::Group, "%s is not within level range, removing from XP gain.", cmember->GetName());
+					LogGroupDetail("[{}] is not within level range, removing from XP gain.", cmember->GetName());
 					if(weighted_levels >= cmember->GetLevel())
 						weighted_levels -= cmember->GetLevel();
 					--membercount;
@@ -1157,7 +1157,7 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 		return;
 
 	float groupexp = static_cast<float>(exp) * RuleR(Character, RaidExpMultiplier);
-	Log(Logs::Detail, Logs::Group, "Raid XP: %d Final XP: %0.2f", exp, groupexp);
+	LogGroupDetail("Raid XP: [{}] Final XP: [{:.2f}]", exp, groupexp);
 
 	//Assigns XP if the qualifications are met.
 	for (int i = 0; i < MAX_RAID_MEMBERS; i++) 
@@ -1178,13 +1178,13 @@ void Raid::SplitExp(uint32 exp, Mob* killed_mob)
 						splitgroupxp = 1;
 
 					cmember->AddEXP(static_cast<uint32>(splitgroupxp), conlevel, killed_mob, 0, true);
-					Log(Logs::Detail, Logs::Group, "%s splits %0.2f with %d players in the raid. Their share is %0.2f", cmember->GetName(), groupexp, membercount, splitgroupxp);
+					LogGroupDetail("[{}] splits [{:.2f}] with [{}] players in the raid. Their share is [{:.2f}]", cmember->GetName(), groupexp, membercount, splitgroupxp);
 				}
 				else
-					Log(Logs::Detail, Logs::Group, "%s is too low in level to gain XP from this raid.", cmember->GetName());
+					LogGroupDetail("[{}] is too low in level to gain XP from this raid.", cmember->GetName());
 			}
 			else
-				Log(Logs::Detail, Logs::Group, "%s is not in the kill zone, is out of range, or %s is green to them. They won't receive raid XP.", cmember->GetName(), killed_mob->GetCleanName());
+				LogGroupDetail("[{}] is not in the kill zone, is out of range, or [{}] is green to them. They won't receive raid XP.", cmember->GetName(), killed_mob->GetCleanName());
 		}
 	}
 }
@@ -1249,7 +1249,6 @@ bool Client::IsInExpRange(Mob* defender)
 	t2 = defender->GetY() - GetY();
 	
 	if (t1 > exprange || t2 > exprange || t1 < -exprange || t2 < -exprange) {
-		//_log(CLIENT__EXP, "%s is out of range. distances (%.3f,%.3f,%.3f), range %.3f No XP will be awarded.", defender->GetName(), t1, t2, t3, exprange);
 		return false;
 	}
 	else

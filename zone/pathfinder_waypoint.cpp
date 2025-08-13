@@ -413,7 +413,7 @@ std::deque<int> PathfinderWaypoint::FindRouteV2(int startID, int endID)
 
 			float FCost = AStarEntry.HCost + AStarEntry.GCost;
 #ifdef PATHDEBUG
-			Log(Logs::General, Logs::Pathing, "Node: %i, Open Neighbour %i has HCost %8.3f, GCost %8.3f (Total Cost: %8.3f)\n",
+			LogPathing("Node: [{}], Open Neighbour [{}] has HCost [{:.3f}], GCost [{:.3f}] (Total Cost: [{:.3f}])",
 				CurrentNode.PathNodeID,
 				PathNodes[CurrentNode.PathNodeID].Neighbours[i].id,
 				AStarEntry.HCost,
@@ -452,7 +452,7 @@ std::deque<int> PathfinderWaypoint::FindRouteV2(int startID, int endID)
 				OpenList.insert(InsertionPoint, AStarEntry);
 		}
 	}
-	Log(Logs::Detail, Logs::Pathing, "Unable to find a route.");
+	LogPathingDetail("Unable to find a route.");
 	return Route;
 }
 
@@ -517,7 +517,7 @@ void PathfinderWaypoint::Load(const std::string &filename) {
 		}
 		fread_var = fread(&Head, sizeof(Head), 1, pathfile);
 	
-		Log(Logs::General, Logs::Pathing, "Path File Header: Version %d, PathNodes %d",
+		LogPathing("Path File Header: Version [{}], PathNodes [{}]",
 			(long)Head.version, (long)Head.PathNodeCount);
 
 		if (Head.version != 2 && Head.version != 3 && Head.version != 4) {
@@ -556,7 +556,7 @@ void PathfinderWaypoint::LoadPath(FILE *PathFile, const PathFileHeader &header)
 			auto &node = m_impl->Nodes[i];
 			if (PathNodes[i].Neighbours[j].id > MaxNodeID)
 			{
-				Log(Logs::General, Logs::Error, "Path Node [%d], Neighbour %d (%d) out of range", i, j, PathNodes[i].Neighbours[j].id);
+				LogError("Path Node [[{}]], Neighbour [{}] ([{}]) out of range", i, j, PathNodes[i].Neighbours[j].id);
 				m_impl->PathFileValid = false;
 			}
 	
@@ -878,8 +878,6 @@ int PathfinderWaypoint::FindNearestPathNode(glm::vec3 Position)
 	int haz_check = 0;
 	for (auto Iterator = SortedByDistance.begin(); Iterator != SortedByDistance.end(); ++Iterator)
 	{
-		//Log(Logs::Detail, Logs::Pathing, "Checking Reachability of Node %i from Start Position.", PathNodes[(*Iterator).id].id);
-
 		if (!zone->zonemap->LineIntersectsZone(Position, m_impl->Nodes[(*Iterator).id].v, 1.0f, nullptr))
 		{
 			// limit how many hazard checks we are doing

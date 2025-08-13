@@ -125,6 +125,12 @@ namespace EQ {
 			m_gen.discard(z);
 		}
 
+		static Random *Instance()
+		{
+			static Random instance;
+			return &instance;
+		}
+
 	private:
 #ifndef BIASED_INT_DIST
 		typedef std::uniform_int_distribution<int>::param_type int_param_t;

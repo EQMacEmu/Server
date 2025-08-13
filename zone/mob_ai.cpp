@@ -191,7 +191,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 
 					case SpellType_Escape:
 					{
-						if (!roambox_distance && !IsPet() && GetHPRatio() <= 15.0f && content_service.IsTheRuinsOfKunarkEnabled()
+						if (!roambox_distance && !IsPet() && GetHPRatio() <= 15.0f && WorldContentService::Instance()->IsTheRuinsOfKunarkEnabled()
 							&& zone->random.Roll(50) && DistanceSquared(CastToNPC()->GetSpawnPoint(), GetPosition()) > 40000)
 						{
 							entity_list.MessageClose_StringID(this, true, 200, Chat::Spells, StringID::BEGIN_GATE, this->GetCleanName());
@@ -435,7 +435,7 @@ bool NPC::AICastSpell(Mob* tar, uint8 iChance, uint16 iSpellTypes, bool zeroPrio
 
 bool NPC::AIDoSpellCast(uint8 i, Mob* tar, int32 mana_cost, uint32* oDontDoAgainBefore) {
 
-	Log(Logs::Detail, Logs::AI, "Mob::AIDoSpellCast: spellid=%d, tar=%s, mana=%d, Name: %s", AIspells[i].spellid, tar->GetName(), mana_cost, spells[AIspells[i].spellid].name);
+	LogAIDetail("Mob::AIDoSpellCast: spellid=[{}], tar=[{}], mana=[{}], Name: [{}]", AIspells[i].spellid, tar->GetName(), mana_cost, spells[AIspells[i].spellid].name);
 	casting_spell_AIindex = i;
 	return CastSpell(AIspells[i].spellid, tar->GetID(), EQ::spells::CastingSlot::Gem2, spells[AIspells[i].spellid].cast_time, mana_cost, oDontDoAgainBefore, -1, -1, 0, 0, &(AIspells[i].resist_adjust));
 }
@@ -447,7 +447,7 @@ bool EntityList::AICheckCloseBeneficialSpells(NPC* caster, uint8 iChance, float 
 		// according to Rogean, Live NPCs will just cast through walls/floors, no problem..
 		//
 		// This check was put in to address an idle-mob CPU issue
-		Log(Logs::General, Logs::Error, "Error: detrimental spells requested from AICheckCloseBeneficialSpells!!");
+		LogError("Error: detrimental spells requested from AICheckCloseBeneficialSpells!!");
 		return(false);
 	}
 
@@ -910,9 +910,9 @@ void Client::AI_Process()
 					// Check if we have reached the last fear point
 					if (IsPositionEqualWithinCertainZ(glm::vec3(GetX(), GetY(), GetZ()), m_FearWalkTarget, 5.0f)) {
 						FixZ(true);
-						curfp = false;
+						currently_fleeing = false;
 						CalculateNewFearpoint();
-						if (curfp)
+						if (currently_fleeing)
 							RunTo(m_FearWalkTarget.x, m_FearWalkTarget.y, m_FearWalkTarget.z);
 						else
 							StopNavigation();
@@ -956,7 +956,7 @@ void Client::AI_Process()
 		}
 		else
 		{
-			Log(Logs::Detail, Logs::Error, "Preventing DivineAura() crash due to null this.");
+			LogErrorDetail("Preventing DivineAura() crash due to null this.");
 			return;
 		}
 
@@ -1249,9 +1249,9 @@ void Mob::DoFearMovement()
 				// Check if we have reached the last fear point
 				if (IsPositionEqualWithinCertainZ(glm::vec3(GetX(), GetY(), GetZ()), m_FearWalkTarget, 5.0f)) {
 					FixZ(true);
-					curfp = false;
+					currently_fleeing = false;
 					CalculateNewFearpoint();
-					if (curfp)
+					if (currently_fleeing)
 						RunTo(m_FearWalkTarget.x, m_FearWalkTarget.y, m_FearWalkTarget.z);
 					else
 						StopNavigation();
@@ -1373,7 +1373,7 @@ void Mob::AI_Process() {
 
 	if (RuleB(Combat, EnableFearPathing))
 	{
-		if ((IsFearedNoFlee() || (IsFleeing() && is_engaged)) && curfp && (!IsRooted() || (permarooted && GetSpecialAbility(SpecialAbility::PermarootFlee))))
+		if ((IsFearedNoFlee() || (IsFleeing() && is_engaged)) && currently_fleeing && (!IsRooted() || (permarooted && GetSpecialAbility(SpecialAbility::PermarootFlee))))
 		{
 			DoFearMovement();
 			return;
@@ -1721,7 +1721,7 @@ void Mob::AI_Process() {
 							return;
 						}
 						if(!IsRooted()) {
-							Log(Logs::Detail, Logs::AI, "Pursuing %s while engaged.", GetTarget()->GetName());
+							LogAIDetail("Pursuing [{}] while engaged.", GetTarget()->GetName());
 							if (m_Navigation.x != GetTarget()->GetX() || m_Navigation.y != GetTarget()->GetY()) {
 								m_Navigation = GetTarget()->GetPosition();
 
@@ -1790,7 +1790,7 @@ void Mob::AI_Process() {
 					}
 				}
 			} // summon and pursuit
-			if (ai_think && IsBlind() && !AI_EngagedCastCheck() && !IsRooted() && curfp)
+			if (ai_think && IsBlind() && !AI_EngagedCastCheck() && !IsRooted() && currently_fleeing)
 			{
 				// target is not in melee range and NPC is blind
 				DoFearMovement();
@@ -2219,7 +2219,7 @@ void NPC::AI_DoMovement() {
 						roambox_movingto_z = SetBestZ(roam_z);
 				}
 			}
-			Log(Logs::Detail, Logs::AI, "Roam Box: (%.3f->%.3f,%.3f->%.3f): Go To (%.3f,%.3f)",
+			LogAIDetail("Roam Box: ([{:.3f}]->[{:.3f}],[{:.3f}]->[{:.3f}]): Go To ([{:.3f}],[{:.3f}])",
 				roambox_min_x, roambox_max_x, roambox_min_y, roambox_max_y, roambox_movingto_x, roambox_movingto_y);
 		}
 		if (!IsMoving()) {
@@ -2268,7 +2268,7 @@ void NPC::AI_DoMovement() {
 								else
 									cur_wp_pause = 38;
 							}
-							Log(Logs::Detail, Logs::AI, "NPC using wander type GridRandomPath on grid %d at waypoint %d has reached its random destination; pause time is %d", GetGrid(), cur_wp, cur_wp_pause);
+							LogAIDetail("NPC using wander type GridRandomPath on grid [{}] at waypoint [{}] has reached its random destination; pause time is [{}]", GetGrid(), cur_wp, cur_wp_pause);
 						}
 						else
 							cur_wp_pause = 0; // skipping pauses until destination
@@ -2379,11 +2379,11 @@ void NPC::AI_SetupNextWaypoint() {
 	else {
 		pause_timer_complete = false;
 
-		Log(Logs::Detail, Logs::Pathing, "We are departing waypoint %d.", cur_wp);
+		LogPathingDetail("We are departing waypoint [{}].", cur_wp);
 
 		//if we were under quest control (with no grid), we are done now..
 		if(cur_wp == EQ::WaypointStatus::QuestControlNoGrid) {
-			Log(Logs::Detail, Logs::Pathing, "Non-grid quest mob has reached its quest ordered waypoint. Leaving pathing mode.");
+			LogPathingDetail("Non-grid quest mob has reached its quest ordered waypoint. Leaving pathing mode.");
 			roamer = false;
 			cur_wp = 0;
 		}
@@ -2530,7 +2530,7 @@ void Mob::AI_Event_NoLongerEngaged() {
 
 	// So mobs don't keep running as a ghost until AIwalking_timer fires
 	// if they were moving prior to losing all hate
-	if (IsMoving() && (!IsFearedNoFlee() || !curfp)) {
+	if (IsMoving() && (!IsFearedNoFlee() || !currently_fleeing)) {
 		StopNavigation();
 	}
 	if (GetCurrentSpeed() < 0.1f || IsMezzed() || IsStunned()) {
@@ -2604,7 +2604,7 @@ bool NPC::AI_EngagedCastCheck() {
 	if (AIautocastspell_timer->Check(false)) {
 		AIautocastspell_timer->Disable();	//prevent the timer from going off AGAIN while we are casting.
 
-		Log(Logs::Detail, Logs::AI, "Engaged autocast check triggered. Trying to cast healing spells then maybe offensive spells.");
+		LogAIDetail("Engaged autocast check triggered. Trying to cast healing spells then maybe offensive spells.");
 
 		// prioritize raid boss spells (spells with priority == 0) first, with no detrimental roll
 		if (hasZeroPrioritySpells)
@@ -2840,7 +2840,7 @@ bool Mob::Rampage(int range, int damagePct)
 				continue;
 			if (m_target->IsCorpse())
 			{
-				Log(Logs::General, Logs::Error, "%s is on %s's rampage list", m_target->GetCleanName(), GetCleanName());
+				LogError("[{}] is on [{}]'s rampage list", m_target->GetCleanName(), GetCleanName());
 				RemoveFromRampageList(m_target, true);
 				continue;
 			}

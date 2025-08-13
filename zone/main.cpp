@@ -95,7 +95,6 @@ extern volatile bool is_zone_loaded;
 
 EntityList  entity_list;
 WorldServer worldserver;
-ZoneStore zone_store;
 uint32      numclients = 0;
 char        errorname[32];
 extern Zone *zone;
@@ -106,11 +105,6 @@ TitleManager          title_manager;
 QueryServ             *QServ = 0;
 QuestParserCollection *parse = 0;
 EQEmuLogSys           LogSys;
-ZoneEventScheduler    event_scheduler;
-WorldContentService   content_service;
-PathManager           path;
-PlayerEventLogs       player_event_logs;
-SkillCaps             skill_caps;
 
 const SPDat_Spell_Struct* spells;
 int32 SPDAT_RECORDS = -1;
@@ -134,7 +128,7 @@ int main(int argc, char** argv) {
 		LogSys.SilenceConsoleLogging();
 	}
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	QServ = new QueryServ;
 
@@ -256,14 +250,14 @@ int main(int argc, char** argv) {
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->SetGMSayHandler(&Zone::GMSayHookCallBackProcess)
 		->StartFileLogs();
 
-	player_event_logs.SetDatabase(&database)->Init();
+	PlayerEventLogs::Instance()->SetDatabase(&database)->Init();
 
-	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
+	SkillCaps::Instance()->SetContentDatabase(&database)->LoadSkillCaps();
 
 	/* Guilds */
 	guild_mgr.SetDatabase(&database);
@@ -303,9 +297,9 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	zone_store.LoadZones(database);
+	ZoneStore::Instance()->LoadZones(database);
 
-	if (zone_store.GetZones().empty()) {
+	if (ZoneStore::Instance()->GetZones().empty()) {
 		LogError("Failed to load zones data, check your schema for possible errors");
 		return 1;
 	}
@@ -341,11 +335,11 @@ int main(int argc, char** argv) {
 		LogInfo("Loaded [{}] commands loaded", Strings::Commify(std::to_string(retval)));
 	}
 
-	content_service.SetDatabase(&database)
+	WorldContentService::Instance()->SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();
 
-	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
+	ZoneEventScheduler::Instance()->SetDatabase(&database)->LoadScheduledEvents();
 
 	parse = new QuestParserCollection();
 #ifdef LUA_EQEMU
@@ -360,7 +354,7 @@ int main(int argc, char** argv) {
 	QServ->CheckForConnectState();
 
 	worldserver.Connect();
-	worldserver.SetScheduler(&event_scheduler);
+	worldserver.SetScheduler(ZoneEventScheduler::Instance());
 
 	// sidecar command handler
 	if (ZoneCLI::RanConsoleCommand(argc, argv) && ZoneCLI::RanSidecarCommand(argc, argv)) {
@@ -498,7 +492,7 @@ int main(int argc, char** argv) {
 				entity_list.MobProcess();
 				entity_list.BeaconProcess();
 				entity_list.EncounterProcess();
-				event_scheduler.Process(zone, &content_service);
+				ZoneEventScheduler::Instance()->Process(zone, WorldContentService::Instance());
 
 				if (zone) {
 					// this was put in to appease concerns about the RNG being affected by the time of day or day of week the server was started on, resulting in bad loot

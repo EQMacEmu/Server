@@ -653,7 +653,7 @@ QuestInterface* QuestParserCollection::GetQIByNPCQuest(uint32 npc_id, std::strin
 
 	Strings::FindReplace(npc_name, "`", "-");
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		const std::string &npc_id_and_name = fmt::format(
 			"{}_{}",
 			npc_name,
@@ -710,7 +710,7 @@ QuestInterface* QuestParserCollection::GetQIByPlayerQuest(std::string& filename)
 		return nullptr;
 	}
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		const std::string &global_path = fmt::format(
 			"{}/{}",
 			dir,
@@ -757,7 +757,7 @@ QuestInterface* QuestParserCollection::GetQIByGlobalNPCQuest(std::string& filena
 
 	std::string file_name;
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		for (auto *e : _load_precedence) {
 			file_name = fmt::format(
 				"{}/{}/global_npc.{}",
@@ -783,7 +783,7 @@ QuestInterface* QuestParserCollection::GetQIByGlobalPlayerQuest(std::string& fil
 	}
 
 	std::string file_name;
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		for (auto *e : _load_precedence) {
 			file_name = fmt::format(
 				"{}/{}/global_player.{}",
@@ -808,7 +808,7 @@ QuestInterface* QuestParserCollection::GetQIBySpellQuest(uint32 spell_id, std::s
 		return nullptr;
 	}
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		const std::string &global_path = fmt::format(
 			"{}/{}/spells",
 			dir,
@@ -854,7 +854,7 @@ QuestInterface* QuestParserCollection::GetQIByItemQuest(std::string item_script,
 		return nullptr;
 	}
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		const std::string &global_path = fmt::format(
 			"{}/{}/items",
 			dir,
@@ -900,7 +900,7 @@ QuestInterface* QuestParserCollection::GetQIByEncounterQuest(std::string encount
 		return nullptr;
 	}
 
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		const std::string &global_path = fmt::format(
 			"{}/{}/encounters",
 			dir,

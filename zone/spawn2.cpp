@@ -144,13 +144,13 @@ bool Spawn2::Process() {
 	if (timer.Check()) {
 		timer.Disable();
 
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Timer has triggered", spawn2_id);
+		LogSpawnsDetail("Spawn2 [{}]: Timer has triggered", spawn2_id);
 
 		//first check our spawn condition, if this isnt active
 		//then we reset the timer and try again next time.
 		if (condition_id != SC_AlwaysEnabled
 			&& !zone->spawn_conditions.Check(condition_id, condition_min_value)) {
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: spawning prevented by spawn condition %d", spawn2_id, condition_id);
+			LogSpawnsDetail("Spawn2 [{}]: spawning prevented by spawn condition [{}]", spawn2_id, condition_id);
 			Reset();
 			return(true);
 		}
@@ -164,7 +164,7 @@ bool Spawn2::Process() {
 		}
 
 		if (spawn_group == nullptr) {
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Unable to locate spawn group %d. Disabling.", spawn2_id, spawngroup_id_);
+			LogSpawnsDetail("Spawn2 [{}]: Unable to locate spawn group [{}]. Disabling.", spawn2_id, spawngroup_id_);
 			return false;
 		}
 
@@ -173,11 +173,11 @@ bool Spawn2::Process() {
 		uint32 npcid = spawn_group->GetNPCType(rtime, spawn2_id);
 		if (npcid == 0)
 		{
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d did not yield an NPC! not spawning.", spawn2_id, spawngroup_id_);
+			LogSpawnsDetail("Spawn2 [{}]: Spawn group [{}] did not yield an NPC! not spawning.", spawn2_id, spawngroup_id_);
 			if (rtime > 0)
 			{
 				// rtime will only have a value if there is a spawngroup limit. In that case, we want every NPC to use the same spawn timer.
-				Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn group %d did not yield an NPC due a group limit!", spawn2_id, spawngroup_id_);
+				LogSpawnsDetail("Spawn2 [{}]: Spawn group [{}] did not yield an NPC due a group limit!", spawn2_id, spawngroup_id_);
 				zone->UpdateGroupTimers(spawn_group, rtime);
 			}
 			else
@@ -255,12 +255,12 @@ bool Spawn2::Process() {
 			}
 
 			if (z == BEST_Z_INVALID) {
-				Log(Logs::General, Logs::Error, "Invalid BestZ for random spawn %d", spawn2_id);
+				LogError("Invalid BestZ for random spawn [{}]", spawn2_id);
 				timer.Start(60000);	// try again later
 				return false;
 			}
 
-			Log(Logs::General, Logs::Status, "Final coords for random spawn %d is %0.2f, %0.2f, %0.2f with timer %d and var %d", spawn2_id, x, y, z, respawn_, variance_);
+			LogInfo("Final coords for random spawn [{}] is [{:.2f}], [{:.2f}], [{:.2f}] with timer [{}] and var [{}]", spawn2_id, x, y, z, respawn_, variance_);
 		}
 
 		glm::vec4 loc(x, y, z, FixHeading(heading));
@@ -273,7 +273,7 @@ bool Spawn2::Process() {
 			{
 				loc = wploc;
 				loc.w = FixHeading(loc.w);
-				Log(Logs::General, Logs::Spawns, "spawning at random waypoint #%i loc: (%.3f, %.3f, %.3f).", starting_wp, loc.x, loc.y, loc.z);
+				LogSpawns("spawning at random waypoint #[{}] loc: ([{:.3f}], [{:.3f}], [{:.3f}]).", starting_wp, loc.x, loc.y, loc.z);
 			}
 		}
 
@@ -292,7 +292,7 @@ bool Spawn2::Process() {
 		entity_list.LimitAddNPC(npc);
 		if (spawn_group->roamdist && spawn_group->roambox[0] && spawn_group->roambox[1] && spawn_group->roambox[2] && spawn_group->roambox[3] && spawn_group->delay && spawn_group->min_delay)
 			npc->AI_SetRoambox(spawn_group->roambox[0], spawn_group->roambox[1], spawn_group->roambox[2], spawn_group->roambox[3], spawn_group->delay, spawn_group->min_delay);
-		Log(Logs::General, Logs::Spawns, "Spawn2 %d: Group %d spawned %s (%d) at (%.3f, %.3f, %.3f).", spawn2_id, spawngroup_id_, npc->GetName(), npcid, loc.x, loc.y, loc.z);
+		LogSpawns("Spawn2 [{}]: Group [{}] spawned [{}] ([{}]) at ([{:.3f}], [{:.3f}], [{:.3f}]).", spawn2_id, spawngroup_id_, npc->GetName(), npcid, loc.x, loc.y, loc.z);
 		LoadGrid(starting_wp);
 	}
 	return true;
@@ -318,7 +318,7 @@ void Spawn2::LoadGrid(int start_wp)
 	//dont set an NPC's grid until its loaded for them.
 	npcthis->SetGrid(grid_);
 	npcthis->AssignWaypoints(grid_, start_wp);
-	Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Loading grid %d for %s; starting wp is %d", spawn2_id, grid_, npcthis->GetName(), start_wp);
+	LogSpawnsDetail("Spawn2 [{}]: Loading grid [{}] for [{}]; starting wp is [{}]", spawn2_id, grid_, npcthis->GetName(), start_wp);
 }
 
 uint16 Spawn2::GetGrid() {
@@ -347,12 +347,12 @@ void Spawn2::Reset(uint32 rtime) {
 		timer.Start(resetTimer());
 	}
 	npcthis = nullptr;
-	Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn reset, repop in %d ms", spawn2_id, timer.GetRemainingTime());
+	LogSpawnsDetail("Spawn2 [{}]: Spawn reset, repop in [{}] ms", spawn2_id, timer.GetRemainingTime());
 }
 
 void Spawn2::Depop() {
 	timer.Disable();
-	Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn reset, repop disabled", spawn2_id);
+	LogSpawnsDetail("Spawn2 [{}]: Spawn reset, repop disabled", spawn2_id);
 	npcthis = nullptr;
 }
 
@@ -362,9 +362,9 @@ void Spawn2::Repop(uint32 delay) {
 
 	if (delay == 0) {
 		timer.Trigger();
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn reset, repop immediately.", spawn2_id);
+		LogSpawnsDetail("Spawn2 [{}]: Spawn reset, repop immediately.", spawn2_id);
 	} else {
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Spawn reset for repop, repop in %d ms", spawn2_id, delay);
+		LogSpawnsDetail("Spawn2 [{}]: Spawn reset for repop, repop in [{}] ms", spawn2_id, delay);
 		timer.Start(delay);
 	}
 }
@@ -410,7 +410,7 @@ void Spawn2::ForceDespawn()
 		cur = despawnTimer(dtimer);
 	}
 
-	Log(Logs::Detail, Logs::Spawns, "ForceDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+	LogSpawnsDetail("ForceDespawn: Spawn2 [{}]: Spawn group [{}] set despawn timer to [{}] ms.", spawn2_id, spawngroup_id_, cur);
 	timer.Start(cur);
 }
 
@@ -447,7 +447,7 @@ void Spawn2::ChangeDespawn(uint8 new_despawn, uint32 new_despawn_timer)
 			cur = despawnTimer(dtimer);
 		}
 
-		Log(Logs::Detail, Logs::Spawns, "ChangeDespawn: Spawn2 %d: Spawn group %d set despawn timer to %d ms.", spawn2_id, spawngroup_id_, cur);
+		LogSpawnsDetail("ChangeDespawn: Spawn2 [{}]: Spawn group [{}] set despawn timer to [{}] ms.", spawn2_id, spawngroup_id_, cur);
 		timer.Start(cur);
 	}
 }
@@ -469,7 +469,7 @@ void Spawn2::DeathReset(bool realdeath)
 	if(spawn2_id)
 	{
 		database.UpdateRespawnTime(spawn2_id, (cur/1000));
-		Log(Logs::General, Logs::Spawns, "Spawn2 %d: Spawn reset by death, repop in %d ms", spawn2_id, timer.GetRemainingTime());
+		LogSpawns("Spawn2 [{}]: Spawn reset by death, repop in [{}] ms", spawn2_id, timer.GetRemainingTime());
 		//store it to database too
 	}
 }
@@ -706,7 +706,7 @@ bool ZoneDatabase::PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*
 				uint32 spawn2_id = next_id + count;
 				if (spawn2_id > next_id + 999)
 				{
-					Log(Logs::General, Logs::Error, "Spawn2 ID %d is over the allocated limit for random box spawns in %s!", spawn2_id, zone_name);
+					LogError("Spawn2 ID [{}] is over the allocated limit for random box spawns in [{}]!", spawn2_id, zone_name);
 					return false;
 				}
 
@@ -744,7 +744,7 @@ bool ZoneDatabase::PopulateRandomZoneSpawnList(uint32 zoneid, LinkedList<Spawn2*
 			"DELETE FROM respawn_times WHERE id >= %d && id <= %d", next_id, next_id + 999);
 		auto results1 = database.QueryDatabase(query);
 
-		Log(Logs::General, Logs::Status, "%d random box spawns found and loaded!", count);
+		LogInfo("[{}] random box spawns found and loaded!", count);
 	}
 
 	return true;
@@ -798,12 +798,12 @@ void Spawn2::SpawnConditionChanged(const SpawnCondition &c, int16 old_value) {
 	if(GetSpawnCondition() != c.condition_id)
 		return;
 
-	Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Notified that our spawn condition %d has changed from %d to %d. Our min value is %d.", spawn2_id, c.condition_id, old_value, c.value, condition_min_value);
+	LogSpawnsDetail("Spawn2 [{}]: Notified that our spawn condition [{}] has changed from [{}] to [{}]. Our min value is [{}].", spawn2_id, c.condition_id, old_value, c.value, condition_min_value);
 
 	bool old_state = (old_value >= condition_min_value);
 	bool new_state = (c.value >= condition_min_value);
 	if(old_state == new_state) {
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our threshold for this condition was not crossed. Doing nothing.", spawn2_id);
+		LogSpawnsDetail("Spawn2 [{}]: Our threshold for this condition was not crossed. Doing nothing.", spawn2_id);
 		return;	//no change
 	}
 
@@ -811,50 +811,50 @@ void Spawn2::SpawnConditionChanged(const SpawnCondition &c, int16 old_value) {
 	switch(c.on_change) {
 	case SpawnCondition::DoNothing:
 		//that was easy.
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Taking no action on existing spawn.", spawn2_id, new_state?"enabled":"disabled");
+		LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Taking no action on existing spawn.", spawn2_id, new_state?"enabled":"disabled");
 		break;
 	case SpawnCondition::DoDepop:
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Depoping our mob.", spawn2_id, new_state?"enabled":"disabled");
+		LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Depoping our mob.", spawn2_id, new_state?"enabled":"disabled");
 		if(npcthis != nullptr)
 			npcthis->Depop(false);	//remove the current mob
 		Depop();
 		break;
 	case SpawnCondition::DoRepop:
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Forcing a repop.", spawn2_id, new_state?"enabled":"disabled");
+		LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Forcing a repop.", spawn2_id, new_state?"enabled":"disabled");
 		if(npcthis != nullptr)
 			npcthis->Depop(false);	//remove the current mob
 		Repop();	//repop
 		break;
 	case SpawnCondition::DoRepopIfReady:
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Forcing a repop if repsawn timer is expired.", spawn2_id, new_state?"enabled":"disabled");
+		LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Forcing a repop if repsawn timer is expired.", spawn2_id, new_state?"enabled":"disabled");
 		if(npcthis != nullptr) {
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our npcthis is currently not null. The zone thinks it is %s. Forcing a depop.", spawn2_id, npcthis->GetName());
+			LogSpawnsDetail("Spawn2 [{}]: Our npcthis is currently not null. The zone thinks it is [{}]. Forcing a depop.", spawn2_id, npcthis->GetName());
 			npcthis->Depop(false);	//remove the current mob
 			npcthis = nullptr;
 		}
 		if(new_state) { // only get repawn timer remaining when the SpawnCondition is enabled.
 			timer_remaining = database.GetSpawnTimeLeft(spawn2_id);
-			Log(Logs::Detail, Logs::Spawns,"Spawn2 %d: Our condition is now %s. The respawn timer_remaining is %d. Forcing a repop if it is <= 0.", spawn2_id, new_state?"enabled":"disabled", timer_remaining);
+			LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. The respawn timer_remaining is [{}]. Forcing a repop if it is <= 0.", spawn2_id, new_state?"enabled":"disabled", timer_remaining);
 			if(timer_remaining <= 0)
 				Repop();
 		} else {
-			Log(Logs::Detail, Logs::Spawns,"Spawn2 %d: Our condition is now %s. Not checking respawn timer.", spawn2_id, new_state?"enabled":"disabled");
+			LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Not checking respawn timer.", spawn2_id, new_state?"enabled":"disabled");
 		}
 		break;
 	default:
 		if(c.on_change < SpawnCondition::DoSignalMin) {
-			Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Invalid on-change action %d.", spawn2_id, new_state?"enabled":"disabled", c.on_change);
+			LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Invalid on-change action [{}].", spawn2_id, new_state?"enabled":"disabled", c.on_change);
 			return;	//unknown onchange action
 		}
 		int signal_id = c.on_change - SpawnCondition::DoSignalMin;
-		Log(Logs::Detail, Logs::Spawns, "Spawn2 %d: Our condition is now %s. Signaling our mob with %d.", spawn2_id, new_state?"enabled":"disabled", signal_id);
+		LogSpawnsDetail("Spawn2 [{}]: Our condition is now [{}]. Signaling our mob with [{}].", spawn2_id, new_state?"enabled":"disabled", signal_id);
 		if(npcthis != nullptr)
 			npcthis->SignalNPC(signal_id);
 	}
 }
 
 void Zone::SpawnConditionChanged(const SpawnCondition &c, int16 old_value) {
-	Log(Logs::Detail, Logs::Spawns, "Zone notified that spawn condition %d has changed from %d to %d. Notifying all spawn points.", c.condition_id, old_value, c.value);
+	LogSpawnsDetail("Zone notified that spawn condition [{}] has changed from [{}] to [{}]. Notifying all spawn points.", c.condition_id, old_value, c.value);
 
 	LinkedListIterator<Spawn2*> iterator(spawn2_list);
 
@@ -921,13 +921,13 @@ void SpawnConditionManager::Process() {
 					if(!cevent.strict || (cevent.strict && tod.minute < min && cevent.next.hour == tod.hour && cevent.next.day == tod.day && cevent.next.month == tod.month && cevent.next.year == tod.year))
 						ExecEvent(cevent, true);
 					else
-						Log(Logs::Detail, Logs::Spawns, "Event %d: Is strict, ExecEvent is skipped.", cevent.id);
+						LogSpawnsDetail("Event [{}]: Is strict, ExecEvent is skipped.", cevent.id);
 
 					//add the period of the event to the trigger time
 					EQTime::AddMinutes(cevent.period, &cevent.next);
 					std::string t;
 					EQTime::ToString(&cevent.next, t);
-					Log(Logs::Detail, Logs::Spawns, "Event %d: Will trigger again in %d EQ minutes at %s.", cevent.id, cevent.period, t.c_str());
+					LogSpawnsDetail("Event [{}]: Will trigger again in [{}] EQ minutes at [{}].", cevent.id, cevent.period, t.c_str());
 					//save the next event time in the DB
 					UpdateDBEvent(cevent);
 					//find the next closest event timer.
@@ -946,7 +946,7 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	std::map<uint16, SpawnCondition>::iterator condi;
 	condi = spawn_conditions.find(event.condition_id);
 	if(condi == spawn_conditions.end()) {
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Unable to find condition %d to execute on.", event.id, event.condition_id);
+		LogSpawnsDetail("Event [{}]: Unable to find condition [{}] to execute on.", event.id, event.condition_id);
 		return;	//unable to find the spawn condition to operate on
 	}
 
@@ -955,7 +955,7 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	//If we're here, strict has already been checked. Check again in case hour has changed.
 	if(event.strict && (event.next.hour != tod.hour || event.next.day != tod.day || event.next.month != tod.month || event.next.year != tod.year))
 	{
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Unable to execute. Condition is strict, and event time has already passed.", event.id);
+		LogSpawnsDetail("Event [{}]: Unable to execute. Condition is strict, and event time has already passed.", event.id);
 		return;
 	}
 
@@ -967,26 +967,26 @@ void SpawnConditionManager::ExecEvent(SpawnEvent &event, bool send_update) {
 	switch(event.action) {
 	case SpawnEvent::ActionSet:
 		new_value = event.argument;
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Executing. Setting condition %d to %d.", event.id, event.condition_id, event.argument);
+		LogSpawnsDetail("Event [{}]: Executing. Setting condition [{}] to [{}].", event.id, event.condition_id, event.argument);
 		break;
 	case SpawnEvent::ActionAdd:
 		new_value += event.argument;
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Executing. Adding %d to condition %d, yeilding %d.", event.id, event.argument, event.condition_id, new_value);
+		LogSpawnsDetail("Event [{}]: Executing. Adding [{}] to condition [{}], yeilding [{}].", event.id, event.argument, event.condition_id, new_value);
 		break;
 	case SpawnEvent::ActionSubtract:
 		new_value -= event.argument;
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Executing. Subtracting %d from condition %d, yeilding %d.", event.id, event.argument, event.condition_id, new_value);
+		LogSpawnsDetail("Event [{}]: Executing. Subtracting [{}] from condition [{}], yeilding [{}].", event.id, event.argument, event.condition_id, new_value);
 		break;
 	case SpawnEvent::ActionMultiply:
 		new_value *= event.argument;
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Executing. Multiplying condition %d by %d, yeilding %d.", event.id, event.condition_id, event.argument, new_value);
+		LogSpawnsDetail("Event [{}]: Executing. Multiplying condition [{}] by [{}], yeilding [{}].", event.id, event.condition_id, event.argument, new_value);
 		break;
 	case SpawnEvent::ActionDivide:
 		new_value /= event.argument;
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Executing. Dividing condition %d by %d, yeilding %d.", event.id, event.condition_id, event.argument, new_value);
+		LogSpawnsDetail("Event [{}]: Executing. Dividing condition [{}] by [{}], yeilding [{}].", event.id, event.condition_id, event.argument, new_value);
 		break;
 	default:
-		Log(Logs::Detail, Logs::Spawns, "Event %d: Invalid event action type %d", event.id, event.action);
+		LogSpawnsDetail("Event [{}]: Invalid event action type [{}]", event.id, event.action);
 		return;
 	}
 
@@ -1056,7 +1056,7 @@ bool SpawnConditionManager::LoadDBEvent(uint32 event_id, SpawnEvent &event, std:
     std::string timeAsString;
     EQTime::ToString(&event.next, timeAsString);
 
-    Log(Logs::Detail, Logs::Spawns, "(LoadDBEvent) Loaded %s spawn event %d on condition %d with period %d, action %d, argument %d, strict %d. Will trigger at %s", event.enabled? "enabled": "disabled", event.id, event.condition_id, event.period, event.action, event.argument, event.strict, timeAsString.c_str());
+    LogSpawnsDetail("(LoadDBEvent) Loaded [{}] spawn event [{}] on condition [{}] with period [{}], action [{}], argument [{}], strict [{}]. Will trigger at [{}]", event.enabled? "enabled": "disabled", event.id, event.condition_id, event.period, event.action, event.argument, event.strict, timeAsString.c_str());
 
 	return true;
 }
@@ -1083,7 +1083,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
         cond.on_change = (SpawnCondition::OnChange) atoi(row[1]);
         spawn_conditions[cond.condition_id] = cond;
 
-        Log(Logs::Detail, Logs::Spawns, "Loaded spawn condition %d with value %d and on_change %d", cond.condition_id, cond.value, cond.on_change);
+        LogSpawnsDetail("Loaded spawn condition [{}] with value [{}] and on_change [{}]", cond.condition_id, cond.value, cond.on_change);
     }
 
 	//load values
@@ -1120,7 +1120,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
         event.period = atoi(row[2]);
 
         if(event.period == 0) {
-            Log(Logs::General, Logs::Error, "Refusing to load spawn event #%d because it has a period of 0\n", event.id);
+            LogError("Refusing to load spawn event #[{}] because it has a period of 0", event.id);
             continue;
         }
 
@@ -1137,7 +1137,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
 
         spawn_events.push_back(event);
 
-        Log(Logs::Detail, Logs::Spawns, "(LoadSpawnConditions) Loaded %s spawn event %d on condition %d with period %d, action %d, argument %d, strict %d", event.enabled? "enabled": "disabled", event.id, event.condition_id, event.period, event.action, event.argument, event.strict);
+        LogSpawnsDetail("(LoadSpawnConditions) Loaded [{}] spawn event [{}] on condition [{}] with period [{}], action [{}], argument [{}], strict [{}]", event.enabled? "enabled": "disabled", event.id, event.condition_id, event.period, event.action, event.argument, event.strict);
     }
 
 	//now we need to catch up on events that happened while we were away
@@ -1172,7 +1172,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
 
         //watch for special case of all 0s, which means to reset next to now
         if(cevent.next.year == 0 && cevent.next.month == 0 && cevent.next.day == 0 && cevent.next.hour == 0 && cevent.next.minute == 0) {
-            Log(Logs::Detail, Logs::Spawns, "Initial next trigger time set for spawn event %d", cevent.id);
+            LogSpawnsDetail("Initial next trigger time set for spawn event [{}]", cevent.id);
             memcpy(&cevent.next, &tod, sizeof(cevent.next));
             //add one period
             EQTime::AddMinutes(cevent.period, &cevent.next);
@@ -1183,7 +1183,7 @@ bool SpawnConditionManager::LoadSpawnConditions(const char* zone_name)
 
         bool ran = false;
         while(EQTime::IsTimeBefore(&tod, &cevent.next)) {
-            Log(Logs::Detail, Logs::Spawns, "Catch up triggering on event %d", cevent.id);
+            LogSpawnsDetail("Catch up triggering on event [{}]", cevent.id);
             //this event has been triggered.
             //execute the event
             if(!cevent.strict || StrictCheck)
@@ -1226,10 +1226,10 @@ void SpawnConditionManager::FindNearestEvent() {
 		}
 	}
 	if (next_id == -1) {
-		Log(Logs::Detail, Logs::Spawns, "No spawn events enabled. Disabling next event.");
+		LogSpawnsDetail("No spawn events enabled. Disabling next event.");
 	}
 	else {
-		Log(Logs::Detail, Logs::Spawns, "Next event determined to be event %d", next_id);
+		LogSpawnsDetail("Next event determined to be event [{}]", next_id);
 	}
 }
 
@@ -1242,14 +1242,14 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		std::map<uint16, SpawnCondition>::iterator condi;
 		condi = spawn_conditions.find(condition_id);
 		if(condi == spawn_conditions.end()) {
-			Log(Logs::Detail, Logs::Spawns, "Condition update received from world for %d, but we do not have that conditon.", condition_id);
+			LogSpawnsDetail("Condition update received from world for [{}], but we do not have that conditon.", condition_id);
 			return;	//unable to find the spawn condition
 		}
 
 		SpawnCondition &cond = condi->second;
 
 		if(cond.value == new_value) {
-			Log(Logs::Detail, Logs::Spawns, "Condition update received from world for %d with value %d, which is what we already have.", condition_id, new_value);
+			LogSpawnsDetail("Condition update received from world for [{}] with value [{}], which is what we already have.", condition_id, new_value);
 			return;
 		}
 
@@ -1258,7 +1258,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		//set our local value
 		cond.value = new_value;
 
-		Log(Logs::Detail, Logs::Spawns, "Condition update received from world for %d with value %d", condition_id, new_value);
+		LogSpawnsDetail("Condition update received from world for [{}] with value [{}]", condition_id, new_value);
 
 		//now we have to test each spawn point to see if it changed.
 		zone->SpawnConditionChanged(cond, old_value);
@@ -1269,14 +1269,14 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		std::map<uint16, SpawnCondition>::iterator condi;
 		condi = spawn_conditions.find(condition_id);
 		if(condi == spawn_conditions.end()) {
-			Log(Logs::Detail, Logs::Spawns, "Local Condition update requested for %d, but we do not have that conditon.", condition_id);
+			LogSpawnsDetail("Local Condition update requested for [{}], but we do not have that conditon.", condition_id);
 			return;	//unable to find the spawn condition
 		}
 
 		SpawnCondition &cond = condi->second;
 
 		if(cond.value == new_value) {
-			Log(Logs::Detail, Logs::Spawns, "Local Condition update requested for %d with value %d, which is what we already have.", condition_id, new_value);
+			LogSpawnsDetail("Local Condition update requested for [{}] with value [{}], which is what we already have.", condition_id, new_value);
 			return;
 		}
 
@@ -1287,7 +1287,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		//save it in the DB too
 		UpdateDBCondition(zone_short, condition_id, new_value);
 
-		Log(Logs::Detail, Logs::Spawns, "Local Condition update requested for %d with value %d", condition_id, new_value);
+		LogSpawnsDetail("Local Condition update requested for [{}] with value [{}]", condition_id, new_value);
 
 		//now we have to test each spawn point to see if it changed.
 		zone->SpawnConditionChanged(cond, old_value);
@@ -1297,7 +1297,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 		//this is a remote spawn condition, update the DB and send
 		//an update packet to the zone if its up
 
-		Log(Logs::Detail, Logs::Spawns, "Remote spawn condition %d set to %d. Updating DB and notifying world.", condition_id, new_value);
+		LogSpawnsDetail("Remote spawn condition [{}] set to [{}]. Updating DB and notifying world.", condition_id, new_value);
 
 		UpdateDBCondition(zone_short, condition_id, new_value);
 
@@ -1316,7 +1316,7 @@ void SpawnConditionManager::SetCondition(const char *zone_short, uint16 conditio
 void SpawnConditionManager::ReloadEvent(uint32 event_id) {
 	std::string zone_short_name;
 
-	Log(Logs::Detail, Logs::Spawns, "Requested to reload event %d from the database.", event_id);
+	LogSpawnsDetail("Requested to reload event [{}] from the database.", event_id);
 
 	//first look for the event in our local event list
 	std::vector<SpawnEvent>::iterator cur,end;
@@ -1329,7 +1329,7 @@ void SpawnConditionManager::ReloadEvent(uint32 event_id) {
 			//load the event into the old event slot
 			if(!LoadDBEvent(event_id, cevent, zone_short_name)) {
 				//unable to find the event in the database...
-				Log(Logs::Detail, Logs::Spawns, "Failed to reload event %d from the database.", event_id);
+				LogSpawnsDetail("Failed to reload event [{}] from the database.", event_id);
 				return;
 			}
 			//sync up our nearest event
@@ -1342,7 +1342,7 @@ void SpawnConditionManager::ReloadEvent(uint32 event_id) {
 	SpawnEvent e;
 	if(!LoadDBEvent(event_id, e, zone_short_name)) {
 		//unable to find the event in the database...
-		Log(Logs::Detail, Logs::Spawns, "Failed to reload event %d from the database.", event_id);
+		LogSpawnsDetail("Failed to reload event [{}] from the database.", event_id);
 		return;
 	}
 
@@ -1359,7 +1359,7 @@ void SpawnConditionManager::ReloadEvent(uint32 event_id) {
 
 void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool strict, bool reset_base) {
 
-	Log(Logs::Detail, Logs::Spawns, "Request to %s spawn event %d %sresetting trigger time", enabled?"enable":"disable", event_id, reset_base?"":"without ");
+	LogSpawnsDetail("Request to [{}] spawn event [{}] [{}] resetting trigger time", enabled?"enable":"disable", event_id, reset_base?"":"without");
 
 	//first look for the event in our local event list
 	std::vector<SpawnEvent>::iterator cur,end;
@@ -1374,13 +1374,13 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 				cevent.enabled = enabled;
 				cevent.strict = strict;
 				if(reset_base) {
-					Log(Logs::Detail, Logs::Spawns, "Spawn event %d located in this zone. State set. Trigger time reset (period %d).", event_id, cevent.period);
+					LogSpawnsDetail("Spawn event [{}] located in this zone. State set. Trigger time reset (period [{}]).", event_id, cevent.period);
 					//start with the time now
 					zone->zone_time.GetCurrentEQTimeOfDay(&cevent.next);
 					//advance the next time by our period
 					EQTime::AddMinutes(cevent.period, &cevent.next);
 				} else {
-					Log(Logs::Detail, Logs::Spawns, "Spawn event %d located in this zone. State changed.", event_id);
+					LogSpawnsDetail("Spawn event [{}] located in this zone. State changed.", event_id);
 				}
 
 				//save the event in the DB
@@ -1389,7 +1389,7 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 				//sync up our nearest event
 				FindNearestEvent();
 			} else {
-				Log(Logs::Detail, Logs::Spawns, "Spawn event %d located in this zone but no change was needed.", event_id);
+				LogSpawnsDetail("Spawn event [{}] located in this zone but no change was needed.", event_id);
 			}
 			//even if we dont change anything, we still found it
 			return;
@@ -1408,24 +1408,24 @@ void SpawnConditionManager::ToggleEvent(uint32 event_id, bool enabled, bool stri
 	SpawnEvent e;
 	std::string zone_short_name;
 	if(!LoadDBEvent(event_id, e, zone_short_name)) {
-		Log(Logs::Detail, Logs::Spawns, "Unable to find spawn event %d in the database.", event_id);
+		LogSpawnsDetail("Unable to find spawn event [{}] in the database.", event_id);
 		//unable to find the event in the database...
 		return;
 	}
 	if(e.enabled == enabled && !reset_base) {
-		Log(Logs::Detail, Logs::Spawns, "Spawn event %d is not located in this zone but no change was needed.", event_id);
+		LogSpawnsDetail("Spawn event [{}] is not located in this zone but no change was needed.", event_id);
 		return;	//no changes.
 	}
 
 	e.enabled = enabled;
 	if(reset_base) {
-		Log(Logs::Detail, Logs::Spawns, "Spawn event %d is in zone %s. State set. Trigger time reset (period %d). Notifying world.", event_id, zone_short_name.c_str(), e.period);
+		LogSpawnsDetail("Spawn event [{}] is in zone [{}]. State set. Trigger time reset (period [{}]). Notifying world.", event_id, zone_short_name, e.period);
 		//start with the time now
 		zone->zone_time.GetCurrentEQTimeOfDay(&e.next);
 		//advance the next time by our period
 		EQTime::AddMinutes(e.period, &e.next);
 	} else {
-		Log(Logs::Detail, Logs::Spawns, "Spawn event %d is in zone %s. State changed. Notifying world.", event_id, zone_short_name.c_str(), e.period);
+		LogSpawnsDetail("Spawn event [{}] is in zone [{}]. State changed. Notifying world.", event_id, zone_short_name, e.period);
 	}
 	//save the event in the DB
 	UpdateDBEvent(e);
@@ -1450,7 +1450,7 @@ int16 SpawnConditionManager::GetCondition(const char *zone_short, uint16 conditi
 		condi = spawn_conditions.find(condition_id);
 		if(condi == spawn_conditions.end())
 		{
-			Log(Logs::Detail, Logs::Spawns, "Unable to find local condition %d in Get request.", condition_id);
+			LogSpawnsDetail("Unable to find local condition [{}] in Get request.", condition_id);
 			return(0);	//unable to find the spawn condition
 		}
 
@@ -1465,12 +1465,12 @@ int16 SpawnConditionManager::GetCondition(const char *zone_short, uint16 conditi
                                     zone_short, condition_id);
     auto results = database.QueryDatabase(query);
     if (!results.Success()) {
-        Log(Logs::Detail, Logs::Spawns, "Unable to query remote condition %d from zone %s in Get request.", condition_id, zone_short);
+        LogSpawnsDetail("Unable to query remote condition [{}] from zone [{}] in Get request.", condition_id, zone_short);
 		return 0;	//dunno a better thing to do...
     }
 
     if (results.RowCount() == 0) {
-        Log(Logs::Detail, Logs::Spawns, "Unable to load remote condition %d from zone %s in Get request.", condition_id, zone_short);
+        LogSpawnsDetail("Unable to load remote condition [{}] from zone [{}] in Get request.", condition_id, zone_short);
 		return 0;	//dunno a better thing to do...
     }
 
@@ -1607,7 +1607,7 @@ void Zone::UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer_id)
 	uint16 spawncount = GetAvailPointCount(sg);
 	if (spawncount == 0)
 	{
-		Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: We have no available spawns (%d), no timers will be updated.", id, spawncount);
+		LogSpawnsDetail("Spawngroup [{}]: We have no available spawns ([{}]), no timers will be updated.", id, spawncount);
 		return;
 	}
 
@@ -1640,12 +1640,12 @@ void Zone::UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer_id)
 				{
 					if (newtimer_id == 1)
 					{
-						Log(Logs::General, Logs::Spawns, "Spawngroup %d: %d is triggering! Roll: %d of %d", id, sp2id, random, spawncount);
+						LogSpawns("Spawngroup [{}]: [{}] is triggering! Roll: [{}] of [{}]", id, sp2id, random, spawncount);
 						cur->timer.Trigger();
 					}
 					else
 					{
-						Log(Logs::General, Logs::Spawns, "Spawngroup %d: %d will be triggered next in %d seconds. Roll: %d of %d", id, sp2id, static_cast<uint32>(remaining_time / 1000), random, spawncount);
+						LogSpawns("Spawngroup [{}]: [{}] will be triggered next in [{}] seconds. Roll: [{}] of [{}]", id, sp2id, static_cast<uint32>(remaining_time / 1000), random, spawncount);
 						cur->Reset(remaining_time);
 					}
 				}
@@ -1669,7 +1669,7 @@ void Zone::UpdateGroupTimers(SpawnGroup* sg, uint32 newtimer_id)
 	}
 
 	if (skipped_spawn2 > 0)
-		Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: Skipped spawnpoint was: %d", id, skipped_spawn2);
+		LogSpawnsDetail("Spawngroup [{}]: Skipped spawnpoint was: [{}]", id, skipped_spawn2);
 }
 
 uint16 Zone::GetGroupActiveTimers(uint32 spawngroupid, uint32& remaining_time_id)

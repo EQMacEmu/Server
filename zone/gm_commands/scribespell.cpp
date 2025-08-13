@@ -21,7 +21,7 @@ void command_scribespell(Client *c, const Seperator *sep){
 		if (t != c)
 			c->Message(Chat::White, "Scribing spell: %s (%i) for %s.", spells[spell_id].name, spell_id, t->GetName());
 
-		Log(Logs::General, Logs::Normal, "Scribe spell: %s (%i) request for %s from %s.", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
+		LogInfo("Scribe spell: [{}] ([{}]) request for [{}] from [{}].", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
 
 		if (spells[spell_id].classes[Class::Warrior] != 0 && spells[spell_id].skill != 52 && spells[spell_id].classes[t->GetPP().class_ - 1] > 0) {
 			book_slot = t->GetNextAvailableSpellBookSlot();

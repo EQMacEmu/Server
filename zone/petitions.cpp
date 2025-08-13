@@ -39,8 +39,6 @@ Copyright (C) 2001-2002 EQEMu Development Team (http://eqemu.org)
 #include "petitions.h"
 #include "worldserver.h"
 
-PetitionList petition_list;
-
 extern WorldServer worldserver;
 
 void Petition::SendPetitionToPlayer(Client* clientto) {
@@ -251,7 +249,7 @@ void ZoneDatabase::InsertPetitionToDB(Petition* wpet)
 	}
 
 #if EQDEBUG >= 5
-		Log(Logs::General, Logs::None, "New petition created");
+		LogInfo("New petition created");
 #endif
 
 }
@@ -288,7 +286,7 @@ void ZoneDatabase::RefreshPetitionsFromDB()
             newpet->SetCheckedOut(true);
         else
             newpet->SetCheckedOut(false);
-        petition_list.AddPetition(newpet);
+		PetitionList::Instance()->AddPetition(newpet);
     }
 
 }

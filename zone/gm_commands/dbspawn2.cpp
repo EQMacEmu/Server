@@ -3,7 +3,7 @@
 void command_dbspawn2(Client *c, const Seperator *sep){
 
 	if (sep->IsNumber(1) && sep->IsNumber(2) && sep->IsNumber(3)) {
-		Log(Logs::General, Logs::Normal, "Spawning database spawn");
+		LogDebug("Spawning database spawn");
 		uint16 cond = 0;
 		int16 cond_min = 0;
 		if (sep->IsNumber(4)) {

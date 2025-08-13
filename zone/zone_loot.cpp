@@ -209,7 +209,7 @@ LoottableRepository::Loottable *Zone::GetLootTable(const uint32 loottable_id)
 {
 	for (auto &e : m_loottables) {
 		if (e.id == loottable_id) {
-			if (!content_service.DoesPassContentFiltering(
+			if (!WorldContentService::Instance()->DoesPassContentFiltering(
 				ContentFlags{
 					.min_expansion = e.min_expansion,
 					.max_expansion = e.max_expansion,
@@ -247,7 +247,7 @@ LootdropRepository::Lootdrop Zone::GetLootdrop(const uint32 lootdrop_id) const
 {
 	for (const auto &e : m_lootdrops) {
 		if (e.id == lootdrop_id) {
-			if (!content_service.DoesPassContentFiltering(
+			if (!WorldContentService::Instance()->DoesPassContentFiltering(
 				ContentFlags{
 					.min_expansion = e.min_expansion,
 					.max_expansion = e.max_expansion,
@@ -274,7 +274,7 @@ std::vector<LootdropEntriesRepository::LootdropEntries> Zone::GetLootdropEntries
 
 	std::vector<LootdropEntriesRepository::LootdropEntries> entries = {};
 	for (const auto &e : m_lootdrop_entries) {
-		if (!content_service.DoesPassContentFiltering(
+		if (!WorldContentService::Instance()->DoesPassContentFiltering(
 			ContentFlags{
 				.min_expansion = e.min_expansion,
 				.max_expansion = e.max_expansion,

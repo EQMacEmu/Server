@@ -179,7 +179,7 @@ bool Doors::Process()
 		lift_timer.Disable();
 		SetOpenState(false);
 		if (door_param > 1) {
-			Log(Logs::General, Logs::Doors, "Lift %d is being closed by process.", database_id);
+			LogDoors("Lift [{}] is being closed by process.", database_id);
 		}
 	}
 
@@ -189,12 +189,12 @@ bool Doors::Process()
 void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 {
 	//door debugging info dump
-	Log(Logs::General, Logs::Doors, "%s clicked door %s (dbid %d, eqid %d) at %s", sender->GetName(), this->door_name, this->database_id, this->door_id, to_string(m_position).c_str());
-	Log(Logs::Detail, Logs::Doors, "  incline %d, opentype %d, lockpick %d, keys %d %d, nokeyring %d, trigger %d type %d, param %d", this->incline, this->open_type, this->lockpick, this->key_item_id, this->alt_key_item_id, this->no_key_ring, this->trigger_door, this->trigger_type, this->door_param);
-	Log(Logs::Detail, Logs::Doors, "  size %d, invert %d, dest: %s %s open %d lift: %d closetime: %d", this->size, this->invert_state, this->destination_zone_name, to_string(m_destination).c_str(), this->is_open, this->is_lift, this->close_time);
+	LogDoors("[{}] clicked door [{}] (dbid [{}], eqid [{}]) at [{}]", sender->GetName(), this->door_name, this->database_id, this->door_id, to_string(m_position).c_str());
+	LogDoorsDetail("  incline [{}], opentype [{}], lockpick [{}], keys [{}] [{}], nokeyring [{}], trigger [{}] type [{}], param [{}]", this->incline, this->open_type, this->lockpick, this->key_item_id, this->alt_key_item_id, this->no_key_ring, this->trigger_door, this->trigger_type, this->door_param);
+	LogDoorsDetail("  size [{}], invert [{}], dest: [{}] [{}] open [{}] lift: [{}] closetime: [{}]", this->size, this->invert_state, this->destination_zone_name, to_string(m_destination).c_str(), this->is_open, this->is_lift, this->close_time);
 
 	if (!IsMoveable()) {
-		Log(Logs::General, Logs::Doors, "%s clicked door %d that doesn't open.", sender->GetName(), door_id);
+		LogDoors("[{}] clicked door [{}] that doesn't open.", sender->GetName(), door_id);
 		return;
 	}
 
@@ -209,12 +209,12 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 
 	// Traps. 120 is ceiling spears. 125 is wall spears. 130 is swinging axe. 140 is falling block trap. 
 	if (open_type == 120 || open_type == 125 || open_type == 130 || open_type == 140) {
-		Log(Logs::General, Logs::Doors, "Clicking a door that is a trap!");
+		LogDoors("Clicking a door that is a trap!");
 		if(sender->HasSkill(EQ::skills::SkillDisarmTraps)) {
 			uint8 success = SKILLUP_FAILURE;
 			int uskill = sender->GetSkill(EQ::skills::SkillDisarmTraps);
 			if ((zone->random.Int(0, 49) + uskill) >= (zone->random.Int(0, 49) + 1)) {
-				Log(Logs::General, Logs::Traps, "Door Trap %d is disarmed.", door_id);
+				LogTraps("Door Trap [{}] is disarmed.", door_id);
 				success = SKILLUP_SUCCESS;
 				sender->Message_StringID(Chat::Skills, StringID::DISARMED_TRAP);
 				move_door_packet->action = DOOR_RESET_TRAP;
@@ -342,7 +342,7 @@ void Doors::HandleClick(Client* sender, uint8 trigger, bool floor_port)
 void Doors::HandleLift(Client* sender)
 {
 	if (door_param > 1) {
-		Log(Logs::General, Logs::Doors, "%s activated lift %s (dbid %d, eqid %d) at %s which moves %d coords.", sender->GetName(), door_name, database_id, door_id, to_string(m_position).c_str(), door_param);
+		LogDoors("[{}] activated lift [{}] (dbid [{}], eqid [{}]) at [{}] which moves [{}] coords.", sender->GetName(), door_name, database_id, door_id, to_string(m_position).c_str(), door_param);
 	}
 
 	auto outapp = new EQApplicationPacket(OP_MoveDoor, sizeof(MoveDoor_Struct));
@@ -358,7 +358,7 @@ void Doors::HandleLift(Client* sender)
 	if (!IsDoorOpen()) {
 		move_door_packet->action = invert_state == 1 ? OPEN_INVDOOR : OPEN_DOOR;
 		if (door_param > 1) {
-			Log(Logs::General, Logs::Doors, "Lift %d is opening (%d) %s", database_id, move_door_packet->action, door_param > 100 ? "." : "starting lift timer.");
+			LogDoors("Lift [{}] is opening ([{}]) [{}]", database_id, move_door_packet->action, door_param > 100 ? "." : "starting lift timer.");
 		}
 
 		if (close_time > 0) {
@@ -369,7 +369,7 @@ void Doors::HandleLift(Client* sender)
 	} else {
 		move_door_packet->action = invert_state == 1 ? CLOSE_INVDOOR : CLOSE_DOOR;
 		if (door_param > 1) {
-			Log(Logs::General, Logs::Doors, "Lift %d is closing (%d) %s", database_id, move_door_packet->action, door_param > 100 ? "." : "disabling lift timer.");
+			LogDoors("Lift [{}] is closing ([{}]) [{}]", database_id, move_door_packet->action, door_param > 100 ? "." : "disabling lift timer.");
 		}
 
 		if (close_time > 0) {
@@ -453,7 +453,7 @@ bool Doors::DoorKeyCheck(Client* sender, uint32& key)
 						}
 					}
 
-					Log(Logs::General, Logs::Skills, "Client has lockpicks: skill=%f", modskill);
+					LogSkills("Client has lockpicks: skill = [{}]", modskill);
 
 					if (GetLockpick() <= modskill) {
 						if (!IsDoorOpen()) {
@@ -606,14 +606,14 @@ void Doors::ToggleState(Mob *sender)
 }
 
 void Doors::DumpDoor(){
-	Log(Logs::General, Logs::Doors,
-		"db_id:%i door_id:%i zone_name:%s door_name:%s %s",
+	LogDoors(
+		"db_id:[{}] door_id:[{}] zone_name:[{}] door_name:[{}] [{}]",
 		database_id, door_id, zone_name, door_name, to_string(m_position).c_str());
-	Log(Logs::General, Logs::Doors,
-		"opentype:%i lockpick:%i keyitem:%i altkeyitem:%i nokeyring:%i trigger_door:%i trigger_type:%i door_param:%i open:%s lift:%i",
+	LogDoors(
+		"opentype:[{}] lockpick:[{}] keyitem:[{}] altkeyitem:[{}] nokeyring:[{}] trigger_door:[{}] trigger_type:[{}] door_param:[{}] open:[{}] lift:[{}]",
 		open_type, lockpick, key_item_id, alt_key_item_id, no_key_ring, trigger_door, trigger_type, door_param, (is_open) ? "open":"closed", is_lift);
-	Log(Logs::General, Logs::Doors,
-		"dest_zone:%s destination:%s ",
+	LogDoors(
+		"dest_zone:[{}] destination:[{}] ",
 		destination_zone_name, to_string(m_destination).c_str());
 }
 
@@ -768,14 +768,14 @@ Doors *EntityList::FindNearbyDoorTrap(Mob* searcher, float max_dist, float &door
 		float curdist = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
 		if (curdist < max_dist2 && curdist < dist) {
-			Log(Logs::General, Logs::Traps, "Door %d has opentype %d and is curdist %0.1f", cur->GetDoorID(), cur->GetOpenType(), curdist);
+			LogTraps("Door [{}] has opentype [{}] and is curdist [{:.1f}]", cur->GetDoorID(), cur->GetOpenType(), curdist);
 			dist = curdist;
 			current_trap = cur;
 		}
 	}
 
 	if (current_trap != nullptr) {
-		Log(Logs::General, Logs::Traps, "Door %d is the closest trap.", current_trap->GetDoorID());
+		LogTraps("Door [{}] is the closest trap.", current_trap->GetDoorID());
 		door_curdist = dist;
 	} else {
 		door_curdist = INVALID_INDEX;

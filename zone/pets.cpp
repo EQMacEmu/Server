@@ -58,7 +58,7 @@ void GetRandPetName(char* name)
 	strcat(name, affix2[a2]);
 	strcat(name, suffix[s]);
 
-	Log(Logs::General, Logs::Pets, "Pet being created: %s", name);
+	LogPets("Pet being created: [{}]", name);
 }
 
 // If you add more to this (for custom servers or whatever) make sure this is ordered from strongest to weakest
@@ -136,14 +136,14 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 	//lookup our pets table record for this type
 	PetRecord record;
 	if(!database.GetPoweredPetEntry(pettype, petpower, &record)) {
-		Log(Logs::General, Logs::Error, "Unable to find data for pet %s, check pets table.", pettype);
+		LogError("Unable to find data for pet [{}], check pets table.", pettype);
 		return;
 	}
 
 	//find the NPC data for the specified NPC type
 	const NPCType *base = database.LoadNPCTypesData(record.npc_type);
 	if(base == nullptr) {
-		Log(Logs::General, Logs::Error, "Unable to load NPC data for pet %s (NPC ID %d), check pets and npc_types tables.", pettype, record.npc_type);
+		LogError("Unable to load NPC data for pet [{}] (NPC ID [{}]), check pets and npc_types tables.", pettype, record.npc_type);
 		return;
 	}
 
@@ -153,7 +153,7 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 	{
 		if (this->IsClient())
 		{
-			//Log(Logs::General, Logs::Pets, "We are a client time to check for focus items");
+			//LogPets("We are a client time to check for focus items");
 			FocusPetItem petItem;
 			// Loop over all the focus items and figure out which on is the best to use
 			// It will step down from PoP - Classic looking for the best focus item to use based on pet level
@@ -165,13 +165,13 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 				if(slot_id != INVALID_INDEX) {
 					//skip this focus item if its effect is out of rage for the pet we are casting
 					if(base->level >= petItem.min_level && base->level <= petItem.max_level) {
-						Log(Logs::General, Logs::Pets, "Found Focus Item: %d in Inventory: %d", petItem.item_id, slot_id);
-						Log(Logs::General, Logs::Pets, "Npc spell levels: %d (%d - %d)", base->level, petItem.min_level, petItem.max_level);
+						LogPets("Found Focus Item: [{}] in Inventory: [{}]", petItem.item_id, slot_id);
+						LogPets("Npc spell levels: [{}] ([{}] - [{}])", base->level, petItem.min_level, petItem.max_level);
 						slot = slot_id;
 						focusItemId = petItem.item_id;
 						break;
 					} else {
-						Log(Logs::General, Logs::Pets, "Moving on Pet base level is out of range: %d (%d - %d)", base->level, petItem.min_level, petItem.max_level);
+						LogPets("Moving on Pet base level is out of range: [{}] ([{}] - [{}])", base->level, petItem.min_level, petItem.max_level);
 					}
 				}
 			}
@@ -181,22 +181,22 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 				// Symbol or Gloves can be used by all NEC, MAG, BST
 				if(petItem.pet_type == FocusPetType::ALL)
 				{
-					//Log(Logs::General, Logs::Pets, "Type is ALL");
+					//LogPets("Type is ALL");
 					focusType = FocusPetType::ALL;
 				} else {
 					// make sure we can use the focus item as the class .. client should never let us fail this but for sanity!
 					if (GetClass() == Class::Magician) {
-						Log(Logs::General, Logs::Pets, "Looking up mage");
-						Log(Logs::General, Logs::Pets, "Looking up if spell: %d is allowed ot be focused", spell_id);
+						LogPets("Looking up mage");
+						LogPets("Looking up if spell: [{}] is allowed ot be focused", spell_id);
 						focusType = Pet::GetPetItemPetTypeFromSpellId(spell_id);
-						Log(Logs::General, Logs::Pets, "FocusType fround %i", focusType);
+						LogPets("FocusType found spell id [{}]", spell_id);
 					} else if (GetClass() == Class::Necromancer) {
-						Log(Logs::General, Logs::Pets, "We are a necro");
+						LogPets("We are a necro");
 						focusType = FocusPetType::NECRO;
 					}
 				}
 
-				Log(Logs::General, Logs::Pets, "Pet Item Type  %i", petItem.pet_type);
+				LogPets("Pet Item Type  [{}]", petItem.pet_type);
 				if (focusType != petItem.pet_type)
 					focusItemId = 0;
 			}
@@ -387,7 +387,7 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 			monsterid = 579;
 		}
 
-		Log(Logs::General, Logs::Pets, "Monster Summon appearance NPCID is %d", monsterid);
+		LogPets("Monster Summon appearance NPCID is [{}]", monsterid);
 
 		// give the summoned pet the attributes of the monster we found
 		const NPCType* monster = database.LoadNPCTypesData(monsterid);
@@ -405,7 +405,7 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 			npc_type->helmtexture = monster->helmtexture;
 		}
 		else {
-			Log(Logs::General, Logs::Error, "Error loading NPC data for monster summoning pet (NPC ID %d)", monsterid);
+			LogError("Error loading NPC data for monster summoning pet (NPC ID [{}])", monsterid);
 		}
 
 	}

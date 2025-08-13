@@ -15,6 +15,7 @@
  */
 
 #include "strings.h"
+#include <cereal/external/rapidjson/document.h>
 #include <fmt/format.h>
 #include <algorithm>
 #include <cctype>
@@ -22,9 +23,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 
 #include <random>
 #include <string>
+
+#ifdef _WINDOWS
+#include <ctype.h>
+#include <functional>
+#include <algorithm>
+#endif
 
  // original source:
  // https://github.com/facebook/folly/blob/master/folly/String.cpp
@@ -524,7 +532,7 @@ bool atobool(const char *iBool) {
 }
 
 // removes the crap and turns the underscores into spaces.
-char* CleanMobName(const char *in, char *out)
+char *CleanMobName(const char *in, char *out)
 {
 	unsigned i, j;
 
@@ -546,7 +554,7 @@ char* CleanMobName(const char *in, char *out)
 	return out;
 }
 
-char* CleanMobNameWithSpaces(const char *in, char *out)
+char *CleanMobNameWithSpaces(const char *in, char *out)
 {
 	unsigned i, j;
 
@@ -613,6 +621,18 @@ std::string FormatName(const std::string &char_name)
 	}
 	return formatted;
 }
+
+const std::string NUM_TO_ENGLISH_X[] = {
+	"", "One ", "Two ", "Three ", "Four ",
+	"Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ", "Eleven ",
+	"Twelve ", "Thirteen ", "Fourteen ", "Fifteen ",
+	"Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "
+};
+
+const std::string NUM_TO_ENGLISH_Y[] = {
+	"", "", "Twenty ", "Thirty ", "Forty ",
+	"Fifty ", "Sixty ", "Seventy ", "Eighty ", "Ninety "
+};
 
 // Function to convert single digit or two digit number into words
 std::string Strings::ConvertToDigit(int n, std::string suffix)

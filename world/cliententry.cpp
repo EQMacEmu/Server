@@ -29,9 +29,6 @@
 #include "../common/strings.h"
 
 extern uint32 numplayers;
-extern LoginServerList loginserverlist;
-extern ZSList zoneserver_list;
-extern ClientList		client_list;
 extern volatile bool RunLoops;
 
 ClientListEntry::ClientListEntry(
@@ -97,7 +94,7 @@ ClientListEntry::~ClientListEntry()
 {
 	if (RunLoops) {
 		Camp(); // updates zoneserver's numplayers
-		client_list.RemoveCLEReferances(this);
+		ClientList::Instance()->RemoveCLEReferances(this);
 	}
 	SetOnline(CLE_Status::Offline);
 	SetAccountID(0);
@@ -150,7 +147,7 @@ void ClientListEntry::LSUpdate(ZoneServer* iZS)
 		zone->count=iZS->NumPlayers();
 		zone->zone = iZS->GetZoneID();
 		zone->zone_wid = iZS->GetID();
-		loginserverlist.SendPacket(pack);
+		LoginServerList::Instance()->SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -166,7 +163,7 @@ void ClientListEntry::LSZoneChange(ZoneToZone_Struct* ztz)
 		zonechange->lsaccount_id = LSID();
 		zonechange->from = ztz->current_zone_id;
 		zonechange->to = ztz->requested_zone_id;
-		loginserverlist.SendPacket(pack);
+		LoginServerList::Instance()->SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -290,7 +287,7 @@ void ClientListEntry::Camp(ZoneServer* iZS)
 		LSUpdate(pzoneserver);
 	}
 
-	if (!client_list.ActiveConnection(paccountid, pcharid)) {
+	if (!ClientList::Instance()->ActiveConnection(paccountid, pcharid)) {
 		database.ClearAccountActive(paccountid);
 		// remove from groups
 		LogInfo("Camp() Removing from groups: [{}]", this->pname);
@@ -303,7 +300,7 @@ void ClientListEntry::Camp(ZoneServer* iZS)
 			gl->zoneid = 0;
 			strcpy(gl->member_name, this->pname);
 			gl->checkleader = true;
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			safe_delete(pack);
 		}
 		database.SetGroupID(this->pname, 0, CharID(), this->paccountid);
@@ -343,7 +340,7 @@ void ClientListEntry::Camp(ZoneServer* iZS)
 			if (rga->rid > 0) {
 				// server expects db to already be updated with member removed
 				// when ServerOP_RaidRemoveLD arrives at zoneservers
-				zoneserver_list.SendPacket(pack);
+				ZSList::Instance()->SendPacket(pack);
 			}
 			safe_delete(pack);
 		}

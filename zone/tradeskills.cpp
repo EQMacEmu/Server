@@ -189,7 +189,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 	}
 
 	if (success) {
-		if (player_event_logs.IsEventEnabled(PlayerEvent::COMBINE_SUCCESS)) {
+		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::COMBINE_SUCCESS)) {
 			auto e = PlayerEvent::CombineEvent{
 				.recipe_id = spec.recipe_id,
 				.recipe_name = spec.name,
@@ -200,7 +200,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 		parse->EventPlayer(EVENT_COMBINE_SUCCESS, user, spec.name, spec.recipe_id);
 	}
 	else {
-		if (player_event_logs.IsEventEnabled(PlayerEvent::COMBINE_FAILURE)) {
+		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::COMBINE_FAILURE)) {
 			auto e = PlayerEvent::CombineEvent{
 				.recipe_id = spec.recipe_id,
 				.recipe_name = spec.name,
@@ -296,7 +296,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 		chance = 95;
 	}
 
-	Log(Logs::Detail, Logs::Tradeskills, "Attempting combine;  Skill ID: %i, Player Skill: %d, Recipe Trivial: %d, AA Fail Reducton: %i pct, Success Chance: %0.2f pct %s, Roll: %0.2f",
+	LogTradeskillsDetail("Attempting combine;  Skill ID: [{}], Player Skill: [{}], Recipe Trivial: [{}], AA Fail Reducton: [{}] pct, Success Chance: [{:.2f}] pct [{}], Roll: [{:.2f}]",
 		spec->tradeskill, user_skill, spec->trivial, aa_chance, chance, spec->nofail ? "(no fail combine)" : "", roll);
 
 	if (isTrivialCombine) {
@@ -313,7 +313,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 
 		Message_StringID(Chat::LightBlue, StringID::TRADESKILL_SUCCEED, spec->name.c_str());
 
-		Log(Logs::Detail, Logs::Tradeskills, "Combine success");
+		LogTradeskillsDetail("Combine success");
 
 		itr = spec->onsuccess.begin();
 		while(itr != spec->onsuccess.end() && !spec->quest) 
@@ -349,7 +349,7 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 
 		Message_StringID(Chat::LightBlue, StringID::TRADESKILL_FAILED);
 
-		Log(Logs::Detail, Logs::Tradeskills, "Combine failed");
+		LogTradeskillsDetail("Combine failed");
 			if (this->GetGroup())
 		{
 			entity_list.MessageGroup(this,true, Chat::Skills,"%s was unsuccessful in %s tradeskill attempt.",GetName(),this->GetGender() == Gender::Male ? "his" : this->GetGender() == Gender::Female ? "her" : "its");
@@ -410,12 +410,12 @@ void Client::CheckIncreaseTradeskill(bool isSuccessfulCombine, EQ::skills::Skill
 	// A successful combine significantly increases the skill-up chance
 	double statCheck = tradeStat * 10.0 / (tradeDifficulty * (isSuccessfulCombine ? 1.0 : 2.0));
 
-	Log(Logs::General, Logs::Tradeskills, "...Attemping Skill-Up; Combine Success: %s, Player Raw Skill Level: %i, INT: %d, WIS: %d, DEX: %d, STR: %d, Difficulty: %0.1f, statCheck: %0.1f",
+	LogTradeskills("...Attemping Skill-Up; Combine Success: [{}], Player Raw Skill Level: [{}], INT: [{}], WIS: [{}], DEX: [{}], STR: [{}], Difficulty: [{:.1f}], statCheck: [{:.1f}]",
 		isSuccessfulCombine ? "yes" : "no", rawSkill, GetINT(), GetWIS(), GetDEX(), GetSTR(), tradeDifficulty, statCheck);
 
 	if (statCheck > zone->random.Real(1, 1000))
 	{
-		Log(Logs::Detail, Logs::Tradeskills, "...Stat check success; Attempting Skill Check.  Success chance: %0.1f pct", 
+		LogTradeskillsDetail("...Stat check success; Attempting Skill Check.  Success chance: [{:.1f}] pct", 
 			rawSkill <= 15 ? 100.0f : 100.0f - std::min(190, rawSkill) / 2.0);
 
 		// The skill roll always succeeds if skill <= 15
@@ -427,16 +427,16 @@ void Client::CheckIncreaseTradeskill(bool isSuccessfulCombine, EQ::skills::Skill
 			if (title_manager.IsNewTradeSkillTitleAvailable(tradeskill, rawSkill + 1))
 				NotifyNewTitlesAvailable();
 
-			Log(Logs::Detail, Logs::Tradeskills, "...Tradeskill skill-up success.  New skill == %i", rawSkill + 1);
+			LogTradeskillsDetail("...Tradeskill skill-up success.  New skill == [{}]", rawSkill + 1);
 		}
 		else
 		{
-			Log(Logs::Detail, Logs::Tradeskills, "...Failed tradeskill skill-up second roll");
+			LogTradeskillsDetail("...Failed tradeskill skill-up second roll");
 		}
 	}
 	else
 	{
-		Log(Logs::Detail, Logs::Tradeskills, "...Failed tradeskill skill-up first roll");
+		LogTradeskillsDetail("...Failed tradeskill skill-up first roll");
 	}
 }
 
@@ -758,7 +758,7 @@ bool ZoneDatabase::GetTradeRecipe(
 	}
 
 	if(results.RowCount() < 1) {
-		Log(Logs::General, Logs::Error, "Error in GetTradeRecept success: no success items returned");
+		LogError("Error in GetTradeRecept success: no success items returned");
 		return false;
 	}
 
@@ -796,7 +796,7 @@ bool Client::CanIncreaseTradeskill(EQ::skills::SkillType tradeskill) {
 		return false;
 	}
 		
-	if (RuleB(Expansion, SetClassicTradeskillCap) && !content_service.IsTheRuinsOfKunarkEnabled() && rawskill >= 200) {
+	if (RuleB(Expansion, SetClassicTradeskillCap) && !WorldContentService::Instance()->IsTheRuinsOfKunarkEnabled() && rawskill >= 200) {
 			return false;
 	}
 

@@ -206,8 +206,8 @@ Clientlist::Clientlist(int ChatPort) {
 
 
 	std::string opcodes_file;
-	if (File::Exists(fmt::format("{}/{}", path.GetOpcodePath(), Config->ChatOpCodesFile))) {
-		opcodes_file = fmt::format("{}/{}", path.GetOpcodePath(), Config->ChatOpCodesFile);
+	if (File::Exists(fmt::format("{}/{}", PathManager::Instance()->GetOpcodePath(), Config->ChatOpCodesFile))) {
+		opcodes_file = fmt::format("{}/{}", PathManager::Instance()->GetOpcodePath(), Config->ChatOpCodesFile);
 	}
 
 	LogInfo("Loading [{}]", opcodes_file);
@@ -1144,7 +1144,7 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 
 	ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
 
-	Log(Logs::Detail, Logs::UCSServer, "%s tells %s, [%s]", GetName().c_str(), RequiredChannel->GetName().c_str(),
+	LogInfo("[{}] tells [{}], [[{}]]", GetName().c_str(), RequiredChannel->GetName().c_str(),
 		Message.substr(MessageStart + 1).c_str());
 
 	if (RuleB(Chat, EnableAntiSpam)) {

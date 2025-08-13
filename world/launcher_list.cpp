@@ -71,7 +71,8 @@ void LauncherList::Process() {
 			LogInfo("Removing pending launcher [{}]. Adding [{}] to active list", l->GetID(), name.c_str());
 			//put the launcher in the list.
 			m_launchers[name] = l;
-		} else {
+		} 
+		else {
 			++cur;
 		}
 	}

@@ -130,6 +130,7 @@ namespace Logs {
 		HTTP,
 		NetClient,
 		NetTCP,
+		Flee,
 		MaxCategoryID	/* Don't Remove this*/
 	};
 
@@ -170,8 +171,8 @@ namespace Logs {
 		"Web Interface (Deprecated)",
 		"World Server (Deprecated)",
 		"Zone Server (Deprecated)",
-		"QueryEr",
-		"Query",
+		"MySQL Error",
+		"MySQL Query",
 		"EQMac",
 		"Quest Debug",
 		"Legacy Packet Logging (Deprecated)",
@@ -216,7 +217,8 @@ namespace Logs {
 		"PlayerEvents",
 		"HTTP",
 		"Net Server <-> Client",
-		"Net TCP"
+		"Net TCP",
+		"Flee"
 	};
 }
 

@@ -77,7 +77,7 @@ const NPCType *Horse::BuildHorseType(uint16 spell_id) {
 	}
 
 	if (results.RowCount() != 1) {
-        Log(Logs::General, Logs::Error, "No Database entry for mount: %s, check the horses table", fileName);
+        LogError("No Database entry for mount: [{}], check the horses table", fileName);
         return nullptr;
 	}
 
@@ -121,7 +121,7 @@ void Client::SummonHorse(uint16 spell_id) {
 		return;
 	}
 	if(!Horse::IsHorseSpell(spell_id)) {
-		Log(Logs::General, Logs::Error, "%s tried to summon an unknown horse, spell id %d", GetName(), spell_id);
+		LogError("[{}] tried to summon an unknown horse, spell id [{}]", GetName(), spell_id);
 		return;
 	}
 
@@ -180,7 +180,7 @@ void Mob::CreateHorseSpawnPacket(EQApplicationPacket* app, const char* ownername
 	FillSpawnStruct(ns, ForWho);
 
 #if (EQDEBUG >= 11)
-	Log(Logs::General, Logs::Spells, "Horse Spawn Packet - Owner: %s\n", ownername);
+	LogSpells("Horse Spawn Packet - Owner: [{}]", ownername);
 	DumpPacket(app);
 #endif
 }

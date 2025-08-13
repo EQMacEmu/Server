@@ -446,7 +446,7 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 	// Summoned pets are indifferent
 	if ((mob->IsClient() && mob->CastToClient()->has_zomm) || mob->iszomm || (mob->IsPet() && !mob->IsCharmedPet()))
 	{
-		Log(Logs::Detail, Logs::Aggro, "Zomm or Pet: Skipping aggro.");
+		LogAggro("Zomm or Pet: Skipping aggro.");
 		return false;
 	}
 
@@ -481,7 +481,7 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 	{
 		//make sure we can see them. last since it is very expensive
 		if (zone->SkipLoS() || CheckLosFN(mob)) {
-			Log(Logs::Detail, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
+			LogAggro("Check aggro for [{}] target [{}]", GetName(), mob->GetName());
 			return true;
 		}
 	}
@@ -494,13 +494,17 @@ bool Mob::CheckWillAggro(Mob *mob, bool turn_mobs)
 		AIhail_timer->Start(38000);
 	}
 
-	LogAggro("Is In zone?:[{}]\n", mob->InZone());
-	LogAggro("Dist^2: [{}]\n", distance_squared);
-	LogAggro("Range^2: [{}]\n", aggro_range_squared);
-	LogAggro("Faction: [{}]\n", static_cast<int>(faction_value));
-	LogAggro("AlwaysAggroFlag: [{}]\n", CastToNPC()->IsAggroOnPC());
-	LogAggro("Int: [{}]\n", GetINT());
-	LogAggro("Con: [{}]\n", GetLevelCon(mob->GetLevel()));
+	if (mob->IsNPC()) {
+		LogAggroDetail("[{}] Is In zone?:[{}] Dist^2: [{}] Range^2: [{}] Faction: [{}] AlwaysAggroFlag: [{}] Con: [{}]", 
+			mob->GetCleanName(), 
+			mob->InZone(), 
+			distance_squared, 
+			aggro_range_squared,
+			static_cast<int>(faction_value),
+			CastToNPC()->IsAggroOnPC(),
+			GetLevelCon(mob->GetLevel())
+		);
+	}
 
 	return false;
 }
@@ -569,7 +573,7 @@ bool Mob::CheckDragAggro(Mob *mob) {
 	// Summoned pets are indifferent
 	if ((mob->IsClient() && mob->CastToClient()->has_zomm) || mob->iszomm || (mob->IsPet() && !mob->IsCharmedPet()))
 	{
-		Log(Logs::Detail, Logs::Aggro, "Zomm or Pet: Skipping drag aggro.");
+		LogAggro("Zomm or Pet: Skipping drag aggro.");
 		return(false);
 	}
 
@@ -583,13 +587,13 @@ bool Mob::CheckDragAggro(Mob *mob) {
 
 	//make sure we can see them. last since it is very expensive
 	if (zone->SkipLoS() || CheckLosFN(mob)) {
-		Log(Logs::Detail, Logs::Aggro, "Check aggro for %s target %s.", GetName(), mob->GetName());
+		LogAggro("Check aggro for [{}] target [{}]", GetName(), mob->GetName());
 		return(true);
 	}
 
-	Log(Logs::Detail, Logs::Aggro, "Is In zone?:%d\n", mob->InZone());
-	Log(Logs::Detail, Logs::Aggro, "Dist^2: %f\n", dist2);
-	Log(Logs::Detail, Logs::Aggro, "Range^2: %f\n", iAggroRange2);
+	LogAggro("Is In zone? : [{}]", mob->InZone());
+	LogAggro("Dist^2 : [{}]", dist2);
+	LogAggro("Range^2 : [{}]", iAggroRange2);
 
 	return(false);
 }
@@ -752,7 +756,17 @@ int EntityList::FleeAllyCount(Mob *attacker, Mob *exclude)
 				continue;
 		}
 
-		Log(Logs::Detail, Logs::EQMac, "%s on faction %d with AggroRange %0.2f is at %0.2f, %0.2f, %0.2f and will count as an ally for %s", mob->GetName(), mob->GetPrimaryFaction(), AggroRange, mob->GetX(), mob->GetY(), mob->GetZ(), exclude->GetName());
+		LogFleeDetail(
+			"[{}] on faction [{}] with AggroRange [{}] is at [{}], [{}], [{}] and will count as an ally for [{}]", 
+			mob->GetName(), 
+			mob->GetPrimaryFaction(), 
+			AggroRange, 
+			mob->GetX(), 
+			mob->GetY(), 
+			mob->GetZ(), 
+			exclude->GetName()
+		);
+
 		++count;
 	}
 
@@ -886,10 +900,6 @@ void EntityList::AIYellForHelp(Mob* sender, Mob* attacker)
 					//make sure we can see them.
 					if(zone->SkipLoS() || npc->CheckLosFN(sender)) 
 					{
-
-						Log(Logs::Detail, Logs::Aggro, "AIYellForHelp(\"%s\",\"%s\") %s attacking %s Dist %f Z %f",
-						sender->GetName(), attacker->GetName(), npc->GetName(), attacker->GetName(), DistanceSquared(npc->GetPosition(), sender->GetPosition()), std::abs(sender->GetZ()+npc->GetZ()));
-
 						npc->AddToHateList(attacker, 20, 0, false, false, false);
 						npc->SetAssisting(true);
 					}
@@ -939,7 +949,7 @@ bool Mob::IsAttackAllowed(Mob *target, bool isSpellAttack, int16 spellid)
 		int32 target_faction = target->CastToNPC()->GetPrimaryFaction();
 		if(npc_faction == target_faction && npc_faction != 0)
 		{
-			Log(Logs::General, Logs::Combat, "IsAttackAllowed failed: %s is on the same faction as %s", GetName(), target->GetName());
+			LogDebug("IsAttackAllowed failed: [{}] is on the same faction as [{}]", GetName(), target->GetName());
 			RemoveFromHateList(target);
 			return false;
 		}
@@ -1130,7 +1140,7 @@ type', in which case, the answer is yes.
 	}
 	while( reverse++ == 0 );
 
-	Log(Logs::General, Logs::Combat, "Mob::IsAttackAllowed: don't have a rule for this - %s vs %s\n", this->GetName(), target->GetName());
+	LogDebug("Mob::IsAttackAllowed: don't have a rule for this - [{}] vs [{}]\n", GetName(), target->GetName());
 	return false;
 }
 
@@ -1271,7 +1281,7 @@ bool Mob::IsBeneficialAllowed(Mob *target)
 	}
 	while( reverse++ == 0 );
 
-	Log(Logs::General, Logs::Spells, "Mob::IsBeneficialAllowed: don't have a rule for this - %s to %s\n", this->GetName(), target->GetName());
+	LogDebug("Mob::IsBeneficialAllowed: don't have a rule for this - [{}] to [{}]\n", GetName(), target->GetName());
 	return false;
 }
 
@@ -1417,8 +1427,6 @@ bool Mob::CheckRegion(Mob* other, bool skipwater) {
 	ThisRegionType = zone->watermap->ReturnRegionType(position);
 	OtherRegionType = zone->watermap->ReturnRegionType(other_position);
 
-	Log(Logs::Detail, Logs::Maps, "Caster Region: %d Other Region: %d", ThisRegionType, OtherRegionType);
-
 	WaterRegionType AdjThisRegionType = ThisRegionType;
 	WaterRegionType AdjOtherRegionType = OtherRegionType;
 
@@ -1467,7 +1475,7 @@ bool Mob::CheckLosFN(float posX, float posY, float posZ, float mobSize, Mob* oth
 #endif
 	}
 
-	Log(Logs::Detail, Logs::Maps, "LOS from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f) sizes: (%.2f, %.2f)", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), mobSize);
+	LogMapsDetail("LOS from([{}], [{}], [{}]) to([{}], [{}], [{}]) sizes: ([{}], [{}])", myloc.x, myloc.y, myloc.z, oloc.x, oloc.y, oloc.z, GetSize(), mobSize);
 	return zone->zonemap->CheckLoS(myloc, oloc);
 }
 
@@ -1547,7 +1555,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			}
 			case SE_DiseaseCounter: // disease counter hate was removed most likely in early May 2002
 			{
-				if (!content_service.IsTheShadowsOfLuclinEnabled()) {
+				if (!WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 					if (IsSlowSpell(spell_id)) {
 						break;
 					}
@@ -1649,7 +1657,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 			{
 				instantHate += CalcSpellEffectValue_formula(spells[spell_id].formula[o], spells[spell_id].base[o], spells[spell_id].max[o], slevel, spell_id);
 				// Warrior epic effects; they used to do a AC debuff; need to do this else other procs will do more hate on high HP targets
-				if ((spell_id == 1935 || spell_id == 1933) && !content_service.IsTheScarsOfVeliousEnabled()) {
+				if ((spell_id == 1935 || spell_id == 1933) && !WorldContentService::Instance()->IsTheScarsOfVeliousEnabled()) {
 					instantHate = standardSpellHate;
 				}
 				break;
@@ -1670,7 +1678,7 @@ int32 Mob::CheckAggroAmount(uint16 spell_id, Mob* target)
 	// procs and clickables capped at 400.  Sony did it this way instead of using a 'isproc' parameter
 	// damage aggro is still added later, so procs like the SoD's anarchy still do more than 400
 	if (!CanClassCastSpell(spell_id) && nonDamageHate > 400) {
-		if (!IsClient() || content_service.IsTheScarsOfVeliousEnabled()
+		if (!IsClient() || WorldContentService::Instance()->IsTheScarsOfVeliousEnabled()
 			|| (CastToClient()->GetWeaponEffectID() != spell_id && CastToClient()->GetWeaponEffectID(EQ::invslot::slotSecondary) != spell_id)) {
 			nonDamageHate = 400;
 		}

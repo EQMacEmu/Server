@@ -245,7 +245,7 @@ void NPC::PauseWandering(int pausetime)
 	// otherwise automatically resume when time is up
 	if (GetGrid() != 0)
 	{
-		Log(Logs::Detail, Logs::Pathing, "Paused Wandering requested for: %s. Grid %d. Resuming in %d ms (0=not until told)", GetName(), GetGrid(), pausetime*1000);
+		LogPathingDetail("Paused Wandering requested for: [{}]. Grid [{}]. Resuming in [{}] ms (0=not until told)", GetName(), GetGrid(), pausetime*1000);
 		if (pausetime<1)
 		{	// negative grid number stops him dead in his tracks until ResumeWandering()
 			SetGrid( 0 - GetGrid());
@@ -1056,7 +1056,6 @@ void Mob::FixZ(bool force) {
 
 		if (!zone->HasWaterMap()) {
 			// no water map
-			//Log(Logs::Detail, Logs::AI, "BestZ returned %4.3f at %4.3f, %4.3f, %4.3f", newz, m_Position.x, m_Position.y, m_Position.z);
 			if (newz != BEST_Z_INVALID) {
 				newz = SetBestZ(newz);
 				if (force || std::abs(newz - dest.z) < max_fix_z || best_z_fail_count > 1) {

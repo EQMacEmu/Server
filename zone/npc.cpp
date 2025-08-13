@@ -64,7 +64,6 @@ extern QueryServ *QServ;
 extern volatile bool is_zone_loaded;
 extern EntityList entity_list;
 extern FastMath g_Math;
-extern SkillCaps skill_caps;
 extern WorldServer worldserver;
 
 NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& position, GravityBehavior iflymode, bool IsCorpse)
@@ -292,7 +291,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	//give NPCs skill values...
 	int r;
 	for (r = 0; r <= EQ::skills::HIGHEST_SKILL; r++) {
-		skills[r] = skill_caps.GetSkillCap(GetClass(), (EQ::skills::SkillType)r, level).cap;
+		skills[r] = SkillCaps::Instance()->GetSkillCap(GetClass(), (EQ::skills::SkillType)r, level).cap;
 	}
 
 	// NPCs get skills at levels earlier than Clients.  NPCs also ignore class skill availabilty restrictions and skill caps
@@ -305,7 +304,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 		skillLevel = std::min(level * 5, 210);
 
 	uint16 weaponSkill = skillLevel;
-	if (content_service.IsThePlanesOfPowerEnabled()) {
+	if (WorldContentService::Instance()->IsThePlanesOfPowerEnabled()) {
 		if (level > 50)
 			weaponSkill = 250 + level;
 		else
@@ -508,7 +507,7 @@ bool NPC::Process()
 		{
 			if (!IsCorpse() && GetHP() > 0)
 			{
-				Log(Logs::General, Logs::Pets, "Pet %s is despawning due to its hatelist being empty or its dispawn timer has expired.", GetName());
+				LogPets("Pet [{}] is despawning due to its hatelist being empty or its dispawn timer has expired.", GetName());
 				int16 resistAdj = -2000;
 				CastSpell(892, GetID(), EQ::spells::CastingSlot::Item, 2000, -1, 0, 0xFFFFFFFF, 0xFFFFFFFF, 0u, 0u, &resistAdj);		// Unsummon Self
 			}
@@ -723,7 +722,7 @@ bool NPC::DatabaseCastAccepted(int spell_id) {
 		case SE_SummonPet: {
 			if(GetPet()){
 #ifdef SPELLQUEUE
-				Log(Logs::General, Logs::Pets, "%s: Attempted to make a second pet, denied.\n",GetName());
+				LogPets("[{}]: Attempted to make a second pet, denied.",GetName());
 #endif
 				return false;
 			}
@@ -3152,7 +3151,7 @@ uint8 NPC::GetGreedPercent()
 				break;
 			}
 		}
-		Log(Logs::General, Logs::Trading, "Greed for %s is set to %d percent.", GetName(), greedper);
+		LogTrading("Greed for [{}] is set to [{}] percent.", GetName(), greedper);
 		return greedper;
 	}
 
@@ -3166,7 +3165,7 @@ uint8 NPC::Disarm(float chance)
 
 	if (GetSpecialAbility(SpecialAbility::DisarmImmunity))
 	{
-		Log(Logs::General, Logs::Skills, "%s is immune to disarm!", GetName());
+		LogSkills("[{}] is immune to disarm!", GetName());
 		return 0;
 	}
 

@@ -26,7 +26,7 @@ void command_unscribespell(Client *c, const Seperator *sep){
 			if (t != c)
 				c->Message(Chat::White, "Unscribing spell: %s (%i) for %s.", spells[spell_id].name, spell_id, t->GetName());
 
-			Log(Logs::General, Logs::Normal, "Unscribe spell: %s (%i) request for %s from %s.", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
+			LogInfo("Unscribe spell: [{}] ([{}]) request for [{}] from [{}].", spells[spell_id].name, spell_id, t->GetName(), c->GetName());
 		}
 		else {
 			t->Message(Chat::Red, "Unable to unscribe spell: %s (%i) from your spellbook. This spell is not scribed.", spells[spell_id].name, spell_id);

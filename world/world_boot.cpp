@@ -19,10 +19,8 @@
 #include "zonelist.h"
 #include "zoneserver.h"
 #include "../common/ip_util.h"
-#include "../common/zone_store.h"
 #include "../common/path_manager.h"
 
-extern ZSList      zoneserver_list;
 extern WorldConfig Config;
 
 void WorldBoot::GMSayHookCallBackProcessWorld(uint16 log_category, const char* func, std::string message)
@@ -44,7 +42,7 @@ void WorldBoot::GMSayHookCallBackProcessWorld(uint16 log_category, const char* f
 		auto message_split = Strings::Split(message, '\n');
 
 		for (size_t iter = 0; iter < message_split.size(); ++iter) {
-			zoneserver_list.SendEmoteMessage(
+			ZSList::Instance()->SendEmoteMessage(
 				0,
 				0,
 				AccountStatus::QuestTroupe,
@@ -60,7 +58,7 @@ void WorldBoot::GMSayHookCallBackProcessWorld(uint16 log_category, const char* f
 		return;
 	}
 
-	zoneserver_list.SendEmoteMessage(
+	ZSList::Instance()->SendEmoteMessage(
 		0,
 		0,
 		AccountStatus::QuestTroupe,
@@ -75,7 +73,7 @@ bool WorldBoot::HandleCommandInput(int argc, char** argv)
 	// command handler
 	if (argc > 1) {
 		LogSys.SilenceConsoleLogging();
-		path.LoadPaths();
+		PathManager::Instance()->Init();
 		WorldConfig::LoadConfig();
 		LoadDatabaseConnections();
 		RuleManager::Instance()->LoadRules(&database, "default", false);
@@ -143,15 +141,13 @@ int get_file_size(const std::string& filename) // path to file
 	return size;
 }
 
-extern LoginServerList loginserverlist;
-
 void WorldBoot::RegisterLoginservers()
 {
 	const auto c = EQEmuConfig::get();
 
 	if (c->LoginCount == 0) {
 		if (c->LoginHost.length()) {
-			loginserverlist.Add(
+			LoginServerList::Instance()->Add(
 				c->LoginHost.c_str(),
 				c->LoginPort,
 				c->LoginAccount.c_str(),
@@ -167,7 +163,7 @@ void WorldBoot::RegisterLoginservers()
 		iterator.Reset();
 		while (iterator.MoreElements()) {
 			if (iterator.GetData()->LoginHost.length()) {
-				loginserverlist.Add(
+				LoginServerList::Instance()->Add(
 					iterator.GetData()->LoginHost.c_str(),
 					iterator.GetData()->LoginPort,
 					iterator.GetData()->LoginAccount.c_str(),
@@ -186,13 +182,11 @@ void WorldBoot::RegisterLoginservers()
 	}
 }
 
-extern WorldEventScheduler event_scheduler;
-
 bool WorldBoot::DatabaseLoadRoutines(int argc, char** argv)
 {
 	// logging system init
 	auto logging = LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings();
 
 	LogSys.SetDiscordHandler(&WorldBoot::DiscordWebhookMessageHandler);
@@ -222,9 +216,9 @@ bool WorldBoot::DatabaseLoadRoutines(int argc, char** argv)
 
 	LogInfo("Loading zones");
 
-	zone_store.LoadZones(database);
+	ZoneStore::Instance()->LoadZones(database);
 
-	if (zone_store.GetZones().empty()) {
+	if (ZoneStore::Instance()->GetZones().empty()) {
 		LogError("Failed to load zones data, check your schema for possible errors");
 		return 1;
 	}
@@ -286,7 +280,7 @@ bool WorldBoot::DatabaseLoadRoutines(int argc, char** argv)
 	TimeOfDay_Struct eqTime{};
 	time_t           realtime;
 	eqTime = database.LoadTime(realtime);
-	zoneserver_list.worldclock.SetCurrentEQTimeOfDay(eqTime, realtime);
+	ZSList::Instance()->worldclock.SetCurrentEQTimeOfDay(eqTime, realtime);
 
 	LogInfo("Clearing Saylinks..");
 	database.ClearSayLink();
@@ -304,10 +298,10 @@ bool WorldBoot::DatabaseLoadRoutines(int argc, char** argv)
 	database.LoadCharacterCreateCombos();
 
 	LogInfo("Initializing [EventScheduler]");
-	event_scheduler.SetDatabase(&database)->LoadScheduledEvents();
+	WorldEventScheduler::Instance()->SetDatabase(&database)->LoadScheduledEvents();
 
 	LogInfo("Initializing [WorldContentService]");
-	content_service.SetDatabase(&database)
+	WorldContentService::Instance()->SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();
 
@@ -516,14 +510,14 @@ void WorldBoot::CheckForPossibleConfigurationIssues()
 
 void WorldBoot::SendDiscordMessage(int webhook_id, const std::string& message)
 {
-	if (UCSLink.IsConnected()) {
+	if (UCSConnection::Instance()->IsConnected()) {
 		auto pack = new ServerPacket(ServerOP_DiscordWebhookMessage, sizeof(DiscordWebhookMessage_Struct) + 1);
 		auto* q = (DiscordWebhookMessage_Struct*)pack->pBuffer;
 
 		strn0cpy(q->message, message.c_str(), 2000);
 		q->webhook_id = webhook_id;
 
-		UCSLink.SendPacket(pack);
+		UCSConnection::Instance()->SendPacket(pack);
 
 		safe_delete(pack);
 	}

@@ -384,7 +384,7 @@ bool Map::DoCollisionCheck(glm::vec3 myloc, glm::vec3 oloc, glm::vec3& outnorm, 
 
 Map *Map::LoadMapFile(std::string file) {
 	std::transform(file.begin(), file.end(), file.begin(), ::tolower);
-	std::string filename = fmt::format("{}/{}.map", path.GetMapsPath(), file);
+	std::string filename = fmt::format("{}/{}.map", PathManager::Instance()->GetMapsPath(), file);
 
 	auto m = new Map();
 	if (m->Load(filename)) {

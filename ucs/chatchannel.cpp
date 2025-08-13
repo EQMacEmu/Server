@@ -31,7 +31,6 @@
 
 extern UCSDatabase database;
 extern uint32 ChatMessagesSent;
-extern DiscordManager discord_manager;
 extern WorldServerList *worldserverlist;
 
 ChatChannel::ChatChannel(std::string inName, std::string inOwner, std::string inPassword, bool inPermanent, int inMinimumStatus)
@@ -793,7 +792,7 @@ void ChatChannelList::ChatChannelDiscordRelay(ChatChannel *channel, Client *clie
 					char *discordFormattedMessage = 0;
 					char item_message[] = "";
 					EncodeDiscordChatItemLinkMsg(item_message, q.message, &discordFormattedMessage);
-					discord_manager.QueueWebhookMessage(
+					DiscordManager::Instance()->QueueWebhookMessage(
 						q.webhook_id,
 						discordFormattedMessage
 					);

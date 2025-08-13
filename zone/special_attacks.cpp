@@ -138,7 +138,7 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 
 	if (stun_chance && zone->random.Roll(stun_chance))
 	{
-		Log(Logs::Detail, Logs::Combat, "Stun passed, checking resists. Was %d chance.", stun_chance);
+		LogCombatDetail("Stun passed, checking resists. Was [{}] chance.", stun_chance);
 
 		int stun_resist = 0;
 
@@ -149,25 +149,25 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 
 		if (defender->GetBaseRace() == OGRE && !BehindMob(defender, GetX(), GetY()))		// should this work if the ogre is illusioned?
 		{
-			Log(Logs::Detail, Logs::Combat, "Frontal stun resisted because, Ogre.");
+			LogCombatDetail("Frontal stun resisted because, Ogre.");
 		}
 		else
 		{
 			if (stun_resist && zone->random.Roll(stun_resist))
 			{
 				defender->Message_StringID(Chat::DefaultText, StringID::AVOID_STUN);
-				Log(Logs::Detail, Logs::Combat, "Stun Resisted. %d chance.", stun_resist);
+				LogCombatDetail("Stun Resisted. [{}] chance.", stun_resist);
 			}
 			else
 			{
-				Log(Logs::Detail, Logs::Combat, "Stunned. %d resist chance.", stun_resist);
+				LogCombatDetail("Stunned. [{}] resist chance.", stun_resist);
 				defender->Stun(2000, this);	// bash/kick stun is always 2 seconds
 			}
 		}
 	}
 	else
 	{
-		Log(Logs::Detail, Logs::Combat, "Stun failed. %d chance.", stun_chance);
+		LogCombatDetail("Stun failed. [{}] chance.", stun_chance);
 
 		// This is a crude approximation of interrupt chance based on old EQ log parses
 		int interruptChance = 100;
@@ -191,13 +191,13 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 				interruptChance = 3 * interruptChance / 4;
 		}
 
-		Log(Logs::Detail, Logs::Combat, "Non-stunning bash/kick interrupt roll: chance = %i", interruptChance);
+		LogCombatDetail("Non-stunning bash/kick interrupt roll: chance = [{}]", interruptChance);
 
 		if (zone->random.Roll(interruptChance))
 		{
 			if (IsValidSpell(defender->casting_spell_id) && !spells[defender->casting_spell_id].uninterruptable)
 			{
-				Log(Logs::Detail, Logs::Combat, "Non-stunning bash/kick successfully interrupted spell");
+				LogCombatDetail("Non-stunning bash/kick successfully interrupted spell");
 				defender->InterruptSpell(SPELL_UNKNOWN, true);
 			}
 		}
@@ -239,7 +239,7 @@ void Mob::DoBash(Mob* defender)
 
 			const EQ::ItemData *itm = item->GetItem();
 			int32 fbash = GetFuriousBash(itm->Focus.Effect);
-			if (fbash && content_service.IsTheShadowsOfLuclinEnabled()) { // Disable Focus Effect until Luclin
+			if (fbash && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) { // Disable Focus Effect until Luclin
 				fbash = zone->random.Int(1, fbash);
 				hate = base * (100 + fbash) / 100;
 			}
@@ -304,7 +304,7 @@ void NPC::DoBackstab(Mob* defender)
 			base = 5;
 		if (base > 220)
 			base = 220;
-		if (content_service.IsThePlanesOfPowerEnabled())	// PoP NPCs had unusually low backstab damage
+		if (WorldContentService::Instance()->IsThePlanesOfPowerEnabled())	// PoP NPCs had unusually low backstab damage
 			base = base * 2 / 3;
 	}
 
@@ -459,7 +459,7 @@ void Client::OPCombatAbility(const EQApplicationPacket *app)
 		return;
 
 	if(!p_timers.Expired(&database, pTimerCombatAbility, false)) {
-		Log(Logs::General, Logs::Error, "Ability recovery time not yet met.");
+		LogError("Ability recovery time not yet met.");
 		return;
 	}
 
@@ -594,7 +594,7 @@ int Mob::DoMonkSpecialAttack(Mob* other, uint8 unchecked_type, bool fromWus)
 			break;
 		}
 		default:
-			Log(Logs::Detail, Logs::Attack, "Invalid special attack type %d attempted", unchecked_type);
+			LogAttackDetail("Invalid special attack type [{}] attempted", unchecked_type);
 			return(1000);
 	}
 
@@ -644,7 +644,7 @@ void Client::RangedAttack(Mob* other) {
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if (attack_timer.Enabled() && !attack_timer.Check(false))
 	{
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Attack timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		LogCombatDetail("Ranged attack canceled. Attack timer not up. Attack [{}], ranged [{}]", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
 	if (ranged_timer.Enabled() && !ranged_timer.CheckKeepSynchronized())
@@ -653,7 +653,7 @@ void Client::RangedAttack(Mob* other) {
 		// this leeway allows one extra attack to succeed and resynchronize the server timer but still prevents unchecked cheating from modified clients.
 		if (ranged_attack_leeway_timer.Enabled() && !ranged_attack_leeway_timer.Check(false))
 		{
-			Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Ranged timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+			LogCombatDetail("Ranged attack canceled. Ranged timer not up. Attack [{}], ranged [{}]", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 			return;
 		}
 		ranged_attack_leeway_timer.Start(5000);
@@ -672,12 +672,12 @@ void Client::RangedAttack(Mob* other) {
 	const EQ::ItemInstance* Ammo = m_inv[EQ::invslot::slotAmmo];
 
 	if (!RangeWeapon || !RangeWeapon->IsClassCommon()) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Missing or invalid ranged weapon (%d) in slot %d", GetItemIDAt(EQ::invslot::slotRange), EQ::invslot::slotRange);
+		LogCombatDetail("Ranged attack canceled. Missing or invalid ranged weapon ([{}]) in slot [{}]", GetItemIDAt(EQ::invslot::slotRange), EQ::invslot::slotRange);
 		Message(Chat::White, "Error: Rangeweapon: GetItem(%i)==0, you have no bow!", GetItemIDAt(EQ::invslot::slotRange));
 		return;
 	}
 	if (!Ammo || !Ammo->IsClassCommon()) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Missing or invalid ammo item (%d) in slot %d", GetItemIDAt(EQ::invslot::slotAmmo), EQ::invslot::slotAmmo);
+		LogCombatDetail("Ranged attack canceled. Missing or invalid ammo item ([{}]) in slot [{}]", GetItemIDAt(EQ::invslot::slotAmmo), EQ::invslot::slotAmmo);
 		Message(Chat::White, "Error: Ammo: GetItem(%i)==0, you have no ammo!", GetItemIDAt(EQ::invslot::slotAmmo));
 		return;
 	}
@@ -688,17 +688,17 @@ void Client::RangedAttack(Mob* other) {
 	const EQ::ItemData* AmmoItem = Ammo->GetItem();
 
 	if(RangeItem->ItemType != EQ::item::ItemTypeBow) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Ranged item is not a bow. type %d.", RangeItem->ItemType);
+		LogCombatDetail("Ranged attack canceled. Ranged item is not a bow. type [{}].", RangeItem->ItemType);
 		Message(Chat::White, "Error: Rangeweapon: Item %d is not a bow.", RangeWeapon->GetID());
 		return;
 	}
 	if(AmmoItem->ItemType != EQ::item::ItemTypeArrow) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Ammo item is not an arrow. type %d.", AmmoItem->ItemType);
+		LogCombatDetail("Ranged attack canceled. Ammo item is not an arrow. type [{}].", AmmoItem->ItemType);
 		Message(Chat::White, "Error: Ammo: type %d != %d, you have the wrong type of ammo!", AmmoItem->ItemType, EQ::item::ItemTypeArrow);
 		return;
 	}
 
-	Log(Logs::Detail, Logs::Combat, "Shooting %s with bow %s (%d) and arrow %s (%d)", GetTarget()->GetName(), RangeItem->Name, RangeItem->ID, AmmoItem->Name, AmmoItem->ID);
+	LogCombatDetail("Shooting [{}] with bow [{}] ([{}]) and arrow [{}] ([{}])", GetTarget()->GetName(), RangeItem->Name, RangeItem->ID, AmmoItem->Name, AmmoItem->ID);
 
 	//look for ammo in inventory if we only have 1 left...
 	if(Ammo->GetCharges() == 1) {
@@ -725,7 +725,7 @@ void Client::RangedAttack(Mob* other) {
 					Ammo = baginst;
 					ammo_slot = m_inv.CalcSlotId(r, i);
 					found = true;
-					Log(Logs::Detail, Logs::Combat, "Using ammo from quiver stack at slot %d. %d in stack.", ammo_slot, Ammo->GetCharges());
+					LogCombatDetail("Using ammo from quiver stack at slot [{}]. [{}] in stack.", ammo_slot, Ammo->GetCharges());
 					break;
 				}
 			}
@@ -740,7 +740,7 @@ void Client::RangedAttack(Mob* other) {
 			if (aslot != INVALID_INDEX) {
 				ammo_slot = aslot;
 				Ammo = m_inv[aslot];
-				Log(Logs::Detail, Logs::Combat, "Using ammo from inventory stack at slot %d. %d in stack.", ammo_slot, Ammo->GetCharges());
+				LogCombatDetail("Using ammo from inventory stack at slot [{}]. [{}] in stack.", ammo_slot, Ammo->GetCharges());
 			}
 		}
 	}
@@ -757,7 +757,7 @@ void Client::RangedAttack(Mob* other) {
 	}
 
 	float range = RangeItem->Range + AmmoItem->Range + size_adj;
-	Log(Logs::Detail, Logs::Combat, "Calculated bow range to be %.1f", range);
+	LogCombatDetail("Calculated bow range to be [{:.1f}]", range);
 	
 	// Archery range check is a client responsibility but a hacked client can potentially cheat and shoot from across the zone.
 	// When the client is moving, the server's notion of the client's position is behind.  This range check is only for cheat/hack protection
@@ -780,7 +780,7 @@ void Client::RangedAttack(Mob* other) {
 		oor_count++;
 		if (dist > range) // too far
 		{
-			Log(Logs::Detail, Logs::Combat, "Ranged attack out of range... client should catch this. (%f > %f).\n", dist, range);
+			LogCombatDetail("Ranged attack out of range... client should catch this. ([{}] > [{}]).", dist, range);
 			if (oor_count > oor_threshold)
 			{
 				Message_StringID(Chat::Red, StringID::TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
@@ -802,7 +802,7 @@ void Client::RangedAttack(Mob* other) {
 	if (other->IsNPC() && other->CastToNPC()->GetIgnoreDistance() > 349.0f
 		&& dist > (other->CastToNPC()->GetIgnoreDistance() * other->CastToNPC()->GetIgnoreDistance()))
 	{
-		Log(Logs::Detail, Logs::Combat, "Ranged attack distance exceeds NPC ignore range\n");
+		LogCombatDetail("Ranged attack distance exceeds NPC ignore range");
 		return;
 	}
 
@@ -828,9 +828,9 @@ void Client::RangedAttack(Mob* other) {
 	if (!ChanceAvoidConsume || (ChanceAvoidConsume < 100 && zone->random.Int(0,99) > ChanceAvoidConsume)){ 
 		//Let Handle_OP_DeleteCharge handle the delete, to avoid item desyncs.
 		//DeleteItemInInventory(ammo_slot, 1, false);
-		Log(Logs::Detail, Logs::Combat, "Consumed one arrow from slot %d", ammo_slot);
+		LogCombatDetail("Consumed one arrow from slot [{}]", ammo_slot);
 	} else {
-		Log(Logs::Detail, Logs::Combat, "Endless Quiver prevented ammo consumption.");
+		LogCombatDetail("Endless Quiver prevented ammo consumption.");
 	}
 
 	CheckIncreaseSkill(EQ::skills::SkillArchery, GetTarget(), zone->skill_difficulty[EQ::skills::SkillArchery].difficulty[GetClass()]);
@@ -880,14 +880,14 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 			// allow the shot if fired parallel to the wall; deny if fired perpendicular
 			if (xy_angle > 0.4f)
 			{
-				Log(Logs::Detail, Logs::Combat, "Poofing arrow; %s is against a wall(1)  xy_angle: %0.4f", other->GetName(), xy_angle);
+				LogCombatDetail("Poofing arrow; [{}] is against a wall(1)  xy_angle: [{:.4f}]", other->GetName(), xy_angle);
 				return;
 			}
 
 			xy_angle = fabs(-other->CastToNPC()->GetWallAngle2(vector_x, vector_y));
 			if (xy_angle > 0.4f)
 			{
-				Log(Logs::Detail, Logs::Combat, "Poofing arrow; %s is against a wall(2)  xy_angle: %0.4f", other->GetName(), xy_angle);
+				LogCombatDetail("Poofing arrow; [{}] is against a wall(2)  xy_angle: [{:.4f}]", other->GetName(), xy_angle);
 				return;
 			}
 		}
@@ -895,7 +895,7 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 
 	if (other->IsNPC() && RuleB(AlKabor, BlockProjectileCorners) && other->CastToNPC()->IsCornered() && (z_angle > 0.85f || z_angle < -0.85f))
 	{
-		Log(Logs::Detail, Logs::Combat, "Poofing arrow; %s is cornered.  z_angle: %0.2f", other->GetName(), z_angle);
+		LogCombatDetail("Poofing arrow; [{}] is cornered.  z_angle: [{:.2f}]", other->GetName(), z_angle);
 		return;
 	}
 	
@@ -912,14 +912,14 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 		other->AvoidDamage(this, damage, true);
 
 		if (damage > 0 && !other->AvoidanceCheck(this, EQ::skills::SkillArchery)) {
-			Log(Logs::Detail, Logs::Combat, "Ranged attack missed %s.", other->GetName());
+			LogCombatDetail("Ranged attack missed [{}].", other->GetName());
 			damage = DMG_MISS;
 		}
 	}
 
 	if (damage > 0)
 	{
-		Log(Logs::Detail, Logs::Combat, "Ranged attack hit %s.", other->GetName());
+		LogCombatDetail("Ranged attack hit [{}].", other->GetName());
 
 		baseDamage = static_cast<int>(RuleR(Combat, ArcheryBaseDamageBonus) * 100.0)*baseDamage / 100;
 
@@ -931,7 +931,7 @@ void Mob::DoArcheryAttackDmg(Mob* other)
 
 		damage = CalcMeleeDamage(other, baseDamage, EQ::skills::SkillArchery);
 
-		Log(Logs::Detail, Logs::Combat, "Base Damage: %d, Damage: %d.", baseDamage, damage);
+		LogCombatDetail("Base Damage: [{}], Damage: [{}].", baseDamage, damage);
 	}
 	Beacon *beacon = new Beacon(this, 3000);
 
@@ -954,7 +954,7 @@ void NPC::RangedAttack(Mob* other)
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((attack_timer.Enabled() && !attack_timer.Check(false)) || 
 		(ranged_timer.Enabled() && !ranged_timer.Check())){
-		Log(Logs::Detail, Logs::Combat, "Archery canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		LogCombatDetail("Archery canceled. Timer not up. Attack [{}], ranged [{}]", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
 	}
 
@@ -1024,7 +1024,7 @@ void NPC::RangedAttack(Mob* other)
 		}
 	}
 
-	Log(Logs::Detail, Logs::Combat, "Calculated bow range to be %.1f", max_range);
+	LogCombatDetail("Calculated bow range to be [{:.1f}]", max_range);
 	max_range *= max_range;
 	if (DistanceSquaredNoZ(m_Position, other->GetPosition()) > max_range) {
 		return;
@@ -1067,7 +1067,7 @@ void NPC::RangedAttack(Mob* other)
 	if (damage > 0 && !other->AvoidanceCheck(this, skillInUse))
 	{
 		damage = DMG_MISS;
-		Log(Logs::Detail, Logs::Combat, "Ranged attack missed %s.", other->GetName());
+		LogCombatDetail("Ranged attack missed [{}].", other->GetName());
 	}
 
 	if (damage > 0)
@@ -1076,7 +1076,7 @@ void NPC::RangedAttack(Mob* other)
 			damage = DMG_INVUL;		// immune
 		}
 		else {
-			Log(Logs::Detail, Logs::Combat, "Ranged attack hit %s.", other->GetName());
+			LogCombatDetail("Ranged attack hit [{}].", other->GetName());
 
 
 			damage = damageBonus + CalcMeleeDamage(other, baseDamage, skillInUse);
@@ -1106,7 +1106,7 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 	//make sure the attack and ranged timers are up
 	//if the ranged timer is disabled, then they have no ranged weapon and shouldent be attacking anyhow
 	if((!CanDoubleAttack && (attack_timer.Enabled() && !attack_timer.Check(false)) || (ranged_timer.Enabled() && !ranged_timer.Check()))) {
-		Log(Logs::Detail, Logs::Combat, "Throwing attack canceled. Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
+		LogCombatDetail("Throwing attack canceled. Timer not up. Attack [{}], ranged [{}]", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		// The server and client timers are not exact matches currently, so this would spam too often if enabled
 		//Message(Chat::White, "Error: Timer not up. Attack %d, ranged %d", attack_timer.GetRemainingTime(), ranged_timer.GetRemainingTime());
 		return;
@@ -1116,7 +1116,7 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 	const EQ::ItemInstance* RangeWeapon = m_inv[EQ::invslot::slotRange];
 
 	if (!RangeWeapon || !RangeWeapon->IsClassCommon()) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Missing or invalid ranged weapon (%d) in slot %d", GetItemIDAt(EQ::invslot::slotRange), EQ::invslot::slotRange);
+		LogCombatDetail("Ranged attack canceled. Missing or invalid ranged weapon ([{}]) in slot [{}]", GetItemIDAt(EQ::invslot::slotRange), EQ::invslot::slotRange);
 		//Message(Chat::White, "Error: Rangeweapon: GetItem(%i)==0, you have nothing to throw!", GetItemIDAt(SlotRange));
 		return;
 	}
@@ -1125,12 +1125,12 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 
 	const EQ::ItemData* item = RangeWeapon->GetItem();
 	if(item->ItemType != EQ::item::ItemTypeLargeThrowing && item->ItemType != EQ::item::ItemTypeSmallThrowing) {
-		Log(Logs::Detail, Logs::Combat, "Ranged attack canceled. Ranged item %d is not a throwing weapon. type %d.", item->ItemType);
+		LogCombatDetail("Ranged attack canceled. Ranged item [{}] is not a throwing weapon. type [{}].", item->ID, item->ItemType);
 		//Message(Chat::White, "Error: Rangeweapon: GetItem(%i)==0, you have nothing useful to throw!", GetItemIDAt(SlotRange));
 		return;
 	}
 
-	Log(Logs::Detail, Logs::Combat, "Throwing %s (%d) at %s", item->Name, item->ID, GetTarget()->GetName());
+	LogCombatDetail("Throwing [{}] ([{}]) at [{}]", item->Name, item->ID, GetTarget()->GetName());
 	float size_adj = 16.0f;
 	if (other)
 	{
@@ -1143,11 +1143,11 @@ void Client::ThrowingAttack(Mob* other, bool CanDoubleAttack) { //old was 51
 			size_adj = 75.0f;
 	}
 	int range = item->Range + size_adj;
-	Log(Logs::Detail, Logs::Combat, "Calculated throwing range to be %.1f", range);
+	LogCombatDetail("Calculated throwing range to be [{}]", range);
 	range *= range;
 	float dist = DistanceSquaredNoZ(m_Position, GetTarget()->GetPosition());
 	if(dist > range) {
-		Log(Logs::Detail, Logs::Combat, "Throwing attack out of range... client should catch this. (%f > %f).\n", dist, range);
+		LogCombatDetail("Throwing attack out of range... client should catch this. ([{}] > [{}]).", dist, range);
 		Message_StringID(Chat::Red, StringID::TARGET_OUT_OF_RANGE);//Client enforces range and sends the message, this is a backup just incase.
 		return;
 	}
@@ -1198,12 +1198,12 @@ void Mob::DoThrowingAttackDmg(Mob* other)
 	if (damage > 0 && !other->AvoidanceCheck(this, EQ::skills::SkillThrowing))
 	{
 		damage = DMG_MISS;
-		Log(Logs::Detail, Logs::Combat, "Ranged attack missed %s.", other->GetName());
+		LogCombatDetail("Ranged attack missed [{}].", other->GetName());
 	}
 	
 	if (damage > 0)
 	{
-		Log(Logs::Detail, Logs::Combat, "Throwing attack hit %s.", other->GetName());
+		LogCombatDetail("Throwing attack hit [{}].", other->GetName());
 
 		damage = CalcMeleeDamage(other, baseDamage, EQ::skills::SkillThrowing);
 	}
@@ -1639,7 +1639,7 @@ void Mob::Taunt(NPC* who, bool always_succeed, int32 overhate)
 		if (IsClient())
 			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillTaunt, who, zone->skill_difficulty[EQ::skills::SkillTaunt].difficulty[GetClass()]);
 
-		Log(Logs::Detail, Logs::Aggro, "Attempting to Taunt with a chance of %i", tauntChance);
+		LogAggro("Attempting to Taunt with a chance of [{}]", tauntChance);
 	}
 
 	if (!who->IsOnHatelist(this))

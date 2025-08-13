@@ -77,6 +77,12 @@ public:
 
 	void QueueServerReload(ServerReload::Type &type);
 
+	static ZSList *Instance()
+	{
+		static ZSList instance;
+		return &instance;
+	}
+
 private:
 	void OnTick(EQ::Timer* t);
 	uint32 NextID;

@@ -95,7 +95,7 @@ uint32 ZoneDatabase::GetZoneForage(uint32 ZoneID, uint8 skill) {
 
         item[index] = atoi(row[0]);
         chance[index] = atoi(row[1]) + chancepool;
-		Log(Logs::General, Logs::General, "Possible Forage: %d with a %d chance total to %d chancepool", item[index], chance[index] - chancepool, chance[index]);
+		LogInfo("Possible Forage: [{}] with a [{}] chance total to [{}] chancepool", item[index], chance[index] - chancepool, chance[index]);
         chancepool = chance[index];
     }
 
@@ -383,7 +383,7 @@ void Client::GoFish(bool guarantee, bool use_bait)
 			CheckItemDiscoverability(inst->GetID());
 
 			if(inst) {
-				if (player_event_logs.IsEventEnabled(PlayerEvent::FISH_SUCCESS)) {
+				if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::FISH_SUCCESS)) {
 					auto e = PlayerEvent::FishSuccessEvent{
 						.item_id   = inst->GetItem()->ID,
 						.item_name = inst->GetItem()->Name,
@@ -497,7 +497,7 @@ void Client::ForageItem(bool guarantee) {
 
 		if(!food_item)
 		{
-			Log(Logs::General, Logs::Error, "nullptr returned from database.GetItem (%d) in ClientForageItem", foragedfood);
+			LogError("nullptr returned from database.GetItem ([{}]) in ClientForageItem", foragedfood);
 			return;
 		}
 
@@ -541,7 +541,7 @@ void Client::ForageItem(bool guarantee) {
 			}
 
 			if(inst) {
-				if (player_event_logs.IsEventEnabled(PlayerEvent::FORAGE_SUCCESS)) {
+				if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::FORAGE_SUCCESS)) {
 					auto e = PlayerEvent::ForageSuccessEvent{
 						.item_id = inst->GetItem()->ID,
 						.item_name = inst->GetItem()->Name

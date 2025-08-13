@@ -360,21 +360,17 @@ set(gm_command_sources
 add_library(gm_commands_zone STATIC ${gm_command_sources})
 set_target_properties(gm_commands_zone PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 32)
 
-IF(EQEMU_DEPOP_INVALIDATES_CACHE)
-	ADD_DEFINITIONS(-DDEPOP_INVALIDATES_NPC_TYPES_CACHE)
-ENDIF(EQEMU_DEPOP_INVALIDATES_CACHE)
-
 # zone combine sources and headers
 ADD_EXECUTABLE(zone ${zone_sources} ${zone_headers})
 
 # binary output directory
 INSTALL(TARGETS zone RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
-# precompile headers
+# precompiled headers
 IF (WIN32 AND EQEMU_BUILD_PCH)
-    TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/pch/pch.h)
-    TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/types.h ../common/eqemu_logsys.h ../common/eqemu_logsys_log_aliases.h ../common/features.h ../common/global_define.h)
-    TARGET_PRECOMPILE_HEADERS(zone PRIVATE mob.h corpse.h npc.h doors.h entity.h client.h zone.h)
+    TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/pch/app-pch.h)
+    TARGET_PRECOMPILE_HEADERS(zone PRIVATE ../common/pch/std-pch.h)
+    TARGET_PRECOMPILE_HEADERS(zone PRIVATE ./pch/pch.h)
 ENDIF()
 
 ADD_DEFINITIONS(-DZONE)

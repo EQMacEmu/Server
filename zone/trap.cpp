@@ -100,7 +100,7 @@ bool Trap::Process()
 	}
 	else if (reset_timer.Enabled() && reset_timer.Check())
 	{
-		Log(Logs::General, Logs::Traps, "Reset timer disabled in Reset Check Process for trap %d.", trap_id);
+		LogTraps("Reset timer disabled in Reset Check Process for trap [{}].", trap_id);
 		reset_timer.Disable();
 		charid = 0;
 	}
@@ -119,7 +119,7 @@ bool Trap::Process()
 
 void Trap::Trigger(Mob* trigger)
 {
-	Log(Logs::General, Logs::Traps, "Trap %d triggered by %s for the %d time!", trap_id, trigger->GetName(), times_triggered+1);
+	LogTraps("Trap [{}] triggered by [{}] for the [{}] time!", trap_id, trigger->GetName(), times_triggered+1);
 
 	int i = 0;
 	const NPCType* tmp = 0;
@@ -239,7 +239,7 @@ void Trap::Trigger(Mob* trigger)
 	bool update = false;
 	if(despawn_when_triggered)
 	{
-		Log(Logs::General, Logs::Traps, "Trap %d is despawning after being triggered.", trap_id);
+		LogTraps("Trap [{}] is despawning after being triggered.", trap_id);
 		update = true;
 	}
 	else
@@ -252,7 +252,7 @@ void Trap::Trigger(Mob* trigger)
 
 	if(triggered_number > 0 && triggered_number <= times_triggered)
 	{
-		Log(Logs::General, Logs::Traps, "Triggered number for trap %d reached. %d/%d", trap_id, times_triggered, triggered_number);
+		LogTraps("Triggered number for trap [{}] reached. [{}]/[{}]", trap_id, times_triggered, triggered_number);
 		update = true;
 	}
 
@@ -282,7 +282,6 @@ Trap* EntityList::FindNearbyTrap(Mob* searcher, float max_dist, float &trap_curd
 		if (curdist < max_dist2 && curdist < dist
 			&& diff.z <= cur->maxzdiff)
 		{
-			Log(Logs::General, Logs::Traps, "Trap %d is curdist %0.1f", cur->db_id, curdist);
 			dist = curdist;
 			current_trap = cur;
 		}
@@ -290,7 +289,6 @@ Trap* EntityList::FindNearbyTrap(Mob* searcher, float max_dist, float &trap_curd
 
 	if (current_trap != nullptr)
 	{
-		Log(Logs::General, Logs::Traps, "Trap %d is the closest trap.", current_trap->db_id);
 		trap_curdist = dist;
 	}
 	else
@@ -319,7 +317,7 @@ Mob* EntityList::GetTrapTrigger(Trap* trap)
 
 			if (cur->trapid == 0 && !cur->GetGM() && (trap->chance == 0 || zone->random.Roll(trap->chance)))
 			{
-				Log(Logs::General, Logs::Traps, "%s is about to trigger trap %d of chance %d. diff: %0.2f maxdist: %0.2f zdiff: %0.2f maxzdiff: %0.2f", cur->GetName(), trap->trap_id, trap->chance, (diff.x*diff.x + diff.y*diff.y), maxdist, diff.z, trap->maxzdiff);
+				LogTraps("[{}] is about to trigger trap [{}] of chance [{}]. diff: [{:.2f}] maxdist: [{:.2f}] zdiff: [{:.2f}] maxzdiff: [{:.2f}]", cur->GetName(), trap->trap_id, trap->chance, (diff.x*diff.x + diff.y*diff.y), maxdist, diff.z, trap->maxzdiff);
 				return cur;
 			}
 		}
@@ -327,7 +325,7 @@ Mob* EntityList::GetTrapTrigger(Trap* trap)
 		{
 			if(cur->trapid == trap->trap_id)
 			{
-				Log(Logs::General, Logs::Traps, "%s is clearing trapid for trap %d", cur->GetName(), trap->trap_id);
+				LogTraps("[{}] is clearing trapid for trap [{}]", cur->GetName(), trap->trap_id);
 				cur->trapid = 0;
 			}
 		}
@@ -366,7 +364,7 @@ void EntityList::UpdateAllTraps(bool respawn, bool repopnow)
 	}
 
 	if(respawn)
-		Log(Logs::General, Logs::Traps, "All traps updated.");
+		LogTraps("All traps updated.");
 }
 
 void EntityList::GetTrapInfo(Client* client)
@@ -451,7 +449,7 @@ bool ZoneDatabase::LoadTraps(const char* zonename) {
 		trap->undetectable = atobool(row[18]);
 		entity_list.AddTrap(trap);
 		trap->CreateHiddenTrigger();
-		Log(Logs::General, Logs::Traps, "Trap %d successfully loaded.", trap->trap_id);
+		LogTraps("Trap [{}] successfully loaded.", trap->trap_id);
 	}
 
 	return true;
@@ -539,7 +537,7 @@ bool ZoneDatabase::SetTrapData(Trap* trap, bool repopnow) {
 		}
 
 		if(trap->trap_id != trap->db_id)
-			Log(Logs::General, Logs::Traps, "Trap (%d) DBID has changed from %d to %d", trap->trap_id, dbid, trap->db_id);
+			LogTraps("Trap ([{}]) DBID has changed from [{}] to [{}]", trap->trap_id, dbid, trap->db_id);
 
 		return true;
 	}

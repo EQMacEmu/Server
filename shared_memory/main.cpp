@@ -34,9 +34,6 @@
 #include "../common/content/world_content_service.h"
 
 EQEmuLogSys LogSys;
-WorldContentService content_service;
-ZoneStore zone_store;
-PathManager path;
 
 #ifdef _WINDOWS
 #include <direct.h>
@@ -79,7 +76,7 @@ int main(int argc, char **argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	LogInfo("Shared Memory Loader Program");
 	if(!EQEmuConfig::LoadConfig()) {
@@ -103,7 +100,7 @@ int main(int argc, char **argv) {
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
@@ -145,15 +142,15 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	content_service.SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
-	content_service.SetDatabase(&database)
+	WorldContentService::Instance()->SetCurrentExpansion(RuleI(Expansion, CurrentExpansion));
+	WorldContentService::Instance()->SetDatabase(&database)
 		->SetExpansionContext()
 		->ReloadContentFlags();
 
 	LogInfo(
 		"Current expansion is [{}] ({})",
-		content_service.GetCurrentExpansion(),
-		content_service.GetCurrentExpansionName()
+		WorldContentService::Instance()->GetCurrentExpansion(),
+		WorldContentService::Instance()->GetCurrentExpansionName()
 	);
 
 	std::string hotfix_name = "";

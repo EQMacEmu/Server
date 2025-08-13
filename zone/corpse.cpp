@@ -391,7 +391,7 @@ Corpse::Corpse(Client* client, int32 in_rezexp, uint8 in_killedby) : Mob (
 				}
 			}
 			else if (item && item->GetItem()->Soulbound)
-				Log(Logs::Detail, Logs::Inventory, "Skipping Soulbound item %s in slot %d", item->GetItem()->Name, i);
+				LogInventoryDetail("Skipping Soulbound item [{}] in slot [{}]", item->GetItem()->Name, i);
 		}
 
 		for (i = EQ::invslot::TRADE_BEGIN; i < EQ::invslot::TRADE_END; i++)
@@ -510,7 +510,7 @@ std::list<uint32> Corpse::MoveItemToCorpse(Client *client, EQ::ItemInstance *ite
 			{
 				client->PushItemOnCursor(*interior_item, true); // Push to cursor for now, since parent bag is about to be deleted.
 				client->DeleteItemInInventory(interior_slot);
-				Log(Logs::Detail, Logs::Inventory, "Skipping Soulbound item %s in slot %d", interior_item->GetItem()->Name, interior_slot);
+				LogInventoryDetail("Skipping Soulbound item [{}] in slot [{}]", interior_item->GetItem()->Name, interior_slot);
 			}
 		}
 	}
@@ -779,7 +779,7 @@ void Corpse::AddItem(uint32 itemnum, int8 charges, int16 slot) {
 	if (!database.GetItem(itemnum))
 		return;
 
-	Log(Logs::Detail, Logs::Inventory, "(Corpse) AddItem(%i, %i, %i)", slot, charges, itemnum);
+	LogInventoryDetail("(Corpse) AddItem(itemnum: [{}], charges: [{}], slot: [{}])", itemnum, charges, slot);
 
 	is_corpse_changed = true;
 
@@ -952,7 +952,7 @@ bool Corpse::Process() {
 			spc->zone_id = zone->graveyard_zoneid();
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
-			Log(Logs::General, Logs::Corpse, "Moved %s player corpse to the designated graveyard in zone %s.", this->GetName(), ZoneName(zone->graveyard_zoneid()));
+			LogCorpse("Moved [{}] player corpse to the designated graveyard in zone [{}].", this->GetName(), ZoneName(zone->graveyard_zoneid()));
 			corpse_db_id = 0;
 		}
 
@@ -970,7 +970,7 @@ bool Corpse::Process() {
 		{
 			if (DistanceSquaredNoZ(zone->GetGraveyardPoint(), GetPosition()) > 75.0f * 75.0f)
 			{
-				Log(Logs::General, Logs::Corpse, "Graveyard corpse %s was moved too far from the graveyard, returning it.", GetName());
+				LogCorpse("Graveyard corpse [{}] was moved too far from the graveyard, returning it.", GetName());
 				double xcorpse = (zone->GetGraveyardPoint().x + zone->random.Real(-20, 20));
 				double ycorpse = (zone->GetGraveyardPoint().y + zone->random.Real(-20, 20));
 				GMMove(xcorpse, ycorpse, zone->GetGraveyardPoint().z);
@@ -1242,7 +1242,7 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 					item = database.GetItem(item_data->item_id);
 					if(item)
 					{
-						Log(Logs::General, Logs::Corpse, "Corpse Looting: %s was not sent to client loot window. Resetting to slot %d...", item->Name, slot);
+						LogCorpse("Corpse Looting: [{}] was not sent to client loot window. Resetting to slot [{}]...", item->Name, slot);
 						client->Message(Chat::White, "Inaccessible Corpse Item: %s. Please close the window and try to loot again.", item->Name);
 						item_data->equip_slot = slot;
 						Save();
@@ -1372,7 +1372,7 @@ void Corpse::LootCorpseItem(Client* client, const EQApplicationPacket* app) {
 		args.push_back(this);
 		parse->EventPlayer(EVENT_LOOT, client, export_string, 0, &args);
 
-		if (player_event_logs.IsEventEnabled(PlayerEvent::LOOT_ITEM) && !IsPlayerCorpse()) {
+		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::LOOT_ITEM) && !IsPlayerCorpse()) {
 			auto e = PlayerEvent::LootItemEvent{
 				.item_id = inst->GetItem()->ID,
 				.item_name = inst->GetItem()->Name,
@@ -1855,7 +1855,7 @@ void Corpse::RevokeConsent()
 {
 	if (IsPlayerCorpse())
 	{
-		Log(Logs::General, Logs::Corpse, "%s is denying consent to all players with corpse_id %u", GetOwnerName(), GetCorpseDBID());
+		LogCorpse("[{}] is denying consent to all players with corpse_id [{}]", GetOwnerName(), GetCorpseDBID());
 
 		auto pack = new ServerPacket(ServerOP_ConsentDenyByID, sizeof(ServerOP_ConsentDenyByID_Struct));
 		ServerOP_ConsentDenyByID_Struct* scs = (ServerOP_ConsentDenyByID_Struct*)pack->pBuffer;

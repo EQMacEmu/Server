@@ -71,7 +71,6 @@
 
 
 extern bool staticzone;
-extern PetitionList petition_list;
 extern QuestParserCollection* parse;
 extern uint32 numclients;
 extern WorldServer worldserver;
@@ -395,12 +394,12 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 				{
 					database.SaveMerchantTemp(npcid, ml.origslot, item, ml.charges, ml.quantity);
 					tmp_merlist.push_back(ml);
-					Log(Logs::General, Logs::Trading, "%d SAVED to temp in slot %d with charges/qty %d/%d", item, ml.origslot, ml.charges, ml.quantity);
+					LogTrading("[{}] SAVED to temp in slot [{}] with charges/qty [{}]/[{}]", item, ml.origslot, ml.charges, ml.quantity);
 				}
 				else //This is a delete
 				{
 					database.DeleteMerchantTemp(npcid, ml.origslot);
-					Log(Logs::General, Logs::Trading, "%d DELETED from temp in slot %d", item, ml.origslot);
+					LogTrading("[{}] DELETED from temp in slot [{}]", item, ml.origslot);
 				}
 			}
 		}
@@ -414,7 +413,7 @@ int Zone::SaveTempItem(uint32 merchantid, uint32 npcid, uint32 item, int32 charg
 		if (charges < 0) //sanity check only, shouldnt happen
 			charges = 0x7FFF;
 		database.SaveMerchantTemp(npcid, freeslot, item, charges, 1);
-		Log(Logs::General, Logs::Trading, "%d ADDED to temp in slot %d with charges/qty %d/%d", item, freeslot, charges, 1);
+		LogTrading("[{}] ADDED to temp in slot [{}] with charges/qty [{}]/[{}]", item, freeslot, charges, 1);
 
 		tmp_merlist = tmpmerchanttable[npcid];
 		TempMerchantList ml2;
@@ -457,7 +456,7 @@ void Zone::SaveMerchantItem(uint32 merchantid, int16 item, int8 charges, int8 sl
 			}
 			else
 			{
-				Log(Logs::General, Logs::Trading, "Merchant %d is saving item %d with %d charges", merchantid, item, charges);
+				LogTrading("Merchant [{}] is saving item [{}] with [{}] charges", merchantid, item, charges);
 				ml2.qty_left = charges;
 				merlist.push_back(ml2);
 			}
@@ -753,7 +752,7 @@ void Zone::Shutdown(bool quiet)
 	}
 
 	LogInfo("Zone Shutdown: {} ({})", zone->GetShortName(), zone->GetZoneID());
-	petition_list.ClearPetitions();
+	PetitionList::Instance()->ClearPetitions();
 	zone->SetZoneHasCurrentTime(false);
 
 	if (!quiet) {
@@ -892,16 +891,16 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 	velious_active = true;
 	Nexus_Scion_Timer = nullptr;
 	Nexus_Portal_Timer = nullptr;
-	if(RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) {
+	if(RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled())) {
 		if(GetZoneID() == Zones::NEXUS) {
 			Nexus_Scion_Timer = new Timer(RuleI(Zone, NexusTimer));
 			Nexus_Scion_Timer->Start();
-			Log(Logs::General, Logs::Nexus, "Setting Velious portal timer to %d", RuleI(Zone, NexusTimer));
+			LogNexus("Setting Velious portal timer to [{}]", RuleI(Zone, NexusTimer));
 
 			Nexus_Portal_Timer = new Timer(RuleI(Zone, NexusTimer));
 			if(RuleI(Zone, NexusTimer) < 900000) {
 				Nexus_Portal_Timer->Start();
-				Log(Logs::General, Logs::Nexus, "Starting Nexus timer without delay, due to timer being set to %d", RuleI(Zone, NexusTimer));
+				LogNexus("Starting Nexus timer without delay, due to timer being set to [{}]", RuleI(Zone, NexusTimer));
 			} else {
 				Nexus_Portal_Timer->Disable();
 			}
@@ -909,7 +908,7 @@ Zone::Zone(uint32 in_zoneid, const char* in_short_name)
 		} else if(IsNexusScionZone()) {
 			Nexus_Scion_Timer = new Timer(RuleI(Zone, NexusScionTimer));
 			Nexus_Scion_Timer->Start();
-			Log(Logs::General, Logs::Nexus, "Setting Nexus scion timer to %d", RuleI(Zone, NexusScionTimer));
+			LogNexus("Setting Nexus scion timer to [{}]", RuleI(Zone, NexusScionTimer));
 		}
 	}
 
@@ -1066,8 +1065,8 @@ bool Zone::Init(bool is_static) {
 		database.DeleteTraderItem(0);
 	}
 
-	petition_list.ClearPetitions();
-	petition_list.ReadDatabase();
+	PetitionList::Instance()->ClearPetitions();
+	PetitionList::Instance()->ReadDatabase();
 
 	LogInfo("Zone booted successfully zone_id [{}] time_offset [{}]", zoneid, zone_time.getEQTimeZone());
 
@@ -1130,14 +1129,14 @@ void Zone::ReloadStaticData() {
 		LoadZoneCFG(GetFileName());
 	} // if that fails, try the file name, then load defaults
 
-	content_service.SetExpansionContext()->ReloadContentFlags();
+	WorldContentService::Instance()->SetExpansionContext()->ReloadContentFlags();
 
 	LogInfo("Zone Static Data Reloaded.");
 }
 
 bool Zone::LoadZoneCFG(const char* filename)
 {
-	auto z = zone_store.GetZone(ZoneID(filename));
+	auto z = ZoneStore::Instance()->GetZone(ZoneID(filename));
 
 	if (!z) {
 		LogError("[LoadZoneCFG] Failed to load zone data for [{}]", filename);
@@ -1498,7 +1497,7 @@ bool Zone::Process() {
 		}
 	}
 
-	if((RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && content_service.IsTheShadowsOfLuclinEnabled())) && (IsNexusScionZone() || GetZoneID() == Zones::NEXUS)) {
+	if((RuleB(Zone, EnableNexusPortals) || (RuleB(Zone, EnableNexusPortalsOnExpansion) && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled())) && (IsNexusScionZone() || GetZoneID() == Zones::NEXUS)) {
 		NexusProcess();
 	}
 
@@ -1746,7 +1745,7 @@ void Zone::RepopClose(const glm::vec4& client_position, uint32 repop_distance)
 	quest_manager.ClearAllTimers();
 
 	if (!database.PopulateZoneSpawnListClose(zoneid, spawn2_list, client_position, repop_distance))
-		Log(Logs::General, Logs::None, "Error in Zone::Repop: database.PopulateZoneSpawnList failed");
+		LogError("Error in Zone::Repop: database.PopulateZoneSpawnList failed");
 
 	entity_list.UpdateAllTraps(true, true);
 }
@@ -2798,7 +2797,7 @@ void Zone::ApplyRandomLoc(uint32 zoneid, float& x, float& y)
 	tmp_x = zone->random.Int(0, (random_loc * 2)) - random_loc;
 	tmp_y = zone->random.Int(0, (random_loc * 2)) - random_loc;
 
-	Log(Logs::General, Logs::EQMac, "random loc: %d Original coords are %0.1f, %0.1f. Updated diffs are %0.1f, %0.1f. FINAL coords are %0.1f, %0.1f", random_loc, x, y, tmp_x, tmp_y, x + tmp_x, y + tmp_y);
+	LogEQMac("random loc: [{}] Original coords are [{:.1f}], [{:.1f}]. Updated diffs are [{:.1f}], [{:.1f}]. FINAL coords are [{:.1f}], [{:.1f}]", random_loc, x, y, tmp_x, tmp_y, x + tmp_x, y + tmp_y);
 
 	x = x + tmp_x;
 	y = y + tmp_y;

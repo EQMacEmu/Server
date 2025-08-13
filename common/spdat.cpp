@@ -598,7 +598,7 @@ bool IsResistableSpell(uint16 spell_id)
 		return true;
 	}
 
-	Log(Logs::Detail, Logs::Spells, "Spell %i is unresistable.", spell_id);
+	LogSpells("Spell [{}] is unresistable.", spell_id);
 	return false;
 }
 
@@ -682,7 +682,7 @@ bool IsSpellEffectBlocked(uint16 sp1, uint16 sp2, uint16 effectid, int value)
 			{
 				if (value < blocked_below_value)
 				{
-					Log(Logs::General, Logs::Spells, "Spell %d blocks one or more effects found in spell %d.", sp1, sp2);
+					LogSpells("Spell [{}] blocks one or more effects found in spell [{}].", sp1, sp2);
 					return true;
 				}
 					
@@ -943,8 +943,11 @@ DmgShieldType GetDamageShieldType(uint16 spell_id, int32 DSType)
 	// If we have a DamageShieldType for this spell from the damageshieldtypes table, return that,
 	// else, make a guess, based on the resist type. Default return value is DS_THORNS
 	if (IsValidSpell(spell_id)) {
-		Log(Logs::Detail, Logs::Spells, "DamageShieldType for spell %i (%s) is %X\n", spell_id,
-			spells[spell_id].name, spells[spell_id].DamageShieldType);
+		LogSpells("DamageShieldType for spell [{}] ([{}]) is [{}]", 
+			spell_id,
+			spells[spell_id].name, 
+			spells[spell_id].DamageShieldType
+		);
 
 		if (spells[spell_id].DamageShieldType)
 			return (DmgShieldType) spells[spell_id].DamageShieldType;

@@ -37,8 +37,6 @@
 #include "cliententry.h"
 #include "world_config.h"
 
-extern ZSList        zoneserver_list;
-extern ClientList    client_list;
 extern uint32        numzones;
 extern uint32        numplayers;
 extern volatile bool RunLoops;
@@ -103,13 +101,13 @@ void LoginServer::ProcessUsertoWorldReq(uint16_t opcode, EQ::Net::Packet& p)
 	if (utwrs->response == 1)
 	{
 		// active account checks
-		if (RuleI(World, AccountSessionLimit) >= 0 && status < (RuleI(World, ExemptAccountLimitStatus)) && (RuleI(World, ExemptAccountLimitStatus) != -1) && client_list.CheckAccountActive(id))
+		if (RuleI(World, AccountSessionLimit) >= 0 && status < (RuleI(World, ExemptAccountLimitStatus)) && (RuleI(World, ExemptAccountLimitStatus) != -1) && ClientList::Instance()->CheckAccountActive(id))
 			utwrs->response = -4;
 	}
 	if (utwrs->response == 1)
 	{
 		// ip limit checks
-		if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(id, utwr->ip, status))
+		if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !ClientList::Instance()->CheckIPLimit(id, utwr->ip, status))
 			utwrs->response = -5;
 	}
 
@@ -125,7 +123,7 @@ void LoginServer::ProcessLSClientAuth(uint16_t opcode, EQ::Net::Packet& p) {
 	try {
 		auto slsca = p.GetSerialize<ClientAuth>(0);
 
-		client_list.CLEAdd(slsca.loginserver_account_id, slsca.account_name, slsca.key, slsca.is_world_admin, slsca.ip_address, slsca.is_client_from_local_network, slsca.version);
+		ClientList::Instance()->CLEAdd(slsca.loginserver_account_id, slsca.account_name, slsca.key, slsca.is_world_admin, slsca.ip_address, slsca.is_client_from_local_network, slsca.version);
 	}
 	catch (std::exception& ex) {
 		LogError("Error parsing LSClientAuth packet from world.\n{0}", ex.what());
@@ -147,7 +145,7 @@ void LoginServer::ProcessSystemwideMessage(uint16_t opcode, EQ::Net::Packet& p) 
 	LogNetcode("Received ServerPacket from LS OpCode {:#04x}", opcode);
 
 	ServerSystemwideMessage* swm = (ServerSystemwideMessage*)p.Data();
-	zoneserver_list.SendEmoteMessageRaw(0, 0, AccountStatus::Player, swm->type, swm->message);
+	ZSList::Instance()->SendEmoteMessageRaw(0, 0, AccountStatus::Player, swm->type, swm->message);
 }
 
 void LoginServer::ProcessLSRemoteAddr(uint16_t opcode, EQ::Net::Packet& p) {
@@ -197,7 +195,7 @@ bool LoginServer::Connect() {
 
 				SendNewInfo();
 				SendStatus();
-				zoneserver_list.SendLSZones();
+				ZSList::Instance()->SendLSZones();
 				m_statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
 					SendStatus();
 				}
@@ -227,7 +225,7 @@ bool LoginServer::Connect() {
 				LogInfo("Connected to Loginserver: {}:{}", m_loginserver_address, m_loginserver_port);
 				SendNewInfo();
 				SendStatus();
-				zoneserver_list.SendLSZones();
+				ZSList::Instance()->SendLSZones();
 				m_statusupdate_timer.reset(new EQ::Timer(LoginServer_StatusUpdateInterval, true, [this](EQ::Timer* t) {
 					SendStatus();
 				}

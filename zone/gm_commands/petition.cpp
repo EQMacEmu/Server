@@ -52,7 +52,7 @@ void command_petition(Client *c, const Seperator *sep)
 			c->Message(Chat::White, "Usage: #petition view (petition number) Type #petition list for a list");
 			return;
 		}
-		Log(Logs::Detail, Logs::Normal, "Petition viewed by %s, petition number:", c->GetName(), atoi(sep->arg[2]));
+		LogInfo("Petition viewed by [{}], petition number: [{}]", c->GetName(), atoi(sep->arg[2]));
 		c->Message(Chat::Red, "ID : Character , Account , Petition Text");
 		std::string query = StringFormat("SELECT petid, charname, accountname, petitiontext FROM petitions WHERE petid = %i", atoi(sep->arg[2]));
 		auto results = database.QueryDatabase(query);
@@ -74,7 +74,7 @@ void command_petition(Client *c, const Seperator *sep)
 			return;
 		}
 
-		Log(Logs::General, Logs::Normal, "Petition information request from %s, petition number:", c->GetName(), atoi(sep->arg[2]));
+		LogInfo("Petition information request from [{}], petition number: [{}]", c->GetName(), atoi(sep->arg[2]));
 		c->Message(Chat::Red, "ID : Character , Account , Zone , Class , Race , Level , Last GM , GM Comment");
 		std::string query = StringFormat("SELECT petid, charname, accountname, zone, charclass, charrace, charlevel, lastgm, gmtext FROM petitions WHERE petid = %i", atoi(sep->arg[2]));
 		auto results = database.QueryDatabase(query);
@@ -98,7 +98,7 @@ void command_petition(Client *c, const Seperator *sep)
 				return;
 			}
 
-			Log(Logs::Detail, Logs::Normal, "Petition update request from %s, petition number:", c->GetName(), atoi(sep->arg[2]));
+			LogInfo("Petition update request from [{}], petition number: [{}]", c->GetName(), atoi(sep->arg[2]));
 			std::string query = StringFormat("UPDATE `petitions` SET `lastgm` = '%s', `gmtext` = '%s' WHERE `petid` = %i;", c->GetName(), sep->arg[3], atoi(sep->arg[2]));
 			auto results = database.QueryDatabase(query);
 
@@ -129,8 +129,8 @@ void command_petition(Client *c, const Seperator *sep)
 			if (!results.Success())
 				return;
 
-			petition_list.ReadDatabase();
-			Log(Logs::Detail, Logs::Normal, "Delete petition request from %s, petition number:", c->GetName(), atoi(sep->arg[2]));
+			PetitionList::Instance()->ReadDatabase();
+			LogInfo("Delete petition request from [{}], petition number: [{}]", c->GetName(), atoi(sep->arg[2]));
 		}
 		else
 			c->Message(Chat::White, "Your access level is not high enough to use this command.");

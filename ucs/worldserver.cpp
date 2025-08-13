@@ -42,8 +42,6 @@ extern WorldServer worldserver;
 extern Clientlist *g_Clientlist;
 extern const ucsconfig *Config;
 extern UCSDatabase database;
-extern DiscordManager  discord_manager;
-extern PathManager path;
 
 WorldServerList::WorldServerList()
 {
@@ -67,7 +65,7 @@ WorldServerList::WorldServerList()
 	char str[50];
 	int worlds = 0;
 	auto jsconf = EQ::JsonConfigFile::Load(
-		fmt::format("{}/ucs_multiserver.json", path.GetServerPath())
+		fmt::format("{}/ucs_multiserver.json", PathManager::Instance()->GetServerPath())
 	);
 	auto c = jsconf.RawHandle();
 	Json::Value *ucs = nullptr;;
@@ -161,7 +159,7 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet &p) {
 			auto o = (ServerReload::Request *)pack->pBuffer;
 			if (o->type == ServerReload::Type::Logs) {
 				LogSys.LoadLogDatabaseSettings();
-				player_event_logs.ReloadSettings();
+				PlayerEventLogs::Instance()->ReloadSettings();
 			}
 
 			break;
@@ -173,14 +171,14 @@ void WorldServer::ProcessMessage(uint16 opcode, EQ::Net::Packet &p) {
 			cereal::BinaryInputArchive archive(ss);
 			archive(n);
 
-			discord_manager.QueuePlayerEventMessage(n);
+			DiscordManager::Instance()->QueuePlayerEventMessage(n);
 
 			break;
 		}		
 		case ServerOP_DiscordWebhookMessage: {
 			auto* q = (DiscordWebhookMessage_Struct*)p.Data();
 
-			discord_manager.QueueWebhookMessage(
+			DiscordManager::Instance()->QueueWebhookMessage(
 				q->webhook_id,
 				q->message
 			);

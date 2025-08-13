@@ -16,17 +16,17 @@
 	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "../common/global_define.h"
-#include "../common/misc_functions.h"
 #include "zonelist.h"
 #include "zoneserver.h"
 #include "worlddb.h"
 #include "world_config.h"
-#include "../common/json/json.h"
-#include "../common/event_sub.h"
-#include "web_interface.h"
+#include "../common/misc_functions.h"
 #include "../common/servertalk.h"
 #include "../common/strings.h"
 #include "../common/random.h"
+#include "../common/json/json.h"
+#include "../common/event_sub.h"
+#include "web_interface.h"
 #include "../common/zone_store.h"
 #include "../common/events/player_event_logs.h"
 #include "../common/patches/patches.h"
@@ -34,15 +34,12 @@
 #include "../common/content/world_content_service.h"
 #include "world_boot.h"
 #include "ucs.h"
+#include "clientlist.h"
 #include "queryserv.h"
 
 
 extern uint32 numzones;
 extern bool holdzones;
-extern UCSConnection UCSLink;
-extern QueryServConnection QSLink;
-extern EQ::Random emu_random;
-extern WebInterfaceList web_interface;
 volatile bool UCSServerAvailable_ = false;
 
 void CatchSignal(int sig_num);
@@ -585,7 +582,7 @@ void ZSList::RebootZone(const char* ip1,uint16 port,const char* ip2, uint32 skip
 		safe_delete_array(tmp);
 		return;
 	}
-	uint32 z = emu_random.Int(0, y-1);
+	uint32 z = EQ::Random::Instance()->Int(0, y-1);
 
 	auto pack = new ServerPacket(ServerOP_ZoneReboot, sizeof(ServerZoneReboot_Struct));
 	ServerZoneReboot_Struct* s = (ServerZoneReboot_Struct*) pack->pBuffer;
@@ -786,7 +783,7 @@ void ZSList::OnTick(EQ::Timer* t)
 		outzone["StaticZone"] = zone->IsStaticZone();
 		out["data"].append(outzone);
 	}
-	web_interface.SendEvent(out);
+	WebInterfaceList::Instance()->SendEvent(out);
 }
 
 const std::list<std::unique_ptr<ZoneServer>> &ZSList::getZoneServerList() const
@@ -851,16 +848,16 @@ void ZSList::SendServerReload(ServerReload::Type type, uchar *packet)
 		RuleManager::Instance()->LoadRules(&database, RuleManager::Instance()->GetActiveRuleset(), true);
 	}
 	else if (type == ServerReload::Type::SkillCaps) {
-		skill_caps.ReloadSkillCaps();
+		SkillCaps::Instance()->ReloadSkillCaps();
 	}
 	else if (type == ServerReload::Type::ContentFlags) {
-		content_service.SetExpansionContext()->ReloadContentFlags();
+		WorldContentService::Instance()->SetExpansionContext()->ReloadContentFlags();
 	}
 	else if (type == ServerReload::Type::Logs) {
 		LogSys.LoadLogDatabaseSettings();
-		player_event_logs.ReloadSettings();
-		UCSLink.SendPacket(&pack);
-		QSLink.SendPacket(&pack);
+		PlayerEventLogs::Instance()->ReloadSettings();
+		UCSConnection::Instance()->SendPacket(&pack);
+		QueryServConnection::Instance()->SendPacket(&pack);
 	}
 
 	// Send the packet to all zones with staggered delays

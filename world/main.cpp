@@ -18,8 +18,6 @@
  *
  */
 
-#define PLATFORM_WORLD 1
-
 #include "../common/global_define.h"
 
 #include <iostream>
@@ -75,39 +73,26 @@
 #include "queryserv.h"
 #include "web_interface.h"
 #include "console.h"
-#include "world_boot.h"
 
 #include "world_server_cli.h"
 #include "../common/content/world_content_service.h"
 #include "../common/zone_store.h"
 #include "world_event_scheduler.h"
+#include "world_boot.h"
 #include "../common/path_manager.h"
 #include "../common/events/player_event_logs.h"
 #include "../common/skill_caps.h"
 #include "../common/ip_util.h"
 
-SkillCaps           skill_caps;
-ZoneStore           zone_store;
 TimeoutManager      timeout_manager;
 EQStreamFactory     eqsf(WorldStream,9000);
-ClientList          client_list;
-ZSList              zoneserver_list;
-LoginServerList     loginserverlist;
-UCSConnection       UCSLink;
-QueryServConnection QSLink;
 LauncherList        launcher_list; 
-WorldEventScheduler event_scheduler;
-EQ::Random          emu_random;
 volatile bool       RunLoops = true;
 uint32              numclients = 0;
 uint32              numzones = 0;
 bool                holdzones = false;
 const WorldConfig   *Config;
 EQEmuLogSys         LogSys;
-WebInterfaceList    web_interface;
-WorldContentService content_service;
-PathManager         path;
-PlayerEventLogs     player_event_logs;
 
 void CatchSignal(int sig_num);
 
@@ -134,7 +119,7 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	if (!WorldBoot::LoadServerConfig()) {
 		return 0;
@@ -148,16 +133,18 @@ int main(int argc, char** argv) {
 		LogError("Could not set signal handler");
 		return 1;
 	}
+
 	if (signal(SIGTERM, CatchSignal) == SIG_ERR)	{
 		LogError("Could not set signal handler");
 		return 1;
 	}
-	#ifndef WIN32
+
+#ifndef WIN32
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)	{
 		LogError("Could not set signal handler");
 		return 1;
 	}
-	#endif
+#endif
 
 	WorldBoot::RegisterLoginservers();
 	WorldBoot::LoadDatabaseConnections();
@@ -167,14 +154,18 @@ int main(int argc, char** argv) {
 
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
-
 	Timer player_event_log_process(1000);
 	player_event_log_process.Start(1000);
 
 	// global loads
 	LogInfo("Loading launcher list..");
 	launcher_list.LoadList();
-	zoneserver_list.Init();
+	ZSList::Instance()->Init();
+
+	if (IpUtil::IsPortInUse(Config->WorldIP, Config->WorldTCPPort)) {
+		LogError("World port [{}] already in use", Config->WorldTCPPort);
+		return 1;
+	}
 
 	std::unique_ptr<EQ::Net::ConsoleServer> console;
 	if (Config->TelnetEnabled) {
@@ -183,7 +174,7 @@ int main(int argc, char** argv) {
 		RegisterConsoleFunctions(console);
 	}
 
-	skill_caps.SetContentDatabase(&database)->LoadSkillCaps();
+	SkillCaps::Instance()->SetContentDatabase(&database)->LoadSkillCaps();
 
 	std::unique_ptr<EQ::Net::ServertalkServer> server_connection;
 	server_connection = std::make_unique<EQ::Net::ServertalkServer>();
@@ -198,7 +189,7 @@ int main(int argc, char** argv) {
 	server_connection->OnConnectionIdentified(
 		"Zone", [&console](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
 			numzones++;
-			zoneserver_list.Add(new ZoneServer(connection, console.get()));
+			ZSList::Instance()->Add(new ZoneServer(connection, console.get()));
 
 			LogInfo(
 				"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
@@ -213,7 +204,7 @@ int main(int argc, char** argv) {
 	server_connection->OnConnectionRemoved(
 		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
 			numzones--;
-			zoneserver_list.Remove(connection->GetUUID());
+			ZSList::Instance()->Remove(connection->GetUUID());
 
 			LogInfo(
 				"Removed Zone Server connection from [{}] total zone_count [{}]",
@@ -255,7 +246,7 @@ int main(int argc, char** argv) {
 				connection->Handle()->RemotePort(),
 				connection->GetUUID());
 
-			QSLink.AddConnection(connection);
+			QueryServConnection::Instance()->AddConnection(connection);
 		}
 	);
 
@@ -266,7 +257,7 @@ int main(int argc, char** argv) {
 				connection->GetUUID()
 			);
 
-			QSLink.RemoveConnection(connection);
+			QueryServConnection::Instance()->RemoveConnection(connection);
 		}
 	);
 
@@ -279,11 +270,9 @@ int main(int argc, char** argv) {
 				connection->GetUUID()
 			);
 
-			UCSLink.SetConnection(connection);
+			UCSConnection::Instance()->SetConnection(connection);
 
-			zoneserver_list.UpdateUCSServerAvailable();
-
-			
+			ZSList::Instance()->UpdateUCSServerAvailable();
 		}
 	);
 
@@ -291,12 +280,12 @@ int main(int argc, char** argv) {
 		"UCS", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
 			LogInfo("Connection lost from UCS Server [{}]", connection->GetUUID());
 
-			auto ucs_connection = UCSLink.GetConnection();
+			auto ucs_connection = UCSConnection::Instance()->GetConnection();
 
 			if (ucs_connection->GetUUID() == connection->GetUUID()) {
 				LogInfo("Removing currently active UCS connection");
-				UCSLink.SetConnection(nullptr);
-				zoneserver_list.UpdateUCSServerAvailable(false);
+				UCSConnection::Instance()->SetConnection(nullptr);
+				ZSList::Instance()->UpdateUCSServerAvailable(false);
 			}
 		}
 	);
@@ -310,7 +299,7 @@ int main(int argc, char** argv) {
 				connection->GetUUID()
 			);
 
-			web_interface.AddConnection(connection);
+			WebInterfaceList::Instance()->AddConnection(connection);
 		}
 	);
 
@@ -321,7 +310,7 @@ int main(int argc, char** argv) {
 				connection->GetUUID()
 			);
 
-			web_interface.RemoveConnection(connection);
+			WebInterfaceList::Instance()->RemoveConnection(connection);
 		}
 	);
 
@@ -337,20 +326,19 @@ int main(int argc, char** argv) {
 	//register all the patches we have avaliable with the stream identifier.
 	EQStreamIdentifier stream_identifier;
 	RegisterAllPatches(stream_identifier);
-	zoneserver_list.shutdowntimer = new Timer(60000);
-	zoneserver_list.shutdowntimer->Disable();
-	zoneserver_list.reminder = new Timer(20000);
-	zoneserver_list.reminder->Disable();
+	ZSList::Instance()->shutdowntimer = new Timer(60000);
+	ZSList::Instance()->shutdowntimer->Disable();
+	ZSList::Instance()->reminder = new Timer(20000);
+	ZSList::Instance()->reminder->Disable();
 	Timer InterserverTimer(INTERSERVER_TIMER); // does MySQL pings and auto-reconnect
 	InterserverTimer.Trigger();
-	uint8 ReconnectCounter = 100;
-	std::shared_ptr<EQStream> eqs;
+	uint8                        ReconnectCounter = 100;
+	std::shared_ptr<EQStream>    eqs;
 	std::shared_ptr<EQOldStream> eqos;
-	EQStreamInterface *eqsi;
+	EQStreamInterface            *eqsi;
 
-	Timer player_event_process_timer(1000);
-	if (player_event_logs.LoadDatabaseConnection()) {
-		player_event_logs.Init();
+	if (PlayerEventLogs::Instance()->LoadDatabaseConnection()) {
+		PlayerEventLogs::Instance()->Init();
 	}
 
 	auto loop_fn = [&](EQ::Timer* t) {
@@ -405,7 +393,7 @@ int main(int argc, char** argv) {
 					LogInfo("Connection [{0}] PASSED banned IPs check. Processing connection.", inet_ntoa(in));
 					auto client = new Client(eqsi);
 					// @merth: client->zoneattempt=0;
-					client_list.Add(client);
+					ClientList::Instance()->Add(client);
 				} else {
 					LogInfo("Connection from [{0}] FAILED banned IPs check. Closing connection.", inet_ntoa(in));
 					eqsi->Close(); //Lieka: If the inbound IP is on the banned table, close the EQStream.
@@ -419,21 +407,17 @@ int main(int argc, char** argv) {
 				);
 				auto client = new Client(eqsi);
 				// @merth: client->zoneattempt=0;
-				client_list.Add(client);
+				ClientList::Instance()->Add(client);
 			}
 		}
 
-		event_scheduler.Process(&zoneserver_list);
+		WorldEventScheduler::Instance()->Process(ZSList::Instance());
 
-		client_list.Process();
+		ClientList::Instance()->Process();
 		
-		if (player_event_process_timer.Check()) {
-			std::jthread event_thread(&PlayerEventLogs::Process, &player_event_logs);
-		}
-
 		if(EQTimeTimer.Check()) {
 			TimeOfDay_Struct tod;
-			zoneserver_list.worldclock.GetCurrentEQTimeOfDay(time(0), &tod);
+			ZSList::Instance()->worldclock.GetCurrentEQTimeOfDay(time(0), &tod);
 			if (!database.SaveTime(tod.minute, tod.hour, tod.day, tod.month, tod.year)) {
 				LogEqTime("Failed to save eqtime");
 			}
@@ -450,12 +434,12 @@ int main(int argc, char** argv) {
 
 		//check for timeouts in other threads
 		timeout_manager.CheckTimeouts();
-		zoneserver_list.Process();
+		ZSList::Instance()->Process();
 		launcher_list.Process();
 
 		if (!RuleB(Logging, PlayerEventsQSProcess)) {
 			if (player_event_log_process.Check()) {
-				player_event_logs.Process();
+				PlayerEventLogs::Instance()->Process();
 			}
 		}
 
@@ -466,7 +450,7 @@ int main(int argc, char** argv) {
 			std::string window_title = fmt::format(
 				"World [{}] Clients [{}]",
 				Config->LongName,
-				client_list.GetClientCount()
+				ClientList::Instance()->GetClientCount()
 			);
 			UpdateWindowTitle(window_title);
 
@@ -484,7 +468,7 @@ int main(int argc, char** argv) {
 
 	LogInfo("World main loop completed.");
 	LogInfo("Shutting down zone connections (if any).");
-	zoneserver_list.KillAll();
+	ZSList::Instance()->KillAll();
 	LogInfo("Zone (TCP) listener stopped.");
 	LogInfo("Client (UDP) listener stopped.");
 	eqsf.Close();

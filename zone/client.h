@@ -113,13 +113,13 @@ enum { //scribing argument to MemorizeSpell
 //Modes for the zoning state of the client.
 typedef enum {
 	ZoneToSafeCoords, // Always send ZonePlayerToBind_Struct to client: Succor/Evac
-	GMSummon, // Always send ZonePlayerToBind_Struct to client: Only a GM Summon
-	ZoneToBindPoint, // Always send ZonePlayerToBind_Struct to client: Death Only
-	ZoneSolicited, // Always send ZonePlayerToBind_Struct to client: Portal, Translocate, Evac spells that have a x y z coord in the spell data
+	GMSummon,         // Always send ZonePlayerToBind_Struct to client: Only a GM Summon
+	ZoneToBindPoint,  // Always send ZonePlayerToBind_Struct to client: Death Only
+	ZoneSolicited,    // Always send ZonePlayerToBind_Struct to client: Portal, Translocate, Evac spells that have a x y z coord in the spell data
 	ZoneUnsolicited,
-	GateToBindPoint, // Always send RequestClientZoneChange_Struct to client: Gate spell or Translocate To Bind Point spell
-	SummonPC, // In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
-	Rewind, // Summon to /rewind location.
+	GateToBindPoint,  // Always send RequestClientZoneChange_Struct to client: Gate spell or Translocate To Bind Point spell
+	SummonPC,         // In-zone GMMove() always: Call of the Hero spell or some other type of in zone only summons
+	Rewind,           // Summon to /rewind location.
 	EvacToSafeCoords
 } ZoneMode;
 
@@ -741,7 +741,7 @@ public:
 
 	inline bool IsTrader() const { return(Trader); }
 	eqFilterMode GetFilter(eqFilterType filter_id) const { return ClientFilters[filter_id]; }
-	void SetFilter(eqFilterType filter_id, eqFilterMode value) { ClientFilters[filter_id]=value; }
+	void SetFilter(eqFilterType filter_id, eqFilterMode filter_mode) { ClientFilters[filter_id] = filter_mode; }
 
 	void LeaveGroup();
 
@@ -919,7 +919,10 @@ public:
 
 	bool ClickyOverride() { return clicky_override; }
 	void SetActiveDisc(uint8 value, int16 spellid) { active_disc = value; active_disc_spell = spellid; }
-	void FadeDisc() { BuffFadeBySpellID(active_disc_spell); p_timers.Clear(&database, pTimerSpellStart + active_disc_spell); active_disc = 0; active_disc_spell = 0; Log(Logs::General, Logs::Discs, "Fading currently enabled disc."); }
+	void FadeDisc() { 
+		BuffFadeBySpellID(active_disc_spell); p_timers.Clear(&database, pTimerSpellStart + active_disc_spell); active_disc = 0; active_disc_spell = 0; 
+		LogDiscs("Fading currently enabled disc."); 
+	}
 	uint8 GetActiveDisc() { return active_disc; }
 	uint16 GetActiveDiscSpell() { return active_disc_spell; }
 	bool HasInstantDisc(uint16 skill_type = 0);
@@ -1169,7 +1172,7 @@ private:
 	bool AddPacket(const EQApplicationPacket *, bool);
 	bool AddPacket(EQApplicationPacket**, bool);
 	bool SendAllPackets();
-	std::deque<CLIENTPACKET *> clientpackets;
+	std::deque<std::unique_ptr<CLIENTPACKET>> clientpackets;
 
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);

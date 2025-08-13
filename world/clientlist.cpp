@@ -36,9 +36,6 @@
 #include "../common/zone_store.h"
 #include <set>
 
-extern WebInterfaceList web_interface;
-
-extern ZSList			zoneserver_list;
 uint32 numplayers = 0;	//this really wants to be a member variable of ClientList...
 
 ClientList::ClientList()
@@ -267,7 +264,7 @@ void ClientList::DisconnectByIP(uint32 iIP) {
 				strcpy(skp->adminname, "SessionLimit");
 				strcpy(skp->name, countCLEIPs->name());
 				skp->adminrank = 255;
-				zoneserver_list.SendPacket(pack);
+				ZSList::Instance()->SendPacket(pack);
 				safe_delete(pack);
 			}
 			countCLEIPs->SetOnline(CLE_Status::Offline);
@@ -621,7 +618,7 @@ void ClientList::SendOnlineGuildMembers(uint32 FromID, uint32 GuildID)
 
 		Iterator.Advance();
 	}
-	zoneserver_list.SendPacket(from->zone(), pack);
+	ZSList::Instance()->SendPacket(from->zone(), pack);
 	safe_delete(pack);
 }
 
@@ -1302,7 +1299,7 @@ void ClientList::RemoveCLEReferances(ClientListEntry* cle) {
 
 bool ClientList::SendPacket(const char* to, ServerPacket* pack) {
 	if (to == 0 || to[0] == 0) {
-		zoneserver_list.SendPacket(pack);
+		ZSList::Instance()->SendPacket(pack);
 		return true;
 	}
 	else if (to[0] == '*') {
@@ -1318,7 +1315,7 @@ bool ClientList::SendPacket(const char* to, ServerPacket* pack) {
 			}
 			return false;
 		} else {
-			ZoneServer* zs = zoneserver_list.FindByName(to);
+			ZoneServer* zs = ZSList::Instance()->FindByName(to);
 			if (zs != nullptr) {
 				zs->SendPacket(pack);
 				return true;
@@ -1348,7 +1345,7 @@ void ClientList::SendGuildPacket(uint32 guild_id, ServerPacket* pack) {
 	cur = zone_ids.begin();
 	end = zone_ids.end();
 	for(; cur != end; cur++) {
-		zoneserver_list.SendPacket(*cur, pack);
+		ZSList::Instance()->SendPacket(*cur, pack);
 	}
 }
 
@@ -1441,7 +1438,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 		);
 
 	if (client_count[EQ::versions::ClientVersionBit::bit_MacPC]) {
-		zoneserver_list.SendEmoteMessage(
+		ZSList::Instance()->SendEmoteMessage(
 			Name,
 			0,
 			AccountStatus::Player,
@@ -1454,7 +1451,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 	}
 
 	if (client_count[EQ::versions::ClientVersionBit::bit_MacIntel]) {
-		zoneserver_list.SendEmoteMessage(
+		ZSList::Instance()->SendEmoteMessage(
 			Name,
 			0,
 			AccountStatus::Player,
@@ -1467,7 +1464,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 	}
 
 	if (client_count[EQ::versions::ClientVersionBit::bit_MacPPC]) {
-		zoneserver_list.SendEmoteMessage(
+		ZSList::Instance()->SendEmoteMessage(
 			Name,
 			0,
 			AccountStatus::Player,
@@ -1479,7 +1476,7 @@ void ClientList::SendClientVersionSummary(const char *Name)
 		);
 	}
 
-	zoneserver_list.SendEmoteMessage(Name, 0, AccountStatus::Player, Chat::NPCQuestSay, fmt::format(
+	ZSList::Instance()->SendEmoteMessage(Name, 0, AccountStatus::Player, Chat::NPCQuestSay, fmt::format(
 		"Client Counts | Total: {} , Unique IPs: {} ",
 		total_clients,
 		unique_ips.size()
@@ -1586,16 +1583,20 @@ void ClientList::GetClientList(Json::Value &response, bool full_list)
 
 		Json::Value row;
 
-		row["online"] = cle->Online();
 		row["id"] = cle->GetID();
+		row["name"] = cle->name();
+		row["level"] = cle->level();
 		row["ip"] = cle->GetIP();
-		row["loginserver_id"] = cle->LSID();
-		row["loginserver_account_id"] = cle->LSAccountID();
-		row["loginserver_name"] = cle->LSName();
-		row["world_admin"] = cle->WorldAdmin();
+		row["gm"] = cle->GetGM();
+		row["race"] = cle->race();
+		row["class"] = cle->class_();
+		row["client_version"] = cle->GetClientVersion();
+		row["admin"] = cle->Admin();
 		row["account_id"] = cle->AccountID();
 		row["account_name"] = cle->AccountName();
-		row["admin"] = cle->Admin();
+		row["character_id"] = cle->CharID();
+		row["anon"] = cle->Anon();
+		row["guild_id"] = cle->GuildID();
 
 		if (full_list) {
 			row["loginserver_account_id"] = cle->LSAccountID();
@@ -1717,6 +1718,6 @@ void ClientList::OnTick(EQ::Timer* t)
 		out["data"].append(outclient);
 		Iterator.Advance();
 	}
-	web_interface.SendEvent(out);
+	WebInterfaceList::Instance()->SendEvent(out);
 }
 

@@ -879,7 +879,7 @@ void LuaParser::ReloadQuests() {
 	std::string module_path = lua_tostring(L, -1);
 	lua_pop(L, 1);
 
-	for (const auto &dir : path.GetLuaModulePaths()) {
+	for (const auto &dir : PathManager::Instance()->GetLuaModulePaths()) {
 		module_path += fmt::format(";{}/?.lua", dir);
 		module_path += fmt::format(";{}/?/init.lua", dir);
 		module_path += fmt::format(";{}/share/lua/{}/?.lua", dir, lua_version);
@@ -895,7 +895,7 @@ void LuaParser::ReloadQuests() {
 	module_path = lua_tostring(L, -1);
 	lua_pop(L, 1);
 
-	for (const auto &dir : path.GetLuaModulePaths()) {
+	for (const auto &dir : PathManager::Instance()->GetLuaModulePaths()) {
 		module_path += fmt::format(";{}/?{}", dir, libext);
 		module_path += fmt::format(";{}/lib/lua/{}/?{}", dir, lua_version, libext);
 	}
@@ -907,7 +907,7 @@ void LuaParser::ReloadQuests() {
 	MapFunctions(L);
 
 	// load init
-	for (auto &dir : path.GetQuestPaths()) {
+	for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 		std::string filename = fmt::format("{}/{}/script_init.lua", dir, QUEST_GLOBAL_DIRECTORY);
 
 		FILE *f = fopen(filename.c_str(), "r");
@@ -923,7 +923,7 @@ void LuaParser::ReloadQuests() {
 
 	//zone init - always loads after global
 	if (zone) {
-		for (auto &dir : path.GetQuestPaths()) {
+		for (auto &dir : PathManager::Instance()->GetQuestPaths()) {
 			std::string zone_script = fmt::format(
 				"{}/{}/script_init.lua",
 				dir,
@@ -1082,7 +1082,6 @@ void LuaParser::MapFunctions(lua_State *L) {
 			lua_register_object(),
 			lua_register_packet(),
 			lua_register_packet_opcodes(),
-			lua_register_rules_const(),
 			lua_register_rulei(),
 			lua_register_ruler(),
 			lua_register_ruleb()

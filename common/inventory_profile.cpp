@@ -100,7 +100,7 @@ bool EQ::InventoryProfile::SetInventoryVersion(versions::MobVersion inventory_ve
 	}
 	else {
 		m_lookup = inventory::Lookup(versions::MobVersion::Unknown);
-		Log(Logs::General, Logs::Error, "InventoryVersion set request after initial set (old: %u, new: %u)",
+		LogError("InventoryVersion set request after initial set (old: [{}], new: [{}])",
 			static_cast<uint32>(m_mob_version), static_cast<uint32>(inventory_version));
 		return false;
 	}

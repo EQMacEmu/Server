@@ -9,9 +9,6 @@
 #include "../common/packet_dump.h"
 #include "../common/event/timer.h"
 
-
-extern QueryServConnection QSLink;
-
 UCSConnection::UCSConnection()
 {
 	connection = 0;

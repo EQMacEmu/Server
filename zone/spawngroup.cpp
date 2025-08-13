@@ -98,7 +98,7 @@ uint32 SpawnGroup::GetNPCType(uint32& rtime, uint32 spawn2_id)
 			// We will only reach this point once per round if the spawn limit is 1, because all the spawnpoints will mass reset in Spawn2::Process() immediately following this.
 			// For spawn limits greater than 1, we will reach this point once for every spawnpoint that has expired and then they will each reset one at a time. A mass timer reset will not occur here.
 			// This is important because we may have multiple spawnpoints waiting to spawn and we need to keep track of their respective timers.
-			Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: %d spawns are waiting to spawn, and %d spawns are up. Limit of %d prevents a new NPC from spawning. NPC will spawn in %d seconds", id, waiting_to_spawn, spawned_count, group_spawn_limit, static_cast<uint32>(remaining_time / 1000));
+			LogSpawnsDetail("Spawngroup [{}]: [{}] spawns are waiting to spawn, and [{}] spawns are up. Limit of [{}] prevents a new NPC from spawning. NPC will spawn in [{}] seconds", id, waiting_to_spawn, spawned_count, group_spawn_limit, static_cast<uint32>(remaining_time / 1000));
 			rtime = group_spawn_limit == 1 ? remaining_time_id: 0;
 			return 0;
 		}
@@ -112,14 +112,14 @@ uint32 SpawnGroup::GetNPCType(uint32& rtime, uint32 spawn2_id)
 			{
 				if (zone->GetAvailPointCount(this) > 1)
 				{
-					Log(Logs::General, Logs::Spawns, "Spawngroup %d: Spawnpoint %d Forcing another spawnpoint to be picked.", id, spawn2_id);
+					LogSpawns("Spawngroup [{}]: Spawnpoint [{}] Forcing another spawnpoint to be picked.", id, spawn2_id);
 					skipped_spawn = spawn2_id;
 					rtime = 1;
 					return 0;
 				}
 			}
 
-			Log(Logs::Detail, Logs::Spawns, "Spawngroup %d: %d has passed limit checks.", id, spawn2_id);
+			LogSpawnsDetail("Spawngroup [{}]: [{}] has passed limit checks.", id, spawn2_id);
 		}
 	}
 

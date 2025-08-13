@@ -56,7 +56,6 @@ extern QueryServ* QServ;
 extern Zone* zone;
 extern volatile bool is_zone_loaded;
 extern WorldServer worldserver;
-extern PetitionList petition_list;
 extern EntityList entity_list;
 
 bool Client::Process() {
@@ -102,7 +101,7 @@ bool Client::Process() {
 				else if (rest_timer.Check())
 				{
 					rested = true;
-					Log(Logs::General, Logs::Regen, "%s is now rested.", GetName());
+					LogRegen("[{}] is now rested.", GetName());
 					rest_timer.Disable();
 				}
 			}
@@ -112,7 +111,7 @@ bool Client::Process() {
 			if (rest_timer.Enabled() || rested)
 			{
 				rested = false;
-				Log(Logs::General, Logs::Regen, "%s is no longer rested.", GetName());
+				LogRegen("[{}] is no longer rested.", GetName());
 				rest_timer.Disable();
 			}
 		}
@@ -244,7 +243,7 @@ bool Client::Process() {
 			}
 			else
 			{
-				Log(Logs::General, Logs::Skills, "Bind wound failed, skillup check skipped.");
+				LogSkills("Bind wound failed, skillup check skipped.");
 			}
 		}
 
@@ -537,27 +536,27 @@ bool Client::Process() {
 	if (client_state == CLIENT_KICKED) {
 		Save();
 		OnDisconnect(true);
-		Log(Logs::General, Logs::Status, "Client disconnected (cs=k): %s", GetName());
+		LogInfo("Client disconnected (cs=k): [{}]", GetName());
 		return false;
 	}
 
 	if (client_state == DISCONNECTED) {
 		OnDisconnect(true);
-		Log(Logs::General, Logs::Error, "Client disconnected (cs=d): %s", GetName());
+		LogInfo("Client disconnected (cs=d): [{}]", GetName());
 		RecordPlayerEventLog(PlayerEvent::POSSIBLE_HACK, PlayerEvent::PossibleHackEvent{ .message = "/MQInstantCamp: Possible instant camp disconnect" });
 		return false;
 	}
 
 	if (client_state == CLIENT_WAITING_FOR_AUTH || client_state == CLIENT_AUTH_RECEIVED) {
 		if (get_auth_timer.Check()) {
-			Log(Logs::General, Logs::Error, "GetAuth() timed out waiting, kicking client");
+			LogInfo("GetAuth() timed out waiting, kicking client");
 			client_state = CLIENT_KICKED;
 			return true;
 		}
 		if (zone->CheckAuth(GetName())) {
 			// we have an auth
 			get_auth_timer.Stop();
-			Log(Logs::General, Logs::Error, "GetAuth() arrived, processing");
+			LogInfo("GetAuth() arrived, processing");
 			if (zoneentry != nullptr) {
 				client_state = CLIENT_AUTH_RECEIVED;
 				ret = HandlePacket(zoneentry);
@@ -643,7 +642,6 @@ bool Client::Process() {
 				OnDisconnect(true);
 			}
 			else {
-				Log(Logs::General, Logs::ZoneServer, "Client linkdead: %s", name);
 				LinkDead();
 			}
 		}
@@ -671,7 +669,7 @@ void Client::OnDisconnect(bool hard_disconnect) {
 	Mob *Other = trade->With();
 	if(Other)
 	{
-		Log(Logs::Detail, Logs::Trading, "Client disconnected during a trade. Returning their items."); 
+		LogTradingDetail("Client disconnected during a trade. Returning their items."); 
 		FinishTrade(this);
 
 		if(Other->IsClient())
@@ -719,7 +717,7 @@ void Client::BulkSendInventoryItems() {
 		if (inst) {
 			inst->Serialize(ob, EQ::invslot::slotCursor);
 			if (ob.tellp() == last_pos)
-				Log(Logs::General, Logs::Inventory, "Serialization failed on item slot %d during BulkSendInventoryItems.  Item skipped.", EQ::invslot::slotCursor);
+				LogInventory("Serialization failed on item slot [{}] during BulkSendInventoryItems.  Item skipped.", EQ::invslot::slotCursor);
 
 			last_pos = ob.tellp();
 		}
@@ -734,7 +732,7 @@ void Client::BulkSendInventoryItems() {
 		inst->Serialize(ob, slot_id);
 
 		if (ob.tellp() == last_pos)
-			Log(Logs::General, Logs::Inventory, "Serialization failed on item slot %d during BulkSendInventoryItems.  Item skipped.", slot_id);
+			LogInventory("Serialization failed on item slot [{}] during BulkSendInventoryItems.  Item skipped.", slot_id);
 
 		last_pos = ob.tellp();
 	}
@@ -748,7 +746,7 @@ void Client::BulkSendInventoryItems() {
 		inst->Serialize(ob, slot_id);
 
 		if (ob.tellp() == last_pos)
-			Log(Logs::General, Logs::Inventory, "Serialization failed on item slot %d during BulkSendInventoryItems.  Item skipped.", slot_id);
+			LogInventory("Serialization failed on item slot [{}] during BulkSendInventoryItems.  Item skipped.", slot_id);
 
 		last_pos = ob.tellp();
 	}	
@@ -762,7 +760,7 @@ void Client::BulkSendInventoryItems() {
 		inst->Serialize(ob, slot_id);
 
 		if (ob.tellp() == last_pos)
-			Log(Logs::General, Logs::Inventory, "Serialization failed on item slot %d during BulkSendInventoryItems.  Item skipped.", slot_id);
+			LogInventory("Serialization failed on item slot [{}] during BulkSendInventoryItems.  Item skipped.", slot_id);
 
 		last_pos = ob.tellp();
 	}
@@ -776,7 +774,7 @@ void Client::BulkSendInventoryItems() {
 		inst->Serialize(ob, slot_id);
 
 		if (ob.tellp() == last_pos)
-			Log(Logs::General, Logs::Inventory, "Serialization failed on item slot %d during BulkSendInventoryItems.  Item skipped.", slot_id);
+			LogInventory("Serialization failed on item slot [{}] during BulkSendInventoryItems.  Item skipped.", slot_id);
 
 		last_pos = ob.tellp();
 	}	
@@ -923,7 +921,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 			facmod = 0;
 		if (fac != 0 && facmod < ml.faction_required && zone->CanDoCombat())
 		{
-			Log(Logs::General, Logs::Trading, "Item %d is being skipped due to bad faction. Faction: %d Required: %d", ml.item, facmod, ml.faction_required);
+			LogTrading("Item [{}] is being skipped due to bad faction. Faction: [{}] Required: [{}]", ml.item, facmod, ml.faction_required);
 			continue;
 		}
 
@@ -931,12 +929,12 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		{
 			if(ml.qty_left <= 0)
 			{
-				Log(Logs::General, Logs::Trading, "Merchant is skipping item %d that has %d left.", ml.item, ml.qty_left);
+				LogTrading("Merchant is skipping item [{}] that has [{}] left.", ml.item, ml.qty_left);
 				continue;
 			}
 			else
 			{
-				Log(Logs::General, Logs::Trading, "Merchant is sending item %d that has %d left in slot %d.", ml.item, ml.qty_left, ml.slot);
+				LogTrading("Merchant is sending item [{}] that has [{}] left in slot [{}].", ml.item, ml.qty_left, ml.slot);
 			}
 		}
 
@@ -958,7 +956,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 				if(inst) 
 				{
 					std::string packet(inst->Serialize(ml.slot-1));
-					Log(Logs::Detail, Logs::Trading, "PERM (%d): %s was added to merchant in slot %d with price %d", i, item->Name, ml.slot, inst->GetPrice());
+					LogTradingDetail("PERM ([{}]): [{}] was added to merchant in slot [{}] with price [{}]", i, item->Name, ml.slot, inst->GetPrice());
 					ser_items[m] = packet;
 					size += packet.length();
 					m++;
@@ -995,7 +993,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 					size += packet.length();
 					m++;
 				}
-				Log(Logs::Detail, Logs::Trading, "TEMP (%d): %s was added to merchant in slot %d with %d count and %d charges and price %d", i, item->Name, ml.slot, capped_charges, charges, inst->GetPrice());
+				LogTradingDetail("TEMP ([{}]): %s was added to merchant in slot [{}] with [{}] count and [{}] charges and price [{}]", i, item->Name, ml.slot, capped_charges, charges, inst->GetPrice());
 			}
 		}
 		tmp_merlist.push_back(ml);
@@ -1004,7 +1002,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 		// 80 inventory slots + 10 "hidden" items.
 		if (i > 89)
 		{
-			Log(Logs::Detail, Logs::Trading, "Item at position %d is not being added.", i);
+			LogTradingDetail("Item at position [{}] is not being added.", i);
 			break;
 		}
 	}
@@ -1023,7 +1021,7 @@ void Client::BulkSendMerchantInventory(int merchant_id, int npcid)
 	delitempacket->priority = 6;
 	QueuePacket(delitempacket);
 	safe_delete(delitempacket);
-	Log(Logs::General, Logs::Trading, "Cleared last merchant slot %d", lastslot);
+	LogTrading("Cleared last merchant slot [{}]", lastslot);
 
 	//this resets the slot
 	zone->merchanttable[merchant_id] = merlist;
@@ -1133,7 +1131,7 @@ void Client::OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, float x,
 {
 	if(PendingRezzXP < 0) {
 		// pendingrezexp is set to -1 if we are not expecting an OP_RezzAnswer
-		Log(Logs::Detail, Logs::Spells, "Unexpected OP_RezzAnswer. Ignoring it.");
+		LogSpellsDetail("Unexpected OP_RezzAnswer. Ignoring it.");
 		Message(Chat::Red, "You have already been resurrected.\n");
 		return;
 	}
@@ -1143,7 +1141,7 @@ void Client::OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, float x,
 		// Mark the corpse as rezzed in the database, just in case the corpse has buried, or the zone the
 		// corpse is in has shutdown since the rez spell was cast.
 		database.MarkCorpseAsRezzed(PendingRezzDBID);
-		Log(Logs::Detail, Logs::Spells, "Player %s got a %i Rezz, spellid %i in zone%i",
+		LogSpellsDetail("Player [{}] got a [{}] Rezz, spellid [{}] in zone [{}]",
 				this->name, (uint16)spells[SpellID].base[0],
 				SpellID, ZoneID);
 
@@ -1195,7 +1193,7 @@ void Client::OPMemorizeSpell(const EQApplicationPacket* app)
 {
 	if(app->size != sizeof(MemorizeSpell_Struct))
 	{
-		Log(Logs::General, Logs::Error, "Wrong size on OP_MemorizeSpell. Got: %i, Expected: %i", app->size, sizeof(MemorizeSpell_Struct));
+		LogError("Wrong size on OP_MemorizeSpell. Got: [{}], Expected: [{}]", app->size, sizeof(MemorizeSpell_Struct));
 		DumpPacket(app);
 		return;
 	}
@@ -1691,7 +1689,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		// languages go here
 		if (gmskill->skill_id > 25)
 		{
-			Log(Logs::Detail, Logs::Combat, "Wrong Training Skill (languages)");
+			LogCombatDetail("Wrong Training Skill (languages)");
 			DumpPacket(app);
 			return;
 		}
@@ -1706,7 +1704,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		// normal skills go here
 		if (gmskill->skill_id > EQ::skills::HIGHEST_SKILL)
 		{
-			Log(Logs::Detail, Logs::Combat, "Wrong Training Skill (abilities)" );
+			LogCombatDetail("Wrong Training Skill (abilities)" );
 			DumpPacket(app);
 			return;
 		}
@@ -1714,12 +1712,12 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 		EQ::skills::SkillType skill = (EQ::skills::SkillType) gmskill->skill_id;
 
 		if(!CanHaveSkill(skill)) {
-			Log(Logs::Detail, Logs::Skills, "Tried to train skill %d, which is not allowed.", skill);
+			LogCombatDetail("Tried to train skill [{}], which is not allowed.", skill);
 			return;
 		}
 
 		if(MaxSkill(skill) == 0) {
-			Log(Logs::Detail, Logs::Skills, "Tried to train skill %d, but training is not allowed at this level.", skill);
+			LogSkillsDetail("Tried to train skill [{}], but training is not allowed at this level.", skill);
 			return;
 		}
 
@@ -1729,7 +1727,7 @@ void Client::OPGMTrainSkill(const EQApplicationPacket *app)
 			uint16 t_level = GetSkillTrainLevel(skill, GetClass());
 			if (t_level == 0)
 			{
-				Log(Logs::Detail, Logs::Combat, "Tried to train a new skill %d which is invalid for this race/class.", skill);
+				LogCombatDetail("Tried to train a new skill [{}] which is invalid for this race/class.", skill);
 				return;
 			}
 			// solar: the client code uses the level required as the initial skill level of a newly acquired skill.  it is believed

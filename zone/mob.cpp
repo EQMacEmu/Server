@@ -327,7 +327,7 @@ Mob::Mob(const char* in_name,
 	follow=0;
 	follow_dist = 100;	// Default Distance for Follow
 	flee_mode = false;
-	curfp = false;
+	currently_fleeing = false;
 	flee_timer.Start();
 
 	permarooted = (runspeed > 0.0f) ? false : true;
@@ -1102,7 +1102,7 @@ void Mob::SendHPUpdate(bool skipnpc, bool sendtoself)
 		return;
 
 	if(IsClient())
-		Log(Logs::Detail, Logs::Regen, "%s is setting HP to %d Sending out an update.", GetName(), GetHP());
+		LogRegenDetail("[{}] is setting HP to [{}] Sending out an update.", GetName(), GetHP());
 
 	EQApplicationPacket hp_app;
 	Group *group = nullptr;
@@ -1355,7 +1355,7 @@ void Mob::ShowStats(Client* client)
 			client->Message(Chat::White, "  PriSkill: %i SecSkill: %i PriMelee: %i SecMelee: %i Double Attack: %i%% Dual Wield: %i%%", n->GetPrimSkill(), n->GetSecSkill(), n->GetPrimaryMeleeTexture(), n->GetSecondaryMeleeTexture(), n->GetDoubleAttackChance(), n->GetDualWieldChance());
 			client->Message(Chat::White, "  Runspeed: %f Walkspeed: %f RunSpeedAnim: %i CurrentSpeed: %f Rooted: %d PermaRooted: %d", GetRunspeed(), GetWalkspeed(), GetRunAnimSpeed(), GetCurrentSpeed(), rooted, permarooted);
 			client->Message(Chat::White, "  AssistAggroMode: %d  IgnoreDistance: %0.2f  IgnoreDespawn: %d",  n->IsAssisting(), n->GetIgnoreDistance(), n->IgnoreDespawn());
-			client->Message(Chat::White, "  Fleespeed: %f CurFP: %i IsFleeing: %i IsBlind: %i IsFeared: %i", n->GetFearSpeed(), curfp, IsFleeing(), IsBlind(), IsFearedNoFlee());
+			client->Message(Chat::White, "  Fleespeed: %f CurFP: %i IsFleeing: %i IsBlind: %i IsFeared: %i", n->GetFearSpeed(), currently_fleeing, IsFleeing(), IsBlind(), IsFearedNoFlee());
 			client->Message(Chat::White, "  MerchantID: %i Shop Count: %d Greed: %d%% ", n->MerchantType, n->shop_count, n->GetGreedPercent());
 			client->Message(Chat::White, "  Primary Weapon: %i Secondary Weapon: %d", n->GetEquipment(EQ::textures::weaponPrimary), n->GetEquipment(EQ::textures::weaponSecondary));
 			n->QueryLoot(client);
@@ -1612,7 +1612,7 @@ void Mob::SendIllusionPacket(uint16 in_race, uint8 in_gender, uint8 in_texture, 
 		entity_list.QueueClients(this, outapp);
 	}
 	safe_delete(outapp);
-	Log(Logs::Detail, Logs::Spells, "Illusion: Race = %i, Gender = %i, Texture = %i, HelmTexture = %i, HairColor = %i, BeardColor = %i, EyeColor1 = %i, EyeColor2 = %i, HairStyle = %i, Face = %i, Size = %f",
+	LogSpellsDetail("Illusion: Race = [{}], Gender = [{}], Texture = [{}], HelmTexture = [{}], HairColor = [{}], BeardColor = [{}], EyeColor1 = [{}], EyeColor2 = [{}], HairStyle = [{}], Face = [{}], Size = [{}]",
 		this->race, this->gender, this->texture, this->helmtexture, this->haircolor, this->beardcolor, this->eyecolor1, this->eyecolor2, this->hairstyle, this->luclinface, this->size);
 }
 
@@ -1694,7 +1694,7 @@ const int32& Mob::SetMana(int32 amount)
 	cur_mana = amount < 0 ? 0 : (amount > mmana ? mmana : amount);
 /*
 	if(IsClient())
-		Log(Logs::Detail, Logs::Debug, "Setting mana for %s to %d (%4.1f%%)", GetName(), amount, GetManaRatio());
+		LogDebug("Setting mana for [{}] to [{}] ([{:.1f}])", GetName(), amount, GetManaRatio());
 */
 
 	return cur_mana;
@@ -2087,7 +2087,7 @@ bool Mob::CheckHateSummon(Mob* summoned) {
 	}
 
 	// this is so we don't have to make duplicate types; some mob types are 48-52 and only the 51-52s should summon
-	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && !content_service.IsTheShadowsOfLuclinEnabled()) {
+	if (IsNPC() && GetLevel() < 51 && GetLevel() > 47 && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 		return false;
 	}
 
@@ -2261,7 +2261,7 @@ void Mob::SendWearChange(uint8 material_slot, Client* sendto, bool skip_if_zero,
 
 	if (IsClient() && !IsPlayableRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
 	{
-		Log(Logs::Detail, Logs::Inventory, "%s tried to send a wearchange while they are illusioned as race %d. Returning.", GetName(), GetRace());
+		LogInventoryDetail("[{}] tried to send a wearchange while they are illusioned as race [{}]. Returning.", GetName(), GetRace());
 		return;
 	}
 
@@ -2301,7 +2301,7 @@ void Mob::SendWearChange(uint8 material_slot, Client* sendto, bool skip_if_zero,
 	}
 	else
 	{
-		Log(Logs::Detail, Logs::Inventory, "SendWearChange(): %s is sending a wear change to the zone. material %d color %d on slot %d", GetName(), wc->material, wc->color, material_slot);
+		LogInventoryDetail("SendWearChange(): [{}] is sending a wear change to the zone. material [{}] color [{}] on slot [{}]", GetName(), wc->material, wc->color.Color, material_slot);
 		entity_list.QueueWearChange(this, outapp, false, material_slot);
 	}
 	safe_delete(outapp);
@@ -2313,7 +2313,7 @@ void Mob::WearChange(uint8 material_slot, uint16 texture, uint32 color, Client* 
 {
 	if (IsClient() && !IsPlayableRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
 	{
-		Log(Logs::Detail, Logs::Inventory, "%s tried to send a wearchange while they are illusioned as race %d. Returning.", GetName(), GetRace());
+		LogInventoryDetail("[{}] tried to send a wearchange while they are illusioned as race [{}]. Returning.", GetName(), GetRace());
 		return;
 	}
 
@@ -2336,7 +2336,7 @@ void Mob::WearChange(uint8 material_slot, uint16 texture, uint32 color, Client* 
 	}
 	else
 	{
-		Log(Logs::Detail, Logs::Inventory, "WearChange(): %s is sending a wear change to the zone. material %d color %d on slot %d", GetName(), wc->material, wc->color.Color, material_slot);
+		LogInventoryDetail("WearChange(): [{}] is sending a wear change to the zone. material [{}] color [{}] on slot [{}]", GetName(), wc->material, wc->color.Color, material_slot);
 		bool force_helm = wc->wear_slot_id == EQ::textures::armorHead && wc->material == 0 && wc->color.Color == 0;
 		entity_list.QueueWearChange(this, outapp, false, material_slot, force_helm);
 	}
@@ -2685,7 +2685,7 @@ bool Mob::ExecWeaponProc(const EQ::ItemInstance *inst, uint16 spell_id, Mob *on)
 		if(IsClient()){
 			// Battle Fists will trigger this. The item was collected from AK, and has a spell proc 4113 which is correct for later
 			// eras. However, it is beyond what is in our spells_en file. 
-			Log(Logs::Detail, Logs::Spells, "Player %s, Weapon Procced invalid spell %u", this->GetName(), spell_id);
+			LogSpellsDetail("Player [{}], Weapon Procced invalid spell [{}]", this->GetName(), spell_id);
 		}
 		return false;
 	}
@@ -3356,12 +3356,12 @@ bool Mob::CombatPush(Mob* attacker, float pushback)
 		if (newz != BEST_Z_INVALID)
 			newloc.z = SetBestZ(newz);
 
-		Log(Logs::Detail, Logs::Combat, "Push: BestZ returned %0.2f for %0.2f,%0.2f,%0.2f", newloc.z, newloc.x, newloc.y, m_Position.z);
+		LogCombatDetail("Push: BestZ returned [{:.2f}] for [{:.2f}], [{:.2f}], [{:.2f}]", newloc.z, newloc.x, newloc.y, m_Position.z);
 	}
 
 	if(CheckCoordLosNoZLeaps(m_Position.x, m_Position.y, m_Position.z, newloc.x, newloc.y, newloc.z))
 	{
-		Log(Logs::Detail, Logs::Combat, "Push: X: %0.2f -> %0.2f Y: %0.2f -> %0.2f Z: %0.2f -> %0.2f", m_Position.x, newloc.x, m_Position.y, newloc.y, m_Position.z, newloc.z);
+		LogCombatDetail("Push: X: [{:.2f}] -> [{:.2f}] Y: [{:.2f}] -> [{:.2f}] Z: [{:.2f}] -> [{:.2f}]", m_Position.x, newloc.x, m_Position.y, newloc.y, m_Position.z, newloc.z);
 		m_Position.x = newloc.x;
 		m_Position.y = newloc.y;
 		m_Position.z = newloc.z;
@@ -3468,7 +3468,7 @@ void Mob::MeleeLifeTap(int32 damage) {
 	if(lifetap_amt && damage > 0){
 
 		lifetap_amt = damage * lifetap_amt / 100;
-		Log(Logs::Detail, Logs::Combat, "Melee lifetap healing for %d damage.", damage);
+		LogCombatDetail("Melee lifetap healing for [{}] damage.", damage);
 
 		if (lifetap_amt > 0)
 			HealDamage(lifetap_amt); //Heal self for modified damage amount.

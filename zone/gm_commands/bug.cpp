@@ -1,4 +1,5 @@
 #include "../client.h"
+#include "../petitions.h"
 
 void command_bug(Client *c, const Seperator *sep)
 {
@@ -43,7 +44,7 @@ void command_bug(Client *c, const Seperator *sep)
 			c->Message(Chat::White, "Usage: #bug view (bug number) Type #bug list for a list");
 			return;
 		}
-		Log(Logs::Detail, Logs::Normal, "Bug viewed by %s, bug number:", c->GetName(), atoi(sep->arg[2]));
+		LogInfo("Bug viewed by [{}], bug number: [{}]", c->GetName(), atoi(sep->arg[2]));
 		c->Message(Chat::Red, "ID : Name , Zone , x , y , z , Type , Flag , Target , Status , Client, Time Sent , Bug");
 		std::string query = StringFormat("SELECT id, name, zone, x, y, z, type, flag, target, status, ui, date, bug FROM bugs WHERE id = %i", atoi(sep->arg[2]));
 		auto results = database.QueryDatabase(query);
@@ -75,8 +76,8 @@ void command_bug(Client *c, const Seperator *sep)
 			if (!results.Success())
 				return;
 
-			petition_list.ReadDatabase();
-			Log(Logs::Detail, Logs::Normal, "Delete bug request from %s, bug number:", c->GetName(), atoi(sep->arg[2]));
+			PetitionList::Instance()->ReadDatabase();
+			LogInfo("Delete bug request from [{}], bug number: [{}]", c->GetName(), atoi(sep->arg[2]));
 		}
 		else
 			c->Message(Chat::White, "Your access level is not high enough to use this command.");

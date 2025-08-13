@@ -505,7 +505,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 		}
 		p->hate += in_hate;
 		p->bFrenzy = bFrenzy;
-		Log(Logs::Detail, Logs::Aggro, "%s is adding %d damage and %d hate to %s hatelist.", ent->GetName(), in_dam, in_hate, owner->GetName());
+		LogAggro("[{}] is adding [{}] damage and [{}] hate to [{}] hatelist.", ent->GetName(), in_dam, in_hate, owner->GetName());
 	}
 	else if (iAddIfNotExist)
 	{
@@ -562,7 +562,7 @@ void HateList::Add(Mob *ent, int32 in_hate, int32 in_dam, bool bFrenzy, bool iAd
 		p->bFrenzy = bFrenzy;
 		list.push_back(p);
 		parse->EventNPC(EVENT_HATE_LIST, owner->CastToNPC(), ent, "1", 0);
-		Log(Logs::Detail, Logs::Aggro, "%s is creating %d damage and %d hate on %s hatelist.", ent->GetName(), in_dam, in_hate, owner->GetName());
+		LogAggro("[{}] is creating [{}] damage and [{}] hate on [{}] hatelist.", ent->GetName(), in_dam, in_hate, owner->GetName());
 	}
 
 	if (p)

@@ -49,7 +49,6 @@
 #include "zone_store.h"
 
 extern Client client;
-EQ::Random emudb_random;
 
 Database::Database () {
 }
@@ -1316,6 +1315,20 @@ uint8 Database::GetServerType() {
 	return atoi(row[0]);
 }
 
+template<typename InputIterator, typename OutputIterator>
+inline auto CleanMobName(InputIterator first, InputIterator last, OutputIterator result)
+{
+	for (; first != last; ++first) {
+		if (*first == '_') {
+			*result = ' ';
+		}
+		else if (isalpha(*first) || *first == '`') {
+			*result = *first;
+		}
+	}
+	return result;
+}
+
 bool Database::MoveCharacterToZone(uint32 character_id, uint32 zone_id)
 {
 	std::string query = StringFormat(
@@ -2091,12 +2104,12 @@ bool Database::AdjustSpawnTimes()
 		{
 			if (rspawn == 0)
 			{
-				rspawn = emudb_random.Int(0, variance);
+				rspawn = EQ::Random::Instance()->Int(0, variance);
 			}
 			else
 			{
 				var = variance / 2;
-				rspawn = emudb_random.Int(rspawn - var, rspawn + var);
+				rspawn = EQ::Random::Instance()->Int(rspawn - var, rspawn + var);
 			}
 		}
 

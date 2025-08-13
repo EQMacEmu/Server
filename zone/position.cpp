@@ -1,22 +1,40 @@
 #include "position.h"
 
-#include <algorithm>
 #include <string>
 #include <cmath>
 #include "../common/strings.h"
+#include "../common/data_verification.h"
+#include <numbers>
+#include "../common/types.h"
+#include <fmt/format.h>
 
-static const float position_eps = 0.0001f;
+constexpr float position_eps = 0.0001f;
 
 std::string to_string(const glm::vec4& position) {
-	return StringFormat("(%.3f, %.3f, %.3f, %.3f)", position.x, position.y, position.z, position.w);
+	return fmt::format(
+		"({:.3f}, {:.3f}, {:.3f}, {:.3f})",
+		position.x,
+		position.y,
+		position.z,
+		position.w
+	);
 }
 
 std::string to_string(const glm::vec3& position) {
-	return StringFormat("(%.3f, %.3f, %.3f)", position.x, position.y, position.z);
+	return fmt::format(
+		"({:.3f}, {:.3f}, {:.3f})",
+		position.x,
+		position.y,
+		position.z
+	);
 }
 
 std::string to_string(const glm::vec2& position) {
-	return StringFormat("(%.3f, %.3f)", position.x, position.y);
+	return fmt::format(
+		"({:.3f}, {:.3f})",
+		position.x,
+		position.y
+	);
 }
 
 bool IsOrigin(const glm::vec2& position) {
@@ -108,14 +126,23 @@ float DistanceSquaredNoZ(const glm::vec4& point1, const glm::vec4& point2) {
 * box (3 dimensional) formed from the points minimum and maximum.
 */
 bool IsWithinAxisAlignedBox(const glm::vec3& position, const glm::vec3& minimum, const glm::vec3& maximum) {
-	auto actualMinimum = glm::vec3(std::min(minimum.x, maximum.x), std::min(minimum.y, maximum.y), std::min(minimum.z, maximum.z));
-	auto actualMaximum = glm::vec3(std::max(minimum.x, maximum.x), std::max(minimum.y, maximum.y), std::max(minimum.z, maximum.z));
+	auto min = glm::vec3(
+		std::min(minimum.x, maximum.x),
+		std::min(minimum.y, maximum.y),
+		std::min(minimum.z, maximum.z)
+	);
 
-	bool xcheck = position.x >= actualMinimum.x && position.x <= actualMaximum.x;
-	bool ycheck = position.y >= actualMinimum.y && position.y <= actualMaximum.y;
-	bool zcheck = position.z >= actualMinimum.z && position.z <= actualMaximum.z;
+	auto max = glm::vec3(
+		std::max(minimum.x, maximum.x),
+		std::max(minimum.y, maximum.y),
+		std::max(minimum.z, maximum.z)
+	);
 
-	return xcheck && ycheck && zcheck;
+	const bool x_check = EQ::ValueWithin(position.x, min.x, max.x);
+	const bool y_check = EQ::ValueWithin(position.y, min.y, max.y);
+	const bool z_check = EQ::ValueWithin(position.z, min.z, max.z);
+
+	return x_check && y_check && z_check;
 }
 
 /**
@@ -123,13 +150,13 @@ bool IsWithinAxisAlignedBox(const glm::vec3& position, const glm::vec3& minimum,
 * box (2 dimensional) formed from the points minimum and maximum.
 */
 bool IsWithinAxisAlignedBox(const glm::vec2& position, const glm::vec2& minimum, const glm::vec2& maximum) {
-	auto actualMinimum = glm::vec2(std::min(minimum.x, maximum.x), std::min(minimum.y, maximum.y));
-	auto actualMaximum = glm::vec2(std::max(minimum.x, maximum.x), std::max(minimum.y, maximum.y));
+	auto min = glm::vec2(std::min(minimum.x, maximum.x), std::min(minimum.y, maximum.y));
+	auto max = glm::vec2(std::max(minimum.x, maximum.x), std::max(minimum.y, maximum.y));
 
-	bool xcheck = position.x >= actualMinimum.x && position.x <= actualMaximum.x;
-	bool ycheck = position.y >= actualMinimum.y && position.y <= actualMaximum.y;
+	const bool x_check = EQ::ValueWithin(position.x, min.x, max.x);
+	const bool y_check = EQ::ValueWithin(position.y, min.y, max.y);
 
-	return xcheck && ycheck;
+	return x_check && y_check;
 }
 
 /**

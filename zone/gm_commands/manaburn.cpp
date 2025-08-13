@@ -20,7 +20,7 @@ void command_manaburn(Client *c, const Seperator *sep){
 						target->Damage(c, nukedmg, 2751, EQ::skills::SkillAbjuration/*hackish*/);
 						c->Message(Chat::LightBlue, "You unleash an enormous blast of magical energies.");
 					}
-					Log(Logs::General, Logs::Normal, "Manaburn request from %s, damage: %d", c->GetName(), nukedmg);
+					LogDebug("Manaburn request from [{}], damage: [{}]", c->GetName(), nukedmg);
 				}
 			}
 			else

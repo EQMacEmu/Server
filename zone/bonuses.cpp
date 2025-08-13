@@ -249,7 +249,7 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		ApplySpellsBonuses(item->Worn.Effect ? item->Worn.Effect : item->Proc.Effect, item->Worn.Level > 0 ? item->Worn.Level : GetLevel(), newbon, 0, true);
 	}
 
-	if (item->Focus.Effect>0 && (item->Focus.Type == EQ::item::ItemEffectFocus) && content_service.IsTheShadowsOfLuclinEnabled()) { // focus effects
+	if (item->Focus.Effect>0 && (item->Focus.Type == EQ::item::ItemEffectFocus) && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) { // focus effects
 		ApplySpellsBonuses(item->Focus.Effect, GetLevel(), newbon, 0, true);
 	}
 
@@ -525,7 +525,15 @@ void Client::ApplyAABonuses(uint32 aaid, uint32 slots, StatBonuses* newbon)
 		if (effect == SE_Blank || (effect == SE_CHA && base1 == 0) || effect == SE_StackingCommand_Block || effect == SE_StackingCommand_Overwrite)
 			continue;
 
-		Log(Logs::Detail, Logs::AA, "Applying Effect %d from AA %u in slot %d (base1: %d, base2: %d) on %s EQMacID: %d", effect, aaid, slot, base1, base2, this->GetCleanName(), zone->EmuToEQMacAA(aaid));
+		LogAA("Applying Effect [{}] from AA [{}] in slot [{}] (base1: [{}], base2: [{}]) on [{}] EQMacID: [{}]", 
+			effect, 
+			aaid, 
+			slot, 
+			base1, 
+			base2, 
+			this->GetCleanName(), 
+			zone->EmuToEQMacAA(aaid)
+		);
 			
 		uint8 focus = IsFocusEffect(0, 0, true,effect);
 		if (focus)
@@ -1097,7 +1105,7 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				}
 				else
 				{
-					Log(Logs::Detail, Logs::Spells, "Cannot apply SE_ChangeFrenzyRad bonus on %s, Mob is immune to Pacify.", GetName());
+					LogSpellsDetail("Cannot apply SE_ChangeFrenzyRad bonus on [{}], Mob is immune to Pacify.", GetName());
 				}
 				break;
 			}
@@ -1114,7 +1122,7 @@ void Mob::ApplySpellsBonuses(uint16 spell_id, uint8 casterlevel, StatBonuses* ne
 				}
 				else
 				{
-					Log(Logs::Detail, Logs::Spells, "Cannot apply SE_Harmony bonus on %s, Mob is immune to Pacify.", GetName());
+					LogSpellsDetail("Cannot apply SE_Harmony bonus on [{}], Mob is immune to Pacify.", GetName());
 				}
 				break;
 			}

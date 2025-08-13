@@ -49,11 +49,6 @@ Clientlist *g_Clientlist;
 EQEmuLogSys LogSys;
 UCSDatabase database;
 WorldServerList *worldserverlist = nullptr;
-DiscordManager discord_manager;
-PathManager path;
-ZoneStore zone_store;
-PlayerEventLogs player_event_logs;
-WorldContentService content_service;
 
 const ucsconfig *Config;
 
@@ -91,7 +86,7 @@ void CatchSignal(int sig_num) {
 
 void PlayerEventQueueListener() {
 	while (caught_loop == 0) {
-		discord_manager.ProcessMessageQueue();
+		DiscordManager::Instance()->ProcessMessageQueue();
 		Sleep(100);
 	}
 }
@@ -101,7 +96,7 @@ int main() {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	// Check every minute for unused channels we can delete
 	//
@@ -132,11 +127,11 @@ int main() {
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
-	player_event_logs.SetDatabase(&database)->Init();
+	PlayerEventLogs::Instance()->SetDatabase(&database)->Init();
 
 	char tmp[64];
 

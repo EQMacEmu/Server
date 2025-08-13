@@ -34,9 +34,6 @@
 #include "../../common/skill_caps.h"
 
 EQEmuLogSys LogSys;
-WorldContentService content_service;
-ZoneStore zone_store;
-PathManager path;
 
 void ExportSpells(SharedDatabase *db);
 void ExportSkillCaps(SharedDatabase *db);
@@ -46,7 +43,7 @@ int main(int argc, char **argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	LogInfo("Client Files Export Utility");
 	if(!EQEmuConfig::LoadConfig()) {
@@ -57,18 +54,38 @@ int main(int argc, char **argv) {
 	auto Config = EQEmuConfig::get();
 
 	SharedDatabase database;
-	Log(Logs::General, Logs::Status, "Connecting to database...");
-	if(!database.Connect(Config->DatabaseHost.c_str(), Config->DatabaseUsername.c_str(),
-		Config->DatabasePassword.c_str(), Config->DatabaseDB.c_str(), Config->DatabasePort)) {
-		Log(Logs::General, Logs::Error, "Unable to connect to the database, cannot continue without a "
-			"database connection");
+
+	LogInfo("Connecting to database");
+	if (!database.Connect(
+		Config->DatabaseHost.c_str(),
+		Config->DatabaseUsername.c_str(),
+		Config->DatabasePassword.c_str(),
+		Config->DatabaseDB.c_str(),
+		Config->DatabasePort
+	)) {
+		LogError("Unable to connect to the database, cannot continue without a database connection");
 		return 1;
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
+
+	std::string export_type;
+
+	if (argv[1]) {
+		export_type = argv[1];
+	}
+
+	if (Strings::EqualFold(export_type, "spells")) {
+		ExportSpells(&database);
+		return 0;
+	}
+	else if (Strings::EqualFold(export_type, "skills")) {
+		ExportSkillCaps(&database);
+		return 0;
+	}
 
 	ExportSpells(&database);
 	ExportSkillCaps(&database);
@@ -78,13 +95,12 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void ExportSpells(SharedDatabase *db) {
-	Log(Logs::General, Logs::Status, "Exporting Spells...");
-
-	std::string file = fmt::format("{}/export/spells_us.txt", path.GetServerPath());
+void ExportSpells(SharedDatabase *db) 
+{
+	std::string file = fmt::format("{}/export/spells_us.txt", PathManager::Instance()->GetServerPath());
 	FILE *f = fopen(file.c_str(), "w");
 	if(!f) {
-		Log(Logs::General, Logs::Error, "Unable to open export/spells_us.txt to write, skipping.");
+		LogError("Unable to open export/spells_us.txt to write, skipping.");
 		return;
 	}
 
@@ -152,7 +168,7 @@ void ExportSkillCaps(SharedDatabase* db)
 {
 	LogInfo("Exporting Skill Caps");
 
-	std::ofstream file(fmt::format("{}/export/SkillCaps.txt", path.GetServerPath()));
+	std::ofstream file(fmt::format("{}/export/SkillCaps.txt", PathManager::Instance()->GetServerPath()));
 	if (!file || !file.is_open()) {
 		LogError("Unable to open export/SkillCaps.txt to write, skipping.");
 		return;

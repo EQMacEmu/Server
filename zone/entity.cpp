@@ -50,7 +50,6 @@ extern Zone *zone;
 extern volatile bool is_zone_loaded;
 extern WorldServer worldserver;
 extern uint32 numclients;
-extern PetitionList petition_list;
 
 extern char errorname[32];
 
@@ -67,12 +66,12 @@ Entity::~Entity()
 Client *Entity::CastToClient()
 {
 	if (this == 0x00) {
-		Log(Logs::General, Logs::Error, "CastToClient error (nullptr)");
+		LogError("CastToClient error (nullptr)");
 		return 0;
 	}
 #ifdef _EQDEBUG
 	if (!IsClient()) {
-		Log(Logs::General, Logs::Error, "CastToClient error (not client)"); 
+		LogError("CastToClient error (not client)"); 
 		return 0;
 	}
 #endif
@@ -85,7 +84,7 @@ NPC *Entity::CastToNPC()
 {
 #ifdef _EQDEBUG
 	if (!IsNPC()) {
-		Log(Logs::General, Logs::Error, "CastToNPC error (Not NPC)");
+		LogError("CastToNPC error (Not NPC)");
 		return 0;
 	}
 #endif
@@ -353,7 +352,7 @@ void EntityList::CheckGroupList (const char *fname, const int fline)
 	{
 		if (*it == nullptr)
 		{
-			Log(Logs::General, Logs::Error, "nullptr group, %s:%i", fname, fline);
+			LogError("nullptr group, [{}]:[{}]", fname, fline);
 		}
 	}
 }
@@ -507,7 +506,7 @@ void EntityList::MobProcess()
 			if (numclients < 1 && !mob_settle_timer->Enabled() && !zone->idle)
 			{
 				mob_settle_timer->Start(RuleI(Zone, IdleTimer)); // idle timer from when the last player left the zone.
-				Log(Logs::General, Logs::Status, "Entity Process: Number of clients has dropped to 0. Setting idle timer.");
+				LogInfo("Entity Process: Number of clients has dropped to 0. Setting idle timer.");
 				LogSys.log_settings[Logs::PacketServerClient].log_to_gmsay = 0;
 				LogSys.log_settings[Logs::PacketClientServer].log_to_gmsay = 0;
 			}
@@ -516,7 +515,7 @@ void EntityList::MobProcess()
 				if (mob_settle_timer->Enabled())
 					mob_settle_timer->Disable();
 				zone->idle = false;
-				Log(Logs::General, Logs::Status, "Entity Process: A player has entered the zone, leaving idle state.");
+				LogInfo("Entity Process: A player has entered the zone, leaving idle state.");
 			}
 
 			if (mob_settle_timer->Check())
@@ -525,12 +524,12 @@ void EntityList::MobProcess()
 				if (numclients < 1)
 				{
 					zone->idle = true;
-					Log(Logs::General, Logs::Status, "Entity Process: Idle timer has expired, zone will now idle.");
+					LogInfo("Entity Process: Idle timer has expired, zone will now idle.");
 				}
 				else
 				{
 					zone->idle = false;
-					Log(Logs::General, Logs::Status, "Entity Process: Idle timer has expired, but there are players in the zone. Zone will not idle.");
+					LogInfo("Entity Process: Idle timer has expired, but there are players in the zone. Zone will not idle.");
 				}
 			}
 
@@ -573,16 +572,16 @@ void EntityList::MobProcess()
 #ifdef _WINDOWS
 				struct in_addr in;
 				in.s_addr = mob->CastToClient()->GetIP();
-				Log(Logs::General, Logs::ZoneServer, "Dropping client: Process=false, ip=%s port=%u", inet_ntoa(in), mob->CastToClient()->GetPort());
+				LogInfo("Dropping client: Process=false, ip=[{}] port=[{}]", inet_ntoa(in), mob->CastToClient()->GetPort());
 #endif
 				Group *g = GetGroupByMob(mob);
 				if(g) {
-					Log(Logs::General, Logs::Error, "About to delete a client still in a group.");
+					LogError("About to delete a client still in a group.");
 					g->DelMember(mob);
 				}
 				Raid *r = entity_list.GetRaidByClient(mob->CastToClient());
 				if(r) {
-					Log(Logs::General, Logs::Error, "About to delete a client still in a raid.");
+					LogError("About to delete a client still in a raid.");
 					r->MemberZoned(mob->CastToClient());
 				}
 				entity_list.RemoveClient(id);
@@ -636,8 +635,7 @@ void EntityList::AddGroup(Group *group)
 
 	uint32 gid = worldserver.NextGroupID();
 	if (gid == 0) {
-		Log(Logs::General, Logs::Error, 
-				"Unable to get new group ID from world server. group is going to be broken.");
+		LogError("Unable to get new group ID from world server. group is going to be broken.");
 		return;
 	}
 
@@ -665,8 +663,7 @@ void EntityList::AddRaid(Raid *raid)
 
 	uint32 gid = worldserver.NextGroupID();
 	if (gid == 0) {
-		Log(Logs::General, Logs::Error, 
-				"Unable to get new group ID from world server. group is going to be broken.");
+		LogError("Unable to get new group ID from world server. group is going to be broken.");
 		return;
 	}
 
@@ -884,7 +881,7 @@ void EntityList::OpenFloorTeleportNear(Client* c)
 
 		auto diff = c->GetPosition() - cdoor->GetPosition();
 		float curdist = diff.x * diff.x + diff.y * diff.y;
-		Log(Logs::Detail, Logs::Doors, "A floor teleport with id %d was found at %0.2f away at %0.2f Z.", cdoor->GetDoorDBID(), curdist, diff.z * diff.z);
+		LogDoorsDetail("A floor teleport with id [{}] was found at [{:.2f}] away at [{:.2f}] Z.", cdoor->GetDoorDBID(), curdist, diff.z * diff.z);
 		if (diff.z * diff.z < 105 && curdist <= 600)
 		{
 			cdoor->HandleClick(c, 0, true);
@@ -2878,7 +2875,7 @@ char* EntityList::MakeNameUnique(char* name)
 		}
 	}
 
-	Log(Logs::General, Logs::Error, "Fatal error in EntityList::MakeNameUnique: Unable to find unique name for '%s'", name);
+	LogError("Fatal error in EntityList::MakeNameUnique: Unable to find unique name for '[{}]'", name);
 	char tmp[64] = "!";
 	strn0cpy(&tmp[1], name, sizeof(tmp) - 1);
 	strcpy(name, tmp);
@@ -3104,7 +3101,7 @@ void EntityList::SendPetitionToAdmins(Petition *pet)
 		strcpy(pcus->accountid, pet->GetAccountName());
 		strcpy(pcus->charname, pet->GetCharName());
 	}
-	pcus->quetotal = petition_list.GetTotalPetitions();
+	pcus->quetotal = PetitionList::Instance()->GetTotalPetitions();
 	auto it = client_list.begin();
 	while (it != client_list.end()) {
 		if (it->second->CastToClient()->Admin() >= 80) {
@@ -3398,7 +3395,7 @@ void EntityList::OpenDoorsNear(NPC *who)
 
 		if (diff.z * diff.z < max_z && curdist <= max_dist)
 		{
-			Log(Logs::Detail, Logs::Doors, "%s has opened door %s (%d) curdist is %0.2f z diff is %0.2f", who->GetName(), cdoor->GetDoorName(), cdoor->GetDoorID(), curdist, diff.z * diff.z);
+			LogDoorsDetail("[{}] has opened door [{}] ([{}]) curdist is [{:.2f}] z diff is [{:.2f}]", who->GetName(), cdoor->GetDoorName(), cdoor->GetDoorID(), curdist, diff.z * diff.z);
 			cdoor->NPCOpen(who);
 		}
 	}
@@ -4059,7 +4056,7 @@ void EntityList::SendGroupLeader(uint32 gid, const char *lname, const char *oldl
 					strcpy(gj->membername, lname);
 					strcpy(gj->yourname, oldlname);
 					it->second->QueuePacket(outapp);
-					Log(Logs::Detail, Logs::Group, "SendGroupLeader(): Entity loop leader update packet sent to: %s .", it->second->GetName());
+					LogGroupDetail("SendGroupLeader(): Entity loop leader update packet sent to: [{}] .", it->second->GetName());
 					g->SetLeaderName(lname);
 					g->SetOldLeaderName(lname);
 					safe_delete(outapp);
@@ -4082,7 +4079,7 @@ void EntityList::SendGroupLeader(uint32 gid, const char *lname, const char *oldl
 					g->SetLeader(newleader);
 					database.SetGroupLeaderName(g->GetID(), newleader->GetName());
 					database.SetGroupOldLeaderName(g->GetID(), newleader->GetName());
-					Log(Logs::Detail, Logs::Group, "Out of zone leader for group %d set to %s", g->GetID(), newleader->GetName());
+					LogGroupDetail("Out of zone leader for group [{}] set to [{}]", g->GetID(), newleader->GetName());
 				}
 			}
 		}
@@ -5036,7 +5033,7 @@ void EntityList::NukeTraderItem(Client* merchant, uint16 slotid)
 			tdis->type=65;
 			tdis->itemslot = slotid;
 
-			Log(Logs::Detail, Logs::Bazaar, "Telling %s to remove item in slot %d.", c->GetName(), slotid);
+			LogBazaarDetail("Telling [{}] to remove item in slot [{}].", c->GetName(), slotid);
 
 			c->QueuePacket(outapp);
 			safe_delete(outapp);
@@ -5067,7 +5064,7 @@ void EntityList::NukeTraderItemByID(Client* merchant, TraderCharges_Struct* gis,
 			for(int i = 0; i < 80; i++) {
 				if(gis->ItemID[i] == ItemID) {
 					tdis->itemslot = i;
-					Log(Logs::Detail, Logs::Bazaar, "Telling %s to remove item %i.", c->GetName(), ItemID);
+					LogBazaarDetail("Telling [{}] to remove item [{}].", c->GetName(), ItemID);
 
 					c->QueuePacket(outapp);
 				}
@@ -5223,7 +5220,7 @@ void EntityList::RepopNPCsByNPCID(uint32 npcid)
 				{
 					if (entityids[i] == current->GetID())
 					{
-						Log(Logs::General, Logs::EQMac, "Repopping %s EntityID %d.", current->GetName(), current->GetID());
+						LogEQMac("Repopping [{}] EntityID [{}].", current->GetName(), current->GetID());
 						current->ForceRepop();
 						break;
 					}

@@ -56,7 +56,7 @@ void NPC::AddLootTable(uint32 loottable_id, bool is_global)
 		.content_flags_disabled = l->content_flags_disabled
 	};
 
-	if (!content_service.DoesPassContentFiltering(content_flags)) {
+	if (!WorldContentService::Instance()->DoesPassContentFiltering(content_flags)) {
 		return;
 	}
 
@@ -1059,7 +1059,7 @@ bool NPC::MoveItemToGeneralInventory(LootItem* weapon)
 	if (item) {
 		RemoveItem(weapon);
 
-		Log(Logs::Detail, Logs::Trading, "%s is moving %d in slot %d to general inventory. quantity: %d", GetCleanName(), weaponid, slot, charges);
+		LogLootDetail("[{}] is moving [{}] in slot [{}] to general inventory. quantity: [{}]", GetCleanName(), weaponid, slot, charges);
 		AddLootDrop(item, l, false, false, quest, pet);
 
 		return true;
@@ -1296,9 +1296,9 @@ bool NPC::AddQuestLoot(int16 itemid, int8 charges) {
 		l.item_charges = charges;
 		l.equip_item = 0;
 		AddLootDrop(item,l, false, false, true);
-		Log(Logs::General, Logs::Trading, "Adding item %d to the NPC's loot marked as quest.", itemid);
+		LogLoot("Adding item [{}] to the NPC's loot marked as quest.", itemid);
 		if (itemid > 0 && HasPetLootItem(itemid)) {
-			Log(Logs::General, Logs::Trading, "Deleting quest item %d from NPC's pet loot.", itemid);
+			LogLoot("Deleting quest item [{}] from NPC's pet loot.", itemid);
 			RemovePetLootItems(itemid);
 		}
 	}
@@ -1322,12 +1322,12 @@ bool NPC::AddPetLoot(int16 itemid, int8 charges, bool fromquest) {
 		if (item) {
 			l.item_charges = charges;
 			AddLootDrop(item, l, true, true, false, true);
-			Log(Logs::General, Logs::Trading, "Adding item %d to the NPC's loot marked as pet.", itemid);
+			LogLoot("Adding item [{}] to the NPC's loot marked as pet.", itemid);
 			return true;
 		}
 	}
 	else {
-		Log(Logs::General, Logs::Trading, "Item %d is a duplicate or no drop. Deleting...", itemid);
+		LogLoot("Item [{}] is a duplicate or no drop. Deleting...", itemid);
 		return false;
 	}
 

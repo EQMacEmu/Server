@@ -20,8 +20,6 @@
 #include "../common/net/console_server.h"
 #include "../queryserv/zonelist.h"
 #include "../queryserv/zoneserver.h"
-#include "../common/discord/discord_manager.h"
-
 
 volatile bool RunLoops = true;
 
@@ -31,13 +29,8 @@ std::string           WorldShortName;
 const queryservconfig *Config;
 WorldServer           *worldserver = 0;
 EQEmuLogSys           LogSys;
-PathManager           path;
-ZoneStore             zone_store;
-PlayerEventLogs       player_event_logs;
 ZSList                zs_list;
 uint32                numzones = 0;
-DiscordManager        discord_manager;
-WorldContentService   content_service;
 
 void CatchSignal(int sig_num) { 
 	RunLoops = false; 
@@ -48,7 +41,7 @@ int main() {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler(); 
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 
 	LogInfo("Starting EQMacEmu QueryServ.");
@@ -85,7 +78,7 @@ int main() {
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
@@ -128,7 +121,7 @@ int main() {
 	server_connection->OnConnectionIdentified(
 		"Zone", [&console](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
 			numzones++;
-			zs_list.Add(new ZoneServer(connection, console.get()));
+			ZSList::Instance()->Add(new ZoneServer(connection, console.get()));
 
 			LogInfo(
 				"New Zone Server connection from [{}] at [{}:{}] zone_count [{}]",
@@ -143,7 +136,7 @@ int main() {
 	server_connection->OnConnectionRemoved(
 		"Zone", [](std::shared_ptr<EQ::Net::ServertalkServerConnection> connection) {
 			numzones--;
-			zs_list.Remove(connection->GetUUID());
+			ZSList::Instance()->Remove(connection->GetUUID());
 
 			LogInfo(
 				"Removed Zone Server connection from [{}] total zone_count [{}]",
@@ -158,7 +151,7 @@ int main() {
 	worldserver->Connect(); 
 
 	Timer player_event_process_timer(1000);
-	player_event_logs.SetDatabase(&qs_database)->Init();
+	PlayerEventLogs::Instance()->SetDatabase(&qs_database)->Init();
 
 	auto loop_fn = [&](EQ::Timer *t) {
 		Timer::SetCurrentTime();
@@ -169,7 +162,7 @@ int main() {
 		}
 
 		if (player_event_process_timer.Check()) {
-			std::jthread player_event_thread(&PlayerEventLogs::Process, &player_event_logs);
+			PlayerEventLogs::Instance()->Process();
 		}
 	};
 

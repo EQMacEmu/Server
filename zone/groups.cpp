@@ -77,7 +77,7 @@ Group::Group(Mob* leader)
 	leader->SetGrouped(true);
 	SetLeader(leader);
 	SetOldLeaderName(leader->GetName());
-	Log(Logs::Detail, Logs::Group, "Group:Group() Setting OldLeader to: %s and Leader to: %s", GetOldLeaderName(), leader->GetName());
+	LogGroupDetail("Group:Group() Setting OldLeader to: [{}] and Leader to: [{}]", GetOldLeaderName(), leader->GetName());
 	disbandcheck = false;
 	maxlevel = 1;
 	minlevel = 65;
@@ -160,7 +160,7 @@ void Group::SplitMoney(uint32 copper, uint32 silver, uint32 gold, uint32 platinu
 			}
 
 			// If logging of player money transactions is enabled, record the transaction.
-			if (player_event_logs.IsEventEnabled(PlayerEvent::SPLIT_MONEY)) {
+			if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::SPLIT_MONEY)) {
 				auto e = PlayerEvent::SplitMoneyEvent{
 					.copper = receive_copper,
 					.silver = receive_silver,
@@ -446,7 +446,7 @@ bool Group::DelMemberOOZ(const char *Name, bool checkleader) {
 			if(!members[i]) {
 				memset(membername[i], 0, 64);
 				removed = true;
-				Log(Logs::Detail, Logs::Group, "DelMemberOOZ: Removed Member: %s", Name);
+				LogGroupDetail("DelMemberOOZ: Removed Member: [{}]", Name);
 				break;
 			}
 		}
@@ -460,7 +460,7 @@ bool Group::DelMemberOOZ(const char *Name, bool checkleader) {
 
 	if(checkleader)
 	{
-		Log(Logs::Detail, Logs::Group, "DelMemberOOZ: Checking leader...");
+		LogGroupDetail("DelMemberOOZ: Checking leader...");
 		if (strcmp(GetOldLeaderName(),Name) == 0 && GroupCount() >= 2)
 		{
 			for(uint32 nl = 0; nl < MAX_GROUP_MEMBERS; nl++)
@@ -494,7 +494,7 @@ bool Group::DelMember(Mob* oldmember)
 			members[i] = nullptr;
 			membername[i][0] = '\0';
 			memset(membername[i],0,64);
-			Log(Logs::Detail, Logs::Group, "DelMember: Removed Member: %s", oldmember->GetCleanName());
+			LogGroupDetail("DelMember: Removed Member: [{}]", oldmember->GetCleanName());
 			break;
 		}
 	}
@@ -542,7 +542,7 @@ bool Group::DelMember(Mob* oldmember)
 
 	for (uint32 i = 0; i < MAX_GROUP_MEMBERS; i++) {
 		if (members[i] == nullptr) {
-			//if (DEBUG>=5) Log(Logs::Detail, Logs::Group, "Group::DelMember() null member at slot %i", i);
+			//if (DEBUG>=5) LogGroupDetail("Group::DelMember() null member at slot [{}]", i);
 			continue;
 		}
 		if (members[i] != oldmember) {
@@ -589,7 +589,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int re
 	if(!caster)
 		return;
 
-	Log(Logs::Detail, Logs::Spells, "%s is casting spell %d on group %d", caster->GetName(), spell_id, GetID());
+	LogSpellsDetail("[{}] is casting spell [{}] on group [{}]", caster->GetName(), spell_id, GetID());
 
 	castspell = true;
 	range = caster->GetAOERange(spell_id);
@@ -618,7 +618,7 @@ void Group::CastGroupSpell(Mob* caster, uint16 spell_id, bool isrecourse, int re
 					caster->SpellOnTarget(spell_id, members[z]->GetPet(), false, false, 0, false, 0, isrecourse, recourse_level);
 #endif
 			} else
-				Log(Logs::Detail, Logs::Spells, "Group spell: %s is out of range %f at distance %f from %s", members[z]->GetName(), range, distance, caster->GetName());
+				LogSpellsDetail("Group spell: [{}] is out of range [[{}] at distance [{}] from [{}]", members[z]->GetName(), range, distance, caster->GetName());
 		}
 	}
 
@@ -839,7 +839,7 @@ bool Group::LearnMembers() {
         return false;
 
     if (results.RowCount() == 0) {
-        Log(Logs::General, Logs::Error, "Error getting group members for group %lu: %s", (unsigned long)GetID(), results.ErrorMessage().c_str());
+        LogError("Error getting group members for group [{}]: [{}]", (unsigned long)GetID(), results.ErrorMessage().c_str());
 			return false;
     }
 
@@ -870,7 +870,7 @@ void Group::VerifyGroup()
 	{
 		if (membername[i][0] == '\0') 
 		{
-			Log(Logs::General, Logs::Group, "Group %lu: Verify %d: Empty.", (unsigned long)GetID(), i);
+			LogGroup("Group [{}]: Verify [{}]: Empty.", (unsigned long)GetID(), i);
 			members[i] = nullptr;
 			continue;
 		}
@@ -895,7 +895,7 @@ void Group::VerifyGroup()
 
 		if (!valid)
 		{
-			Log(Logs::General, Logs::Group, "Member of group %lu named '%s' was not found in the database.", (unsigned long)GetID(), membername[i]);
+			LogGroup("Member of group [{}] named '[{}]' was not found in the database.", (unsigned long)GetID(), membername[i]);
 			membername[i][0] = '\0';
 			members[i] = nullptr;
 			continue;
@@ -906,7 +906,7 @@ void Group::VerifyGroup()
 		Mob *them = entity_list.GetMob(membername[i]);
 		if(them == nullptr && members[i] != nullptr) 
 		{	//they aren't here anymore...
-			Log(Logs::General, Logs::Group, "Member of group %lu named '%s' has left the zone.", (unsigned long)GetID(), membername[i]);
+			LogGroup("Member of group [{}] named '[{}]' has left the zone.", (unsigned long)GetID(), membername[i]);
 			//membername[i][0] = '\0';
 			members[i] = nullptr;
 			continue;
@@ -914,12 +914,12 @@ void Group::VerifyGroup()
 
 		if(them != nullptr && members[i] != them) 
 		{	//our pointer is out of date... update it.
-			Log(Logs::General, Logs::Group, "Member of group %lu named '%s' had their pointer updated.", (unsigned long)GetID(), membername[i]);
+			LogGroup("Member of group [{}] named '[{}]' had their pointer updated.", (unsigned long)GetID(), membername[i]);
 			members[i] = them;
 			continue;
 		}
 
-		Log(Logs::General, Logs::Group, "Member of group %lu named '%s' is valid.", (unsigned long)GetID(), membername[i]);
+		LogGroup("Member of group [{}] named '[{}]' is valid.", (unsigned long)GetID(), membername[i]);
 	}
 }
 
@@ -954,7 +954,7 @@ void Client::LeaveGroup() {
 			g->DelMember(this);
 		}
 
-		Log(Logs::General, Logs::Group, "%s has left the group.", GetName());
+		LogGroup("[{}] has left the group.", GetName());
 	}
 	else
 	{
@@ -1177,12 +1177,12 @@ void Group::ChangeLeader(Mob* newleader)
 		if (members[i] && members[i]->IsClient())
 		{
 			members[i]->CastToClient()->QueuePacket(outapp);
-			Log(Logs::Detail, Logs::Group, "ChangeLeader(): Local leader update packet sent to: %s .", members[i]->GetName());
+			LogGroupDetail("ChangeLeader(): Local leader update packet sent to: [{}] .", members[i]->GetName());
 		}
 	}
 	safe_delete(outapp);
 
-	Log(Logs::Detail, Logs::Group, "ChangeLeader(): Old Leader is: %s New leader is: %s", GetOldLeaderName(), newleader->GetName());
+	LogGroupDetail("ChangeLeader(): Old Leader is: [{}] New leader is: [{}]", GetOldLeaderName(), newleader->GetName());
 
 	auto pack = new ServerPacket(ServerOP_ChangeGroupLeader, sizeof(ServerGroupLeader_Struct));
 	ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
@@ -1200,7 +1200,7 @@ void Group::ChangeLeader(Mob* newleader)
 
 void Group::ChangeLeaderByName(std::string newleader)
 {
-	Log(Logs::Detail, Logs::Group, "ChangeLeaderByName(): Old Leader is: %s New leader is: %s. Sending to world for confirmation.", GetOldLeaderName(), newleader.c_str());
+	LogGroupDetail("ChangeLeaderByName(): Old Leader is: [{}] New leader is: [{}]. Sending to world for confirmation.", GetOldLeaderName(), newleader.c_str());
 
 	auto pack = new ServerPacket(ServerOP_CheckGroupLeader, sizeof(ServerGroupLeader_Struct));
 	ServerGroupLeader_Struct* fgu = (ServerGroupLeader_Struct*)pack->pBuffer;
@@ -1235,7 +1235,7 @@ void Group::SetLevels()
 		}
 	}
 
-	Log(Logs::General, Logs::Group, "Group: Maxlevel is %d minlevel is %d", maxlevel, minlevel);
+	LogGroup("Group: Maxlevel is [{}] minlevel is [{}]", maxlevel, minlevel);
 }
 
 bool Group::HasOOZMember(std::string& member)

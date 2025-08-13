@@ -784,11 +784,11 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	}
 	if (duration == 0)
 	{
-		Log(Logs::General, Logs::Spells, "Buff %d failed to add because its duration came back as 0.", spell_id);
+		LogSpells("Buff [{}] failed to add because its duration came back as 0.", spell_id);
 		return false;
 	}
 
-	Log(Logs::Detail, Logs::Spells, "Trying to add buff %d cast by %s (cast level %d) with duration %d",
+	LogSpellsDetail("Trying to add buff [{}] cast by [{}] (cast level [{}]) with duration [{}]",
 		spell_id, caster ? caster->GetName() : "UNKNOWN", caster_level, duration);
 
 	int emptyslot = -1;
@@ -840,8 +840,17 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 				cd->sequence = action->sequence;
 				cd->damage = 0;
 
-				Log(Logs::Detail, Logs::Spells, "AssignBuffSlot: SpellMessage target: %i, source: %i, type: %i, spellid: %i, sequence: %f, damage: %i BardSong: %i", cd->target, cd->source, cd->type, cd->spellid, cd->sequence, cd->damage, IsBardSong(spell_id));
-				Log(Logs::Detail, Logs::Spells, "Sending Message packet for spell %d", spell_id);
+				LogSpellsDetail(
+					"AssignBuffSlot: SpellMessage target: [{}], source: [{}], type: [{}], spellid: [{}], sequence: [{}], damage: [{}] BardSong: [{}]", 
+					cd->target, 
+					cd->source, 
+					cd->type, 
+					cd->spellid, 
+					cd->sequence, 
+					cd->damage, 
+					IsBardSong(spell_id)
+				);
+				LogSpellsDetail("Sending Message packet for spell [{}]", spell_id);
 
 				// send to target unfiltered.
 				if (IsClient())
@@ -933,7 +942,7 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 			buffs[emptyslot].instrumentmod = mod;
 	}
 
-	Log(Logs::Detail, Logs::Spells, "Buff %d added to slot %d with caster level %d", spell_id, emptyslot, caster_level);
+	LogSpellsDetail("Buff [{}] added to slot [{}] with caster level [{}]", spell_id, emptyslot, caster_level);
 
 	CalcBonuses();
 

@@ -42,33 +42,37 @@ public:
 	std::string GetZoneLongName(uint32 zone_id);
 	const char* GetZoneName(uint32 zone_id, bool error_unknown = false);
 	const char* GetZoneLongName(uint32 zone_id, bool error_unknown = false);
+
+	static ZoneStore *Instance()
+	{
+		static ZoneStore instance;
+		return &instance;
+	}
 private:
 	std::vector<ZoneRepository::Zone> m_zones;
 };
 
-extern ZoneStore zone_store;
-
 /**
  * Global helpers
  */
-inline uint32 ZoneID(const char* in_zone_name) { return zone_store.GetZoneID(in_zone_name); }
-inline uint32 ZoneID(std::string zone_name) { return zone_store.GetZoneID(zone_name); }
+inline uint32 ZoneID(const char* in_zone_name) { return ZoneStore::Instance()->GetZoneID(in_zone_name); }
+inline uint32 ZoneID(std::string zone_name) { return ZoneStore::Instance()->GetZoneID(zone_name); }
 inline const char* ZoneName(uint32 zone_id, bool error_unknown = false)
 {
-	return zone_store.GetZoneName(
+	return ZoneStore::Instance()->GetZoneName(
 		zone_id,
 		error_unknown
 	);
 }
 inline const char* ZoneLongName(uint32 zone_id, bool error_unknown = false)
 {
-	return zone_store.GetZoneLongName(
+	return ZoneStore::Instance()->GetZoneLongName(
 		zone_id,
 		error_unknown
 	);
 }
-inline ZoneRepository::Zone* GetZone(uint32 zone_id) { return zone_store.GetZone(zone_id); };
-inline ZoneRepository::Zone* GetZone(const char* in_zone_name) { return zone_store.GetZone(in_zone_name); };
+inline ZoneRepository::Zone* GetZone(uint32 zone_id) { return ZoneStore::Instance()->GetZone(zone_id); };
+inline ZoneRepository::Zone* GetZone(const char* in_zone_name) { return ZoneStore::Instance()->GetZone(in_zone_name); };
 
 
 #endif //EQEMU_ZONE_STORE_H

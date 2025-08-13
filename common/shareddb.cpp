@@ -136,19 +136,24 @@ uint32 SharedDatabase::GetTotalTimeEntitledOnAccount(uint32 AccountID)
 
 void SharedDatabase::SetMailKey(int CharID, int IPAddress, int MailKey)
 {
-	char MailKeyString[17];
+	char mail_key[17];
 
-	if (RuleB(Chat, EnableMailKeyIPVerification) == true)
-		sprintf(MailKeyString, "%08X%08X", IPAddress, MailKey);
-	else
-		sprintf(MailKeyString, "%08X", MailKey);
+	if (RuleB(Chat, EnableMailKeyIPVerification) == true) {
+		sprintf(mail_key, "%08X%08X", IPAddress, MailKey);
+	}
+	else {
+		sprintf(mail_key, "%08X", MailKey);
+	}
 
-	std::string query = StringFormat("UPDATE character_data SET mailkey = '%s' WHERE id = '%i'",
-		MailKeyString, CharID);
-	auto results = QueryDatabase(query);
-	if (!results.Success())
-		Log(Logs::General, Logs::Error, "SharedDatabase::SetMailKey(%i, %s) : %s", CharID, MailKeyString, results.ErrorMessage().c_str());
+	const std::string query = StringFormat(
+		"UPDATE character_data SET mailkey = '%s' WHERE id = '%i'",
+		mail_key, CharID
+	);
 
+	const auto        results = QueryDatabase(query);
+	if (!results.Success()) {
+		LogError("SharedDatabase::SetMailKey({}, {}) : {}", CharID, mail_key, results.ErrorMessage().c_str());
+	}
 }
 
 std::string SharedDatabase::GetMailKey(int CharID, bool key_only)
@@ -297,10 +302,15 @@ bool SharedDatabase::GetInventory(uint32 char_id, EQ::InventoryProfile* inv)
 
         const EQ::ItemData* item = GetItem(item_id);
 
-        if (!item) {
-            Log(Logs::General, Logs::Error,"Warning: charid %i has an invalid item_id %i in inventory slot %i", char_id, item_id, slot_id);
-            continue;
-        }
+		if (!item) {
+			LogError(
+				"Warning: charid [{}] has an invalid item_id [{}] in inventory slot [{}]",
+				char_id,
+				item_id,
+				slot_id
+			);
+			continue;
+		}
 
         int16 put_slot_id = INVALID_INDEX;
 
@@ -370,7 +380,7 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, EQ::InventoryPr
                                     name, account_id);
     auto results = QueryDatabase(query);
     if (!results.Success()){
-		Log(Logs::General, Logs::Error, "Error loading character items.");
+		LogError("Error loading character items.");
         return false;
 	}
 
@@ -427,8 +437,15 @@ bool SharedDatabase::GetInventory(uint32 account_id, char* name, EQ::InventoryPr
         safe_delete(inst);
 
         // Save ptr to item in inventory
-        if (put_slot_id == INVALID_INDEX)
-            Log(Logs::General, Logs::Error, "Warning: Invalid slot_id for item in inventory: name=%s, acctid=%i, item_id=%i, slot_id=%i", name, account_id, item_id, slot_id);
+		if (put_slot_id == INVALID_INDEX) {
+			LogError(
+				"Warning: Invalid slot_id for item in inventory: name: [{}], acctid: [{}], item_id: [{}], slot_id: [{}]", 
+				name, 
+				account_id, 
+				item_id, 
+				slot_id
+			);
+		}
 
     }
 
@@ -467,7 +484,7 @@ bool SharedDatabase::LoadItems(const std::string &prefix)
 		auto Config = EQEmuConfig::get();
 		EQ::IPCMutex mutex("items");
 		mutex.Lock();
-		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("items"));
+		std::string file_name = fmt::format("{}/{}{}", PathManager::Instance()->GetSharedMemoryPath(), prefix, std::string("items"));
 		items_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		items_hash = std::unique_ptr<EQ::FixedMemoryHashSet<EQ::ItemData>>(new EQ::FixedMemoryHashSet<EQ::ItemData>(reinterpret_cast<uint8*>(items_mmf->Get()), items_mmf->Size()));
 		mutex.Unlock();
@@ -576,7 +593,7 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Mana = std::stoi(row[ItemField::mana]);
 		item.AC = std::stoi(row[ItemField::ac]);
 
-		if (RuleB(Expansion, UseItemExpansionSetting) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (RuleB(Expansion, UseItemExpansionSetting) && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			//Bane Damage
 			item.BaneDmgAmt = 0;
 			item.BaneDmgBody = 0;
@@ -608,7 +625,7 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.ItemClass = std::stoi(row[ItemField::itemclass]);
 		item.Races = std::stoi(row[ItemField::races]);
 
-		if (RuleB(Expansion, UseItemExpansionSetting) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (RuleB(Expansion, UseItemExpansionSetting) && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			item.RecLevel = 0;
 			item.RecSkill = 0;
 			item.ReqLevel = 0;
@@ -621,7 +638,7 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Slots = std::stoi(row[ItemField::slots]);
 
 		// Skill Modifier
-		if (RuleB(Expansion, UseItemExpansionSetting) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (RuleB(Expansion, UseItemExpansionSetting) && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			item.SkillModValue = 0;
 			item.SkillModType = 0;
 		}
@@ -672,7 +689,7 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.RecastType = std::stoul(row[ItemField::recasttype]);
 
 		// Focus Effect
-		if (RuleB(Expansion, UseItemExpansionSetting) && !content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (RuleB(Expansion, UseItemExpansionSetting) && !WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			item.Focus.Effect = 0;
 			item.Focus.Type = 0;
 			item.Focus.Level = 0;
@@ -948,13 +965,61 @@ bool SharedDatabase::GetCommandSettings(std::map<std::string, std::pair<uint8, s
     return true;
 }
 
+template<typename T1, typename T2>
+inline std::vector<std::string> join_pair(
+	const std::string &glue,
+	const std::pair<char, char> &encapsulation,
+	const std::vector<std::pair<T1, T2>> &src
+)
+{
+	if (src.empty()) {
+		return {};
+	}
+
+	std::vector<std::string> output;
+
+	for (const std::pair<T1, T2> &src_iter : src) {
+		output.emplace_back(
+
+			fmt::format(
+				"{}{}{}{}{}{}{}",
+				encapsulation.first,
+				src_iter.first,
+				encapsulation.second,
+				glue,
+				encapsulation.first,
+				src_iter.second,
+				encapsulation.second
+			)
+		);
+	}
+
+	return output;
+}
+
+template<typename T>
+inline std::string
+ImplodePair(const std::string &glue, const std::pair<char, char> &encapsulation, const std::vector<T> &src)
+{
+	if (src.empty()) {
+		return {};
+	}
+	std::ostringstream oss;
+	for (const T &src_iter : src) {
+		oss << encapsulation.first << src_iter << encapsulation.second << glue;
+	}
+	std::string output(oss.str());
+	output.resize(output.size() - glue.size());
+	return output;
+}
+
 bool SharedDatabase::UpdateInjectedCommandSettings(const std::vector<std::pair<std::string, uint8>>& injected)
 {
 	if (injected.size()) {
 
 		std::string query = fmt::format(
 			"REPLACE INTO `command_settings`(`command`, `access`) VALUES {}",
-			Strings::ImplodePair(
+			ImplodePair(
 				",",
 				std::pair<char, char>('(', ')'),
 				join_pair(",", std::pair<char, char>('\'', '\''), injected)
@@ -982,7 +1047,7 @@ bool SharedDatabase::UpdateOrphanedCommandSettings(const std::vector<std::string
 	if (orphaned.size()) {
 		std::string query = fmt::format(
 			"DELETE FROM `command_settings` WHERE `command` IN ({})",
-			Strings::ImplodePair(",", std::pair<char, char>('\'', '\''), orphaned)
+			ImplodePair(",", std::pair<char, char>('\'', '\''), orphaned)
 		);
 
 		auto results = QueryDatabase(query);
@@ -992,7 +1057,7 @@ bool SharedDatabase::UpdateOrphanedCommandSettings(const std::vector<std::string
 
 		query = fmt::format(
 			"DELETE FROM `command_subsettings` WHERE `parent_command` IN ({})",
-			Strings::ImplodePair(",", std::pair<char, char>('\'', '\''), orphaned)
+			ImplodePair(",", std::pair<char, char>('\'', '\''), orphaned)
 		);
 
 		auto results_two = QueryDatabase(query);
@@ -1071,7 +1136,7 @@ bool SharedDatabase::LoadSpells(const std::string &prefix, int32 *records, const
 		EQ::IPCMutex mutex("spells");
 		mutex.Lock();
 	
-		std::string file_name = fmt::format("{}/{}{}", path.GetSharedMemoryPath(), prefix, std::string("spells"));
+		std::string file_name = fmt::format("{}/{}{}", PathManager::Instance()->GetSharedMemoryPath(), prefix, std::string("spells"));
 		spells_mmf = std::unique_ptr<EQ::MemoryMappedFile>(new EQ::MemoryMappedFile(file_name));
 		LogInfo("Loading [{}]", file_name);
 		*records = *reinterpret_cast<uint32*>(spells_mmf->Get());

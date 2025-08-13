@@ -17,7 +17,6 @@
 */
 
 #include "../common/global_define.h"
-#include "../common/misc_functions.h"
 #include "launcher_link.h"
 #include "launcher_list.h"
 #include "world_config.h"
@@ -26,7 +25,7 @@
 #include "../common/packet_dump.h"
 #include "../common/servertalk.h"
 #include "../common/strings.h"
-
+#include "../common/misc_functions.h"
 #include "worlddb.h"
 #include "eql_config.h"
 
@@ -229,7 +228,8 @@ void LauncherLink::BootDynamics(uint8 new_count) {
 			}
 		}
 		m_dynamicCount = new_count;
-	} else if(new_count == 0) {
+	} 
+	else if(new_count == 0) {
 		//kill all zones...
 		std::map<std::string, ZoneState>::iterator cur, end;
 		cur = m_states.begin();
@@ -237,7 +237,8 @@ void LauncherLink::BootDynamics(uint8 new_count) {
 		for(; cur != end; cur++) {
 			StopZone(cur->first.c_str());
 		}
-	} else {
+	} 
+	else {
 		//need to get rid of some zones...
 
 		//quick and dirty way to do this.. should do better (like looking for idle zones)
@@ -250,7 +251,8 @@ void LauncherLink::BootDynamics(uint8 new_count) {
 				if(found >= new_count) {
 					//this zone exceeds the number of allowed booted zones.
 					StopZone(cur->first.c_str());
-				} else {
+				} 
+				else {
 					found++;
 				}
 			}

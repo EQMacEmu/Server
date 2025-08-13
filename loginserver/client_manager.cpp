@@ -41,7 +41,7 @@ ClientManager::ClientManager()
 
 	std::string opcodes_path = fmt::format(
 		"{}/{}",
-		path.GetOpcodePath(),
+		PathManager::Instance()->GetOpcodePath(),
 		"login_opcodes_oldver.conf"
 	);
 
@@ -93,7 +93,7 @@ void ClientManager::Process()
 	auto iter = clients.begin();
 	while (iter != clients.end()) {
 		if ((*iter)->Process() == false) {
-			Log(Logs::General, Logs::LoginServer, "Client had a fatal error and had to be removed from the login.");
+			LogWarning("Client had a fatal error and had to be removed from the login");
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
@@ -125,7 +125,7 @@ void ClientManager::RemoveExistingClient(unsigned int account_id)
 	auto iter = clients.begin();
 	while (iter != clients.end()){
 		if ((*iter)->GetAccountID() == account_id) {
-			Log(Logs::General, Logs::LoginServer, "Client attempting to log in and existing client already logged in, removing existing client.");
+			LogInfo("Client attempting to log in existing client already logged in, removing existing client");
 			delete (*iter);
 			iter = clients.erase(iter);
 		}
@@ -158,7 +158,7 @@ Client *ClientManager::GetClient(unsigned int account_id)
 	}
 
 	if(count > 1) {
-		Log(Logs::General, Logs::Error, "More than one client with a given account_id existed in the client list.");
+		LogError("More than one client with a given account_id existed in the client list.");
 	}
 	return cur;
 }

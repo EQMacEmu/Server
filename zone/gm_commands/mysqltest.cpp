@@ -11,6 +11,6 @@ void command_mysqltest(Client *c, const Seperator *sep)
 			auto results = database.QueryDatabase(query);
 		} 
 	}
-	Log(Logs::General, Logs::Debug, "MySQL Test... Took %f seconds", ((float)(std::clock() - t)) / CLOCKS_PER_SEC); 
+	LogDebug("MySQL Test... Took [{}] seconds", ((float)(std::clock() - t)) / CLOCKS_PER_SEC); 
 }
 

@@ -97,6 +97,11 @@ public:
 
 	void SetContentFlag(const std::string &content_flag_name, bool enabled);
 
+	static WorldContentService *Instance()
+	{
+		static WorldContentService instance;
+		return &instance;
+	}
 private:
 	int current_expansion{};
 	std::vector<ContentFlagsRepository::ContentFlags> content_flags;
@@ -104,7 +109,5 @@ private:
 	// reference to database
 	Database *m_database;
 };
-
-extern WorldContentService content_service;
 
 #endif //EQEMU_WORLD_CONTENT_SERVICE_H

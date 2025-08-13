@@ -55,11 +55,11 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 	const SPDat_Spell_Struct &spell = spells[spell_id];
 
-	Log(Logs::Detail, Logs::Spells, "%s is affected by spell '%s' (id %d)", GetName(), spell.name, spell_id);
+	LogSpellsDetail("[{}] is affected by spell '[{}]' (id [{}])", GetName(), spell.name, spell_id);
 
 	if(buffslot >= 0 && !IsCorpse())
 	{
-		Log(Logs::Detail, Logs::Spells, "Buff slot: %d  Duration: %d tics", buffslot, buffs[buffslot].ticsremaining);
+		LogSpellsDetail("Buff slot: [{}]  Duration: [{}] tics", buffslot, buffs[buffslot].ticsremaining);
 		buffs[buffslot].melee_rune = 0;
 		buffs[buffslot].magic_rune = 0;
 	}
@@ -383,7 +383,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 					if(!target_zone) {
 #ifdef SPELL_EFFECT_SPAM
-						Log(Logs::General, Logs::Spells, "Succor/Evacuation Spell In Same Zone.");
+						LogSpells("Succor/Evacuation Spell In Same Zone.");
 #endif
 						if (IsClient())
 							CastToClient()->MovePC(zone->GetZoneID(), x, y, z, heading, 0, EvacToSafeCoords);
@@ -392,7 +392,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					}
 					else {
 #ifdef SPELL_EFFECT_SPAM
-						Log(Logs::General, Logs::Spells, "Succor/Evacuation Spell To Another Zone.");
+						LogSpells("Succor/Evacuation Spell To Another Zone.");
 #endif
 						if (IsClient())
 						{
@@ -635,7 +635,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 
 				if (IsFleeing() && !IsFearedNoFlee() && !IsBlind())
 				{
-					curfp = false;
+					currently_fleeing = false;
 					flee_mode = false;
 				}
 
@@ -714,7 +714,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						CastToClient()->AI_Start();
 						feared = true;
 					}
-					if (!curfp)
+					if (!currently_fleeing)
 						CalculateNewFearpoint();
 				}
 				else
@@ -755,7 +755,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 						cd->spellid = action->spell;
 						cd->sequence = action->sequence;
 
-						Log(Logs::Detail, Logs::Spells, "Sending Action #2/Message packet for spell %d (SE_BindAffinity)", spell_id);
+						LogSpellsDetail("Sending Action #2/Message packet for spell [{}] (SE_BindAffinity)", spell_id);
 						CastToClient()->QueuePacket(action_packet);
 						if(caster->IsClient() && caster != this)
 							caster->CastToClient()->QueuePacket(action_packet);
@@ -811,7 +811,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 								cd->type = action->type;
 								cd->spellid = action->spell;
 								cd->sequence = action->sequence;
-								Log(Logs::Detail, Logs::Spells, "Sending Action #2/Message packet for spell %d (SE_BindAffinity)", spell_id);
+								LogSpellsDetail("Sending Action #2/Message packet for spell [{}] (SE_BindAffinity)", spell_id);
 								CastToClient()->QueuePacket(action_packet);
 								if(caster->IsClient() && caster != this)
 									caster->CastToClient()->QueuePacket(action_packet);
@@ -851,7 +851,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							cd->sequence = action->sequence;
 
 
-							Log(Logs::Detail, Logs::Spells, "Sending Action #2/Message packet for spell %d (SE_BindAffinity)", spell_id);
+							LogSpellsDetail("Sending Action #2/Message packet for spell [{}] (SE_BindAffinity)", spell_id);
 							CastToClient()->QueuePacket(action_packet);
 							if(caster->IsClient() && caster != this)
 								caster->CastToClient()->QueuePacket(action_packet);
@@ -1147,7 +1147,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				// this should catch the cures
 				if (IsBeneficialSpell(spell_id) && spells[spell_id].buffduration == 0)
 					BuffFadeByEffect(SE_Blind);
-				else if (!IsClient() && !curfp)
+				else if (!IsClient() && !currently_fleeing)
 				{
 					if (!GetTarget())
 						SetTarget(caster); // have to set a target so blind can set a fear point properly
@@ -1264,7 +1264,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 				if (IsMezSpell(spell_id) && current_buff_refresh)
 				{
-					Log(Logs::General, Logs::Spells, "Spell %d cast on %s is a mez the entity is already debuffed with. Skipping Mem Blur component.", spell_id, GetName());
+					LogSpells("Spell [{}] cast on [{}] is a mez the entity is already debuffed with. Skipping Mem Blur component.", spell_id, GetName());
 					break;
 				}
 
@@ -1395,7 +1395,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				if (GetPetType() == petHatelist || GetPetType() == petFamiliar)
 					pet_ActSpellCostMod = 0;
 
-				Log(Logs::General, Logs::Spells, "Reclaimed %d mana from pet %s. ReclaimMod: %d", pet_ActSpellCostMod, GetName(), ImprovedReclaimMod);
+				LogSpells("Reclaimed [{}] mana from pet [{}]. ReclaimMod: [{}]", pet_ActSpellCostMod, GetName(), ImprovedReclaimMod);
 				caster->SetMana(caster->GetMana() + pet_ActSpellCostMod);
 
 				if(caster->IsClient())
@@ -1484,7 +1484,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				if (IsCorpse() && CastToCorpse()->IsPlayerCorpse()) {
 
 					if(caster)
-						Log(Logs::Detail, Logs::Spells, " corpse being rezzed using spell %i by %s",
+						LogSpellsDetail(" corpse being rezzed using spell [{}] by [{}]",
 							spell_id, caster->GetName());
 
 					CastToCorpse()->CastRezz(spell_id, caster);
@@ -1515,12 +1515,12 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					float newsize = floor((size * modifyAmount) - 0.5f);
 					if(newsize >= gnome_height)
 					{
-						Log(Logs::General, Logs::Spells, "Shrink successful from %0.2f to %0.2f. modifyAmount %0.2f", size, newsize, modifyAmount);
+						LogSpells("Shrink successful from [{:.2f}] to [{:.2f}]. modifyAmount [{:.2f}]", size, newsize, modifyAmount);
 						ChangeSize(newsize, true);
 					}
 					else if (newsize < gnome_height)
 					{
-						Log(Logs::General, Logs::Spells, "Shrink successful from %0.2f to %0.2f. modifyAmount %0.2f", size, gnome_height, modifyAmount);
+						LogSpells("Shrink successful from [{:.2f}] to [{:.2f}]. modifyAmount [{:.2f}]", size, gnome_height, modifyAmount);
 						ChangeSize(gnome_height, true);
 					}
 
@@ -1530,12 +1530,12 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					float newsize = floor((size * modifyAmount) + 0.5f);
 					if(newsize <= ogre_height)
 					{
-						Log(Logs::General, Logs::Spells, "Growth successful from %0.2f to %0.2f. modifyAmount %0.2f", size, newsize, modifyAmount);
+						LogSpells("Growth successful from [{:.2f}] to [{:.2f}]. modifyAmount [{:.2f}]", size, newsize, modifyAmount);
 						ChangeSize(newsize, true);
 					}
 					else if (newsize > ogre_height)
 					{
-						Log(Logs::General, Logs::Spells, "Growth successful from %0.2f to %0.2f. modifyAmount %0.2f", size, ogre_height, modifyAmount);
+						LogSpells("Growth successful from [{:.2f}] to [{:.2f}]. modifyAmount [{:.2f}]", size, ogre_height, modifyAmount);
 						ChangeSize(ogre_height, true);
 					}
 				}
@@ -1622,7 +1622,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					else {
 						caster->Message_StringID(Chat::SpellFailure, StringID::TARGET_NOT_FOUND);
 						this->CastToClient()->SummonItem(spells[spell_id].components[0]);
-						Log(Logs::General, Logs::Error, "%s attempted to cast spell id %u with spell effect SE_SummonCorpse, but could not cast target into a Client object.", GetCleanName(), spell_id);
+						LogError("[{}] attempted to cast spell id [{}] with spell effect SE_SummonCorpse, but could not cast target into a Client object.", GetCleanName(), spell_id);
 					}
 				}
 
@@ -2290,7 +2290,7 @@ int Mob::CalcSpellEffectValue(uint16 spell_id, int effect_index, int caster_leve
 		int oval = effect_value;
 		int mod = instrumentmod;
 		effect_value = effect_value * mod / 10;
-		Log(Logs::Detail, Logs::Spells, "Effect value %d altered with bard modifier of %d to yield %d", oval, mod, effect_value);
+		LogSpellsDetail("Effect value [{}] altered with bard modifier of [{}] to yield [{}]", oval, mod, effect_value);
 	}
 
 	return(effect_value);
@@ -2350,7 +2350,7 @@ snare has both of them negative, yet their range should work the same:
 		updownsign = 1;
 	}
 	#if EQDEBUG >= 11
-		Log(Logs::Detail, Logs::Spells, "CSEV: spell %d, formula %d, base %d, max %d, lvl %d. Up/Down %d",
+		LogSpellsDetail("CSEV: spell [{}], formula [{}], base [{}], max [{}], lvl [{}]. Up/Down [{}]",
 			spell_id, formula, base, max, caster_level, updownsign);
 	#endif
 
@@ -2560,7 +2560,7 @@ snare has both of them negative, yet their range should work the same:
 				result = ubase + (caster_level * formula);
 				
 				// Sony hardcoded a HT damage bonus
-				if (content_service.IsTheScarsOfVeliousEnabled())
+				if (WorldContentService::Instance()->IsTheScarsOfVeliousEnabled())
 				{
 					if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH)
 					{
@@ -2575,7 +2575,7 @@ snare has both of them negative, yet their range should work the same:
 				}
 			}
 			else
-				Log(Logs::General, Logs::Error, "Unknown spell effect value formula %d", formula);
+				LogError("Unknown spell effect value formula [{}]", formula);
 		}
 	}
 
@@ -2600,7 +2600,7 @@ snare has both of them negative, yet their range should work the same:
 	if (base < 0 && result > 0)
 		result *= -1;
 	#if EQDEBUG >= 11
-		Log(Logs::Detail, Logs::Spells, "Result: %d (orig %d), cap %d %s", result, oresult, max, (base < 0 && result > 0)?"Inverted due to negative base":"");
+		LogSpellsDetail("Result: [{}] (orig [{}]), cap [{}] [{}]", result, oresult, max, (base < 0 && result > 0)?"Inverted due to negative base":"");
 	#endif
 
 	return result;
@@ -2641,18 +2641,18 @@ void Mob::BuffProcess()
 							IsMezSpell(buffs[buffs_i].spellid) ||
 							IsBlindSpell(buffs[buffs_i].spellid))
 						{
-							Log(Logs::Detail, Logs::Spells, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
+							LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
 							BuffFadeBySlot(buffs_i);
 						}
 					}
 					else if (buffs[buffs_i].ticsremaining < 0)
 					{
-						Log(Logs::Detail, Logs::Spells, "Buff %d in slot %d has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
+						LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
 						BuffFadeBySlot(buffs_i);
 					}
 					else
 					{
-						Log(Logs::Detail, Logs::Spells, "Buff %d in slot %d has %d tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
+						LogSpellsDetail("Buff [{}] in slot [{}] has [{}] tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
 					}
 				}
 				else if(IsClient())
@@ -2774,7 +2774,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 					}
 
 					effect_value = -effect_value;
-					Log(Logs::Detail, Logs::Spells, "%s is being damaged for %d points due to DOT %s in slot %d.", GetName(), effect_value, GetSpellName(spell_id), slot);
+					LogSpellsDetail("[{}] is being damaged for [{}] points due to DOT [{}] in slot [{}].", GetName(), effect_value, GetSpellName(spell_id), slot);
 					Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
 				} else if(effect_value > 0) {
 					// Regen spell...
@@ -2850,7 +2850,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 							if (zone->random.Int(1, 100) > caster->aabonuses.CharmBreakChance)	// Total Domination AA
 								breakCharm = true;
 							else
-								Log(Logs::Detail, Logs::Spells, "Total Domination success; charm will hold");
+								LogSpellsDetail("Total Domination success; charm will hold");
 						}
 						else
 							breakCharm = true;
@@ -2963,7 +2963,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 						if(zone->random.Real(0.0, 100.0) < break_chance)
 						{
 							BuffModifyDurationBySpellID(spell_id, 10, true);
-							Log(Logs::General, Logs::Spells, "Invis spell %d fading early. 10 tics remain.", spell_id);
+							LogSpells("Invis spell [{}] fading early. 10 tics remain.", spell_id);
 						}
 					}
 				}
@@ -3021,11 +3021,11 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 
 	if (buffs[slot].isdisc)
 	{
-		Log(Logs::General, Logs::Discs, "Fading disc spell %d from slot %d on %s", buffs[slot].spellid, slot, GetName());
+		LogDiscs("Fading disc spell [{}] from slot [{}] on [{}]", buffs[slot].spellid, slot, GetName());
 	}
 	else
 	{
-		Log(Logs::Detail, Logs::Spells, "Fading %s %d from slot %d on %s", isbuff ? "buff" : "debuff", buffs[slot].spellid, slot, GetName());
+		LogSpellsDetail("Fading [{}] [{}] from slot [{}] on [{}]", isbuff ? "buff" : "debuff", buffs[slot].spellid, slot, GetName());
 	}
 
 	if(IsClient()) {
@@ -3269,7 +3269,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 						bool pop_charm = buffs[slot].spellid == 3355 || buffs[slot].spellid == 3347;	// Command of Druzzil, Beckon
 						if (this->IsNPC() && pop_charm && zone->random.Roll(5))
 						{
-							Log(Logs::Detail, Logs::Spells, "Attempting to aggro on nearby client instead of enchanter");
+							LogSpellsDetail("Attempting to aggro on nearby client instead of enchanter");
 							found = entity_list.AICheckClientAggro(this->CastToNPC());	// find a client to aggro on
 						}
 						if (!pop_charm || !found)
@@ -3338,9 +3338,9 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 			}
 
 			case SE_Blind:
-				if (curfp && !FindType(SE_Fear))
+				if (currently_fleeing && !FindType(SE_Fear))
 				{
-					curfp = false;
+					currently_fleeing = false;
 				}
 				break;
 
@@ -3358,9 +3358,9 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 						}
 					}
 
-					if (curfp)
+					if (currently_fleeing)
 					{
-						curfp = false;
+						currently_fleeing = false;
 						if (IsNPC())
 							StopNavigation();
 					}
@@ -3410,7 +3410,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 						{
 							if(!my_c->GetGMSpeed() && (runs >= my_c->GetBaseRunspeed() || (speed > (my_c->GetBaseRunspeed() * RuleR(Cheat, MQWarpDetectionDistanceFactor)))))
 							{
-								Log(Logs::General, Logs::Status, "%s %i moving too fast! moved: %.2f in %ims, speed %.2f\n", __FILE__, __LINE__,
+								LogInfo("[{}] [{}] moving too fast! moved: [{:.2f}] in [{}] ms, speed [{:.2f}]", __FILE__, __LINE__,
 									my_c->m_DistanceSinceLastPositionCheck, (cur_time - my_c->m_TimeSinceLastPositionCheck), speed);
 								if(my_c->cheat_manager.GetExemptStatus(ShadowStep))
 								{
@@ -3905,12 +3905,12 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 		case SE_LimitInstant:
 			if (focus_spell.base[i] == 1 && spell.buffduration) //Fail if not instant
 			{
-				Log(Logs::Detail, Logs::Focus, "Focus %d only affects direct spells.", focus_id);
+				LogFocusDetail("Focus [{}] only affects direct spells.", focus_id);
 				return 0;
 			}
 			if (focus_spell.base[i] == 0 && (spell.buffduration == 0)) //Fail if instant
 			{
-				Log(Logs::Detail, Logs::Focus, "Focus %d only affects buffs.", focus_id);
+				LogFocusDetail("Focus [{}] only affects buffs.", focus_id);
 				return 0;
 			}
 
@@ -3920,7 +3920,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 			if (IsNPC())
 				break;;
 			lvldiff = casted_spell_level - focus_spell.base[i];
-			Log(Logs::Detail, Logs::Focus, "Focus %d affects buffs with a max level of %d.", focus_id, focus_spell.base[i]);
+			LogFocusDetail("Focus [{}] affects buffs with a max level of [{}].", focus_id, focus_spell.base[i]);
 
 			//every level over cap reduces the effect by focus_spell.base2[i] percent unless from a clicky when ItemCastsUseFocus is true
 			if(lvldiff > 0 && (casted_spell_level <= RuleI(Character, MaxLevel) || RuleB(Character, ItemCastsUseFocus) == false)){
@@ -3937,26 +3937,26 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 		case SE_LimitMinLevel:
 			if (IsNPC())
 				break;
-			Log(Logs::Detail, Logs::Focus, "Focus %d affects buffs with a min level of %d.", focus_id, focus_spell.base[i]);
+			LogFocusDetail("Focus [{}] affects buffs with a min level of [{}].", focus_id, focus_spell.base[i]);
 			if (spell.classes[(GetClass()%16) - 1] < focus_spell.base[i])
 				return(0);
 			break;
 
 		case SE_LimitCastTimeMin:
-			Log(Logs::Detail, Logs::Focus, "Focus %d affects buffs with a min casting time of %d.", focus_id, focus_spell.base[i]);
+			LogFocusDetail("Focus [{}] affects buffs with a min casting time of [{}].", focus_id, focus_spell.base[i]);
 			if (spells[spell_id].cast_time < (uint16)focus_spell.base[i])
 				return(0);
 			break;
 
 		case SE_LimitCastTimeMax:
-			Log(Logs::Detail, Logs::Focus, "Focus %d affects buffs with a max casting time of %d.", focus_id, focus_spell.base[i]);
+			LogFocusDetail("Focus [{}] affects buffs with a max casting time of [{}].", focus_id, focus_spell.base[i]);
 			if (spells[spell_id].cast_time > (uint16)focus_spell.base[i])
 				return(0);
 			break;
 			
 		case SE_LimitSpell:
 			if(focus_spell.base[i] < 0) {	//Exclude
-				Log(Logs::Detail, Logs::Focus, "Focus %d excludes spellid of %d.", focus_id, -focus_spell.base[i]);
+				LogFocusDetail("Focus [{}] excludes spellid of [{}].", focus_id, -focus_spell.base[i]);
 				if (spell_id == -focus_spell.base[i])
 					return(0);
 			} 
@@ -3970,7 +3970,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 		case SE_LimitMinDur:
 			if (focus_spell.base[i] > CalcBuffDuration_formula(GetLevel(), spell.buffdurationformula, spell.buffduration))
 			{
-				Log(Logs::Detail, Logs::Focus, "Focus %d only affects buffs with a min duration of %d.", focus_id, focus_spell.base[i]);
+				LogFocusDetail("Focus [{}] only affects buffs with a min duration of [{}].", focus_id, focus_spell.base[i]);
 				return(0);
 			}
 			break;
@@ -4070,7 +4070,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 
 					if (!has_limit_effect && spell.buffduration)
 					{
-						Log(Logs::Detail, Logs::Focus, "Focus %d is not Burning Affliction, dot tick will be ignored.", focus_id);
+						LogFocusDetail("Focus [{}] is not Burning Affliction, dot tick will be ignored.", focus_id);
 						return 0;
 					}
 				}
@@ -4177,7 +4177,7 @@ int16 Mob::CalcFocusEffect(focusType type, uint16 focus_id, uint16 spell_id, boo
 		//this spits up a lot of garbage when calculating spell focuses
 		//since they have all kinds of extra effects on them.
 		default:
-			Log(Logs::General, Logs::Normal, "CalcFocusEffect: unknown effectid %d", focus_spell.effectid[i]);
+			LogInfo("CalcFocusEffect: unknown effectid [{}]", focus_spell.effectid[i]);
 #endif
 		}
 		
@@ -4209,7 +4209,7 @@ int16 Client::GetFocusEffect(focusType type, uint16 spell_id, std::string& item_
 		return 0;
 	}
 
-	if (!content_service.IsTheShadowsOfLuclinEnabled()) {
+	if (!WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 		return 0;
 	}
 
@@ -4413,13 +4413,13 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 				{
 					int32 pacify_original_duration = buffs[buffslot].ticsremaining;
 					int32 pacify_modified_duration = 8; // 7 plus extra tick
-					Log(Logs::General, Logs::Focus, "Pacify spell TAKP special - reducing duration from %d to %d before focus", pacify_original_duration, pacify_modified_duration);
+					LogFocus("Pacify spell TAKP special - reducing duration from [{}] to [{}] before focus", pacify_original_duration, pacify_modified_duration);
 					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false); // update false because we call the function again below to really update
 				}
 				int32 tics = buffs[buffslot].ticsremaining;
 				int32 newduration = (tics * casting_spell_focus_duration) / 100;
 
-				Log(Logs::General, Logs::Focus, "focusSpellDuration update tics remaining from %d to %d", tics, newduration);
+				LogFocus("focusSpellDuration update tics remaining from [{}] to [{}]", tics, newduration);
 				spelltar->BuffModifyDurationBySpellID(spell_id, newduration, true);
 			}
 		}

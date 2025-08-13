@@ -129,7 +129,7 @@ int32 Client::GetActSpellDamage(uint16 spell_id, int32 dmg, Mob* target)
 	int32 focusDmg = 0;
 	focusDmg = dmg * GetFocusEffect(focusImprovedDamage, spell_id, item_name) / 100;
 	if (focusDmg)
-		Log(Logs::General, Logs::Focus, "focusImprovedDamage improved damage from %d to %d", dmg, focusDmg + dmg);
+		LogFocus("focusImprovedDamage improved damage from [{}] to [{}]", dmg, focusDmg + dmg);
 
 	// SK AA Soul Abrasion; only SKs get something with focusSpellDamageMult
 	if (GetClass() == Class::ShadowKnight)
@@ -185,7 +185,7 @@ int32 Client::GetActDoTDamage(uint16 spell_id, int32 value, Mob* target) {
 		int32 tmp_val = value;
 		value += int(value_BaseEffect*GetFocusEffect(focusImprovedDamage, spell_id, item_name, true)/100)*ratio/100;
 		if (tmp_val != value)
-			Log(Logs::General, Logs::Focus, "focusImprovedDamage improved DOT damage from %d to %d", tmp_val, value);
+			LogFocus("focusImprovedDamage improved DOT damage from [{}] to [{}]", tmp_val, value);
 
 		return value;
 	}
@@ -259,7 +259,7 @@ int32 Client::GetActSpellHealing(uint16 spell_id, int32 value, Mob* target, bool
 		if (value_BaseEffect != value)
 		{
 			int32 tmp_val = GetHP() + value > GetMaxHP() ? GetMaxHP() : value;
-			Log(Logs::General, Logs::Focus, "focusImprovedHeal improved heal from %d to %d", value_BaseEffect, tmp_val);
+			LogFocus("focusImprovedHeal improved heal from [{}] to [{}]", value_BaseEffect, tmp_val);
 		}
 	}
 
@@ -360,7 +360,7 @@ int32 Client::GetActSpellCasttime(uint16 spell_id, int32 casttime)
 	modified_cast_time = modified_cast_time < casttime / 2 ? casttime / 2 : modified_cast_time;
 
 	if(modified_cast_time != casttime)
-		Log(Logs::General, Logs::Focus, "Spell %d casttime %d modified %d aa_mod %d item_mod %d buff_mod %d", spell_id, casttime, modified_cast_time, aa_casting_time_mod, item_casting_time_mod, buff_casting_time_mod);
+		LogFocus("Spell [{}] casttime [{}] modified [{}] aa_mod [{}] item_mod [{}] buff_mod [{}]", spell_id, casttime, modified_cast_time, aa_casting_time_mod, item_casting_time_mod, buff_casting_time_mod);
 
 	return modified_cast_time;
 }
@@ -496,7 +496,7 @@ bool Client::UseDiscipline(uint8 disc_id)
 	// cast a new one.
 	if(GetActiveDisc() != 0)
 	{
-		Log(Logs::General, Logs::Discs, "Clearing disc %d so that disc %d can be cast.", GetActiveDisc(), disc_id);
+		LogDiscs("Clearing disc [{}] so that disc [{}] can be cast.", GetActiveDisc(), disc_id);
 		FadeDisc();
 	}
 
@@ -917,7 +917,7 @@ bool Client::CastDiscipline(uint8 disc_id, uint8 level_to_use)
 
 			break;
 		default:
-			Log(Logs::General, Logs::Discs, "Invalid disc id %d was passed to CastDiscipline.", disc_id);
+			LogDiscs("Invalid disc id [{}] was passed to CastDiscipline.", disc_id);
 			return false;
 	}
 
@@ -941,7 +941,7 @@ bool Client::CastDiscipline(uint8 disc_id, uint8 level_to_use)
 		}
 		else
 		{
-			Log(Logs::General, Logs::Discs, "Disc %d is an instant effect", disc_id);
+			LogDiscs("Disc [{}] is an instant effect", disc_id);
 		}
 
 		SetActiveDisc(disc_id, spellid);
@@ -949,7 +949,7 @@ bool Client::CastDiscipline(uint8 disc_id, uint8 level_to_use)
 	}
 	else
 	{
-		Log(Logs::General, Logs::Discs, "Disc: %d Invalid stringid or spellid specified.", disc_id);
+		LogDiscs("Disc: [{}] Invalid stringid or spellid specified.", disc_id);
 		return false;
 	}
 
@@ -1057,7 +1057,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 		// Some scripts have the trigger cast on itself (Nexus Scions) so we want to allow that.
 		if (curmob->IsUnTargetable() && (curmob != spell_target || clientcaster))
 		{
-			Log(Logs::Detail, Logs::Spells, "Invalid target: Attempting to cast an AE spell on %s, which is untargetable.", curmob->GetName());
+			LogSpellsDetail("Invalid target: Attempting to cast an AE spell on [{}], which is untargetable.", curmob->GetName());
 			continue;
 		}
 		if (curmob->IsTrap())
@@ -1121,14 +1121,14 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			{
 				if (caster->IsAttackAllowed(curmob, true))
 				{
-					Log(Logs::General, Logs::Spells, "Invalid target: Attempting to cast a beneficial AE spell/song on %s.", curmob->GetName());
+					LogSpells("Invalid target: Attempting to cast a beneficial AE spell/song on [{}].", curmob->GetName());
 					if(!IsBardSong(spell_id) && spells[spell_id].targettype != ST_AEBard)
 						caster->Message_StringID(Chat::SpellFailure, StringID::SPELL_NO_HOLD);
 					continue;
 				}
 				else if (IsBardSong(spell_id) && curmob->IsPet())
 				{
-					Log(Logs::General, Logs::Spells, "Invalid target: Attempting to cast a beneficial AE song on %s who is a pet.", curmob->GetName());
+					LogSpells("Invalid target: Attempting to cast a beneficial AE song on [{}] who is a pet.", curmob->GetName());
 					//caster->Message_StringID(Chat::SpellFailure, SPELL_NO_HOLD);
 					continue;
 				}
@@ -1144,7 +1144,7 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 			if(slotid == INVALID_INDEX)
 			{
 				curmob->Message_StringID(Chat::SpellFailure, StringID::NO_COMPONENT_LUCLIN);
-				Log(Logs::Detail, Logs::Spells, "%s does not have the correct component to travel to Luclin.", curmob->GetName());
+				LogSpellsDetail("[{}] does not have the correct component to travel to Luclin.", curmob->GetName());
 				continue;
 			}
 			else
@@ -1163,12 +1163,12 @@ void EntityList::AESpell(Mob *caster, Mob *center, uint16 spell_id, bool affect_
 				caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 				if (curmob->IsNPC() && caster->IsAttackAllowed(curmob, true, spell_id))
 					++targets_hit;
-				Log(Logs::Detail, Logs::Spells, "Targeted AE Spell: %d has hit target #%d/%d: %s", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
+				LogSpellsDetail("Targeted AE Spell: [{}] has hit target #[{}]/[{}]: [{}]", spell_id, targets_hit, MAX_TARGETS_ALLOWED, curmob->GetCleanName());
 			}
 		}
 		else 
 		{
-			Log(Logs::Detail, Logs::Spells, "Non-limited AE Spell: %d has hit target %s", spell_id, curmob->GetCleanName());
+			LogSpellsDetail("Non-limited AE Spell: [{}] has hit target [{}]", spell_id, curmob->GetCleanName());
 			caster->SpellOnTarget(spell_id, curmob, false, true, resist_adjust, false, ae_caster_id);
 		}
 	}

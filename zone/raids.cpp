@@ -94,7 +94,7 @@ void Raid::AddMember(Client *c, uint32 group, bool rleader, bool groupleader, bo
     auto results = database.QueryDatabase(query);
 
 	if(!results.Success()) {
-		Log(Logs::General, Logs::Error, "Error inserting into raid members: %s", results.ErrorMessage().c_str());
+		LogError("Error inserting into raid members: [{}]", results.ErrorMessage());
 	}
 
 	c->SetRaidGrouped(group != 0xFFFFFFFF);
@@ -413,13 +413,13 @@ void Raid::SetRaidLeader(const char *wasLead, const char *name)
 		std::string query = StringFormat("UPDATE raid_members SET israidleader = 0 WHERE name = '%s'", wasLead);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success())
-			Log(Logs::General, Logs::Error, "Set Raid Leader error: %s\n", results.ErrorMessage().c_str());
+			LogError("Set Raid Leader error: [{}]", results.ErrorMessage());
 	}
 	if (strlen(name) > 0) {
 		std::string query = StringFormat("UPDATE raid_members SET israidleader = 1, islooter = 1 WHERE name = '%s'", name);
 		auto results = database.QueryDatabase(query);
 		if (!results.Success())
-			Log(Logs::General, Logs::Error, "Set Raid Leader error: %s\n", results.ErrorMessage().c_str());
+			LogError("Set Raid Leader error: [{}]", results.ErrorMessage());
 	}
 	strn0cpy(leadername, name, 64);
 
@@ -605,7 +605,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 	if(!caster)
 		return;
 
-	Log(Logs::Detail, Logs::Spells, "%s is casting spell %d on raid %d", caster->GetName(), spellid, GetID());
+	LogSpellsDetail("[{}] is casting spell [{}] on raid [{}]", caster->GetName(), spellid, GetID());
 
 	range = caster->GetAOERange(spellid);
 
@@ -634,7 +634,7 @@ void Raid::CastGroupSpell(Mob* caster, uint16 spellid, uint32 gid, bool isrecour
 #endif
 				}
 				else{
-					Log(Logs::Detail, Logs::Spells, "Raid spell: %s is out of range %f at distance %f from %s", members[x].member->GetName(), range, distance, caster->GetName());
+					LogSpellsDetail("Raid spell: [{}] is out of range [{}] at distance [{}] from [{}]", members[x].member->GetName(), range, distance, caster->GetName());
 				}
 			}
 		}
@@ -1567,7 +1567,7 @@ void Raid::GetRaidDetails()
     auto results = database.QueryDatabase(query);
 	if (!results.Success())
 	{
-		Log(Logs::General, Logs::Error, "Error getting raid details for raid %lu: %s", (unsigned long)GetID(), results.ErrorMessage().c_str());
+		LogError("Error getting raid details for raid [{}]: [{}]", (unsigned long)GetID(), results.ErrorMessage());
 		return;
 	}
 
@@ -1591,7 +1591,7 @@ bool Raid::LearnMembers()
     auto results = database.QueryDatabase(query);
 	if (!results.Success())
 	{
-		Log(Logs::General, Logs::Error, "Error getting raid members for raid %lu: %s", (unsigned long)GetID(), results.ErrorMessage().c_str());
+		LogError("Error getting raid members for raid [{}]: [{}]", (unsigned long)GetID(), results.ErrorMessage());
 		return false;
 	}
 

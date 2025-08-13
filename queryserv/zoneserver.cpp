@@ -5,8 +5,6 @@
 #include "../common/events/player_event_logs.h"
 #include "../common/discord/discord_manager.h"
 
-extern DiscordManager discord_manager;
-
 ZoneServer::ZoneServer(
 	std::shared_ptr<EQ::Net::ServertalkServerConnection> in_connection,
 	EQ::Net::ConsoleServer *in_console
@@ -35,9 +33,9 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p)
 			cereal::BinaryInputArchive archive(ss);
 			archive(n);
 
-			player_event_logs.AddToQueue(n.player_event_log);
+			PlayerEventLogs::Instance()->AddToQueue(n.player_event_log);
 
-			discord_manager.QueuePlayerEventMessage(n);
+			DiscordManager::Instance()->QueuePlayerEventMessage(n);
 			break;
 		}
 		default: {
@@ -51,8 +49,8 @@ void ZoneServer::SendPlayerEventLogSettings()
 {
 	EQ::Net::DynamicPacket                                                dyn_pack;
 	std::vector<PlayerEventLogSettingsRepository::PlayerEventLogSettings> settings(
-		player_event_logs.GetSettings(),
-		player_event_logs.GetSettings() + PlayerEvent::EventType::MAX
+		PlayerEventLogs::Instance()->GetSettings(),
+		PlayerEventLogs::Instance()->GetSettings() + PlayerEvent::EventType::MAX
 	);
 
 	dyn_pack.PutSerialize(0, settings);

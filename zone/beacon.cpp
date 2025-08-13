@@ -309,7 +309,7 @@ bool Beacon::Process()
 
 								if (!fail_cast && RuleB(AlKabor, BlockProjectileCorners) && target->CastToNPC()->IsCornered())
 								{
-									Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is cornered", target->GetName());
+									LogCombatDetail("Poofing bolt; [{}] is cornered", target->GetName());
 									fail_cast = true;
 								}
 
@@ -328,14 +328,14 @@ bool Beacon::Process()
 									// allow the bolt if fired parallel to the wall; deny if fired perpendicular
 									if (xy_angle > 0.4f)
 									{
-										Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is against a wall(1)  xy_angle: %0.4f", target->GetName(), xy_angle);
+										LogCombatDetail("Poofing bolt; [{}] is against a wall(1)  xy_angle: [{:.4f}]", target->GetName(), xy_angle);
 										fail_cast = true;
 									}
 
 									xy_angle = fabs(-target->CastToNPC()->GetWallAngle2(vector_x, vector_y));
 									if (xy_angle > 0.4f)
 									{
-										Log(Logs::Detail, Logs::Combat, "Poofing bolt; %s is against a wall(2)  xy_angle: %0.4f", target->GetName(), xy_angle);
+										LogCombatDetail("Poofing bolt; [{}] is against a wall(2)  xy_angle: [{:.4f}]", target->GetName(), xy_angle);
 										fail_cast = true;
 									}
 								}

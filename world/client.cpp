@@ -65,10 +65,6 @@
 std::vector<RaceClassAllocation> character_create_allocations;
 std::vector<RaceClassCombos> character_create_race_class_combos;
 
-extern ZSList zoneserver_list;
-extern LoginServerList loginserverlist;
-extern ClientList client_list;
-extern EQ::Random emu_random;
 extern uint32 numclients;
 extern volatile bool RunLoops;
 extern volatile bool UCSServerAvailable_;
@@ -217,12 +213,12 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 	else
 		id=atoi(name);
 
-	if (loginserverlist.Connected() == false && !is_player_zoning) {
+	if (LoginServerList::Instance()->Connected() == false && !is_player_zoning) {
 		LogInfo("Error: Login server login while not connected to login server.");
 		return false;
 	}
 
-	if (((cle = client_list.CheckAuth(name, password)) || (cle = client_list.CheckAuth(id, password))))
+	if (((cle = ClientList::Instance()->CheckAuth(name, password)) || (cle = ClientList::Instance()->CheckAuth(id, password))))
 
 	{
 		if(GetSessionLimit())
@@ -260,7 +256,7 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 			ServerLSPlayerJoinWorld_Struct* join =(ServerLSPlayerJoinWorld_Struct*)pack->pBuffer;
 			strcpy(join->key,GetLSKey());
 			join->lsaccount_id = GetLSID();
-			loginserverlist.SendPacket(pack);
+			LoginServerList::Instance()->SendPacket(pack);
 			safe_delete(pack);
 		}
 
@@ -390,7 +386,7 @@ bool Client::HandleGenerateRandomNamePacket(const EQApplicationPacket *app) {
 	char cons[48]="bcdfghjklmnpqrstvwxzybcdgklmnprstvwbcdgkpstrkd";
 	char rndname[17]="\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 	char paircons[33]="ngrkndstshthphsktrdrbrgrfrclcr";
-	int rndnum=emu_random.Int(0, 75),n=1;
+	int rndnum= EQ::Random::Instance()->Int(0, 75),n=1;
 	bool dlc=false;
 	bool vwl=false;
 	bool dbl=false;
@@ -411,18 +407,18 @@ bool Client::HandleGenerateRandomNamePacket(const EQApplicationPacket *app) {
 		rndname[0]=vowels[rndnum];
 		vwl=true;
 	}
-	int namlen=emu_random.Int(5, 10);
+	int namlen= EQ::Random::Instance()->Int(5, 10);
 	for (int i=n;i<namlen;i++)
 	{
 		dlc=false;
 		if (vwl)	//last char was a vowel
 		{			// so pick a cons or cons pair
-			rndnum=emu_random.Int(0, 62);
+			rndnum= EQ::Random::Instance()->Int(0, 62);
 			if (rndnum>46)
 			{	// pick a cons pair
 				if (i>namlen-3)	// last 2 chars in name?
 				{	// name can only end in cons pair "rk" "st" "sh" "th" "ph" "sk" "nd" or "ng"
-					rndnum=emu_random.Int(0, 7)*2;
+					rndnum= EQ::Random::Instance()->Int(0, 7)*2;
 				}
 				else
 				{	// pick any from the set
@@ -440,12 +436,12 @@ bool Client::HandleGenerateRandomNamePacket(const EQApplicationPacket *app) {
 		}
 		else
 		{		// select a vowel
-			rndname[i]=vowels[emu_random.Int(0, 16)];
+			rndname[i]=vowels[EQ::Random::Instance()->Int(0, 16)];
 		}
 		vwl=!vwl;
 		if (!dbl && !dlc)
 		{	// one chance at double letters in name
-			if (!emu_random.Int(0, i+9))	// chances decrease towards end of name
+			if (!EQ::Random::Instance()->Int(0, i+9))	// chances decrease towards end of name
 			{
 				rndname[i+1]=rndname[i];
 				dbl=true;
@@ -513,7 +509,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 		return false;
 	}
 
-	if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !client_list.CheckIPLimit(GetAccountID(), GetIP(), GetAdmin(), cle)) {
+	if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !ClientList::Instance()->CheckIPLimit(GetAccountID(), GetIP(), GetAdmin(), cle)) {
 		return false;
 	}
 
@@ -536,7 +532,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 	}
 
 	if (zone_id == 0 || !ZoneName(zone_id)) {
-		if (mule && content_service.IsTheShadowsOfLuclinEnabled()) {
+		if (mule && WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled()) {
 			// This is to save people in an invalid zone, once it's removed from the DB
 			database.MoveCharacterToZone(char_id, ZoneID("bazaar"));
 			LogInfo("Zone [{}] not found, moving [{}] to Bazaar.", zone_id, char_name);
@@ -563,7 +559,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 
 			database.SetGroupID(char_name, 0, char_id, GetAccountID());
 			
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			safe_delete(pack);
 		}
 		
@@ -603,7 +599,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 			if (rga->rid > 0) {
 				// this packet expects client already to be removed
 				// from db, when it arrives at zoneservers
-				zoneserver_list.SendPacket(pack);
+				ZSList::Instance()->SendPacket(pack);
 			}
 			safe_delete(pack);
 		}
@@ -670,7 +666,7 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 	safe_delete(outapp);
 
 	// set mailkey - used for duration of character session
-	int MailKey = emu_random.Int(1, INT_MAX);
+	int MailKey = EQ::Random::Instance()->Int(1, INT_MAX);
 
 	database.SetMailKey(char_id, GetIP(), MailKey);
 	if (UCSServerAvailable_) {
@@ -776,14 +772,14 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 	// Voidd: Anti-GM Account hack, Checks source ip against valid GM Account IP Addresses
 	if (RuleB(World, GMAccountIPList) && this->GetAdmin() >= (RuleI(World, MinGMAntiHackStatus))) {
 		if(!database.CheckGMIPs(long2ip(this->GetIP()), this->GetAccountID())) {
-			Log(Logs::Detail, Logs::Error,"GM Account not permited from source address %s and accountid %i", long2ip(this->GetIP()).c_str(), this->GetAccountID());
+			LogInfo("GM Account not permited from source address [{}] and accountid [{}]", long2ip(this->GetIP()).c_str(), this->GetAccountID());
 			eqs->Close();
 		}
 	}
 
 	if (GetAccountID() == 0 && opcode != OP_SendLoginInfo) {
 		// Got a packet other than OP_SendLoginInfo when not logged in
-		Log(Logs::Detail, Logs::Error,"Expecting OP_SendLoginInfo, got %s", OpcodeNames[opcode]);
+		LogInfo("Expecting OP_SendLoginInfo, got [{}]", OpcodeNames[opcode]);
 		return false;
 	}
 
@@ -844,7 +840,7 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			}
 			else
 			{
-				Log(Logs::Detail, Logs::Error,"Checksum failed for account: %i. Closing connection.", this->GetAccountID());
+				LogInfo("Checksum failed for account: [{}]. Closing connection.", this->GetAccountID());
 				eqs->Close();
 				return false;
 			}
@@ -901,7 +897,7 @@ bool Client::Process() {
 			ServerLSPlayerLeftWorld_Struct* logout =(ServerLSPlayerLeftWorld_Struct*)pack->pBuffer;
 			strcpy(logout->key,GetLSKey());
 			logout->lsaccount_id = GetLSID();
-			loginserverlist.SendPacket(pack);
+			LoginServerList::Instance()->SendPacket(pack);
 			safe_delete(pack);
 		}
 		LogInfo("Client disconnected (not active in process)");
@@ -916,13 +912,13 @@ void Client::EnterWorld(bool TryBootup) {
 		return;
 
 	ZoneServer* zone_server = nullptr;
-	zone_server = zoneserver_list.FindByZoneID(zone_id);
+	zone_server = ZSList::Instance()->FindByZoneID(zone_id);
 
 	const char *zone_name = ZoneName(zone_id, true);
 	if (zone_server) {
 		if (false == enter_world_triggered) {
 			//Drop any clients we own in other zones.
-			zoneserver_list.DropClient(GetLSID(), zone_server);
+			ZSList::Instance()->DropClient(GetLSID(), zone_server);
 			// warn the zone we're coming
 			zone_server->IncomingClient(this);
 			//tell the server not to trigger this multiple times before we get a zone unavailable
@@ -934,7 +930,7 @@ void Client::EnterWorld(bool TryBootup) {
 		if (TryBootup && !RuleB(World, DontBootDynamics)) {
 			LogInfo("Attempting autobootup of [{}] [{}]", zone_name, zone_id);
 			autobootup_timeout.Start();
-			zone_waiting_for_bootup = zoneserver_list.TriggerBootup(zone_id);
+			zone_waiting_for_bootup = ZSList::Instance()->TriggerBootup(zone_id);
 			if (zone_waiting_for_bootup == 0) {
 				LogInfo("No zoneserver available to boot up.");
 				TellClientZoneUnavailable();
@@ -949,7 +945,7 @@ void Client::EnterWorld(bool TryBootup) {
 	}
 	zone_waiting_for_bootup = 0;
 
-	if (GetAdmin() < 80 && zoneserver_list.IsZoneLocked(zone_id)) {
+	if (GetAdmin() < 80 && ZSList::Instance()->IsZoneLocked(zone_id)) {
 		LogInfo("Enter world failed. Zone is locked.");
 		TellClientZoneUnavailable();
 		return;
@@ -993,7 +989,7 @@ void Client::EnterWorld(bool TryBootup) {
 void Client::Clearance(int8 response)
 {
 	ZoneServer* zs = nullptr;
-	zs = zoneserver_list.FindByZoneID(zone_id);
+	zs = ZSList::Instance()->FindByZoneID(zone_id);
 
 	if(zs == 0 || response == -1 || response == 0)
 	{
@@ -1103,12 +1099,12 @@ void Client::SendGuildList()
 	//ask the guild manager to build us a nice guild list packet
 	outapp->pBuffer = guild_mgr.MakeOldGuildList(outapp->size);
 	if(outapp->pBuffer == nullptr) {
-		Log(Logs::Detail, Logs::Guilds, "Unable to make guild list!");
+		LogGuilds("Unable to make guild list!");
 		safe_delete(outapp);
 		return;
 	}
 
-	Log(Logs::Detail, Logs::Guilds, "Sending OP_GuildsList of length %d", outapp->size);
+	LogGuilds("Sending OP_GuildsList of length [{}]", outapp->size);
 
 	eqs->FastQueuePacket(&outapp);
 }
@@ -1588,7 +1584,7 @@ bool Client::GetSessionLimit()
 {
 	if (RuleI(World, AccountSessionLimit) >= 0 && cle->Admin() < (RuleI(World, ExemptAccountLimitStatus)) && (RuleI(World, ExemptAccountLimitStatus) != -1)) 
 	{
-		if(client_list.CheckAccountActive(cle->AccountID()) && cle->Online() != CLE_Status::Zoning)
+		if(ClientList::Instance()->CheckAccountActive(cle->AccountID()) && cle->Online() != CLE_Status::Zoning)
 		{
 			LogInfo("Account [{}] attempted to login with an active player in the world.", cle->AccountID());
 			return true;
@@ -1602,7 +1598,7 @@ bool Client::GetSessionLimit()
 
 void Client::RecordPossibleHack(const std::string &message)
 {
-	if (player_event_logs.IsEventEnabled(PlayerEvent::POSSIBLE_HACK)) {
+	if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::POSSIBLE_HACK)) {
 		auto event = PlayerEvent::PossibleHackEvent{ .message = message };
 		std::stringstream ss;
 		{

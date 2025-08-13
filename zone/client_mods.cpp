@@ -30,13 +30,20 @@
 
 int32 Client::GetMaxStat(int32 aabonusAmount) const {
 
-	if((RuleI(Character, StatCap)) > 0)
+	if ((RuleI(Character, StatCap)) > 0) {
 		return (RuleI(Character, StatCap));
+	}
 
-	if (GetLevel() <= 60)
-		return 255;
-	else
-		return 255 + (GetLevel() - 60) * 5 + aabonusAmount;
+	int level = GetLevel();
+	int32 base = 0;
+
+	if (level <= 60) {
+		base = 255;
+	}
+	else {
+		base = 255 + (level - 60) * 5 + aabonusAmount;
+	}
+	return base;
 }
 
 int32 Client::GetMaxResist() const
@@ -44,40 +51,62 @@ int32 Client::GetMaxResist() const
 	return 500;
 }
 
-int32 Client::GetMaxSTR() const {
+int32 Client::GetMaxSTR() const 
+{
 	return GetMaxStat(aabonuses.STRCapMod);
 }
-int32 Client::GetMaxSTA() const {
+
+int32 Client::GetMaxSTA() const 
+{
 	return GetMaxStat(aabonuses.STACapMod);
 }
+
 int32 Client::GetMaxDEX() const {
 	return GetMaxStat(aabonuses.DEXCapMod);
 }
-int32 Client::GetMaxAGI() const {
+
+int32 Client::GetMaxAGI() const 
+{
 	return GetMaxStat(aabonuses.AGICapMod);
 }
-int32 Client::GetMaxINT() const {
+
+int32 Client::GetMaxINT() const 
+{
 	return GetMaxStat(aabonuses.INTCapMod);
 }
-int32 Client::GetMaxWIS() const {
+
+int32 Client::GetMaxWIS() const 
+{
 	return GetMaxStat(aabonuses.WISCapMod);
 }
-int32 Client::GetMaxCHA() const {
+
+int32 Client::GetMaxCHA() const 
+{
 	return GetMaxStat(aabonuses.CHACapMod);
 }
-int32 Client::GetMaxMR() const {
+
+int32 Client::GetMaxMR() const 
+{
 	return GetMaxResist() + aabonuses.MRCapMod;
 }
-int32 Client::GetMaxPR() const {
+
+int32 Client::GetMaxPR() const 
+{
 	return GetMaxResist() + aabonuses.PRCapMod;
 }
-int32 Client::GetMaxDR() const {
+
+int32 Client::GetMaxDR() const
+{
 	return GetMaxResist() + aabonuses.DRCapMod;
 }
-int32 Client::GetMaxCR() const {
+
+int32 Client::GetMaxCR() const 
+{
 	return GetMaxResist() + aabonuses.CRCapMod;
 }
-int32 Client::GetMaxFR() const {
+
+int32 Client::GetMaxFR() const 
+{
 	return GetMaxResist() + aabonuses.FRCapMod;
 }
 
@@ -87,72 +116,64 @@ int32 Client::LevelRegen(int level, bool is_sitting, bool is_resting, bool is_fe
 	int hp_regen_amount = 1;
 
 	// sitting adds 1
-	if (is_sitting)
-	{
+	if (is_sitting)	{
 		hp_regen_amount += 1;
 	}
 
 	// feigning at 51+ adds 1 as if sitting
-	if (level > 50 && is_feigned)
-	{
+	if (level > 50 && is_feigned) {
 		hp_regen_amount += 1;
 	}
 
 	// being either hungry or thirsty negates the passive regen from standing/sitting/feigning but can still benefit from level bonuses and resting
-	if (is_famished)	// the client checks to see if either food or water is 0 in pp
-	{
+	if (is_famished) {	// the client checks to see if either food or water is 0 in pp
 		hp_regen_amount = 0;
 	}
 
 	// additional point of regen is gained at levels 51, 56, 60, 61, 63 and 65
-	if (level >= 51)
-	{
+	if (level >= 51) {
 		hp_regen_amount += 1;
 	}
-	if (level >= 56)
-	{
+
+	if (level >= 56) {
 		hp_regen_amount += 1;
 	}
-	if (level >= 60)
-	{
+
+	if (level >= 60) {
 		hp_regen_amount += 1;
 	}
-	if (level >= 61)
-	{
+
+	if (level >= 61) {
 		hp_regen_amount += 1;
 	}
-	if (level >= 63)
-	{
+
+	if (level >= 63) {
 		hp_regen_amount += 1;
 	}
-	if (level >= 65)
-	{
+
+	if (level >= 65) {
 		hp_regen_amount += 1;
 	}
 
 	// resting begins after sitting for 1 minute.
 	// 1 additional point of regen is gained at levels 20 and 50
-	if (is_sitting && is_resting)
-	{
-		if (level >= 20)
-		{
+	if (is_sitting && is_resting) {
+		if (level >= 20) {
 			hp_regen_amount += 1;
 		}
-		if (level >= 50)
-		{
+
+		if (level >= 50) {
 			hp_regen_amount += 1;
 		}
 	}
 
 	// racial trait adds to then doubles regen bonuses
-	if (has_racial_regen_bonus)
-	{
-		if (level >= 51)
-		{
+	if (has_racial_regen_bonus) {
+		if (level >= 51) {
 			hp_regen_amount += 1;
 		}
-		if (level >= 56)
-		{
+
+		if (level >= 56) {
 			hp_regen_amount += 1;
 		}
 
@@ -176,10 +197,8 @@ int32 Client::CalcHPRegen()
 	hp_regen_amount += aabonuses.HPRegen;
 
 	// we're almost dead, our regeneration won't save us now but a heal could
-	if (GetHP() <= 0)
-	{
-		if (hp_regen_amount <= 0 || GetHP() < -5)
-		{
+	if (GetHP() <= 0) {
+		if (hp_regen_amount <= 0 || GetHP() < -5) {
 			// bleed to death slowly
 			hp_regen_amount = -1;
 		}
@@ -190,8 +209,7 @@ int32 Client::CalcHPRegen()
 
 	// special case, if we're unconscious and our hp isn't changing, make it -1 so the character doesn't end up stuck in that state
 	// this only applies if the character ends up with between -5 and 0 hp, then once they reach -6 they will hit the normal bleeding logic
-	if (GetHP() <= 0 && hp_regen_amount == 0)
-	{
+	if (GetHP() <= 0 && hp_regen_amount == 0) {
 		hp_regen_amount = -1;
 	}
 
@@ -201,8 +219,9 @@ int32 Client::CalcHPRegen()
 int32 Client::CalcHPRegenCap()
 {
 	int base = 30;
-	if (level > 60)
+	if (level > 60) {
 		base = level - 30;
+	}
 
 	return base;
 }
@@ -218,18 +237,15 @@ int32 Client::CalcMaxHP(bool unbuffed) {
 	// Natural Durability and Physical Enhancement
 	double nd = 0.0;
 	int nd_level = GetAA(aaNaturalDurability);
-	if (nd_level != 0)
-	{
-		switch (nd_level)
-		{
+	if (nd_level != 0) {
+		switch (nd_level) {
 			case 1: nd = 2.0; break;
 			case 2: nd = 5.0; break;
 			case 3: nd = 10.0; break;
 		}
 		// Physical Enhancement only functions if you have at least 1 point in Natural Durability
 		int pe_level = GetAA(aaPhysicalEnhancement);
-		if (pe_level != 0)
-		{
+		if (pe_level != 0) {
 			nd += 2.0;
 		}
 	}
@@ -237,16 +253,13 @@ int32 Client::CalcMaxHP(bool unbuffed) {
 	// Planar Durability - WAR PAL SHD ability
 	// Note that de-leveling below 60 after getting this ability causes you to lose hitpoints
 	int pd_level = GetAA(aaPlanarDurability);
-	if (pd_level != 0)
-	{
+	if (pd_level != 0) {
 		int levels_over_60 = GetLevel() - 60;
 		pd_level = pd_level > levels_over_60 ? levels_over_60 : pd_level;
-		if (GetClass() == Class::Warrior)
-		{
+		if (GetClass() == Class::Warrior) {
 			nd += 1.5 * pd_level;
 		}
-		else if (GetClass() == Class::Paladin || GetClass() == Class::ShadowKnight)
-		{
+		else if (GetClass() == Class::Paladin || GetClass() == Class::ShadowKnight) {
 			nd += 1.25 * pd_level;
 		}
 	}
@@ -255,19 +268,21 @@ int32 Client::CalcMaxHP(bool unbuffed) {
 	// there are cases where the clients end up with different hp totals for the same character, but have only seen it off by 1 hp
 	val += (int32)(val * nd / 100.0);
 	val += aabonuses.HP + 5;
-	if (!unbuffed)
+	if (!unbuffed) {
 		val += spellbonuses.HP;
+	}
 
 	// this MaxHPChange bonus is only used in AAs on TAKP, not in items or spells, so this line doesn't do anything
 	//val += val * ((spellbonuses.MaxHPChange + itembonuses.MaxHPChange) / 10000.0f);
 
-	if(val > 32767)
+	if (val > 32767) {
 		val = 32767;
+	}
 
-	if (!unbuffed)
-	{
-		if (cur_hp > val)
+	if (!unbuffed) {
+		if (cur_hp > val) {
 			cur_hp = val;
+		}
 		max_hp = val;
 	}
 
@@ -277,8 +292,7 @@ int32 Client::CalcMaxHP(bool unbuffed) {
 uint32 Mob::GetClassLevelFactor(){
 	uint32 multiplier = 0;
 	uint8 mlevel=GetLevel();
-	switch(GetClass())
-	{
+	switch(GetClass()) {
 		case Class::Warrior:{
 			if (mlevel < 20)
 				multiplier = 220;
@@ -382,17 +396,17 @@ int32 Client::CalcBaseHP(bool unbuffed)
 	int32 lm = GetClassLevelFactor() / 10;
 	int32 level_hp = GetLevel() * lm;
 	int32 sta_factor = GetSTA();
-	if (unbuffed) // web stats export uses this
-	{
+	if (unbuffed) { // web stats export uses this
 		sta_factor = CalcSTA(unbuffed);
 	}
-	if (sta_factor > 255)
-	{
+
+	if (sta_factor > 255) {
 		sta_factor = (sta_factor - 255) / 2 + 255;
 	}
 	int32 val = level_hp * sta_factor / 300 + level_hp;
-	if (!unbuffed)
+	if (!unbuffed) {
 		base_hp = val;
+	}
 
 	return val;
 }
@@ -415,10 +429,11 @@ int32 Client::GetRawItemAC() {
 int32 Client::acmod() {
 	int agility = GetAGI();
 	int level = GetLevel();
-	if(agility < 1 || level < 1)
-		return(0);
+	if (agility < 1 || level < 1) {
+		return 0;
+	}
 
-	if (agility <=74){
+	if (agility <=74) {
 		if (agility == 1)
 			return -24;
 		else if (agility <=3)
@@ -474,7 +489,7 @@ int32 Client::acmod() {
 		else if (agility <=74)
 			return 5;
 	}
-	else if(agility <= 137) {
+	else if (agility <= 137) {
 		if (agility == 75){
 			if (level <= 6)
 				return 9;
@@ -485,7 +500,7 @@ int32 Client::acmod() {
 			else
 				return 39;
 		}
-		else if (agility >= 76 && agility <= 79){
+		else if (agility >= 76 && agility <= 79) {
 			if (level <= 6)
 				return 10;
 			else if (level <= 19)
@@ -495,7 +510,7 @@ int32 Client::acmod() {
 			else
 				return 40;
 		}
-		else if (agility == 80){
+		else if (agility == 80) {
 			if (level <= 6)
 				return 11;
 			else if (level <= 19)
@@ -505,7 +520,7 @@ int32 Client::acmod() {
 			else
 				return 41;
 		}
-		else if (agility >= 81 && agility <= 85){
+		else if (agility >= 81 && agility <= 85) {
 			if (level <= 6)
 				return 12;
 			else if (level <= 19)
@@ -515,7 +530,7 @@ int32 Client::acmod() {
 			else
 				return 42;
 		}
-		else if (agility >= 86 && agility <= 90){
+		else if (agility >= 86 && agility <= 90) {
 			if (level <= 6)
 				return 12;
 			else if (level <= 19)
@@ -525,7 +540,7 @@ int32 Client::acmod() {
 			else
 				return 42;
 		}
-		else if (agility >= 91 && agility <= 95){
+		else if (agility >= 91 && agility <= 95) {
 			if (level <= 6)
 				return 13;
 			else if (level <= 19)
@@ -535,7 +550,7 @@ int32 Client::acmod() {
 			else
 				return 43;
 		}
-		else if (agility >= 96 && agility <= 99){
+		else if (agility >= 96 && agility <= 99) {
 			if (level <= 6)
 				return 14;
 			else if (level <= 19)
@@ -545,7 +560,7 @@ int32 Client::acmod() {
 			else
 				return 44;
 		}
-		else if (agility == 100 && level >= 7){
+		else if (agility == 100 && level >= 7) {
 			if (level <= 19)
 				return 28;
 			else if (level <= 39)
@@ -557,7 +572,7 @@ int32 Client::acmod() {
 			return 15;
 		}
 		//level is >6
-		else if (agility >= 101 && agility <= 105){
+		else if (agility >= 101 && agility <= 105) {
 			if (level <= 19)
 				return 29;
 			else if (level <= 39)
@@ -565,7 +580,7 @@ int32 Client::acmod() {
 			else
 				return 45;
 		}
-		else if (agility >= 106 && agility <= 110){
+		else if (agility >= 106 && agility <= 110) {
 			if (level <= 19)
 				return 29;
 			else if (level <= 39)
@@ -573,7 +588,7 @@ int32 Client::acmod() {
 			else
 				return 46;
 		}
-		else if (agility >= 111 && agility <= 115){
+		else if (agility >= 111 && agility <= 115) {
 			if (level <= 19)
 				return 30;
 			else if (level <= 39)
@@ -593,13 +608,13 @@ int32 Client::acmod() {
 				return 32;
 		}
 		//level is > 19
-		else if (agility == 120){
+		else if (agility == 120) {
 			if (level <= 39)
 				return 42;
 			else
 				return 48;
 		}
-		else if (agility <= 125){
+		else if (agility <= 125) {
 			if (level <= 39)
 				return 42;
 			else
@@ -776,12 +791,12 @@ int32 Client::acmod() {
 				return(65);
 		}
 	}
-	else{
+	else {
 		//seems about 21 agil per extra AC pt over 300...
-	return (65 + ((agility-300) / 21));
+		return (65 + ((agility-300) / 21));
 	}
 
-	Log(Logs::Detail, Logs::Error, "Error in Client::acmod(): Agility: %i, Level: %i", agility, level);
+	LogErrorDetail("Error in Client::acmod(): Agility: [{}], Level: [{}]", agility, level);
 
 	return 0;
 };
@@ -795,39 +810,40 @@ int32 Client::CalcAC()
 
 int32 Client::CalcMaxMana()
 {
-	switch(GetCasterClass())
-	{
-		case 'I':
-		case 'W': {
-			if ((GetClass() == Class::Ranger || GetClass() == Class::Paladin || GetClass() == Class::Beastlord) && GetLevel() < 9)
-				max_mana = 0;
-			else
-				max_mana = (CalcBaseMana() + itembonuses.Mana + spellbonuses.Mana);
-			break;
-		}
-		case 'N': {
+	switch (GetCasterClass()) {
+	case 'I':
+	case 'W': {
+		if ((GetClass() == Class::Ranger || GetClass() == Class::Paladin || GetClass() == Class::Beastlord) && GetLevel() < 9)
 			max_mana = 0;
-			break;
-		}
-		default: {
-			Log(Logs::Detail, Logs::Spells, "Invalid Class '%c' in CalcMaxMana", GetCasterClass());
-			max_mana = 0;
-			break;
-		}
+		else
+			max_mana = (CalcBaseMana() + itembonuses.Mana + spellbonuses.Mana);
+		break;
 	}
+	case 'N': {
+		max_mana = 0;
+		break;
+	}
+	default: {
+		LogSpellsDetail("Invalid Class '[{}]' in CalcMaxMana", GetCasterClass());
+		max_mana = 0;
+		break;
+	}
+	}
+
 	if (max_mana < 0) {
 		max_mana = 0;
 	}
 
-	if(max_mana > 32767)
+	if (max_mana > 32767) {
 		max_mana = 32767;
+	}
 
 	if (cur_mana > max_mana) {
 		cur_mana = max_mana;
 	}
-	#if EQDEBUG >= 11
-		Log(Logs::Detail, Logs::Spells, "Client::CalcMaxMana() called for %s - returning %d", GetName(), max_mana);
-	#endif
+
+	LogSpellsDetail("Client::CalcMaxMana() called for [{}] - returning [{}]", GetName(), max_mana);
+
 	return max_mana;
 }
 
@@ -839,8 +855,7 @@ int32 Client::CalcBaseMana()
 	int wisint_mana = 0;
 	int base_mana = 0;
 	int ConvertedWisInt = 0;
-	switch(GetCasterClass())
-	{
+	switch(GetCasterClass()) {
 		case 'I':
 			WisInt = GetINT();
 
@@ -877,15 +892,14 @@ int32 Client::CalcBaseMana()
 			break;
 		}
 		default: {
-			Log(Logs::General, Logs::Spells, "Invalid Class '%c' in CalcMaxMana", GetCasterClass());
+			LogSpells("Invalid Class '[{}]' in CalcMaxMana", GetCasterClass());
 			max_m = 0;
 			break;
 		}
 	}
 
-#if EQDEBUG >= 11
-	Log(Logs::General, Logs::Spells, "Client::CalcBaseMana() called for %s - returning %d", GetName(), max_m);
-#endif
+	LogSpells("Client::CalcBaseMana() called for [{}] - returning [{}]", GetName(), max_m);
+
 	return max_m;
 }
 
@@ -915,8 +929,9 @@ int32 Client::CalcManaRegen(bool meditate)
 			donal's buff = add 0-1
 	*/
 
-	if (CalcMaxMana() == 0)
+	if (CalcMaxMana() == 0) {
 		return 0;
+	}
 
 	uint8 clevel = GetLevel();
 
@@ -924,25 +939,21 @@ int32 Client::CalcManaRegen(bool meditate)
 	bool new_medding_state = false;
 
 	// standing/sitting passive regen stops when famished
-	if (!Famished())
-	{
+	if (!Famished()) {
 		regen = 1; // passive standing regen when not famished
 
-		if (IsSitting() || (GetHorseId() != 0 && !auto_attack && !ClientMoving()))
-		{
+		if (IsSitting() || (GetHorseId() != 0 && !auto_attack && !ClientMoving())) {
 			regen = 2; // passive sitting regen when not famished
 
 			// bards cannot meditate even though they have the skill
-			if (GetClass() != Class::Bard && HasSkill(EQ::skills::SkillMeditate))
-			{
+			if (GetClass() != Class::Bard && HasSkill(EQ::skills::SkillMeditate)) {
 				// matches client logic for an edge case
 				// happens with skill level 0 or 1 but normally training the skill at level 4/8/12 will put it higher anyway
 				// except bards, they get only 1 point, but they can't meditate so they don't hit this condition either
 				regen = 3;
 				new_medding_state = true;
 
-				if (GetSkill(EQ::skills::SkillMeditate) > 1)
-				{
+				if (GetSkill(EQ::skills::SkillMeditate) > 1) {
 					regen = 4 + GetSkill(EQ::skills::SkillMeditate) / 15;	// meditate regen is 20 for characters with maximum skill
 				}
 			}
@@ -950,18 +961,16 @@ int32 Client::CalcManaRegen(bool meditate)
 	}
 
 	this->medding = new_medding_state; // turn off medding flag if it didn't get set above (famished or not sitting/mounted)
-	if (this->medding && meditate)
-	{
+	if (this->medding && meditate) {
 		CheckIncreaseSkill(EQ::skills::SkillMeditate, nullptr, zone->skill_difficulty[EQ::skills::SkillMeditate].difficulty[GetClass()]);
 	}
 	
 	// level regen bonus applies even when famished
-	if (clevel > 61)
-	{
+	if (clevel > 61) {
 		regen += 1;
 	}
-	if (clevel > 63)
-	{
+
+	if (clevel > 63) {
 		regen += 1;
 	}
 
@@ -969,8 +978,7 @@ int32 Client::CalcManaRegen(bool meditate)
 	regen += aabonuses.ManaRegen + spellbonuses.ManaRegen + itembonuses.ManaRegen;
 
 	// Donal's BP leaves a 7.5 min residual effect (extended by buff duration extension AAs) which provides 1 point of mana regen that is separate from spell bonuses and flowing thought
-	if (GetBuffSlotFromType(SE_CompleteHeal) >= 0)
-	{
+	if (GetBuffSlotFromType(SE_CompleteHeal) >= 0) {
 		regen += 1;
 	}
 
@@ -979,8 +987,9 @@ int32 Client::CalcManaRegen(bool meditate)
 
 int32 Client::CalcManaRegenCap()
 {
-	if(GetCasterClass() == 'N')
+	if (GetCasterClass() == 'N') {
 		return 0;
+	}
 
 	int32 cap = RuleI(Character, ItemManaRegenCap);
 
@@ -992,32 +1001,28 @@ uint32 Client::CalcCurrentWeight() {
 	const EQ::ItemInstance* ins = nullptr;
 	uint32 Total = 0;
 	int x;
-	for (x = EQ::invslot::slotCursor; x <= EQ::invslot::GENERAL_END; x++)
-	{
+	for (x = EQ::invslot::slotCursor; x <= EQ::invslot::GENERAL_END; x++) {
 		ins = GetInv().GetItem(x);
-		if (ins)
-		{
+		if (ins) {
 			Total += ins->GetItem()->Weight;
 		}
 
 		const EQ::ItemInstance* baginst = ins;
 		const EQ::ItemInstance* inst = nullptr;
-		if (baginst && baginst->GetItem() && baginst->IsClassBag())
-		{
+		if (baginst && baginst->GetItem() && baginst->IsClassBag()) {
 			uint32 bag_weight = 0;
 			int i;
-			for (i = 0; i < baginst->GetItem()->BagSlots; i++) 
-			{
+			for (i = 0; i < baginst->GetItem()->BagSlots; i++) {
 				inst = GetInv().GetItem(m_inv.CalcSlotId(x, i));
-				if (inst)
-				{
+				if (inst) {
 					bag_weight += inst->GetItem()->Weight;
 				}
 			}
 
 			int reduction = baginst->GetItem()->BagWR;
-			if (reduction > 0 && bag_weight > 0)
-				bag_weight -= bag_weight*reduction/100;
+			if (reduction > 0 && bag_weight > 0) {
+				bag_weight -= bag_weight * reduction / 100;
+			}
 
 			Total += bag_weight;
 		}
@@ -1028,11 +1033,9 @@ uint32 Client::CalcCurrentWeight() {
 	// Coin purses only work when in a main inventory slot
 	const EQ::ItemInstance* cins = nullptr;
 	uint32 coin_reduction = 0;
-	for (x = EQ::invslot::GENERAL_BEGIN; x <= EQ::invslot::GENERAL_END; x++)
-	{
+	for (x = EQ::invslot::GENERAL_BEGIN; x <= EQ::invslot::GENERAL_END; x++) {
 		cins = GetInv().GetItem(x);
-		if (cins && cins->GetID() >= 17201 && cins->GetID() <= 17230)
-		{
+		if (cins && cins->GetID() >= 17201 && cins->GetID() <= 17230) {
 			int reduction = cins->GetItem()->BagWR;
 			coin_reduction = reduction > coin_reduction ? reduction : coin_reduction;
 		}
@@ -1040,13 +1043,15 @@ uint32 Client::CalcCurrentWeight() {
 
 	coin_weight -= coin_weight*coin_reduction/100;
 	Total += coin_weight;
+
 	return Total;
 }
 
 int32 Client::CalcAlcoholPhysicalEffect()
 {
-	if(m_pp.intoxication <= 55)
+	if (m_pp.intoxication <= 55) {
 		return 0;
+	}
 
 	return (m_pp.intoxication - 40) / 16;
 }
@@ -1054,8 +1059,7 @@ int32 Client::CalcAlcoholPhysicalEffect()
 int32 Client::CalcSTR() {
 	int32 val = m_pp.STR + itembonuses.STR + spellbonuses.STR + CalcAlcoholPhysicalEffect() - CalculateFatiguePenalty();
 
-	if (CalcAlcoholPhysicalEffect() == 0 && GetClass() == Class::Warrior && IsBerserk())
-	{
+	if (CalcAlcoholPhysicalEffect() == 0 && GetClass() == Class::Warrior && IsBerserk()) {
 		val += GetLevel() / 10 + 9;
 	}
 
@@ -1063,36 +1067,42 @@ int32 Client::CalcSTR() {
 
 	STR = val + mod;
 
-	if(STR < 1)
+	if (STR < 1) {
 		STR = 1;
+	}
 
 	int m = GetMaxSTR();
-	if(STR > m)
+	if (STR > m) {
 		STR = m;
+	}
 
 	return(STR);
 }
 
 int32 Client::CalcSTA(bool unbuffed) {
 	int32 val = m_pp.STA + itembonuses.STA; 
-	if(!unbuffed)
+	if (!unbuffed) {
 		val += spellbonuses.STA + CalcAlcoholPhysicalEffect();
+	}
 
 	int32 mod = aabonuses.STA;
 
 	int32 newSTA = val + mod;
 
-	if(newSTA < 1)
+	if (newSTA < 1) {
 		newSTA = 1;
+	}
 
 	int m = GetMaxSTA();
-	if(newSTA > m)
+	if (newSTA > m) {
 		newSTA = m;
+	}
 
-	if (!unbuffed)
+	if (!unbuffed) {
 		STA = newSTA;
+	}
 
-	return(newSTA);
+	return newSTA;
 }
 
 int32 Client::CalcAGI() {
@@ -1104,40 +1114,37 @@ int32 Client::CalcAGI() {
 	float encum_factor = 1.0;
 
 	// Near death - from client decompile
-	if (GetMaxHP() > 0 && !dead)	// agi calculation depends on max hp calculation
-	{
-		if (cur_hp < max_hp && GetLevel() > 3)
-		{
-			if ((float)cur_hp / max_hp >= 0.2 || cur_hp >= 50.0)
-			{
-				if ((float)cur_hp / max_hp < 0.33000001 && cur_hp < 100.0)
-				{
+	if (GetMaxHP() > 0 && !dead) {	// agi calculation depends on max hp calculation
+		if (cur_hp < max_hp && GetLevel() > 3) {
+			if ((float)cur_hp / max_hp >= 0.2 || cur_hp >= 50.0) {
+				if ((float)cur_hp / max_hp < 0.33000001 && cur_hp < 100.0) {
 					encum_factor = 0.75;
 				}
 			}
-			else
-			{
+			else {
 				encum_factor = 0.5;
 			}
 		}
 	}
 
 	//Encumbered penalty
-	if (IsEncumbered() && GetZoneID() != Zones::BAZAAR)
-	{
+	if (IsEncumbered() && GetZoneID() != Zones::BAZAAR)	{
 		//AGI is halved when we double our weight, zeroed (defaults to 1) when we triple it. this includes AGI from AAs
 		encum_factor = fmaxf(0.0, encum_factor - (weight / 10.0f - str) / (float)(str + str));
 	}
+
 	AGI = (val + mod) * encum_factor;
 
-	if(AGI < 1)
+	if (AGI < 1) {
 		AGI = 1;
+	}
 
 	int m = GetMaxAGI();
-	if(AGI > m)
+	if (AGI > m) {
 		AGI = m;
+	}
 
-	return(AGI);
+	return AGI;
 }
 
 int32 Client::CalcDEX() {
@@ -1147,14 +1154,16 @@ int32 Client::CalcDEX() {
 
 	DEX = val + mod;
 
-	if(DEX < 1)
+	if (DEX < 1) {
 		DEX = 1;
+	}
 
 	int m = GetMaxDEX();
-	if(DEX > m)
+	if (DEX > m) {
 		DEX = m;
+	}
 
-	return(DEX);
+	return DEX;
 }
 
 int32 Client::CalcINT() {
@@ -1164,24 +1173,27 @@ int32 Client::CalcINT() {
 
 	INT = val + mod;
 
-	if(m_pp.intoxication)
-	{
+	if(m_pp.intoxication) {
 		int32 AlcINT = INT - (int32)((float)m_pp.intoxication / 200.0f * (float)INT) - 1;
 
-		if((AlcINT < (int)(0.2 * INT)))
+		if ((AlcINT < (int)(0.2 * INT))) {
 			INT = (int)(0.2f * (float)INT);
-		else
+		}
+		else {
 			INT = AlcINT;
+		}
 	}
 
-	if(INT < 1)
+	if (INT < 1) {
 		INT = 1;
+	}
 
 	int m = GetMaxINT();
-	if(INT > m)
+	if (INT > m) {
 		INT = m;
+	}
 
-	return(INT);
+	return INT;
 }
 
 int32 Client::CalcWIS() {
@@ -1191,24 +1203,27 @@ int32 Client::CalcWIS() {
 
 	WIS = val + mod;
 
-	if(m_pp.intoxication)
-	{
+	if(m_pp.intoxication) {
 		int32 AlcWIS = WIS - (int32)((float)m_pp.intoxication / 200.0f * (float)WIS) - 1;
 
-		if((AlcWIS < (int)(0.2 * WIS)))
+		if ((AlcWIS < (int)(0.2 * WIS))) {
 			WIS = (int)(0.2f * (float)WIS);
-		else
+		}
+		else {
 			WIS = AlcWIS;
+		}
 	}
 
-	if(WIS < 1)
+	if (WIS < 1) {
 		WIS = 1;
+	}
 
 	int m = GetMaxWIS();
-	if(WIS > m)
+	if (WIS > m) {
 		WIS = m;
+	}
 
-	return(WIS);
+	return WIS;
 }
 
 int32 Client::CalcCHA() {
@@ -1218,23 +1233,26 @@ int32 Client::CalcCHA() {
 
 	CHA = val + mod;
 
-	if(CHA < 1)
+	if (CHA < 1) {
 		CHA = 1;
+	}
 
 	int m = GetMaxCHA();
-	if(CHA > m)
+	if (CHA > m) {
 		CHA = m;
+	}
 
-	return(CHA);
+	return CHA;
 }
 
 //The AA multipliers are set to be 5, but were 2 on WR
 //in Mob::CheckResistSpell
-int32	Client::CalcMR()
+int32 Client::CalcMR()
 {
 	return (MR = CalcMR(false, true));
 }
-int32	Client::CalcMR(bool ignoreCap, bool includeSpells)
+
+int32 Client::CalcMR(bool ignoreCap, bool includeSpells)
 {
 	int32 calc;
 
@@ -1287,31 +1305,33 @@ int32	Client::CalcMR(bool ignoreCap, bool includeSpells)
 	}
 
 	calc += itembonuses.MR + aabonuses.MR;
-	if (includeSpells)
-	{
+	if (includeSpells) {
 		calc += spellbonuses.MR;
 	}
 
-	if(GetClass() == Class::Warrior)
+	if (GetClass() == Class::Warrior) {
 		calc += GetLevel() / 2;
-
-	if(calc < 1)
-		calc = 1;
-
-	if(!ignoreCap)
-	{
-		if(calc > GetMaxMR())
-			calc = GetMaxMR();
 	}
 
-	return(calc);
+	if (calc < 1) {
+		calc = 1;
+	}
+
+	if (!ignoreCap) {
+		if (calc > GetMaxMR()) {
+			calc = GetMaxMR();
+		}
+	}
+
+	return calc;
 }
 
-int32	Client::CalcFR()
+int32 Client::CalcFR()
 {
-	return (FR = CalcFR(false, true));
+	return FR = CalcFR(false, true);
 }
-int32	Client::CalcFR(bool ignoreCap, bool includeSpells)
+
+int32 Client::CalcFR(bool ignoreCap, bool includeSpells)
 {
 	int32 calc;
 
@@ -1364,46 +1384,46 @@ int32	Client::CalcFR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == Class::Ranger) 
-	{
+	if (c == Class::Ranger) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	}
-	else if(c == Class::Monk) 
-	{
+	else if (c == Class::Monk) {
 		calc += 8;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	}
 
 	calc += itembonuses.FR + aabonuses.FR;
-	if (includeSpells)
-	{
+	if (includeSpells) {
 		calc += spellbonuses.FR;
 	}
 
-	if(calc < 1)
+	if (calc < 1) {
 		calc = 1;
+	}
 
-	if(!ignoreCap)
-	{
+	if (!ignoreCap) {
 		if(calc > GetMaxFR())
 			calc = GetMaxFR();
 	}
 
-	return(calc);
+	return calc;
 }
 
-int32	Client::CalcDR()
+int32 Client::CalcDR()
 {
-	return (DR = CalcDR(false, true));
+	return DR = CalcDR(false, true);
 }
-int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
+
+int32 Client::CalcDR(bool ignoreCap, bool includeSpells)
 {
 	int32 calc;
 
@@ -1456,61 +1476,62 @@ int32	Client::CalcDR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == Class::Paladin) 
-	{
+	if (c == Class::Paladin) {
 		calc += 8;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 
 	} 
-	else if(c == Class::ShadowKnight) 
-	{
+	else if (c == Class::ShadowKnight) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	} 
-	else if(c == Class::Beastlord) 
-	{
+	else if (c == Class::Beastlord) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	} 
-	else if(c == Class::Monk) 
-	{
+	else if (c == Class::Monk) {
 		int l = GetLevel();
-		if(l > 50)
+		if (l > 50) {
 			calc += l - 50;
+		}
 	}
 
 	calc += itembonuses.DR + aabonuses.DR;
-	if (includeSpells)
-	{
+	if (includeSpells) {
 		calc += spellbonuses.DR;
 	}
 
-	if(calc < 1)
+	if (calc < 1) {
 		calc = 1;
-
-	if(!ignoreCap)
-	{
-		if(calc > GetMaxDR())
-			calc = GetMaxDR();
 	}
 
-	return(calc);
+	if (!ignoreCap)	{
+		if (calc > GetMaxDR()) {
+			calc = GetMaxDR();
+		}
+	}
+
+	return calc;
 }
 
-int32	Client::CalcPR()
+int32 Client::CalcPR()
 {
-	return (PR = CalcPR(false, true));
+	return PR = CalcPR(false, true);
 }
-int32	Client::CalcPR(bool ignoreCap, bool includeSpells)
+
+int32 Client::CalcPR(bool ignoreCap, bool includeSpells)
 {
 	int32 calc;
 
@@ -1563,53 +1584,53 @@ int32	Client::CalcPR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == Class::Rogue) 
-	{
+	if (c == Class::Rogue) {
 		calc += 8;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
-
+		}
 	} 
-	else if(c == Class::ShadowKnight) 
-	{
+	else if (c == Class::ShadowKnight) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
-			calc += l - 49;
+		if (l > 49) {
+		 	calc += l - 49;
+		}
 	}
-	else if(c == Class::Monk) 
-	{
+	else if (c == Class::Monk) {
 		int l = GetLevel();
-		if(l > 50)
+		if (l > 50) {
 			calc += l - 50;
+		}
 	}
 
 	calc += itembonuses.PR + aabonuses.PR;
-	if (includeSpells)
-	{
+	if (includeSpells) {
 		calc += spellbonuses.PR;
 	}
 
-	if(calc < 1)
+	if (calc < 1) {
 		calc = 1;
-
-	if(!ignoreCap)
-	{
-		if(calc > GetMaxPR())
-			calc = GetMaxPR();
 	}
 
-	return(calc);
+	if(!ignoreCap) {
+		if (calc > GetMaxPR()) {
+			calc = GetMaxPR();
+		}
+	}
+
+	return calc;
 }
 
-int32	Client::CalcCR()
+int32 Client::CalcCR()
 {
-	return (CR = CalcCR(false, true));
+	return CR = CalcCR(false, true);
 }
-int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
+
+int32 Client::CalcCR(bool ignoreCap, bool includeSpells)
 {
 	int32 calc;
 
@@ -1662,36 +1683,36 @@ int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
 	}
 
 	int c = GetClass();
-	if(c == Class::Ranger) 
-	{
+	if (c == Class::Ranger) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	} 
-	else if(c == Class::Beastlord) 
-	{
+	else if (c == Class::Beastlord) {
 		calc += 4;
 
 		int l = GetLevel();
-		if(l > 49)
+		if (l > 49) {
 			calc += l - 49;
+		}
 	}
 
 	calc += itembonuses.CR + aabonuses.CR;
-	if (includeSpells)
-	{
+	if (includeSpells) {
 		calc += spellbonuses.CR;
 	}
 
-	if(calc < 1)
+	if (calc < 1) {
 		calc = 1;
+	}
 
-	if(!ignoreCap)
-	{
-		if(calc > GetMaxCR())
+	if (!ignoreCap)	{
+		if (calc > GetMaxCR()) {
 			calc = GetMaxCR();
+		}
 	}
 
 	return(calc);
@@ -1699,11 +1720,13 @@ int32	Client::CalcCR(bool ignoreCap, bool includeSpells)
 
 uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 {
-	if (GetClass() != Class::Bard)	// instrument mods don't work for non bards
+	if (GetClass() != Class::Bard) { // instrument mods don't work for non bards
 		return 10;
+	}
 
-	if (!IsBardSong(spell_id)) // instrument mods don't work on spells that aren't bard songs.  there are 7 or so spells that have a bard casting skill assigned but they aren't bard songs.
+	if (!IsBardSong(spell_id)) { // instrument mods don't work on spells that aren't bard songs.  there are 7 or so spells that have a bard casting skill assigned but they aren't bard songs.
 		return 10;
+	}
 
 	uint32 effectmod = 10;	// base mod - 100% effectiveness
 
@@ -1733,10 +1756,8 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 
 	*/
 
-	if (GetSkill(spells[spell_id].skill) > 0)	// no mods if the skill isn't trained
-	{
-		switch (spells[spell_id].skill)
-		{
+	if (GetSkill(spells[spell_id].skill) > 0) {	// no mods if the skill isn't trained
+		switch (spells[spell_id].skill) {
 			case EQ::skills::SkillPercussionInstruments:
 				// spellbonuses here is the puretone discipline, its value is 28 already including the base 10 amount
 				// itembonuses is the worn item instrument bonus, including the base 10 amount
@@ -1768,30 +1789,32 @@ uint32 Mob::GetInstrumentMod(uint16 spell_id) const
 	int effectmodcap = RuleI(Character, BaseInstrumentSoftCap);	// base mod cap, usually 36
 	effectmodcap += aabonuses.songModCap + spellbonuses.songModCap + itembonuses.songModCap;  // mod cap can be raised to 39 with Ayonae's Tutelage AA
 
-	if (effectmod < 10)
+	if (effectmod < 10) {
 		effectmod = 10;
+	}
 
-	if (effectmod > effectmodcap)
+	if (effectmod > effectmodcap) {
 		effectmod = effectmodcap;
+	}
 
-	Log(Logs::Detail, Logs::Spells, "%s::GetInstrumentMod() song=%d mod=%d modcap=%d\n",
+	LogSpellsDetail("[{}]::GetInstrumentMod() song = [{}] mod = [{}] modcap = [{}]",
 			GetName(), spell_id, effectmod, effectmodcap);
 
 	// it's unclear if the 2 cassindra clarity songs should be modded.  there are conflicting accounts on old forum posts.
 	// the TAKP client does mod these spells unless we lie to the client by sending this false mod value in the action packet instead.
 	// it is possible that AK worked this way, but this is just a guess.
-	if (spell_id == SPELL_CINDAS_CHARISMATIC_CARILLON || spell_id == SPELL_CASSINDRAS_CHANT_OF_CLARITY || spell_id == SPELL_CASSINDRAS_CHORUS_OF_CLARITY)
-	{
+	if (spell_id == SPELL_CINDAS_CHARISMATIC_CARILLON || spell_id == SPELL_CASSINDRAS_CHANT_OF_CLARITY || spell_id == SPELL_CASSINDRAS_CHORUS_OF_CLARITY) {
 		effectmod = 10;
-		Log(Logs::General, Logs::Spells, "Overriding instrument mod for song %d to %d", spell_id, effectmod);
+		LogSpells("Overriding instrument mod for song [{}] to [{}]", spell_id, effectmod);
 	}
 
 	// selos mod is capped but movement speed is capped in the client as well so this doesn't matter much
-	if (GetSpellEffectIndex(spell_id, SE_MovementSpeed) != -1)
-	{
-		if (effectmod > 28)
+	if (GetSpellEffectIndex(spell_id, SE_MovementSpeed) != -1) {
+		if (effectmod > 28) {
 			effectmod = 28;
-		Log(Logs::General, Logs::Spells, "Overriding instrument mod for song %d to %d", spell_id, effectmod);
+		}
+
+		LogSpells("Overriding instrument mod for song [{}] to [{}]", spell_id, effectmod);
 	}
 		
 	return effectmod;
@@ -1802,10 +1825,8 @@ int Client::GetRawACNoShield(int &shield_ac, int spell_mod) const
 	int ac = itembonuses.AC + spellbonuses.AC / spell_mod + aabonuses.AC;
 	shield_ac = 0;
 	const EQ::ItemInstance *inst = m_inv.GetItem(EQ::invslot::slotSecondary);
-	if(inst)
-	{
-		if(inst->GetItem()->ItemType == EQ::item::ItemTypeShield)
-		{
+	if (inst) {
+		if (inst->GetItem()->ItemType == EQ::item::ItemTypeShield) {
 			ac -= inst->GetItem()->AC;
 			shield_ac = inst->GetItem()->AC;
 		}
@@ -1823,14 +1844,16 @@ uint16 Client::CalculateLungCapacity()
 	int lung_capacity = base_lung_capacity;
 
 	int STA_penalty = GetSTA() - 30;
-	if (STA_penalty < 100)
-	{
+	if (STA_penalty < 100) {
 		lung_capacity = base_lung_capacity * STA_penalty / 100;
 
-		if (lung_capacity < 10)
+		if (lung_capacity < 10) {
 			lung_capacity = 10;
-		if (lung_capacity > base_lung_capacity)
+		}
+
+		if (lung_capacity > base_lung_capacity) {
 			lung_capacity = base_lung_capacity;
+		}
 	}
 
 	return lung_capacity;
@@ -1838,8 +1861,7 @@ uint16 Client::CalculateLungCapacity()
 
 int32 Client::CalculateFatiguePenalty()
 {
-	if (m_pp.fatigue > GetSTA())
-	{
+	if (m_pp.fatigue > GetSTA()) {
 		return std::min(m_pp.fatigue - GetSTA(), 10);
 	}
 

@@ -21,7 +21,7 @@ void command_logs(Client *c, const Seperator *sep)
 		);
 		c->Message(
 			Chat::White,
-			"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-2)] - Sets log settings during the lifetime of the zone"
+			"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-3)] - Sets log settings during the lifetime of the zone"
 		);
 		return;
 	}
@@ -45,7 +45,7 @@ void command_logs(Client *c, const Seperator *sep)
 		);
 		c->Message(
 			Chat::White,
-			"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-2)] - Sets log settings during the lifetime of the zone"
+			"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-3)] - Sets log settings during the lifetime of the zone"
 		);
 		return;
 	}
@@ -194,7 +194,7 @@ void command_logs(Client *c, const Seperator *sep)
 		if (!sep->IsNumber(4) || (!is_console && !is_file && !is_gmsay && !is_discord)) {
 			c->Message(
 				Chat::White,
-				"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-2)] - Sets log settings during the lifetime of the zone"
+				"#logs set [console|file|gmsay] [Category ID] [Debug Level (1-3)] - Sets log settings during the lifetime of the zone"
 			);
 			c->Message(Chat::White, "Example: #logs set gmsay 20 1 - Would output Quest errors to gmsay");
 			return;
@@ -234,4 +234,3 @@ void command_logs(Client *c, const Seperator *sep)
 		LogSys.log_settings[category_id].is_category_enabled = setting ? 1 : 0;
 	}
 }
-

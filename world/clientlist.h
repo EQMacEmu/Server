@@ -80,6 +80,11 @@ public:
 
 	void GetClientList(Json::Value &response, bool full_list = false);
 
+	static ClientList *Instance()
+	{
+		static ClientList instance;
+		return &instance;
+	}
 private:
 	void OnTick(EQ::Timer* t);
 	inline uint32 GetNextCLEID() { return NextCLEID++; }

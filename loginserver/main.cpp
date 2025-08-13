@@ -1,20 +1,3 @@
-/*	EQEMu: Everquest Server Emulator
-	Copyright (C) 2001-2010 EQEMu Development Team (http://eqemulator.net)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; version 2 of the License.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY except by those people which sell it, which
-	are required to give you total support for your newly bought product;
-	without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-	A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-*/
 #include "../common/global_define.h"
 #include "../common/types.h"
 #include "../common/opcodemgr.h"
@@ -38,7 +21,6 @@ TimeoutManager timeout_manager;
 LoginServer server;
 EQEmuLogSys LogSys;
 EQCrypto eq_crypto;
-PathManager path;
 Database database;
 
 bool run_server = true;
@@ -57,12 +39,8 @@ void LoadDatabaseConnection()
 		server.config.GetVariableString("database", "port", "3306"),
 		server.config.GetVariableString("database", "db", "eqemu")
 	);
-}
 
-void LoadLogSysDatabaseConnection()
-{
-	if (server.config.RawHandle()["logsys_database"].isObject())
-	{
+	if (server.config.RawHandle()["logsys_database"].isObject()) {
 		LogInfo("LogSys MySQL Database Init.");
 		server.logsys_db = (Database *)new Database(
 			server.config.GetVariableString("logsys_database", "user", "user"),
@@ -72,8 +50,7 @@ void LoadLogSysDatabaseConnection()
 			server.config.GetVariableString("logsys_database", "db", "eqemu")
 		);
 	}
-	else
-	{
+	else {
 		server.logsys_db = nullptr;
 	}
 }
@@ -81,7 +58,7 @@ void LoadLogSysDatabaseConnection()
 void LoadServerConfig()
 {
 	server.config = EQ::JsonConfigFile::Load(
-		fmt::format("{}/login.json", path.GetServerPath())
+		fmt::format("{}/login.json", PathManager::Instance()->GetServerPath())
 	);
 	LogInfo("Config System Init.");
 
@@ -109,24 +86,20 @@ void LoadServerConfig()
 	server.options.LoginPasswordSalt(server.config.GetVariableString("database", "salt", ""));
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	RegisterExecutablePlatform(ExePlatformLogin);
-	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
+
 	LogInfo("Logging System Init.");
+	LogSys.LoadLogSettingsDefaults();
 
-	LogSys.log_settings[Logs::Error].log_to_console = Logs::General;
-
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	LoadServerConfig();
 
 	/* Create database connection */
-	if (server.config.GetVariableString("database", "subsystem", "MySQL").compare("MySQL") == 0) {
-		LoadDatabaseConnection();
-		LoadLogSysDatabaseConnection();
-	}
+	LoadDatabaseConnection();
 
 	LogSys.SetDatabase(server.logsys_db != nullptr ? server.logsys_db : server.db)
 		->SetLogPath("logs")
@@ -235,7 +208,6 @@ int main()
 	{
 		delete server.logsys_db;
 	}
-
 	LogSys.CloseFileLogs();
 
 	return 0;

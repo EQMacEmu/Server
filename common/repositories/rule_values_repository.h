@@ -3,6 +3,7 @@
 
 #include "../database.h"
 #include "../strings.h"
+#include <sstream>
 #include "base/base_rule_values_repository.h"
 
 class RuleValuesRepository: public BaseRuleValuesRepository {
@@ -44,6 +45,49 @@ public:
      */
 
 	// Custom extended repository methods here
+
+	template<typename T1, typename T2, typename T3, typename T4>
+	static std::vector<std::string> join_tuple(
+		const std::string &glue,
+		const std::pair<char, char> &encapsulation,
+		const std::vector<std::tuple<T1, T2, T3, T4>> &src
+	)
+	{
+		if (src.empty()) {
+			return {};
+		}
+
+		std::vector<std::string> output;
+
+		for (const std::tuple<T1, T2, T3, T4> &src_iter : src) {
+
+			output.emplace_back(
+
+				fmt::format(
+					"{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+					encapsulation.first,
+					std::get<0>(src_iter),
+					encapsulation.second,
+					glue,
+					encapsulation.first,
+					std::get<1>(src_iter),
+					encapsulation.second,
+					glue,
+					encapsulation.first,
+					std::get<2>(src_iter),
+					encapsulation.second,
+					glue,
+					encapsulation.first,
+					std::get<3>(src_iter),
+					encapsulation.second
+				)
+			);
+		}
+
+		return output;
+	}
+
+
 	static std::vector<std::string> GetRuleNames(Database &db, int rule_set_id)
 	{
 		std::vector<std::string> v;
@@ -87,12 +131,28 @@ public:
 		return v;
 	}
 
+	template<typename T>
+	static std::string
+		ImplodePair(const std::string &glue, const std::pair<char, char> &encapsulation, const std::vector<T> &src)
+	{
+		if (src.empty()) {
+			return {};
+		}
+		std::ostringstream oss;
+		for (const T &src_iter : src) {
+			oss << encapsulation.first << src_iter << encapsulation.second << glue;
+		}
+		std::string output(oss.str());
+		output.resize(output.size() - glue.size());
+		return output;
+	}
+
 	static bool DeleteOrphanedRules(Database &db, std::vector<std::string> &v)
 	{
 		const auto query = fmt::format(
 			"DELETE FROM {} WHERE rule_name IN ({})",
 			TableName(),
-			Strings::ImplodePair(",", std::pair<char, char>('\'', '\''), v)
+			ImplodePair(",", std::pair<char, char>('\'', '\''), v)
 		);
 
 		return db.QueryDatabase(query).Success();
@@ -103,7 +163,7 @@ public:
 		const auto query = fmt::format(
 			"REPLACE INTO {} (`ruleset_id`, `rule_name`, `rule_value`, `notes`) VALUES {}",
 			TableName(),
-			Strings::ImplodePair(
+			ImplodePair(
 				",",
 				std::pair<char, char>('(', ')'),
 				join_tuple(",", std::pair<char, char>('\'', '\''), v)

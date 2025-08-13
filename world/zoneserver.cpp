@@ -41,13 +41,8 @@
 #include "../common/skill_caps.h"
 #include "../common/server_reload_types.h"
 
-extern ClientList client_list;
-extern ZSList zoneserver_list;
-extern LoginServerList loginserverlist;
 extern volatile bool RunLoops;
 extern volatile bool UCSServerAvailable_;
-extern UCSConnection UCSLink;
-extern QueryServConnection QSLink;
 void CatchSignal(int sig_num);
 
 ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_connection, EQ::Net::ConsoleServer *in_console)
@@ -59,7 +54,7 @@ ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_c
 	memset(client_address, 0, sizeof(client_address));
 	memset(client_local_address, 0, sizeof(client_local_address));
 
-	zone_server_id = zoneserver_list.GetNextID();
+	zone_server_id = ZSList::Instance()->GetNextID();
 	zone_server_zone_id = 0;
 	zone_os_process_id = 0;
 	client_port = 0;
@@ -83,7 +78,7 @@ ZoneServer::ZoneServer(std::shared_ptr<EQ::Net::ServertalkServerConnection> in_c
 
 ZoneServer::~ZoneServer() {
 	if (RunLoops)
-		client_list.CLERemoveZSRef(this);
+		ClientList::Instance()->CLERemoveZSRef(this);
 }
 
 bool ZoneServer::SetZone(uint32 in_zone_id, bool in_is_static_zone) {
@@ -108,7 +103,7 @@ bool ZoneServer::SetZone(uint32 in_zone_id, bool in_is_static_zone) {
 	}
 
 	if (!zone_server_zone_id) {
-		client_list.CLERemoveZSRef(this);
+		ClientList::Instance()->CLERemoveZSRef(this);
 		zone_player_count = 0;
 		LSSleepUpdate(GetPrevZoneID());
 	}
@@ -118,7 +113,7 @@ bool ZoneServer::SetZone(uint32 in_zone_id, bool in_is_static_zone) {
 	strn0cpy(zone_name, zone_short_name.c_str(), sizeof(zone_name));
 	strn0cpy(long_name, zone_long_name.c_str(), sizeof(long_name));
 
-	client_list.ZoneBootup(this);
+	ClientList::Instance()->ZoneBootup(this);
 	zone_boot_timer.Start();
 
 	return true;
@@ -139,7 +134,7 @@ void ZoneServer::LSShutDownUpdate(uint32 zoneid) {
 			zsd->zone = zoneid;
 		}
 		zsd->zone_wid = GetID();
-		loginserverlist.SendPacket(pack);
+		LoginServerList::Instance()->SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -159,7 +154,7 @@ void ZoneServer::LSBootUpdate(uint32 zoneid, bool startup) {
 
 		bootup->zone = zoneid;
 		bootup->zone_wid = GetID();
-		loginserverlist.SendPacket(pack);
+		LoginServerList::Instance()->SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -174,7 +169,7 @@ void ZoneServer::LSSleepUpdate(uint32 zone_id) {
 		auto sleep = (ServerLSZoneSleep_Struct*) pack->pBuffer;
 		sleep->zone = zone_id;
 		sleep->zone_wid = GetID();
-		loginserverlist.SendPacket(pack);
+		LoginServerList::Instance()->SendPacket(pack);
 		safe_delete(pack);
 	}
 }
@@ -203,7 +198,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto gis = (GroupInvite_Struct*) pack->pBuffer;
-			client_list.SendPacket(gis->invitee_name, pack);
+			ClientList::Instance()->SendPacket(gis->invitee_name, pack);
 			break;
 		}
 		case ServerOP_GroupFollow: {
@@ -212,7 +207,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto sgfs = (ServerGroupFollow_Struct*) pack->pBuffer;
-			client_list.SendPacket(sgfs->gf.name1, pack);
+			ClientList::Instance()->SendPacket(sgfs->gf.name1, pack);
 			break;
 		}
 		case ServerOP_GroupFollowAck: {
@@ -221,7 +216,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto sgfas = (ServerGroupFollowAck_Struct*) pack->pBuffer;
-			client_list.SendPacket(sgfas->Name, pack);
+			ClientList::Instance()->SendPacket(sgfas->Name, pack);
 			break;
 		}
 		case ServerOP_GroupCancelInvite: {
@@ -230,7 +225,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto gcs = (GroupCancel_Struct*) pack->pBuffer;
-			client_list.SendPacket(gcs->name1, pack);
+			ClientList::Instance()->SendPacket(gcs->name1, pack);
 			break;
 		}
 		case ServerOP_GroupSetID: {
@@ -241,7 +236,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto gsi = (GroupSetID_Struct*) pack->pBuffer;
 			// set groupid in CLE
 			uint32 char_id = gsi->char_id;
-			ClientListEntry* client_cle = client_list.FindCLEByCharacterID(gsi->char_id);
+			ClientListEntry* client_cle = ClientList::Instance()->FindCLEByCharacterID(gsi->char_id);
 			if (client_cle) {
 				client_cle->SetGroupID(gsi->group_id);
 			}
@@ -257,7 +252,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_GroupJoin: {
@@ -265,7 +260,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_RaidGroupJoin: {
@@ -273,7 +268,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_ForceGroupUpdate: {
@@ -281,11 +276,11 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_OOZGroupMessage: {
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 
 			// check for characters zoning and queue messages
 			auto gcm = (ServerGroupChannelMessage_Struct*) pack->pBuffer;
@@ -295,7 +290,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 				// iterate client_list looking for clients that are zoning
 				std::vector<ClientListEntry*> vec;
-				client_list.GetClients("", vec);
+				ClientList::Instance()->GetClients("", vec);
 				for (auto it = vec.begin(); it != vec.end(); ++it) {
 					ClientListEntry* cle = *it;
 					if (cle && cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
@@ -343,9 +338,9 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			auto sdbg = (ServerDisbandGroup_Struct*) pack->pBuffer;
 			if (sdbg->groupid > 0) {
-				client_list.ClearGroup(sdbg->groupid); // clear groupid from all matching CLE's
+				ClientList::Instance()->ClearGroup(sdbg->groupid); // clear groupid from all matching CLE's
 			}
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_ChangeGroupLeader: {
@@ -353,7 +348,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack); //bounce it to all zones
+			ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			break;
 		}
 		case ServerOP_CheckGroupLeader: {
@@ -362,10 +357,10 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto sgls = (ServerGroupLeader_Struct*) pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCharacter(sgls->leader_name);
+			ClientListEntry* cle = ClientList::Instance()->FindCharacter(sgls->leader_name);
 
 			if (cle) {
-				zoneserver_list.SendPacket(pack); //bounce it to all zones
+				ZSList::Instance()->SendPacket(pack); //bounce it to all zones
 			}
 			else {
 				LogInfo("Character [{}] is not found, group ownership will not be transferred.", sgls->leader_name);
@@ -378,7 +373,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidRemove: {
@@ -386,7 +381,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidRemoveLD: {
@@ -394,7 +389,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidDisband: {
@@ -402,7 +397,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidChangeGroup: {
@@ -410,7 +405,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_UpdateGroup: {
@@ -418,7 +413,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidGroupDisband: {
@@ -426,7 +421,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidGroupAdd: {
@@ -434,7 +429,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidGroupRemove: {
@@ -442,18 +437,18 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidGroupSay:
 		case ServerOP_RaidSay: {
-			zoneserver_list.SendPacket(pack); // broadcast to zones
+			ZSList::Instance()->SendPacket(pack); // broadcast to zones
 
 			// check for characters zoning and queue messages
 			auto srm = (ServerRaidMessage_Struct*) pack->pBuffer;
 			if (srm->rid != 0) {
 				std::vector<ClientListEntry*> vec;
-				client_list.GetClients("", vec);
+				ClientList::Instance()->GetClients("", vec);
 				for (auto it = vec.begin(); it != vec.end(); ++it) {
 					ClientListEntry* cle = *it;
 					if (cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
@@ -485,7 +480,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidLeader: {
@@ -493,7 +488,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidTypeChange: {
@@ -501,7 +496,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RaidAddLooter: {
@@ -509,7 +504,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RemoveRaidLooter: {
@@ -517,7 +512,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_PlayerEvent: {
@@ -531,15 +526,15 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			// if set, process events in queryserver
 			// if you want to offload event recording to a dedicated QS instance
 			if (!RuleB(Logging, PlayerEventsQSProcess)) {
-				player_event_logs.AddToQueue(n.player_event_log);
+				PlayerEventLogs::Instance()->AddToQueue(n.player_event_log);
 			}
 			else {
-				QSLink.SendPacket(pack);
+				QueryServConnection::Instance()->SendPacket(pack);
 			}
 
 			// if discord enabled for event, ship to UCS to process
-			if (player_event_logs.IsEventDiscordEnabled(n.player_event_log.event_type_id)) {
-				UCSLink.SendPacket(pack);
+			if (PlayerEventLogs::Instance()->IsEventDiscordEnabled(n.player_event_log.event_type_id)) {
+				UCSConnection::Instance()->SendPacket(pack);
 			}
 
 			break;
@@ -549,7 +544,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_SpawnCondition: {
@@ -559,7 +554,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			//bounce the packet to the correct zone server, if its up
 			auto ssc = (ServerSpawnCondition_Struct*) pack->pBuffer;
-			zoneserver_list.SendPacket(ssc->zoneID, pack);
+			ZSList::Instance()->SendPacket(ssc->zoneID, pack);
 			break;
 		}
 		case ServerOP_SpawnEvent: {
@@ -569,7 +564,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			//bounce the packet to the correct zone server, if its up
 			auto sse = (ServerSpawnEvent_Struct*) pack->pBuffer;
-			zoneserver_list.SendPacket(sse->zoneID, pack);
+			ZSList::Instance()->SendPacket(sse->zoneID, pack);
 			break;
 		}
 		case ServerOP_ChannelMessage: {
@@ -578,7 +573,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 			auto scm = (ServerChannelMessage_Struct*) pack->pBuffer;
 			if (scm->chan_num == 20) {
-				UCSLink.SendMessage(scm->from, scm->message);
+				UCSConnection::Instance()->SendMessage(scm->from, scm->message);
 				break;
 			}
 			// tells get a reply echo
@@ -597,14 +592,14 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 							auto scm2 = (ServerChannelMessage_Struct*)pack->pBuffer;
 							strcpy(scm2->deliverto, scm2->from);
 							scm2->noreply = true;
-							client_list.SendPacket(scm->from, pack);
+							ClientList::Instance()->SendPacket(scm->from, pack);
 							safe_delete(pack);
 						}
 								)
 								) &&
 							!scm->noreply
 							) {
-							zoneserver_list.SendEmoteMessage(
+							ZSList::Instance()->SendEmoteMessage(
 								scm->from,
 								0,
 								AccountStatus::Player,
@@ -619,13 +614,13 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 					break;
 				}
 
-				auto cle = client_list.FindCharacter(scm->deliverto);
+				auto cle = ClientList::Instance()->FindCharacter(scm->deliverto);
 
 				if (cle == 0 || cle->Online() < CLE_Status::Zoning ||
 					(cle->TellsOff() && (scm->fromadmin < cle->Admin() || scm->fromadmin < 80))) {
 					// client not found or has tells off
 					if (scm->chan_num == ChatChannel_Tell) {
-						ClientListEntry* sender = client_list.FindCharacter(scm->from);
+						ClientListEntry* sender = ClientList::Instance()->FindCharacter(scm->from);
 						if (!sender || !sender->Server())
 							break;
 						scm->chan_num = ChatChannel_TellEcho;
@@ -637,7 +632,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				}
 				else if (cle->Online() == CLE_Status::Zoning) {
 					if (scm->chan_num == ChatChannel_Tell) {
-						ClientListEntry* sender = client_list.FindCharacter(scm->from);
+						ClientListEntry* sender = ClientList::Instance()->FindCharacter(scm->from);
 						if (cle->TellQueueFull()) {
 							if (!sender || !sender->Server())
 								break;
@@ -665,7 +660,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				}
 				else if (cle->Server() == 0) {
 					if (scm->chan_num == ChatChannel_Tell) {
-						zoneserver_list.SendEmoteMessage(scm->from, 0, AccountStatus::Player, Chat::White, fmt::format(" {} is not contactable at this time'", scm->to).c_str());
+						ZSList::Instance()->SendEmoteMessage(scm->from, 0, AccountStatus::Player, Chat::White, fmt::format(" {} is not contactable at this time'", scm->to).c_str());
 					}
 				}
 				else {
@@ -676,12 +671,12 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				//if (scm->chan_num == ChatChannel_OOC || scm->chan_num == ChatChannel_Broadcast || scm->chan_num == ChatChannel_GMSAY) {
 				//	console_list.SendChannelMessage(scm);
 				//}
-				zoneserver_list.SendPacket(pack); // broadcast to zones
+				ZSList::Instance()->SendPacket(pack); // broadcast to zones
 
 				if (scm->chan_num == ChatChannel_Guild || scm->chan_num == ChatChannel_GMSAY || scm->chan_num == ChatChannel_Broadcast) {
 					// check for characters zoning and see if they would be eligible for this message, and if so, queue message
 					std::vector<ClientListEntry*> vec;
-					client_list.GetClients("", vec);
+					ClientList::Instance()->GetClients("", vec);
 					for (auto it = vec.begin(); it != vec.end(); ++it) {
 						ClientListEntry* cle = *it;
 						if (cle->Online() == CLE_Status::Zoning && !cle->TellQueueFull()) {
@@ -714,17 +709,17 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_EmoteMessage: {
 			auto sem = (ServerEmoteMessage_Struct*) pack->pBuffer;
-			zoneserver_list.SendEmoteMessageRaw(sem->to, sem->guilddbid, sem->minstatus, sem->type, sem->message);
+			ZSList::Instance()->SendEmoteMessageRaw(sem->to, sem->guilddbid, sem->minstatus, sem->type, sem->message);
 			break;
 		}
 		case ServerOP_RezzPlayerAccept: {
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RezzPlayer: {
 
 			auto sRezz = (RezzPlayer_Struct*) pack->pBuffer;
-			if (zoneserver_list.SendPacket(pack)) {
+			if (ZSList::Instance()->SendPacket(pack)) {
 				LogInfo("Sent Rez packet for [{}]",sRezz->rez.your_name);
 			}
 			else {
@@ -734,12 +729,12 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_RezzPlayerReject: {
 			char* Recipient = (char*)pack->pBuffer;
-			client_list.SendPacket(Recipient, pack);
+			ClientList::Instance()->SendPacket(Recipient, pack);
 			break;
 		}
 		case ServerOP_MultiLineMsg: {
 			auto mlm = (ServerMultiLineMsg_Struct*) pack->pBuffer;
-			client_list.SendPacket(mlm->to, pack);
+			ClientList::Instance()->SendPacket(mlm->to, pack);
 			break;
 		}
 		case ServerOP_SetZone: {
@@ -770,7 +765,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto sci = (ServerConnectInfo*) pack->pBuffer;
 
 			if (!sci->port) {
-				client_port = zoneserver_list.GetAvailableZonePort();
+				client_port = ZSList::Instance()->GetAvailableZonePort();
 
 				ServerPacket p(ServerOP_SetConnectInfo, sizeof(ServerConnectInfo));
 				memset(p.pBuffer, 0, sizeof(ServerConnectInfo));
@@ -813,22 +808,22 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_ShutdownAll: {
 			if (pack->size == 0) {
-				zoneserver_list.SendPacket(pack);
-				zoneserver_list.Process();
+				ZSList::Instance()->SendPacket(pack);
+				ZSList::Instance()->Process();
 				CatchSignal(2);
 			}
 			else {
 				auto wsd = (WorldShutDown_Struct*) pack->pBuffer;
-				if (!wsd->time && !wsd->interval && zoneserver_list.shutdowntimer->Enabled()) {
-					zoneserver_list.shutdowntimer->Disable();
-					zoneserver_list.reminder->Disable();
+				if (!wsd->time && !wsd->interval && ZSList::Instance()->shutdowntimer->Enabled()) {
+					ZSList::Instance()->shutdowntimer->Disable();
+					ZSList::Instance()->reminder->Disable();
 				}
 				else {
-					zoneserver_list.shutdowntimer->Start(wsd->time);
-					zoneserver_list.reminder->Start(wsd->interval - 1000);
-					zoneserver_list.reminder->SetDuration(wsd->interval);
-					zoneserver_list.shutdowntimer->Start();
-					zoneserver_list.reminder->Start();
+					ZSList::Instance()->shutdowntimer->Start(wsd->time);
+					ZSList::Instance()->reminder->Start(wsd->interval - 1000);
+					ZSList::Instance()->reminder->SetDuration(wsd->interval);
+					ZSList::Instance()->shutdowntimer->Start();
+					ZSList::Instance()->reminder->Start();
 				}
 			}
 			break;
@@ -837,17 +832,17 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto s = (ServerZoneStateChange_struct*) pack->pBuffer;
 			ZoneServer *zs = 0;
 			if (s->zone_server_id) {
-				zs = zoneserver_list.FindByID(s->zone_server_id);
+				zs = ZSList::Instance()->FindByID(s->zone_server_id);
 			}
 			else if (s->zone_id) {
-				zs = zoneserver_list.FindByName(ZoneName(s->zone_id));
+				zs = ZSList::Instance()->FindByName(ZoneName(s->zone_id));
 			}
 			else {
-				zoneserver_list.SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: neither ID nor name specified");
+				ZSList::Instance()->SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: neither ID nor name specified");
 			}
 
 			if (!zs) {
-				zoneserver_list.SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: zoneserver not found");
+				ZSList::Instance()->SendEmoteMessage(s->admin_name, 0, AccountStatus::Player, Chat::White, "Error: SOP_ZoneShutdown: zoneserver not found");
 			}
 			else {
 				zs->SendPacket(pack);
@@ -859,18 +854,18 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto s = (ServerZoneStateChange_struct*) pack->pBuffer;
 			uint32 ZoneServerID = s->zone_server_id;
 			if (ZoneServerID == 0) {
-				ZoneServerID = zoneserver_list.GetAvailableZoneID();
+				ZoneServerID = ZSList::Instance()->GetAvailableZoneID();
 				if (ZoneServerID == 0) {
 					break;
 				}
 			}
-			zoneserver_list.SOPZoneBootup(s->admin_name, ZoneServerID, ZoneName(s->zone_id), s->is_static);
+			ZSList::Instance()->SOPZoneBootup(s->admin_name, ZoneServerID, ZoneName(s->zone_id), s->is_static);
 			break;
 		}
 		case ServerOP_ZoneStatus: {
 			if (pack->size >= 1) {
 				auto z = (ServerZoneStatus_Struct*) pack->pBuffer;
-				zoneserver_list.SendZoneStatus(z->name, z->admin, this);
+				ZSList::Instance()->SendZoneStatus(z->name, z->admin, this);
 			}
 			break;
 
@@ -882,7 +877,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			auto wtz = (WorldToZone_Struct*) pack->pBuffer;
 			Client *client = 0;
-			client = client_list.FindByAccountID(wtz->account_id);
+			client = ClientList::Instance()->FindByAccountID(wtz->account_id);
 			if (client != 0) {
 				client->Clearance(wtz->response);
 			}
@@ -909,7 +904,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto ztz = (ZoneToZone_Struct*)pack->pBuffer;
 			ClientListEntry *client = nullptr;
 			if (WorldConfig::get()->UpdateStats) {
-				client = client_list.FindCharacter(ztz->name);
+				client = ClientList::Instance()->FindCharacter(ztz->name);
 			}
 
 			LogInfo("ZoneToZone request for [{}] current zone [{}] req zone [{}]",
@@ -919,14 +914,14 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			if (GetZoneID() == ztz->current_zone_id) {
 				LogInfo("Processing ZTZ for egress from zone for client [{}]", ztz->name);
 
-				if (ztz->admin < 80 && ztz->ignorerestrictions < 2 && zoneserver_list.IsZoneLocked(ztz->requested_zone_id)) {
+				if (ztz->admin < 80 && ztz->ignorerestrictions < 2 && ZSList::Instance()->IsZoneLocked(ztz->requested_zone_id)) {
 					ztz->response = 0;
 					SendPacket(pack);
 					break;
 				}
 
 				ZoneServer* ingress_server = nullptr;
-				ingress_server = zoneserver_list.FindByZoneID(ztz->requested_zone_id);
+				ingress_server = ZSList::Instance()->FindByZoneID(ztz->requested_zone_id);
 
 				/* Zone was already running*/
 				if (ingress_server) {
@@ -938,11 +933,11 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 					int server_id;
 					if (!RuleB(World, DontBootDynamics))
 					{
-						if ((server_id = zoneserver_list.TriggerBootup(ztz->requested_zone_id))) {
+						if ((server_id = ZSList::Instance()->TriggerBootup(ztz->requested_zone_id))) {
 							LogInfo("Successfully booted a zone for [{}]", ztz->name);
 							// bootup successful, ready to rock
 							ztz->response = 1;
-							ingress_server = zoneserver_list.FindByID(server_id);
+							ingress_server = ZSList::Instance()->FindByID(server_id);
 						}
 						else
 						{
@@ -969,7 +964,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 				LogInfo("Processing ZTZ for ingress to zone for client [{}]", ztz->name);
 				ZoneServer *egress_server = nullptr;
-				egress_server = zoneserver_list.FindByZoneID(ztz->current_zone_id);
+				egress_server = ZSList::Instance()->FindByZoneID(ztz->current_zone_id);
 
 				if (egress_server) {
 					egress_server->SendPacket(pack);
@@ -983,7 +978,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				LogInfo("Wrong size on ServerOP_ClientList. Got: [{}], Expected: [{}]", pack->size, sizeof(ServerClientList_Struct));
 				break;
 			}
-			client_list.ClientUpdate(this, (ServerClientList_Struct*)pack->pBuffer);
+			ClientList::Instance()->ClientUpdate(this, (ServerClientList_Struct*)pack->pBuffer);
 			break;
 		}
 		case ServerOP_ClientListKA: {
@@ -992,7 +987,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				LogInfo("Wrong size on ServerOP_ClientListKA. Got: [{}], Expected: [{}]", pack->size, (4 + (4 * sclka->numupdates)));
 				break;
 			}
-			client_list.CLEKeepAlive(sclka->numupdates, sclka->wid);
+			ClientList::Instance()->CLEKeepAlive(sclka->numupdates, sclka->wid);
 			break;
 		}
 		case ServerOP_Who: {
@@ -1006,34 +1001,34 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			whom->wrace = whoall->wrace;
 			whom->guildid = whoall->guildid;
 			strcpy(whom->whom, whoall->whom);
-			client_list.SendWhoAll(whoall->fromid, whoall->from, whoall->admin, whom);
+			ClientList::Instance()->SendWhoAll(whoall->fromid, whoall->from, whoall->admin, whom);
 			safe_delete(whom);
 			break;
 		}
 		case ServerOP_RequestOnlineGuildMembers: {
 			auto srogms = (ServerRequestOnlineGuildMembers_Struct*) pack->pBuffer;
-			Log(Logs::Detail, Logs::Guilds, "ServerOP_RequestOnlineGuildMembers Recieved. FromID=%i GuildID=%i", srogms->FromID, srogms->GuildID);
-			client_list.SendOnlineGuildMembers(srogms->FromID, srogms->GuildID);
+			LogGuilds("ServerOP_RequestOnlineGuildMembers Recieved. FromID = [{}] GuildID = [{}]", srogms->FromID, srogms->GuildID);
+			ClientList::Instance()->SendOnlineGuildMembers(srogms->FromID, srogms->GuildID);
 			break;
 		}
 		case ServerOP_ClientVersionSummary: {
 			auto srcvss = (ServerRequestClientVersionSummary_Struct*) pack->pBuffer;
-			client_list.SendClientVersionSummary(srcvss->Name);
+			ClientList::Instance()->SendClientVersionSummary(srcvss->Name);
 			break;
 		}
 		case ServerOP_FriendsWho: {
 			auto FriendsWho = (ServerFriendsWho_Struct*) pack->pBuffer;
-			client_list.SendFriendsWho(FriendsWho, this);
+			ClientList::Instance()->SendFriendsWho(FriendsWho, this);
 			break;
 		}
 		case ServerOP_KickPlayer: {
 			auto skp = (ServerKickPlayer_Struct*) pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCLEByAccountID(skp->AccountID);
+			ClientListEntry* cle = ClientList::Instance()->FindCLEByAccountID(skp->AccountID);
 			if (cle) {
 				cle->SetOnline(CLE_Status::Offline);
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_IsOwnerOnline: {
@@ -1042,14 +1037,14 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			}
 
 			auto online = (ServerIsOwnerOnline_Struct*) pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCLEByAccountID(online->accountid);
+			ClientListEntry* cle = ClientList::Instance()->FindCLEByAccountID(online->accountid);
 			if (cle) {
 				online->online = 1;
 			}
 			else {
 				online->online = 0;
 			}
-			zoneserver_list.FindByZoneID(online->zoneid)->SendPacket(pack);
+			ZSList::Instance()->FindByZoneID(online->zoneid)->SendPacket(pack);
 			break;
 		}
 								   //these opcodes get processed by the guild manager.
@@ -1060,11 +1055,11 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			break;
 		}
 		case ServerOP_FlagUpdate: {
-			ClientListEntry *cle = client_list.FindCLEByAccountID(*((uint32*) pack->pBuffer));
+			ClientListEntry *cle = ClientList::Instance()->FindCLEByAccountID(*((uint32*) pack->pBuffer));
 			if (cle) {
 				cle->SetAdmin(*((int16*)&pack->pBuffer[4]));
 			}
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_GMGoto: {
@@ -1073,7 +1068,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 			auto gmg = (ServerGMGoto_Struct*) pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCharacter(gmg->gotoname);
+			ClientListEntry* cle = ClientList::Instance()->FindCharacter(gmg->gotoname);
 			if (cle != 0) {
 				if (cle->Server() == 0) {
 					this->SendEmoteMessage(gmg->myname, 0, AccountStatus::Player, Chat::Red, fmt::format("Error: Cannot identify {}'s zoneserver.", gmg->gotoname).c_str());
@@ -1103,8 +1098,8 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				WorldConfig::UnlockWorld();
 			}
 
-			if (loginserverlist.Connected()) {
-				loginserverlist.SendStatus();
+			if (LoginServerList::Instance()->Connected()) {
+				LoginServerList::Instance()->SendStatus();
 				SendEmoteMessage(l->character_name, 0, AccountStatus::Player, Chat::Yellow, fmt::format("World {}.", l->is_locked ? "locked" : "unlocked").c_str());
 			}
 			else {
@@ -1120,7 +1115,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			auto smotd = (ServerMotd_Struct*) pack->pBuffer;
 			RuleManager::Instance()->SetRule("MOTD", smotd->motd, &database, true, true);
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_Uptime: {
@@ -1133,15 +1128,15 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				ZSList::ShowUpTime(this, sus->adminname);
 			}
 			else {
-				ZoneServer* zs = zoneserver_list.FindByID(sus->zoneserverid);
+				ZoneServer* zs = ZSList::Instance()->FindByID(sus->zoneserverid);
 				if (zs)
 					zs->SendPacket(pack);
 			}
 			break;
 		}
 		case ServerOP_Petition: {
-			zoneserver_list.SendPacket(pack);
-			QSLink.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
+			QueryServConnection::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_GetWorldTime: {
@@ -1153,23 +1148,23 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			outpack->pBuffer = new uchar[outpack->size];
 			memset(outpack->pBuffer, 0, outpack->size);
 			auto tod = (eqTimeOfDay*)outpack->pBuffer;
-			tod->start_eqtime = zoneserver_list.worldclock.getStartEQTime();
-			tod->start_realtime = zoneserver_list.worldclock.getStartRealTime();
+			tod->start_eqtime = ZSList::Instance()->worldclock.getStartEQTime();
+			tod->start_realtime = ZSList::Instance()->worldclock.getStartRealTime();
 			SendPacket(outpack);
 			safe_delete(outpack);
 			break;
 		}
 		case ServerOP_RefreshCensorship: {
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_SetWorldTime: {
 			LogInfo("Received SetWorldTime");
 			eqTimeOfDay *newtime = (eqTimeOfDay*) pack->pBuffer;
-			zoneserver_list.worldclock.SetCurrentEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
+			ZSList::Instance()->worldclock.SetCurrentEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
 			LogInfo("New time = [{}]-[{}]-[{}] [{}]:[{}] ([{}])\n", newtime->start_eqtime.year, newtime->start_eqtime.month, (int)newtime->start_eqtime.day, (int)newtime->start_eqtime.hour, (int)newtime->start_eqtime.minute, (int)newtime->start_realtime);
 			database.SaveTime((int)newtime->start_eqtime.minute, (int)newtime->start_eqtime.hour, (int)newtime->start_eqtime.day, newtime->start_eqtime.month, newtime->start_eqtime.year);
-			zoneserver_list.SendTimeSync();
+			ZSList::Instance()->SendTimeSync();
 			break;
 		}
 		case ServerOP_IPLookup: {
@@ -1180,10 +1175,10 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			auto sgwq = (ServerGenericWorldQuery_Struct*) pack->pBuffer;
 			if (pack->size == sizeof(ServerGenericWorldQuery_Struct)) {
-				client_list.SendCLEList(sgwq->admin, sgwq->from, this);
+				ClientList::Instance()->SendCLEList(sgwq->admin, sgwq->from, this);
 			}
 			else {
-				client_list.SendCLEList(sgwq->admin, sgwq->from, this, sgwq->query);
+				ClientList::Instance()->SendCLEList(sgwq->admin, sgwq->from, this, sgwq->query);
 			}
 			break;
 		}
@@ -1195,12 +1190,12 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			auto lock_zone = (ServerLockZone_Struct*) pack->pBuffer;
 			switch (lock_zone->op) {
 			case ServerLockType::List: {
-				zoneserver_list.ListLockedZones(lock_zone->adminname, this);
+				ZSList::Instance()->ListLockedZones(lock_zone->adminname, this);
 				break;
 			}
 			case ServerLockType::Lock: {
-				if (zoneserver_list.SetLockedZone(lock_zone->zoneID, true)) {
-					zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone locked: {} ", ZoneName(lock_zone->zoneID)).c_str());
+				if (ZSList::Instance()->SetLockedZone(lock_zone->zoneID, true)) {
+					ZSList::Instance()->SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone locked: {} ", ZoneName(lock_zone->zoneID)).c_str());
 				}
 				else {
 					this->SendEmoteMessageRaw(lock_zone->adminname, 0, AccountStatus::Player, Chat::White, "Failed to change lock");
@@ -1208,8 +1203,8 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 			case ServerLockType::Unlock: {
-				if (zoneserver_list.SetLockedZone(lock_zone->zoneID, false)) {
-					zoneserver_list.SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone unlocked: {} ", ZoneName(lock_zone->zoneID)).c_str());
+				if (ZSList::Instance()->SetLockedZone(lock_zone->zoneID, false)) {
+					ZSList::Instance()->SendEmoteMessage(0, 0, AccountStatus::QuestTroupe, Chat::Yellow, fmt::format("Zone unlocked: {} ", ZoneName(lock_zone->zoneID)).c_str());
 				}
 				else {
 					this->SendEmoteMessageRaw(lock_zone->adminname, 0, AccountStatus::Player, Chat::White, "Failed to change lock");
@@ -1221,7 +1216,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_Revoke: {
 			auto rev = (RevokeStruct*)pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCharacter(rev->name);
+			ClientListEntry* cle = ClientList::Instance()->FindCharacter(rev->name);
 			if (cle != 0 && cle->Server() != 0) {
 				cle->Server()->SendPacket(pack);
 			}
@@ -1229,7 +1224,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_SpawnPlayerCorpse: {
 			SpawnPlayerCorpse_Struct* s = (SpawnPlayerCorpse_Struct*)pack->pBuffer;
-			ZoneServer* zs = zoneserver_list.FindByZoneID(s->zone_id);
+			ZoneServer* zs = ZSList::Instance()->FindByZoneID(s->zone_id);
 			if (zs) {
 				zs->SendPacket(pack);
 			}
@@ -1241,13 +1236,13 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 
 			ZoneServer* zs;
 			auto s = (ServerOP_Consent_Struct*)pack->pBuffer;
-			ClientListEntry* cle = client_list.FindCharacter(s->grantname);
+			ClientListEntry* cle = ClientList::Instance()->FindCharacter(s->grantname);
 			if (cle) {
-				zs = zoneserver_list.FindByZoneID(cle->zone());
+				zs = ZSList::Instance()->FindByZoneID(cle->zone());
 				if (zs) {
 					zs->SendPacket(pack);
 					success = true;
-					ClientListEntry* cle_reply = client_list.FindCharacter(s->ownername);
+					ClientListEntry* cle_reply = ClientList::Instance()->FindCharacter(s->ownername);
 					if (cle_reply) {
 						auto reply = new ServerPacket(ServerOP_Consent_Response, sizeof(ServerOP_Consent_Struct));
 						ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)reply->pBuffer;
@@ -1257,7 +1252,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 						scs->zone_id = s->zone_id;
 						scs->message_string_id = 1427; //CONSENT_GIVEN
 						scs->corpse_id = s->corpse_id;
-						zs = zoneserver_list.FindByZoneID(cle_reply->zone());
+						zs = ZSList::Instance()->FindByZoneID(cle_reply->zone());
 						if (zs) {
 							zs->SendPacket(reply);
 							// Sends packet to owner so they get the success message. If this fails, consent will still occur the owner just won't get a message.
@@ -1278,7 +1273,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				scs->zone_id = s->zone_id;
 				scs->message_string_id = 101; //TARGET_NOT_FOUND
 				scs->corpse_id = s->corpse_id;
-				zs = zoneserver_list.FindByZoneID(s->zone_id);
+				zs = ZSList::Instance()->FindByZoneID(s->zone_id);
 				if (zs) {
 					zs->SendPacket(reply);
 					LogInfo("ServerOP_Consent: send consent offline response back to player {} in zone {}.", s->ownername, zs->GetZoneName());
@@ -1293,7 +1288,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		case ServerOP_Consent_Response: {
 			// This just relays the packet back to the owner's zone. 
 			auto s = (ServerOP_Consent_Struct*) pack->pBuffer;
-			ZoneServer *zs = zoneserver_list.FindByZoneID(s->zone_id);
+			ZoneServer *zs = ZSList::Instance()->FindByZoneID(s->zone_id);
 			if (zs) {
 				zs->SendPacket(pack);
 			}
@@ -1307,12 +1302,12 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_ConsentDenyByID: {
 			if (pack->size != sizeof(ServerOP_ConsentDenyByID_Struct)) {
-				LogError("ServerOP_ConsentDenyByID wrong struct size. Got: {}", pack->size);
+				LogError("ServerOP_ConsentDenyByID wrong struct size. Got: [{}]", pack->size);
 				break;
 			}
 
@@ -1326,7 +1321,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			iterator.Reset();
 			while (iterator.MoreElements()) {
 				ConsentDenied_Struct *cd = iterator.GetData();
-				ClientListEntry *cle = client_list.FindCharacter(cd->gname);
+				ClientListEntry *cle = ClientList::Instance()->FindCharacter(cd->gname);
 				if (cle) {
 					char gname[64];
 					strncpy(gname, cle->name(), 64);
@@ -1339,7 +1334,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 					scs->corpse_id = cd->corpse_id;
 
 					LogInfo("Created ServerOP_Consent_Response packet. Owner: {} Granted: {} CorpseID: {}", scs->ownername, scs->grantname, scs->corpse_id);
-					ZoneServer* zs = zoneserver_list.FindByZoneID(cle->zone());
+					ZoneServer* zs = ZSList::Instance()->FindByZoneID(cle->zone());
 					if (zs) {
 						scs->zone_id = zs->GetZoneID();
 						zs->SendPacket(scs_pack);
@@ -1362,7 +1357,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_QGlobalDelete: {
@@ -1370,18 +1365,18 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				break;
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_LSAccountUpdate: {
 			LogInfo("Received ServerOP_LSAccountUpdate packet from zone");
-			loginserverlist.SendAccountUpdate(pack);
+			LoginServerList::Instance()->SendAccountUpdate(pack);
 			break;
 		}
 		case ServerOP_UCSServerStatusRequest:
 		{
 			auto ucsss = (UCSServerStatus_Struct*)pack->pBuffer;
-			auto zs = zoneserver_list.FindByPort(ucsss->port);
+			auto zs = ZSList::Instance()->FindByPort(ucsss->port);
 			if (!zs)
 				break;
 			auto outapp = new ServerPacket(ServerOP_UCSServerStatusReply, sizeof(UCSServerStatus_Struct));
@@ -1393,11 +1388,11 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			break;
 		}
 		case ServerOP_DiscordWebhookMessage: {
-			UCSLink.SendPacket(pack);
+			UCSConnection::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_QueryServGeneric:{
-			QSLink.SendPacket(pack);
+			QueryServConnection::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_CZMessagePlayer:
@@ -1413,18 +1408,18 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		case ServerOP_UpdateSpawn:
 		case ServerOP_Weather:
 		case ServerOP_ZonePlayer: {
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_ServerReloadRequest: {
 			auto o = (ServerReload::Request *)pack->pBuffer;
-			zoneserver_list.SendServerReload((ServerReload::Type)o->type, pack->pBuffer);
+			ZSList::Instance()->SendServerReload((ServerReload::Type)o->type, pack->pBuffer);
 			break;
 		}
 		case ServerOP_CZSignalNPC: {
 			auto s = (CZNPCSignal_Struct*)pack->pBuffer;
 			uint32 zone_id = s->npctype_id / 1000u;						// NPC IDs have the zone IDs in them.  who cares about pets
-			ZoneServer *zs = zoneserver_list.FindByZoneID(zone_id);
+			ZoneServer *zs = ZSList::Instance()->FindByZoneID(zone_id);
 			if (zs) {
 				zs->SendPacket(pack);
 			}
@@ -1433,7 +1428,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		case ServerOP_CZSetEntityVariableByNPCTypeID: {
 			auto s = (CZSetEntVarByNPCTypeID_Struct*)pack->pBuffer;
 			uint32 zone_id = s->npctype_id / 1000u;
-			ZoneServer *zs = zoneserver_list.FindByZoneID(zone_id);
+			ZoneServer *zs = ZSList::Instance()->FindByZoneID(zone_id);
 			if (zs) {
 				zs->SendPacket(pack);
 			}
@@ -1441,7 +1436,7 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 		}
 		case ServerOP_Soulmark: {
 			auto sss = (ServerRequestSoulMark_Struct*)pack->pBuffer;
-			ClientListEntry *cle = client_list.FindCharacter(sss->name);
+			ClientListEntry *cle = ClientList::Instance()->FindCharacter(sss->name);
 			if (!cle || cle && !cle->Server()) {
 				break;
 			}
@@ -1470,12 +1465,12 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 				LogInfo("Error: Could not load item data. But ignoring");
 			}
 
-			zoneserver_list.SendPacket(pack);
+			ZSList::Instance()->SendPacket(pack);
 			break;
 		}
 		case ServerOP_RequestTellQueue: {
 			auto rtq = (ServerRequestTellQueue_Struct*)pack->pBuffer;
-			ClientListEntry *cle = client_list.FindCharacter(rtq->name);
+			ClientListEntry *cle = ClientList::Instance()->FindCharacter(rtq->name);
 			if (!cle || cle->TellQueueEmpty()) {
 				break;
 			}
@@ -1488,20 +1483,20 @@ void ZoneServer::HandleMessage(uint16 opcode, const EQ::Net::Packet &p) {
 			std::string query = StringFormat("SELECT zone FROM launcher_zones WHERE enabled = 1");
 			auto results = database.QueryDatabase(query);
 			if (!results.Success()) {
-				LogError("BootDownZones: {}", results.ErrorMessage());
+				LogError("BootDownZones: [{}]", results.ErrorMessage().c_str());
 				break;
 			}
 
 			for (auto row = results.begin(); row != results.end(); ++row) {
 				std::string zone_name = row[0];
-				ZoneServer *zs = zoneserver_list.FindByName(zone_name.c_str());
+				ZoneServer *zs = ZSList::Instance()->FindByName(zone_name.c_str());
 				if (zs == nullptr) {
-					uint32 zoneserverid = zoneserver_list.GetAvailableZoneID();
+					uint32 zoneserverid = ZSList::Instance()->GetAvailableZoneID();
 					if (zoneserverid == 0) {
 						break;
 					}
 
-					zoneserver_list.SOPZoneBootup(s->adminname, zoneserverid, zone_name.c_str(), true);
+					ZSList::Instance()->SOPZoneBootup(s->adminname, zoneserverid, zone_name.c_str(), true);
 				}
 			}
 
@@ -1561,7 +1556,7 @@ void ZoneServer::SendEmoteMessageRaw(const char* to, uint32 to_guilddbid, int16 
 void ZoneServer::SendGroupIDs() {
 	auto pack = new ServerPacket(ServerOP_GroupIDReply, sizeof(ServerGroupIDReply_Struct));
 	ServerGroupIDReply_Struct* sgi = (ServerGroupIDReply_Struct*)pack->pBuffer;
-	zoneserver_list.NextGroupIDs(sgi->start, sgi->end);
+	ZSList::Instance()->NextGroupIDs(sgi->start, sgi->end);
 	SendPacket(pack);
 	delete pack;
 }
@@ -1576,7 +1571,7 @@ void ZoneServer::ChangeWID(uint32 iCharID, uint32 iWID) {
 	auto scw = (ServerChangeWID_Struct*)pack->pBuffer;
 	scw->charid = iCharID;
 	scw->newwid = iWID;
-	zoneserver_list.SendPacket(pack);
+	ZSList::Instance()->SendPacket(pack);
 	delete pack;
 }
 

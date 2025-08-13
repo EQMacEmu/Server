@@ -257,7 +257,7 @@ void ZoneDatabase::SetDoorPlace(uint8 value,uint8 door_id,const char* zone_name)
 void ZoneDatabase::LoadWorldContainer(uint32 parentid, EQ::ItemInstance* container)
 {
 	if (!container) {
-		Log(Logs::General, Logs::Error, "Programming error: LoadWorldContainer passed nullptr pointer");
+		LogError("Programming error: LoadWorldContainer passed nullptr pointer");
 		return;
 	}
 
@@ -265,7 +265,7 @@ void ZoneDatabase::LoadWorldContainer(uint32 parentid, EQ::ItemInstance* contain
                                     "FROM object_contents WHERE parentid = %i", parentid);
     auto results = QueryDatabase(query);
     if (!results.Success()) {
-        Log(Logs::General, Logs::Error, "Error in DB::LoadWorldContainer: %s", results.ErrorMessage().c_str());
+        LogError("Error in DB::LoadWorldContainer: [{}]", results.ErrorMessage());
         return;
     }
 
@@ -314,7 +314,7 @@ void ZoneDatabase::SaveWorldContainer(uint32 zone_id, uint32 parent_id, const EQ
                                         zone_id, parent_id, index, item_id, inst->GetCharges());
         auto results = QueryDatabase(query);
         if (!results.Success())
-            Log(Logs::General, Logs::Error, "Error in ZoneDatabase::SaveWorldContainer: %s", results.ErrorMessage().c_str());
+            LogError("Error in ZoneDatabase::SaveWorldContainer: [{}]", results.ErrorMessage());
 
     }
 
@@ -326,7 +326,7 @@ void ZoneDatabase::DeleteWorldContainer(uint32 parent_id, uint32 zone_id)
 	std::string query = StringFormat("DELETE FROM object_contents WHERE parentid = %i AND zoneid = %i", parent_id, zone_id);
     auto results = QueryDatabase(query);
 	if (!results.Success())
-		Log(Logs::General, Logs::Error, "Error in ZoneDatabase::DeleteWorldContainer: %s", results.ErrorMessage().c_str());
+		LogError("Error in ZoneDatabase::DeleteWorldContainer: [{}]", results.ErrorMessage());
 
 }
 
@@ -338,14 +338,14 @@ Trader_Struct* ZoneDatabase::LoadTraderItem(uint32 char_id)
 	std::string query = StringFormat("SELECT * FROM trader WHERE char_id = %i ORDER BY slot_id LIMIT 80", char_id);
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::Detail, Logs::Bazaar, "Failed to load trader information!\n");
+		LogBazaarDetail("Failed to load trader information!");
 		return loadti;
 	}
 
 	loadti->Code = BazaarTrader_ShowItems;
 	for (auto& row = results.begin(); row != results.end(); ++row) {
 		if (atoi(row[5]) >= 80 || atoi(row[4]) < 0) {
-			Log(Logs::Detail, Logs::Bazaar, "Bad Slot number when trying to load trader information!\n");
+			LogBazaarDetail("Bad Slot number when trying to load trader information!");
 			continue;
 		}
 
@@ -363,13 +363,13 @@ TraderCharges_Struct* ZoneDatabase::LoadTraderItemWithCharges(uint32 char_id)
 	std::string query = StringFormat("SELECT * FROM trader WHERE char_id=%i ORDER BY slot_id LIMIT 80", char_id);
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
-		Log(Logs::Detail, Logs::Bazaar, "Failed to load trader information!\n");
+		LogBazaarDetail("Failed to load trader information!");
 		return loadti;
 	}
 
 	for (auto& row = results.begin(); row != results.end(); ++row) {
 		if (atoi(row[5]) >= 80 || atoi(row[5]) < 0) {
-			Log(Logs::Detail, Logs::Bazaar, "Bad Slot number when trying to load trader information!\n");
+			LogBazaarDetail("Bad Slot number when trying to load trader information!");
 			continue;
 		}
 
@@ -389,7 +389,8 @@ EQ::ItemInstance* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int16 isloti
         return nullptr;
 
 	if (results.RowCount() == 0) {
-        Log(Logs::Detail, Logs::Bazaar, "LoadSingleTraderItem: No items found."); fflush(stdout);
+        LogBazaarDetail("LoadSingleTraderItem: No items found."); 
+		fflush(stdout);
         return nullptr;
     }
 
@@ -402,7 +403,7 @@ EQ::ItemInstance* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int16 isloti
     const EQ::ItemData *item = database.GetItem(ItemID);
 
 	if(!item) {
-		Log(Logs::Detail, Logs::Bazaar, "Unable to create item\n");
+		LogBazaarDetail("Unable to create item.");
 		fflush(stdout);
 		return nullptr;
 	}
@@ -412,7 +413,7 @@ EQ::ItemInstance* ZoneDatabase::LoadSingleTraderItem(uint32 CharID, int16 isloti
 
     EQ::ItemInstance* inst = database.CreateItem(item);
 	if(!inst) {
-		Log(Logs::Detail, Logs::Bazaar, "Unable to create item instance\n");
+		LogBazaarDetail("Unable to create item instance.");
 		fflush(stdout);
 		return nullptr;
 	}
@@ -449,25 +450,25 @@ void ZoneDatabase::SaveTraderItem(uint32 CharID, uint32 ItemID, int16 islotid, i
                                     CharID, ItemID, islotid, Charges, ItemCost, Slot);
     auto results = QueryDatabase(query);
     if (!results.Success())
-        Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to save trader item: %i for char_id: %i, the error was: %s\n", ItemID, CharID, results.ErrorMessage().c_str());
+        LogBazaarDetail("[CLIENT] Failed to save trader item: [{}] for char_id: [{}], the error was: [{}]", ItemID, CharID, results.ErrorMessage());
 
 }
 
 void ZoneDatabase::UpdateTraderItemCharges(int CharID, int16 SlotID, int32 Charges) {
-	Log(Logs::Detail, Logs::Bazaar, "ZoneDatabase::UpdateTraderItemCharges(%i, %i, %i)", CharID, SlotID, Charges);
+	LogBazaarDetail("ZoneDatabase::UpdateTraderItemCharges([{}], [{}], [{}])", CharID, SlotID, Charges);
 
 	std::string query = StringFormat("UPDATE trader SET charges = %i WHERE char_id = %i AND slot_id = %i",
                                     Charges, CharID, SlotID);
     auto results = QueryDatabase(query);
     if (!results.Success())
-		Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to update charges for trader item in inventory slot: %i for char_id: %i, the error was: %s\n",
-                                SlotID, CharID, results.ErrorMessage().c_str());
+		LogBazaarDetail("[CLIENT] Failed to update charges for trader item in inventory slot: [{}] for char_id: [{}], the error was: [{}]",
+                                SlotID, CharID, results.ErrorMessage());
 
 }
 
 void ZoneDatabase::UpdateTraderItemPrice(int CharID, uint32 ItemID, uint32 Charges, uint32 NewPrice) {
 
-	Log(Logs::Detail, Logs::Bazaar, "ZoneDatabase::UpdateTraderPrice(%i, %i, %i, %i)", CharID, ItemID, Charges, NewPrice);
+	LogBazaarDetail("ZoneDatabase::UpdateTraderPrice([{}], [{}], [{}], [{}])", CharID, ItemID, Charges, NewPrice);
 
 	const EQ::ItemData *item = database.GetItem(ItemID);
 
@@ -475,12 +476,12 @@ void ZoneDatabase::UpdateTraderItemPrice(int CharID, uint32 ItemID, uint32 Charg
 		return;
 
 	if(NewPrice == 0) {
-		Log(Logs::Detail, Logs::Bazaar, "Removing Trader items from the DB for CharID %i, ItemID %i", CharID, ItemID);
+		LogBazaarDetail("Removing Trader items from the DB for CharID [{}], ItemID [{}]", CharID, ItemID);
 
         std::string query = StringFormat("DELETE FROM trader WHERE char_id = %i AND item_id = %i",CharID, ItemID);
         auto results = QueryDatabase(query);
         if (!results.Success())
-			Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to remove trader item(s): %i for char_id: %i, the error was: %s\n", ItemID, CharID, results.ErrorMessage().c_str());
+			LogBazaarDetail("[CLIENT] Failed to remove trader item(s): [{}] for char_id: [{}], the error was: [{}]", ItemID, CharID, results.ErrorMessage());
 
 		return;
 	}
@@ -491,7 +492,7 @@ void ZoneDatabase::UpdateTraderItemPrice(int CharID, uint32 ItemID, uint32 Charg
                                         NewPrice, CharID, ItemID, Charges);
         auto results = QueryDatabase(query);
         if (!results.Success())
-            Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to update price for trader item: %i for char_id: %i, the error was: %s\n", ItemID, CharID, results.ErrorMessage().c_str());
+            LogBazaarDetail("[CLIENT] Failed to update price for trader item: [{}] for char_id: [{}], the error was: [{}]", ItemID, CharID, results.ErrorMessage().c_str());
 
         return;
     }
@@ -501,7 +502,7 @@ void ZoneDatabase::UpdateTraderItemPrice(int CharID, uint32 ItemID, uint32 Charg
                                     NewPrice, CharID, ItemID);
     auto results = QueryDatabase(query);
     if (!results.Success())
-            Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to update price for trader item: %i for char_id: %i, the error was: %s\n", ItemID, CharID, results.ErrorMessage().c_str());
+            LogBazaarDetail("[CLIENT] Failed to update price for trader item: [{}] for char_id: [{}], the error was: [{}]", ItemID, CharID, results.ErrorMessage().c_str());
 }
 
 void ZoneDatabase::DeleteTraderItem(uint32 char_id){
@@ -510,7 +511,7 @@ void ZoneDatabase::DeleteTraderItem(uint32 char_id){
         const std::string query = "DELETE FROM trader";
         auto results = QueryDatabase(query);
 		if (!results.Success())
-			Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to delete all trader items data, the error was: %s\n", results.ErrorMessage().c_str());
+			LogBazaarDetail("[CLIENT] Failed to delete all trader items data, the error was: [{}]", results.ErrorMessage().c_str());
 
         return;
 	}
@@ -518,7 +519,7 @@ void ZoneDatabase::DeleteTraderItem(uint32 char_id){
 	std::string query = StringFormat("DELETE FROM trader WHERE char_id = %i", char_id);
 	auto results = QueryDatabase(query);
     if (!results.Success())
-        Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to delete trader item data for char_id: %i, the error was: %s\n", char_id, results.ErrorMessage().c_str());
+        LogBazaarDetail("[CLIENT] Failed to delete trader item data for char_id: [{}], the error was: [{}]", char_id, results.ErrorMessage().c_str());
 
 }
 void ZoneDatabase::DeleteTraderItem(uint32 CharID,uint16 SlotID) {
@@ -526,7 +527,7 @@ void ZoneDatabase::DeleteTraderItem(uint32 CharID,uint16 SlotID) {
 	std::string query = StringFormat("DELETE FROM trader WHERE char_id = %i AND slot_id = %i", CharID, SlotID);
 	auto results = QueryDatabase(query);
 	if (!results.Success())
-		Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to delete trader item data for char_id: %i, the error was: %s\n",CharID, results.ErrorMessage().c_str());
+		LogBazaarDetail("[CLIENT] Failed to delete trader item data for char_id: [{}], the error was: [{}]",CharID, results.ErrorMessage().c_str());
 }
 
 void ZoneDatabase::IncreaseTraderSlot(uint32 CharID,uint16 SlotID) {
@@ -535,7 +536,7 @@ void ZoneDatabase::IncreaseTraderSlot(uint32 CharID,uint16 SlotID) {
 	std::string query = StringFormat("UPDATE trader set slot_id = %i WHERE char_id = %i AND slot_id = %i", newslot, CharID, SlotID);
 	auto results = QueryDatabase(query);
 	if (!results.Success())
-		Log(Logs::Detail, Logs::Bazaar, "[CLIENT] Failed to increase trader item slot for char_id: %i, the error was: %s\n",CharID, results.ErrorMessage().c_str());
+		LogBazaarDetail("[CLIENT] Failed to increase trader item slot for char_id: [{}], the error was: [{}]",CharID, results.ErrorMessage().c_str());
 }
 
 
@@ -825,7 +826,7 @@ bool ZoneDatabase::LoadCharacterBindPoint(uint32 character_id, PlayerProfile_Str
 
 bool ZoneDatabase::SaveCharacterLanguage(uint32 character_id, uint32 lang_id, uint32 value){
 	std::string query = StringFormat("REPLACE INTO `character_languages` (id, lang_id, value) VALUES (%u, %u, %u)", character_id, lang_id, value); QueryDatabase(query);
-	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterLanguage for character ID: %i, lang_id:%u value:%u done", character_id, lang_id, value);
+	LogCharacter("ZoneDatabase::SaveCharacterLanguage for character ID: [{}], lang_id:[{}] value:[{}] done", character_id, lang_id, value);
 	return true;
 }
 
@@ -878,7 +879,7 @@ void ZoneDatabase::SaveCharacterBinds(Client* c)
 
 bool ZoneDatabase::SaveCharacterSkill(uint32 character_id, uint32 skill_id, uint32 value){
 	std::string query = StringFormat("REPLACE INTO `character_skills` (id, skill_id, value) VALUES (%u, %u, %u)", character_id, skill_id, value); auto results = QueryDatabase(query);
-	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterSkill for character ID: %i, skill_id:%u value:%u done", character_id, skill_id, value);
+	LogCharacter("ZoneDatabase::SaveCharacterSkill for character ID: [{}], skill_id:[{}] value:[{}] done", character_id, skill_id, value);
 	return true;
 }
 
@@ -1069,7 +1070,7 @@ bool ZoneDatabase::SaveCharacterData(uint32 character_id, uint32 account_id, Pla
 		mail_key.c_str()
 	);
 	auto results = database.QueryDatabase(query);
-	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveCharacterData %i, done... Took %f seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);
+	LogCharacter("ZoneDatabase::SaveCharacterData [{}], done... Took [{}] seconds", character_id, ((float)(std::clock() - t)) / CLOCKS_PER_SEC);
 	return true;
 }
 
@@ -1105,7 +1106,7 @@ bool ZoneDatabase::SaveCharacterCurrency(uint32 character_id, PlayerProfile_Stru
 		pp->silver_cursor,
 		pp->copper_cursor);
 	auto results = database.QueryDatabase(query);
-	Log(Logs::General, Logs::Character, "Saving Currency for character ID: %i, done", character_id);
+	LogCharacter("Saving Currency for character ID: [{}], done", character_id);
 	return true;
 }
 
@@ -1114,7 +1115,7 @@ bool ZoneDatabase::SaveCharacterAA(uint32 character_id, uint32 aa_id, uint32 cur
 		" VALUES (%u, %u, %u)",
 		character_id, aa_id, current_level);
 	auto results = QueryDatabase(rquery);
-	Log(Logs::General, Logs::Character, "Saving AA for character ID: %u, aa_id: %u current_level: %u", character_id, aa_id, current_level);
+	LogCharacter("Saving AA for character ID: [{}], aa_id: [{}] current_level: [{}]", character_id, aa_id, current_level);
 	return true;
 }
 
@@ -1178,7 +1179,7 @@ bool ZoneDatabase::SaveCharacterConsent(char grantname[64], char ownername[64], 
 		std::string query = StringFormat("INSERT INTO `character_consent` (name, consenter_name, corpse_id) VALUES ('%s', '%s', %u)", escaped_gname.c_str(), escaped_oname.c_str(), corpse_id);
 		QueryDatabase(query);
 
-		Log(Logs::Detail, Logs::Corpse, "Adding %s (%u) to %s consent list...", ownername, corpse_id, grantname);
+		LogCorpseDetail("Adding [{}] ([{}]) to [{}] consent list...", ownername, corpse_id, grantname);
 		CharacterConsent cc;
 		cc.consenter = ownername;
 		cc.corpse_id = corpse_id;
@@ -1192,7 +1193,7 @@ bool ZoneDatabase::SaveAccountShowHelm(uint32 account_id, bool value)
 {
 	std::string query = StringFormat("UPDATE `character_data` SET showhelm = %d WHERE account_id = %u", value, account_id);
 	QueryDatabase(query);
-	Log(Logs::General, Logs::Character, "ZoneDatabase::SaveAccountShowHelm for Account ID: %u, value:%d done", account_id, value);
+	LogCharacter("ZoneDatabase::SaveAccountShowHelm for Account ID: [{}], value:[{}] done", account_id, value);
 	return true;
 }
 
@@ -1976,7 +1977,7 @@ int32 ZoneDatabase::GetBlockedSpellsCount(uint32 zoneid)
 
 bool ZoneDatabase::LoadBlockedSpells(int32 blockedSpellsCount, ZoneSpellsBlocked* into, uint32 zoneid)
 {
-	Log(Logs::General, Logs::Status, "Loading Blocked Spells from database...");
+	LogInfo("Loading Blocked Spells from database...");
 
 	std::string query = StringFormat("SELECT id, spellid, type, x, y, z, x_diff, y_diff, z_diff, message "
                                     "FROM blocked_spells WHERE zoneid = %d ORDER BY id ASC", zoneid);
@@ -2078,7 +2079,7 @@ void ZoneDatabase::CommandLogs(const char* char_name, const char* acct_name, flo
 			Strings::Escape(char_name).c_str(), acct_name, y, x, z, Strings::Escape(command).c_str(), Strings::Escape(targetType).c_str(), Strings::Escape(target).c_str(), tar_y, tar_x, tar_z, zone_id, zone_name, time);
 	auto log_results = QueryDatabase(query);
 	if (!log_results.Success())
-		Log(Logs::General, Logs::Error, "Error in CommandLogs query '%s': %s", query.c_str(), results.ErrorMessage().c_str());
+		LogError("Error in CommandLogs query '[{}]': [{}]", query.c_str(), results.ErrorMessage().c_str());
 }
 
 void ZoneDatabase::SaveBuffs(Client *client) {
@@ -2552,7 +2553,7 @@ bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race
 		fm->deity_mod = 0;
 	}
 
-	Log(Logs::Detail, Logs::Faction, "Race: %d BaseRace: %d UsedRace: %d RaceBit: %d Class: %d Deity: %d BaseMod: %i RaceMod: %d ClassMod: %d DeityMod: %d NeutralIllusion: %d PlayableRace: %d", 
+	LogFactionDetail("Race: [{}] BaseRace: [{}] UsedRace: [{}] RaceBit: [{}] Class: [{}] Deity: [{}] BaseMod: [{}] RaceMod: [{}] ClassMod: [{}] DeityMod: [{}] NeutralIllusion: [{}] PlayableRace: [{}]", 
 		race_mod, base_race, myRace, GetPlayerRaceBit(race_mod), class_mod, deity_mod, fm->base, fm->race_mod, fm->class_mod, fm->deity_mod, isNeutralIllusion, isPlayableRace);
 	return true;
 }
@@ -2985,7 +2986,7 @@ bool ZoneDatabase::UpdateCharacterCorpseBackup(uint32 db_id, uint32 char_id, con
 	);
 	auto results = QueryDatabase(query);
 	if (!results.Success()){
-		Log(Logs::Detail, Logs::Error, "UpdateCharacterCorpseBackup query '%s' %s", query.c_str(), results.ErrorMessage().c_str());
+		LogErrorDetail("UpdateCharacterCorpseBackup query '[{}]' [{}]", query.c_str(), results.ErrorMessage().c_str());
 		return false;
 	}
 
@@ -3220,7 +3221,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 	);
 	auto results = QueryDatabase(query); 
 	if (!results.Success()){
-		Log(Logs::Detail, Logs::Error, "Error inserting character_corpses_backup.");
+		LogErrorDetail("Error inserting character_corpses_backup.");
 		return false;
 	}
 
@@ -3249,7 +3250,7 @@ bool ZoneDatabase::SaveCharacterCorpseBackup(uint32 corpse_id, uint32 charid, co
 	}
 	auto sc_results = QueryDatabase(query); 
 	if (!sc_results.Success()){
-		Log(Logs::Detail, Logs::Error, "Error inserting character_corpse_items_backup.");
+		LogErrorDetail("Error inserting character_corpse_items_backup.");
 		return false;
 	}
 	return true;
@@ -3478,7 +3479,7 @@ Corpse* ZoneDatabase::SummonBuriedCharacterCorpses(uint32 char_id, uint32 dest_z
 			corpse->SetDecayTimer(corpse_decay);
 			corpse->Spawn();
 			if (!UnburyCharacterCorpse(corpse->GetCorpseDBID(), dest_zone_id, position))
-				Log(Logs::Detail, Logs::Error, "Unable to unbury a summoned player corpse for character id %u.", char_id);
+				LogErrorDetail("Unable to unbury a summoned player corpse for character id [{}].", char_id);
 		}
 	}
 
@@ -3563,7 +3564,7 @@ bool ZoneDatabase::SummonAllCharacterCorpses(uint32 char_id, uint32 dest_zone_id
 			++CorpseCount;
 		}
 		else{
-			Log(Logs::General, Logs::Error, "Unable to construct a player corpse for character id %u.", char_id);
+			LogError("Unable to construct a player corpse for character id [{}].", char_id);
 		}
 	}
 
@@ -3723,7 +3724,7 @@ bool ZoneDatabase::CopyBackupCorpse(uint32 corpse_id) {
 	std::string ci_query = StringFormat("REPLACE INTO `character_corpse_items` SELECT * from `character_corpse_items_backup` WHERE `corpse_id` = %d", corpse_id);
 	auto ci_results = QueryDatabase(ci_query);
 	if (!ci_results.Success()){ 
-		Log(Logs::Detail, Logs::Error, "CopyBackupCorpse() Error replacing items.");
+		LogErrorDetail("CopyBackupCorpse() Error replacing items.");
 	}
 
 	return true;
@@ -3901,10 +3902,10 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 		int16 use_slot = (i == EQ::invslot::CURSOR_QUEUE_BEGIN) ? EQ::invslot::slotCursor : i;
 		if (inst)
 		{
-			Log(Logs::Detail, Logs::Inventory, "SaveCursor: Attempting to save item %s for char %d in slot %d", inst->GetItem()->Name, char_id, use_slot);
+			LogInventoryDetail("SaveCursor: Attempting to save item [{}] for char [{}] in slot [{}]", inst->GetItem()->Name, char_id, use_slot);
 		}
 		else
-			Log(Logs::Detail, Logs::Inventory, "SaveCursor: No inst found. This is either an error, or we've reached the end of the list.");
+			LogInventoryDetail("SaveCursor: No inst found. This is either an error, or we've reached the end of the list.");
 
 		if (!SaveInventory(char_id, inst, use_slot)) 
 		{
@@ -3914,7 +3915,7 @@ bool ZoneDatabase::SaveCursor(Client* client, std::list<EQ::ItemInstance*>::cons
 		{
 			client->SendItemPacket(EQ::invslot::slotCursor, inst, ItemPacketSummonItem);
 			inst->SetCursorQueue(true);
-			Log(Logs::Detail, Logs::Inventory, "SaveCursor: Sending out ItemPacket for non-queued cursor item %s", inst->GetItem()->Name);
+			LogInventoryDetail("SaveCursor: Sending out ItemPacket for non-queued cursor item [{}]", inst->GetItem()->Name);
 		}
 	}
 	return true;

@@ -63,7 +63,6 @@ extern Zone                 *zone;
 extern volatile bool        is_zone_loaded;
 extern void                 Shutdown();
 extern WorldServer           worldserver;
-extern PetitionList          petition_list;
 extern uint32                numclients;
 extern QuestParserCollection *parse;
 extern QueryServ             *QServ;
@@ -601,7 +600,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		case ServerOP_ZonePlayer: {
 			ServerZonePlayer_Struct* szp = (ServerZonePlayer_Struct*) pack->pBuffer;
 			Client* client = entity_list.GetClientByName(szp->name);
-			Log(Logs::Detail, Logs::Status, "Zoning %s to %s(%u)\n", client != nullptr ? client->GetCleanName() : "Unknown", szp->zone, ZoneID(szp->zone));
+			LogInfo("Zoning [{}] to [{}]([{}])", client != nullptr ? client->GetCleanName() : "Unknown", szp->zone, ZoneID(szp->zone));
 			if (client != 0) {
 				if (strcasecmp(szp->adminname, szp->name) == 0)
 					client->Message(Chat::White, "Zoning to: %s", szp->zone);
@@ -733,10 +732,10 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			ServerPetitionUpdate_Struct* sus = (ServerPetitionUpdate_Struct*) pack->pBuffer;
 			// solar: this was typoed to = instead of ==, not that it acts any different now though..
 			if (sus->status == 0) {
-				petition_list.ReadDatabase();
+				PetitionList::Instance()->ReadDatabase();
 			}
 			else if (sus->status == 1) {
-				petition_list.ReadDatabase(); // Until I fix this to be better....
+				PetitionList::Instance()->ReadDatabase(); // Until I fix this to be better....
 			}
 
 			break;
@@ -762,7 +761,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
 					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
-					Log(Logs::Detail, Logs::Spells, "OP_RezzRequest in zone %s for %s, spellid:%i",
+					LogSpellsDetail("OP_RezzRequest in zone [{}] for [{}], spellid:[{}]",
 					zone->GetShortName(), client->GetName(), srs->rez.spellid);
 					auto outapp = new EQApplicationPacket(OP_RezzRequest,
 											      sizeof(Resurrect_Struct));
@@ -777,10 +776,10 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 				// to the zone that the corpse is in.
 				Corpse* corpse = entity_list.GetCorpseByName(srs->rez.corpse_name);
 				if (corpse && corpse->IsCorpse()) {
-					Log(Logs::Detail, Logs::Spells, "OP_RezzComplete received in zone %s for corpse %s",
+					LogSpellsDetail("OP_RezzComplete received in zone [{}] for corpse [{}]",
 								zone->GetShortName(), srs->rez.corpse_name);
 
-					Log(Logs::Detail, Logs::Spells, "Found corpse. Marking corpse as rezzed.");
+					LogSpellsDetail("Found corpse. Marking corpse as rezzed.");
 					corpse->CompleteResurrection();
 				}
 			}
@@ -806,7 +805,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 		}
 		case ServerOP_SyncWorldTime: {
 			if(zone != 0 && !zone->is_zone_time_localized) {
-				Log(Logs::Detail, Logs::ZoneServer, "%s Received Message SyncWorldTime", __FUNCTION__);
+				LogInfo("[{}] Received Message SyncWorldTime", __FUNCTION__);
 
 				eqTimeOfDay* newtime = (eqTimeOfDay*) pack->pBuffer;
 				zone->zone_time.SetCurrentEQTimeOfDay(newtime->start_eqtime, newtime->start_realtime);
@@ -1610,7 +1609,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 				NewCorpse->Spawn();
 			}
 			else {
-				Log(Logs::General, Logs::Error, "Unable to load player corpse id %u for zone %s.", s->player_corpse_id, zone->GetShortName());
+				LogError("Unable to load player corpse id [{}] for zone [{}].", s->player_corpse_id, zone->GetShortName());
 			}
 
 			break;
@@ -2015,7 +2014,7 @@ bool WorldServer::SendEmoteMessage(const char* to, uint32 to_guilddbid, int16 to
 
 bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 dbid, uint32 char_id, uint16 opcode)
 {
-	Log(Logs::Detail, Logs::Spells, "WorldServer::RezzPlayer rezzexp is %i (0 is normal for RezzComplete", rezzexp);
+	LogSpellsDetail("WorldServer::RezzPlayer rezzexp is [{}] (0 is normal for RezzComplete", rezzexp);
 	auto pack = new ServerPacket(ServerOP_RezzPlayer, sizeof(RezzPlayer_Struct));
 	RezzPlayer_Struct* sem = (RezzPlayer_Struct*) pack->pBuffer;
 	sem->rezzopcode = opcode;
@@ -2025,10 +2024,10 @@ bool WorldServer::RezzPlayer(EQApplicationPacket* rpack, uint32 rezzexp, uint32 
 	sem->corpse_character_id = char_id;
 	bool ret = SendPacket(pack);
 	if (ret) {
-		Log(Logs::Detail, Logs::Spells, "Sending player rezz packet to world spellid:%i", sem->rez.spellid);
+		LogSpellsDetail("Sending player rezz packet to world spellid:[{}]", sem->rez.spellid);
 	}
 	else {
-		Log(Logs::Detail, Logs::Spells, "NOT Sending player rezz packet to world");
+		LogSpellsDetail("NOT Sending player rezz packet to world");
 	}
 
 	safe_delete(pack);
@@ -2042,7 +2041,7 @@ uint32 WorldServer::NextGroupID() {
 	if(cur_groupid >= last_groupid) {
 		//this is an error... This means that 50 groups were created before
 		//1 packet could make the zone->world->zone trip... so let it error.
-		Log(Logs::General, Logs::Error, "Ran out of group IDs before the server sent us more.");
+		LogError("Ran out of group IDs before the server sent us more.");
 		return(0);
 	}
 	if(cur_groupid > (last_groupid - /*50*/995)) {
@@ -2051,7 +2050,7 @@ uint32 WorldServer::NextGroupID() {
 		SendPacket(pack);
 		safe_delete(pack);
 	}
-	Log(Logs::General, Logs::Group, "Handing out new group id %d", cur_groupid);
+	LogGroup("Handing out new group id [{}]", cur_groupid);
 	return(cur_groupid++);
 }
 
@@ -2152,7 +2151,7 @@ void WorldServer::ProcessReload(const ServerReload::Request &request)
 		break;
 
 	case ServerReload::Type::ContentFlags:
-		content_service.SetExpansionContext()->ReloadContentFlags();
+		WorldContentService::Instance()->SetExpansionContext()->ReloadContentFlags();
 		break;
 
 	case ServerReload::Type::Factions:
@@ -2168,7 +2167,7 @@ void WorldServer::ProcessReload(const ServerReload::Request &request)
 		LogSys.LoadLogDatabaseSettings();
 		// if QS process is enabled, we get settings from QS
 		if (!RuleB(Logging, PlayerEventsQSProcess)) {
-			player_event_logs.ReloadSettings();
+			PlayerEventLogs::Instance()->ReloadSettings();
 		}
 		break;
 
@@ -2196,7 +2195,7 @@ void WorldServer::ProcessReload(const ServerReload::Request &request)
 		break;
 
 	case ServerReload::Type::SkillCaps:
-		skill_caps.ReloadSkillCaps();
+		SkillCaps::Instance()->ReloadSkillCaps();
 		break;
 
 	case ServerReload::Type::StaticZoneData:
@@ -2250,7 +2249,7 @@ void WorldServer::ProcessReload(const ServerReload::Request &request)
 		break;
 
 	case ServerReload::Type::ZoneData:
-		zone_store.LoadZones(database);
+		ZoneStore::Instance()->LoadZones(database);
 		zone->LoadZoneCFG(zone->GetShortName());
 		break;
 

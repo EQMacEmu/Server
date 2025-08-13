@@ -43,11 +43,8 @@ Database::Database(std::string user, std::string pass, std::string host, std::st
 		errbuf
 	)
 		) {
-		Log(Logs::General, Logs::Error, "Failed to connect to database: Error: %s", errbuf);
+		LogError("Failed to connect to database: Error: [{}]", errbuf);
 		exit(1);
-	}
-	else {
-		Log(Logs::General, Logs::Status, "Using database '%s' at %s:%d", m_database, host, port);
 	}
 }
 

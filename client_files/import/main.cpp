@@ -29,9 +29,6 @@
 #include "../../common/path_manager.h"
 
 EQEmuLogSys LogSys;
-WorldContentService content_service;
-ZoneStore zone_store;
-PathManager path;
 
 void ImportSpells(SharedDatabase *db);
 void ImportSkillCaps(SharedDatabase *db);
@@ -41,7 +38,7 @@ int main(int argc, char **argv) {
 	LogSys.LoadLogSettingsDefaults();
 	set_exception_handler();
 
-	path.LoadPaths();
+	PathManager::Instance()->Init();
 
 	LogInfo("Client Files Import Utility");
 	if(!EQEmuConfig::LoadConfig()) {
@@ -52,16 +49,21 @@ int main(int argc, char **argv) {
 	auto Config = EQEmuConfig::get();
 
 	SharedDatabase database;
-	Log(Logs::General, Logs::Status, "Connecting to database...");
-	if(!database.Connect(Config->DatabaseHost.c_str(), Config->DatabaseUsername.c_str(),
-		Config->DatabasePassword.c_str(), Config->DatabaseDB.c_str(), Config->DatabasePort)) {
-		Log(Logs::General, Logs::Error, "Unable to connect to the database, cannot continue without a "
-			"database connection");
+
+	LogInfo("Connecting to database");
+	if (!database.Connect(
+		Config->DatabaseHost.c_str(),
+		Config->DatabaseUsername.c_str(),
+		Config->DatabasePassword.c_str(),
+		Config->DatabaseDB.c_str(),
+		Config->DatabasePort
+	)) {
+		LogError("Unable to connect to the database, cannot continue without a database connection");
 		return 1;
 	}
 
 	LogSys.SetDatabase(&database)
-		->SetLogPath(path.GetLogPath())
+		->SetLogPath(PathManager::Instance()->GetLogPath())
 		->LoadLogDatabaseSettings()
 		->StartFileLogs();
 
@@ -103,8 +105,8 @@ bool IsStringField(int i) {
 }
 
 void ImportSpells(SharedDatabase *db) {
-	Log(Logs::General, Logs::Status, "Importing Spells...");
-	std::string file = fmt::format("{}/import/spells_us.txt", path.GetServerPath());
+	LogInfo("Importing Spells");
+	std::string file = fmt::format("{}/import/spells_us.txt", PathManager::Instance()->GetServerPath());
 	FILE *f = fopen(file.c_str(), "r");
 	if(!f) {
 		LogError("Unable to open {} to read, skipping.", file);
@@ -180,21 +182,21 @@ void ImportSpells(SharedDatabase *db) {
 
 		spells_imported++;
 		if(spells_imported % 1000 == 0) {
-			Log(Logs::General, Logs::Status, "%d spells imported.", spells_imported);
+			LogInfo("[{}] spells imported", spells_imported);
 		}
 	}
 
 	if(spells_imported % 1000 != 0) {
-		Log(Logs::General, Logs::Status, "%d spells imported.", spells_imported);
+		LogInfo("[{}] spells imported", spells_imported);
 	}
 
 	fclose(f);
 }
 
 void ImportSkillCaps(SharedDatabase *db) {
-	Log(Logs::General, Logs::Status, "Importing Skill Caps...");
+	LogInfo("Importing Skill Caps");
 
-	std::string file = fmt::format("{}/import/SkillCaps.txt", path.GetServerPath());
+	std::string file = fmt::format("{}/import/SkillCaps.txt", PathManager::Instance()->GetServerPath());
 	FILE *f = fopen(file.c_str(), "r");
 	if(!f) {
 		LogError("Unable to open {} to read, skipping.", file);

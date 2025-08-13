@@ -7,10 +7,6 @@
 #include <list>
 #include "../zone/petitions.h"
 
-extern PetitionList petition_list;
-//extern GuildRanks_Struct guilds[512];
-//extern ZoneDatabase database;
-
 #define PBUFFER 50
 #define MBUFFER 50
 

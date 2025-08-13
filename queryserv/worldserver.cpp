@@ -25,7 +25,6 @@
 extern WorldServer            worldserver;
 extern const queryservconfig *Config;
 extern QSDatabase            qs_database;
-extern ZSList                zs_list;
 
 WorldServer::WorldServer()
 {
@@ -78,8 +77,8 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 			auto o = (ServerReload::Request *)p.Data();
 			if (o->type == ServerReload::Type::Logs) {
 				LogSys.LoadLogDatabaseSettings();
-				player_event_logs.ReloadSettings();
-				zs_list.SendPlayerEventLogSettings();
+				PlayerEventLogs::Instance()->ReloadSettings();
+				ZSList::Instance()->SendPlayerEventLogSettings();
 			}
 
 			break;

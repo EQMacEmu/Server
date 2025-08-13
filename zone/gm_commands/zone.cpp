@@ -29,7 +29,7 @@ void command_zone(Client *c, const Seperator *sep)
 		std::stoul(zone_identifier) :
 		ZoneID(zone_identifier)
 		);
-	auto zone_short_name =ZoneName(zone_id);
+	auto zone_short_name = ZoneName(zone_id);
 	if (!zone_id || !zone_short_name) {
 		c->Message(
 			Chat::White,

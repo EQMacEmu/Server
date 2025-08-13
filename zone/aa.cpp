@@ -223,7 +223,7 @@ void Client::ActivateAA(aaID aaid)
 				spells[caa->spell_id].targettype == ST_AECaster ||
 				spells[caa->spell_id].targettype == ST_TargetOptional))
 			{
-				Log(Logs::Detail, Logs::AA, "AA Spell %d auto-targeted the caster. Group? %d, target type %d", caa->spell_id, IsGroupSpell(caa->spell_id), spells[caa->spell_id].targettype);
+				LogAA("AA Spell [{}] does not require a target. Group? [{}]", caa->spell_id, IsGroupSpell(caa->spell_id) ? "Yes" : "No");
 				target_id = GetID();
 			}
 			break;
@@ -285,8 +285,6 @@ void Client::ActivateAA(aaID aaid)
 	// note that an aa can have a non-spell action AND a spell_id handled below (only Frenzied Burnout)
 	if (caa->action != aaActionNone)
 	{
-		Log(Logs::General, Logs::AA, "Handling non-spell AA action %d for aa %d", caa->action, aaid);
-
 		// Fading Memories has 900 nonspell_mana in the database, that is the only ability that uses this logic
 		if (caa->mana_cost > 0)
 		{
@@ -349,7 +347,7 @@ void Client::ActivateAA(aaID aaid)
 			break;
 
 		default:
-			Log(Logs::General, Logs::Error, "Unknown AA nonspell action type %d", caa->action);
+			LogError("Unknown AA nonspell");
 			break;
 		}
 	}
@@ -357,12 +355,14 @@ void Client::ActivateAA(aaID aaid)
 	//cast the spell, if we have one
 	if (IsValidSpell(spell_id))
 	{
-		Log(Logs::General, Logs::AA, "Casting spell %d for AA %d", spell_id, aaid);
+
 		if (casting_aa != 0)
 		{
 			LogAA("casting_aa is not 0. Either we are currently casting another ability, or we didn't clear the value somewhere!");
 		}
 		casting_aa = aaid;
+		LogAA("Casting spell [{}] for AA [{}]", spell_id, casting_aa);
+
 
 		if (spell_id != SPELL_AA_BOASTFUL_BELLOW) // special case - this AA ability did not break invis on AK
 		{
