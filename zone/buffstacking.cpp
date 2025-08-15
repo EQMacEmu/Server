@@ -825,7 +825,7 @@ int Mob::FindAffectSlot_PatchV1(Mob *caster, uint16 spell_id, int *result_slotnu
 			{
 				if (spellbonuses.Screech + new_spelldata->base[effect_slot] >= 0)
 				{
-					Message_StringID(Chat::SpellFailure, SCREECH_BUFF_BLOCK, new_spelldata->name);
+					Message_StringID(Chat::SpellFailure, StringID::SCREECH_BUFF_BLOCK, new_spelldata->name);
 					return 0;
 				}
 			}
