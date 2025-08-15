@@ -185,9 +185,10 @@ EQApplicationPacket* ServerManager::CreateServerListPacket(Client* c)
 
 		ServerListServerFlags_Struct* slsf = (ServerListServerFlags_Struct*)data_ptr;
 		slsf->greenname = 0;
-		if (server.db->GetWorldPreferredStatus((*iter)->GetServerId())) {
-			slsf->greenname = 1;
-		}
+		// this doesn't work atm
+		//if (server.db->GetWorldPreferredStatus((*iter)->GetServerId())) {
+		//	slsf->greenname = 1;
+		//}
 		slsf->flags = 0x1;
 		slsf->worldid = (*iter)->GetServerId();
 		slsf->usercount = (*iter)->GetStatus();
