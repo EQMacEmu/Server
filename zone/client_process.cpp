@@ -488,11 +488,6 @@ bool Client::Process() {
 			DoManaRegen();
 			BuffProcess();
 
-			if (fishing_timer.Check()) 
-			{
-				GoFish();
-			}
-
 			if (autosave_timer.Check()) 
 			{
 				Save(0);
@@ -513,6 +508,11 @@ bool Client::Process() {
 			{
 				ItemTimerCheck();
 			}
+		}
+
+		if (fishing_timer.Enabled())
+		{
+			GoFish();
 		}
 
 		if (apperance_timer.Check())

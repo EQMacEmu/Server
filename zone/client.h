@@ -782,6 +782,7 @@ public:
 	void LoadZoneFlags(LinkedList<ZoneFlags_Struct*>* ZoneFlags);
 
 	bool CanFish();
+	bool TryFishing();
 	void GoFish(bool guarantee = false, bool use_bait = true);
 	void ForageItem(bool guarantee = false);
 	//Calculate vendor price modifier based on CHA: (reverse==merchant buying)
@@ -1327,6 +1328,7 @@ private:
 	Timer ranged_attack_leeway_timer;
 	uint32 feigned_time; // GetCurrentTime() when feigned
 	int8 last_fatigue;
+	glm::vec3 fishingStartPosition;
 };
 
 #endif

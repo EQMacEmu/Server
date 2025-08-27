@@ -358,6 +358,7 @@ Client::Client(EQStreamInterface* ieqs) : Mob(
 	wake_corpse_id = 0;
 	ranged_attack_leeway_timer.Disable();
 	last_fatigue = 0;
+	fishingStartPosition = glm::vec3(0.0f);
 }
 
 Client::~Client() {

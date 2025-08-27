@@ -205,8 +205,10 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 
 	if(GetLevel() >= item->RecLevel) {
 		newbon->AC += item->AC;
-		newbon->HP += item->HP;
-		newbon->Mana += item->Mana;
+		if (item->ItemType != EQ::item::ItemTypeDrink) // hp stat isn't added from drink
+			newbon->HP += item->HP;
+		if(item->ItemType != EQ::item::ItemTypeFood && item->ItemType != EQ::item::ItemTypeDrink) // mana stat isn't added from food/drink
+			newbon->Mana += item->Mana;
 		newbon->STR += (item->AStr);
 		newbon->STA += (item->ASta);
 		newbon->DEX += (item->ADex);
@@ -226,8 +228,10 @@ void Client::AddItemBonuses(const EQ::ItemInstance *inst, StatBonuses* newbon) {
 		int reclvl = item->RecLevel;
 
 		newbon->AC += CalcRecommendedLevelBonus( lvl, reclvl, item->AC );
-		newbon->HP += CalcRecommendedLevelBonus( lvl, reclvl, item->HP );
-		newbon->Mana += CalcRecommendedLevelBonus( lvl, reclvl, item->Mana );
+		if (item->ItemType != EQ::item::ItemTypeDrink) // hp stat isn't added from drink
+			newbon->HP += CalcRecommendedLevelBonus( lvl, reclvl, item->HP );
+		if (item->ItemType != EQ::item::ItemTypeFood && item->ItemType != EQ::item::ItemTypeDrink) // mana stat isn't added from food/drink
+			newbon->Mana += CalcRecommendedLevelBonus( lvl, reclvl, item->Mana );
 		newbon->STR += CalcRecommendedLevelBonus( lvl, reclvl, (item->AStr) );
 		newbon->STA += CalcRecommendedLevelBonus( lvl, reclvl, (item->ASta) );
 		newbon->DEX += CalcRecommendedLevelBonus( lvl, reclvl, (item->ADex) );

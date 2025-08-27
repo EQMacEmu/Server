@@ -849,58 +849,21 @@ int32 Client::CalcMaxMana()
 
 int32 Client::CalcBaseMana()
 {
-	int WisInt = 0;
-	int MindLesserFactor, MindFactor;
-	int32 max_m = 0;
-	int wisint_mana = 0;
-	int base_mana = 0;
-	int ConvertedWisInt = 0;
-	switch(GetCasterClass()) {
-		case 'I':
-			WisInt = GetINT();
+	if (GetCasterClass() == 'N')
+		return 0;
 
-				if((( WisInt - 199 ) / 2) > 0)
-					MindLesserFactor = ( WisInt - 199 ) / 2;
-				else
-					MindLesserFactor = 0;
+	int32 prime_stat_value = GetCasterClass() == 'W' ? GetWIS() : GetINT();
+	int16 level_factor = 15 * GetLevel();
+	int32 stat_factor = prime_stat_value;
+	
+	if (prime_stat_value > 200)
+		stat_factor = (prime_stat_value - 200) / 2 + 200; // stat over 200 only counts for half as much mana
+	if (stat_factor - 100 > 0) // stat over 100 has more benefit
+		stat_factor += 3 * (stat_factor - 100) / 2;
+	
+	int32 base_mana = stat_factor * level_factor / 200 + level_factor;
 
-				MindFactor = WisInt - MindLesserFactor;
-				if(WisInt > 100)
-					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-				else
-					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			break;
-
-		case 'W':
-			WisInt = GetWIS();
-
-
-				if((( WisInt - 199 ) / 2) > 0)
-					MindLesserFactor = ( WisInt - 199 ) / 2;
-				else
-					MindLesserFactor = 0;
-
-				MindFactor = WisInt - MindLesserFactor;
-				if(WisInt > 100)
-					max_m = (((5 * (MindFactor + 20)) / 2) * 3 * GetLevel() / 40);
-				else
-					max_m = (((5 * (MindFactor + 200)) / 2) * 3 * GetLevel() / 100);
-			break;
-
-		case 'N': {
-			max_m = 0;
-			break;
-		}
-		default: {
-			LogSpells("Invalid Class '[{}]' in CalcMaxMana", GetCasterClass());
-			max_m = 0;
-			break;
-		}
-	}
-
-	LogSpells("Client::CalcBaseMana() called for [{}] - returning [{}]", GetName(), max_m);
-
-	return max_m;
+	return base_mana;
 }
 
 int32 Client::CalcManaRegen(bool meditate)

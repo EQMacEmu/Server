@@ -155,13 +155,43 @@ uint32 ZoneDatabase::GetZoneFishing(uint32 ZoneID, uint8 skill)
     }
 
     uint8 index = 0;
-    for (auto row = results.begin(); row != results.end(); ++row, ++index) {
+
+	// these items seem to be available in every zone.  note that the junk items here can also be earned on a critical failure outcome.
+	// the chances might not be a real thing on live eq, maybe every item has the same chance, this part is not verified
+	item[index] = 13019; // Fresh Fish
+	chance[index] = 100 + chancepool;
+	chancepool = chance[index];
+	index++;
+
+	item[index] = 13076; // Fish Scales
+	chance[index] = 100 + chancepool;
+	chancepool = chance[index];
+	index++;
+
+	item[index] = 7007; // Rusty Dagger
+	chance[index] = 100 + chancepool;
+	chancepool = chance[index];
+	index++;
+
+	item[index] = 1038; // Tattered Cloth Sandal
+	chance[index] = 100 + chancepool;
+	chancepool = chance[index];
+	index++;
+
+    for (auto row = results.begin(); row != results.end(); ++row) {
         if (index >= 50)
             break;
 
-        item[index] = atoi(row[0]);
-        chance[index] = atoi(row[1])+chancepool;
+		int item_id = atoi(row[0]);
+
+		if (item_id == 13019 || item_id == 13076 || item_id == 7007 || item_id == 1038) // don't double up on the junk if it's in the database
+			continue;
+
+        item[index] = item_id;
+        //chance[index] = atoi(row[1])+chancepool; // i think this variable chance might be made up so taking it out for now and weighting things equally
+		chance[index] = 100 + chancepool;
 		chancepool = chance[index];
+		index++;
     }
 
 	if (index <= 0)
@@ -285,165 +315,184 @@ bool Client::CanFish() {
 	return true;
 }
 
+bool Client::TryFishing()
+{
+	if (!p_timers.Expired(&database, pTimerFishing, false)) {
+		LogError("Ability recovery time not yet met.");
+		return false;
+	}
+
+	if (CanFish())
+	{
+		fishingStartPosition = GetPosition();
+		p_timers.Start(pTimerFishing, FishingReuseTime - 1);
+		fishing_timer.Start(11000);
+		parse->EventPlayer(EVENT_FISH_START, this, "", 0);
+
+		return true;
+	}
+
+	return false;
+}
+
 void Client::GoFish(bool guarantee, bool use_bait)
 {
-
-	fishing_timer.Disable();
-
-	//we're doing this a second time (1st in Client::Handle_OP_Fishing) to make sure that, between when we started fishing & now, we're still able to fish (in case we move, change equip, etc)
-	if (!CanFish())	//if we can't fish here, we don't need to bother with the rest
-		return;
-
-	//multiple entries yeilds higher probability of dropping...
-	uint32 common_fish_ids[MAX_COMMON_FISH_IDS] = {
-		1038, // Tattered Cloth Sandals
-		1038, // Tattered Cloth Sandals
-		1038, // Tattered Cloth Sandals
-		13019, // Fresh Fish
-		13076, // Fish Scales
-		13076, // Fish Scales
-		7007, // Rusty Dagger
-		7007, // Rusty Dagger
-		7007 // Rusty Dagger
-
-	};
-
-	//success formula is not researched at all
-
-	int fishing_skill = GetSkill(EQ::skills::SkillFishing);	//will take into account skill bonuses on pole & bait
-	uint16 fishing_mod = 0;
-
-	//make sure we still have a fishing pole on:
-	int32 bslot = m_inv.HasItemByUse(EQ::item::ItemTypeFishingBait, 1, invWhereWorn|invWherePersonal);
-	const EQ::ItemInstance* Bait = nullptr;
-	if (bslot != INVALID_INDEX)
-		Bait = m_inv.GetItem(bslot);
-
-	//if the bait isnt equipped, need to add its skill bonus
-	if(bslot >= EQ::invslot::GENERAL_BEGIN && Bait != nullptr && Bait->GetItem()->SkillModType == EQ::skills::SkillFishing) {
-		fishing_skill += fishing_skill * (Bait->GetItem()->SkillModValue/100);
-
-		if (fishing_skill > HARD_SKILL_CAP)
-		{
-			fishing_skill = HARD_SKILL_CAP;
-		}
+	if (fishingStartPosition != glm::vec3(GetPosition())) {
+		fishing_timer.Disable();
+		fishingStartPosition = glm::vec3(0.0f);
+		Message_StringID(Chat::Skills, StringID::FISHING_STOP);
 	}
 
-	if (fishing_skill > 100)
-		fishing_mod = 100 + ((fishing_skill - 100) / 2);
-	else
-		fishing_mod = fishing_skill;
+	if (fishing_timer.Check()) {
+		fishing_timer.Disable();
+		fishingStartPosition = glm::vec3(0.0f);
 
-	uint8 success = SKILLUP_FAILURE;
-	if (guarantee || zone->random.Int(0,175) < fishing_mod) {
-		uint32 food_id = 0;
-
-		if (zone->random.Int(0, 299) <= fishing_mod)
-		{
-			food_id = database.GetZoneFishing(m_pp.zone_id, fishing_skill);
+		//we're doing this a second time (1st in Client::Handle_OP_Fishing) to make sure that, between when we started fishing & now, we're still able to fish (in case we move, change equip, etc)
+		if (!CanFish()) {	//if we can't fish here, we don't need to bother with the rest
+			return;
 		}
 
-		if (use_bait) {
-			//consume bait, should we always consume bait on success?
-			DeleteItemInInventory(bslot, 1, true);    //do we need client update?
+		int fishing_skill = GetSkill(EQ::skills::SkillFishing);	//will take into account skill bonuses on pole & bait
+
+		//make sure we still have a fishing pole on:
+		int32 bslot = m_inv.HasItemByUse(EQ::item::ItemTypeFishingBait, 1, invWhereWorn | invWherePersonal);
+		const EQ::ItemInstance *Bait = nullptr;
+		if (bslot != INVALID_INDEX) {
+			Bait = m_inv.GetItem(bslot);
 		}
 
-		if(food_id == 0) {
-			int index = zone->random.Int(0, MAX_COMMON_FISH_IDS-1);
-			food_id = common_fish_ids[index];
-		}
+		//if the bait isnt equipped, need to add its skill bonus
+		if (bslot >= EQ::invslot::GENERAL_BEGIN && Bait != nullptr && Bait->GetItem()->SkillModType == EQ::skills::SkillFishing) {
+			fishing_skill += fishing_skill * (Bait->GetItem()->SkillModValue / 100);
 
-		const EQ::ItemData* food_item = database.GetItem(food_id);
-
-		EQ::ItemInstance* inst = database.CreateItem(food_item, 1);
-		if(inst != nullptr) {
-			if(CheckLoreConflict(inst->GetItem()))
-			{
-				Message_StringID(Chat::White, StringID::DUP_LORE);
-				safe_delete(inst);
-			}
-			else
-			{
-				if (food_item->ItemType == EQ::item::ItemTypeFood)
-				{
-					Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS, food_item->Name);
-				}
-				else
-				{
-					Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS_SOMETHING);
-				}
-
-				PushItemOnCursorWithoutQueue(inst);
-
-				safe_delete(inst);
-				inst = m_inv.GetItem(EQ::invslot::slotCursor);
-				success = SKILLUP_SUCCESS;
-			}
-
-			CheckItemDiscoverability(inst->GetID());
-
-			if(inst) {
-				if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::FISH_SUCCESS)) {
-					auto e = PlayerEvent::FishSuccessEvent{
-						.item_id   = inst->GetItem()->ID,
-						.item_name = inst->GetItem()->Name,
-					};
-
-					RecordPlayerEventLog(PlayerEvent::FISH_SUCCESS, e);
-				}
-
-				if (parse->PlayerHasQuestSub(EVENT_FISH_SUCCESS)) {
-					std::vector<std::any> args = { inst };
-					parse->EventPlayer(EVENT_FISH_SUCCESS, this, "", inst->GetID(), &args);
-				}
-			}
-		}
-	}
-	else
-	{
-		//chance to use bait when you dont catch anything...
-		if (zone->random.Int(0, 4) == 1) 
-		{
-			DeleteItemInInventory(bslot, 1, true);
-			Message_StringID(Chat::Skills, StringID::FISHING_LOST_BAIT);	//You lost your bait!
-		} 
-		else 
-		{
-			bool spilled_beer = false;
-			if (zone->random.Int(0, 15) == 1)	//give about a 1 in 15 chance to spill your beer.
-			{
-				if (SpillBeer())
-				{
-					Message_StringID(Chat::Skills, StringID::FISHING_SPILL_BEER);	//You spill your beer while bringing in your line.
-					spilled_beer = true;
-				}
-			}
-			
-			if (!spilled_beer)
-			{
-				Message_StringID(Chat::Skills, StringID::FISHING_FAILED);	//You didn't catch anything.
+			if (fishing_skill > HARD_SKILL_CAP){
+				fishing_skill = HARD_SKILL_CAP;
 			}
 		}
 
-		RecordPlayerEventLog(PlayerEvent::FISH_FAILURE, PlayerEvent::EmptyEvent{});
-		if (parse->PlayerHasQuestSub(EVENT_FISH_FAILURE)) {
-			parse->EventPlayer(EVENT_FISH_FAILURE, this, "", 0);
+		// determine the outcome of the fishing event - this logic was taken from a beta client.  
+		// it may not be era accurate but this fishing code is no longer present in the eqmac client so can't verify.
+		int skillFactor = fishing_skill + zone->random.Int(20, 50);
+		int roll260 = zone->random.Int(1, 260);
+		int resultingEvent; // the random outcome of the fishing event
+		if (roll260 > skillFactor) {
+			if (roll260 <= 235) {
+				if (roll260 > 225 || roll260 - skillFactor > 200) {
+					resultingEvent = 3; // "You lost your bait!"
+				}
+				else {
+					resultingEvent = 2; // "You didn't catch anything."
+				}
+			}
+			else {
+				resultingEvent = 5; // critical failure, pole can break
+			}
 		}
-	}
+		else {
+			resultingEvent = 4; // success
+		}
 
-	//chance to break fishing pole...
-	uint16 break_chance = 49;
-	if(fishing_skill > 49)
-		break_chance = fishing_skill;
-	if (zone->random.Int(0, break_chance) == 1) {
-		Message_StringID(Chat::Skills, StringID::FISHING_POLE_BROKE);	//Your fishing pole broke!
-		DeleteItemInInventory(EQ::invslot::slotPrimary, 0, true);
-	}
+		if (guarantee) {
+			resultingEvent = 4;
+		}
 
-	if(CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()]), success)
-	{
-		if(title_manager.IsNewTradeSkillTitleAvailable(EQ::skills::SkillFishing, GetRawSkill(EQ::skills::SkillFishing)))
-			NotifyNewTitlesAvailable();
+		switch (resultingEvent) {
+			case 2: { // "You didn't catch anything."
+				Message_StringID(Chat::Skills, StringID::FISHING_FAILED);
+				CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()], SKILLUP_FAILURE);
+				parse->EventPlayer(EVENT_FISH_FAILURE, this, "", 0);
+				break;
+			}
+
+			case 3: { // "You lost your bait!"
+				Message_StringID(Chat::Skills, StringID::FISHING_LOST_BAIT);
+				if (use_bait) {
+					DeleteItemInInventory(bslot, 1, true);
+				}
+				CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()], SKILLUP_SUCCESS);
+				parse->EventPlayer(EVENT_FISH_FAILURE, this, "", 0);
+				break;
+			}
+
+			case 4: { // successful catch - uses up bait
+				CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()], SKILLUP_SUCCESS);
+				if (use_bait) {
+					DeleteItemInInventory(bslot, 1, true);
+				}
+
+				// get an item id from the database
+				uint32 caught_item_id = database.GetZoneFishing(m_pp.zone_id, 999); // the minimum skill thing looks like it's for custom behavior so taking it out for now
+				if (caught_item_id == 0) {
+					caught_item_id = 13019; // Fresh Fish
+				}
+
+				const EQ::ItemData *caught_item = database.GetItem(caught_item_id);
+
+				EQ::ItemInstance *inst = database.CreateItem(caught_item, 1);
+				if (inst != nullptr) {
+					if (CheckLoreConflict(inst->GetItem())) {
+						Message_StringID(Chat::White, StringID::DUP_LORE);
+						safe_delete(inst);
+					}
+					else {
+						Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS, caught_item->Name);
+						PushItemOnCursorWithoutQueue(inst);
+						safe_delete(inst);
+						inst = m_inv.GetItem(EQ::invslot::slotCursor);
+					}
+
+					if (inst) {
+						if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::FISH_SUCCESS)) {
+							auto e = PlayerEvent::FishSuccessEvent{
+								.item_id = inst->GetItem()->ID,
+								.item_name = inst->GetItem()->Name,
+							};
+
+							RecordPlayerEventLog(PlayerEvent::FISH_SUCCESS, e);
+						}
+
+						if (parse->PlayerHasQuestSub(EVENT_FISH_SUCCESS)) {
+							std::vector<std::any> args = { inst };
+							parse->EventPlayer(EVENT_FISH_SUCCESS, this, "", inst->GetID(), &args);
+						}
+					}
+					else {
+						RecordPlayerEventLog(PlayerEvent::FISH_FAILURE, PlayerEvent::EmptyEvent{});
+						if (parse->PlayerHasQuestSub(EVENT_FISH_FAILURE)) {
+							parse->EventPlayer(EVENT_FISH_FAILURE, this, "", 0);
+						}
+					}
+				}
+				break;
+			}
+
+			case 5: { // critical failure - can break fishing pole
+				int roll100 = zone->random.Int(1, 100);
+				if (roll100 <= 98) {
+					if (roll100 > 80) {
+						Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS_SOMETHING);
+						SummonItem(13076, 1); // Fish Scales 
+					} 
+					else if (roll100 > 70) {
+						Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS_SOMETHING);
+						SummonItem(7007, 1); // Rusty Dagger
+					}
+					else if (roll100 > 60) {
+						Message_StringID(Chat::Skills, StringID::FISHING_SUCCESS_SOMETHING);
+						SummonItem(1038, 1); // Tattered Cloth Sandal
+					}
+					else {
+						Message_StringID(Chat::Skills, StringID::FISHING_SPILL_BEER);
+					}
+				}
+				else {
+					Message_StringID(Chat::Skills, StringID::FISHING_POLE_BROKE);
+					DeleteItemInInventory(EQ::invslot::slotPrimary, 0, true);
+				}
+				CheckIncreaseSkill(EQ::skills::SkillFishing, nullptr, zone->skill_difficulty[EQ::skills::SkillFishing].difficulty[GetClass()], SKILLUP_SUCCESS);
+				break;
+			}
+		}
 	}
 }
 
