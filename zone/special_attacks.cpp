@@ -147,7 +147,7 @@ void Mob::TryBashKickStun(Mob* defender, uint8 skill)
 			stun_resist = defender->aabonuses.StunResist;						// Stalwart Endurance AA
 		}
 
-		if (defender->GetBaseRace() == OGRE && !BehindMob(defender, GetX(), GetY()))		// should this work if the ogre is illusioned?
+		if (defender->GetBaseRace() == Race::Ogre && !BehindMob(defender, GetX(), GetY()))		// should this work if the ogre is illusioned?
 		{
 			LogCombatDetail("Frontal stun resisted because, Ogre.");
 		}
@@ -403,9 +403,9 @@ bool Client::HasRacialAbility(const CombatAbility_Struct* ca_atk)
 
 		switch (GetRace())
 		{
-		case OGRE:
-		case TROLL:
-		case BARBARIAN:
+		case Race::Ogre:
+		case Race::Troll:
+		case Race::Barbarian:
 			return  true;
 		default:
 			break;

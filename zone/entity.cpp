@@ -51,8 +51,6 @@ extern volatile bool is_zone_loaded;
 extern WorldServer worldserver;
 extern uint32 numclients;
 
-extern char errorname[32];
-
 Entity::Entity()
 {
 	id = 0;
@@ -4919,7 +4917,7 @@ void EntityList::GetBoatInfo(Client* client)
 	auto it = mob_list.begin();
 	while (it != mob_list.end()) {
 		// We don't want to include player controlled boats.
-		if (it->second->IsNPC() && (it->second->GetBaseRace() == SHIP || it->second->GetBaseRace() == LAUNCH || it->second->GetBaseRace() == GHOST_SHIP))
+		if (it->second->IsNPC() && (it->second->GetBaseRace() == Race::Ship || it->second->GetBaseRace() == Race::Launch || it->second->GetBaseRace() == Race::GhostShip))
 		{
 			// Have to use NPCID, because the EntityID will change when the player zones.
 			uint8 passengers = GetClientCountByBoatNPCID(it->second->GetNPCTypeID());

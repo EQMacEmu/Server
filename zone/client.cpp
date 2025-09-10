@@ -2173,37 +2173,37 @@ bool Client::CanHaveSkill(EQ::skills::SkillType skill_id) const
 	{
 		if (skill_id == EQ::skills::SkillHide)
 		{
-			if(GetBaseRace() == DARK_ELF || GetBaseRace() == HALFLING || GetBaseRace() == WOOD_ELF)
+			if(GetBaseRace() == Race::DarkElf || GetBaseRace() == Race::Halfling || GetBaseRace() == Race::WoodElf)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillSneak)
 		{
-			if (GetBaseRace() == VAHSHIR || GetBaseRace() == HALFLING)
+			if (GetBaseRace() == Race::VahShir || GetBaseRace() == Race::Halfling)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillForage)
 		{
-			if (GetBaseRace() == WOOD_ELF || GetBaseRace() == IKSAR)
+			if (GetBaseRace() == Race::WoodElf || GetBaseRace() == Race::Iksar)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillSwimming)
 		{
-			if (GetBaseRace() == IKSAR)
+			if (GetBaseRace() == Race::Iksar)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillSenseHeading)
 		{
-			if (GetBaseRace() == DWARF)
+			if (GetBaseRace() == Race::Dwarf)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillTinkering)
 		{
-			if (GetBaseRace() == GNOME)
+			if (GetBaseRace() == Race::Gnome)
 				return true;
 		}
 		else if (skill_id == EQ::skills::SkillSafeFall)
 		{
-			if (GetBaseRace() == VAHSHIR)
+			if (GetBaseRace() == Race::VahShir)
 				return true;
 		}
 	}
@@ -2220,32 +2220,32 @@ uint16 Client::MaxSkill(EQ::skills::SkillType skill_id, uint8 class_id, uint8 le
 	if (value < 50)
 	{
 		if (skill_id == EQ::skills::SkillHide) {
-			if (GetBaseRace() == DARK_ELF || GetBaseRace() == HALFLING || GetBaseRace() == WOOD_ELF)
+			if (GetBaseRace() == Race::DarkElf || GetBaseRace() == Race::Halfling || GetBaseRace() == Race::WoodElf)
 				return 50;
 		}
 		else if (skill_id == EQ::skills::SkillSneak)
 		{
-			if (GetBaseRace() == VAHSHIR || GetBaseRace() == HALFLING)
+			if (GetBaseRace() == Race::VahShir || GetBaseRace() == Race::Halfling)
 				return 50;
 		}
 		else if (skill_id == EQ::skills::SkillForage)
 		{
-			if (GetBaseRace() == WOOD_ELF || GetBaseRace() == IKSAR)
+			if (GetBaseRace() == Race::WoodElf || GetBaseRace() == Race::Iksar)
 				return 50;
 		}
 		else if (skill_id == EQ::skills::SkillSenseHeading)
 		{
-			if (GetBaseRace() == DWARF)
+			if (GetBaseRace() == Race::Dwarf)
 				return 50;
 		}
 		else if (skill_id == EQ::skills::SkillTinkering)
 		{
-			if (GetBaseRace() == GNOME)
+			if (GetBaseRace() == Race::Gnome)
 				return 50;
 		}
 		else if (skill_id == EQ::skills::SkillSafeFall)
 		{
-			if (GetBaseRace() == VAHSHIR)
+			if (GetBaseRace() == Race::VahShir)
 				return 50;
 		}
 	}
@@ -2253,7 +2253,7 @@ uint16 Client::MaxSkill(EQ::skills::SkillType skill_id, uint8 class_id, uint8 le
 	{
 		if (skill_id == EQ::skills::SkillSwimming)
 		{
-			if (GetBaseRace() == IKSAR)
+			if (GetBaseRace() == Race::Iksar)
 				return 100;
 		}
 	}

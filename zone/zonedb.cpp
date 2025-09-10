@@ -2475,8 +2475,8 @@ bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race
 		return false;
 	}
 
-	bool isPlayableRace = GetPlayerRaceBit(race_mod) & PLAYER_RACE_ALL_MASK;
-	bool isNeutralIllusion = race_mod == MINOR_ILLUSION || race_mod == TREEFORM;
+	bool isPlayableRace = GetPlayerRaceBit(race_mod) & RaceBitmask::All;
+	bool isNeutralIllusion = race_mod == Race::MinorIllusion || race_mod == Race::Tree;
 
 	// skip_illusions will allow the faction to see through ALL illusions
 	// see_illusion only allows them to see non playable race illusions
@@ -2511,11 +2511,11 @@ bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race
 		char str[32];
 		sprintf(str, "r%u", myRace);
 
-		if(myRace == WOLF)
+		if(myRace == Race::Wolf)
 		{
 			sprintf(str, "r%um%u", myRace, gender_mod);
 		}
-		else if(myRace == ELEMENTAL)
+		else if(myRace == Race::Elemental)
 		{
 			sprintf(str, "r%um%u", myRace, texture_mod);
 		}
@@ -2525,7 +2525,7 @@ bool ZoneDatabase::GetFactionData(FactionMods* fm, uint32 class_mod, uint32 race
 		{
 			fm->race_mod = iter->second + base;
 		}
-		else if(myRace == ELEMENTAL || myRace == WOLF)
+		else if(myRace == Race::Elemental || myRace == Race::Wolf)
 		{
 			sprintf(str, "r%u", myRace);
 			std::map<std::string, int16>::iterator iter = faction_array[faction_id]->mods.find(str);

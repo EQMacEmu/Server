@@ -1,44 +1,64 @@
 #include "../../client.h"
 
-void SetTexture(Client *c, const Seperator *sep){
+void SetTexture(Client *c, const Seperator *sep)
+{
+	const auto arguments = sep->argnum;
+	if (arguments < 2 || (!sep->IsNumber(2) && Strings::ToUnsignedInt(sep->arg[2]) < 0 && Strings::ToUnsignedInt(sep->arg[2]) > 255)) {
+		c->Message(Chat::White, "Usage: #set texture [Texture] [Helmet Texture]");
+		return;
+	}
 
-	uint16 texture;
-	if (sep->IsNumber(2) && atoi(sep->arg[2]) >= 0 && atoi(sep->arg[2]) <= 255) {
-		texture = atoi(sep->arg[2]);
-		uint8 helm = 0xFF;
+	uint8 texture = Strings::ToUnsignedInt(sep->arg[2]);
+	uint8 helmet_texture = 0xFF;
 
-		// Player Races Wear Armor, so Wearchange is sent instead
-		int i;
-		if (!c->GetTarget())
-			for (i = EQ::textures::textureBegin; i <= EQ::textures::LastTintableTexture; i++)
-			{
-			c->WearChange(i, texture, 0);
-			}
-		else if (c->GetTarget()->IsPlayableRace(c->GetTarget()->GetRace())) {
-			for (i = EQ::textures::textureBegin; i <= EQ::textures::LastTintableTexture; i++)
-			{
-				c->GetTarget()->WearChange(i, texture, 0);
-			}
-		}
-		else	// Non-Player Races only need Illusion Packets to be sent for texture
-		{
-			if (sep->IsNumber(3) && atoi(sep->arg[3]) >= 0 && atoi(sep->arg[3]) <= 255)
-				helm = atoi(sep->arg[3]);
-			else
-				helm = texture;
+	Mob *t = c;
+	if (c->GetTarget()) {
+		t = c->GetTarget();
+	}
 
-			if (texture == 255) {
-				texture = 0xFFFF;	// Should be pulling these from the database instead
-				helm = 0xFF;
-			}
-
-			if ((c->GetTarget()) && (c->Admin() >= commandTextureOthers))
-				c->GetTarget()->SendIllusionPacket(c->GetTarget()->GetRace(), 0xFF, texture, helm);
-			else
-				c->SendIllusionPacket(c->GetRace(), 0xFF, texture, helm);
+	if (IsPlayerRace(t->GetRace())) { // Player Races Wear Armor, so Wearchange is sent instead
+		for (
+			int texture_slot = EQ::textures::textureBegin;
+			texture_slot <= EQ::textures::LastTintableTexture;
+			texture_slot++
+			) {
+			t->WearChange(texture_slot, texture, 0);
 		}
 	}
-	else
-		c->Message(Chat::White, "Usage: #texture [texture] [helmtexture] (0-255, 255 for show equipment)");
-}
+	else { // Non-Player Races only need Illusion Packets to be sent for texture
+		uint8 helmet_texture = (
+			(sep->IsNumber(3) && Strings::ToUnsignedInt(sep->arg[3]) >= 0 && Strings::ToUnsignedInt(sep->arg[3]) <= 255) ?
+			Strings::ToUnsignedInt(sep->arg[3]) :
+			texture
+		);
 
+		if (texture == 255) {
+			texture = 0xFFFF;
+			helmet_texture = 0xFF;
+		}
+
+		t->SendIllusionPacket(
+			t->GetRace(), 
+			0xFF, 
+			texture, 
+			helmet_texture
+		);
+	}
+
+	c->Message(
+		Chat::White,
+		fmt::format(
+			"Texture Changed for {} | Texture: {}{}",
+			c->GetTargetDescription(t, TargetDescriptionType::UCSelf),
+			texture,
+			(
+				IsPlayerRace(t->GetRace()) ?
+				"" :
+				fmt::format(
+					" Helmet Texture: {}",
+					helmet_texture
+				)
+				)
+		).c_str()
+	);
+}

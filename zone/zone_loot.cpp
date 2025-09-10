@@ -75,16 +75,18 @@ void Zone::LoadLootTables(const std::vector<uint32> in_loottable_ids)
 	auto lootdrops = LootdropRepository::GetWhere(
 		database,
 		fmt::format(
-			"id IN ({})",
-			Strings::Join(lootdrop_ids, ",")
+			"id IN ({}) {}",
+			Strings::Join(lootdrop_ids, ","),
+			ContentFilterCriteria::apply()
 		)
 	);
 
 	auto lootdrop_entries = LootdropEntriesRepository::GetWhere(
 		database,
 		fmt::format(
-			"lootdrop_id IN ({})",
-			Strings::Join(lootdrop_ids, ",")
+			"lootdrop_id IN ({}) {}",
+			Strings::Join(lootdrop_ids, ","),
+			ContentFilterCriteria::apply()
 		)
 	);
 

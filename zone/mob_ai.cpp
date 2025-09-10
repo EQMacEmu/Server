@@ -1987,7 +1987,7 @@ void NPC::AI_DoMovement() {
 	if (IsZomm())
 		return;
 
-	if (GetBaseRace() == CONTROLLED_BOAT)
+	if (GetBaseRace() == Race::Boat)
 	{
 		uint8 passengers = entity_list.GetClientCountByBoatID(GetID());
 		if (passengers > 0)

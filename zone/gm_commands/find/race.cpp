@@ -4,7 +4,7 @@ void FindRace(Client *c, const Seperator *sep)
 {
 	if (sep->IsNumber(2)) {
 		const auto race_id = static_cast<uint16>(Strings::ToUnsignedInt(sep->arg[2]));
-		const std::string& race_name = GetRaceIDName(race_id);
+		const std::string &race_name = GetRaceIDName(race_id);
 		if (EQ::ValueWithin(race_id, Race::Human, Race::Portal)) {
 			c->Message(
 				Chat::White,
@@ -13,13 +13,13 @@ void FindRace(Client *c, const Seperator *sep)
 					race_id,
 					race_name,
 					(
-						c->IsPlayerRace(race_id) ?
+						IsPlayerRace(race_id) ?
 						fmt::format(
 							" ({})",
 							Strings::Commify(GetPlayerRaceBit(race_id))
 						) :
 						""
-					)
+						)
 				).c_str()
 			);
 
@@ -37,7 +37,7 @@ void FindRace(Client *c, const Seperator *sep)
 		return;
 	}
 
-	const auto& search_criteria = Strings::ToLower(sep->argplus[2]);
+	const auto &search_criteria = Strings::ToLower(sep->argplus[2]);
 
 	auto found_count = 0;
 
@@ -55,13 +55,13 @@ void FindRace(Client *c, const Seperator *sep)
 				race_id,
 				race_name,
 				(
-					c->IsPlayerRace(race_id) ?
+					IsPlayerRace(race_id) ?
 					fmt::format(
 						" ({})",
 						Strings::Commify(GetPlayerRaceBit(race_id))
 					) :
 					""
-				)
+					)
 			).c_str()
 		);
 

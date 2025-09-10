@@ -1245,7 +1245,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							caster->GetTarget()->GetSize()
 						);
 
-						if(!IsPlayableRace(caster->GetTarget()->GetRace()))
+						if(!IsPlayerRace(caster->GetTarget()->GetRace()))
 						{
 							uint32 newsize = floor(caster->GetTarget()->GetSize() + 0.5);
 							caster->SendAppearancePacket(AppearanceType::Size, newsize);
@@ -1500,8 +1500,8 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 #endif
 
 				float modifyAmount = (static_cast<float>(effect_value) / 100.0f);
-				float gnome_height = GetPlayerHeight(GNOME);
-				float ogre_height = GetPlayerHeight(OGRE);
+				float gnome_height = GetPlayerHeight(Race::Gnome);
+				float ogre_height = GetPlayerHeight(Race::Ogre);
 				float size = GetSize();
 
 				// Do not allow Shrink if Gnome size or smaller, or if size 20 or higher. 
@@ -3072,7 +3072,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 			case SE_Illusion:
 			{
 				uint8 texture = 0xFF;
-				if(IsNPC() && !IsPlayableRace(GetBaseRace()))
+				if(IsNPC() && !IsPlayerRace(GetBaseRace()))
 				{
 					texture = CastToNPC()->GetBaseTexture();
 				}
@@ -3086,7 +3086,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 					GetBaseSize()
 				);
 
-				if(IsNPC() && !IsPlayableRace(GetBaseRace()))
+				if(IsNPC() && !IsPlayerRace(GetBaseRace()))
 				{
 					uint32 newsize = floor(GetBaseSize() + 0.5);
 					SendAppearancePacket(AppearanceType::Size, newsize);
@@ -3395,7 +3395,7 @@ void Mob::BuffFadeBySlot(int slot, bool iRecalcBonuses, bool message, bool updat
 			{
 				if(IsNPC() && IsRunning() && !IsEngaged())
 				{
-					if (GetBaseRace() != SHIP)
+					if (GetBaseRace() != Race::Ship)
 						SetRunning(false);
 				}
 				if(IsClient())

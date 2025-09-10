@@ -1214,14 +1214,14 @@ bool IsRacialIllusion(uint16 spell_id)
 {
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
-		if(spells[spell_id].effectid[i] == SE_Illusion && (spells[spell_id].base[i] == HUMAN || 
-			spells[spell_id].base[i] == BARBARIAN || spells[spell_id].base[i] == ERUDITE || 
-			spells[spell_id].base[i] == WOOD_ELF || spells[spell_id].base[i] == HIGH_ELF || 
-			spells[spell_id].base[i] == DARK_ELF || spells[spell_id].base[i] == HALF_ELF || 
-			spells[spell_id].base[i] == DWARF || spells[spell_id].base[i] == TROLL || 
-			spells[spell_id].base[i] == OGRE || spells[spell_id].base[i] == HALFLING || 
-			spells[spell_id].base[i] == GNOME || spells[spell_id].base[i] == IKSAR || 
-			spells[spell_id].base[i] == VAHSHIR))
+		if(spells[spell_id].effectid[i] == SE_Illusion && (spells[spell_id].base[i] == Race::Human || 
+			spells[spell_id].base[i] == Race::Barbarian || spells[spell_id].base[i] == Race::Erudite || 
+			spells[spell_id].base[i] == Race::WoodElf || spells[spell_id].base[i] == Race::HighElf || 
+			spells[spell_id].base[i] == Race::DarkElf || spells[spell_id].base[i] == Race::HalfElf || 
+			spells[spell_id].base[i] == Race::Dwarf || spells[spell_id].base[i] == Race::Troll || 
+			spells[spell_id].base[i] == Race::Ogre || spells[spell_id].base[i] == Race::Halfling || 
+			spells[spell_id].base[i] == Race::Gnome || spells[spell_id].base[i] == Race::Iksar || 
+			spells[spell_id].base[i] == Race::VahShir))
 			return true;
 	}
 	return false;

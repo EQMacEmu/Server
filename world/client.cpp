@@ -1426,53 +1426,52 @@ void Client::SetClassStartingSkills(PlayerProfile_Struct *pp)
 
 void Client::SetRaceStartingSkills( PlayerProfile_Struct *pp )
 {
-	switch( pp->race )
-	{
-	case BARBARIAN:
-	case ERUDITE:
-	case HALF_ELF:
-	case HIGH_ELF:
-	case HUMAN:
-	case OGRE:
-	case TROLL:
+	switch( pp->race ) {
+	case Race::Barbarian:
+	case Race::Erudite:
+	case Race::HalfElf:
+	case Race::HighElf:
+	case Race::Human:
+	case Race::Ogre:
+	case Race::Troll:
 		{
 			// No Race Specific Skills
 			break;
 		}
-	case DWARF:
+	case Race::Dwarf:
 		{
 			pp->skills[EQ::skills::SkillSenseHeading] = 50; //Even if we set this to 0, Intel client sets this to 50 anyway. Confirmed this is correct for era.
 			break;
 		}
-	case DARK_ELF:
+	case Race::DarkElf:
 		{
 			pp->skills[EQ::skills::SkillHide] = 50;
 			break;
 		}
-	case GNOME:
+	case Race::Gnome:
 		{
 			pp->skills[EQ::skills::SkillTinkering] = 50;
 			break;
 		}
-	case HALFLING:
+	case Race::Halfling:
 		{
 			pp->skills[EQ::skills::SkillHide] = 50;
 			pp->skills[EQ::skills::SkillSneak] = 50;
 			break;
 		}
-	case IKSAR:
+	case Race::Iksar:
 		{
 			pp->skills[EQ::skills::SkillForage] = 50;
 			pp->skills[EQ::skills::SkillSwimming] = 100;
 			break;
 		}
-	case WOOD_ELF:
+	case Race::WoodElf:
 		{
 			pp->skills[EQ::skills::SkillForage] = 50;
 			pp->skills[EQ::skills::SkillHide] = 50;
 			break;
 		}
-	case VAHSHIR:
+	case Race::VahShir:
 		{
 			pp->skills[EQ::skills::SkillSafeFall] = 50;
 			pp->skills[EQ::skills::SkillSneak] = 50;

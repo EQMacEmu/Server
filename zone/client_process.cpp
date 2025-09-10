@@ -1612,7 +1612,7 @@ void Client::OPGMTraining(const EQApplicationPacket *app)
 	for (sk = EQ::skills::Skill1HBlunt; sk <= EQ::skills::HIGHEST_SKILL; sk = (EQ::skills::SkillType)(sk+1))
 	{
 		//Only Gnomes can tinker.
-		if(sk == EQ::skills::SkillTinkering && GetBaseRace() != GNOME)
+		if(sk == EQ::skills::SkillTinkering && GetBaseRace() != Race::Gnome)
 			gmtrain->skills[sk] = 0;
 		else 
 			gmtrain->skills[sk] = GetMaxSkillAfterSpecializationRules((EQ::skills::SkillType)sk, MaxSkill((EQ::skills::SkillType)sk, GetClass(), RuleI(Character, MaxLevel)));

@@ -630,165 +630,89 @@ const char* GetRaceIDName(uint16 race_id)
 	}
 }
 
-const char* GetPlayerRaceName(uint32 player_race_value)
+uint32 GetPlayerRaceValue(uint16 race_id)
 {
-	return GetRaceIDName(GetRaceIDFromPlayerRaceValue(player_race_value));
-}
-
-
-const char* GetRaceIDNamePlural(uint16 race_id)
-{
-	switch (race_id)
-	{
-	case HUMAN:
-		return "Humans";
-	case BARBARIAN:
-		return "Barbarians";
-	case ERUDITE:
-		return "Erudites";
-	case WOOD_ELF:
-		return "Wood Elves";
-	case HIGH_ELF:
-		return "High Elves";
-	case DARK_ELF:
-		return "Dark Elves";
-	case HALF_ELF:
-		return "Half Elves";
-	case DWARF:
-		return "Dwarves";
-	case TROLL:
-		return "Trolls";
-	case OGRE:
-		return "Ogres";
-	case HALFLING:
-		return "Halflings";
-	case GNOME:
-		return "Gnomes";
-	case IKSAR:
-		return "Iksar";
-	case VAHSHIR:
-		return "Vah Shir";
+	switch (race_id) {
+	case Race::Human:
+	case Race::Barbarian:
+	case Race::Erudite:
+	case Race::WoodElf:
+	case Race::HighElf:
+	case Race::DarkElf:
+	case Race::HalfElf:
+	case Race::Dwarf:
+	case Race::Troll:
+	case Race::Ogre:
+	case Race::Halfling:
+	case Race::Gnome:
+		return race_id;
+	case Race::Iksar:
+		return RaceIndex::Iksar;
+	case Race::VahShir:
+		return RaceIndex::VahShir;
 	default:
-		return "Races"; break;
+		return Race::Doug;
 	}
 }
 
-uint32 GetPlayerRaceValue(uint16 race_id) {
+uint16 GetPlayerRaceBit(uint16 race_id)
+{
 	switch (race_id) {
-		case HUMAN:
-		case BARBARIAN:
-		case ERUDITE:
-		case WOOD_ELF:
-		case HIGH_ELF:
-		case DARK_ELF:
-		case HALF_ELF:
-		case DWARF:
-		case TROLL:
-		case OGRE:
-		case HALFLING:
-		case GNOME:
-			return race_id;
-		case IKSAR:
-			return PLAYER_RACE_IKSAR;
-		case VAHSHIR:
-			return PLAYER_RACE_VAHSHIR;
-		default:
-			return PLAYER_RACE_UNKNOWN; // watch
+	case Race::Human:
+		return RaceBitmask::Human;
+	case Race::Barbarian:
+		return RaceBitmask::Barbarian;
+	case Race::Erudite:
+		return RaceBitmask::Erudite;
+	case Race::WoodElf:
+		return RaceBitmask::WoodElf;
+	case Race::HighElf:
+		return RaceBitmask::HighElf;
+	case Race::DarkElf:
+		return RaceBitmask::DarkElf;
+	case Race::HalfElf:
+		return RaceBitmask::HalfElf;
+	case Race::Dwarf:
+		return RaceBitmask::Dwarf;
+	case Race::Troll:
+		return RaceBitmask::Troll;
+	case Race::Ogre:
+		return RaceBitmask::Ogre;
+	case Race::Halfling:
+		return RaceBitmask::Halfling;
+	case Race::Gnome:
+		return RaceBitmask::Gnome;
+	case Race::Iksar:
+		return RaceBitmask::Iksar;
+	case Race::VahShir:
+		return RaceBitmask::VahShir;
+	default:
+		return RaceBitmask::Unknown;
 	}
 }
 
-uint32 GetPlayerRaceBit(uint16 race_id) {
-	switch (race_id) {
-		case HUMAN:
-			return PLAYER_RACE_HUMAN_BIT;
-		case BARBARIAN:
-			return PLAYER_RACE_BARBARIAN_BIT;
-		case ERUDITE:
-			return PLAYER_RACE_ERUDITE_BIT;
-		case WOOD_ELF:
-			return PLAYER_RACE_WOOD_ELF_BIT;
-		case HIGH_ELF:
-			return PLAYER_RACE_HIGH_ELF_BIT;
-		case DARK_ELF:
-			return PLAYER_RACE_DARK_ELF_BIT;
-		case HALF_ELF:
-			return PLAYER_RACE_HALF_ELF_BIT;
-		case DWARF:
-			return PLAYER_RACE_DWARF_BIT;
-		case TROLL:
-			return PLAYER_RACE_TROLL_BIT;
-		case OGRE:
-			return PLAYER_RACE_OGRE_BIT;
-		case HALFLING:
-			return PLAYER_RACE_HALFLING_BIT;
-		case GNOME:
-			return PLAYER_RACE_GNOME_BIT;
-		case IKSAR:
-			return PLAYER_RACE_IKSAR_BIT;
-		case VAHSHIR:
-			return PLAYER_RACE_VAHSHIR_BIT;
-		default:
-			return PLAYER_RACE_UNKNOWN_BIT;
-	}
-}
-
-uint16 GetRaceIDFromPlayerRaceValue(uint32 player_race_value) {
+uint16 GetRaceIDFromPlayerRaceValue(uint32 player_race_value)
+{
 	switch (player_race_value) {
-		case PLAYER_RACE_HUMAN:
-		case PLAYER_RACE_BARBARIAN:
-		case PLAYER_RACE_ERUDITE:
-		case PLAYER_RACE_WOOD_ELF:
-		case PLAYER_RACE_HIGH_ELF:
-		case PLAYER_RACE_DARK_ELF:
-		case PLAYER_RACE_HALF_ELF:
-		case PLAYER_RACE_DWARF:
-		case PLAYER_RACE_TROLL:
-		case PLAYER_RACE_OGRE:
-		case PLAYER_RACE_HALFLING:
-		case PLAYER_RACE_GNOME:
-			return player_race_value;
-		case PLAYER_RACE_IKSAR:
-			return IKSAR;
-		case PLAYER_RACE_VAHSHIR:
-			return VAHSHIR;
-		default:
-			return PLAYER_RACE_UNKNOWN; // watch
-	}
-}
-
-uint16 GetRaceIDFromPlayerRaceBit(uint32 player_race_bit)
-{
-	switch (player_race_bit) {
-	case PLAYER_RACE_HUMAN_BIT:
-		return HUMAN;
-	case PLAYER_RACE_BARBARIAN_BIT:
-		return BARBARIAN;
-	case PLAYER_RACE_ERUDITE_BIT:
-		return ERUDITE;
-	case PLAYER_RACE_WOOD_ELF_BIT:
-		return WOOD_ELF;
-	case PLAYER_RACE_HIGH_ELF_BIT:
-		return HIGH_ELF;
-	case PLAYER_RACE_DARK_ELF_BIT:
-		return DARK_ELF;
-	case PLAYER_RACE_HALF_ELF_BIT:
-		return HALF_ELF;
-	case PLAYER_RACE_DWARF_BIT:
-		return DWARF;
-	case PLAYER_RACE_TROLL_BIT:
-		return TROLL;
-	case PLAYER_RACE_OGRE_BIT:
-		return OGRE;
-	case PLAYER_RACE_HALFLING_BIT:
-		return HALFLING;
-	case PLAYER_RACE_GNOME_BIT:
-		return GNOME;
-	case PLAYER_RACE_IKSAR_BIT:
-		return IKSAR;
-	case PLAYER_RACE_VAHSHIR_BIT:
-		return VAHSHIR;
+	case RaceIndex::Human:
+	case RaceIndex::Barbarian:
+	case RaceIndex::Erudite:
+	case RaceIndex::WoodElf:
+	case RaceIndex::HighElf:
+	case RaceIndex::DarkElf:
+	case RaceIndex::HalfElf:
+	case RaceIndex::Dwarf:
+	case RaceIndex::Troll:
+	case RaceIndex::Ogre:
+	case RaceIndex::Halfling:
+	case RaceIndex::Gnome:
+		return player_race_value;
+	case RaceIndex::Iksar:
+		return Race::Iksar;
+	case RaceIndex::VahShir:
+		return Race::VahShir;
 	default:
-		return PLAYER_RACE_UNKNOWN; // watch
+		return Race::Doug;
 	}
 }
 
@@ -903,78 +827,45 @@ float GetRaceGenderDefaultHeight(int race, int gender)
 	if (race >= size)
 		return 6.0f;
 
-	if (gender == 1)
+	if (gender == Gender::Female)
 		return female_height[race];
 
 	return male_height[race];
 }
 
-// PlayerAppearance prep
-#define HUMAN_MALE ((HUMAN << 8) |Gender::Male)
-#define HUMAN_FEMALE ((HUMAN << 8) |Gender::Female)
-#define BARBARIAN_MALE ((BARBARIAN << 8) |Gender::Male)
-#define BARBARIAN_FEMALE ((BARBARIAN << 8) |Gender::Female)
-#define ERUDITE_MALE ((ERUDITE << 8) |Gender::Male)
-#define ERUDITE_FEMALE ((ERUDITE << 8) |Gender::Female)
-#define WOOD_ELF_MALE ((WOOD_ELF << 8) |Gender::Male)
-#define WOOD_ELF_FEMALE ((WOOD_ELF << 8) |Gender::Female)
-#define HIGH_ELF_MALE ((HIGH_ELF << 8) |Gender::Male)
-#define HIGH_ELF_FEMALE ((HIGH_ELF << 8) |Gender::Female)
-#define DARK_ELF_MALE ((DARK_ELF << 8) |Gender::Male)
-#define DARK_ELF_FEMALE ((DARK_ELF << 8) |Gender::Female)
-#define HALF_ELF_MALE ((HALF_ELF << 8) |Gender::Male)
-#define HALF_ELF_FEMALE ((HALF_ELF << 8) |Gender::Female)
-#define DWARF_MALE ((DWARF << 8) |Gender::Male)
-#define DWARF_FEMALE ((DWARF << 8) |Gender::Female)
-#define TROLL_MALE ((TROLL << 8) |Gender::Male)
-#define TROLL_FEMALE ((TROLL << 8) |Gender::Female)
-#define OGRE_MALE ((OGRE << 8) |Gender::Male)
-#define OGRE_FEMALE ((OGRE << 8) |Gender::Female)
-#define HALFLING_MALE ((HALFLING << 8) |Gender::Male)
-#define HALFLING_FEMALE ((HALFLING << 8) |Gender::Female)
-#define GNOME_MALE ((GNOME << 8) |Gender::Male)
-#define GNOME_FEMALE ((GNOME << 8) |Gender::Female)
-#define IKSAR_MALE ((IKSAR << 8) |Gender::Male)
-#define IKSAR_FEMALE ((IKSAR << 8) |Gender::Female)
-#define VAHSHIR_MALE ((VAHSHIR << 8) |Gender::Male)
-#define VAHSHIR_FEMALE ((VAHSHIR << 8) |Gender::Female)
+#define GetRaceGenderMask(race_id, gender_id) (((int)race_id << 8) | gender_id)
 
-#define BINDRG(r, g) (((int)r << 8) | g)
-
-
-bool PlayerAppearance::IsValidBeard(uint16 race_id, uint8 gender_id, uint8 beard_value, bool use_luclin)
+bool RaceAppearance::IsValidBeard(uint16 race_id, uint8 gender_id, uint8 beard_value, bool use_luclin)
 {
-	if (beard_value == 0xFF)
+	if (beard_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
 	if (use_luclin) {
-		switch (BINDRG(race_id, gender_id)) {
-		case DWARF_FEMALE:
+		switch (GetRaceGenderMask(race_id, gender_id)) {
+		case RaceAppearance::DarkElfFemale:
 			if (beard_value <= 1)
 				return true;
 			break;
-		case HIGH_ELF_MALE:
-		case DARK_ELF_MALE:
-		case HALF_ELF_MALE:
-			if (beard_value <= 3)
+		case RaceAppearance::HighElfMale:
+		case RaceAppearance::DarkElfMale:
+		case RaceAppearance::HalfElfMale:
+			if (beard_value <= 3) {
 				return true;
+			}
+
 			break;
-		case HUMAN_MALE:
-		case BARBARIAN_MALE:
-		case ERUDITE_MALE:
-		case DWARF_MALE:
-		case HALFLING_MALE:
-		case GNOME_MALE:
-			if (beard_value <= 5)
+		case RaceAppearance::HumanMale:
+		case RaceAppearance::BarbarianMale:
+		case RaceAppearance::EruditeMale:
+		case RaceAppearance::DwarfMale:
+		case RaceAppearance::HalflingMale:
+		case RaceAppearance::GnomeMale:
+			if (beard_value <= 5) {
 				return true;
+			}
+
 			break;
-		default:
-			break;
-		}
-		return false;
-	}
-	else {
-		switch (BINDRG(race_id, gender_id)) {
 		default:
 			break;
 		}
@@ -982,442 +873,290 @@ bool PlayerAppearance::IsValidBeard(uint16 race_id, uint8 gender_id, uint8 beard
 	}
 }
 
-bool PlayerAppearance::IsValidBeardColor(uint16 race_id, uint8 gender_id, uint8 beard_color_value, bool use_luclin)
+bool RaceAppearance::IsValidBeardColor(uint16 race_id, uint8 gender_id, uint8 beard_color_value, bool use_luclin)
 {
-	if (beard_color_value == 0xFF)
+	if (beard_color_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
-	switch (BINDRG(race_id, gender_id)) {
-	case GNOME_MALE:
-		if (beard_color_value <= 24)
+	switch (GetRaceGenderMask(race_id, gender_id)) {
+	case RaceAppearance::GnomeMale:
+		if (beard_color_value <= 24) {
 			return true;
+		}
+
 		break;
-	case HUMAN_MALE:
-	case BARBARIAN_MALE:
-	case ERUDITE_MALE:
-	case HALF_ELF_MALE:
-	case DWARF_MALE:
-	case DWARF_FEMALE:
-	case HALFLING_MALE:
-		if (beard_color_value <= 19)
+	case RaceAppearance::HumanMale:
+	case RaceAppearance::BarbarianMale:
+	case RaceAppearance::EruditeMale:
+	case RaceAppearance::HalfElfMale:
+	case RaceAppearance::DwarfMale:
+	case RaceAppearance::DwarfFemale:
+	case RaceAppearance::HalflingMale:
+		if (beard_color_value <= 19) {
 			return true;
+		}
+
 		break;
-	case DARK_ELF_MALE:
-		if (beard_color_value >= 13 && beard_color_value <= 18)
+	case RaceAppearance::DarkElfMale:
+		if (EQ::ValueWithin(beard_color_value, 13, 18)) {
 			return true;
+		}
+
 		break;
-	case HIGH_ELF_MALE:
-		if (beard_color_value <= 14)
+	case RaceAppearance::HighElfMale:
+		if (beard_color_value <= 14) {
 			return true;
+		}
+
 		break;
 	default:
 		break;
 	}
+
 	return false;
 }
 
-bool PlayerAppearance::IsValidEyeColor(uint16 race_id, uint8 gender_id, uint8 eye_color_value, bool use_luclin)
+bool RaceAppearance::IsValidEyeColor(uint16 race_id, uint8 gender_id, uint8 eye_color_value, bool use_luclin)
 {
-	return true; // need valid criteria
+	if (eye_color_value == std::numeric_limits<uint8>::max()) {
+		return true;
+	}
 
-	switch (BINDRG(race_id, gender_id)) {
-	case HUMAN_MALE:
-	case HUMAN_FEMALE:
-	case BARBARIAN_MALE:
-	case BARBARIAN_FEMALE:
-	case ERUDITE_MALE:
-	case ERUDITE_FEMALE:
-	case WOOD_ELF_MALE:
-	case WOOD_ELF_FEMALE:
-	case HIGH_ELF_MALE:
-	case HIGH_ELF_FEMALE:
-	case DARK_ELF_MALE:
-	case DARK_ELF_FEMALE:
-	case HALF_ELF_MALE:
-	case HALF_ELF_FEMALE:
-	case DWARF_MALE:
-	case DWARF_FEMALE:
-	case OGRE_MALE:
-	case OGRE_FEMALE:
-	case HALFLING_MALE:
-	case HALFLING_FEMALE:
-	case GNOME_MALE:
-	case GNOME_FEMALE:
-	case IKSAR_MALE:
-	case IKSAR_FEMALE:
-	case VAHSHIR_MALE:
-	case VAHSHIR_FEMALE:
-		if (eye_color_value <= 9)
+	switch (GetRaceGenderMask(race_id, gender_id)) {
+	case RaceAppearance::HumanMale:
+	case RaceAppearance::HumanFemale:
+	case RaceAppearance::BarbarianMale:
+	case RaceAppearance::BarbarianFemale:
+	case RaceAppearance::EruditeMale:
+	case RaceAppearance::EruditeFemale:
+	case RaceAppearance::WoodElfMale:
+	case RaceAppearance::WoodElfFemale:
+	case RaceAppearance::HighElfMale:
+	case RaceAppearance::HighElfFemale:
+	case RaceAppearance::DarkElfMale:
+	case RaceAppearance::DarkElfFemale:
+	case RaceAppearance::HalfElfMale:
+	case RaceAppearance::HalfElfFemale:
+	case RaceAppearance::DwarfMale:
+	case RaceAppearance::DwarfFemale:
+	case RaceAppearance::OgreMale:
+	case RaceAppearance::OgreFemale:
+	case RaceAppearance::HalflingMale:
+	case RaceAppearance::HalflingFemale:
+	case RaceAppearance::GnomeMale:
+	case RaceAppearance::GnomeFemale:
+	case RaceAppearance::IksarMale:
+	case RaceAppearance::IksarFemale:
+	case RaceAppearance::VahShirMale:
+	case RaceAppearance::VahShirFemale:
+		if (eye_color_value <= 9) {
 			return true;
+		}
+
 		break;
-	case TROLL_MALE:
-	case TROLL_FEMALE:
-		if (eye_color_value <= 10)
+	case RaceAppearance::TrollMale:
+	case RaceAppearance::TrollFemale:
+		if (eye_color_value <= 10) {
 			return true;
+		}
+
 		break;
 	default:
 		break;
 	}
+
 	return false;
 }
 
-bool PlayerAppearance::IsValidFace(uint16 race_id, uint8 gender_id, uint8 face_value, bool use_luclin)
+bool RaceAppearance::IsValidFace(uint16 race_id, uint8 gender_id, uint8 face_value, bool use_luclin)
 {
-	if (face_value == 0xFF)
+	if (face_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
-	switch (BINDRG(race_id, gender_id)) {
-	case HUMAN_MALE:
-	case HUMAN_FEMALE:
-	case BARBARIAN_MALE:
-	case BARBARIAN_FEMALE:
-	case ERUDITE_MALE:
-	case ERUDITE_FEMALE:
-	case WOOD_ELF_MALE:
-	case WOOD_ELF_FEMALE:
-	case HIGH_ELF_MALE:
-	case HIGH_ELF_FEMALE:
-	case DARK_ELF_MALE:
-	case DARK_ELF_FEMALE:
-	case HALF_ELF_MALE:
-	case HALF_ELF_FEMALE:
-	case DWARF_MALE:
-	case DWARF_FEMALE:
-	case TROLL_MALE:
-	case TROLL_FEMALE:
-	case OGRE_MALE:
-	case OGRE_FEMALE:
-	case HALFLING_MALE:
-	case HALFLING_FEMALE:
-	case GNOME_MALE:
-	case GNOME_FEMALE:
-	case IKSAR_MALE:
-	case IKSAR_FEMALE:
-	case VAHSHIR_MALE:
-	case VAHSHIR_FEMALE:
-		if (face_value <= 7)
+	switch (GetRaceGenderMask(race_id, gender_id)) {
+	case RaceAppearance::HumanMale:
+	case RaceAppearance::HumanFemale:
+	case RaceAppearance::BarbarianMale:
+	case RaceAppearance::BarbarianFemale:
+	case RaceAppearance::EruditeMale:
+	case RaceAppearance::EruditeFemale:
+	case RaceAppearance::WoodElfMale:
+	case RaceAppearance::WoodElfFemale:
+	case RaceAppearance::HighElfMale:
+	case RaceAppearance::HighElfFemale:
+	case RaceAppearance::DarkElfMale:
+	case RaceAppearance::DarkElfFemale:
+	case RaceAppearance::HalfElfMale:
+	case RaceAppearance::HalfElfFemale:
+	case RaceAppearance::DwarfMale:
+	case RaceAppearance::DwarfFemale:
+	case RaceAppearance::TrollMale:
+	case RaceAppearance::TrollFemale:
+	case RaceAppearance::OgreMale:
+	case RaceAppearance::OgreFemale:
+	case RaceAppearance::HalflingMale:
+	case RaceAppearance::HalflingFemale:
+	case RaceAppearance::GnomeMale:
+	case RaceAppearance::GnomeFemale:
+	case RaceAppearance::IksarMale:
+	case RaceAppearance::IksarFemale:
+	case RaceAppearance::VahShirMale:
+	case RaceAppearance::VahShirFemale:
+		if (face_value <= 7) {
 			return true;
+		}
+
 		break;
 	default:
 		break;
 	}
+
 	return false;
 }
 
-bool PlayerAppearance::IsValidHair(uint16 race_id, uint8 gender_id, uint8 hair_value, bool use_luclin)
+bool RaceAppearance::IsValidHair(uint16 race_id, uint8 gender_id, uint8 hair_value, bool use_luclin)
 {
-	if (hair_value == 0xFF)
+	if (hair_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
 	if (use_luclin) {
-		switch (BINDRG(race_id, gender_id)) {
-		case HUMAN_MALE:
-		case HUMAN_FEMALE:
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-		case WOOD_ELF_MALE:
-		case WOOD_ELF_FEMALE:
-		case HIGH_ELF_MALE:
-		case HIGH_ELF_FEMALE:
-		case DARK_ELF_MALE:
-		case DARK_ELF_FEMALE:
-		case HALF_ELF_MALE:
-		case HALF_ELF_FEMALE:
-		case DWARF_MALE:
-		case DWARF_FEMALE:
-		case TROLL_FEMALE:
-		case OGRE_FEMALE:
-		case HALFLING_MALE:
-		case HALFLING_FEMALE:
-		case GNOME_MALE:
-		case GNOME_FEMALE:
-			if (hair_value <= 3)
+		switch (GetRaceGenderMask(race_id, gender_id)) {
+		case RaceAppearance::HumanMale:
+		case RaceAppearance::HumanFemale:
+		case RaceAppearance::BarbarianMale:
+		case RaceAppearance::BarbarianFemale:
+		case RaceAppearance::WoodElfMale:
+		case RaceAppearance::WoodElfFemale:
+		case RaceAppearance::HighElfMale:
+		case RaceAppearance::HighElfFemale:
+		case RaceAppearance::DarkElfMale:
+		case RaceAppearance::DarkElfFemale:
+		case RaceAppearance::HalfElfMale:
+		case RaceAppearance::HalfElfFemale:
+		case RaceAppearance::DwarfMale:
+		case RaceAppearance::DwarfFemale:
+		case RaceAppearance::TrollFemale:
+		case RaceAppearance::OgreFemale:
+		case RaceAppearance::HalflingMale:
+		case RaceAppearance::HalflingFemale:
+		case RaceAppearance::GnomeMale:
+		case RaceAppearance::GnomeFemale:
+			if (hair_value <= 3) {
 				return true;
+			}
+
 			break;
-		case ERUDITE_MALE:
-			if (hair_value <= 5)
+		case RaceAppearance::EruditeMale:
+			if (hair_value <= 5) {
 				return true;
+			}
+
 			break;
-		case ERUDITE_FEMALE:
-			if (hair_value <= 8)
+		case RaceAppearance::EruditeFemale:
+			if (hair_value <= 8) {
 				return true;
+			}
+
 			break;
 		default:
 			break;
 		}
-		return false;
-	}
-	else {
-		switch (BINDRG(race_id, gender_id)) {
-		default:
-			break;
-		}
+
 		return false;
 	}
 }
 
-bool PlayerAppearance::IsValidHairColor(uint16 race_id, uint8 gender_id, uint8 hair_color_value, bool use_luclin)
+bool RaceAppearance::IsValidHairColor(uint16 race_id, uint8 gender_id, uint8 hair_color_value, bool use_luclin)
 {
-	if (hair_color_value == 0xFF)
+	if (hair_color_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
-	switch (BINDRG(race_id, gender_id)) {
-	case GNOME_MALE:
-	case GNOME_FEMALE:
-		if (hair_color_value <= 24)
+	switch (GetRaceGenderMask(race_id, gender_id)) {
+	case RaceAppearance::GnomeMale:
+	case RaceAppearance::GnomeFemale:
+		if (hair_color_value <= 24) {
 			return true;
+		}
+
 		break;
-	case TROLL_FEMALE:
-	case OGRE_FEMALE:
-		if (hair_color_value <= 23)
+	case RaceAppearance::TrollFemale:
+	case RaceAppearance::OgreFemale:
+		if (hair_color_value <= 23) {
 			return true;
+		}
+
 		break;
-	case HUMAN_MALE:
-	case HUMAN_FEMALE:
-	case BARBARIAN_MALE:
-	case BARBARIAN_FEMALE:
-	case WOOD_ELF_MALE:
-	case WOOD_ELF_FEMALE:
-	case HALF_ELF_MALE:
-	case HALF_ELF_FEMALE:
-	case DWARF_MALE:
-	case DWARF_FEMALE:
-	case HALFLING_MALE:
-	case HALFLING_FEMALE:
-		if (hair_color_value <= 19)
+	case RaceAppearance::HumanMale:
+	case RaceAppearance::HumanFemale:
+	case RaceAppearance::BarbarianMale:
+	case RaceAppearance::BarbarianFemale:
+	case RaceAppearance::WoodElfMale:
+	case RaceAppearance::WoodElfFemale:
+	case RaceAppearance::HalfElfMale:
+	case RaceAppearance::HalfElfFemale:
+	case RaceAppearance::DwarfMale:
+	case RaceAppearance::DwarfFemale:
+	case RaceAppearance::HalflingMale:
+	case RaceAppearance::HalflingFemale:
+		if (hair_color_value <= 19) {
 			return true;
+		}
+
 		break;
-	case DARK_ELF_MALE:
-	case DARK_ELF_FEMALE:
-		if (hair_color_value >= 13 && hair_color_value <= 18)
+	case RaceAppearance::DarkElfMale:
+	case RaceAppearance::DarkElfFemale:
+		if (EQ::ValueWithin(hair_color_value, 13, 18)) {
 			return true;
+		}
+
 		break;
-	case HIGH_ELF_MALE:
-	case HIGH_ELF_FEMALE:
-		if (hair_color_value <= 14)
+	case RaceAppearance::HighElfMale:
+	case RaceAppearance::HighElfFemale:
+		if (hair_color_value <= 14) {
 			return true;
+		}
+
 		break;
 	default:
 		break;
 	}
+
 	return false;
 }
 
-bool PlayerAppearance::IsValidHead(uint16 race_id, uint8 gender_id, uint8 head_value, bool use_luclin)
+bool RaceAppearance::IsValidWoad(uint16 race_id, uint8 gender_id, uint8 woad_value, bool use_luclin)
 {
-	if (head_value == 0xFF)
+	if (woad_value == std::numeric_limits<uint8>::max()) {
 		return true;
+	}
 
 	if (use_luclin) {
-		switch (BINDRG(race_id, gender_id)) {
-		case HUMAN_MALE:
-		case HUMAN_FEMALE:
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-		case WOOD_ELF_MALE:
-		case WOOD_ELF_FEMALE:
-		case HIGH_ELF_MALE:
-		case HIGH_ELF_FEMALE:
-		case DARK_ELF_MALE:
-		case DARK_ELF_FEMALE:
-		case HALF_ELF_MALE:
-		case HALF_ELF_FEMALE:
-		case DWARF_MALE:
-		case DWARF_FEMALE:
-		case TROLL_MALE:
-		case TROLL_FEMALE:
-		case OGRE_MALE:
-		case OGRE_FEMALE:
-		case HALFLING_MALE:
-		case HALFLING_FEMALE:
-		case GNOME_MALE:
-		case GNOME_FEMALE:
-		case IKSAR_MALE:
-		case IKSAR_FEMALE:
-		case VAHSHIR_MALE:
-		case VAHSHIR_FEMALE:
-			if (head_value <= 3)
+		switch (GetRaceGenderMask(race_id, gender_id)) {
+		case RaceAppearance::BarbarianMale:
+		case RaceAppearance::BarbarianFemale:
+			if (woad_value <= 8) {
 				return true;
-			break;
-		case ERUDITE_MALE:
-		case ERUDITE_FEMALE:
-			if (head_value <= 4)
-				return true;
-			break;
-		default:
-			break;
-		}
-		return false;
-	}
-	else {
-		switch (BINDRG(race_id, gender_id)) {
-		case HUMAN_MALE:
-		case HUMAN_FEMALE:
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-		case ERUDITE_MALE:
-		case ERUDITE_FEMALE:
-		case WOOD_ELF_MALE:
-		case WOOD_ELF_FEMALE:
-		case HIGH_ELF_MALE:
-		case HIGH_ELF_FEMALE:
-		case DARK_ELF_MALE:
-		case DARK_ELF_FEMALE:
-		case HALF_ELF_MALE:
-		case HALF_ELF_FEMALE:
-		case DWARF_MALE:
-		case DWARF_FEMALE:
-		case TROLL_MALE:
-		case TROLL_FEMALE:
-		case OGRE_MALE:
-		case OGRE_FEMALE:
-		case HALFLING_MALE:
-		case HALFLING_FEMALE:
-		case IKSAR_MALE:
-		case IKSAR_FEMALE:
-		case VAHSHIR_MALE:
-		case VAHSHIR_FEMALE:
-			if (head_value <= 3)
-				return true;
-			break;
-		case GNOME_MALE:
-		case GNOME_FEMALE:
-			if (head_value <= 4)
-				return true;
-			break;
-		default:
-			break;
-		}
-		return false;
-	}
-}
+			}
 
-bool PlayerAppearance::IsValidTexture(uint16 race_id, uint8 gender_id, uint8 texture_value, bool use_luclin)
-{
-	if (texture_value == 0xFF)
-		return true;
-
-	if (use_luclin) {
-		switch (BINDRG(race_id, gender_id)) {
-		case HUMAN_MALE:
-		case HUMAN_FEMALE:
-		case IKSAR_MALE:
-		case IKSAR_FEMALE:
-			if ((texture_value >= 10 && texture_value <= 16) || texture_value <= 4)
-				return true;
-			break;
-		case ERUDITE_MALE:
-		case ERUDITE_FEMALE:
-		case HIGH_ELF_MALE:
-		case HIGH_ELF_FEMALE:
-		case DARK_ELF_MALE:
-		case DARK_ELF_FEMALE:
-		case GNOME_MALE:
-		case GNOME_FEMALE:
-			if ((texture_value >= 10 && texture_value <= 16) || texture_value <= 3)
-				return true;
-			break;
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-		case WOOD_ELF_MALE:
-		case WOOD_ELF_FEMALE:
-		case HALF_ELF_MALE:
-		case HALF_ELF_FEMALE:
-		case DWARF_MALE:
-		case DWARF_FEMALE:
-		case TROLL_MALE:
-		case TROLL_FEMALE:
-		case OGRE_MALE:
-		case OGRE_FEMALE:
-		case HALFLING_MALE:
-		case HALFLING_FEMALE:
-		case VAHSHIR_MALE:
-		case VAHSHIR_FEMALE:
-			if (texture_value <= 3)
-				return true;
-			break;
-		default:
-			break;
-		}
-		return false;
-	}
-	else {
-		switch (BINDRG(race_id, gender_id)) {
-		case HUMAN_MALE:
-		case HUMAN_FEMALE:
-		case ERUDITE_MALE:
-		case ERUDITE_FEMALE:
-			if ((texture_value >= 10 && texture_value <= 16) || texture_value <= 4)
-				return true;
-			break;
-		case HIGH_ELF_MALE:
-		case HIGH_ELF_FEMALE:
-		case DARK_ELF_MALE:
-		case DARK_ELF_FEMALE:
-		case GNOME_MALE:
-		case GNOME_FEMALE:
-			if ((texture_value >= 10 && texture_value <= 16) || texture_value <= 3)
-				return true;
-			break;
-		case VAHSHIR_MALE:
-		case VAHSHIR_FEMALE:
-			if (texture_value == 50 || texture_value <= 3)
-				return true;
-			break;
-		case IKSAR_MALE:
-		case IKSAR_FEMALE:
-			if (texture_value == 10 || texture_value <= 4)
-				return true;
-			break;
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-		case WOOD_ELF_MALE:
-		case WOOD_ELF_FEMALE:
-		case HALF_ELF_MALE:
-		case HALF_ELF_FEMALE:
-		case DWARF_MALE:
-		case DWARF_FEMALE:
-		case TROLL_MALE:
-		case TROLL_FEMALE:
-		case OGRE_MALE:
-		case OGRE_FEMALE:
-		case HALFLING_MALE:
-		case HALFLING_FEMALE:
-			if (texture_value <= 3)
-				return true;
-			break;
-		default:
-			break;
-		}
-		return false;
-	}
-}
-
-bool PlayerAppearance::IsValidWoad(uint16 race_id, uint8 gender_id, uint8 woad_value, bool use_luclin)
-{
-	if (woad_value == 0xFF)
-		return true;
-
-	if (use_luclin) {
-		switch (BINDRG(race_id, gender_id)) {
-		case BARBARIAN_MALE:
-		case BARBARIAN_FEMALE:
-			if (woad_value <= 8)
-				return true;
 			break;
 		default:
 			break;
 		}
 	}
+
 	return false;
 }
 
-const char* GetGenderName(uint32 gender_id) {
-	const char* gender_name = "Unknown";
-	if (gender_id ==Gender::Male) {
+const char *GetGenderName(uint32 gender_id) {
+	const char *gender_name = "Unknown";
+	if (gender_id == Gender::Male) {
 		gender_name = "Male";
 	}
-	else if (gender_id ==Gender::Female) {
+	else if (gender_id == Gender::Female) {
 		gender_name = "Female";
 	}
 	else if (gender_id == Gender::Neuter) {
@@ -1471,5 +1210,5 @@ bool IsPlayerRace(uint16 race_id) {
 		EQ::ValueWithin(race_id, Race::Human, Race::Gnome) ||
 		race_id == Race::Iksar ||
 		race_id == Race::VahShir
-		);
+	);
 }

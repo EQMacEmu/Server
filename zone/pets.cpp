@@ -352,7 +352,7 @@ void Mob::MakePoweredPet(uint16 spell_id, const char* pettype, int16 petpower,
 			npc_type->luclinface = 0;
 			break;
 		default:
-			npc_type->race = WOLF;
+			npc_type->race = Race::Wolf;
 			npc_type->texture = 0;
 			break;
 		}
@@ -515,19 +515,19 @@ Pet::Pet(NPCType *type_data, Mob *owner, PetType type, uint16 spell_id, int16 po
 	skills[EQ::skills::SkillDualWield] = level > 18 ? skillLevel : 0;
 
 	// these class pets are weaker at lower levels (shaman, druid, beastlord)
-	if (race == WOLF_ELEMENTAL || race == TIGER || race == ALLIGATOR || race == WOLF || race == BEAR)
+	if (race == Race::WolfElemental || race == Race::Tiger || race == Race::Alligator || race == Race::Wolf || race == Race::Bear)
 	{
 		if (level < 35)
 		{
 			skills[EQ::skills::SkillDualWield] = std::max((level - 16) * 5, 0);
 
-			if (race != WOLF_ELEMENTAL && skills[EQ::skills::SkillDoubleAttack])
+			if (race != Race::WolfElemental && skills[EQ::skills::SkillDoubleAttack])
 				skills[EQ::skills::SkillDoubleAttack] -= 35 - level;
 		}
 	}
 
 	// beastlord pets block instead of parry
-	if ((race == TIGER || race == ALLIGATOR || race == BEAR || race == WOLF) && type_data->npc_id != 638)	// 638 is druid bear pet
+	if ((race == Race::Tiger || race == Race::Alligator || race == Race::Bear || race == Race::Wolf) && type_data->npc_id != 638)	// 638 is druid bear pet
 	{
 		skills[EQ::skills::SkillBlock] = std::min(level *2, 50);
 		skills[EQ::skills::SkillParry] = 0;

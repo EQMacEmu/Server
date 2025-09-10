@@ -1207,7 +1207,7 @@ void Mob::SendRealPosition()
 // this one is for mobs on the move, and clients.
 void Mob::SendPosUpdate(uint8 iSendToSelf)
 {
-	if (GetRace() == CONTROLLED_BOAT)
+	if (GetRace() == Race::Boat)
 	{
 		//OP_ClientUpdate handles updates for these boats for us.
 		return;
@@ -1494,7 +1494,7 @@ void Mob::SendIllusionPacket(uint16 in_race, uint8 in_gender, uint8 in_texture, 
 			gender = in_gender;
 	}
 	if (in_texture == 0xFF) {
-		if (IsPlayableRace(in_race))
+		if (IsPlayerRace(in_race))
 			this->texture = 0xFF;
 		else
 			this->texture = GetTexture();
@@ -1510,7 +1510,7 @@ void Mob::SendIllusionPacket(uint16 in_race, uint8 in_gender, uint8 in_texture, 
 			this->gender = 2;
 			this->helmtexture = this->helmtexture_quarm;
 		}
-		else if (IsPlayableRace(in_race))
+		else if (IsPlayerRace(in_race))
 			this->helmtexture = 0xFF;
 		else if (in_texture != 0xFF)
 			this->helmtexture = in_texture;
@@ -1617,8 +1617,15 @@ void Mob::SendIllusionPacket(uint16 in_race, uint8 in_gender, uint8 in_texture, 
 }
 
 uint8 Mob::GetDefaultGender(uint16 in_race, uint8 in_gender) {
-	if (IsPlayableRace(in_race) ||
-		in_race == BROWNIE || in_race == LION || in_race == DRACNID || in_race == ZOMBIE || in_race == ELF_VAMPIRE || in_race == ERUDITE_GHOST) {
+	if (
+		IsPlayerRace(in_race) ||
+		in_race == Race::Brownie || 
+		in_race == Race::Lion || 
+		in_race == Race::Drachnid || 
+		in_race == Race::Zombie || 
+		in_race == Race::ElfVampire || 
+		in_race == Race::EruditeGhost
+		) {
 		if (in_gender >= Gender::Neuter) {
 			// Female default for PC Races
 			return Gender::Female;
@@ -1626,15 +1633,32 @@ uint8 Mob::GetDefaultGender(uint16 in_race, uint8 in_gender) {
 		else
 			return in_gender;
 	}
-	else if (in_race == FREEPORT_GUARD || in_race == MIMIC || in_race == HUMAN_BEGGER || in_race == VAMPIRE || in_race == HIGHPASS_CITIZEN ||
-		in_race == CLOCKWORK_GNOME || in_race == DWARF_GHOST || in_race == INVISIBLE_MAN || in_race == NERIAK_CITIZEN || in_race == ERUDITE_CITIZEN ||
-		in_race == RIVERVALE_CITIZEN || in_race == HALAS_CITIZEN || in_race == GROBB_CITIZEN || in_race == OGGOK_CITIZEN || in_race == KALADIM_CITIZEN || 
-		in_race == FELGUARD || in_race == FAYGUARD) {
+	else if (
+		in_race == Race::FreeportGuard || 
+		in_race == Race::Mimic || 
+		in_race == Race::HumanBeggar || 
+		in_race == Race::Vampire || 
+		in_race == Race::HighpassCitizen ||
+		in_race == Race::ClockworkGnome || 
+		in_race == Race::DwarfGhost || 
+		in_race == Race::InvisibleMan || 
+		in_race == Race::NeriakCitizen || 
+		in_race == Race::EruditeCitizen ||
+		in_race == Race::RivervaleCitizen || 
+		in_race == Race::HalasCitizen || 
+		in_race == Race::GrobbCitizen || 
+		in_race == Race::OggokCitizen || 
+		in_race == Race::KaladimCitizen || 
+		in_race == Race::Felguard || 
+		in_race == Race::Fayguard
+	) {
 		// Male only races
 		return Gender::Male;
-
 	}
-	else if (in_race == FAIRY || in_race == PIXIE) {
+	else if (
+		in_race == Race::Fairy || 
+		in_race == Race::Pixie
+	) {
 		// Female only races
 		return Gender::Female;
 	}
@@ -1643,31 +1667,6 @@ uint8 Mob::GetDefaultGender(uint16 in_race, uint8 in_gender) {
 		return Gender::Neuter;
 	}
 }
-
-bool Mob::IsPlayerClass(uint16 in_class) {
-	if (
-		in_class >= Class::Warrior &&
-		in_class <= Class::Beastlord
-		) {
-		return true;
-	}
-
-	return false;
-}
-
-bool Mob::IsPlayerRace(uint16 in_race) {
-
-	if (
-		(in_race >= HUMAN && in_race <= GNOME) ||
-		in_race == IKSAR ||
-		in_race == VAHSHIR
-		) {
-		return true;
-	}
-
-	return false;
-}
-
 
 void Mob::SendAppearancePacket(uint32 type, uint32 value, bool WholeZone, bool iIgnoreSelf, Client *specific_target) {
 	if (!GetID())
@@ -2259,7 +2258,7 @@ void Mob::SendWearChange(uint8 material_slot, Client* sendto, bool skip_if_zero,
 		return;
 	}
 
-	if (IsClient() && !IsPlayableRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
+	if (IsClient() && !IsPlayerRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
 	{
 		LogInventoryDetail("[{}] tried to send a wearchange while they are illusioned as race [{}]. Returning.", GetName(), GetRace());
 		return;
@@ -2311,7 +2310,7 @@ void Mob::SendWearChange(uint8 material_slot, Client* sendto, bool skip_if_zero,
 // This sends a WearChange based on the apperance variables passed to it.
 void Mob::WearChange(uint8 material_slot, uint16 texture, uint32 color, Client* sendto)
 {
-	if (IsClient() && !IsPlayableRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
+	if (IsClient() && !IsPlayerRace(GetRace()) && material_slot < EQ::textures::weaponPrimary)
 	{
 		LogInventoryDetail("[{}] tried to send a wearchange while they are illusioned as race [{}]. Returning.", GetName(), GetRace());
 		return;
@@ -3492,7 +3491,12 @@ bool Mob::TryReflectSpell(uint32 spell_id)
 
 bool Mob::IsBoat() const 
 {
-	return (GetBaseRace() == SHIP || GetBaseRace() == LAUNCH || GetBaseRace() == CONTROLLED_BOAT || GetBaseRace() == GHOST_SHIP);
+	return (
+		GetBaseRace() == Race::Ship || 
+		GetBaseRace() == Race::Launch || 
+		GetBaseRace() == Race::Boat || 
+		GetBaseRace() == Race::GhostShip
+	);
 }
 
 void Mob::SetBodyType(uint8 new_body, bool overwrite_orig) {
@@ -4114,33 +4118,33 @@ int32 Mob::GetSpellStat(uint32 spell_id, const char *identifier, uint8 slot)
 uint32 Mob::GetRaceStringID() {
 
 	switch (GetRace()) {
-		case HUMAN:
+		case Race::Human:
 			return 1257; break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			return 1258; break;
-		case ERUDITE:
+		case Race::Erudite:
 			return 1259; break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			return 1260; break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			return 1261; break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			return 1262; break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			return 1263; break;
-		case DWARF:
+		case Race::Dwarf:
 			return 1264; break;
-		case TROLL:
+		case Race::Troll:
 			return 1265; break;
-		case OGRE:
+		case Race::Ogre:
 			return 1266; break;
-		case HALFLING:
+		case Race::Halfling:
 			return 1267; break;
-		case GNOME:
+		case Race::Gnome:
 			return 1268; break;
-		case IKSAR:
+		case Race::Iksar:
 			return 1269; break;
-		case VAHSHIR:
+		case Race::VahShir:
 			return 1270; break;
 		default:
 			return 1256; break;
@@ -4234,7 +4238,7 @@ float Mob::CalcHeadOffset()
 		mysize = LOS_DEFAULT_HEIGHT;
 
 	// fixed size dragons
-	if (myrace == LAVA_DRAGON || myrace == WURM || myrace == GHOST_DRAGON)
+	if (myrace == Race::LavaDragon || myrace == Race::Wurm || myrace == Race::GhostDragon)
 		return (16.8f);
 
 	return (std::min(LOS_MAX_HEIGHT, mysize * HEAD_POSITION));
@@ -4248,7 +4252,7 @@ float Mob::CalcModelSize()
 		mysize = LOS_DEFAULT_HEIGHT;
 
 	// fixed size dragons
-	if (myrace == LAVA_DRAGON || myrace == WURM || myrace == GHOST_DRAGON)
+	if (myrace == Race::LavaDragon || myrace == Race::Wurm || myrace == Race::GhostDragon)
 		return (20.0);
 
 	return (mysize);
@@ -4929,16 +4933,6 @@ int32 Mob::GetSkillStat(EQ::skills::SkillType skillid)
 	return (stat <= 190) ? stat : 190;
 }
 
-bool Mob::IsPlayableRace(uint16 race)
-{
-	if(race > 0 && (race <= GNOME || race == IKSAR || race == VAHSHIR))
-	{
-		return true;
-	}
-
-	return false;
-}
-
 float Mob::GetPlayerHeight(uint16 race)
 {
 	float ret_size = 6.0f;
@@ -5058,7 +5052,7 @@ void Mob::FadeVoiceGraft()
 bool Mob::IsUnTargetable()
 {
 	if (GetBodyType() == BodyType::NoTarget || GetBodyType() == BodyType::NoTarget2 || GetBodyType() == BodyType::Special ||
-		(GetBaseRace() == INVISIBLE_MAN && GetBodyType() == BodyType::InvisibleMan))
+		(GetBaseRace() == Race::InvisibleMan && GetBodyType() == BodyType::InvisibleMan))
 		return true;
 
 	return false;
@@ -5507,4 +5501,78 @@ std::string Mob::GetBucketRemaining(std::string bucket_name) {
 void Mob::SetBucket(std::string bucket_name, std::string bucket_value, std::string expiration) {
 	std::string full_bucket_name = fmt::format("{}-{}", GetBucketKey(), bucket_name);
 	DataBucket::SetData(full_bucket_name, bucket_value, expiration);
+}
+
+std::string Mob::GetRacePlural()
+{
+	switch (GetBaseRace()) {
+	case Race::Human:
+		return "Humans";
+	case Race::Barbarian:
+		return "Barbarians";
+	case Race::Erudite:
+		return "Erudites";
+	case Race::WoodElf:
+		return "Wood Elves";
+	case Race::HighElf:
+		return "High Elves";
+	case Race::DarkElf:
+		return "Dark Elves";
+	case Race::HalfElf:
+		return "Half Elves";
+	case Race::Dwarf:
+		return "Dwarves";
+	case Race::Troll:
+		return "Trolls";
+	case Race::Ogre:
+		return "Ogres";
+	case Race::Halfling:
+		return "Halflings";
+	case Race::Gnome:
+		return "Gnomes";
+	case Race::Iksar:
+		return "Iksar";
+	case Race::VahShir:
+		return "Vah Shir";
+	default:
+		return "Races";
+	}
+}
+
+std::string Mob::GetClassPlural()
+{
+	switch (GetClass()) {
+	case Class::Warrior:
+		return "Warriors";
+	case Class::Cleric:
+		return "Clerics";
+	case Class::Paladin:
+		return "Paladins";
+	case Class::Ranger:
+		return "Rangers";
+	case Class::ShadowKnight:
+		return fmt::format("{}s", shadow_knight_class_name);
+	case Class::Druid:
+		return "Druids";
+	case Class::Monk:
+		return "Monks";
+	case Class::Bard:
+		return "Bards";
+	case Class::Rogue:
+		return "Rogues";
+	case Class::Shaman:
+		return "Shamans";
+	case Class::Necromancer:
+		return "Necromancers";
+	case Class::Wizard:
+		return "Wizards";
+	case Class::Magician:
+		return "Magicians";
+	case Class::Enchanter:
+		return "Enchanters";
+	case Class::Beastlord:
+		return "Beastlords";
+	default:
+		return "Classes";
+	}
 }

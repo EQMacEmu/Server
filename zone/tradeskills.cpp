@@ -134,7 +134,7 @@ void Object::HandleCombine(Client* user, const Combine_Struct* in_combine, Objec
 		}
 	}
 	else if (spec.tradeskill == EQ::skills::SkillTinkering) {
-		if (user_pp.race != GNOME && spec.trivial > 0) {
+		if (user_pp.race != Race::Gnome && spec.trivial > 0) {
 			user->Message(Chat::Red, "Only gnomes can tinker.");
 			return;
 		}

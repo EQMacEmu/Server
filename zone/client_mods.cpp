@@ -1221,46 +1221,46 @@ int32 Client::CalcMR(bool ignoreCap, bool includeSpells)
 
 	//racial bases
 	switch(GetBaseRace()) {
-		case HUMAN:
+		case Race::Human:
 			calc = 25;
 			break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			calc = 25;
 			break;
-		case ERUDITE:
+		case Race::Erudite:
 			calc = 30;
 			break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			calc = 25;
 			break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			calc = 25;
 			break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			calc = 25;
 			break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			calc = 25;
 			break;
-		case DWARF:
+		case Race::Dwarf:
 			calc = 30;
 			break;
-		case TROLL:
+		case Race::Troll:
 			calc = 25;
 			break;
-		case OGRE:
+		case Race::Ogre:
 			calc = 25;
 			break;
-		case HALFLING:
+		case Race::Halfling:
 			calc = 25;
 			break;
-		case GNOME:
+		case Race::Gnome:
 			calc = 25;
 			break;
-		case IKSAR:
+		case Race::Iksar:
 			calc = 25;
 			break;
-		case VAHSHIR:
+		case Race::VahShir:
 			calc = 25;
 			break;
 		default:
@@ -1300,46 +1300,46 @@ int32 Client::CalcFR(bool ignoreCap, bool includeSpells)
 
 	//racial bases
 	switch(GetBaseRace()) {
-		case HUMAN:
+		case Race::Human:
 			calc = 25;
 			break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			calc = 25;
 			break;
-		case ERUDITE:
+		case Race::Erudite:
 			calc = 25;
 			break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			calc = 25;
 			break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			calc = 25;
 			break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			calc = 25;
 			break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			calc = 25;
 			break;
-		case DWARF:
+		case Race::Dwarf:
 			calc = 25;
 			break;
-		case TROLL:
+		case Race::Troll:
 			calc = 5;
 			break;
-		case OGRE:
+		case Race::Ogre:
 			calc = 25;
 			break;
-		case HALFLING:
+		case Race::Halfling:
 			calc = 25;
 			break;
-		case GNOME:
+		case Race::Gnome:
 			calc = 25;
 			break;
-		case IKSAR:
+		case Race::Iksar:
 			calc = 30;
 			break;
-		case VAHSHIR:
+		case Race::VahShir:
 			calc = 25;
 			break;
 		default:
@@ -1392,46 +1392,46 @@ int32 Client::CalcDR(bool ignoreCap, bool includeSpells)
 
 	//racial bases
 	switch(GetBaseRace()) {
-		case HUMAN:
+		case Race::Human:
 			calc = 15;
 			break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			calc = 15;
 			break;
-		case ERUDITE:
+		case Race::Erudite:
 			calc = 10;
 			break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			calc = 15;
 			break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			calc = 15;
 			break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			calc = 15;
 			break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			calc = 15;
 			break;
-		case DWARF:
+		case Race::Dwarf:
 			calc = 15;
 			break;
-		case TROLL:
+		case Race::Troll:
 			calc = 15;
 			break;
-		case OGRE:
+		case Race::Ogre:
 			calc = 15;
 			break;
-		case HALFLING:
+		case Race::Halfling:
 			calc = 20;
 			break;
-		case GNOME:
+		case Race::Gnome:
 			calc = 15;
 			break;
-		case IKSAR:
+		case Race::Iksar:
 			calc = 15;
 			break;
-		case VAHSHIR:
+		case Race::VahShir:
 			calc = 15;
 			break;
 		default:
@@ -1500,46 +1500,46 @@ int32 Client::CalcPR(bool ignoreCap, bool includeSpells)
 
 	//racial bases
 	switch(GetBaseRace()) {
-		case HUMAN:
+		case Race::Human:
 			calc = 15;
 			break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			calc = 15;
 			break;
-		case ERUDITE:
+		case Race::Erudite:
 			calc = 15;
 			break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			calc = 15;
 			break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			calc = 15;
 			break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			calc = 15;
 			break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			calc = 15;
 			break;
-		case DWARF:
+		case Race::Dwarf:
 			calc = 20;
 			break;
-		case TROLL:
+		case Race::Troll:
 			calc = 15;
 			break;
-		case OGRE:
+		case Race::Ogre:
 			calc = 15;
 			break;
-		case HALFLING:
+		case Race::Halfling:
 			calc = 20;
 			break;
-		case GNOME:
+		case Race::Gnome:
 			calc = 15;
 			break;
-		case IKSAR:
+		case Race::Iksar:
 			calc = 15;
 			break;
-		case VAHSHIR:
+		case Race::VahShir:
 			calc = 15;
 			break;
 		default:
@@ -1599,46 +1599,46 @@ int32 Client::CalcCR(bool ignoreCap, bool includeSpells)
 
 	//racial bases
 	switch(GetBaseRace()) {
-		case HUMAN:
+		case Race::Human:
 			calc = 25;
 			break;
-		case BARBARIAN:
+		case Race::Barbarian:
 			calc = 35;
 			break;
-		case ERUDITE:
+		case Race::Erudite:
 			calc = 25;
 			break;
-		case WOOD_ELF:
+		case Race::WoodElf:
 			calc = 25;
 			break;
-		case HIGH_ELF:
+		case Race::HighElf:
 			calc = 25;
 			break;
-		case DARK_ELF:
+		case Race::DarkElf:
 			calc = 25;
 			break;
-		case HALF_ELF:
+		case Race::HalfElf:
 			calc = 25;
 			break;
-		case DWARF:
+		case Race::Dwarf:
 			calc = 25;
 			break;
-		case TROLL:
+		case Race::Troll:
 			calc = 25;
 			break;
-		case OGRE:
+		case Race::Ogre:
 			calc = 25;
 			break;
-		case HALFLING:
+		case Race::Halfling:
 			calc = 25;
 			break;
-		case GNOME:
+		case Race::Gnome:
 			calc = 25;
 			break;
-		case IKSAR:
+		case Race::Iksar:
 			calc = 15;
 			break;
-		case VAHSHIR:
+		case Race::VahShir:
 			calc = 25;
 			break;
 		default:
@@ -1800,7 +1800,7 @@ int Client::GetRawACNoShield(int &shield_ac, int spell_mod) const
 uint16 Client::CalculateLungCapacity()
 {
 	// Iksar do not benefit from Innate Lung Capacity and do not have STA penalty
-	if (GetBaseRace() == IKSAR) return 127;
+	if (GetBaseRace() == Race::Iksar) return 127;
 
 	// Innate Lung Capacity AA gives 10%/25%/50% more
 	int base_lung_capacity = aabonuses.BreathLevel > 0 ? aabonuses.BreathLevel : 100;

@@ -812,17 +812,17 @@ uint32 Client::GetEXPForLevel(uint16 check_level, bool aa)
 
 	float playermod = 10;
 	uint8 race = GetBaseRace();
-	if(race == HALFLING)
+	if(race == Race::Halfling)
 		playermod *= 95.0;
-	else if(race == DARK_ELF || race == DWARF || race == ERUDITE || race == GNOME || 
-		race == HALF_ELF || race == HIGH_ELF || race == HUMAN || race == WOOD_ELF ||
-		race == VAHSHIR)
+	else if(race == Race::DarkElf || race == Race::Dwarf || race == Race::Erudite || race == Race::Gnome || 
+		race == Race::HalfElf || race == Race::HighElf || race == Race::Human || race == Race::WoodElf ||
+		race == Race::VahShir)
 		playermod *= 100.0;
-	else if(race == BARBARIAN)
+	else if(race == Race::Barbarian)
 		playermod *= 105.0;
-	else if(race == OGRE)
+	else if(race == Race::Ogre)
 		playermod *= 115.0;
-	else if(race == IKSAR || race == TROLL)
+	else if(race == Race::Iksar || race == Race::Troll)
 		playermod *= 120.0;
 
 	float mod;

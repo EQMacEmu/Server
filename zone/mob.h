@@ -574,8 +574,6 @@ public:
 	//Util
 	static uint32 RandomTimer(int min, int max);
 	static uint8 GetDefaultGender(uint16 in_race, uint8 in_gender = 0xFF);
-	static bool IsPlayerClass(uint16 in_class);
-	static bool IsPlayerRace(uint16 in_race);
 	uint16 GetSkillByItemType(int ItemType);
 	uint8 GetItemTypeBySkill(EQ::skills::SkillType skill);
 	virtual void MakePet(uint16 spell_id, const char* pettype, const char *petname = nullptr);
@@ -961,6 +959,9 @@ public:
 
 	bool 	HasSpellEffect(int effectid);
 
+	std::string GetRacePlural();
+	std::string GetClassPlural();
+
 	int		GetDoubleAttackChance(bool returnEffectiveSkill = false);
 	bool	CheckDoubleAttack();
 	int		GetDualWieldChance(bool returnEffectiveSkill = false);
@@ -985,7 +986,6 @@ public:
 	void DamageTotalsWipe();
 	void ReportDmgTotals(Client* client, bool corpse = false, bool xp = false, bool faction = false, int32 dmg_amt = 0);
 	float  GetBaseEXP();
-	static bool IsPlayableRace(uint16 race);
 	float GetPlayerHeight(uint16 race);
 	void FadeVoiceGraft();
 	bool IsUnTargetable();

@@ -8813,7 +8813,7 @@ void Client::Handle_OP_WearChange(const EQApplicationPacket *app)
 
 	if (wc->wear_slot_id < EQ::textures::weaponPrimary)
 	{
-		if (!IsPlayableRace(GetRace()))
+		if (!IsPlayerRace(GetRace()))
 		{
 			LogInventoryDetail("Recieved a wearchange request from [{}] while they are illusioned as race [{}]. Returning.", GetName(), GetRace());
 			return;

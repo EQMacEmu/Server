@@ -4684,7 +4684,7 @@ int Client::GetMitigation(bool ignoreCap, int item_ac_sum, int shield_ac, int sp
 			acSum += acBonus;
 		}
 	}
-	if (base_race == IKSAR)
+	if (base_race == Race::Iksar)
 	{
 		if (level < 10)
 		{
