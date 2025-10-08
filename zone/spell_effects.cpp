@@ -2659,38 +2659,34 @@ void Mob::ApplyPeriodicHPEffects()
 
 							if (buff_caster->IsNPC())
 								effect_value = buff_caster->CastToNPC()->GetActSpellDamage(spell_id, effect_value, this);
-						}
 
-						// damage credit
-						int damage = -effect_value;
-						if (buff_caster)
-						{
+							// damage credit
+							int damage = -effect_value;
 							if (!buff_caster->IsClient() || (buff_caster->IsClient() && !buff_caster->CastToClient()->IsFeigned()))
 							{
 								AddToHateList(buff_caster, 0, damage, false, true, false);
 							}
-						}
 
-						// exp damage accounting
-						if (IsNPC() && !zone->IsIdling())
-						{
-							int32 adj_damage = GetHP() - damage < 0 ? GetHP() : damage;
-
-							total_damage += adj_damage;
-
-							// Pets should not be included.
-							if (buff_caster->IsClient())
+							// exp damage accounting
+							if (IsNPC() && !zone->IsIdling())
 							{
-								player_damage += adj_damage;
+								int32 adj_damage = GetHP() - damage < 0 ? GetHP() : damage;
+
+								total_damage += adj_damage;
+
+								// Pets should not be included.
+								if (buff_caster->IsClient())
+								{
+									player_damage += adj_damage;
+								}
+
+								if (buff_caster->IsDireCharmed())
+									dire_pet_damage += adj_damage;
+
+								if (buff_caster->IsNPC() && (!buff_caster->IsPet() || (buff_caster->GetOwner() && buff_caster->GetOwner()->IsNPC())))
+									npc_damage += adj_damage;
 							}
-
-							if (buff_caster->IsDireCharmed())
-								dire_pet_damage += adj_damage;
-
-							if (buff_caster->IsNPC() && (!buff_caster->IsPet() || (buff_caster->GetOwner() && buff_caster->GetOwner()->IsNPC())))
-								npc_damage += adj_damage;
 						}
-
 					}
 
 					// damage is applied at the end after adding it all up
