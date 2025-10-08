@@ -27,6 +27,7 @@
 #include "char_create_data.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/zone_store.h"
+#include "player_start_location.h"
 
 WorldDatabase database;
 extern std::vector<RaceClassAllocation> character_create_allocations;
@@ -308,6 +309,7 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	in_pp->x = in_pp->y = in_pp->z = in_pp->heading = in_pp->zone_id = 0;
 	in_pp->binds[0].x = in_pp->binds[0].y = in_pp->binds[0].z = in_pp->binds[0].zoneId = 0;
 
+#if 0 // solar 20251007: disabled database query method and using hardcoded function
     std::string query = StringFormat(
 		"SELECT x, y, z, heading, bind_id,bind_x,bind_y,bind_z FROM start_zones WHERE zone_id = %i "
         "AND player_class = %i AND player_deity = %i AND player_race = %i %s",
@@ -361,6 +363,25 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 			in_pp->binds[0].heading = zone->safe_heading;
 		}
 	}
+#endif
+
+	// this uses code decompiled from the eqmac client to set origin and bind location for new characters
+	PlayerStartLocationInfo i{};
+	i.race = in_cc->race;
+	i.classnum = in_cc->class_;
+	i.deity = in_cc->deity;
+	i.city_ix = in_cc->start_zone;
+	FillPlayerStartLocationInfo(&i);
+	in_pp->zone_id = i.zone_id;
+	in_pp->x = i.x;
+	in_pp->y = i.y;
+	in_pp->z = i.z;
+	in_pp->heading = i.heading;
+	in_pp->binds[0].zoneId = i.bind_zone_id;
+	in_pp->binds[0].x = i.bind_x;
+	in_pp->binds[0].y = i.bind_y;
+	in_pp->binds[0].z = i.bind_z;
+	in_pp->binds[0].heading = 0.0f;
 
 	return true;
 }

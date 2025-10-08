@@ -1144,8 +1144,9 @@ void Client::SendChannelMessageByNumber(std::string Message) {
 
 	ChannelList->ChatChannelDiscordRelay(RequiredChannel, this, Message.substr(MessageStart + 1).c_str());
 
-	LogInfo("[{}] tells [{}], [[{}]]", GetName().c_str(), RequiredChannel->GetName().c_str(),
-		Message.substr(MessageStart + 1).c_str());
+	// this log format is crashing - i'm not sure how to fix it, it calls EQEmuLogSys::Out eventually which tries to format the string again
+	//LogInfo("[{}] tells [{}], [[{}]]", GetName().c_str(), RequiredChannel->GetName().c_str(),
+	//	Message.substr(MessageStart + 1).c_str());
 
 	if (RuleB(Chat, EnableAntiSpam)) {
 		if (!RequiredChannel->IsModerated() || RequiredChannel->HasVoice(GetFQName()) || RequiredChannel->IsOwner(GetFQName()) ||

@@ -129,9 +129,9 @@ void Trade::AddEntity(uint16 trade_slot_id, uint32 stack_size) {
 
 		uint32 _stack_size = 0;
 
-		if ((stack_size + inst2->GetCharges()) > inst2->GetItem()->StackSize) {
-			_stack_size = (stack_size + inst2->GetCharges()) - inst->GetItem()->StackSize;
-			inst2->SetCharges(inst2->GetItem()->StackSize);
+		if ((stack_size + inst2->GetCharges()) > EQMAC_STACKSIZE) {
+			_stack_size = (stack_size + inst2->GetCharges()) - EQMAC_STACKSIZE;
+			inst2->SetCharges(EQMAC_STACKSIZE);
 		}
 		else {
 			_stack_size = inst->GetCharges() - stack_size;
@@ -259,10 +259,10 @@ void Client::ResetTrade() {
 					break;
 				}
 
-				if ((partial_inst->GetCharges() + inst->GetCharges()) > partial_inst->GetItem()->StackSize) {
-					int16 new_charges = (partial_inst->GetCharges() + inst->GetCharges()) - partial_inst->GetItem()->StackSize;
+				if ((partial_inst->GetCharges() + inst->GetCharges()) > EQMAC_STACKSIZE) {
+					int16 new_charges = (partial_inst->GetCharges() + inst->GetCharges()) - EQMAC_STACKSIZE;
 
-					partial_inst->SetCharges(partial_inst->GetItem()->StackSize);
+					partial_inst->SetCharges(EQMAC_STACKSIZE);
 					inst->SetCharges(new_charges);
 				}
 				else {
@@ -295,14 +295,14 @@ void Client::ResetTrade() {
 
 				EQ::ItemInstance *bias_inst = GetInv().GetItem(bias_slot);
 
-				if (!bias_inst || (bias_inst->GetID() != inst->GetID()) || (bias_inst->GetCharges() >= bias_inst->GetItem()->StackSize)) {
+				if (!bias_inst || (bias_inst->GetID() != inst->GetID()) || (bias_inst->GetCharges() >= EQMAC_STACKSIZE)) {
 					continue;
 				}
 
-				if ((bias_inst->GetCharges() + inst->GetCharges()) > bias_inst->GetItem()->StackSize) {
-					int16 new_charges = (bias_inst->GetCharges() + inst->GetCharges()) - bias_inst->GetItem()->StackSize;
+				if ((bias_inst-> GetCharges() + inst->GetCharges()) > EQMAC_STACKSIZE) {
+					int16 new_charges = (bias_inst->GetCharges() + inst->GetCharges()) - EQMAC_STACKSIZE;
 
-					bias_inst->SetCharges(bias_inst->GetItem()->StackSize);
+					bias_inst->SetCharges(EQMAC_STACKSIZE);
 					inst->SetCharges(new_charges);
 				}
 				else {
@@ -464,10 +464,10 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry)
 						int16 old_charges = inst->GetCharges();
 						int16 partial_charges = partial_inst->GetCharges();
 
-						if ((partial_inst->GetCharges() + inst->GetCharges()) > partial_inst->GetItem()->StackSize) {
-							int16 new_charges = (partial_inst->GetCharges() + inst->GetCharges()) - partial_inst->GetItem()->StackSize;
+						if ((partial_inst->GetCharges() + inst->GetCharges()) > EQMAC_STACKSIZE) {
+							int16 new_charges = (partial_inst->GetCharges() + inst->GetCharges()) - EQMAC_STACKSIZE;
 
-							partial_inst->SetCharges(partial_inst->GetItem()->StackSize);
+							partial_inst->SetCharges(EQMAC_STACKSIZE);
 							inst->SetCharges(new_charges);
 						}
 						else {
@@ -515,16 +515,16 @@ void Client::FinishTrade(Mob *tradingWith, bool finalizer, void *event_entry)
 
 						EQ::ItemInstance *bias_inst = GetInv().GetItem(bias_slot);
 
-						if (!bias_inst || (bias_inst->GetID() != inst->GetID()) || (bias_inst->GetCharges() >= bias_inst->GetItem()->StackSize)) {
+						if (!bias_inst || (bias_inst->GetID() != inst->GetID()) || (bias_inst->GetCharges() >= EQMAC_STACKSIZE)) {
 							continue;
 						}
 
 						int16 old_charges = inst->GetCharges();
 
-						if ((bias_inst->GetCharges() + inst->GetCharges()) > bias_inst->GetItem()->StackSize) {
-							int16 new_charges = (bias_inst->GetCharges() + inst->GetCharges()) - bias_inst->GetItem()->StackSize;
+						if ((bias_inst->GetCharges() + inst->GetCharges()) > EQMAC_STACKSIZE) {
+							int16 new_charges = (bias_inst->GetCharges() + inst->GetCharges()) - EQMAC_STACKSIZE;
 
-							bias_inst->SetCharges(bias_inst->GetItem()->StackSize);
+							bias_inst->SetCharges(EQMAC_STACKSIZE);
 							inst->SetCharges(new_charges);
 						}
 						else {
@@ -1960,7 +1960,7 @@ void Client::UpdateTraderCustomerPriceChanged(TraderCharges_Struct* gis, uint32 
 	entity_list.SendTraderUpdateMessage(this, item, 0);
 
 	for(int i = 0; i < 80; i++) {
-		if ((gis->ItemID[i] != ItemID) || ((!item->Stackable) && (gis->Charges[i] != Charges))) {
+		if ((gis->ItemID[i] != ItemID) || ((!item->IsStackable()) && (gis->Charges[i] != Charges))) {
 			continue;
 		}
 
@@ -2084,7 +2084,7 @@ void Client::HandleTraderPriceUpdate(const EQApplicationPacket *app)
 		// although you can set different prices for them before entering Trader mode. If you Remove them and then
 		// add them back whilst still in Trader mode, they all go up for the same price. We check for this situation
 		// and give the Trader a warning message.
-		if(!item->Stackable) {
+		if(!item->IsStackable()) {
 
 			bool SameItemWithDifferingCharges = false;
 

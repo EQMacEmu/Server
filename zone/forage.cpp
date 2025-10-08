@@ -421,7 +421,7 @@ void Client::GoFish(bool guarantee, bool use_bait)
 				}
 
 				// get an item id from the database
-				uint32 caught_item_id = database.GetZoneFishing(m_pp.zone_id, 999); // the minimum skill thing looks like it's for custom behavior so taking it out for now
+				uint32 caught_item_id = database.GetZoneFishing(m_pp.zone_id, 255); // the minimum skill thing looks like it's for custom behavior so taking it out for now
 				if (caught_item_id == 0) {
 					caught_item_id = 13019; // Fresh Fish
 				}

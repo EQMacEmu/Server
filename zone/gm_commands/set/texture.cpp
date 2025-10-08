@@ -8,7 +8,7 @@ void SetTexture(Client *c, const Seperator *sep)
 		return;
 	}
 
-	uint8 texture = Strings::ToUnsignedInt(sep->arg[2]);
+	uint16 texture = Strings::ToUnsignedInt(sep->arg[2]);
 	uint8 helmet_texture = 0xFF;
 
 	Mob *t = c;

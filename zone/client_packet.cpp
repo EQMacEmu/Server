@@ -151,7 +151,7 @@ void MapOpcodes()
 	ConnectedOpcodes[OP_DisarmTraps] = &Client::Handle_OP_DisarmTraps;
 	ConnectedOpcodes[OP_Discipline] = &Client::Handle_OP_Discipline;
 	ConnectedOpcodes[OP_DuelResponse] = &Client::Handle_OP_DuelResponse;
-	ConnectedOpcodes[OP_DuelResponse2] = &Client::Handle_OP_DuelResponse2;
+	ConnectedOpcodes[OP_DuelAccept] = &Client::Handle_OP_DuelAccept;
 	ConnectedOpcodes[OP_Emote] = &Client::Handle_OP_Emote;
 	ConnectedOpcodes[OP_EndLootRequest] = &Client::Handle_OP_EndLootRequest;
 	ConnectedOpcodes[OP_EnvDamage] = &Client::Handle_OP_EnvDamage;
@@ -376,7 +376,6 @@ void Client::CompleteConnect()
 	UpdateWho();
 	client_state = CLIENT_CONNECTED;
 
-	hpupdate_timer.Start();
 	position_timer.Start();
 	autosave_timer.Start();
 	entity_list.UpdateNewClientDistances(this);
@@ -1882,7 +1881,7 @@ void Client::Handle_OP_AAAction(const EQApplicationPacket *app)
 		aaID activate = (aaID)emuaa;
 
 		if (GetBoatNPCID() > 0) {
-			ResetAATimer(activate, StringID::TOO_DISTRACTED);
+			Message_StringID(Chat::SpellFailure, StringID::TOO_DISTRACTED);
 			return;
 		}
 
@@ -2081,43 +2080,78 @@ void Client::Handle_OP_BazaarSearchCon(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Begging(const EQApplicationPacket *app) 
 {
-	auto outapp = new EQApplicationPacket(OP_Begging, sizeof(BeggingResponse_Struct));
-	BeggingResponse_Struct *brs = (BeggingResponse_Struct*)outapp->pBuffer;
-
-	brs->target = GetTarget() ? GetTarget()->GetID() : 0;
-	brs->begger = GetID();
-	brs->skill = GetSkill(EQ::skills::SkillBegging);
-	brs->Result = 0; // Default, Fail.
-	brs->Amount = 0;
-
-	if (!GetTarget() || GetTarget() == this || !GetTarget()->IsNPC() || GetTarget()->IsBoat()) {
-		LogSkills("Tried to beg from an invalid entity. No skillup check will occur.");
-		QueuePacket(outapp);
-		safe_delete(outapp);
+	if (app->size != sizeof(Begging_Struct)) {
+		LogError("Size mismatch in Handle_OP_Begging. expected [{}] got [{}]", sizeof(Begging_Struct), app->size);
+		DumpPacket(app);
 		return;
 	}
+	Begging_Struct *beg_request = (Begging_Struct *)app->pBuffer;
+	Mob *beg_target = entity_list.GetMob(beg_request->target);
 
+	auto outapp = app->Copy();
+	Begging_Struct *beg_response = (Begging_Struct*)outapp->pBuffer;
+	beg_response->Result = 0; // Default, Fail.
+	beg_response->Amount = 0;
+
+	// check timer
 	if (!p_timers.Expired(&database, pTimerBeggingPickPocket, false)) {
 		LogError("Ability recovery time not yet met.");
+		Message_StringID(Chat::Skills, StringID::BEG_REUSE_TIMER);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+	// start timer
+	p_timers.Start(pTimerBeggingPickPocket, 8); // 10 seconds reuse in client, allows for some leeway for latency
+
+	// check target
+	if (!beg_target || beg_target == this || !beg_target->IsNPC() || beg_target->IsBoat()) {
+		LogSkills("Tried to beg from an invalid entity. No skillup check will occur.");
+		Message_StringID(Chat::Skills, StringID::BEG_NEED_TARGET);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+	
+	// check auto attack
+	if (auto_attack) {
+		LogSkills("Tried to beg while auto attacking.");
+		Message_StringID(Chat::Skills, StringID::BEG_WHILE_ATTACKING);
 		QueuePacket(outapp);
 		safe_delete(outapp);
 		return;
 	}
 
-	p_timers.Start(pTimerBeggingPickPocket, 8);
+	// check range
+	if (Distance(GetPosition(), beg_target->GetPosition()) > 15.0f)
+	{
+		LogSkills("Tried to beg while out of range.");
+		Message_StringID(Chat::Skills, StringID::BEG_OUT_OF_RANGE);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
 
-	NPC* npc = nullptr;
-	if (GetTarget() && GetTarget()->IsNPC())
-		npc = GetTarget()->CastToNPC();
+	// check if invisible
+	if (invisible)
+	{
+		LogSkills("Tried to beg while invisible.");
+		Message_StringID(Chat::Skills, StringID::BEG_WHILE_INVIS);
+		QueuePacket(outapp);
+		safe_delete(outapp);
+		return;
+	}
+
+	NPC *npc = beg_target->CastToNPC();
 
 	uint16 beg_skill = GetSkill(EQ::skills::SkillBegging);
-	if (npc && !npc->IsPet() && zone->random.Int(1, 199) > beg_skill && zone->random.Roll(9)) {
+	if (npc && !npc->IsPet() && !npc->IsEngaged() && zone->random.Int(1, 199) > beg_skill && zone->random.Roll(9)) {
 		if (npc->CanTalk()) {
 			uint8 stringchance = zone->random.Int(0, 1);
 			int stringid = StringID::BEG_FAIL1;
 			if (stringchance == 1)
 				stringid = StringID::BEG_FAIL2;
-			npc->Say_StringID(Chat::White, stringid);
+			npc->Say_StringID(Chat::Say, stringid);
 		}
 
 		npc->AddToHateList(this, 50);
@@ -2131,7 +2165,7 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 	uint8 success = SKILLUP_FAILURE;
 	if (RandomChance < ChanceToBeg)	{
 		success = SKILLUP_SUCCESS;
-		if (npc && !npc->IsPet()) {
+		if (npc && !npc->IsPet() && !npc->IsEngaged()) {
 			uint8 money[4];
 			money[0] = npc->GetPlatinum();
 			money[1] = npc->GetGold();
@@ -2179,8 +2213,8 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 						amt = plat;
 					npc->SetPlatinum(plat - amt);
 					AddMoneyToPP(0, 0, 0, amt, false);
-					brs->Amount = amt;
-					brs->Result = 1;
+					beg_response->Amount = amt;
+					beg_response->Result = 1;
 					break;
 				}
 				case 1:
@@ -2190,8 +2224,8 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 						amt = gold;
 					npc->SetGold(gold - amt);
 					AddMoneyToPP(0, 0, amt, 0, false);
-					brs->Amount = amt;
-					brs->Result = 2;
+					beg_response->Amount = amt;
+					beg_response->Result = 2;
 					break;
 				}
 				case 2:
@@ -2201,8 +2235,8 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 						amt = silver;
 					npc->SetSilver(silver - amt);
 					AddMoneyToPP(0, amt, 0, 0, false);
-					brs->Amount = amt;
-					brs->Result = 3;
+					beg_response->Amount = amt;
+					beg_response->Result = 3;
 					break;
 				}
 				case 3:
@@ -2212,21 +2246,20 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 						amt = copper;
 					npc->SetCopper(copper - amt);
 					AddMoneyToPP(amt, 0, 0, 0, false);
-					brs->Amount = amt;
-					brs->Result = 4;
+					beg_response->Amount = amt;
+					beg_response->Result = 4;
 					break;
 				}
 				}
 			}
 
-			if (brs->Amount != 0 && brs->Result != 0)
-				Message_StringID(Chat::White, StringID::BEG_SUCCESS, GetName());
+			if (beg_response->Amount != 0 && beg_response->Result != 0)
+				npc->Say_StringID(Chat::Say, StringID::BEG_SUCCESS, GetName());
 		}
 		else
 		{
-
 			LogSkills("Beg was successful but the NPC is a pet or other invalid type.");
-			brs->Result = 0;
+			beg_response->Result = 0;
 		}
 	}
 	else
@@ -2236,7 +2269,7 @@ void Client::Handle_OP_Begging(const EQApplicationPacket *app)
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
-	CheckIncreaseSkill(EQ::skills::SkillBegging, nullptr, zone->skill_difficulty[EQ::skills::SkillBegging].difficulty[GetClass()], success);
+	CheckIncreaseSkill(EQ::skills::SkillBegging, npc, zone->skill_difficulty[EQ::skills::SkillBegging].difficulty[GetClass()], success);
 }
 
 void Client::Handle_OP_Bind_Wound(const EQApplicationPacket *app) 
@@ -3477,19 +3510,37 @@ void Client::Handle_OP_Death(const EQApplicationPacket *app)
 	}
 	Death_Struct* ds = (Death_Struct*)app->pBuffer;
 
+	LogDeathDetail("Client OP_Death: spawn_id: {}({}) killer_id: {}({}) corpseid: {}({}) spawn_level: {} spell_id: {}({}) attack_skill: {}({}) damage: {} is_PC: {}",
+		ds->spawn_id, entity_list.GetMob(ds->spawn_id) ? entity_list.GetMob(ds->spawn_id)->GetName() : "?",
+		ds->killer_id, entity_list.GetMob(ds->killer_id) ? entity_list.GetMob(ds->killer_id)->GetName() : "?",
+		ds->corpseid, entity_list.GetMob(ds->corpseid) ? entity_list.GetMob(ds->corpseid)->GetName() : "?",
+		ds->spawn_level, ds->spell_id, IsValidSpell(ds->spell_id) ? spells[ds->spell_id].name : "?",
+		ds->attack_skill, EQ::skills::GetSkillName((EQ::skills::SkillType)ds->attack_skill), ds->damage, ds->is_PC
+	);
+	//
+	// when the player dies from a DoT, the eqmac client sends skill 23 (Eagle Strike)
+	// it doesn't send a reliable killer_id.  if the client kills itself with a DoT
+	// it does send its own id as the killer (or if at least the first DoT is self inflicted)
+	// but if it goes unconscious first then this doesn't happen. if they bleed out then
+	// they send no killer_id
+	// 
+	// for environmental death, the client sends damage packets hurting itself and the server calls Death()
+	// before the client has a chance to send this packet anyway
+	//
+	// if we call Death() from here with these blank values, it will set the dead flag and ignore
+	// additional Death() calls from the damage code.  taking these out for now so that death
+	// is consistently caused by the server and the killing blow is credited to the correct entity
+	//
+
+	/*
 	//Burning, Drowning, Falling, Freezing
-	if (ds->attack_skill >= 246 && ds->attack_skill <= 255)
+	if (ds->attack_skill >= 246)
 	{
 		EnvDeath = true;
 	}
-	//I think this attack_skill value is really a value from SkillDamageTypes...
-	else if (ds->attack_skill > 255)
-	{
-		return;
-	}
 
 	Mob* killer = entity_list.GetMob(ds->killer_id);
-	LogDeathDetail("Client has sent a death request for [{}]. Killer is: [{}]", GetName(), killer ? killer->GetName() : "null");
+
 	if (EnvDeath == true)
 	{
 		EQ::skills::SkillType env_skill = static_cast<EQ::skills::SkillType>(ds->attack_skill);
@@ -3501,6 +3552,7 @@ void Client::Handle_OP_Death(const EQApplicationPacket *app)
 		Death(killer, ds->damage, ds->spell_id, (EQ::skills::SkillType)ds->attack_skill, Killed_Client);
 		return;
 	}
+	*/
 }
 
 void Client::Handle_OP_DeleteCharge(const EQApplicationPacket *app)
@@ -3707,57 +3759,125 @@ void Client::Handle_OP_Discipline(const EQApplicationPacket *app)
 	}
 }
 
-void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app) 
+void Client::Handle_OP_RequestDuel(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(DuelResponse_Struct))
+	if (app->size != sizeof(DuelChallenge_Struct)) {
 		return;
-	DuelResponse_Struct* ds = (DuelResponse_Struct*)app->pBuffer;
-	Entity *entity = entity_list.GetID(ds->duel_target);
-	Entity *initiator = entity_list.GetID(ds->duel_initiator);
-	if(!entity || !initiator)
+	}
+
+	DuelChallenge_Struct *ds = (DuelChallenge_Struct *)app->pBuffer;
+	//Message(Chat::Broadcasts, "RequestDuel duel_challenger_id = %u (%s)   duel_target_id = %u (%s)", ds->duel_challenger_id, entity_list.GetClientByID(ds->duel_challenger_id)->GetName(), ds->duel_target_id, entity_list.GetClientByID(ds->duel_target_id)->GetName());
+	if (!ds->duel_challenger_id || ds->duel_challenger_id != GetID() || !ds->duel_target_id) {
 		return;
-	
-	if (!entity->IsClient() || !initiator->IsClient())
+	}
+	Entity *entity1 = entity_list.GetID(ds->duel_target_id);
+	if (!entity1 || !entity1->IsClient()) {
+		return;
+	}
+	Client *opponent = entity1->CastToClient();
+
+	// can't duel self - client checks this
+	if (opponent->GetID() == GetID())
 		return;
 
-	entity->CastToClient()->SetDuelTarget(0);
-	entity->CastToClient()->SetDueling(false);
-	initiator->CastToClient()->SetDuelTarget(0);
-	initiator->CastToClient()->SetDueling(false);
-	// inform initiator the duel was declined (the client handles informing the decliner)
-	initiator->CastToClient()->Message_StringID(Chat::White, StringID::DUEL_DECLINE, GetName());
-	return;
+	// the clients handle the various scenarios like pending challenge or duel in progress by responding to the request themselves and we just relay the packets between them
+
+	if (opponent->GetDuelTarget() == 0 || opponent->GetDuelTarget() == GetID()) {
+		// a new request, set them both as each others' duel target
+		if (opponent->GetDuelTarget() == 0) {
+			this->SetDuelTarget(opponent->GetID());
+			opponent->SetDuelTarget(this->GetID());
+		}
+	}
+
+	// relay message to target
+	// the message is sent by the client both when requesting and accepting
+	// so relaying this will either let them know they've been challenged or that their challenge has been accepted
+	opponent->QueuePacket(app);
 }
 
-void Client::Handle_OP_DuelResponse2(const EQApplicationPacket *app) 
+void Client::Handle_OP_DuelResponse(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(Duel_Struct))
+	if (app->size != sizeof(DuelResponse_Struct)) {
+		return;
+	}
+
+	DuelResponse_Struct *ds = (DuelResponse_Struct *)app->pBuffer;
+	//Message(Chat::Broadcasts, "DuelResponse sender_id = %u (%s)   recipient_id = %u (%s)  response_type = %d", ds->sender_id, entity_list.GetClientByID(ds->sender_id)->GetName(), ds->recipient_id, entity_list.GetClientByID(ds->recipient_id)->GetName(), ds->reponse_type);
+	if (!ds->sender_id || ds->sender_id != GetID() || !ds->recipient_id) {
+		return;
+	}
+	Entity *entity1 = entity_list.GetID(ds->recipient_id);
+	if (!entity1 || !entity1->IsClient()) {
+		return;
+	}
+	Client *response_recipient = entity1->CastToClient();
+
+	// the dueling request/response exchange and the various messages generated are handled by the client - we just have to relay the packets to the opponent
+	// if they accept or decline, we take note of that and set the appropriate state here
+
+	if (ds->reponse_type == 0) { // decline
+		if (!IsDueling() && !response_recipient->IsDueling()) { // client checks this
+			if (response_recipient->GetDuelTarget() == GetID() && GetDuelTarget() == response_recipient->GetID()) {
+				response_recipient->SetDuelTarget(0);
+				SetDuelTarget(0);
+			}
+		}
+	}
+	else if (ds->reponse_type == 1) { // already dueling
+		// nothing to do - client will display appropriate message when we relay the packet to them
+	}
+	else if (ds->reponse_type == 2) { // pending challenge with somebody else
+		// nothing to do - client will display appropriate message when we relay the packet to them
+	}
+
+	// relay packet
+	response_recipient->QueuePacket(app);
+}
+
+void Client::Handle_OP_DuelAccept(const EQApplicationPacket *app) 
+{
+	// sent by the client when accepting a duel after being challenged
+	// this is ignored by the eqmac client when received from the server
+	if (app->size != sizeof(DuelChallenge_Struct)) {
+		return;
+	}
+
+	DuelChallenge_Struct *ds = (DuelChallenge_Struct *)app->pBuffer;
+	if (!ds->duel_challenger_id || ds->duel_challenger_id != GetID() || !ds->duel_target_id) {
+		return;
+	}
+	Entity *entity1 = entity_list.GetID(ds->duel_target_id);
+	if (!entity1 || !entity1->IsClient()) {
+		return;
+	}
+	Client *duel_target = entity1->CastToClient();
+
+	// can't duel self - client checks this
+	if (duel_target->GetID() == GetID())
 		return;
 
-	Duel_Struct* ds = (Duel_Struct*)app->pBuffer;
-	Entity* entity = entity_list.GetID(ds->duel_target);
-	Entity* initiator = entity_list.GetID(ds->duel_initiator);
+	// already dueling
+	if (IsDueling() || duel_target->IsDueling())
+		return;
 
-	if (entity && initiator && entity == this && initiator->IsClient()) {
-		auto outapp = new EQApplicationPacket(OP_RequestDuel, sizeof(Duel_Struct));
-		Duel_Struct* ds2 = (Duel_Struct*)outapp->pBuffer;
+	if (duel_target->GetDuelTarget() == GetID() && GetDuelTarget() == duel_target->GetID())
+	{
+		// this is probably custom behavior
+		if (IsCasting()) {
+			InterruptSpell();
+		}
+		if (duel_target->IsCasting()) {
+			duel_target->InterruptSpell();
+		}
 
-		ds2->duel_initiator = entity->GetID();
-		ds2->duel_target = entity->GetID();
-		initiator->CastToClient()->QueuePacket(outapp);
-
-		outapp->SetOpcode(OP_DuelResponse2);
-		ds2->duel_initiator = initiator->GetID();
-
-		initiator->CastToClient()->QueuePacket(outapp);
-
-		QueuePacket(outapp);
+		// duel accepted
 		SetDueling(true);
-		initiator->CastToClient()->SetDueling(true);
-		SetDuelTarget(ds->duel_initiator);
-		safe_delete(outapp);
+		duel_target->SetDueling(true);
 	}
-	return;
+
+	// relay packet to other client
+	duel_target->QueuePacket(app);
 }
 
 void Client::Handle_OP_Emote(const EQApplicationPacket *app)
@@ -6839,49 +6959,6 @@ void Client::Handle_OP_Report(const EQApplicationPacket *app)
 
 	CanUseReport = false;
 	database.AddReport(reporter, reported, current_string);
-}
-
-void Client::Handle_OP_RequestDuel(const EQApplicationPacket *app) 
-{
-	if (app->size != sizeof(Duel_Struct))
-		return;
-
-	EQApplicationPacket* outapp = app->Copy();
-	Duel_Struct* ds = (Duel_Struct*)outapp->pBuffer;
-	uint32 duel = ds->duel_initiator;
-	ds->duel_initiator = ds->duel_target;
-	ds->duel_target = duel;
-	Entity* entity = entity_list.GetID(ds->duel_target);
-	
-	if (!entity) {
-		safe_delete(outapp);
-		return;
-	}
-	
-	if (GetID() != ds->duel_target && entity->IsClient() && (entity->CastToClient()->IsDueling() && entity->CastToClient()->GetDuelTarget() != 0)) {
-		Message_StringID(Chat::White, StringID::DUEL_CONSIDERING, entity->GetName());
-		safe_delete(outapp);
-		return;
-	}
-	if (IsDueling()) {
-		Message_StringID(Chat::White, StringID::DUEL_INPROGRESS);
-		safe_delete(outapp);
-		return;
-	}
-
-	if (GetID() != ds->duel_target && entity->IsClient() && GetDuelTarget() == 0 && !IsDueling() && !entity->CastToClient()->IsDueling() && entity->CastToClient()->GetDuelTarget() == 0) {
-		SetDuelTarget(ds->duel_target);
-		entity->CastToClient()->SetDuelTarget(GetID());
-		ds->duel_target = ds->duel_initiator;
-		entity->CastToClient()->FastQueuePacket(&outapp);
-		entity->CastToClient()->SetDueling(false);
-		SetDueling(false);
-		safe_delete(outapp);
-		return;
-	}
-	
-	safe_delete(outapp);
-	return;
 }
 
 void Client::Handle_OP_RezzAnswer(const EQApplicationPacket *app)

@@ -549,7 +549,6 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.QuestItemFlag = std::stoi(row[ItemField::questitemflag]) ? true : false;
 		item.Tradeskills = std::stoi(row[ItemField::tradeskills]) ? true : false;
 		item.Stackable_ = static_cast<int8>(std::stoi(row[ItemField::stackable]));
-		item.Stackable = (std::stoi(row[ItemField::stackable]) == 1) ? true : false;
 
 		// Type
 		item.ItemType = static_cast<uint8>(std::stoul(row[ItemField::itemtype]));
@@ -559,7 +558,6 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.MaxCharges = static_cast<int8>(std::stoi(row[ItemField::maxcharges]));
 		item.Size = static_cast<uint8>(std::stoul(row[ItemField::size]));
 		item.Soulbound = static_cast<int8>(std::stoi(row[ItemField::soulbound]));
-		//item.StackSize = static_cast<int16>(std::stoul(row[ItemField::stacksize])); // note - this is overwritten below
 		item.Weight = std::stoul(row[ItemField::weight]);
 
 		// Merchant
@@ -720,34 +718,6 @@ void SharedDatabase::LoadItems(void *data, uint32 size, int32 items, uint32 max_
 		item.Worn.Type = std::stoi(row[ItemField::worntype]);
 		item.Worn.Level = static_cast<uint8>(std::stoul(row[ItemField::wornlevel]));
 		item.Worn.Level2 = static_cast<uint8>(std::stoul(row[ItemField::wornlevel2]));
-
-		// solar - fixup StackSize data
-		// TODO: this StackSize field in the database is not needed, and code referencing StackSize should be rewritten to determine stackability based on the following conditions.  stack size is always 20.
-		if
-			(
-				item.ItemClass == EQ::item::ItemClass::ItemClassCommon &&
-				item.MaxCharges > 0 &&
-				(
-					item.ItemType == EQ::item::ItemTypeFood ||
-					item.ItemType == EQ::item::ItemTypeDrink ||
-					item.ItemType == EQ::item::ItemTypeCombinable ||
-					item.ItemType == EQ::item::ItemTypeBandage ||
-					item.ItemType == EQ::item::ItemTypeSmallThrowing ||
-					item.ItemType == EQ::item::ItemTypeArrow ||
-					item.ItemType == EQ::item::ItemTypeUnknown4 ||
-					item.ItemType == EQ::item::ItemTypeFishingBait ||
-					item.ItemType == EQ::item::ItemTypeAlcohol
-				)
-			)
-		{
-			// item is stackable
-			item.StackSize = 20;
-		}
-		else
-		{
-			// item is not stackable
-			item.StackSize = 1;
-		}
 
         try {
             hash.insert(item.ID, item);

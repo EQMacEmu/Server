@@ -1076,7 +1076,7 @@ void Client::Damage(Mob* other, int32 damage, uint16 spell_id, EQ::skills::Skill
 			*/
 
 			// this spell mitigation part is from a client decompile
-			if (IsValidSpell(spell_id) && spells[spell_id].goodEffect == 0)
+			if (!iBuffTic && IsValidSpell(spell_id) && spells[spell_id].goodEffect == 0)
 			{
 				int caster_class = other->GetClass();
 				float mitigation;
@@ -1400,6 +1400,7 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	}
 
 	entity_list.RemoveFromTargets(this);
+	entity_list.RemoveFromDuelTargets(this);
 	hate_list.RemoveEnt(this);
 	EndShield();
 
@@ -3303,7 +3304,7 @@ void Mob::GenerateDeathPackets(Mob* killerMob, int32 damage, uint16 spell, uint8
 	{
 		out_killer = 0;
 		out_skill = EQ::skills::SkillHandtoHand;
-		Message(Chat::White, "Pain and suffering tries to strike YOU, but misses!");
+		//Message(Chat::White, "Pain and suffering tries to strike YOU, but misses!");
 	}
 
 	auto app = new EQApplicationPacket(OP_Death, sizeof(Death_Struct));
@@ -3356,11 +3357,6 @@ void Mob::HealDamage(uint32 amount, Mob *caster, uint16 spell_id, bool hot)
 		Message_StringID(Chat::Spells, StringID::YOU_HEALED, itoa(acthealed));
 	}
 
-	if (IsClient())
-	{
-		CastToClient()->CalcAGI(); // AGI depends on current hp
-	}
-
 	if (curhp < maxhp) {
 		if ((curhp + amount) > maxhp)
 			curhp = maxhp;
@@ -3369,6 +3365,11 @@ void Mob::HealDamage(uint32 amount, Mob *caster, uint16 spell_id, bool hot)
 		SetHP(curhp);
 
 		SendHPUpdate();
+	}
+
+	if (IsClient())
+	{
+		CastToClient()->CalcAGI(); // AGI depends on current hp
 	}
 }
 
@@ -4275,7 +4276,7 @@ void NPC::DisplayAttackTimer(Client* sender)
 		}
 	}
 
-	sender->Message(Chat::White, "Attack Delays: Main-hand: [{}]  Off-hand: [{}]  Ranged: [{}]", primary, dualwield, ranged);
+	sender->Message(Chat::White, "Attack Delays: Main-hand: [%u]  Off-hand: [%u]  Ranged: [%u]", primary, dualwield, ranged);
 }
 
 // This will provide reasonable estimates for NPC offense.  based on many parsed logs.

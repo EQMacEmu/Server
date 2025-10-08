@@ -340,15 +340,15 @@ EQ::ItemInstance* EQ::InventoryProfile::PopItem(int16 slot_id)
 
 bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quantity) {
 
-	if (ItemToTry->Stackable) {
+	if (ItemToTry->IsStackable()) {
 
 		for (int16 i = invslot::GENERAL_BEGIN; i <= invslot::GENERAL_END; i++) {
 
 			ItemInstance* InvItem = GetItem(i);
 
-			if (InvItem && (InvItem->GetItem()->ID == ItemToTry->ID) && (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+			if (InvItem && (InvItem->GetItem()->ID == ItemToTry->ID) && (InvItem->GetCharges() < EQMAC_STACKSIZE)) {
 
-				int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+				int ChargeSlotsLeft = EQMAC_STACKSIZE - InvItem->GetCharges();
 
 				if (Quantity <= ChargeSlotsLeft)
 					return true;
@@ -365,9 +365,9 @@ bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quan
 					InvItem = GetItem(BaseSlotID + BagSlot);
 
 					if (InvItem && (InvItem->GetItem()->ID == ItemToTry->ID) &&
-						(InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+						(InvItem->GetCharges() < EQMAC_STACKSIZE)) {
 
-						int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+						int ChargeSlotsLeft = EQMAC_STACKSIZE - InvItem->GetCharges();
 
 						if (Quantity <= ChargeSlotsLeft)
 							return true;
@@ -385,7 +385,7 @@ bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quan
 
 		if (!InvItem) {
 
-			if (!ItemToTry->Stackable) {
+			if (!ItemToTry->IsStackable()) {
 
 				if (Quantity == 1)
 					return true;
@@ -393,10 +393,10 @@ bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quan
 					Quantity--;
 			}
 			else {
-				if (Quantity <= ItemToTry->StackSize)
+				if (Quantity <= EQMAC_STACKSIZE)
 					return true;
 				else
-					Quantity -= ItemToTry->StackSize;
+					Quantity -= EQMAC_STACKSIZE;
 			}
 
 		}
@@ -411,7 +411,7 @@ bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quan
 				InvItem = GetItem(BaseSlotID + BagSlot);
 
 				if (!InvItem) {
-					if (!ItemToTry->Stackable) {
+					if (!ItemToTry->IsStackable()) {
 
 						if (Quantity == 1)
 							return true;
@@ -419,10 +419,10 @@ bool EQ::InventoryProfile::HasSpaceForItem(const ItemData* ItemToTry, int16 Quan
 							Quantity--;
 					}
 					else {
-						if (Quantity <= ItemToTry->StackSize)
+						if (Quantity <= EQMAC_STACKSIZE)
 							return true;
 						else
-							Quantity -= ItemToTry->StackSize;
+							Quantity -= EQMAC_STACKSIZE;
 					}
 				}
 			}
@@ -651,7 +651,7 @@ int16 EQ::InventoryProfile::FindFreeSlotForTradeItem(const ItemInstance* inst) {
 			if (!main_inst)
 				continue;
 
-			if ((main_inst->GetID() == inst->GetID()) && (main_inst->GetCharges() < main_inst->GetItem()->StackSize))
+			if ((main_inst->GetID() == inst->GetID()) && (main_inst->GetCharges() < EQMAC_STACKSIZE))
 				return free_slot;
 		}
 
@@ -668,7 +668,7 @@ int16 EQ::InventoryProfile::FindFreeSlotForTradeItem(const ItemInstance* inst) {
 					if (!sub_inst)
 						continue;
 
-					if ((sub_inst->GetID() == inst->GetID()) && (sub_inst->GetCharges() < sub_inst->GetItem()->StackSize))
+					if ((sub_inst->GetID() == inst->GetID()) && (sub_inst->GetCharges() < EQMAC_STACKSIZE))
 						return InventoryProfile::CalcSlotId(free_slot, free_bag_slot);
 				}
 			}

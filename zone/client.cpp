@@ -127,7 +127,6 @@ Client::Client(EQStreamInterface* ieqs) : Mob(
 	//these must be listed in the order they appear in client.h
 	position_timer(250),
 	get_auth_timer(5000),
-	hpupdate_timer(6000),
 	camp_timer(35000),
 	process_timer(100),
 	stamina_timer(46000),
@@ -5784,9 +5783,9 @@ bool Client::FleshToBone()
 {
 	EQ::ItemInstance* flesh = GetInv().GetItem(EQ::invslot::slotCursor);
 	if (flesh && flesh->IsFlesh()) {
-		uint32 fcharges = flesh->GetCharges();
+		uint32 fcharges = flesh->IsStackable() ? flesh->GetCharges() : 0; 
 		DeleteItemInInventory(EQ::invslot::slotCursor, fcharges, true);
-		SummonItem(13073, fcharges);
+		SummonItem(13073, fcharges ? fcharges : 1);
 		return true;
 	}
 

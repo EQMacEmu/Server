@@ -900,7 +900,6 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	// now add buff at emptyslot
 	assert(buffs[emptyslot].spellid == SPELL_UNKNOWN || buffs[emptyslot].spellid == spell_id);	// sanity check
 
-	int extraTick = 1;  // all buffs get an extra tick
 	buffs[emptyslot].spellid = spell_id;
 	buffs[emptyslot].casterlevel = caster_level;
 	buffs[emptyslot].realcasterlevel = caster ? caster->GetLevel() : caster_level;
@@ -909,7 +908,7 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	else
 		memset(buffs[emptyslot].caster_name, 0, 64);
 	buffs[emptyslot].casterid = caster ? caster->GetID() : 0;
-	buffs[emptyslot].ticsremaining = duration + extraTick;
+	buffs[emptyslot].ticsremaining = duration;
 	buffs[emptyslot].counters = CalculateCounters(spell_id);
 	buffs[emptyslot].client = caster ? caster->IsClient() : 0;
 	buffs[emptyslot].persistant_buff = 0;
@@ -931,7 +930,7 @@ bool Mob::AssignBuffSlot(Mob *caster, uint16 spell_id, int &buffslot, int &caste
 	}
 	else
 	{
-		if (buffs[emptyslot].ticsremaining > (extraTick + CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration)))
+		if (buffs[emptyslot].ticsremaining > CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration))
 			buffs[emptyslot].UpdateClient = true;
 	}
 

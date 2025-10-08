@@ -1368,10 +1368,13 @@ bool IsInstrumentModdableSpellEffect(uint16 spell_id, int effect_index)
 
 bool IsSplurtFormulaSpell(uint16 spell_id)
 {
-	for (int i = 0; i < EFFECT_COUNT; i++)
+	if (IsValidSpell(spell_id))
 	{
-		int formula = spells[spell_id].formula[i];
-		if (formula == 107 || formula == 108 || formula == 120 || formula == 122) return true;
+		for (int i = 0; i < EFFECT_COUNT; i++)
+		{
+			int formula = spells[spell_id].formula[i];
+			if (formula == 107 || formula == 108 || formula == 120 || formula == 122) return true;
+		}
 	}
 
 	return false;

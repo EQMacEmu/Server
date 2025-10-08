@@ -423,6 +423,7 @@ Mob::~Mob()
 		entity_list.QueueClients(this, &app, true);
 
 	entity_list.RemoveFromTargets(this);
+	entity_list.RemoveFromDuelTargets(this);
 	EndShield();
 
 	if(trade) {

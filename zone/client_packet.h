@@ -52,7 +52,7 @@
 	void Handle_OP_DisarmTraps(const EQApplicationPacket *app);
 	void Handle_OP_Discipline(const EQApplicationPacket *app);
 	void Handle_OP_DuelResponse(const EQApplicationPacket *app);
-	void Handle_OP_DuelResponse2(const EQApplicationPacket *app);
+	void Handle_OP_DuelAccept(const EQApplicationPacket *app);
 	void Handle_OP_Emote(const EQApplicationPacket *app);
 	void Handle_OP_EndLootRequest(const EQApplicationPacket *app);
 	void Handle_OP_EnvDamage(const EQApplicationPacket *app);

@@ -466,7 +466,7 @@ luabind::scope lua_register_packet_opcodes() {
 			luabind::value("SaveOnZoneReq", static_cast<int>(OP_SaveOnZoneReq)),
 			luabind::value("Logout", static_cast<int>(OP_Logout)),
 			luabind::value("LogoutReply", static_cast<int>(OP_LogoutReply)),
-			luabind::value("DuelResponse2", static_cast<int>(OP_DuelResponse2)),
+			luabind::value("DuelAccept", static_cast<int>(OP_DuelAccept)),
 			luabind::value("InstillDoubt", static_cast<int>(OP_InstillDoubt)),
 			luabind::value("SafeFallSuccess", static_cast<int>(OP_SafeFallSuccess)),
 			luabind::value("DisciplineChange", static_cast<int>(OP_DisciplineChange)),

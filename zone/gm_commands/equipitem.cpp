@@ -18,9 +18,9 @@ void command_equipitem(Client *c, const Seperator *sep){
 			// crude stackable check to only 'move' the difference count on client instead of entire stack when applicable
 			if (to_inst && to_inst->IsStackable() &&
 				(to_inst->GetItem()->ID == from_inst->GetItem()->ID) &&
-				(to_inst->GetCharges() < to_inst->GetItem()->StackSize) &&
-				(from_inst->GetCharges() > to_inst->GetItem()->StackSize - to_inst->GetCharges())) {
-				movecount = to_inst->GetItem()->StackSize - to_inst->GetCharges();
+				(to_inst->GetCharges() < EQMAC_STACKSIZE) &&
+				(from_inst->GetCharges() > EQMAC_STACKSIZE - to_inst->GetCharges())) {
+				movecount = EQMAC_STACKSIZE - to_inst->GetCharges();
 				mi->number_in_stack = (uint32)movecount;
 				partialmove = true;
 			}

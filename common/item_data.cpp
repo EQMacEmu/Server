@@ -57,3 +57,21 @@ bool EQ::ItemData::IsTypeShield() const
 {
 	return (ItemType == item::ItemTypeShield);
 }
+
+bool EQ::ItemData::IsStackable() const
+{
+	return 
+		ItemClass == EQ::item::ItemClass::ItemClassCommon &&
+		MaxCharges > 0 &&
+		(
+			ItemType == EQ::item::ItemTypeFood ||
+			ItemType == EQ::item::ItemTypeDrink ||
+			ItemType == EQ::item::ItemTypeCombinable ||
+			ItemType == EQ::item::ItemTypeBandage ||
+			ItemType == EQ::item::ItemTypeSmallThrowing ||
+			ItemType == EQ::item::ItemTypeArrow ||
+			ItemType == EQ::item::ItemTypeUnknown4 ||
+			ItemType == EQ::item::ItemTypeFishingBait ||
+			ItemType == EQ::item::ItemTypeAlcohol
+		);
+}

@@ -116,12 +116,6 @@ bool Client::Process() {
 			}
 		}
 
-		if(hpupdate_timer.Check())
-		{
-			CalcMaxHP();
-			DoHPRegen();
-		}
-
 		if(client_distance_timer.Enabled() && client_distance_timer.Check())
 			entity_list.UpdateDistances(this);
 
@@ -484,6 +478,7 @@ bool Client::Process() {
 		if (tic_timer.Check() && !dead) 
 		{
 			ProcessFatigue();
+			ApplyPeriodicHPEffects(); // HoT + DoT/regen + basic regen
 			CalcMaxMana();
 			DoManaRegen();
 			BuffProcess();

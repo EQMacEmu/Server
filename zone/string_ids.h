@@ -137,6 +137,7 @@ namespace StringID {
 	const uint16 MEND_SUCCESS                   = 350; //You mend your wounds and heal some damage.
 	const uint16 MEND_WORSEN                    = 351; //You have worsened your wounds!
 	const uint16 MEND_FAIL                      = 352; //You have failed to mend your wounds.
+	const uint16 BEG_REUSE_TIMER                = 354; //You must wait longer before you can attempt to beg.
 	const uint16 TRAP_NOT_DETECTED              = 367; //You have not detected any traps.
 	const uint16 TRAP_TOO_FAR                   = 368; //You are too far away from that trap to affect it.
 	const uint16 FAIL_DISARM_DETECTED_TRAP      = 370; //You fail to disarm the detected trap.
@@ -470,6 +471,10 @@ namespace StringID {
 	const uint16 TALKING_TO_SELF                = 12323; //Talking to yourself again?
 	const uint16 SPLIT_NO_GROUP	                = 12328; //You are not in a group!Keep it all.
 	const uint16 NOT_IN_CONTROL                 = 12368; //You do not have control of yourself right now.
+	const uint16 BEG_NEED_TARGET                = 12401; //You must target someone to beg from first.
+	const uint16 BEG_WHILE_ATTACKING            = 12402; //You can't try to beg while attacking.
+	const uint16 BEG_OUT_OF_RANGE               = 12403; //You are too far away to beg. Get closer.
+	const uint16 BEG_WHILE_INVIS                = 12404; //How can you beg from someone when they can't see you?!	
 	const uint16 STEAL_FROM_SELF                = 12409; //You can't seem to steal from yourself for some reason...
 	const uint16 STEAL_CORPSES                  = 12406; //You must target a player to steal from first.  You may not steal from corpses.
 	const uint16 STEAL_PLAYERS                  = 12410; //You may not steal from a person who does not follow the ways of chaos....

@@ -373,7 +373,7 @@ uint32 Lua_Item::GetRecastType() {
 
 bool Lua_Item::GetStackable() {
 	Lua_Safe_Call_Bool();
-	return self->Stackable;
+	return self->IsStackable();
 }
 
 bool Lua_Item::GetQuestItemFlag() {
@@ -383,7 +383,7 @@ bool Lua_Item::GetQuestItemFlag() {
 
 int Lua_Item::GetStackSize() {
 	Lua_Safe_Call_Int();
-	return self->StackSize;
+	return EQMAC_STACKSIZE;
 }
 
 int Lua_Item::GetClick_Effect() {

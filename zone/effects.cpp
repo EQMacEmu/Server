@@ -66,7 +66,7 @@ int32 NPC::GetActSpellDamage(uint16 spell_id, int32 value,  Mob* target) {
 		int16 chance = 0;
 		int ratio = 0;
 
-		if (spells[spell_id].buffduration == 0) {
+		if (spells[spell_id].buffdurationformula == 0) {
 
 			if (chance && zone->random.Roll(chance)) {
 				value += (value*ratio)/100;
@@ -231,7 +231,7 @@ int32 NPC::GetActSpellHealing(uint16 spell_id, int32 value, Mob* target, bool ho
 
 	 //Allow for critical heal chance if NPC is loading spell effect bonuses.
 	 if (AI_HasSpellsEffects()){
-		if(spells[spell_id].buffduration < 1) {
+		if(spells[spell_id].buffdurationformula == 0) {
 			if(spellbonuses.CriticalHealChance && (zone->random.Roll(spellbonuses.CriticalHealChance))) {
 				value = value*2;
 				entity_list.MessageClose_StringID(this, true, 100, Chat::SpellCrit, StringID::OTHER_CRIT_HEAL, GetCleanName(), itoa(value));
@@ -264,7 +264,7 @@ int32 Client::GetActSpellHealing(uint16 spell_id, int32 value, Mob* target, bool
 	}
 
 	// Instant Heals
-	if(spells[spell_id].buffduration < 1) {
+	if(spells[spell_id].buffdurationformula == 0) {
 
 		chance += itembonuses.CriticalHealChance + spellbonuses.CriticalHealChance + aabonuses.CriticalHealChance;
 

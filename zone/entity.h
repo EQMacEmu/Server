@@ -319,6 +319,7 @@ public:
 	void	DuelMessage(Mob* winner, Mob* loser, bool flee);
 	void	GroupMessage(uint32 gid, const char *from, const char *message, uint8 language, uint8 lang_skill);
 	void	RemoveFromTargets(Mob* mob);
+	void	RemoveFromDuelTargets(Mob *mob);
 	void	RemoveFromNPCTargets(Mob* mob);
 	void	InterruptTargeted(Mob* mob);
 	void	ReplaceWithTarget(Mob* pOldMob, Mob*pNewTarget);

@@ -204,9 +204,6 @@ int32 Client::CalcHPRegen()
 		}
 	}
 
-	// add spell and item regen
-	hp_regen_amount += itembonuses.HPRegen + spellbonuses.HPRegen;
-
 	// special case, if we're unconscious and our hp isn't changing, make it -1 so the character doesn't end up stuck in that state
 	// this only applies if the character ends up with between -5 and 0 hp, then once they reach -6 they will hit the normal bleeding logic
 	if (GetHP() <= 0 && hp_regen_amount == 0) {

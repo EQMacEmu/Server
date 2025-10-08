@@ -537,10 +537,11 @@ bool NPC::Process()
 	if(tic_timer.Check())
 	{
 		parse->EventNPC(EVENT_TICK, this, nullptr, "", 0);
-		BuffProcess();
 
-		if(flee_mode)
-			ProcessFlee();
+		if (GetMana() < GetMaxMana())
+			SetMana(GetMana() + GetManaRegen());
+
+		ApplyPeriodicHPEffects();
 
 		int32 old_hp = GetHP();
 		if(GetHP() < GetMaxHP())
@@ -554,8 +555,10 @@ bool NPC::Process()
 			}
 		}
 
-		if(GetMana() < GetMaxMana())
-			SetMana(GetMana() + GetManaRegen());
+		BuffProcess();
+
+		if (flee_mode)
+			ProcessFlee();
 	}
 
 	if (!RuleB(Alkabor, NPCsSendHPUpdatesPerTic) && sendhpupdate_timer.Check() && (IsTargeted() || (IsPet() && GetOwner() && GetOwner()->IsClient())))

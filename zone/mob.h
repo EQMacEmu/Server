@@ -272,6 +272,7 @@ public:
 
 	//Buff
 	void BuffProcess();
+	void ApplyPeriodicHPEffects();
 	virtual void DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caster_level, Mob* caster = 0, int instrumentmod = 10);
 	void BuffFadeBySpellID(uint16 spell_id, bool message = true);
 	void BuffFadeByEffect(int effectid, int skipslot = -1);
@@ -1000,7 +1001,7 @@ public:
 protected:
 	void CommonDamage(Mob* other, int32 &damage, const uint16 spell_id, const  EQ::skills::SkillType  attack_skill, bool &avoidable, const int8 buffslot, const bool iBuffTic);
 	void AggroPet(Mob* attacker);
-	static uint16 GetProcID(uint16 spell_id, uint8 effect_index);
+	uint16 GetProcID(uint16 spell_id, uint8 effect_index);
 	//float _GetMovementSpeed(int mod, bool iswalking = false) const;
 	int _GetRunSpeed() const;
 	int _GetWalkSpeed() const;

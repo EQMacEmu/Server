@@ -15,16 +15,16 @@ void FindItem(Client *c, const Seperator *sep)
 				"X"
 			);
 
-			if (item->Stackable && item->StackSize > 1) {
+			if (item->IsStackable()) {
 				summon_links += fmt::format(
 					" | {}",
 					Saylink::Silent(
 						fmt::format(
 							"#si {} {}",
 							item_id,
-							item->StackSize
+							EQMAC_STACKSIZE
 						),
-						std::to_string(item->StackSize)
+						std::to_string(EQMAC_STACKSIZE)
 					)
 				);
 			}
@@ -84,16 +84,16 @@ void FindItem(Client *c, const Seperator *sep)
 			"X"
 		);
 
-		if (item->Stackable && item->StackSize > 1) {
+		if (item->IsStackable()) {
 			summon_links += fmt::format(
 				" | {}",
 				Saylink::Silent(
 					fmt::format(
 						"#si {} {}",
 						e,
-						item->StackSize
+						EQMAC_STACKSIZE
 					),
-					std::to_string(item->StackSize)
+					std::to_string(EQMAC_STACKSIZE)
 				)
 			);
 		}

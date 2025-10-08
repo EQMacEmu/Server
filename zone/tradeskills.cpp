@@ -277,8 +277,21 @@ bool Client::TradeskillExecute(DBTradeskillRecipe_Struct *spec)
 		}
 	}
 
-	if (aa_chance && chance < 100)
-	{
+	if (spec->tradeskill == EQ::skills::SkillMakePoison){
+		switch (GetAA(aaPoisonMastery)){
+		case 1:
+			aa_chance = 10;
+			break;
+		case 2:
+			aa_chance = 25;
+			break;
+		case 3:
+			aa_chance = 50;
+			break;
+		}
+	}
+
+	if (aa_chance && chance < 100) {
 		chance += (100 - chance) * aa_chance / 100;
 	}
 

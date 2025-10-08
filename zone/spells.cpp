@@ -2450,7 +2450,7 @@ int CalcBuffDuration_formula(int level, int formula, int duration)
 			return duration ? i < duration ? i : duration : i;
 
 		case 50:	// permanent buff
-			return 0xFFFE;
+			return 0xFFFF;
 
 		default:
 			LogSpells("CalcBuffDuration_formula: unknown formula [{}]", formula);
@@ -4167,6 +4167,12 @@ void Mob::Stun(int duration, Mob* attacker)
 	if (IsNPC() && IsMezzed())
 	{
 		return;
+	}
+
+	// NPCs can't be stunned for less than a second, but still get interrupted
+	if (IsNPC() && duration < 1000)
+	{
+		duration = 0;
 	}
 
 	uint16 spellid = casting_spell_id;

@@ -1192,7 +1192,6 @@ private:
 
 	PTimerList p_timers; //persistent timers
 	Timer get_auth_timer;
-	Timer hpupdate_timer;
 	Timer camp_timer;
 	Timer process_timer;
 	Timer stamina_timer;

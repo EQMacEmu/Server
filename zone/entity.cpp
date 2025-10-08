@@ -1507,6 +1507,28 @@ void EntityList::RemoveFromTargets(Mob *mob)
 	}
 }
 
+void EntityList::RemoveFromDuelTargets(Mob *mob)
+{
+	auto it = client_list.begin();
+	while (it != client_list.end()) {
+		Client *c = it->second;
+		++it;
+
+		if (!c) {
+			continue;
+		}
+
+		if (c->GetDuelTarget() == mob->GetID()) {
+			c->SetDueling(false);
+			c->SetDuelTarget(0);
+			if (mob->IsClient() && mob->CastToClient()->GetDuelTarget() == c->GetID()) {
+				mob->CastToClient()->SetDueling(false);
+				mob->CastToClient()->SetDuelTarget(0);
+			}
+		}
+	}
+}
+
 void EntityList::RemoveFromNPCTargets(Mob *mob)
 {
 	auto it = npc_list.begin();

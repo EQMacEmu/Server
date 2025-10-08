@@ -871,6 +871,7 @@ bool RaceAppearance::IsValidBeard(uint16 race_id, uint8 gender_id, uint8 beard_v
 		}
 		return false;
 	}
+	return false;
 }
 
 bool RaceAppearance::IsValidBeardColor(uint16 race_id, uint8 gender_id, uint8 beard_color_value, bool use_luclin)
@@ -1067,6 +1068,7 @@ bool RaceAppearance::IsValidHair(uint16 race_id, uint8 gender_id, uint8 hair_val
 
 		return false;
 	}
+	return false;
 }
 
 bool RaceAppearance::IsValidHairColor(uint16 race_id, uint8 gender_id, uint8 hair_color_value, bool use_luclin)

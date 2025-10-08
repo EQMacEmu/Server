@@ -486,7 +486,7 @@ void ZoneDatabase::UpdateTraderItemPrice(int CharID, uint32 ItemID, uint32 Charg
 		return;
 	}
 
-    if(!item->Stackable) {
+    if(!item->IsStackable()) {
         std::string query = StringFormat("UPDATE trader SET item_cost = %i "
                                         "WHERE char_id = %i AND item_id = %i AND charges=%i",
                                         NewPrice, CharID, ItemID, Charges);
@@ -3746,13 +3746,13 @@ int8 ZoneDatabase::ItemQuantityType(int16 item_id)
 	if(item)
 	{
 		// Item does not have quantity and is not stackable or is lore. (Normal item.)
-		if ((item->MaxCharges < 1 && (item->StackSize <= 1 || !item->Stackable)) || 
-			(item->MaxCharges == 1 && item->StackSize > 1 && item->Stackable && (item->Lore[0] == '*' || item->Lore[0] == '#')))
+		if ((item->MaxCharges < 1 && !item->IsStackable()) ||
+			(item->MaxCharges == 1 && item->IsStackable() && (item->Lore[0] == '*' || item->Lore[0] == '#')))
 		{ 
 			return EQ::item::Quantity_Normal;
 		}
 		//Item is not stackable, and uses charges.
-		else if(item->StackSize < 1 || !item->Stackable) 
+		else if(!item->IsStackable())
 		{
 			return EQ::item::Quantity_Charges;
 		}

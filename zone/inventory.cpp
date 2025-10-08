@@ -42,7 +42,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invslot::EQUIPMENT_BEGIN; i <= EQ::invslot::EQUIPMENT_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -56,7 +56,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 	if(where_to_check & invWhereCursor) {
 		if (GetItemIDAt(EQ::invslot::slotCursor) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(EQ::invslot::slotCursor) != INVALID_ID)) {
 			cur = m_inv.GetItem(EQ::invslot::slotCursor);
-			if(cur && cur->GetItem()->Stackable) {
+			if(cur && cur->GetItem()->IsStackable()) {
 				x += cur->GetCharges();
 			} else {
 				x++;
@@ -68,7 +68,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invbag::CURSOR_BAG_BEGIN; i <= EQ::invbag::CURSOR_BAG_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -83,7 +83,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invslot::GENERAL_BEGIN; i <= EQ::invslot::GENERAL_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -96,7 +96,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invbag::GENERAL_BAGS_BEGIN; i <= EQ::invbag::GENERAL_BAGS_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -111,7 +111,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invslot::BANK_BEGIN; i <= EQ::invslot::BANK_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -124,7 +124,7 @@ uint32 Client::NukeItem(uint32 itemnum, uint8 where_to_check) {
 		for (i = EQ::invbag::BANK_BAGS_BEGIN; i <= EQ::invbag::BANK_BAGS_END; i++) {
 			if (GetItemIDAt(i) == itemnum || (itemnum == 0xFFFE && GetItemIDAt(i) != INVALID_ID)) {
 				cur = m_inv.GetItem(i);
-				if(cur && cur->GetItem()->Stackable) {
+				if(cur && cur->GetItem()->IsStackable()) {
 					x += cur->GetCharges();
 				} else {
 					x++;
@@ -233,7 +233,7 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 				quantity = 1;
 			}
 			else {
-				quantity = item->StackSize;
+				quantity = EQMAC_STACKSIZE;
 			}
 		}
 	}	
@@ -739,7 +739,7 @@ bool Client::TryStacking(EQ::ItemInstance* item, uint8 type, bool try_worn, bool
 							emptyslot = slotid;
 						}
 						// Partial stack found use this first
-						if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+						if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 							MoveItemCharges(*item, slotid, type);
 							CalcBonuses();
 							if(item->GetCharges())	// we didn't get them all
@@ -760,7 +760,7 @@ bool Client::TryStacking(EQ::ItemInstance* item, uint8 type, bool try_worn, bool
 	for (i = EQ::invslot::GENERAL_BEGIN; i <= EQ::invslot::GENERAL_END; i++)
 	{
 		EQ::ItemInstance* tmp_inst = m_inv.GetItem(i);
-		if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+		if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 			MoveItemCharges(*item, i, type);
 			CalcBonuses();
 			if(item->GetCharges())	// we didn't get them all
@@ -775,7 +775,7 @@ bool Client::TryStacking(EQ::ItemInstance* item, uint8 type, bool try_worn, bool
 			uint16 slotid = EQ::InventoryProfile::CalcSlotId(i, j);
 			EQ::ItemInstance* tmp_inst = m_inv.GetItem(slotid);
 
-			if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+			if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 				MoveItemCharges(*item, slotid, type);
 				CalcBonuses();
 				if(item->GetCharges())	// we didn't get them all
@@ -815,7 +815,7 @@ int16 Client::GetStackSlot(EQ::ItemInstance* item, bool try_worn, bool try_curso
 							emptyslot = slotid;
 						}
 						// Partial stack found use this first
-						if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+						if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 							return slotid;
 						}
 					}
@@ -831,7 +831,7 @@ int16 Client::GetStackSlot(EQ::ItemInstance* item, bool try_worn, bool try_curso
 	for (i = EQ::invslot::GENERAL_BEGIN; i <= EQ::invslot::GENERAL_END; i++)
 	{
 		EQ::ItemInstance* tmp_inst = m_inv.GetItem(i);
-		if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+		if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 			return i;
 		}
 	}
@@ -842,7 +842,7 @@ int16 Client::GetStackSlot(EQ::ItemInstance* item, bool try_worn, bool try_curso
 			uint16 slotid = EQ::InventoryProfile::CalcSlotId(i, j);
 			EQ::ItemInstance* tmp_inst = m_inv.GetItem(slotid);
 
-			if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize){
+			if(tmp_inst && tmp_inst->GetItem()->ID == item_id && tmp_inst->GetCharges() < EQMAC_STACKSIZE){
 				return slotid;
 			}
 		}
@@ -960,10 +960,10 @@ void Client::MoveItemCharges(EQ::ItemInstance &from, int16 to_slot, uint8 type)
 {
 	EQ::ItemInstance *tmp_inst = m_inv.GetItem(to_slot);
 
-	if(tmp_inst && tmp_inst->GetCharges() < tmp_inst->GetItem()->StackSize)
+	if(tmp_inst && tmp_inst->GetCharges() < EQMAC_STACKSIZE)
 	{
 		// this is how much room is left on the item we're stacking onto
-		int charge_slots_left = tmp_inst->GetItem()->StackSize - tmp_inst->GetCharges();
+		int charge_slots_left = EQMAC_STACKSIZE - tmp_inst->GetCharges();
 		// this is how many charges we can move from the looted item to
 		// the item in the inventory
 		int charges_to_move =
@@ -1098,7 +1098,7 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		LogInventoryDetail("Src slot [{}] has item [{}] ([{}]) with [{}] charges in it.", src_slot_id, src_inst->GetItem()->Name, src_inst->GetItem()->ID, src_inst->GetCharges());
 		srcitemid = src_inst->GetItem()->ID;
 
-		if (src_inst->GetCharges() > 0 && (src_inst->GetCharges() < (int16)move_in->number_in_stack || move_in->number_in_stack > src_inst->GetItem()->StackSize))
+		if (src_inst->GetCharges() > 0 && (src_inst->GetCharges() < (int16)move_in->number_in_stack || move_in->number_in_stack > EQMAC_STACKSIZE))
 		{
 			std::string error = "Insufficent number in stack.";
 			LogInventory("Insufficent number in stack.");
@@ -1251,9 +1251,9 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 
 						// Fill up destination stack as much as possible
 						world_charges += src_charges;
-						if (world_charges > world_inst->GetItem()->StackSize) {
-							src_charges = world_charges - world_inst->GetItem()->StackSize;
-							world_charges = world_inst->GetItem()->StackSize;
+						if (world_charges > EQMAC_STACKSIZE) {
+							src_charges = world_charges - EQMAC_STACKSIZE;
+							world_charges = EQMAC_STACKSIZE;
 						}
 						else {
 							src_charges = 0;
@@ -1342,15 +1342,15 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				else
 				{
 					new_charges = (dst_inst->GetCharges()+src_inst->GetCharges());
-					if (new_charges < dst_inst->GetItem()->StackSize)
+					if (new_charges < EQMAC_STACKSIZE)
 					{
 						dst_inst->SetCharges(new_charges);
 						new_charges = 0;
 					}
 					else
 					{
-						new_charges = src_inst->GetCharges()-(dst_inst->GetItem()->StackSize-dst_inst->GetCharges()); //Leftover charges = charges - difference
-						dst_inst->SetCharges(dst_inst->GetItem()->StackSize);
+						new_charges = src_inst->GetCharges()-(EQMAC_STACKSIZE -dst_inst->GetCharges()); //Leftover charges = charges - difference
+						dst_inst->SetCharges(EQMAC_STACKSIZE);
 					}
 
 				}
@@ -1410,11 +1410,11 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 				);
 				return false;
 			}
-			if(dst_inst->GetCharges() < dst_inst->GetItem()->StackSize) {
+			if(dst_inst->GetCharges() < EQMAC_STACKSIZE) {
 				//we have a chance of stacking.
-				LogInventoryDetail("Move from [{}] to [{}] with stack size [{}]. dest has [{}]/[{}] charges", src_slot_id, dst_slot_id, move_in->number_in_stack, dst_inst->GetCharges(), dst_inst->GetItem()->StackSize);
+				LogInventoryDetail("Move from [{}] to [{}] with stack size [{}]. dest has [{}]/[{}] charges", src_slot_id, dst_slot_id, move_in->number_in_stack, dst_inst->GetCharges(), EQMAC_STACKSIZE);
 				// Charges can be emptied into dst
-				uint16 usedcharges = dst_inst->GetItem()->StackSize - dst_inst->GetCharges();
+				uint16 usedcharges = EQMAC_STACKSIZE - dst_inst->GetCharges();
 				if (usedcharges > move_in->number_in_stack)
 					usedcharges = move_in->number_in_stack;
 
@@ -1431,14 +1431,14 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 					LogInventoryDetail("Dest ([{}]) now has [{}] charges, source ([{}]) has [{}] ([{}] moved)", dst_slot_id, dst_inst->GetCharges(), src_slot_id, src_inst->GetCharges(), usedcharges);
 				}
 			} else {
-				sprintf(error, "Move from %d to %d with stack size %d. Exceeds dest maximum stack size: %d/%d", src_slot_id, dst_slot_id, move_in->number_in_stack, (src_inst->GetCharges()+dst_inst->GetCharges()), dst_inst->GetItem()->StackSize);
+				sprintf(error, "Move from %d to %d with stack size %d. Exceeds dest maximum stack size: %d/%d", src_slot_id, dst_slot_id, move_in->number_in_stack, (src_inst->GetCharges()+dst_inst->GetCharges()), EQMAC_STACKSIZE);
 				LogInventory(
 					"Move from [{}] to [{}] with stack size [{}]. Exceeds dest maximum stack size: [{}]/[{}]", 
 					src_slot_id, 
 					dst_slot_id, 
 					move_in->number_in_stack, 
 					(src_inst->GetCharges() + dst_inst->GetCharges()), 
-					dst_inst->GetItem()->StackSize
+					EQMAC_STACKSIZE
 				);
 				return false;
 			}
@@ -2096,9 +2096,9 @@ bool Client::MoveItemToInventory(EQ::ItemInstance *ItemToReturn, bool UpdateClie
 
 			EQ::ItemInstance* InvItem = m_inv.GetItem(i);
 
-			if(InvItem && (InvItem->GetItem()->ID == ItemID) && (InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+			if(InvItem && (InvItem->GetItem()->ID == ItemID) && (InvItem->GetCharges() < EQMAC_STACKSIZE)) {
 
-				int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+				int ChargeSlotsLeft = EQMAC_STACKSIZE - InvItem->GetCharges();
 
 				int ChargesToMove = ItemToReturn->GetCharges() < ChargeSlotsLeft ? ItemToReturn->GetCharges() :
 													ChargeSlotsLeft;
@@ -2127,9 +2127,9 @@ bool Client::MoveItemToInventory(EQ::ItemInstance *ItemToReturn, bool UpdateClie
 				for (BagSlot = EQ::invbag::SLOT_BEGIN; BagSlot < BagSize; BagSlot++) {
 					InvItem = m_inv.GetItem(BaseSlotID + BagSlot);
 					if (InvItem && (InvItem->GetItem()->ID == ItemID) &&
-						(InvItem->GetCharges() < InvItem->GetItem()->StackSize)) {
+						(InvItem->GetCharges() < EQMAC_STACKSIZE)) {
 
-						int ChargeSlotsLeft = InvItem->GetItem()->StackSize - InvItem->GetCharges();
+						int ChargeSlotsLeft = EQMAC_STACKSIZE - InvItem->GetCharges();
 
 						int ChargesToMove = ItemToReturn->GetCharges() < ChargeSlotsLeft
 									? ItemToReturn->GetCharges() : ChargeSlotsLeft;

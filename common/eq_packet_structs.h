@@ -65,17 +65,18 @@ struct EntityId_Struct
 	/*002*/
 };
 
-struct Duel_Struct
+struct DuelChallenge_Struct
 {
-	uint16 duel_initiator;
-	uint16 duel_target;
+	uint16 duel_target_id;
+	uint16 duel_challenger_id;
 };
 
 struct DuelResponse_Struct
 {
-	uint16 duel_initiator;
-	uint16 duel_target;
-	uint16 unknown;
+	uint16 recipient_id;
+	uint16 sender_id;
+	int8 reponse_type;
+	int8 _pad9;	// eq structs have alignment padding
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2558,17 +2559,17 @@ struct GMSearchCorpse_Struct
 /*128*/	uint32 Unknown128;
 };
 
-struct BeggingResponse_Struct
+struct Begging_Struct
 {
 /*00*/	uint16	target;
 /*02*/	uint16	begger;
-/*04*/	uint8	skill;
-/*05*/	uint8	unknown1;
+/*04*/	int16	skill;
 /*06*/	int8	Result;	// -1 = Request, 0 = Fail, 1 = Plat, 2 = Gold, 3 = Silver, 4 = Copper
-/*07*/	uint8	unknown2;
+/*07*/	uint8	_pad1;
 /*08*/	uint32	Amount;
-/*12*/	uint32	unknown3;
-/*16*/	uint8	unknown4[2];
+/*12*/	int8	unknown3;
+/*13*/	uint8	_pad2[5];
+/*18*/
 };
 
 struct CorpseDrag_Struct

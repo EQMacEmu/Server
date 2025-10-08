@@ -41,7 +41,7 @@ void command_zopp(Client *c, const Seperator *sep){
 			return;
 		}
 
-		if (charges < 0 || charges > FakeItem->StackSize) {
+		if (charges < 0 || charges > EQMAC_STACKSIZE) {
 			c->Message(Chat::Red, "Warning: The specified charge count does not meet expected criteria!");
 			c->Message(Chat::White, "Processing request..results may cause unpredictable behavior.");
 		}

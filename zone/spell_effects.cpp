@@ -569,13 +569,16 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 				}
 				else
 				{
+					// the formula calculation for this effect returns the max level.  the base contains the duration.
+					int stun_duration = spell.base[i];
+
 					if (caster->IsClient())
 					{
 						// cap player stuns on NPCs at 7.5 seconds
-						if (effect_value > 7500 && IsNPC())
-							effect_value = 7500;
+						if (stun_duration > 7500 && IsNPC())
+							stun_duration = 7500;
 					}
-					Stun(effect_value, caster);
+					Stun(stun_duration, caster);
 				}
 				break;
 			}
@@ -1023,10 +1026,10 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 							quantity = item->MaxCharges;
 						} else if(database.ItemQuantityType(spell.base[i]) == EQ::item::Quantity_Normal) {
 							quantity = 1;
-						} else if(spell.formula[i] > 0 && spell.formula[i] <= 20) {
+						} else if(spell.formula[i] > 0 && spell.formula[i] <= EQMAC_STACKSIZE) {
 							quantity = spell.formula[i];
 						} else {
-							quantity = CalcSpellEffectValue_formula(spell.formula[i],0,item->Stackable ? item->StackSize : item->MaxCharges,GetLevel(),spell_id);
+							quantity = CalcSpellEffectValue_formula(spell.formula[i],0,item->IsStackable() ? EQMAC_STACKSIZE : item->MaxCharges, GetLevel(), spell_id);
 							if (quantity < max)
 								quantity = max;
 						}
@@ -1065,8 +1068,8 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 					} else {
 						int charges;
 
-						if (item->Stackable)
-							charges = (spell.formula[i] > item->StackSize) ? item->StackSize : spell.formula[i];
+						if (item->IsStackable())
+							charges = (spell.formula[i] > EQMAC_STACKSIZE) ? EQMAC_STACKSIZE : spell.formula[i];
 						else if (item->MaxCharges) // mod rods, not sure if there are actual examples of this for IntoBag
 							charges = item->MaxCharges;
 						else
@@ -2379,35 +2382,15 @@ snare has both of them negative, yet their range should work the same:
 		case 107:
 		{
 			// Client duration extension focus effects are disabled for spells that use this formula
-			if (ticsremaining > 0)
-			{
-				int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - (ticsremaining - 1);
-				if (ticdif < 0)
-					ticdif = 0;
-
-				result = updownsign * (ubase - ticdif);
-			}
-			else
-			{
-				result = updownsign * ubase;
-			}
+			int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - ticsremaining;
+			result = updownsign * (ubase - ticdif);
 			break;
 		}
 		case 108:
 		{
 			// Client duration extension focus effects are disabled for spells that use this formula
-			if (ticsremaining > 0)
-			{
-				int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - (ticsremaining - 1);
-				if (ticdif < 0)
-					ticdif = 0;
-
-				result = updownsign * (ubase - (2 * ticdif));
-			}
-			else
-			{
-				result = updownsign * ubase;
-			}
+			int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - ticsremaining;
+			result = updownsign * (ubase - (2 * ticdif));
 			break;
 		}
 		case 109:	// confirmed 2/6/04
@@ -2415,18 +2398,25 @@ snare has both of them negative, yet their range should work the same:
 		case 110:
 			result = updownsign * (ubase + (caster_level / 6)); break;
 		case 111:
-			result = updownsign * (ubase + 6 * (caster_level - 16));
+			result = ubase;
+			if (caster_level > 16)
+				result = updownsign * (ubase + 6 * (caster_level - 16));
 			break;
 		case 112:
-			result = updownsign * (ubase + 8 * (caster_level - 24));
+			result = ubase;
+			if (caster_level > 24)
+				result = updownsign * (ubase + 8 * (caster_level - 24));
 			break;
 		case 113:
-			result = updownsign * (ubase + 10 * (caster_level - 34));
+			result = ubase;
+			if (caster_level > 34)
+				result = updownsign * (ubase + 10 * (caster_level - 34));
 			break;
 		case 114:
-			result = updownsign * (ubase + 15 * (caster_level - 44));
+			result = ubase;
+			if (caster_level > 44)
+				result = updownsign * (ubase + 15 * (caster_level - 44));
 			break;
-
 		case 115:	// this is only in symbol of transal
 			result = ubase;
 			if (caster_level > 15)
@@ -2453,18 +2443,8 @@ snare has both of them negative, yet their range should work the same:
 		case 120:
 		{
 			// Client duration extension focus effects are disabled for spells that use this formula
-			if (ticsremaining > 0)
-			{
-				int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - (ticsremaining - 1);
-				if (ticdif < 0)
-					ticdif = 0;
-
-				result = updownsign * (ubase - (5 * ticdif));
-			}
-			else
-			{
-				result = updownsign * ubase;
-			}
+			int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - ticsremaining;
+			result = updownsign * (ubase - (5 * ticdif));
 			break;
 		}
 		case 121:	// corrected 2/6/04
@@ -2472,22 +2452,12 @@ snare has both of them negative, yet their range should work the same:
 		case 122:
 		{
 			// Client duration extension focus effects are disabled for spells that use this formula
-			if (ticsremaining > 0)
-			{
-				int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - (ticsremaining - 1);
-				if (ticdif < 0)
-					ticdif = 0;
-
-				result = updownsign * (ubase - (12 * ticdif));
-			}
-			else
-			{
-				result = updownsign * ubase;
-			}
+			int ticdif = CalcBuffDuration_formula(caster_level, spells[spell_id].buffdurationformula, spells[spell_id].buffduration) - ticsremaining;
+			result = updownsign * (ubase - (12 * ticdif));
 			break;
 		}
 		case 123:	// added 2/6/04
-			result = zone->random.Int(ubase, std::abs(max));
+			result = ubase + zone->random.Int(1, max - abs(base));
 			break;
 
 		case 124:	// check sign
@@ -2542,40 +2512,27 @@ snare has both of them negative, yet their range should work the same:
 			result = caster_level > 50 ? 10 : caster_level > 45 ? 5 + caster_level - 45 : caster_level > 40 ? 5 : caster_level > 34 ? 4 : 3;
 			break;
 
-		//these are used in stacking effects... formula unknown
-		case 201:
-		case 202:
-		case 203:
-		case 204:
-		case 205:
-			result = max;
-			break;
 		default:
 		{
-			if (formula < 100)
-			{
-				if (spell_id == SPELL_HARM_TOUCH2)		// Unholy Aura disc HT.  This has formula = 14 but it's supposed to multiply all HTs by 1.5, including
-					formula = 10;						// Unholy Touch AA's added damage.  SPELL_HARM_TOUCH has formula 10.  Doing the mult elsewhere
+			if (spell_id == SPELL_HARM_TOUCH2)		// Unholy Aura disc HT.  This has formula = 14 but it's supposed to multiply all HTs by 1.5, including
+				formula = 10;						// Unholy Touch AA's added damage.  SPELL_HARM_TOUCH has formula 10.  Doing the mult elsewhere
 
-				result = ubase + (caster_level * formula);
+			result = ubase + (caster_level * formula);
 				
-				// Sony hardcoded a HT damage bonus
-				if (WorldContentService::Instance()->IsTheScarsOfVeliousEnabled())
+			// Sony hardcoded a HT damage bonus
+			if (WorldContentService::Instance()->IsTheScarsOfVeliousEnabled())
+			{
+				if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH)
 				{
-					if (spell_id == SPELL_HARM_TOUCH || spell_id == SPELL_HARM_TOUCH2 || spell_id == SPELL_IMP_HARM_TOUCH)
+					if (caster_level > 40)		// HT damage starts increasing by 30 per level at level 41
 					{
-						if (caster_level > 40)		// HT damage starts increasing by 30 per level at level 41
-						{
-							int htBonus = 20 * caster_level - 40;
-							if (htBonus > 400)		// scale goes back to +10 per level at level 60
-								htBonus = 400;
-							result += htBonus;
-						}
+						int htBonus = 20 * caster_level - 40;
+						if (htBonus > 400)		// scale goes back to +10 per level at level 60
+							htBonus = 400;
+						result += htBonus;
 					}
 				}
 			}
-			else
-				LogError("Unknown spell effect value formula [{}]", formula);
 		}
 	}
 
@@ -2606,6 +2563,229 @@ snare has both of them negative, yet their range should work the same:
 	return result;
 }
 
+void Mob::ApplyPeriodicHPEffects()
+{
+	CalcMaxHP();
+
+	// add up all SE_HealOverTime 100 effects
+	{
+		int total_HealOverTime = 0;
+
+		for (int buff_slot = 0; buff_slot < GetMaxTotalSlots(); buff_slot++)
+		{
+			if (!IsValidSpell(buffs[buff_slot].spellid))
+				continue;
+
+			auto spell = spells[buffs[buff_slot].spellid];
+			for (int effect_slot = 0; effect_slot < EFFECT_COUNT; effect_slot++)
+			{
+				if (spell.effectid[effect_slot] == SE_HealOverTime)
+				{
+					Mob *buff_caster = entity_list.GetMob(buffs[buff_slot].casterid);
+					int effect_value = CalcSpellEffectValue(spell.id, effect_slot, buffs[buff_slot].casterlevel, buffs[buff_slot].ticsremaining, buffs[buff_slot].instrumentmod);
+					if (buff_caster)
+						effect_value = buff_caster->GetActSpellHealing(spell.id, effect_value, nullptr, true);
+
+					total_HealOverTime += effect_value;
+				}
+			}
+		}
+
+		if (total_HealOverTime > 0)
+		{
+			// client does this all in one adjustment, not as it processes the effects.  maybe that's why there was no message for HoT heals to the caster.
+			HealDamage(total_HealOverTime, 0, 0, true);
+		}
+	}
+
+	// the client adds up all the SE_CurrentHP 0 effects (DoT and regen) plus worn regen and then applies the pvp/self mitigation to the sum.
+	{
+		int total_CurrentHP = 0;
+		bool firstDoTFound = false;
+		Mob *firstDoTCaster = nullptr;
+		int effect_multiplier_pct = 0;
+
+		for (int buff_slot = 0; buff_slot < GetMaxTotalSlots(); buff_slot++)
+		{
+			int spell_id = buffs[buff_slot].spellid;
+			if (!IsValidSpell(spell_id)) continue;
+			auto spell = spells[spell_id];
+
+			for (int effect_slot = 0; effect_slot < EFFECT_COUNT; effect_slot++)
+			{
+				if (spell.effectid[effect_slot] == SE_CurrentHP)
+				{
+					Mob *buff_caster = entity_list.GetMob(buffs[buff_slot].casterid);
+					// reversed tap spell
+					bool is_tap_recourse = (spell.targettype == ST_TargetAETap || spell.targettype == ST_Tap) && buff_caster == this;
+					int effect_value = CalcSpellEffectValue(spell.id, effect_slot, buffs[buff_slot].casterlevel, buffs[buff_slot].ticsremaining, buffs[buff_slot].instrumentmod);
+					if (is_tap_recourse) effect_value = -effect_value;
+					int hate_amount = effect_value;
+
+					//Handle client cast DOTs here.
+					if (buff_caster && buff_caster->IsClient() && IsDetrimentalSpell(spell_id) && effect_value < 0)
+					{
+						effect_value = buff_caster->CastToClient()->GetActDoTDamage(spell_id, effect_value, this);
+
+						if (!buff_caster->CastToClient()->IsFeigned()
+							&& (!GetOwner() || !GetOwner()->IsClient())
+							)
+							AddToHateList(buff_caster, -hate_amount);
+					}
+
+					if (effect_value < 0)
+					{
+						// this works like WhoPutThisEffectOnMe in the client, considering the caster of the first DoT found only
+						if (!firstDoTFound)
+						{
+							firstDoTFound = true;
+							firstDoTCaster = buff_caster; // could be null, if the caster left the zone
+							if (firstDoTCaster)
+							{
+								if (firstDoTCaster->IsClient() && IsClient())
+								{
+									effect_multiplier_pct = firstDoTCaster == this ? 75 : 70;
+								}
+							}
+						}
+
+						if (buff_caster)
+						{
+							if (!buff_caster->IsClient())
+							{
+								if (!IsClient() && !GetOwner()) //Allow NPC's to generate hate if casted on other NPC's.
+									AddToHateList(buff_caster, -hate_amount);
+							}
+
+							if (buff_caster->IsNPC())
+								effect_value = buff_caster->CastToNPC()->GetActSpellDamage(spell_id, effect_value, this);
+						}
+
+						// damage credit
+						int damage = -effect_value;
+						if (buff_caster)
+						{
+							if (!buff_caster->IsClient() || (buff_caster->IsClient() && !buff_caster->CastToClient()->IsFeigned()))
+							{
+								AddToHateList(buff_caster, 0, damage, false, true, false);
+							}
+						}
+
+						// exp damage accounting
+						if (IsNPC() && !zone->IsIdling())
+						{
+							int32 adj_damage = GetHP() - damage < 0 ? GetHP() : damage;
+
+							total_damage += adj_damage;
+
+							// Pets should not be included.
+							if (buff_caster->IsClient())
+							{
+								player_damage += adj_damage;
+							}
+
+							if (buff_caster->IsDireCharmed())
+								dire_pet_damage += adj_damage;
+
+							if (buff_caster->IsNPC() && (!buff_caster->IsPet() || (buff_caster->GetOwner() && buff_caster->GetOwner()->IsNPC())))
+								npc_damage += adj_damage;
+						}
+
+					}
+
+					// damage is applied at the end after adding it all up
+					total_CurrentHP += effect_value;
+				}
+			}
+		}
+
+		int total_worn = itembonuses.HPRegen;
+		int hp_mod = total_worn + total_CurrentHP;
+
+		// this is buff + item regen
+		if (hp_mod)
+		{
+			if (hp_mod < 0) // losing hitpoints from DoTs that exceed positive effects
+			{
+				if (effect_multiplier_pct)
+				{
+					hp_mod = effect_multiplier_pct * hp_mod / 100;
+					if (hp_mod > -1)
+						hp_mod = -1; // doesn't become 0 even with the PvP and self harm mitigation
+				}
+
+				// fade mez on DoT damage
+				if(int mez_in_slot = GetBuffSlotFromType(SE_Mez) >= 0)
+				{
+					BuffFadeBySlot(mez_in_slot);
+				}
+			}
+
+			// modify hp
+			int old_hp_ratio = (int)GetHPRatio();
+			SetHP(GetHP() + hp_mod);
+			if (IsClient())
+				CastToClient()->CalcAGI(); // AGI depends on current hp (near death)
+
+			if (hp_mod < 0) // damage was dealt
+			{
+				bool died = HasDied();
+
+				if(!died)
+				{
+					if (GetHPRatio() < 16.0f)
+						TryDeathSave();
+
+					TrySpinStunBreak();
+				}
+
+				//send an HP update if we are hurt
+				if (GetHP() < GetMaxHP())
+				{
+					if (IsNPC())
+					{
+						int cur_hp_ratio = (int)GetHPRatio();
+						if (cur_hp_ratio != old_hp_ratio)
+							SendHPUpdate(true, true);
+					}
+					// Let regen handle buff tics unless this tic killed us.
+					else if (died)
+					{
+						SendHPUpdate(true, true);
+					}
+
+					if (!died && IsNPC())
+					{
+						CheckFlee();
+						CheckEnrage();
+					}
+				}
+
+				if (died)
+				{
+					// it's Eagle Strike in the client when dying from a DoT
+					Death(firstDoTCaster, hp_mod, SPELL_UNKNOWN, EQ::skills::SkillEagleStrike, 0, true);
+
+					/* After this point, "this" is still a valid object, but its entityID is 0.*/
+					if (firstDoTCaster && firstDoTCaster->IsNPC())
+					{
+						uint32 emoteid = firstDoTCaster->GetEmoteID();
+						if (emoteid != 0)
+							firstDoTCaster->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::Killed, emoteid, this);
+					}
+				}
+			}
+		}
+	}
+
+	// this is innate/position/class based plus AA regen
+	if (IsClient() && GetHP() < GetMaxHP())
+	{
+		CalcMaxHP();
+		CastToClient()->DoHPRegen();
+	}
+	// NPC regen handled in NPC::Process()
+}
 
 void Mob::BuffProcess()
 {
@@ -2615,7 +2795,8 @@ void Mob::BuffProcess()
 	{
 		if (buffs[buffs_i].spellid != SPELL_UNKNOWN)
 		{
-			// this is a flag that removes the buff on the next BuffProcess() run, used to work around a client lockup issue for fear/charm spells
+			// this is a flag that removes the buff on the next BuffProcess() run, used to work around a client lockup issue for fear/charm spells.
+			// it's a custom behavior and not live like
 			if (buffs[buffs_i].remove_me)
 			{
 				buffs[buffs_i].remove_me = false;
@@ -2623,49 +2804,43 @@ void Mob::BuffProcess()
 				continue;
 			}
 
+			// remove expired
+			// in the case of buffs on clients, there are two timers (client/server).  both the client and server can remove the buff and
+			// notify each other about it.  this results in the last tick being cut short, when the buff reaches duration 0.  the server
+			// will reach this block first some of the time and remove the buff on the client before it expires fully on the client side.
+			if (buffs[buffs_i].ticsremaining == 0)
+			{
+				// note that in eqmac, the buff is removed here and its effects are not processed on the 0 duration iteration
+				LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
+				Message(Chat::Cyan, "Server is fading buff %s", spells[buffs[buffs_i].spellid].name);
+				BuffFadeBySlot(buffs_i);
+				continue;
+			}
+			else
+			{
+				LogSpellsDetail("Buff [{}] in slot [{}] has [{}] tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
+			}
+
+			// decrement duration
+			if (spells[buffs[buffs_i].spellid].buffdurationformula != DF_Permanent)
+			{
+				// the first tick is (duration - 1) and the last tick is 0 for the formula calculations.
+				--buffs[buffs_i].ticsremaining;
+			}
+
+			// recalc bonuses if degenerating spells are active
+			if (IsSplurtFormulaSpell(buffs[buffs_i].spellid))
+			{
+				CalcBonuses();
+			}
+
+			// apply effects
 			DoBuffTic(buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining, buffs[buffs_i].casterlevel, entity_list.GetMob(buffs[buffs_i].casterid), buffs[buffs_i].instrumentmod);
 			// If the Mob died during DoBuffTic, then the buff we are currently processing will have been removed
 			if(buffs[buffs_i].spellid == SPELL_UNKNOWN)
 				continue;
 
-			if(spells[buffs[buffs_i].spellid].buffdurationformula != DF_Permanent)
-			{
-				if(!zone->BuffTimersSuspended() || !IsSuspendableSpell(buffs[buffs_i].spellid) || !IsBeneficialSpell(buffs[buffs_i].spellid))
-				{
-					--buffs[buffs_i].ticsremaining;
-
-					if (buffs[buffs_i].ticsremaining == 0) {
-						if (!IsShortDurationBuff(buffs[buffs_i].spellid) ||
-							IsFearSpell(buffs[buffs_i].spellid) ||
-							IsCharmSpell(buffs[buffs_i].spellid) ||
-							IsMezSpell(buffs[buffs_i].spellid) ||
-							IsBlindSpell(buffs[buffs_i].spellid))
-						{
-							LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
-							BuffFadeBySlot(buffs_i);
-						}
-					}
-					else if (buffs[buffs_i].ticsremaining < 0)
-					{
-						LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
-						BuffFadeBySlot(buffs_i);
-					}
-					else
-					{
-						LogSpellsDetail("Buff [{}] in slot [{}] has [{}] tics remaining.", buffs[buffs_i].spellid, buffs_i, buffs[buffs_i].ticsremaining);
-					}
-				}
-				else if(IsClient())
-				{
-					buffs[buffs_i].UpdateClient = true;
-				}
-			}
-
-			if (buffs[buffs_i].spellid != SPELL_UNKNOWN && IsSplurtFormulaSpell(buffs[buffs_i].spellid))
-			{
-				CalcBonuses();
-			}
-
+			// modify duration on client if flagged
 			if(buffs[buffs_i].spellid != SPELL_UNKNOWN && IsClient())
 			{
 				if(buffs[buffs_i].UpdateClient == true)
@@ -2728,9 +2903,6 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 		}
 	}
 
-	// reversed tap spell
-	bool is_tap_recourse = (spells[spell_id].targettype == ST_TargetAETap || spells[spell_id].targettype == ST_Tap) && caster == this;
-
 	for (int i = 0; i < EFFECT_COUNT; i++)
 	{
 		if(IsBlankSpellEffect(spell_id, i))
@@ -2744,52 +2916,12 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 		{
 			case SE_CurrentHP:
 			{
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
-				if (is_tap_recourse) effect_value = -effect_value;
-				int hate_amount = effect_value;
-				//Handle client cast DOTs here.
-				if (caster && caster->IsClient() && IsDetrimentalSpell(spell_id) && effect_value < 0) {
-
-					effect_value = caster->CastToClient()->GetActDoTDamage(spell_id, effect_value, this);
-
-					if (!caster->CastToClient()->IsFeigned()
-						&& (!GetOwner() || !GetOwner()->IsClient())
-					)
-						AddToHateList(caster, -hate_amount);
-				}
-
-				if(effect_value < 0)
-				{
-					if(caster)
-					{
-						if(!caster->IsClient()){
-
-							if (!IsClient() && !GetOwner()) //Allow NPC's to generate hate if casted on other NPC's.
-								AddToHateList(caster, -hate_amount);
-						}
-
-						if(caster->IsNPC())
-							effect_value = caster->CastToNPC()->GetActSpellDamage(spell_id, effect_value, this);
-
-					}
-
-					effect_value = -effect_value;
-					LogSpellsDetail("[{}] is being damaged for [{}] points due to DOT [{}] in slot [{}].", GetName(), effect_value, GetSpellName(spell_id), slot);
-					Damage(caster, effect_value, spell_id, spell.skill, false, i, true);
-				} else if(effect_value > 0) {
-					// Regen spell...
-					// handled with bonuses
-				}
+				// handled in ApplyPeriodicHPEffects
 				break;
 			}
 			case SE_HealOverTime:
 			{
-				effect_value = CalcSpellEffectValue(spell_id, i, caster_level, ticsremaining, instrumentmod);
-				if(caster)
-					effect_value = caster->GetActSpellHealing(spell_id, effect_value, nullptr, true);
-
-				HealDamage(effect_value, caster, spell_id, true);
-				//healing aggro would go here; removed for now
+				// handled in ApplyPeriodicHPEffects
 				break;
 			}
 
@@ -2945,7 +3077,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			case SE_InvisVsAnimals:
 			case SE_InvisVsUndead:
 			{
-				if(ticsremaining > 10)
+				if(ticsremaining > 1)
 				{
 					//EQMac has no effect for fixed length invis :(
 					if(!spells[spell_id].bardsong && !IsFixedDurationInvisSpell(spell_id))
@@ -2962,12 +3094,13 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 
 						if(zone->random.Real(0.0, 100.0) < break_chance)
 						{
-							BuffModifyDurationBySpellID(spell_id, 10, true);
-							LogSpells("Invis spell [{}] fading early. 10 tics remain.", spell_id);
+							BuffModifyDurationBySpellID(spell_id, 1, true);
+							ticsremaining = 1;
+							LogSpells("Invis spell [{}] fading early. 1 tic remains.", spell_id);
 						}
 					}
 				}
-				else if (ticsremaining == 2)
+				if (!spells[spell_id].bardsong && ticsremaining == 1)
 				{
 					Message_StringID(Chat::SpellFailure, StringID::INVIS_BEGIN_BREAK);
 				}
@@ -4412,7 +4545,7 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 				if (spell_id == SPELL_PACIFY && RuleB(Spells, ReducePacifyDuration))
 				{
 					int32 pacify_original_duration = buffs[buffslot].ticsremaining;
-					int32 pacify_modified_duration = 8; // 7 plus extra tick
+					int32 pacify_modified_duration = 7;
 					LogFocus("Pacify spell TAKP special - reducing duration from [{}] to [{}] before focus", pacify_original_duration, pacify_modified_duration);
 					spelltar->BuffModifyDurationBySpellID(spell_id, pacify_modified_duration, false); // update false because we call the function again below to really update
 				}
@@ -4429,27 +4562,18 @@ void Client::ApplyDurationFocus(uint16 spell_id, uint16 buffslot, Mob* spelltar,
 //for some stupid reason SK procs return theirs one base off...
 uint16 Mob::GetProcID(uint16 spell_id, uint8 effect_index)
 {
-	if (!RuleB(Spells, SHDProcIDOffByOne)) // UF+ spell files
-		return spells[spell_id].base[effect_index];
+	if (!IsValidSpell(spell_id))
+		return 0;
+	if (effect_index < 0 || effect_index >= EFFECT_COUNT)
+		return 0;
 
-	// We should actually just be checking if the mob is SHD, but to not force
-	// custom servers to create new spells, we will still do this
-	bool sk = false;
-	bool other = false;
-	for (int x = 0; x < 16; x++) {
-		if (x == 4) {
-			if (spells[spell_id].classes[4] < 255)
-				sk = true;
-		} else {
-			if (spells[spell_id].classes[x] < 255)
-				other = true;
-		}
-	}
+	uint16 proc_spell_id = spells[spell_id].base[effect_index];
 
-	if (sk && !other)
-		return spells[spell_id].base[effect_index] + 1;
-	else
-		return spells[spell_id].base[effect_index];
+	// this applies to everything, not just SK buffs.  there are SK versions of things like Blade Dance, Call of Sky Strike, etc.
+	if (GetClass() == Class::ShadowKnight)
+		return proc_spell_id + 1;
+
+	return proc_spell_id;
 }
 
 bool Mob::TryDivineSave()

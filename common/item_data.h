@@ -45,6 +45,8 @@
 #include "emu_constants.h"
 
 
+#define EQMAC_STACKSIZE 20
+
 namespace EQ
 {
 	namespace item {
@@ -269,9 +271,10 @@ namespace EQ
 		uint32	Color;			// RR GG BB 00 <-- as it appears in pc
 		int32	Classes;		// Bitfield of classes that can equip item (1 << class#)
 		int32	Races;			// Bitfield of races that can equip item (1 << race#)
-		bool	Stackable;
+		// Stackable is named wrong, the client uses to check for clicky spell cast items if value > 1
 		int8	Stackable_; // EQMac uses 0 for non-stackable, 1 for stackable, and 3 indicates the item has a spell effect. 2 seems to be unused.
-		int16	StackSize;
+		// StackSize doesn't exist in eqmac, it's always 20
+		//int16	StackSize;
 
 		int8	Book;			// 0=Not book, 1=Book
 		int16	BookType;
@@ -321,6 +324,7 @@ namespace EQ
 		bool IsType1HWeapon() const;
 		bool IsType2HWeapon() const;
 		bool IsTypeShield() const;
+		bool IsStackable() const;
 	};
 }
 #endif /*COMMON_ITEM_DATA_H*/
