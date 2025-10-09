@@ -3524,15 +3524,7 @@ void Client::Handle_OP_Death(const EQApplicationPacket *app)
 	// but if it goes unconscious first then this doesn't happen. if they bleed out then
 	// they send no killer_id
 	// 
-	// for environmental death, the client sends damage packets hurting itself and the server calls Death()
-	// before the client has a chance to send this packet anyway
-	//
-	// if we call Death() from here with these blank values, it will set the dead flag and ignore
-	// additional Death() calls from the damage code.  taking these out for now so that death
-	// is consistently caused by the server and the killing blow is credited to the correct entity
-	//
 
-	/*
 	//Burning, Drowning, Falling, Freezing
 	if (ds->attack_skill >= 246)
 	{
@@ -3552,7 +3544,6 @@ void Client::Handle_OP_Death(const EQApplicationPacket *app)
 		Death(killer, ds->damage, ds->spell_id, (EQ::skills::SkillType)ds->attack_skill, Killed_Client);
 		return;
 	}
-	*/
 }
 
 void Client::Handle_OP_DeleteCharge(const EQApplicationPacket *app)

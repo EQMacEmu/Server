@@ -2808,7 +2808,7 @@ void Mob::BuffProcess()
 			{
 				// note that in eqmac, the buff is removed here and its effects are not processed on the 0 duration iteration
 				LogSpellsDetail("Buff [{}] in slot [{}] has expired. Fading.", buffs[buffs_i].spellid, buffs_i);
-				Message(Chat::Cyan, "Server is fading buff %s", spells[buffs[buffs_i].spellid].name);
+				//Message(Chat::Cyan, "Server is fading buff %s", spells[buffs[buffs_i].spellid].name);
 				BuffFadeBySlot(buffs_i);
 				continue;
 			}
@@ -3073,7 +3073,7 @@ void Mob::DoBuffTic(uint16 spell_id, int slot, uint32 ticsremaining, uint8 caste
 			case SE_InvisVsAnimals:
 			case SE_InvisVsUndead:
 			{
-				if(ticsremaining > 1)
+				if(ticsremaining > 3)
 				{
 					//EQMac has no effect for fixed length invis :(
 					if(!spells[spell_id].bardsong && !IsFixedDurationInvisSpell(spell_id))
