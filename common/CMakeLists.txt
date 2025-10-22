@@ -55,6 +55,7 @@ SET(common_sources
     mutex.cpp
     mysql_request_result.cpp
     mysql_request_row.cpp
+    name_generator.cpp
     opcode_map.cpp
     opcodemgr.cpp
     packet_dump.cpp
@@ -112,6 +113,7 @@ SET(common_sources
     tinyxml/tinyxmlerror.cpp
     tinyxml/tinyxmlparser.cpp
     util/uuid.cpp
+	name_generator.cpp
 )
 
 SET(repositories
@@ -432,6 +434,7 @@ SET(common_headers
     mutex.h
     mysql_request_result.h
     mysql_request_row.h
+    name_generator.h
     op_codes.h
     opcodemgr.h
     packet_dump.h
@@ -515,6 +518,7 @@ SET(common_headers
     tinyxml/tinyxml.h
     util/memory_stream.h
     util/uuid.h
+	name_generator.h
 )
 
 SOURCE_GROUP(Event FILES

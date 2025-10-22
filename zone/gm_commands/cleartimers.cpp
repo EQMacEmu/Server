@@ -33,6 +33,7 @@ void command_cleartimers(Client *c, const Seperator *sep)
 			t->ClearPTimers(0);
 			t->SendAATimers();
 			t->ResetAllSkills();
+			t->MemorizeSpell((uint32)EQ::spells::CastingSlot::Ability, 5, memSpellSpellbar); // spell 5 has 0 recast time, any 0 recast spell could be used here
 			c->Message(Chat::White, "Cleared all timers on %s", t->GetName());
 		}
 		else if(strcasecmp(sep->arg[1], "skills") == 0)

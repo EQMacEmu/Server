@@ -21,6 +21,7 @@
 #include "../common/strings.h"
 #include "../common/types.h"
 #include "../common/zone_store.h"
+#include "../common/name_generator.h"
 
 #include "entity.h"
 #include "client.h"
@@ -37,26 +38,7 @@
 
 void GetRandPetName(char* name)
 {
-	// (G,J,K,L,V,X,Z) + ("",ab,ar,as,eb,en,ib,ob,on) + ("",an,ar,ek,ob) + (ab,er,n,tik)
-	static const char *prefix[] = { "G", "J", "K", "L", "V", "X", "Z" };
-	static const char *affix1[] = { "", "ab", "ar", "as", "eb", "en", "ib", "ob", "on" };
-	static const char *affix2[] = { "", "an", "ar", "ek", "ob" };
-	static const char *suffix[] = { "ab", "er", "n", "tik" };
-	
-	int p = zone->random.Int(0, (sizeof(prefix) / sizeof(const char *)) - 1);
-	int a1 = zone->random.Int(0, (sizeof(affix1) / sizeof(const char *)) - 1);
-	int a2 = zone->random.Int(0, (sizeof(affix2) / sizeof(const char *)) - 1);
-	int s = zone->random.Int(0, (sizeof(suffix) / sizeof(const char *)) - 1);
-	
-	if (a1 == 0 && a2 == 0)
-		s = 3;
-	if (a2 == 3)
-		s = zone->random.Int(0, (sizeof(suffix) / sizeof(const char *)) - 2);
-
-	strcpy(name, prefix[p]);
-	strcat(name, affix1[a1]);
-	strcat(name, affix2[a2]);
-	strcat(name, suffix[s]);
+	strcpy(name, EQNameGen(zone->random).CreateName(0, 0));
 
 	LogPets("Pet being created: [{}]", name);
 }

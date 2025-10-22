@@ -406,6 +406,7 @@ void Client::ActivateAA(aaID aaid)
 		if (aaid == aaImprovedHarmTouch || aaid == aaLeechTouch)
 		{
 			GetPTimers().Start(pTimerHarmTouch, reuse_timer);
+			MemorizeSpell((uint32)EQ::spells::CastingSlot::Ability, SPELL_HARM_TOUCH, memSpellSpellbar);
 			if (HasInstantDisc(SPELL_HARM_TOUCH))
 				FadeDisc();
 		}
