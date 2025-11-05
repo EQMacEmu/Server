@@ -19,16 +19,22 @@ std::string Process::execute(const std::string &cmd, bool return_result)
 {
 	std::string random     = "/tmp/" + random_string(25);
 	const char  *file_name = random.c_str();
+	int exit_status = 0;
 
 	if (return_result) {
 #ifdef _WINDOWS
-		std::system((cmd + " > " + file_name + " 2>&1").c_str());
+		exit_status = std::system((cmd + " > " + file_name + " 2>&1").c_str());
 #else
-		std::system((cmd + " > " + file_name + " 2>&1").c_str());
+		exit_status = std::system((cmd + " > " + file_name + " 2>&1").c_str());
 #endif
 	}
 	else {
-		std::system((cmd).c_str());
+		exit_status = std::system((cmd).c_str());
+	}
+
+	if (exit_status)
+	{
+		fprintf(stderr, "non zero exit from std::system: %d", exit_status);
 	}
 
 	std::string result;

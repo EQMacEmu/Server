@@ -2099,6 +2099,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 	}
 	uint32 emoteid = this->GetEmoteID();
 	bool is_client_pet = false;
+	bool is_summoned_pet = IsSummonedClientPet() || (IsPet() && GetSummonerID());
 	if (GetOwner() && GetOwner()->IsClient())
 		is_client_pet = true;
 
@@ -2115,7 +2116,7 @@ void NPC::CreateCorpse(Mob* killer, bool &corpse_bool)
 	if (killer != 0 && emoteid != 0)
 		corpse->CastToNPC()->DoNPCEmote(EQ::constants::EmoteEventTypes::AfterDeath, emoteid, killer);
 
-	if (killer != 0 && killer->IsClient())
+	if (killer != 0 && killer->IsClient() && !is_summoned_pet)
 	{
 		corpse->AllowPlayerLoot(killer, 0);
 		if (killer->IsGrouped())

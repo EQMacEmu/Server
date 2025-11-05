@@ -249,13 +249,17 @@ ProcLauncher::ProcRef ProcLauncher::Launch(Spec *&to_launch) {
 				if(dup2(outfd, STDOUT_FILENO) == -1) {
 					fprintf(stderr, "Unable to duplicate FD %d to %d. Log file will be empty: %s\n", outfd, STDOUT_FILENO, strerror(errno));
 					const char *err = "Unable to redirect stdout into this file. That sucks.";
-					write(outfd, err, strlen(err));
+					if (write(outfd, err, strlen(err)) == -1) {
+						perror("write");
+					}
 				}
 				close(STDERR_FILENO);
 				if(dup2(outfd, STDERR_FILENO) == -1) {
 					//can no longer print to screen..
 					const char *err = "Unable to redirect stderr into this file. You might miss some error info in this log.";
-					write(outfd, err, strlen(err));
+					if (write(outfd, err, strlen(err)) == -1) {
+						perror("write");
+					}
 				}
 				close(STDIN_FILENO);
 

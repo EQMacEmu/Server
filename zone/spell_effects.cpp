@@ -109,7 +109,7 @@ bool Mob::SpellEffect(Mob* caster, uint16 spell_id, int buffslot, int caster_lev
 		effect_value = CalcSpellEffectValue(spell_id, i, caster_level, 0, caster ? caster->GetInstrumentMod(spell_id) : 10);
 
 		if(spell_id == SPELL_LAY_ON_HANDS && caster && caster->GetAA(aaImprovedLayOnHands))
-			effect_value = GetMaxHP();
+			effect_value = 10000;
 		if (spell_id == SPELL_LEECH_TOUCH && caster && caster->GetAA(aaConsumptionoftheSoul))
 			effect_value -= 200 * caster->GetAA(aaConsumptionoftheSoul);
 
