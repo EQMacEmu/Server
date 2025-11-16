@@ -28,6 +28,8 @@
 #include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/zone_store.h"
 #include "player_start_location.h"
+#include "../common/races.h"
+#include "../common/classes.h"
 
 WorldDatabase database;
 extern std::vector<RaceClassAllocation> character_create_allocations;
@@ -364,6 +366,30 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		}
 	}
 #endif
+	if (!WorldContentService::Instance()->IsTheRuinsOfKunarkEnabled() && in_cc->race == Race::Iksar) {
+		LogInfo("Race not available during this expansion");
+		return false;
+	}
+
+	if (!WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled() && in_cc->race == Race::VahShir) {
+		LogInfo("Race not available during this expansion");
+		return false;
+	}
+
+	if (!WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled() && in_cc->class_ == Class::Beastlord) {
+		LogInfo("Class not available during this expansion");
+		return false;
+	}
+
+	if (!WorldContentService::Instance()->IsTheShadowsOfLuclinEnabled() && 
+		((in_cc->race == Race::Gnome && in_cc->class_ == Class::Paladin) ||
+		(in_cc->race == Race::Gnome && in_cc->class_ == Class::ShadowKnight) ||
+		(in_cc->race == Race::Halfling && in_cc->class_ == Class::Paladin) ||
+		(in_cc->race == Race::Halfling && in_cc->class_ == Class::Ranger))
+	) {
+		LogInfo("Race/Class not available during this expansion");
+		return false;
+	}
 
 	// this uses code decompiled from the eqmac client to set origin and bind location for new characters
 	PlayerStartLocationInfo i{};
