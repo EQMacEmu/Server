@@ -467,9 +467,7 @@ bool Client::HandleCharacterCreatePacket(const EQApplicationPacket *app) {
 	else if (app->size != sizeof(CharCreate_Struct)) {
 		LogInfo("Wrong size on OP_CharacterCreate. Got: [{}], Expected: [{}]",app->size,sizeof(CharCreate_Struct));
 		DumpPacket(app);
-		// the previous behavior was essentially returning true here
-		// but that seems a bit odd to me.
-		return true;
+		return false;
 	}
 
 	CharCreate_Struct *cc = (CharCreate_Struct*)app->pBuffer;
@@ -1150,9 +1148,6 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 
 	in.s_addr = GetIP();
 
-	if(cc->face == 0 && cc->oldface > 0)
-		cc->face = cc->oldface;
-
 	LogInfo(
 		"Character creation request from [{}] LS [{}] ([{}]:[{}]) : ", 
 		GetCLE()->LSName(), 
@@ -1166,7 +1161,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		cc->class_,
 		cc->gender,
 		cc->deity,
-		cc->start_zone
+		cc->zone_id
 	);
 	LogInfo(
 		"AGI [{}] CHA [{}] DEX [{}] INT [{}] STA [{}] STR [{}] WIS [{}] Total [{}]",
@@ -1179,7 +1174,7 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		cc->WIS,
 		stats_sum
 	);
-	LogInfo("Face: [{}]  Eye colors: [{}] [{}]", cc->face, cc->eyecolor1, cc->eyecolor2);
+	LogInfo("Face: [{}]  Eye colors: [{}] [{}]", cc->luclinface, cc->eyecolor1, cc->eyecolor2);
 	LogInfo("Hairstyle: [{}]  Haircolor: [{}]", cc->hairstyle, cc->haircolor);
 	LogInfo("Beard: [{}]  Beardcolor: [{}]", cc->beard, cc->beardcolor);
 
@@ -1193,6 +1188,9 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 
 	strn0cpy(pp.name, name, sizeof(pp.name));
 
+	if (cc->luclinface == 0 && cc->oldface > 0)
+		cc->luclinface = cc->oldface;
+
 	pp.race         = cc->race;
 	pp.class_       = cc->class_;
 	pp.gender       = cc->gender;
@@ -1204,7 +1202,8 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	pp.WIS          = cc->WIS;
 	pp.INT          = cc->INT;
 	pp.CHA          = cc->CHA;
-	pp.face         = cc->face;
+	pp.face         = cc->oldface;
+	pp.luclinface	= cc->luclinface;
 	pp.eyecolor1    = cc->eyecolor1;
 	pp.eyecolor2    = cc->eyecolor2;
 	pp.hairstyle    = cc->hairstyle;
@@ -1311,7 +1310,10 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 
 	LogInfo( "Validating char creation info...");
 
-	int currentExpansions = GetExpansion(); // Get expansion value from account table
+	//int currentExpansions = GetExpansion(); // Get expansion value from account table
+
+	int csexp = WorldContentService::Instance()->GetCurrentExpansion(); // this is the chronological expansion number or -1 to indicate ALL but we need a bit mask to compare against
+	int currentExpansions = (1 << (csexp >= 0 ? csexp : 30)) - 1; // Get expansion mask based on CurrentExpansion rule for TLP
 
 	RaceClassCombos class_combo;
 	bool found = false;
@@ -1320,7 +1322,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 		if (character_create_race_class_combos[i].Class == cc->class_ &&
 				character_create_race_class_combos[i].Race == cc->race &&
 				character_create_race_class_combos[i].Deity == cc->deity &&
-				character_create_race_class_combos[i].Zone == cc->start_zone &&
+				character_create_race_class_combos[i].Zone == cc->zone_id &&
 			((currentExpansions & character_create_race_class_combos[i].ExpansionRequired) == character_create_race_class_combos[i].ExpansionRequired || 
 				character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];

@@ -27,7 +27,6 @@
 #include "char_create_data.h"
 #include "../common/repositories/criteria/content_filter_criteria.h"
 #include "../common/zone_store.h"
-#include "player_start_location.h"
 #include "../common/races.h"
 #include "../common/classes.h"
 
@@ -311,61 +310,6 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 	in_pp->x = in_pp->y = in_pp->z = in_pp->heading = in_pp->zone_id = 0;
 	in_pp->binds[0].x = in_pp->binds[0].y = in_pp->binds[0].z = in_pp->binds[0].zoneId = 0;
 
-#if 0 // solar 20251007: disabled database query method and using hardcoded function
-    std::string query = StringFormat(
-		"SELECT x, y, z, heading, bind_id,bind_x,bind_y,bind_z FROM start_zones WHERE zone_id = %i "
-        "AND player_class = %i AND player_deity = %i AND player_race = %i %s",
-        in_cc->start_zone, 
-		in_cc->class_, 
-		in_cc->deity, 
-		in_cc->race,
-		ContentFilterCriteria::apply().c_str()
-	);
-    auto results = QueryDatabase(query);
-	if(!results.Success()) {
-		return false;
-	}
-
-    if (results.RowCount() == 0) {
-		LogInfo("{}: No start_zones entry in database, character create is rejected", in_pp->name);
-		// character creation will be rejected however the client message will be name rejected choose another.
-		// This is an optional to use for min expansion server side rather than setting it client side.
-		return false;
-    }
-    else {
-		LogInfo("{}: Found starting location in start_zones", in_pp->name);
-		auto row = results.begin();
-		in_pp->x = atof(row[0]);
-		in_pp->y = atof(row[1]);
-		in_pp->z = atof(row[2]);
-		in_pp->heading = atof(row[3]);
-		in_pp->zone_id = in_cc->start_zone;
-		in_pp->binds[0].zoneId = atoi(row[4]);
-		in_pp->binds[0].x = atoi(row[5]);
-		in_pp->binds[0].y = atoi(row[6]);
-		in_pp->binds[0].z = atoi(row[7]);
-	}
-
-	if (in_pp->x == 0 && in_pp->y == 0 && in_pp->z == 0 && in_pp->heading == 0) {
-		auto zone = GetZone(in_pp->zone_id);
-		if (zone) {
-			in_pp->x = zone->safe_x;
-			in_pp->y = zone->safe_y;
-			in_pp->z = zone->safe_z;
-			in_pp->heading = zone->safe_heading;
-		}
-	}
-
-	if (in_pp->binds[0].x == 0 && in_pp->binds[0].y == 0 && in_pp->binds[0].z == 0 && in_pp->binds[0].heading == 0) {
-		auto zone = GetZone(in_pp->binds[0].zoneId);
-		if (zone) {
-			in_pp->binds[0].x = zone->safe_x;
-			in_pp->binds[0].y = zone->safe_y;
-			in_pp->binds[0].z = zone->safe_z;
-			in_pp->binds[0].heading = zone->safe_heading;
-		}
-	}
-#endif
 	if (!WorldContentService::Instance()->IsTheRuinsOfKunarkEnabled() && in_cc->race == Race::Iksar) {
 		LogInfo("Race not available during this expansion");
 		return false;
@@ -391,23 +335,42 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		return false;
 	}
 
-	// this uses code decompiled from the eqmac client to set origin and bind location for new characters
-	PlayerStartLocationInfo i{};
-	i.race = in_cc->race;
-	i.classnum = in_cc->class_;
-	i.deity = in_cc->deity;
-	i.city_ix = in_cc->start_zone;
-	FillPlayerStartLocationInfo(&i);
-	in_pp->zone_id = i.zone_id;
-	in_pp->x = i.x;
-	in_pp->y = i.y;
-	in_pp->z = i.z;
-	in_pp->heading = i.heading;
-	in_pp->binds[0].zoneId = i.bind_zone_id;
-	in_pp->binds[0].x = i.bind_x;
-	in_pp->binds[0].y = i.bind_y;
-	in_pp->binds[0].z = i.bind_z;
-	in_pp->binds[0].heading = 0.0f;
+// starting zone_id is validated by CheckCharCreateInfo() already but just in case
+	const int allowed_origin_zones[] = { 1, 2, 3, 8, 9, 10, 19, 23, 24, 29, 41, 42, 49, 52, 54, 55, 60, 61, 62, 67, 75, 78, 82, 106, 155 };
+	const int allowed_bind_zones[] = { 1, 2, 4, 9, 25, 30, 33, 38, 46, 47, 54, 56, 68, 75, 78, 155 };
+
+	bool allowed_origin_zone_id = false;
+	for (size_t j = 0; !allowed_origin_zone_id && j < sizeof(allowed_origin_zones) / sizeof(int); j++)
+		if (allowed_origin_zones[j] == in_cc->zone_id)
+			allowed_origin_zone_id = true;
+
+	if (allowed_origin_zone_id)
+	{
+		// copy info from the EQ_PC struct the client sends
+		in_pp->zone_id = in_cc->zone_id;
+		in_pp->x = in_cc->x;
+		in_pp->y = in_cc->y;
+		in_pp->z = in_cc->z;
+		in_pp->heading = in_cc->heading;
+	}
+
+	for (int i = 0; i < 5; i++)
+	{
+		bool allowed_bind_zone_id = false;
+		for (size_t j = 0; !allowed_bind_zone_id && j < sizeof(allowed_bind_zones) / sizeof(int); j++)
+			if (allowed_bind_zones[j] == in_cc->bind_point_zone[i])
+				allowed_bind_zone_id = true;
+
+		if (allowed_bind_zone_id)
+		{
+			// copy info from the EQ_PC struct the client sends
+			in_pp->binds[i].zoneId = in_cc->bind_point_zone[i];
+			in_pp->binds[i].x = in_cc->bind_x[i];
+			in_pp->binds[i].y = in_cc->bind_y[i];
+			in_pp->binds[i].z = in_cc->bind_z[i];
+			in_pp->binds[i].heading = in_cc->bind_heading[i];
+		}
+	}
 
 	return true;
 }

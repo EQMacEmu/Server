@@ -25,7 +25,6 @@ SET(world_sources
 	world_boot.cpp
 	zonelist.cpp
 	zoneserver.cpp
-	player_start_location.cpp
 )
 
 SET(world_headers
@@ -55,7 +54,6 @@ SET(world_headers
 	world_event_scheduler.h
 	zonelist.h
 	zoneserver.h
-	player_start_location.h
 )
 
 ADD_EXECUTABLE(world ${world_sources} ${world_headers})

@@ -529,54 +529,186 @@ struct NameGeneration_Struct
 /*0072*/
 };
 
+struct CC_SpellBuff_Struct
+{
+	uint8 bufftype;
+	uint8 level;
+	uint8 bard_modifier;
+	uint8 activated;
+	uint16 spellid;
+	uint16 duration;
+	uint16 counters;
+};
+
+struct CC_ItemProperties_Struct
+{
+	uint8 unknown01[2];
+	int8 charges;
+	uint8 unknown02[7];
+};
+
+struct CC_AA_Array
+{
+	uint8 AA;
+	uint8 value;
+};
+
 /*
 ** CharCreate
 ** Length: 8452 Bytes
 */
 struct CharCreate_Struct
 {
-	/*0000*/	uint8	unknown0004[136];
-	/*0136*/	uint8	gender;				// Player Gender
-	/*0137*/	char	unknown137[1];
-	/*0138*/	uint16	race;				// Player Race
-	/*0140*/	uint16	class_;				// Player Class
-	/*0142*/	uint8	unknown0142[18];
-	/*0160*/	uint16	STR;				// Player Strength
-	/*0162*/	uint16	STA;				// Player Stamina
-	/*0164*/	uint16	CHA;				// Player Charisma
-	/*0166*/	uint16	DEX;				// Player Dexterity
-	/*0168*/	uint16	INT;				// Player Intelligence
-	/*0170*/	uint16	AGI;				// Player Agility
-	/*0172*/	uint16	WIS;				// Player Wisdom
-	/*0174*/	uint8	oldface;
-	/*0175*/	uint8	unknown0175[3265];
-	/*3440*/	uint32	start_zone;
-	// 0 = odus
-	// 1 = qeynos
-	// 2 = halas
-	// 3 = rivervale
-	// 4 = freeport
-	// 5 = neriak
-	// 6 = gukta/grobb
-	// 7 = ogguk
-	// 8 = kaladim
-	// 9 = gfay
-	// 10 = felwithe
-	// 11 = akanon
-	// 12 = cabalis
-	// 13 = shar vahl
-	/*3444*/	uint8	unknown3444[1496];
-	/*4940*/	uint16	deity;
-	/*4942*/	uint8	unknown4946[480];
-	/*5422*/	uint8	haircolor;			// Player Hair Color
-	/*5423*/	uint8	beardcolor;			// Player Beard Color
-	/*5424*/	uint8	eyecolor1;			// Player Left Eye Color
-	/*5425*/	uint8	eyecolor2;			// Player Right Eye Color
-	/*5426*/	uint8	hairstyle;			// Player Hair Style
-	/*5427*/	uint8	beard;				// Player Beard Type
-	/*5428*/	uint8	face;				// Player Face Type
-	/*5429*/	uint8	unknown5429[3023];
-	/*8452*/
+	uint8 unknown0004[2];
+	char name[64];
+	char last_name[66];
+	uint32 uniqueGuildID;
+	uint8 gender;
+	char _genderchar[1];
+	uint16 race;
+	uint16 class_;
+	uint16 bodytype;
+	uint8 level;
+	char _levelchar[3];
+	uint32 exp;
+	int16 points;
+	int16 mana;
+	int16 cur_hp;
+	uint16 status;
+	int16 STR;
+	int16 STA;
+	int16 CHA;
+	int16 DEX;
+	int16 INT;
+	int16 AGI;
+	int16 WIS;
+	uint8 oldface;
+	uint8 EquipType[9];
+	uint32 EquipColor[9];
+	int16 inventory[30];
+	uint8 languages[32];
+	struct CC_ItemProperties_Struct invItemProperties[30];
+	struct CC_SpellBuff_Struct buffs[15];
+	int16 containerinv[80];
+	int16 cursorbaginventory[10];
+	struct CC_ItemProperties_Struct bagItemProperties[80];
+	struct CC_ItemProperties_Struct cursorItemProperties[10];
+	int16 spell_book[256];
+	uint8 unknown2374[512];
+	int16 mem_spells[8];
+	uint8 unknown2886[16];
+	uint16 available_slots;
+	float y;
+	float x;
+	float z;
+	float heading;
+	uint32 position;
+	int32 platinum;
+	int32 gold;
+	int32 silver;
+	int32 copper;
+	int32 platinum_bank;
+	int32 gold_bank;
+	int32 silver_bank;
+	int32 copper_bank;
+	int32 platinum_cursor;
+	int32 gold_cursor;
+	int32 silver_cursor;
+	int32 copper_cursor;
+	int32 currency[4];
+	int16 skills[100];
+	int16 innate_skills[25];
+	uint8 air_supply;
+	uint8 texture;
+	float height;
+	float width;
+	float length;
+	float view_height;
+	char boat[32];
+	uint8 unknown[60];
+	uint8 autosplit;
+	uint8 unknown3449[43];
+	uint8 expansions;
+	uint8 _pad_exp[3];
+	int32 toxicity;
+	uint8 unknown3393[16];
+	int32 hunger_level;
+	int32 thirst_level;
+	struct CC_SpellBuff_Struct npc_buffs[2];
+	uint32 zone_id;
+	int32 EQ_Player;
+	int32 held_item[30];
+	uint8 unknown3456[2];
+	struct CC_SpellBuff_Struct npc_extra_buffs[15];
+	uint16 buff_caster_entityid[30];
+
+	uint32 bind_point_zone[5];
+	float bind_y[5];
+	float bind_x[5];
+	float bind_z[5];
+	float bind_heading[5];
+	struct CC_ItemProperties_Struct bankinvitemproperties[8];
+	struct CC_ItemProperties_Struct bankbagitemproperties[80];
+	uint32 login_time;
+	int16 bank_inv[8];
+	int16 bank_cont_inv[80];
+	uint16 deity;
+	uint16 guild_id;
+	uint32 birthday;
+	uint32 lastlogin;
+	uint32 timePlayedMin;
+	int8 thirst_level_old;
+	int8 hunger_level_old;
+	int8 fatigue;
+	uint8 pvp;
+	uint8 level2;
+	uint8 anon;
+	uint8 gm;
+	uint8 guildrank;
+	uint8 intoxication;
+	uint8 eqbackground;
+	uint8 unknown4760[2];
+	uint32 spellSlotRefresh[8];
+	uint32 unknown5003;
+	uint32 abilitySlotRefresh;
+	char groupMembers[6][64];
+	uint8 unknown5396[20];
+	uint32 groupdat;
+	uint32 expAA;
+	uint8 title;
+	uint8 perAA;
+	uint8 haircolor;
+	uint8 beardcolor;
+	uint8 eyecolor1;
+	uint8 eyecolor2;
+	uint8 hairstyle;
+	uint8 beard;
+	uint8 luclinface;
+	uint32 item_material[9];
+	uint8 unknown5469[143];
+	struct CC_AA_Array aa_array[120];
+	uint32 ATR_DIVINE_RES_timer;
+	uint32 ATR_FREE_HOT_timer;
+	uint32 ATR_TARGET_DA_timer;
+	uint32 SptWoodTimer;
+	uint32 DireCharmTimer;
+	uint32 ATR_STRONG_ROOT_timer;
+	uint32 ATR_MASOCHISM_timer;
+	uint32 ATR_MANA_BURN_timer;
+	uint32 ATR_GATHER_MANA_timer;
+	uint32 ATR_PET_LOH_timer;
+	uint32 ExodusTimer;
+	uint32 ATR_MASS_FEAR_timer;
+	uint16 air_remaining;
+	uint16 aapoints;
+	uint32 MGBTimer;
+	uint8 unknown5908[91];
+	int8 mBitFlags[6];
+	uint8 Unknown6004[707];
+	uint32 PoPSpellTimer;
+	uint32 LastShield;
+	uint32 LastModulated;
+	uint8 Unknown6724[1732];
 };
 
 /*
