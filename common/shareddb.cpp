@@ -160,7 +160,7 @@ std::string SharedDatabase::GetMailKey(int CharID, bool key_only)
 {
 	std::string query = StringFormat("SELECT `mailkey` FROM `character_data` WHERE `id`='%i' LIMIT 1", CharID);
 	auto results = QueryDatabase(query);
-	if (!results.Success()) {
+	if (!results.Success() || results.RowCount() < 1) {
 		LogClientLogin("Error retrieving mailkey from database: {}", results.ErrorMessage().c_str());
 		return std::string();
 	}
