@@ -1183,13 +1183,14 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 						return;
 					}
 				}
-				if (attacked_count == 0)
-					attacked_count = 1;
 
 				uint16 bonus_chance = 0;
 				uint16 spell_level = spells[spell_id].classes[GetClass() - 1];
 				uint16 roll = 0;
 				uint16 loops = 0;
+				uint16 max_loops = attacked_count * 3 / 4 + 1;		// makes channeling a bit more forgiving if the number of hits > 4.  this is in decompiles
+				if (max_loops < 1)
+					max_loops = 1;
 
 				do {
 					roll = zone->random.Int(1, 390);
@@ -1215,7 +1216,7 @@ void Mob::CastedSpellFinished(uint16 spell_id, uint32 target_id, CastingSlot slo
 					}
 
 					loops++;
-				} while (loops < attacked_count);
+				} while (loops < max_loops);
 
 				regain_conc = true;
 			}
@@ -3870,6 +3871,9 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 	resist_chance += level_mod;
 
 	if (use_classic_resists && IsClient()) {
+		if (resist_chance > 200 && spells[spell_id].targettype == ST_Tap) {
+			resist_chance = 200;
+		}
 
 		if (caster->IsNPC()) {
 			if (spell_id == 837) {
@@ -3877,24 +3881,29 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 				resist_modifier = -50;
 			}
 
+			if (spell_id == 843) {
+				// Immolating Breath
+				resist_modifier = -100;
+			}
+
 			if (resist_modifier == -150) {
 				// dragon aoes
-				if (!WorldContentService::Instance()->IsTheScarsOfVeliousEnabled())
-					resist_modifier = -50;
-				else
-					resist_modifier = -100;
+				resist_modifier = -100;
 			}
 		}
 
-		int hardcap = 375;
+		int hardcap = 350;
 		if (!WorldContentService::Instance()->IsTheScarsOfVeliousEnabled()) {
-			hardcap = 252;
+			hardcap = 250;
 		}
 
 		if (resist_chance > hardcap) {
 			resist_chance = hardcap;
 		}
 
+		if (resist_chance > 200) {
+			resist_chance = 200 + (resist_chance - 200) / 2;
+		}
 	}
 
 	resist_chance += resist_modifier;
