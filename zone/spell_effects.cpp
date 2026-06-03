@@ -2658,7 +2658,8 @@ void Mob::ApplyPeriodicHPEffects()
 				}
 
 				// fade mez on DoT damage
-				if(int mez_in_slot = GetBuffSlotFromType(SE_Mez) >= 0)
+				int mez_in_slot = GetBuffSlotFromType(SE_Mez);
+				if(mez_in_slot >= 0)
 				{
 					BuffFadeBySlot(mez_in_slot);
 				}

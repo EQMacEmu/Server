@@ -5142,6 +5142,12 @@ void Mob::SetHP(int32 hp)
 		return;
 	}
 
+	// not sure if negative HP is useful for anything other than clients (which die at -11 not 0 hitpoints)
+	if (!IsClient() && hp < 0)
+	{
+		hp = 0;
+	}
+
 	if (m_combat_record.InCombat()) {
 		m_combat_record.ProcessHPEvent(hp, cur_hp);
 	}

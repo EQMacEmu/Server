@@ -245,7 +245,7 @@ bool Mob::AvoidDamage(Mob* attacker, int32 &damage, bool isRangedAttack)
 	bool InFront = attacker->InFrontMob(this, attacker->GetX(), attacker->GetY());
 
 	// block
-	if (GetSkill(EQ::skills::SkillBlock))
+	if (GetSkill(EQ::skills::SkillBlock) && InFront)
 	{
 		if (IsClient())
 			CastToClient()->CheckIncreaseSkill(EQ::skills::SkillBlock, attacker, zone->skill_difficulty[EQ::skills::SkillBlock].difficulty[GetClass()]);
@@ -1265,8 +1265,8 @@ bool Client::Death(Mob* killerMob, int32 damage, uint16 spell, EQ::skills::Skill
 	);	
 	
 	if(parse->EventPlayer(EVENT_DEATH, this, export_string, 0) != 0) {
-		if(GetHP() < 0) {
-			SetHP(0);
+		if(GetHP() < -11) {
+			SetHP(-11);
 		}
 		return false;
 	}
@@ -2907,32 +2907,10 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 				CastToClient()->CalcAGI(); // AGI depends on current hp (near death)
 		}
 
-		// Don't let them go unconscious due to a DOT, otherwise the client may not complete its death routine properly.
-		if(HasDied() || (iBuffTic && GetHP() <= 0))
-		{
-			bool IsSaved = false;
+		died = HasDied();
 
-			if(TryDivineSave()) 
-			{
-				IsSaved = true;
-            }
-
-			if(!IsSaved) 
-			{
-				if (IsNPC())
-					died = !CastToNPC()->GetDepop();
-				else if (IsClient())
-					died = CastToClient()->CheckDeath();
-
-				if(died)
-					SetHP(-500);
-			}
-		}
-		else
-		{
-			if(GetHPRatio() < 16.0f)
-				TryDeathSave();
-		}
+		if(!died && GetHPRatio() < 16.0f)
+			TryDeathSave();
 
 		if (!died)
 		{
