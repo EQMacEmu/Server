@@ -1972,21 +1972,33 @@ struct BecomeNPC_Struct {
 	int32 maxlevel;
 };
 
-struct Resurrect_Struct	{
-/*000*/	uint32	unknown000;
-/*004*/	uint16	zone_id;
-/*006*/	uint16	unused;
-/*008*/	float	y;
-/*012*/	float	x;
-/*016*/	float	z;
-/*020*/	uint32	unknown020;
-/*024*/	char	your_name[64];
-/*088*/	uint32	unknown088;
-/*092*/	char	rezzer_name[64];
-/*156*/	uint32	spellid;
-/*160*/	char	corpse_name[64];
-/*224*/	uint32	action;
-/* 228 */
+//
+// when the server sends this to the client with OP_RezzRequest it pops up the confirmation dialog.  it uses your_name, rezzer_name and spellid.
+// first it checks that your_name matches the local character name
+// even though the effect value is in the packet, it gets that from the spell data instead when populating the dialog.
+//
+// when the user clicks yes on the dialog the client sends back this packet with OP_RezzAnswer
+//
+// the server then sends it back with OP_RezzComplete and action = 1 which causes the client to apply the debuff on itself and MoveToZone where it needs to go
+// the client uses the effect_value to check if it's 100 to determine whether it needs to zero mana, set HP to 1/3 and apply rez effects
+// but it uses the saved packet for the position to move to
+//
+struct Resurrect_Struct {
+	/*000*/	int16	corpse_entity_id;
+	/*002*/ char	pad002[2];
+	/*004*/	uint32	zone_id;
+	/*008*/	float	y;
+	/*012*/	float	x;
+	/*016*/	float	z;
+	/*020*/	int32	effect_value;
+	/*024*/	char	your_name[64];
+	/*088*/	uint32	unknown088;
+	/*092*/	char	rezzer_name[64];
+	/*156*/	int16	spellid;
+	/*158*/	char	corpse_name[64];
+	/*222*/	char	pad224[2];
+	/*224*/	uint32	action;
+	/*228*/
 };
 
 struct Translocate_Struct {

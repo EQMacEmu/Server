@@ -6964,38 +6964,7 @@ void Client::Handle_OP_RezzAnswer(const EQApplicationPacket *app)
 		r->action ? "ACCEPT" : "DECLINE"
 	);
 
-
-	OPRezzAnswer(r->action, r->spellid, r->zone_id, r->x, r->y, r->z);
-
-	if (r->action == ResurrectionActions::Accept) {
-		if (PlayerEventLogs::Instance()->IsEventEnabled(PlayerEvent::REZ_ACCEPTED)) {
-			auto e = PlayerEvent::ResurrectAcceptEvent{
-				.resurrecter_name = r->rezzer_name,
-				.spell_name = spells[r->spellid].name,
-				.spell_id = r->spellid,
-			};
-			RecordPlayerEventLog(PlayerEvent::REZ_ACCEPTED, e);
-		}
-
-		Mob* mypet = GetPet();
-		if (mypet) {
-			if (mypet->IsCharmedPet()) {
-			FadePetCharmBuff();
-			}
-			else {
-				DepopPet();
-			}
-		}
-
-		entity_list.ClearAggro(this);
-
-		EQApplicationPacket* outapp = app->Copy();
-		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
-		// the rezzed corpse is in to mark the corpse as rezzed.
-		outapp->SetOpcode(OP_RezzComplete);
-		worldserver.RezzPlayer(outapp, 0, 0, 0, OP_RezzComplete);
-		safe_delete(outapp);
-	}
+	OPRezzAnswer(app);
 }
 
 void Client::Handle_OP_Sacrifice(const EQApplicationPacket *app) 

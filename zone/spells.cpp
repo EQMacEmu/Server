@@ -3266,6 +3266,8 @@ void Corpse::CastRezz(uint16 spellid, Mob* Caster)
 {
 	LogSpellsDetail("Corpse::CastRezz spellid [{}], Rezzed() is [{}], rezzexp is [{}] rez_timer enabled: [{}]", spellid,IsRezzed(),rez_experience, corpse_rez_timer.Enabled());
 
+	if (!IsValidSpell(spellid) || Caster == nullptr) return;
+
 	// refresh rezzed state from database
 	uint32 db_exp, db_gmexp;
 	bool db_rezzable, db_is_rezzed;
@@ -3304,18 +3306,19 @@ void Corpse::CastRezz(uint16 spellid, Mob* Caster)
 	auto outapp = new EQApplicationPacket(OP_RezzRequest, sizeof(Resurrect_Struct));
 	auto *rezz = (Resurrect_Struct*) outapp->pBuffer;
 
-	strn0cpy(rezz->your_name,this->corpse_name,64);
-	strn0cpy(rezz->corpse_name,this->name,64);
-	strn0cpy(rezz->rezzer_name,Caster->GetName(),64);
+	strn0cpy(rezz->your_name, GetOwnerName(), 64);
+	strn0cpy(rezz->corpse_name, GetName(), 64);
+	strn0cpy(rezz->rezzer_name, Caster->GetName(), 64);
 
+	rezz->corpse_entity_id = GetID();
 	rezz->zone_id = zone->GetZoneID();
 	rezz->spellid = spellid;
 	rezz->x = this->m_Position.x;
 	rezz->y = this->m_Position.y;
 	rezz->z = this->m_Position.z;
-	rezz->unknown000 = 0x00000000;
-	rezz->unknown020 = 0x00000000;
+	rezz->effect_value = spells[spellid].base[0];
 	rezz->unknown088 = 0x00000000;
+	rezz->action = 0;
 
 	// We send this to world, because it needs to go to the player who may not be in this zone.
 	worldserver.RezzPlayer(outapp, rez_experience, corpse_db_id, char_id, OP_RezzRequest);

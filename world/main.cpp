@@ -152,6 +152,11 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	LogSys.SetDatabase(&database)
+		->SetLogPath(PathManager::Instance()->GetLogPath())
+		->LoadLogDatabaseSettings()
+		->StartFileLogs();
+
 	Timer EQTimeTimer(600000);
 	EQTimeTimer.Start(600000);
 	Timer player_event_log_process(1000);

@@ -760,7 +760,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 					}
 					//pendingrezexp is the amount of XP on the corpse. Setting it to a value >= 0
 					//also serves to inform Client::OPRezzAnswer to expect a packet.
-					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name);
+					client->SetPendingRezzData(srs->exp, srs->dbid, srs->rez.spellid, srs->rez.corpse_name, &srs->rez);
 					LogSpellsDetail("OP_RezzRequest in zone [{}] for [{}], spellid:[{}]",
 					zone->GetShortName(), client->GetName(), srs->rez.spellid);
 					auto outapp = new EQApplicationPacket(OP_RezzRequest,

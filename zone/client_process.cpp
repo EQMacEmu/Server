@@ -1122,7 +1122,7 @@ void Client::MerchantWelcome(int merchant_id, int npcid)
 	}
 }
 
-void Client::OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, float x, float y, float z)
+void Client::OPRezzAnswer(const EQApplicationPacket *app)
 {
 	if(PendingRezzXP < 0) {
 		// pendingrezexp is set to -1 if we are not expecting an OP_RezzAnswer
@@ -1131,45 +1131,121 @@ void Client::OPRezzAnswer(uint32 Action, uint32 SpellID, uint16 ZoneID, float x,
 		return;
 	}
 
-	if (Action == 1)
+	// the packet we just got from the client should be the same as what is in this->PendingRezzPacket
+	// which is the same as what we originally sent them but we'll use our copy to be safe
+	Resurrect_Struct *ra = &PendingRezzPacket;
+
+	Resurrect_Struct *client_response = (Resurrect_Struct *)app->pBuffer;
+	if (client_response->action == 1)
 	{
+		if (!IsValidSpell(ra->spellid))
+		{
+			return;
+		}
+		ra->action = 1;
+
 		// Mark the corpse as rezzed in the database, just in case the corpse has buried, or the zone the
 		// corpse is in has shutdown since the rez spell was cast.
 		database.MarkCorpseAsRezzed(PendingRezzDBID);
 		LogSpellsDetail("Player [{}] got a [{}] Rezz, spellid [{}] in zone [{}]",
-				this->name, (uint16)spells[SpellID].base[0],
-				SpellID, ZoneID);
+				this->name, (uint16)spells[ra->spellid].base[0],
+				ra->spellid, ra->zone_id);
 
+		// clear buffs
 		this->BuffFadeNonPersistDeath();
-		int SpellEffectDescNum = GetSpellEffectDescNum(SpellID);
-		// Rez spells with Rez effects have this DescNum
-		if(SpellEffectDescNum == 39067) {
+
+		// apply resurrection effects if it's not a 100% rez spell (Divine Resurrection, Customer Service Resurrect)
+		if(spells[ra->spellid].base[0] < 100)
+		{
 			SetMana(0);
-			SetHP(GetMaxHP()/5);
-			if(!GetGM())
-				SpellOnTarget(SPELL_RESURRECTION_EFFECTS, this); // Rezz effects
+			SetHP(GetMaxHP()/3);
+			SendHPUpdate();
+
+			// rez effect spell depends on race
+			int rezeffect_spell_id = SPELL_RESURRECTION_EFFECTS;
+			if (GetRace() == Race::Ogre || GetRace() == Race::Troll || GetRace() == Race::Barbarian || GetRace() == Race::Dwarf)
+			{
+				rezeffect_spell_id = SPELL_RESURRECTION_EFFECT; // this is a less severe form of the debuff, only taking 50 STR instead of 100, for the 4 strong races
+			}
+
+			// the rez effect is applied without 'casting' it, with a specific duration (40) and caster level (52) - client does this on its own so we have to do it the same way
+			buffs[0].spellid = rezeffect_spell_id;
+			buffs[0].casterlevel = 52;
+			buffs[0].realcasterlevel = 52;
+			memset(buffs[0].caster_name, 0, 64);
+			buffs[0].casterid = 0;
+			buffs[0].ticsremaining = 40;
+			buffs[0].counters = 0;
+			buffs[0].client = 0;
+			buffs[0].persistant_buff = 0;
+			buffs[0].ExtraDIChance = 0;
+			buffs[0].RootBreakChance = 0;
+			buffs[0].instrumentmod = 10;
+			buffs[0].isdisc = false;
+			buffs[0].remove_me = false;
+			buffs[0].first_tic = true;
+			buffs[0].bufftype = 2;
+			buffs[0].UpdateClient = false;
 		}
-		else {
+		else
+		{
+			// 100% rez
 			SetMana(GetMaxMana());
 			SetHP(GetMaxHP());
 		}
-		if(spells[SpellID].base[0] < 100 && spells[SpellID].base[0] > 0 && PendingRezzXP > 0)
+
+		// restore experience
+		if(spells[ra->spellid].base[0] < 100 && spells[ra->spellid].base[0] > 0 && PendingRezzXP > 0)
 		{
-				SetEXP(((int)(GetEXP()+((float)((PendingRezzXP / 100) * spells[SpellID].base[0])))),
-						GetAAXP(),true);
+			SetEXP(((int)(GetEXP()+((float)((PendingRezzXP / 100) * spells[ra->spellid].base[0])))),GetAAXP(),true);
 		}
-		else if (spells[SpellID].base[0] == 100 && PendingRezzXP > 0) {
+		else if (spells[ra->spellid].base[0] == 100 && PendingRezzXP > 0) {
 			SetEXP((GetEXP() + PendingRezzXP), GetAAXP(), true);
 		}
 
 		entity_list.RemoveFromTargets(this);
 
-		//Was sending the packet back to initiate client zone...
-		//but that could be abusable, so lets go through proper channels
-		MovePC(ZoneID, x, y, z, GetHeading() * 2.0f, 0, ZoneSolicited);
+		// lose pet
+		Mob *mypet = GetPet();
+		if (mypet)
+		{
+			if (mypet->IsCharmedPet())
+				FadePetCharmBuff();
+			else
+				DepopPet();
+		}
+
+		entity_list.ClearAggro(this);
+
+		// Send the OP_RezzComplete to the world server. This finds it's way to the zone that
+		// the rezzed corpse is in to mark the corpse as rezzed.
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_RezzComplete, (const unsigned char *)&PendingRezzPacket, sizeof(Resurrect_Struct));
+			worldserver.RezzPlayer(outapp, 0, 0, 0, OP_RezzComplete);
+			safe_delete(outapp);
+		}
+
+		// arm for zoning, but let client take the next step
+		if (ra->zone_id != GetZoneID())
+		{
+			CastToClient()->zone_mode = ZoneSolicited;
+			CastToClient()->m_ZoneSummonLocation = glm::vec4(ra->x, ra->y, ra->z, 0.0f);
+			CastToClient()->zonesummon_id = ra->zone_id;
+			CastToClient()->zonesummon_ignorerestrictions = 0;
+			CastToClient()->zoning_timer.Start();
+		}
+
+		// send the packet back to the client - this causes the client to teleport/zone, set its HP/mana and apply the rez effect buff based on race
+		{
+			EQApplicationPacket *outapp = new EQApplicationPacket(OP_RezzComplete, (const unsigned char *)&PendingRezzPacket, sizeof(Resurrect_Struct));
+			QueuePacket(outapp);
+			safe_delete(outapp);
+		}
 	}
+
 	PendingRezzXP = -1;
 	PendingRezzSpellID = 0;
+	memset(&PendingRezzPacket, 0, sizeof(Resurrect_Struct));
 }
 
 void Client::OPTGB(const EQApplicationPacket *app)

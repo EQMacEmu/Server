@@ -500,19 +500,23 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 		return true;
 	}
 
+	EnterWorld_Struct *ew = (EnterWorld_Struct *)app->pBuffer;
+	strn0cpy(char_name, ew->name, 64);
+
+	LogInfo("HandleEnterWorldPacket(): Received request for character {} from {}:{}", char_name, long2ip(this->GetIP()).c_str(), this->GetPort());
+
 	//if (RuleI(World, MaxClientsPerIP) >= 0) {
 	//	client_list.GetCLEIP(this->GetIP()); //Check current CLE Entry IPs against incoming connection
 	//}
 	if (GetSessionLimit()) {
+		LogInfo("HandleEnterWorldPacket(): Rejecting request for character {} from {}:{} because of GetSessionLimit()", char_name, long2ip(this->GetIP()).c_str(), this->GetPort());
 		return false;
 	}
 
 	if (!mule && RuleI(World, MaxClientsPerIP) >= 0 && !ClientList::Instance()->CheckIPLimit(GetAccountID(), GetIP(), GetAdmin(), cle)) {
+		LogInfo("HandleEnterWorldPacket(): Rejecting request for character {} from {}:{} because of CheckIPLimit()", char_name, long2ip(this->GetIP()).c_str(), this->GetPort());
 		return false;
 	}
-
-	EnterWorld_Struct *ew = (EnterWorld_Struct *)app->pBuffer;
-	strn0cpy(char_name, ew->name, 64);
 
 	uint32 tmpaccid = 0;
 	char_id = database.GetCharacterInfo(char_name, &tmpaccid, &zone_id);

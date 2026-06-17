@@ -434,6 +434,7 @@ NPC::NPC(const NPCType *npc_type_data, Spawn2* in_respawn, const glm::vec4& posi
 	noQuestPause = false;
 	assisting = false;
 	pbaoe_damage = 0;
+	m_record_loot_stats = false;
 }
 
 NPC::~NPC()
