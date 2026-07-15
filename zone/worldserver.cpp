@@ -381,6 +381,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 					}
 				}
 				outapp->priority = 6;
+				LogInfo("ZTZ response {} current_zone_id {} -> requested_zone_id {} response {}", ztz->name, ztz->current_zone_id, ztz->requested_zone_id, ztz->response);
 				entity->CastToClient()->QueuePacket(outapp, true, Mob::ZONING);
 				safe_delete(outapp);
 				if (ztz->response <= 0) {
@@ -413,6 +414,7 @@ void WorldServer::HandleMessage(uint16 opcode, const EQ::Net::Packet& p)
 				else {
 					ztz->response = 1;
 				}
+				LogInfo("ZTZ request {} current_zone_id {} -> requested_zone_id {} response {}", ztz->name, ztz->current_zone_id, ztz->requested_zone_id, ztz->response);
 
 				SendPacket(pack);
 				break;

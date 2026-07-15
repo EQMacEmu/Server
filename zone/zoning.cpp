@@ -46,9 +46,9 @@ void Client::Handle_OP_ZoneChange(const EQApplicationPacket *app) {
 		return;
 	}
 
-	ZoneChange_Struct* zc=(ZoneChange_Struct*)app->pBuffer;
-	LogInfo("Zone request from [{}] : char_name {}, zoneID {}, zone_reason {}, unk {} {}, success {}, error {} {} {}", GetName(),
-		std::string(zc->char_name), (int)zc->zoneID, (int)zc->zone_reason, (int)zc->unknown[0], (int)zc->unknown[1], (int)zc->success, zc->error[0], zc->error[1], zc->error[2]);
+	ZoneChange_Struct* zc = (ZoneChange_Struct*)app->pBuffer;
+	LogInfo("Zone request from [{}] : char_name {}, zoneID {}, zone_reason {}, success {}", GetName(),
+		std::string(zc->char_name), (int)zc->zoneID, (int)zc->zone_reason, (int)zc->success);
 
 	uint16 target_zone_id = 0;
 	ZonePoint* zone_point = nullptr;
@@ -391,7 +391,7 @@ void Client::SendZoneCancel(ZoneChange_Struct *zc) {
 	m_lock_save_position = false;
 }
 
-void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
+void Client::SendZoneError(ZoneChange_Struct *zc, int32 err)
 {
 	LogError("Zone [{}] is not available because target wasn't found or character insufficent level", zc->zoneID);
 
@@ -402,7 +402,6 @@ void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
 	strcpy(zc2->char_name, zc->char_name);
 	zc2->zoneID = zc->zoneID;
 	zc2->success = err;
-	memset(zc2->error, 0xff, sizeof(zc2->error));
 	outapp->priority = 6;
 	FastQueuePacket(&outapp);
 
@@ -417,7 +416,7 @@ void Client::SendZoneError(ZoneChange_Struct *zc, int8 err)
 void Client::DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r) {
 	//this is called once the client is fully allowed to zone here
 	//it takes care of all the activities which occur when a client zones out
-	LogInfo("DoZoneSuccess {} mode {}", zone_id, (int)zone_mode);
+	LogInfo("DoZoneSuccess {} {} mode {}", GetName(), zone_id, (int)zone_mode);
 
 	SendLogoutPackets();
 

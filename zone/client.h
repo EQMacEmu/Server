@@ -1177,7 +1177,7 @@ private:
 
 	//Zoning related stuff
 	void SendZoneCancel(ZoneChange_Struct *zc);
-	void SendZoneError(ZoneChange_Struct *zc, int8 err);
+	void SendZoneError(ZoneChange_Struct *zc, int32 err);
 	void DoZoneSuccess(ZoneChange_Struct *zc, uint16 zone_id, float dest_x, float dest_y, float dest_z, float dest_h, int8 ignore_r);
 	void ZonePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions, ZoneMode zm);
 	void ProcessMovePC(uint32 zoneID, float x, float y, float z, float heading, uint8 ignorerestrictions = 0, ZoneMode zm = ZoneSolicited);

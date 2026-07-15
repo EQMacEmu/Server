@@ -1002,30 +1002,30 @@ struct BindWound_Struct {
 
 /*
 ** Type: Zone Change Request (before hand)
-** Length: 88 bytes
-** OpCode: a320
+** Length: 76 bytes
+** OpCode: a340
+*  This packet is used by IsZoneAvailable(), it's a status query, MSG_ZSERVER_STATUS
 */
-
 struct ZoneChange_Struct {
 	/*000*/	char	char_name[64];     // Character Name
-	/*064*/	uint16	zoneID;
-	/*066*/ uint16  zone_reason;
-	/*068*/ uint16  unknown[2];
-	/*072*/	int8	success;		// =0 client->server, =1 server->client, -X=specific error
-	/*073*/	uint8	error[3]; // =0 ok, =ffffff error
+	/*064*/	int32	zoneID;
+	/*068*/ int32   zone_reason;
+	/*072*/	int32	success;		// =0 client->server, =1 server->client, -X=specific error
 	/*076*/
 };
 
+
 // Whatever you send to the client in RequestClientZoneChange_Struct.type, the client will send back
 // to the server in ZoneChange_Struct.zone_reason. My guess is this is a memo field of sorts.
-
+// This is a server initiated action, MSG_TELEPORT_PC, that will make the client zone to this location.
+// The function in the client will honor 99999.0 values to keep the current x/y/z position when it teleports itself
 struct RequestClientZoneChange_Struct {
 	/*000*/	uint32	zone_id;
 	/*004*/	float	y;
 	/*008*/	float	x;
 	/*012*/	float	z;
 	/*016*/	float	heading;
-	/*020*/	uint32	type;	//unknown... values
+	/*020*/	uint32	type;	// see ZoneChangeReason enum for values the client uses for MSG_ZSERVER_STATUS
 	/*024*/
 };
 

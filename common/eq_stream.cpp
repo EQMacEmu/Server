@@ -2795,7 +2795,14 @@ void EQOldStream::_SendDisconnect()
 {
 	FinalizePacketQueue();
 }
+
 void EQOldStream::Close() {
+	// don't queue a second FIN packet here if we get called again while already closing
+	EQStreamState state = GetState();
+	if (state == CLOSING || state == DISCONNECTING || state == CLOSED) {
+		return;
+	}
+
 	if(HasOutgoingData()) {
 		//there is pending data, wait for it to go out.
 		LogNetcode("[{}]:[{}]: EQOldStream requested to Close(), but there is pending data, waiting for it.", long2ip(remote_ip), ntohs(remote_port));
