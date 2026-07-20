@@ -3911,18 +3911,6 @@ float Mob::CheckResistSpell(uint8 resist_type, uint16 spell_id, Mob *caster, Mob
 	}
 
 	resist_chance += resist_modifier;
-	
-	if (use_classic_resists && caster->IsNPC() && caster->GetLevel() > 24 && zone->GetZoneID() != Zones::SIRENS && zone->GetZoneID() != Zones::TEMPLEVEESHAN
-		&& (caster->GetClass() == Class::Enchanter || caster->GetClass() == Class::EnchanterGM))
-	{
-		if (GetLevel() < resist_chance) {
-			resist_chance = GetLevel();
-		}
-
-		if (resist_chance > 80) {
-			resist_chance = 80;
-		}
-	}
 
 	if (tick_save) {
 		// See http://www.eqemulator.org/forums/showthread.php?t=43370
