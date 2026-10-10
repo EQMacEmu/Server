@@ -1963,15 +1963,15 @@ namespace Trilogy {
 			/*020*/ float   pos_x;               // x loc
 			/*024*/ float   pos_z;               // z loc
 			/*028*/ float	heading;
-			/*032*/ uint16  incline;
-			/*034*/ uint16	size;
-			/*036*/ uint8	unknown[2];
-			/*038*/ uint8	doorid;             // door's id #
-			/*039*/ uint8	opentype;
-			/*040*/ uint8	doorIsOpen;
-			/*041*/ uint8	inverted;
-			/*042*/ uint16	parameter;
-			/*044*/
+			/*032*/ float	incline;
+			/*036*/ float	padding;
+			/*040*/ uint8	doorid;             // door's id #
+			/*041*/ uint8	opentype;
+			/*042*/ uint8	doorIsOpen;
+			/*043*/ uint8	inverted;
+			/*044*/ int16	parameter;
+			/*046*/ uint8	pad[2];
+			/*048*/
 		};
 
 		/******Useful Open Types*******/

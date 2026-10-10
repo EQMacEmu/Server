@@ -1647,6 +1647,27 @@ DECODE(OP_SendLoginInfo)
 		FINISH_ENCODE();
 	}
 
+	ENCODE(OP_SpawnDoor)
+	{
+		ENCODE_LENGTH_EXACT(Door_Struct);
+		SETUP_DIRECT_ENCODE(Door_Struct, structs::Door_Struct);
+		memcpy(eq->name, emu->name, sizeof(eq->name));
+		OUT(pos_y);
+		OUT(pos_x);
+		OUT(pos_z);
+		OUT(heading);
+		eq->incline = (float)emu->incline;
+		eq->padding = 0.0f;
+		OUT(doorid);
+		OUT(opentype);
+		OUT(doorIsOpen);
+		OUT(inverted);
+		OUT(parameter);
+		LogInfo("Trilogy ENCODE(OP_SpawnDoor): name=[{}], doorid=[{}], pos=({:.2f}, {:.2f}, {:.2f}), hdg={:.2f}",
+			eq->name, eq->doorid, eq->pos_x, eq->pos_y, eq->pos_z, eq->heading);
+		FINISH_ENCODE();
+	}
+
 	DECODE(OP_ClickDoor)
 	{
 		DECODE_LENGTH_EXACT(structs::ClickDoor_Struct);
@@ -1654,8 +1675,11 @@ DECODE(OP_SendLoginInfo)
 		IN(doorid);
 		IN(item_id);
 		IN(player_id);
-		LogInfo("Trilogy DECODE(OP_ClickDoor): raw bytes [{}], doorid=[{}], item_id=[{}], player_id=[{}]",
-			Strings::EscapePair((const char*)__eq_buffer, sizeof(structs::ClickDoor_Struct)), eq->doorid, eq->item_id, eq->player_id);
+		LogInfo("Trilogy DECODE(OP_ClickDoor): raw hex [{:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}], doorid=[{}], item_id=[{}], player_id=[{}]",
+			__eq_buffer[0], __eq_buffer[1], __eq_buffer[2], __eq_buffer[3],
+			__eq_buffer[4], __eq_buffer[5], __eq_buffer[6], __eq_buffer[7],
+			__eq_buffer[8], __eq_buffer[9], __eq_buffer[10], __eq_buffer[11],
+			eq->doorid, eq->item_id, eq->player_id);
 		FINISH_DIRECT_DECODE();
 	}
 
