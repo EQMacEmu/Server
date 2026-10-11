@@ -266,19 +266,20 @@ namespace Trilogy {
 
 		struct Action_Struct
 		{
-			/*00*/	uint32	target;				// Comment: Spell Targets ID 
-			/*04*/	uint32	source;				// Comment: Spell Caster ID
-			/*08*/	uint16	level;				// Comment: Spell Casters Level
-			/*10*/	uint16	spell_level;
-			/*12*/	uint32	instrument_mod;		// int8 + padding?
-			/*16*/	float	force;				// confirmed
-			/*20*/	float	sequence;			// confirmed
-			/*24*/	float	pushup_angle;		// maybe
-			/*28*/	uint8	type;				// confirmed
-			/*29*/  uint8	unknown029[3];
-			/*32*/	uint16	spell;		// confirmed
-			/*34*/	uint8	unknown034;
-			/*35*/  uint8	buff_unknown; // confirmed
+			/*00*/	uint32	target;				// Target ID
+			/*04*/	uint32	source;				// Caster ID
+			/*08*/	uint8	level;				// Caster Level
+			/*09*/	uint8	unknown09;			// 0x00
+			/*10*/	uint8	spell_level;		// 0x41
+			/*11*/	uint8	unknown11;			// 0x00
+			/*12*/	uint8	instrument_mod;		// 0x0A (or instrument mod)
+			/*13*/	uint8	unknown13[7];		// zeros
+			/*20*/	float	sequence;			// heading
+			/*24*/	uint8	unknown24[4];		// zeros
+			/*28*/	uint32	type;				// 231 (0xE7) for spell
+			/*32*/	uint16	spell;				// spell ID
+			/*34*/	uint8	unknown34;			// 0x00
+			/*35*/	uint8	buff_unknown;		// 0x04 for buff success!
 			/*36*/
 		};
 

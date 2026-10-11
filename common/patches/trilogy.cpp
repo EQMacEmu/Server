@@ -1590,19 +1590,16 @@ DECODE(OP_SendLoginInfo)
 			eq->level = static_cast<uint8>(emu->level);
 		eq->spell_level = 0x41;
 		eq->instrument_mod = static_cast<uint8>(emu->instrument_mod);
-		eq->force = emu->force;
-
-		OUT(pushup_angle);
+		eq->sequence = emu->sequence;
 		eq->type = emu->type;
 		if (emu->spell > 2999)
 			eq->spell = 0xFFFF;
 		else
 			eq->spell = emu->spell;
 		eq->buff_unknown = emu->buff_unknown;
-		eq->sequence = emu->sequence;
 
-		LogInfo("Trilogy ENCODE(OP_Action): Target: {}, Source: {}, Level: {}, Type: {}, Spell: {}, Force: {:.2f}, Seq: {:.2f}",
-			eq->target, eq->source, eq->level, static_cast<int>(eq->type), eq->spell, eq->force, eq->sequence);
+		LogInfo("Trilogy ENCODE(OP_Action): Target: {}, Source: {}, Level: {}, Type: {}, Spell: {}, BuffUnknown: {}, Seq: {:.2f}",
+			eq->target, eq->source, eq->level, eq->type, eq->spell, eq->buff_unknown, eq->sequence);
 
 		FINISH_ENCODE();
 	}
