@@ -145,35 +145,36 @@ namespace Trilogy {
 			/*005*/	char	name[30];				// Comment: 
 			/*035*/	char	zone[15];				// Comment: 
 			/*050*/	int8	sze_unknown2[6];		// Comment: 
-			/*056*/	float	y_pos;						// Comment: 
-			/*060*/	float	x_pos;						// Comment: 
-			/*064*/	float	z_pos;						// Comment: 
-			/*068*/ float   heading;				// Comment: Cofruben: es cierto que heading est aqu? sino aadir 4 bytes mas al siguiente.
-			/*072*/ int8    sze_unknown3[66];		// Comment: 
-			/*138*/	uint16	petOwnerId;
-			/*140*/	uint32	max_hp;
-			/*144*/	uint32	curHP;
-			/*148*/ int16   GuildID;				// Comment: 
-			/*150*/	uint8	my_socket[6];		// ***Placeholder
-			/*156*/ uint8	NPC;
+			/*056*/	float	y;						// Comment: 
+			/*060*/	float	x;						// Comment: 
+			/*064*/	float	z;						// Comment: 
+			/*068*/ float   heading;				// Comment: 
+			/*072*/ int8    sze_unknown3[76];		// Comment: 
+			/*148*/ int16   guildeqid;				// Comment: 
+			/*150*/	int8	sze_unknown3_78[3];		// Comment: 
+			/*153*/ int8    sze_unknown_add[4];		// Comment: (0=ok, 1=name color as dead, 2=death on zone in)
 			/*157*/ int8    class_;					// Comment: 
-			/*158*/	int16	race;					// Comment: Cofruben: sino va bien, hacerlo int8 y aadir despues un unknown
+			/*158*/	int16	race;					// Comment: 
 			/*160*/	int8	gender;					// Comment: 
 			/*161*/	int8	level;					// Comment: 
-			/*162*/	int8    invis;
-			/*163*/	int8	sneaking;
+			/*162*/	int8    sze_unknown5[2];		// Comment: 
 			/*164*/	int8    pvp;					// Comment: 0x0=non_pvp 0x1=pvp
-			/*165*/	uint8    anim_type;
-			/*166*/	int8    light;
+			/*165*/	int8    sze_unknown5_2_1[2];	// Comment: 
 			/*167*/	int8    face;					// Comment: 
-			/*168*/	uint8   equipment[9]; // Array elements correspond to struct equipment above
+			/*168*/	int8    helmet;					// Comment: 
+			/*169*/	int8    sze_unknown5_2_2_0;		// Comment: 
+			/*170*/	int8    sze_unknown5_2_2_1;		// Comment: 
+			/*171*/	int8    sze_unknown5_2_2_2;		// Comment: 
+			/*172*/	int8    sze_unknown5_2_2_3;		// Comment: 
+			/*173*/	int8    sze_unknown5_2_2_4;		// Comment: 
+			/*174*/	int8    sze_unknown5_2_2_5;		// Comment: 
+			/*175*/	int8    left_hand;				// Comment: 
+			/*176*/	int8    right_hand;				// Comment: 
 			/*177*/	int8    sze_unknown5_2_2_6[3];	// Comment: 
-			/*180*/	Color_Struct equipcolors[9]; // Array elements correspond to struct equipment_colors above
-			/*216*/	uint32	bodytexture;	// Texture (0xFF=Player - See list of textures for more)
-			/*220*/	float	size;
-			/*224*/	float	width;
-			/*228*/	float	length;
-			/*232*/	uint32	helm;
+			/*180*/	uint32  helmcolor;				// Comment: 
+			/*184*/	int8    sze_unknown5_2_2_7[32]; // Comment: 
+			/*216*/	int8    npc_armor_graphic;		// Comment: 0xFF=Player, 0=none, 1=leather, 2=chain, 3=steelplate
+			/*217*/	int8    sze_unknown5_2_2[19];	// Comment: 
 			/*236*/	float   walkspeed;				// Comment: 
 			/*240*/	float   runspeed;				// Comment: 
 			/*244*/	int8	LD;
@@ -182,7 +183,7 @@ namespace Trilogy {
 			/*248*/	int8	bodytype;
 			/*249*/	int8	view_player[7];
 			/*256*/	int8    anon;					// Comment: 
-			/*257*/	int8    sze_unknown6_13[23];	// Comment: At least one flag in here disables a zone point or all
+			/*257*/	int8    sze_unknown6_13[23];	// Comment: 
 			/*280*/ char	Surname[20];			// Comment: 
 			/*300*/	int8    sze_unknown_add2[2];	// Comment: 
 			/*302*/ int16	deity;					// Comment: 
@@ -252,16 +253,16 @@ namespace Trilogy {
 
 		struct CombatDamage_Struct
 		{
-			/*000*/	uint32	target; // confirmed
-			/*004*/	uint32	source; // confirmed
-			/*008*/	uint8	type; // confirmed
-			/*009*/	uint8   unknown;
-			/*010*/	uint16	spellid; // confirmed
-			/*012*/	int32	damage; // confirmed
-			/*016*/	float	force;
-			/*020*/	float	sequence;
-			/*024*/ float	pushup_angle;
-			/*028*/
+			/*000*/	uint16	target;
+			/*002*/	uint16	source;
+			/*004*/	uint8	type;
+			/*005*/	uint8   unknown;
+			/*006*/	uint16	spellid;
+			/*008*/	int32	damage;
+			/*012*/	float	force;
+			/*016*/	float	sequence;
+			/*020*/ float	pushup_angle;
+			/*024*/
 		};
 
 		struct Action_Struct
@@ -439,7 +440,8 @@ namespace Trilogy {
 		struct DeleteSpawn_Struct
 		{
 			/*00*/ uint16 spawn_id;				// Comment: Spawn ID to delete
-			/*02*/
+			/*02*/ uint16 unknown02;
+			/*04*/
 		};
 
 		//New ChannelMessage_Struct struct
@@ -607,11 +609,10 @@ namespace Trilogy {
 
 		struct Animation_Struct
 		{
-			/*00*/	uint32 spawnid;
-			/*04*/	uint8  action;
-			/*05*/  uint8  value;
-			/*06*/	uint32 unknown06;
-			/*10*/	uint16 unknown10; // 80 3F
+			/*00*/	uint16 spawnid;
+			/*02*/	uint16 pad02;
+			/*04*/	int32  action;
+			/*08*/	float  speed;
 		};
 
 		struct Consider_Struct

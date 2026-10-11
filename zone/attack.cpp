@@ -2442,6 +2442,7 @@ void Mob::DamageShield(Mob* attacker, bool spell_ds) {
 		//we can assume there is a spell now
 		auto outapp = new EQApplicationPacket(OP_Damage, sizeof(Damage_Struct));
 		Damage_Struct* cds = (Damage_Struct*)outapp->pBuffer;
+		memset(cds, 0, sizeof(Damage_Struct));
 		cds->target = targetid;
 		cds->source = GetID();
 		cds->type = spellbonuses.DamageShieldType;
@@ -3002,6 +3003,7 @@ void Mob::GenerateDamagePackets(Mob* attacker, bool FromDamageShield, int32 dama
 {
 	auto outapp = new EQApplicationPacket(OP_Damage, sizeof(Damage_Struct));
 	Damage_Struct* a = (Damage_Struct*)outapp->pBuffer;
+	memset(a, 0, sizeof(Damage_Struct));
 	a->target = GetID();
 
 	uint16 attacker_id = 0;
@@ -3210,6 +3212,7 @@ void Mob::GenerateDamagePackets(Mob* attacker, bool FromDamageShield, int32 dama
 		{
 			auto message_packet = new EQApplicationPacket(OP_Damage, sizeof(Damage_Struct));
 			Damage_Struct *cd = (Damage_Struct *)message_packet->pBuffer;
+			memset(cd, 0, sizeof(Damage_Struct));
 			cd->target = attacker->GetID();
 			cd->source = attacker->GetID();
 			cd->type = 231;

@@ -265,6 +265,7 @@ public:
 	KeyRing_Data_Struct* GetKeyRing(uint16 keyitem, uint32 zoneid);
 	virtual bool IsClient() const { return true; }
 	void	CompleteConnect();
+	void	SendServerZoneEntry();
 	bool	TryStacking(EQ::ItemInstance* item, uint8 type = ItemPacketTrade, bool try_worn = true, bool try_cursor = true);
 	int16	GetStackSlot(EQ::ItemInstance* item, bool try_worn = true, bool try_cursor = true);
 	void	SendTraderPacket(Client* trader);

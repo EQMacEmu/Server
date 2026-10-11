@@ -183,46 +183,32 @@ DECODE(OP_SendLoginInfo)
 	{
 		SETUP_DIRECT_ENCODE(ServerZoneEntry_Struct, structs::ServerZoneEntry_Struct);
 
-		int k = 0;
-		strn0cpy(eq->zone, StaticGetZoneName(emu->zoneID), 15);
-		OUT(anon);
 		strn0cpy(eq->name, emu->name, 30);
-		eq->deity = emu->deity;
+		strn0cpy(eq->Surname, emu->Surname, 20);
+		strn0cpy(eq->zone, StaticGetZoneName(emu->zoneID), 15);
+		eq->class_ = emu->class_;
 		eq->race = emu->race;
-		OUT(size);
-		OUT(NPC);
+		eq->gender = emu->gender;
+		eq->level = emu->level;
+		eq->deity = emu->deity;
+		eq->x = emu->x_pos;
+		eq->y = emu->y_pos;
+		eq->z = emu->z_pos;
+		eq->heading = emu->heading * 2.0f;
+		eq->walkspeed = emu->walkspeed;
+		eq->runspeed = emu->runspeed;
+		eq->anon = emu->anon;
+		eq->face = emu->face;
+		eq->guildeqid = (int16)emu->GuildID;
+		eq->pvp = emu->pvp;
+		eq->helmet = (int8)emu->helm;
+		eq->helmcolor = emu->equipcolors.Slot[EQ::textures::armorHead].Color;
+		eq->npc_armor_graphic = (int8)0xff;
+		eq->left_hand = (int8)emu->equipment[EQ::textures::weaponPrimary];
+		eq->right_hand = (int8)emu->equipment[EQ::textures::weaponSecondary];
+		eq->flymode = emu->flymode;
+		eq->GM = emu->GM;
 
-		OUT(invis);
-		OUT(max_hp);
-		OUT(curHP);
-		OUT(x_pos);
-		OUT(y_pos);
-		OUT(z_pos);
-		OUT(heading);
-		OUT(face);
-		OUT(level);
-
-		for (k = 0; k < 9; k++)
-		{
-			eq->equipment[k] = (uint8)emu->equipment[k];
-			eq->equipcolors[k].color = emu->equipcolors.Slot[k].Color;
-		}
-		OUT(anim_type);
-		OUT(bodytexture);
-		OUT(helm);
-		OUT(race);
-		OUT(GM);
-		OUT(GuildID);
-
-		strn0cpy(eq->Surname, emu->Surname, 32);
-		OUT(walkspeed);
-		OUT(runspeed);
-		OUT(light);
-		OUT(class_);
-		OUT(gender);
-		OUT(flymode);
-		OUT(size);
-		OUT(petOwnerId);
 		CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::ServerZoneEntry_Struct));
 
 		FINISH_ENCODE();
@@ -1563,14 +1549,27 @@ DECODE(OP_SendLoginInfo)
 	{
 		ENCODE_LENGTH_EXACT(Damage_Struct);
 		SETUP_DIRECT_ENCODE(Damage_Struct, structs::CombatDamage_Struct);
-		OUT(target);
-		OUT(source);
-		OUT(type);
-		OUT(spellid);
-		OUT(damage);
-		OUT(force);
-		OUT(sequence);
-		OUT(pushup_angle);
+		eq->target = emu->target;
+		eq->source = emu->source;
+		eq->type = static_cast<uint8>(emu->type);
+		eq->unknown = 0;
+		eq->spellid = emu->spellid;
+		eq->damage = emu->damage;
+
+		if (std::isnan(emu->force) || std::isinf(emu->force) || emu->force < 0.0f || emu->force > 10.0f)
+			eq->force = 0.0f;
+		else
+			eq->force = emu->force;
+
+		if (std::isnan(emu->sequence) || std::isinf(emu->sequence))
+			eq->sequence = 0.0f;
+		else
+			eq->sequence = emu->sequence;
+
+		if (std::isnan(emu->pushup_angle) || std::isinf(emu->pushup_angle))
+			eq->pushup_angle = 0.0f;
+		else
+			eq->pushup_angle = emu->pushup_angle;
 
 		LogInfo("Trilogy ENCODE(OP_Damage): Target: {}, Source: {}, Type: {}, Spell: {}, Dmg: {}, Force: {:.2f}, Seq: {:.2f}",
 			eq->target, eq->source, static_cast<int>(eq->type), eq->spellid, eq->damage, eq->force, eq->sequence);
@@ -2188,8 +2187,9 @@ DECODE(OP_SendLoginInfo)
 		ENCODE_LENGTH_EXACT(Animation_Struct);
 		SETUP_DIRECT_ENCODE(Animation_Struct, structs::Animation_Struct);
 		eq->spawnid = emu->entity_id;
-		eq->action = (uint8)emu->animation_id;
-		eq->value = 0;
+		eq->pad02 = 0;
+		eq->action = emu->animation_id;
+		eq->speed = emu->speed;
 		FINISH_ENCODE();
 	}
 
@@ -2197,9 +2197,9 @@ DECODE(OP_SendLoginInfo)
 	{
 		DECODE_LENGTH_EXACT(structs::Animation_Struct);
 		SETUP_DIRECT_DECODE(Animation_Struct, structs::Animation_Struct);
-		emu->entity_id = (uint16)eq->spawnid;
+		emu->entity_id = eq->spawnid;
 		emu->animation_id = eq->action;
-		emu->speed = 1.0f;
+		emu->speed = eq->speed;
 		FINISH_DIRECT_DECODE();
 	}
 
@@ -2407,15 +2407,23 @@ DECODE(OP_SendLoginInfo)
 	{
 		SETUP_DIRECT_ENCODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
 		OUT(spawn_id);
+		eq->unknown02 = 0;
 		LogInfo("Trilogy ENCODE(OP_DeleteSpawn): Spawn: {}", eq->spawn_id);
 		FINISH_ENCODE();
 	}
 
 	DECODE(OP_DeleteSpawn)
 	{
-		DECODE_LENGTH_EXACT(structs::DeleteSpawn_Struct);
-		SETUP_DIRECT_DECODE(DeleteSpawn_Struct, structs::DeleteSpawn_Struct);
-		IN(spawn_id);
+		if (__packet->size != 2 && __packet->size != sizeof(structs::DeleteSpawn_Struct)) {
+			__packet->SetOpcode(OP_Unknown);
+			return;
+		}
+		unsigned char *__eq_buffer = __packet->pBuffer;
+		uint16 spawn_id = *(uint16*)__eq_buffer;
+		__packet->size = sizeof(DeleteSpawn_Struct);
+		__packet->pBuffer = new unsigned char[__packet->size];
+		DeleteSpawn_Struct *emu = (DeleteSpawn_Struct *)__packet->pBuffer;
+		emu->spawn_id = spawn_id;
 		FINISH_DIRECT_DECODE();
 	}
 

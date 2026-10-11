@@ -1634,107 +1634,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	memset(&m_suspendedminion, 0, sizeof(PetInfo));
 
 	/* Server Zone Entry Packet */
-	outapp = new EQApplicationPacket(OP_ZoneEntry, sizeof(ServerZoneEntry_Struct));
-	ServerZoneEntry_Struct* sze = (ServerZoneEntry_Struct*)outapp->pBuffer;
-	memset(sze, 0, sizeof(ServerZoneEntry_Struct));
-	
-	strcpy(sze->name, name);
-	strn0cpy(sze->Surname, lastname, 32);
-	sze->zoneID = zone->GetZoneID();
-	sze->x_pos = m_pp.x;
-	sze->y_pos = m_pp.y;
-	sze->z_pos = m_pp.z;
-	sze->heading = m_pp.heading;
-	sze->race = m_pp.race;
-	sze->deity = m_pp.deity;
-	sze->curHP = static_cast<uint32>(GetHPRatio());
-	sze->max_hp = 100;
-
-	sze->size = base_size;
-	sze->width = 0;
-	sze->length = 0;
-	sze->view_height = 6.2;
-	sze->sprite_oheight = 3.125;
-	
-	sze->NPC = IsBecomeNPC() ? 1 : 10;
-	sze->invis = invisible ? 1 : 0;
-	sze->sneaking = sneaking;
-	sze->animation = animation;
-	
-	sze->haircolor = m_pp.haircolor;
-	sze->beardcolor = m_pp.beardcolor;
-	sze->eyecolor1 = m_pp.eyecolor1;
-	sze->eyecolor2 = m_pp.eyecolor2;
-	sze->hairstyle = m_pp.hairstyle;
-	sze->beard = m_pp.beard;
-	sze->face = m_pp.face;
-	sze->level = m_pp.level;
-	for(int k = EQ::textures::textureBegin; k <= EQ::textures::LastTexture; k++)
-	{
-		sze->equipment[k] = GetEquipmentMaterial(k);
-		sze->equipcolors.Slot[k].Color = GetEquipmentColor(k);
-	}
-	sze->AFK = AFK;
-	sze->anon = m_pp.anon;
-	sze->title = GetAARankTitle();
-	sze->anim_type = 0x64;
-	sze->bodytexture = texture;
-	sze->bodytype = bodytype;
-
-	if(helmtexture && helmtexture != 0xFF)
-	{
-		sze->helm=helmtexture;
-	} else {
-		sze->helm = 0;
-	}
-
-	sze->GM = GetGM() ? 1 : 0;
-	sze->GuildID = GuildID();
-	if(sze->GuildID == 0)
-		sze->GuildID = 0xFFFF;
-	if (!IsInAGuild()) {
-		sze->guildrank = 0xFFFF;
-	} else {
-		sze->guildrank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), AccountID());
-	}
-	if(sze->guildrank == 0)
-		sze->guildrank = 0xFFFF;
-			
-	sze->walkspeed = walkspeed;
-	sze->runspeed = (gmspeed == 0) ? runspeed : 3.1f;
-	sze->light = m_Light.Type[EQ::lightsource::LightActive];
-	sze->class_ = GetClass();
-
-	sze->gender = m_pp.gender;
-	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground);
-	sze->prev = 0xa0ae0e00;
-	sze->next = 0xa0ae0e00;
-	sze->extra[10] = 0xFF;
-	sze->extra[11] = 0xFF;
-	sze->extra[12] = 0xFF;
-	sze->extra[13] = 0xFF;
-	sze->type = 0;
-	sze->petOwnerId = ownerid;
-
-	sze->curHP = 1;
-	sze->NPC = 0;
-	if(zone->zonemap)
-	{
-	// This prevents hopping on logging in.
-	glm::vec3 loc(m_Position.x, m_Position.y, m_Position.z);
-	if (!IsEncumbered() && m_pp.boatid == 0 && (!zone->HasWaterMap() || !zone->watermap->InLiquid(loc)) && 
-		zone->GetZoneID() != Zones::HOLE && zone->GetZoneID() != Zones::FREPORTE)
-	{
-		float bestz = zone->zonemap->FindBestZ(loc, nullptr);
-		if (bestz != BEST_Z_INVALID && size > 0)
-			m_Position.z = bestz + CalcZOffset();
-	}
-	sze->z_pos = m_Position.z;
-	}
-
-	CRC32::SetEQChecksum((unsigned char*)sze, sizeof(ServerZoneEntry_Struct));
-	outapp->priority = 6;
-	FastQueuePacket(&outapp);
+	SendServerZoneEntry();
 
 	// this sets locations mobs were, when bulk zone spawns sent
 	entity_list.BulkNewClientDistances(this);
@@ -8886,15 +8786,129 @@ void Client::Handle_OP_YellForHelp(const EQApplicationPacket *app)
 	return;
 }
 
+void Client::SendServerZoneEntry()
+{
+	auto outapp = new EQApplicationPacket(OP_ZoneEntry, sizeof(ServerZoneEntry_Struct));
+	ServerZoneEntry_Struct* sze = (ServerZoneEntry_Struct*)outapp->pBuffer;
+	memset(sze, 0, sizeof(ServerZoneEntry_Struct));
+	
+	strcpy(sze->name, name);
+	strn0cpy(sze->Surname, lastname, 32);
+	sze->zoneID = zone->GetZoneID();
+	sze->x_pos = m_pp.x;
+	sze->y_pos = m_pp.y;
+	sze->z_pos = m_pp.z;
+	sze->heading = m_pp.heading;
+	sze->race = m_pp.race;
+	sze->deity = m_pp.deity;
+	sze->curHP = static_cast<uint32>(GetHPRatio());
+	sze->max_hp = 100;
+
+	sze->size = base_size;
+	sze->width = 0;
+	sze->length = 0;
+	sze->view_height = 6.2;
+	sze->sprite_oheight = 3.125;
+	
+	sze->NPC = IsBecomeNPC() ? 1 : 10;
+	sze->invis = invisible ? 1 : 0;
+	sze->sneaking = sneaking;
+	sze->animation = animation;
+	
+	sze->haircolor = m_pp.haircolor;
+	sze->beardcolor = m_pp.beardcolor;
+	sze->eyecolor1 = m_pp.eyecolor1;
+	sze->eyecolor2 = m_pp.eyecolor2;
+	sze->hairstyle = m_pp.hairstyle;
+	sze->beard = m_pp.beard;
+	sze->face = m_pp.face;
+	sze->level = m_pp.level;
+	for(int k = EQ::textures::textureBegin; k <= EQ::textures::LastTexture; k++)
+	{
+		sze->equipment[k] = GetEquipmentMaterial(k);
+		sze->equipcolors.Slot[k].Color = GetEquipmentColor(k);
+	}
+	sze->AFK = AFK;
+	sze->anon = m_pp.anon;
+	sze->title = GetAARankTitle();
+	sze->anim_type = 0x64;
+	sze->bodytexture = texture;
+	sze->bodytype = bodytype;
+
+	if(helmtexture && helmtexture != 0xFF)
+	{
+		sze->helm = helmtexture;
+	} else {
+		sze->helm = 0;
+	}
+
+	sze->GM = GetGM() ? 1 : 0;
+	sze->GuildID = GuildID();
+	if(sze->GuildID == 0)
+		sze->GuildID = 0xFFFF;
+	if (!IsInAGuild()) {
+		sze->guildrank = 0xFFFF;
+	} else {
+		sze->guildrank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), AccountID());
+	}
+	if(sze->guildrank == 0)
+		sze->guildrank = 0xFFFF;
+			
+	sze->walkspeed = walkspeed;
+	sze->runspeed = (gmspeed == 0) ? runspeed : 3.1f;
+	sze->light = m_Light.Type[EQ::lightsource::LightActive];
+	sze->class_ = GetClass();
+
+	sze->gender = m_pp.gender;
+	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground);
+	sze->prev = 0xa0ae0e00;
+	sze->next = 0xa0ae0e00;
+	sze->extra[10] = 0xFF;
+	sze->extra[11] = 0xFF;
+	sze->extra[12] = 0xFF;
+	sze->extra[13] = 0xFF;
+	sze->type = 0;
+	sze->petOwnerId = ownerid;
+
+	sze->curHP = 1;
+	sze->NPC = 0;
+	if(zone->zonemap)
+	{
+		// This prevents hopping on logging in.
+		glm::vec3 loc(m_Position.x, m_Position.y, m_Position.z);
+		if (!IsEncumbered() && m_pp.boatid == 0 && (!zone->HasWaterMap() || !zone->watermap->InLiquid(loc)) && 
+			zone->GetZoneID() != Zones::HOLE && zone->GetZoneID() != Zones::FREPORTE)
+		{
+			float bestz = zone->zonemap->FindBestZ(loc, nullptr);
+			if (bestz != BEST_Z_INVALID && size > 0)
+				m_Position.z = bestz + CalcZOffset();
+		}
+		sze->z_pos = m_Position.z;
+	}
+
+	CRC32::SetEQChecksum((unsigned char*)sze, sizeof(ServerZoneEntry_Struct));
+	outapp->priority = 6;
+	FastQueuePacket(&outapp);
+}
+
 void Client::Handle_OP_ZoneEntryResend(const EQApplicationPacket *app)
 {
+	LogDebug("[Client: {}] Handle_OP_ZoneEntryResend: size={}", GetName(), app->size);
+
 	if (m_ClientVersionBit == EQ::versions::ClientVersionBit::bit_Trilogy) {
-		auto outapp = app->Copy();
-		QueuePacket(outapp);
+		if (app->size == 2) {
+			uint16 spawn_id = *(uint16*)app->pBuffer;
+			Mob* mob = entity_list.GetMob(spawn_id);
+			if (mob) {
+				EQApplicationPacket spawn_app;
+				mob->CreateSpawnPacket(&spawn_app);
+				QueuePacket(&spawn_app, true, CLIENT_CONNECTED);
+				safe_delete_array(spawn_app.pBuffer);
+			}
+		}
 		return;
 	}
 
-	//EQMac doesn't reply to this according to ShowEQ captures.
 	return;
 }
 
