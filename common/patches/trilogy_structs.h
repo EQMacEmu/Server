@@ -253,16 +253,16 @@ namespace Trilogy {
 
 		struct CombatDamage_Struct
 		{
-			/*000*/	uint16	target;
-			/*002*/	uint16	source;
-			/*004*/	uint8	type;
-			/*005*/	uint8   unknown;
-			/*006*/	uint16	spellid;
-			/*008*/	int32	damage;
-			/*012*/	float	force;
-			/*016*/	float	sequence;
-			/*020*/ float	pushup_angle;
-			/*024*/
+			/*000*/	uint32	target;
+			/*004*/	uint32	source;
+			/*008*/	uint8	type;
+			/*009*/	uint8   unknown;
+			/*010*/	uint16	spellid;
+			/*012*/	int32	damage;
+			/*016*/	float	force;
+			/*020*/	float	sequence;
+			/*024*/ float	pushup_angle;
+			/*028*/
 		};
 
 		struct Action_Struct
