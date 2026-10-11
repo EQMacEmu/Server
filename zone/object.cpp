@@ -143,6 +143,23 @@ Object::Object(Client* client, const EQ::ItemInstance* inst)
 
 	// Set object name
 	if (inst) {
+		m_data.itemid = inst->GetID();
+		m_data.charges = inst->GetCharges();
+		if (inst->IsType(EQ::item::ItemClassBag)) {
+			for (uint8 sub = EQ::invbag::SLOT_BEGIN; sub <= EQ::invbag::SLOT_END; ++sub) {
+				const auto* bag_item = inst->GetItem(sub);
+				if (bag_item) {
+					m_data.itemsinbag[sub - EQ::invbag::SLOT_BEGIN] = bag_item->GetID();
+				} else {
+					m_data.itemsinbag[sub - EQ::invbag::SLOT_BEGIN] = 0xFFFF;
+				}
+			}
+		} else {
+			for (int g = 0; g < 10; g++) {
+				m_data.itemsinbag[g] = 0xFFFF;
+			}
+		}
+
 		const EQ::ItemData* item = inst->GetItem();
 		if (item) {
 			if (item->IDFile[0] == '\0') {
@@ -199,6 +216,23 @@ Object::Object(const EQ::ItemInstance *inst, float x, float y, float z, float he
 
 	// Set object name
 	if (inst) {
+		m_data.itemid = inst->GetID();
+		m_data.charges = inst->GetCharges();
+		if (inst->IsType(EQ::item::ItemClassBag)) {
+			for (uint8 sub = EQ::invbag::SLOT_BEGIN; sub <= EQ::invbag::SLOT_END; ++sub) {
+				const auto* bag_item = inst->GetItem(sub);
+				if (bag_item) {
+					m_data.itemsinbag[sub - EQ::invbag::SLOT_BEGIN] = bag_item->GetID();
+				} else {
+					m_data.itemsinbag[sub - EQ::invbag::SLOT_BEGIN] = 0xFFFF;
+				}
+			}
+		} else {
+			for (int g = 0; g < 10; g++) {
+				m_data.itemsinbag[g] = 0xFFFF;
+			}
+		}
+
 		const EQ::ItemData* item = inst->GetItem();
 		if (item) {
 			if (item->IDFile[0] == '\0') {

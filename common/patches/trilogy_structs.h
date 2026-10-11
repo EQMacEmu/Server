@@ -500,29 +500,35 @@ namespace Trilogy {
 
 		struct Object_Struct
 		{
-			/*000*/		int8	unknown001[8];
-			/*008*/		uint16  itemid;
-			/*010*/		uint16  unknown010;
-			/*012*/		int32	drop_id;	//this id will be used, if someone clicks on this object
-			/*016*/		int16	zone_id;
-			/*018*/		uint8   unknown014[6];
-			/*024*/		uint8   charges;
-			/*025*/		uint8   unknown25;
-			/*026*/		uint8   maxcharges;
-			/*027*/		uint8	unknown027[113];		// ***Placeholder
-			/*140*/		float   heading;
-			/*144*/		float	z;
-			/*148*/		float	x;
-			/*152*/		float	y;					// Z Position
-			/*156*/		char	object_name[16];				// ACTOR ID
-			/*172*/		int8	unknown172[14];
-			/*186*/		int16	itemsinbag[10]; //if you drop a bag, thats where the items are
-			/*206*/		int16	unknown206;
-			/*208*/		int32	unknown208;
-			/*212*/		uint32	object_type;
-			/*216*/		int16	unknown216[4];
-			/*224*/
+		/*000*/	int8	unknown_4b[4];
+		/*004*/	int8	client_address[4];	//Confirmed (Sp0tter). Something to do with the way the client stores objects.
+		/*008*/	int32	itemid;				//Confirmed (Sp0tter).
+		/*012*/	int32	dropid;				//this id will be used, if someone clicks on this object
+		/*016*/	int8	unknown_24[24];		// 0
+		/*040*/	float	ypos;
+		/*044*/	float	xpos;
+		/*048*/	float	zpos;
+		/*052*/	float	heading;
+		/*056*/	char	objectname[16];
+		/*072*/	int8	unknown_14[14];
+		/*086*/	int16	itemsinbag[10];		//if you drop a bag, thats where the items are
+		/*106*/	int8	unknown_6[6]; 
+		/*112*/	int16	cost;				//Confirmed (Sp0tter).
+		/*114*/	int8	unknown_4[4]; 
+		/*118*/	int8	stack_size;			//Confirmed (Sp0tter).
+		/*119*/	int8	unknown_1; 
+		/*120*/	int16	click_effect;		//Confirmed (Sp0tter).
+		/*122*/ int8	unknown_5[5];
+		/*127*/	Object_Data_Struct item_data[10];
+		/*227*/	int8	unknown_1b; 
+		/*228*/	int8	weight;				//Confirmed (Sp0tter).
+		/*229*/	int8	unknown_11[3]; 
+		/*232*/	int8	unknown_12[4];
+		/*236*/	int16	icon_nr;
+		/*238*/	int16	type;
+		/*240*/
 		};
+		static_assert(sizeof(Object_Struct) == 240, "structs::Object_Struct must be 240 bytes");
 
 		struct ClickObject_Struct
 		{

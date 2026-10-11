@@ -981,6 +981,27 @@ DECODE(OP_SendLoginInfo)
 				message = "You are missing ";
 				message += emu->message;
 				break;
+			case 466: {
+				message = "--";
+				message += emu->message;
+				message += " has looted a ";
+				size_t len1 = strlen(emu->message);
+				if (sizeof(FormattedMessage_Struct) + len1 + 1 < (size_t)__packet->size) {
+					const char* item_name = emu->message + len1 + 1;
+					message += item_name;
+				}
+				message += ".--";
+				break;
+			}
+			case 467:
+				message = "--You have looted a ";
+				message += emu->message;
+				message += ".--";
+				break;
+			case 468:
+				message = "GUILD MOTD: ";
+				message += emu->message;
+				break;
 			case 469:
 				message = "Your faction standing with ";
 				message += emu->message;
@@ -2251,32 +2272,28 @@ DECODE(OP_SendLoginInfo)
 
 	ENCODE(OP_GroundSpawn)
 	{
-
 		ENCODE_LENGTH_EXACT(Object_Struct);
 		SETUP_DIRECT_ENCODE(Object_Struct, structs::Object_Struct);
-		OUT(drop_id);
-		OUT(zone_id);
-		OUT(heading);
-		OUT(z);
-		OUT(y);
-		OUT(x);
-		strncpy(eq->object_name, emu->object_name, 16);
-		OUT(object_type);
-		OUT(charges);
-		OUT(maxcharges);
-		int g;
-		for (g = 0; g<10; g++)
+		eq->dropid = emu->drop_id;
+		eq->itemid = emu->itemid;
+		eq->xpos = emu->x;
+		eq->ypos = emu->y;
+		eq->zpos = emu->z;
+		eq->heading = emu->heading;
+		strncpy(eq->objectname, emu->object_name, 16);
+		eq->type = (int16)emu->object_type;
+		eq->stack_size = emu->charges;
+		for (int g = 0; g < 10; g++)
 		{
-			if (eq->itemsinbag[g] > 0)
+			if (emu->itemsinbag[g] > 0 && emu->itemsinbag[g] != 0xFFFF)
 			{
 				eq->itemsinbag[g] = emu->itemsinbag[g];
-				LogInventory("Found a container item {} in slot: {}", emu->itemsinbag[g], g);
 			}
 			else
+			{
 				eq->itemsinbag[g] = 0xFFFF;
+			}
 		}
-		eq->unknown208 = 0xFFFFFFFF;
-		eq->unknown216[0] = 0xFFFF;
 		FINISH_ENCODE();
 	}
 
@@ -2284,15 +2301,19 @@ DECODE(OP_SendLoginInfo)
 	{
 		DECODE_LENGTH_EXACT(structs::Object_Struct);
 		SETUP_DIRECT_DECODE(Object_Struct, structs::Object_Struct);
-		IN(drop_id);
-		IN(zone_id);
-		IN(heading);
-		IN(z);
-		IN(y);
-		IN(x);
-		strncpy(emu->object_name, eq->object_name, 16);
-		IN(object_type);
-
+		emu->drop_id = eq->dropid;
+		emu->itemid = eq->itemid;
+		emu->x = eq->xpos;
+		emu->y = eq->ypos;
+		emu->z = eq->zpos;
+		emu->heading = eq->heading;
+		strncpy(emu->object_name, eq->objectname, 16);
+		emu->charges = eq->stack_size;
+		emu->object_type = eq->type;
+		for (int i = 0; i < 10; i++)
+		{
+			emu->itemsinbag[i] = eq->itemsinbag[i];
+		}
 		FINISH_DIRECT_DECODE();
 	}
 

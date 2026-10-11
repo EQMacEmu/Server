@@ -3307,6 +3307,14 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
 {
+	if (app && app->size == sizeof(Object_Struct)) {
+		const Object_Struct* os = (const Object_Struct*)app->pBuffer;
+		glm::vec4 coords(os->x, os->y, os->z, os->heading);
+		if (DistanceSquaredNoZ(GetPosition(), coords) < (100.0f * 100.0f)) {
+			DropItem(EQ::invslot::slotCursor, &coords);
+			return;
+		}
+	}
 	DropItem(EQ::invslot::slotCursor);
 	return;
 }
