@@ -3833,14 +3833,21 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 
 void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(uint16)) {
-		std::cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(uint16) << std::endl;
+	uint32 corpse_id = 0;
+	if (app->size == sizeof(uint16)) {
+		corpse_id = *((uint16*)app->pBuffer);
+	}
+	else if (app->size == sizeof(uint32)) {
+		corpse_id = *((uint32*)app->pBuffer);
+	}
+	else {
+		std::cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(uint16) << " or " << sizeof(uint32) << std::endl;
 		return;
 	}
 
 	SetLooting(0);
 
-	Entity* entity = entity_list.GetID(*((uint16*)app->pBuffer));
+	Entity* entity = entity_list.GetID(corpse_id);
 	if (entity == 0) {
 		Corpse::SendLootReqErrorPacket(this);
 		return;
@@ -5698,7 +5705,7 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 	}
 
 	auto* l = (LootingItem_Struct*)app->pBuffer;
-	auto entity = entity_list.GetID(*((uint16*)app->pBuffer));
+	auto entity = entity_list.GetID(l->lootee);
 	if (!entity) {
 		auto outapp = new EQApplicationPacket(OP_LootComplete, 0);
 		QueuePacket(outapp);
@@ -5716,12 +5723,19 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 
 void Client::Handle_OP_LootRequest(const EQApplicationPacket *app) 
 {
-	if (app->size != sizeof(uint16)) {
-		LogError("Wrong size: OP_EndLootRequest, size= [{}], expected [{}]", app->size, sizeof(uint16));
+	uint32 corpse_id = 0;
+	if (app->size == sizeof(uint16)) {
+		corpse_id = *((uint16*)app->pBuffer);
+	}
+	else if (app->size == sizeof(uint32)) {
+		corpse_id = *((uint32*)app->pBuffer);
+	}
+	else {
+		LogError("Wrong size: OP_LootRequest, size= [{}], expected [{} or {}]", app->size, sizeof(uint16), sizeof(uint32));
 		return;
 	}
 
-	Entity* ent = entity_list.GetID(*((uint16*)app->pBuffer));
+	Entity* ent = entity_list.GetID(corpse_id);
 	if (ent == 0) {
 		//	Message(Chat::Red, "Error: OP_LootRequest: Corpse not found (ent = 0)");
 		Corpse::SendLootReqErrorPacket(this);
