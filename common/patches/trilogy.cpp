@@ -1656,7 +1656,21 @@ DECODE(OP_SendLoginInfo)
 		SETUP_DIRECT_ENCODE(Consider_Struct, structs::Consider_Struct);
 		OUT(playerid);
 		OUT(targetid);
-		OUT(faction);
+		uint32 pass_faction = 0;
+		switch (emu->faction)
+		{
+			case 1: pass_faction = 0x00000500; break; // Ally
+			case 2: pass_faction = 0x00000300; break; // Warmly
+			case 3: pass_faction = 0x00000200; break; // Kindly
+			case 4: pass_faction = 0x00000100; break; // Amiably
+			case 5: pass_faction = 0x00000000; break; // Indifferently
+			case 6: pass_faction = 0xFFFFFD00; break; // Scowls
+			case 7: pass_faction = 0xFFFFFE00; break; // Threateningly
+			case 8: pass_faction = 0xFFFFFF00; break; // Dubiously
+			case 9: pass_faction = 0xFFFFFFFF; break; // Apprehensively
+			default: pass_faction = 0x00000000; break;
+		}
+		eq->faction = pass_faction;
 		OUT(level);
 		OUT(cur_hp);
 		OUT(max_hp);
