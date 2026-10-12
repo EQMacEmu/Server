@@ -12,6 +12,7 @@
 #include "../strings.h"
 #include "../inventory_profile.h"
 #include "trilogy_structs.h"
+#include "trilogy_strings.h"
 #include "../rulesys.h"
 #include "../zone_numbers.h"
 #include "../zone_store.h"
@@ -29,6 +30,30 @@ namespace Trilogy {
 
 	static inline uint32 TrilogyToServerSlot(int16 TrilogySlot);
 	static inline uint32 TrilogyToServerCorpseSlot(int16 TrilogyCorpse);
+
+	static std::string CleanItemLinks(const std::string& str)
+	{
+		std::string result;
+		result.reserve(str.length());
+		for (size_t i = 0; i < str.length(); ++i)
+		{
+			if (str[i] == '\x12')
+			{
+				size_t close_pos = str.find('\x12', i + 1);
+				if (close_pos != std::string::npos && (close_pos - i - 1) >= 7)
+				{
+					size_t text_start = i + 1 + 7;
+					size_t text_len = close_pos - text_start;
+					result.append(str, text_start, text_len);
+					i = close_pos;
+					continue;
+				}
+				continue;
+			}
+			result += str[i];
+		}
+		return result;
+	}
 
 	void Register(EQPacketTranslator &translator)
 	{
@@ -501,7 +526,8 @@ DECODE(OP_SendLoginInfo)
 		uint32 __i = 0;
 		__i++; /* to shut up compiler */
 
-		int msglen = __packet->size - sizeof(ChannelMessage_Struct);
+		std::string clean_msg = CleanItemLinks(emu->message);
+		int msglen = clean_msg.length() + 1;
 		int len = sizeof(structs::ChannelMessage_Struct) + msglen + 4;
 		__packet->pBuffer = new unsigned char[len];
 		__packet->size = len;
@@ -512,7 +538,7 @@ DECODE(OP_SendLoginInfo)
 		eq->language = emu->language;
 		eq->chan_num = emu->chan_num;
 		eq->skill_in_language = emu->skill_in_language;
-		strcpy(eq->message, emu->message);
+		strcpy(eq->message, clean_msg.c_str());
 		FINISH_ENCODE();
 	}
 
@@ -526,19 +552,20 @@ DECODE(OP_SendLoginInfo)
 		uint32 __i = 0;
 		__i++; /* to shut up compiler */
 
-		int msglen = __packet->size - sizeof(FormattedMessage_Struct);
-		int len = sizeof(structs::ChannelMessage_Struct) + msglen;
-
 		std::string message("");
 		if (emu->string_id == 1032 || emu->string_id == 1034) {
+			char sender[32] = { 0 };
+			strn0cpy(sender, emu->message, 30);
+			bufptr = emu->message + strlen(sender) + 1;
+			std::string clean_channel_msg = CleanItemLinks(bufptr);
+			int len = sizeof(structs::ChannelMessage_Struct) + clean_channel_msg.length() + 5;
 			__packet->pBuffer = new unsigned char[len];
 			__packet->size = len;
 			memset(__packet->pBuffer, 0, len);
 			structs::ChannelMessage_Struct *eq = (structs::ChannelMessage_Struct *) __packet->pBuffer;
 			__packet->SetOpcode(OP_ChannelMessage);
-			strn0cpy(eq->sender, emu->message, 30);
-			bufptr = emu->message + strlen(eq->sender) + 1;
-			strn0cpy(eq->message, bufptr, msglen - strlen(eq->sender) - 1);
+			strn0cpy(eq->sender, sender, 30);
+			strcpy(eq->message, clean_channel_msg.c_str());
 			if (emu->string_id == 1032)
 				eq->chan_num = 8;
 			else
@@ -546,564 +573,29 @@ DECODE(OP_SendLoginInfo)
 			eq->skill_in_language = 100;
 		}
 		else {
-			switch (emu->string_id) {
-			case 100:
-				message = "Your target is out of range, get closer!";
-				break;
-			case 101:
-				message = "Target player not found.";
-				break;
-			case 104:
-				message = "Trade cancelled, duplicated Lore Items would result.";
-				break;
-			case 105:
-				message = "You cannot form an affinity with this area. Try a city.";
-				break;
-			case 106:
-				message = "This spell does not work here.";
-				break;
-			case 107:
-				message = "This spell does not work on this plane.";
-				break;
-			case 108:
-				message = "You cannot see your target.";
-				break;
-			case 113:
-				message = "The next group buff you cast will hit all targets in range.";
-				break;
-			case 116:
-				message = "Your ability failed. Timer has been reset.";
-				break;
-			case 114:
-				message = "You escape from combat, hiding yourself from view.";
-				break;
-			case 119:
-				message = "Alternate Experience is *OFF*.";
-				break;
-			case 121:
-				message = "Alternate Experience is *ON*.";
-				break;
-			case 124:
-				message = "Your target is too far away, get closer!";
-				break;
-			case 126:
-				message = "Your will is not sufficient to command this weapon.";
-				break;
-			case 127:
-				message = "Your pet's will is not sufficient to command its weapon.";
-				break;
-			case 128:
-				message = "You unleash a flurry of attacks.";
-				break;
-			case 130:
-				message = "It's locked and you're not holding the key.";
-				break;
-			case 131:
-				message = "This lock cannot be picked.";
-				break;
-			case 132:
-				message = "You are not sufficiently skilled to pick this lock.";
-				break;
-			case 133:
-				message = "You opened the locked door with your magic GM key.";
-				break;
-			case 136:
-				message = "You are not sufficient level to use this item.";
-				break;
-			case 138:
-				message = "You gain experience!!";
-				break;
-			case 139:
-				message = "You gain party experience!!";
-				break;
-			case 143:
-				message = "Your bow shot did double dmg.";
-				break;
-			case 146:
-				message = "You can't bandage without bandages, go buy some.";
-				break;
-			case 147:
-				message = "You are being bandaged. Stay relatively still.";
-				break;
-			case 148:
-				message = "You can't try to forage while attacking.";
-				break;
-			case 149:
-				message = "You must be standing to forage.";
-				break;
-			case 150:
-				message = "You have scrounged up some fishing grubs.";
-				break;
-			case 151:
-				message = "You have scrounged up some water.";
-				break;
-			case 152:
-				message = "You have scrounged up some food.";
-				break;
-			case 153:
-				message = "You have scrounged up some drink.";
-				break;
-			case 154:
-				message = "You have scrounged up something that doesn't look edible.";
-				break;
-			case 155:
-				message = "You fail to locate any food nearby.";
-				break;
-			case 156:
-				message = "You are already fishing!";
-				break;
-			case 158:
-				message = "You can't fish while holding something.";
-				break;
-			case 160:
-				message = "You can't fish without a fishing pole, go buy one.";
-				break;
-			case 161:
-				message = "You need to put your fishing pole in your primary hand.";
-				break;
-			case 162:
-				message = "You can't fish without fishing bait, go buy some.";
-				break;
-			case 163:
-				message = "You cast your line.";
-				break;
-			case 164:
-				message = "You're not scaring anyone.";
-				break;
-			case 165:
-				message = "You stop fishing and go on your way.";
-				break;
-			case 166:
-				message = "Trying to catch land sharks perhaps?";
-				break;
-			case 167:
-				message = "Trying to catch a fire elemental or something?";
-				break;
-			case 168:
-				message = "You didn't catch anything.";
-				break;
-			case 169:
-				message = "Your fishing pole broke!";
-				break;
-			case 170:
-				message = "You caught, something...";
-				break;
-			case 171:
-				message = "You spill your beer while bringing in your line.";
-				break;
-			case 172:
-				message = "You lost your bait!";
-				break;
-			case 173:
-				message = "Your spell fizzles!";
-				break;
-			case 179:
-				message = "You cannot use this item unless it is equipped.";
-				break;
-			case 180:
-				message = "You miss a note, bringing your song to a close!";
-				break;
-			case 181:
-				message = "Your race, class, or deity cannot use this item.";
-				break;
-			case 182:
-				message = "Item is out of charges.";
-				break;
-			case 191:
-				message = "Your target has no mana to affect.";
-				break;
-			case 196:
-				message = "You must first target a group member.";
-				break;
-			case 197:
-				message = "Your spell is too powerful for your intended target.";
-				break;
-			case 199:
-				message = "Insufficient Mana to cast this spell!";
-				break;
-			case 203:
-				message = "This being is not a worthy sacrifice.";
-				break;
-			case 204:
-				message = "This being is too powerful to be a sacrifice.";
-				break;
-			case 205:
-				message = "You cannot sacrifice yourself.";
-				break;
-			case 207:
-				message = "You *CANNOT* cast spells, you have been silenced!";
-				break;
-			case 208:
-				message = "Spell can only be cast during the day.";
-				break;
-			case 209:
-				message = "Spell can only be cast during the night.";
-				break;
-			case 210:
-				message = "That spell can not affect this target PC.";
-				break;
-			case 214:
-				message = "You must first select a target for this spell!";
-				break;
-			case 215:
-				message = "You must first target a living group member whose corpse you wish to summon.";
-				break;
-			case 221:
-				message = "This spell only works on corpses.";
-				break;
-			case 224:
-				message = "You can't drain yourself!";
-				break;
-			case 230:
-				message = "This corpse is not valid.";
-				break;
-			case 231:
-				message = "This player cannot be resurrected. The corpse is too old.";
-				break;
-			case 234:
-				message = "You can only cast this spell in the outdoors.";
-				break;
-			case 236:
-				message = "Spell recast time not yet met.";
-				break;
-			case 237:
-				message = "Spell recovery time not yet met.";
-				break;
-			case 238:
-				message = "Your Portal fails to open.";
-				break;
-			case 239:
-				message = "Your target cannot be mesmerized.";
-				break;
-			case 240:
-				message = "Your target cannot be mesmerized (with this spell).";
-				break;
-			case 241:
-				message = "Your target is immune to the stun portion of this effect.";
-				break;
-			case 242:
-				message = "Your target is immune to changes in its attack speed.";
-				break;
-			case 243:
-				message = "Your target is immune to fear spells.";
-				break;
-			case 244:
-				message = "Your target is immune to changes in its run speed.";
-				break;
-			case 246:
-				message = "You cannot have more than one pet at a time.";
-				break;
-			case 248:
-				message = "Your target is too high of a level for your charm spell.";
-				break;
-			case 251:
-				message = "That spell can not affect this target NPC.";
-				break;
-			case 256:
-				message = "Your pet is the focus of something's attention.";
-				break;
-			case 255:
-				message = "You do not have a pet.";
-				break;
-			case 260:
-				message = "Your gate is too unstable, and collapses.";
-				break;
-			case 262:
-				message = "You cannot sense any corpses for this PC in this zone.";
-				break;
-			case 263:
-				message = "Your spell did not take hold.";
-				break;
-			case 267:
-				message = "This NPC cannot be charmed.";
-				break;
-			case 268:
-				message = "Your target looks unaffected.";
-				break;
-			case 269:
-				message = "Stick to singing until you learn to play this instrument.";
-				break;
-			case 270:
-				message = "You regain your concentration and continue your casting.";
-				break;
-			case 271:
-				message = "Your spell would not have taken hold on your target.";
-				break;
-			case 272:
-				message = "You are missing some required spell components.";
-				break;
-			case 275:
-				message = "You feel yourself starting to appear.";
-				break;
-			case 278:
-				message = "You lose the concentration to remain in your fighting discipline.";
-				break;
-			case 289:
-				message = "You regain some experience from resurrection.";
-				break;
-			case 290:
-				message = "Duplicate lore items are not allowed.";
-				break;
-			case 293:
-				message = "Target other group buff is *ON*.";
-				break;
-			case 294:
-				message = "Target other group buff is *OFF*.";
-				break;
-			case 303:
-				message = "I don't see anyone by that name around here...";
-				break;
-			case 334:
-				message = "You cannot combine these items in this container type!";
-				break;
-			case 336:
-				message = "You lacked the skills to fashion the items together.";
-				break;
-			case 338:
-				message = "You can no longer advance your skill from making this item.";
-				break;
-			case 339:
-				message = "You have fashioned the items together to create something new!";
-				break;
-			case 343:
-				message = "You have momentarily ducked away from the main combat.";
-				break;
-			case 344:
-				message = "Your attempts at ducking clear of combat fail.";
-				break;
-			case 345:
-				message = "You failed to hide yourself.";
-				break;
-			case 346:
-				message = "You have hidden yourself from view.";
-				break;
-			case 347:
-				message = "You are as quiet as a cat stalking its prey.";
-				break;
-			case 348:
-				message = "You are as quiet as a herd of running elephants.";
-				break;
-			case 349:
-				message = "You magically mend your wounds and heal considerable damage.";
-				break;
-			case 350:
-				message = "You mend your wounds and heal some damage.";
-				break;
-			case 351:
-				message = "You have worsened your wounds!";
-				break;
-			case 352:
-				message = "You have failed to mend your wounds.";
-				break;
-			case 371:
-				message = "You cannot loot this Lore Item. You already have one.";
-				break;
-			case 379:
-				message = "You cannot pick up a lore item you already possess.";
-				break;
-			case 389:
-				message = "The corpse is too far away to summon.";
-				break;
-			case 390:
-				message = "You do not have consent to summon that corpse.";
-				break;
-			case 393:
-				message = "You are ready to use a new discipline now.";
-				break;
-			case 397:
-				message = "Not a valid consent name.";
-				break;
-			case 398:
-				message = "You cannot consent NPC\'s.";
-				break;
-			case 399:
-				message = "You cannot consent yourself.";
-				break;
-			case 405:
-				message = "You need to play a percussion instrument for this song.";
-				break;
-			case 406:
-				message = "You need to play a wind instrument for this song.";
-				break;
-			case 407:
-				message = "You need to play a stringed instrument for this song.";
-				break;
-			case 408:
-				message = "You need to play a brass instrument for this song.";
-				break;
-			case 419:
-				message = "You have been healed for ";
-				message += emu->message;
-				message += " points of damage.";
-				break;
-			case 422:
-				message = "Your ";
-				message += emu->message;
-				message += " begins to glow.";
-				break;
-			case 423:
-				message = emu->message;
-				message += " tries to cast an invisibility spell on you, but you are already invisible.";
-				break;
-			case 424:
-				message = emu->message;
-				message += " tries to cast a spell on you, but you are protected.";
-				break;
-			case 425:
-				message = "Your target resisted the ";
-				message += emu->message;
-				message += " spell.";
-				break;
-			case 426:
-				message = "You resist the ";
-				message += emu->message;
-				message += " spell!";
-				break;
-			case 427:
-				message = "You perform an exceptional heal! (";
-				message += emu->message;
-				message += ")";
-				break;
-			case 428:
-				message = "You deliver a critical blast! (";
-				message += emu->message;
-				message += ")";
-				break;
-			case 429:
-				message = "Summoning your corpse.";
-				break;
-			case 430:
-				message = "Summoning ";
-				message += emu->message;
-				message += "'s corpse.";
-				break;
-			case 433:
-				message = "You are missing ";
-				message += emu->message;
-				break;
-			case 466: {
-				message = "--";
-				message += emu->message;
-				message += " has looted a ";
-				size_t len1 = strlen(emu->message);
-				if (sizeof(FormattedMessage_Struct) + len1 + 1 < (size_t)__packet->size) {
-					const char* item_name = emu->message + len1 + 1;
-					message += item_name;
+			std::vector<std::string> args;
+			if (__packet->size > sizeof(FormattedMessage_Struct)) {
+				const char* ptr = emu->message;
+				const char* end = (const char*)__emu_buffer + __packet->size;
+				while (ptr < end && *ptr != '\0') {
+					args.emplace_back(ptr);
+					ptr += args.back().length() + 1;
 				}
-				message += ".--";
-				break;
 			}
-			case 467:
-				message = "--You have looted a ";
-				message += emu->message;
-				message += ".--";
-				break;
-			case 468:
-				message = "GUILD MOTD: ";
-				message += emu->message;
-				break;
-			case 469:
-				message = "Your faction standing with ";
-				message += emu->message;
-				message += " could not possibly get any worse.";
-				break;
-			case 470:
-				message = "Your faction standing with ";
-				message += emu->message;
-				message += " got worse.";
-				break;
-			case 471:
-				message = "Your faction standing with ";
-				message += emu->message;
-				message += " could not possibly get any better.";
-				break;
-			case 472:
-				message = "Your faction standing with ";
-				message += emu->message;
-				message += " got better.";
-				break;
-			case 12268:
-				message = "You must target a player or use /invite <name> to invite someone to your group.";
-				break;
-			case 12270:
-				message = "You cannot invite yourself.";
-				break;
-			case 12290:
-				message = "You abandon your preparations to camp.";
-				break;
-			case 12323:
-				message = "Talking to yourself again?";
-				break;
-			case 12368:
-				message = "You do not have control of yourself right now.";
-				break;
-			case 12409:
-				message = "You can't seem to steal from yourself for some reason...";
-				break;
-			case 12406:
-				message = "You must target a player to steal from first.  You may not steal from corpses.";
-				break;
-			case 12410:
-				message = "You may not steal from a person who does not follow the ways of chaos....";
-				break;
-			case 12413:
-				message = "You can only steal from others in your level range.";
-				break;
-			case 12440:
-				message = "You are too distracted to cast a spell now!";
-				break;
-			case 12442:
-				message = "You are already casting a spell!";
-				break;
-			case 12444:
-				message = "Your ";
-				message += emu->message;
-				message += " shimmers briefly.";
-				break;
-			case 12446:
-				message = "You don't sense any corpses of that name.";
-				break;
-			case 12447:
-				message = "You don't sense any corpses.";
-				break;
-			case 12448:
-				message = "Your immunity buff protected you from the spell ";
-				message += emu->message;
-				message += " !";
-				break;
-			case 12452:
-				message = "You are not holding an item!";
-				break;
-			case 12471:
-				message = "You sense undead in this direction.";
-				break;
-			case 12472:
-				message = "You sense an animal in this direction.";
-				break;
-			case 12473:
-				message = "You sense a summoned being in this direction.";
-				break;
-			case 12474:
-				message = "You don't sense anything.";
-				break;
-			case 12478:
-				message = emu->message;
-				message += "'s casting is interrupted!";
-				break;
-			case 12481:
-				message = "You were hit by non-melee for ";
-				message += emu->message;
-				message += " damage.";
-				break;
-			default:
+
+			const char* fmt = GetTrilogyString(emu->string_id);
+			if (fmt) {
+				message = FormatTrilogyString(fmt, args);
+			}
+			else {
 				message = "Unhandled string_id: ";
 				message += itoa(emu->string_id);
-				break;
 			}
 		}
 		if (message.length() > 0) {
+			message = CleanItemLinks(message);
 			__packet->SetOpcode(OP_SpecialMesg);
-			len = sizeof(structs::SpecialMesg_Struct) + message.length() + 5;
+			int len = sizeof(structs::SpecialMesg_Struct) + message.length() + 5;
 			__packet->pBuffer = new unsigned char[len];
 			__packet->size = len;
 			memset(__packet->pBuffer, 0, len);
@@ -1122,21 +614,27 @@ DECODE(OP_SendLoginInfo)
 		unsigned char *__emu_buffer = __packet->pBuffer;
 		InterruptCast_Struct *emu = (InterruptCast_Struct *)__emu_buffer;
 		std::string message = "";
-		switch (emu->messageid) {
-		case 12687:
-			message = "Your song ends.";
-			break;
-		case 439:
-			message = "Your spell is interrupted.";
-			break;
-		case 12686:
-			message = "Your song ends abruptly.";
-			break;
-		case 173:
-			message = "Your spell fizzles!";
-			break;
-		default:
-			break;
+		const char* str = GetTrilogyString(emu->messageid);
+		if (str) {
+			message = str;
+		}
+		else {
+			switch (emu->messageid) {
+			case 12687:
+				message = "Your song ends.";
+				break;
+			case 439:
+				message = "Your spell is interrupted.";
+				break;
+			case 12686:
+				message = "Your song ends abruptly.";
+				break;
+			case 173:
+				message = "Your spell fizzles!";
+				break;
+			default:
+				break;
+			}
 		}
 		int len = sizeof(structs::InterruptCast_Struct) + message.length() + 1;
 		__packet->pBuffer = new unsigned char[len];
@@ -1157,16 +655,15 @@ DECODE(OP_SendLoginInfo)
 		uint32 __i = 0;
 		__i++; /* to shut up compiler */
 
-		int msglen = __packet->size - sizeof(SpecialMesg_Struct);
-		if (msglen < 0)
-			msglen = 0;
+		std::string clean_msg = CleanItemLinks(emu->message);
+		int msglen = clean_msg.length() + 1;
 		int len = sizeof(structs::SpecialMesg_Struct) + msglen + 4;
 		__packet->pBuffer = new unsigned char[len];
 		__packet->size = len;
 		memset(__packet->pBuffer, 0, len);
 		structs::SpecialMesg_Struct *eq = (structs::SpecialMesg_Struct *) __packet->pBuffer;
 		eq->msg_type = emu->msg_type;
-		strcpy(eq->message, emu->message);
+		strcpy(eq->message, clean_msg.c_str());
 		FINISH_ENCODE();
 	}
 
