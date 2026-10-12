@@ -2902,7 +2902,9 @@ void Mob::AddToHateList(Mob* other, int32 hate, int32 damage, bool bFrenzy, bool
 				if (lootLockoutItr != petowner->CastToClient()->loot_lockouts.end())
 				{
 					memcpy(&record.lockout, &lootLockoutItr->second, sizeof(LootLockout));
-					if (zone && zone->GetGuildID() != GUILD_NONE && zone->GetGuildID() != 1 && lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
+					// Same rule as the client check above: an NPC without a lockout timer never boots anyone,
+					// even if the owner still holds an old lockout for it in memory.
+					if (IsNPC() && CastToNPC()->loot_lockout_timer > 0 && zone && zone->GetGuildID() != GUILD_NONE && zone->GetGuildID() != 1 && lootLockoutItr->second.HasLockout(Timer::GetTimeSeconds()))
 					{
 						petowner->CastToClient()->Message(Chat::Red, "You were locked out of %s. Sending you out.", GetCleanName());
 						petowner->CastToClient()->BootFromGuildInstance(true);
