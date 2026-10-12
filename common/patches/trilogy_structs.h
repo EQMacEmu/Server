@@ -1934,22 +1934,22 @@ namespace Trilogy {
 		};
 
 
-		// Struct for of a message
+		// Struct for a message
 		struct MBMessage_Struct
 		{
 			/*0000*/ uint32 id;
-			/*0004*/ char date[10]; /* char year[2]; char month[2]; char day[2];
-									/*0014*/ uint8 unknown2[6];
-			/*0020*/ char author[64];
-			/*0084*/ uint8 unknown3[2];
-			/*0086*/ uint8 language;
-			/*0087*/ uint8 unknown4;
-			/*0088*/ char subject[29];
-			/*0117*/ uint8 unknown5[3];
-			/*0120*/ uint8 category;
-			/*0121*/ uint8 unknown6;
-			/*0122*/ char message[2048]; // see eqgame function at .text:0047D4E5
-			/*2170*/
+			/*0004*/ char date[10]; /* char year[2]; char month[2]; char day[2]; */
+			/*0014*/ uint8 unknown2[6];
+			/*0020*/ char author[30];
+			/*0050*/ uint8 unknown3[2];
+			/*0052*/ uint8 language;
+			/*0053*/ uint8 unknown4;
+			/*0054*/ char subject[29];
+			/*0083*/ uint8 unknown5[3];
+			/*0086*/ uint8 category;
+			/*0087*/ uint8 unknown6;
+			/*0088*/ char message[2048]; // see eqgame function at .text:0047D4E5
+			/*2136*/
 		};
 
 

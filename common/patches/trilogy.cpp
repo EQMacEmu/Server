@@ -2844,6 +2844,113 @@ DECODE(OP_SendLoginInfo)
 		return eq;
 	}
 
+	DECODE(OP_MBRetrievalRequest)
+	{
+		DECODE_LENGTH_EXACT(structs::MBRetrieveMessages_Struct);
+		SETUP_DIRECT_DECODE(MBRetrieveMessages_Struct, structs::MBRetrieveMessages_Struct);
+		emu->entityID = eq->entityID;
+		emu->category = eq->category;
+		FINISH_DIRECT_DECODE();
+	}
+
+	ENCODE(OP_MBRetrievalResponse)
+	{
+		ENCODE_LENGTH_EXACT(MBMessageRetrievalGen_Struct);
+		SETUP_DIRECT_ENCODE(MBMessageRetrievalGen_Struct, structs::MBMessage_Struct);
+		eq->id = emu->id;
+		strn0cpy(eq->date, emu->date, sizeof(eq->date));
+		strn0cpy(eq->author, emu->author, sizeof(eq->author));
+		eq->language = emu->language;
+		strn0cpy(eq->subject, emu->subject, sizeof(eq->subject));
+		eq->category = emu->category;
+		FINISH_ENCODE();
+	}
+
+	ENCODE(OP_MBRetrievalFin)
+	{
+		EQApplicationPacket *in = *p;
+		*p = nullptr;
+		auto outapp = new EQApplicationPacket(OP_MBRetrievalFin, 1);
+		outapp->pBuffer[0] = 0;
+		delete in;
+		result->SetPacket(&outapp, reliable);
+	}
+
+	DECODE(OP_MBRetrievalDetailRequest)
+	{
+		DECODE_LENGTH_EXACT(structs::MBRetrieveMessage_Struct);
+		SETUP_DIRECT_DECODE(MBModifyRequest_Struct, structs::MBRetrieveMessage_Struct);
+		emu->EntityID = (uint16)eq->entityID;
+		emu->id = (uint16)eq->id;
+		emu->category = (uint16)eq->category;
+		FINISH_DIRECT_DECODE();
+	}
+
+	ENCODE(OP_MBRetrievalDetailResponse)
+	{
+		EQApplicationPacket *in = *p;
+		*p = nullptr;
+		if (in->size > 0 && in->pBuffer) {
+			auto outapp = new EQApplicationPacket(OP_MBRetrievalDetailResponse, 2048);
+			memset(outapp->pBuffer, 0, 2048);
+			uint32 to_copy = (in->size < 2048) ? in->size : 2048;
+			memcpy(outapp->pBuffer, in->pBuffer, to_copy);
+			delete in;
+			result->SetPacket(&outapp, reliable);
+		} else {
+			auto outapp = new EQApplicationPacket(OP_MBRetrievalDetailResponse, 1);
+			outapp->pBuffer[0] = 0;
+			delete in;
+			result->SetPacket(&outapp, reliable);
+		}
+	}
+
+	DECODE(OP_MBRetrievalPostRequest)
+	{
+		constexpr size_t kHeaderSize = offsetof(structs::MBMessage_Struct, message);
+		if (__packet->size < kHeaderSize) {
+			__packet->SetOpcode(OP_Unknown);
+			return;
+		}
+
+		uint32 incoming_size = __packet->size;
+		unsigned char *__eq_buffer = __packet->pBuffer;
+		structs::MBMessage_Struct *eq = (structs::MBMessage_Struct *)__eq_buffer;
+
+		__packet->size = sizeof(MBMessageRetrievalGen_Struct);
+		__packet->pBuffer = new unsigned char[__packet->size];
+		memset(__packet->pBuffer, 0, __packet->size);
+		MBMessageRetrievalGen_Struct *emu = (MBMessageRetrievalGen_Struct *)__packet->pBuffer;
+
+		emu->id = eq->id;
+		strn0cpy(emu->date, eq->date, sizeof(emu->date));
+		strn0cpy(emu->author, eq->author, sizeof(emu->author));
+		emu->language = eq->language;
+		strn0cpy(emu->subject, eq->subject, sizeof(emu->subject));
+		emu->category = eq->category;
+
+		uint32 msg_len = incoming_size - kHeaderSize;
+		if (msg_len > 0) {
+			if (msg_len >= sizeof(emu->message))
+				msg_len = sizeof(emu->message) - 1;
+			memcpy(emu->message, eq->message, msg_len);
+			emu->message[msg_len] = '\0';
+		}
+
+		delete[] __eq_buffer;
+	}
+
+	DECODE(OP_MBRetrievalEraseRequest)
+	{
+		DECODE_LENGTH_EXACT(structs::MBEraseMessage_Struct);
+		SETUP_DIRECT_DECODE(MBEraseRequest_Struct, structs::MBEraseMessage_Struct);
+		emu->EntityID = (uint16)eq->entityID;
+		emu->id = (uint16)eq->id;
+		emu->category = (uint16)eq->category;
+		emu->unknown = 0;
+		FINISH_DIRECT_DECODE();
+	}
+
 	ENCODE(OP_RaidJoin) { ENCODE_FORWARD(OP_Unknown); }
 	ENCODE(OP_RaidUpdate) { ENCODE_FORWARD(OP_Unknown); }
 	ENCODE(OP_RaidInvite) { ENCODE_FORWARD(OP_Unknown); }

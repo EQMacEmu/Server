@@ -140,6 +140,13 @@ D(OP_FaceChange)
 D(OP_Assist)
 E(OP_Assist)
 D(OP_ZoneEntry)
+D(OP_MBRetrievalRequest)
+E(OP_MBRetrievalResponse)
+E(OP_MBRetrievalFin)
+D(OP_MBRetrievalDetailRequest)
+E(OP_MBRetrievalDetailResponse)
+D(OP_MBRetrievalPostRequest)
+D(OP_MBRetrievalEraseRequest)
 
 // Below are invalid opcodes ONLY
 E(OP_Unknown)
