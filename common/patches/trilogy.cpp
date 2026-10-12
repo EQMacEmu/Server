@@ -17,10 +17,10 @@
 #include "../zone_numbers.h"
 #include "../zone_store.h"
 #include "../content/world_content_service.h"
-
 namespace Trilogy {
 
 	static Strategy struct_strategy;
+
 
 	structs::Item_Struct* TrilogyItem(const EQ::ItemInstance *inst, int16 slot_id_in, int type = 0);
 	structs::Spawn_Struct* TrilogySpawns(struct Spawn_Struct*, int type);
@@ -2334,6 +2334,15 @@ DECODE(OP_SendLoginInfo)
 		ENCODE_LENGTH_EXACT(ExpUpdate_Struct);
 		SETUP_DIRECT_ENCODE(ExpUpdate_Struct, structs::ExpUpdate_Struct);
 		OUT(exp);
+		FINISH_ENCODE();
+	}
+
+	ENCODE(OP_LevelUpdate)
+	{
+		ENCODE_LENGTH_EXACT(LevelUpdate_Struct);
+		SETUP_DIRECT_ENCODE(LevelUpdate_Struct, structs::LevelUpdate_Struct);
+		eq->level = static_cast<uint8>(emu->level);
+		eq->can_delevel = 1;
 		FINISH_ENCODE();
 	}
 

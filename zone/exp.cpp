@@ -221,11 +221,17 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 	float con_mult;			// custom rules con reduction
 	float race_mult = 1.0f; // race modifier for AA exp
 	float totalmod = RuleR(Character, ExpMultiplier);	// should be 1.0 for non-custom
+	if (ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+		if (totalmod < 1.0f)
+			totalmod = 1.0f;
+	}
 	float aa_mult = RuleR(Character, AAExpMultiplier);	// should be 1.0 for non-custom
 	float aa_lvl_mod = 1.0f;	// level_exp_mods table
 	float class_mult = 1.0f;	// since we don't factor class into exp required for level like Sony did, we have to add exp on kills.  does not apply to AAs
-	if (GetClass() == Class::Warrior) class_mult = 10.0f / 9.0f;
-	if (GetClass() == Class::Rogue) class_mult = 10.0f / 9.05f;
+	if (ClientVersion() != EQ::versions::ClientVersion::Trilogy) {
+		if (GetClass() == Class::Warrior) class_mult = 10.0f / 9.0f;
+		if (GetClass() == Class::Rogue) class_mult = 10.0f / 9.05f;
+	}
 
 	// This logic replicates the Spetember 4 & 6 2002 patch exp modifications that granted a large
 	// experience bonus to kills within +/-5 levels of the player for level 51+ players
@@ -369,13 +375,18 @@ void Client::AddEXP(uint32 in_add_exp, uint8 conlevel, Mob* killed_mob, int16 av
 
 	add_exp = static_cast<uint32>(add_exp * hbm * class_mult);  // applies to level exp only
 
+	if (ClientVersion() == EQ::versions::ClientVersion::Trilogy && GetLevel() < 6) {
+		// Classic progression rate for Trilogy low levels (~20-25% per level-appropriate kill, ~4-5 kills to ding)
+		add_exp = static_cast<uint32>(add_exp * 2.3f);
+	}
+
 	uint32 requiredxp = GetEXPForLevel(GetLevel() + 1) - GetEXPForLevel(GetLevel());
-	uint32 xp_cap = requiredxp / 8u;	// kill exp cap is 12.5%
+	uint32 xp_cap = (ClientVersion() == EQ::versions::ClientVersion::Trilogy && GetLevel() < 6) ? (requiredxp / 3u) : (requiredxp / 8u);
 
 	if (add_exp > xp_cap)
 	{
 		add_exp = xp_cap;
-		LogEQMacDetail("Exp capped to 12.5 percent of level exp");
+		LogEQMacDetail("Exp capped to {} percent of level exp", (ClientVersion() == EQ::versions::ClientVersion::Trilogy && GetLevel() < 6) ? 33.3f : 12.5f);
 	}
 
 	if (killed_mob->IsZomm())
@@ -672,8 +683,17 @@ void Client::SetEXP(uint32 set_exp, uint32 set_aaxp, bool isrezzexp, bool is_spl
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
 		auto outapp = new EQApplicationPacket(OP_ExpUpdate, sizeof(ExpUpdate_Struct));
 		ExpUpdate_Struct* eu = (ExpUpdate_Struct*)outapp->pBuffer;
-		float tmpxp = (float) ( (float) set_exp-tmpxp2 ) / ( (float) tmpxp1-tmpxp2 );
-		eu->exp = (uint32)(330.0f * tmpxp);
+		if (ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+			eu->exp = set_exp;
+		}
+		else {
+			float tmpxp = (float) ( (float) set_exp-tmpxp2 ) / ( (float) tmpxp1-tmpxp2 );
+			if (tmpxp < 0.0f)
+				tmpxp = 0.0f;
+			else if (tmpxp > 1.0f)
+				tmpxp = 1.0f;
+			eu->exp = (uint32)(330.0f * tmpxp);
+		}
 		FastQueuePacket(&outapp);
 	}
 }
@@ -757,12 +777,24 @@ void Client::SetLevel(uint8 set_level, bool command)
 	}
 	else {
 		float tmpxp = (float) ( (float) m_pp.exp - GetEXPForLevel( GetLevel() )) / ( (float) GetEXPForLevel(GetLevel()+1) - GetEXPForLevel(GetLevel()));
+		if (tmpxp < 0.0f)
+			tmpxp = 0.0f;
+		else if (tmpxp > 1.0f)
+			tmpxp = 1.0f;
 		lu->exp = (uint32)(330.0f * tmpxp);
 	}
 	lu->level = set_level;
 	QueuePacket(outapp);
 	safe_delete(outapp);
 	this->SendAppearancePacket(AppearanceType::WhoLevel, set_level); // who level change
+
+	if (ClientVersion() == EQ::versions::ClientVersion::Trilogy && command) {
+		auto exp_app = new EQApplicationPacket(OP_ExpUpdate, sizeof(ExpUpdate_Struct));
+		ExpUpdate_Struct* eu = (ExpUpdate_Struct*)exp_app->pBuffer;
+		eu->exp = m_pp.exp;
+		QueuePacket(exp_app);
+		safe_delete(exp_app);
+	}
 
 	LogInfo("Setting Level for [{}] to [{}]", GetName(), set_level);
 
@@ -810,7 +842,27 @@ uint32 Client::GetEXPForLevel(uint16 check_level, bool aa)
 	// formula drastically (see above comment.) Instead, they gave the penalized classes a bonus on gain. We've decided to go
 	// the easy route, and simply not use a class mod at all.
 
-	float playermod = 10;
+	float playermod = 10.0f;
+	if (ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+		switch (GetClass()) {
+			case Class::Warrior: playermod = 9.0f; break;
+			case Class::Cleric: playermod = 10.0f; break;
+			case Class::Paladin: playermod = 14.0f; break;
+			case Class::Ranger: playermod = 14.0f; break;
+			case Class::ShadowKnight: playermod = 14.0f; break;
+			case Class::Druid: playermod = 10.0f; break;
+			case Class::Monk: playermod = 12.0f; break;
+			case Class::Bard: playermod = 14.0f; break;
+			case Class::Rogue: playermod = 9.05f; break;
+			case Class::Shaman: playermod = 10.0f; break;
+			case Class::Necromancer: playermod = 11.0f; break;
+			case Class::Wizard: playermod = 11.0f; break;
+			case Class::Magician: playermod = 11.0f; break;
+			case Class::Enchanter: playermod = 11.0f; break;
+			case Class::Beastlord: playermod = 10.0f; break;
+			default: playermod = 10.0f; break;
+		}
+	}
 	uint8 race = GetBaseRace();
 	if(race == Race::Halfling)
 		playermod *= 95.0;

@@ -784,8 +784,17 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 
 	// Crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
-		float tmpxp = (float)((float)m_pp.exp - tmpxp2) / ((float)tmpxp1 - tmpxp2);
-		eu->exp = (uint32)(330.0f * tmpxp);
+		if (ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+			eu->exp = m_pp.exp;
+		}
+		else {
+			float tmpxp = (float)((float)m_pp.exp - tmpxp2) / ((float)tmpxp1 - tmpxp2);
+			if (tmpxp < 0.0f)
+				tmpxp = 0.0f;
+			else if (tmpxp > 1.0f)
+				tmpxp = 1.0f;
+			eu->exp = (uint32)(330.0f * tmpxp);
+		}
 		outapp->priority = 6;
 		QueuePacket(outapp);
 	}
