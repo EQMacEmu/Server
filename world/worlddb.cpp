@@ -436,20 +436,20 @@ bool WorldDatabase::LoadCharacterCreateAllocations() {
     for (auto row = results.begin(); row != results.end(); ++row) {
         RaceClassAllocation allocate;
 		allocate.Index = atoi(row[0]);
-		allocate.BaseStats[0] = atoi(row[1]);
-		allocate.BaseStats[3] = atoi(row[2]);
-		allocate.BaseStats[1] = atoi(row[3]);
-		allocate.BaseStats[2] = atoi(row[4]);
-		allocate.BaseStats[4] = atoi(row[5]);
-		allocate.BaseStats[5] = atoi(row[6]);
-		allocate.BaseStats[6] = atoi(row[7]);
-		allocate.DefaultPointAllocation[0] = atoi(row[8]);
-		allocate.DefaultPointAllocation[3] = atoi(row[9]);
-		allocate.DefaultPointAllocation[1] = atoi(row[10]);
-		allocate.DefaultPointAllocation[2] = atoi(row[11]);
-		allocate.DefaultPointAllocation[4] = atoi(row[12]);
-		allocate.DefaultPointAllocation[5] = atoi(row[13]);
-		allocate.DefaultPointAllocation[6] = atoi(row[14]);
+		allocate.BaseStats[0] = atoi(row[1]); // base_str
+		allocate.BaseStats[3] = atoi(row[2]); // base_sta
+		allocate.BaseStats[1] = atoi(row[3]); // base_dex
+		allocate.BaseStats[2] = atoi(row[4]); // base_agi
+		allocate.BaseStats[4] = atoi(row[5]); // base_int
+		allocate.BaseStats[5] = atoi(row[6]); // base_wis
+		allocate.BaseStats[6] = atoi(row[7]); // base_cha
+		allocate.DefaultPointAllocation[0] = atoi(row[8]);  // alloc_str
+		allocate.DefaultPointAllocation[3] = atoi(row[9]);  // alloc_sta
+		allocate.DefaultPointAllocation[1] = atoi(row[10]); // alloc_dex
+		allocate.DefaultPointAllocation[2] = atoi(row[11]); // alloc_agi
+		allocate.DefaultPointAllocation[4] = atoi(row[12]); // alloc_int
+		allocate.DefaultPointAllocation[5] = atoi(row[13]); // alloc_wis
+		allocate.DefaultPointAllocation[6] = atoi(row[14]); // alloc_cha
 
 		character_create_allocations.push_back(allocate);
     }

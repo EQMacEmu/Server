@@ -17,6 +17,7 @@
 #include "../zone_numbers.h"
 #include "../zone_store.h"
 #include "../content/world_content_service.h"
+#include "../deity.h"
 namespace Trilogy {
 
 	static Strategy struct_strategy;
@@ -266,7 +267,11 @@ DECODE(OP_SendLoginInfo)
 		OUT(race);
 		OUT(class_);
 		OUT(level);
-		OUT(deity);
+		if (emu->deity == Deity::Agnostic2) {
+			eq->deity = Deity::Agnostic1;
+		} else {
+			OUT(deity);
+		}
 		OUT(intoxication);
 		OUT(points);
 		OUT(mana);
@@ -412,7 +417,13 @@ DECODE(OP_SendLoginInfo)
 		}
 		strn0cpy(emu->name, eq->name, 64);
 		strn0cpy(emu->last_name, eq->Surname, 66);
-		uint32 deity = (uint8)eq->deity;
+		uint32 deity = eq->deity_;
+		if (deity == 0 && eq->deity != 0) {
+			deity = eq->deity;
+		}
+		if (deity == Deity::Agnostic1) {
+			deity = Deity::Agnostic2;
+		}
 		emu->deity = deity;
 		IN(STR);
 		IN(STA);

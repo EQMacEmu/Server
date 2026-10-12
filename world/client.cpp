@@ -21,6 +21,7 @@
 #include "../common/content/world_content_service.h"
 #include "../common/skill_caps.h"
 #include "../common/patches/patches.h"
+#include "../common/deity.h"
 
 #include "client.h"
 #include "worlddb.h"
@@ -1387,6 +1388,31 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	return true;
 }
 
+static bool IsSameStartingCityZone(uint32 zone_a, uint32 zone_b) {
+	if (zone_a == zone_b)
+		return true;
+	// Freeport: freportn (8), freportw (9), freporte (10)
+	if ((zone_a >= 8 && zone_a <= 10) && (zone_b >= 8 && zone_b <= 10))
+		return true;
+	// Qeynos: qeynos (1), qeynos2 (2)
+	if ((zone_a == 1 || zone_a == 2) && (zone_b == 1 || zone_b == 2))
+		return true;
+	// Erudin: erudnint (23), erudnext (24)
+	if ((zone_a == 23 || zone_a == 24) && (zone_b == 23 || zone_b == 24))
+		return true;
+	// Neriak: neriaka (40), neriakb (41), neriakc (42), neriakd (43)
+	if ((zone_a >= 40 && zone_a <= 43) && (zone_b >= 40 && zone_b <= 43))
+		return true;
+	// Kaladim: kaladima (60), kaladimb (67)
+	if ((zone_a == 60 || zone_a == 67) && (zone_b == 60 || zone_b == 67))
+		return true;
+	// Felwithe: felwithea (61), felwitheb (62)
+	if ((zone_a == 61 || zone_a == 62) && (zone_b == 61 || zone_b == 62))
+		return true;
+
+	return false;
+}
+
 // returns true if the request is ok, false if there's an error
 bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 {
@@ -1399,6 +1425,9 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 
 	int csexp = WorldContentService::Instance()->GetCurrentExpansion(); // this is the chronological expansion number or -1 to indicate ALL but we need a bit mask to compare against
 	int currentExpansions = (1 << (csexp >= 0 ? csexp : 30)) - 1; // Get expansion mask based on CurrentExpansion rule for TLP
+	if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy && cc->deity == Deity::Agnostic1) {
+		cc->deity = Deity::Agnostic2;
+	}
 
 	RaceClassCombos class_combo;
 	bool found = false;
@@ -1406,7 +1435,8 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 	for (int i = 0; i < combos; ++i) {
 		bool zone_match = false;
 		if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
-			zone_match = (cc->zone_id == 0 || character_create_race_class_combos[i].Zone == cc->zone_id);
+			zone_match = (cc->zone_id == 0 ||
+				IsSameStartingCityZone(character_create_race_class_combos[i].Zone, cc->zone_id));
 		}
 		else {
 			zone_match = (character_create_race_class_combos[i].Zone == cc->zone_id);
@@ -1419,7 +1449,7 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 			((currentExpansions & character_create_race_class_combos[i].ExpansionRequired) == character_create_race_class_combos[i].ExpansionRequired || 
 				character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];
-			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy && cc->zone_id == 0) {
+			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
 				cc->zone_id = class_combo.Zone;
 			}
 			found = true;
