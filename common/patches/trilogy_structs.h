@@ -1757,7 +1757,6 @@ namespace Trilogy {
 		// Variable length, null-terminated.
 		struct BookText_Struct
 		{
-			/*000*/	uint8 type;		//type: 0=scroll, 1=book, 2=item info.. prolly others.
 			/*000*/	char booktext[1]; // Variable Length
 		};
 

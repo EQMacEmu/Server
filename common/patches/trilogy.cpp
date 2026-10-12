@@ -1554,7 +1554,7 @@ DECODE(OP_SendLoginInfo)
 		size_t txtlen = strlen(emu_BookText_Struct->booktext);
 
 		// In Trilogy, text starts directly at offset 0 (no type byte)
-		in->size = sizeof(structs::BookText_Struct) + txtlen;
+		in->size = txtlen + 1;
 		in->pBuffer = new unsigned char[in->size];
 		structs::BookText_Struct *eq_BookText_Struct = (structs::BookText_Struct*)in->pBuffer;
 
