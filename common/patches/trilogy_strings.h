@@ -5320,20 +5320,42 @@ inline const char* GetTrilogyString(uint32 string_id)
     return nullptr;
 }
 
-inline std::string FormatTrilogyString(const char* fmt, const std::vector<std::string>& args)
+inline std::string FormatTrilogyString(const char* fmt, const std::vector<std::string>& args, int depth = 0)
 {
-    if (!fmt)
+    if (!fmt || depth > 3)
         return "";
     std::string result;
     result.reserve(strlen(fmt) + 64);
     for (size_t i = 0; fmt[i] != '\0'; ++i) {
-        if (fmt[i] == '%' && fmt[i + 1] >= '1' && fmt[i + 1] <= '9') {
-            size_t arg_idx = static_cast<size_t>(fmt[i + 1] - '1');
-            if (arg_idx < args.size()) {
-                result += args[arg_idx];
+        if (fmt[i] == '%') {
+            // Check for %T1..%T9 or %t1..%t9 (nested string table lookup by string ID parameter)
+            if ((fmt[i + 1] == 'T' || fmt[i + 1] == 't') && fmt[i + 2] >= '1' && fmt[i + 2] <= '9') {
+                size_t arg_idx = static_cast<size_t>(fmt[i + 2] - '1');
+                if (arg_idx < args.size()) {
+                    uint32 nested_id = static_cast<uint32>(atoi(args[arg_idx].c_str()));
+                    if (nested_id > 0) {
+                        const char* nested_fmt = GetTrilogyString(nested_id);
+                        if (nested_fmt) {
+                            result += FormatTrilogyString(nested_fmt, args, depth + 1);
+                        } else {
+                            result += args[arg_idx];
+                        }
+                    } else {
+                        result += args[arg_idx];
+                    }
+                }
+                i += 2;
+                continue;
             }
-            ++i;
-            continue;
+            // Check for %1..%9
+            if (fmt[i + 1] >= '1' && fmt[i + 1] <= '9') {
+                size_t arg_idx = static_cast<size_t>(fmt[i + 1] - '1');
+                if (arg_idx < args.size()) {
+                    result += args[arg_idx];
+                }
+                ++i;
+                continue;
+            }
         }
         result += fmt[i];
     }
