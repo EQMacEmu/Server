@@ -413,6 +413,9 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 			in_pp->y = atof(row[2]);
 			in_pp->z = atof(row[3]);
 			in_pp->heading = atof(row[4]);
+			if (in_pp->heading == 0.0f) { // Trilogy client doesn't know which heading to spawn in with
+				in_pp->heading = 256.0f;
+			}
 			LogInfo("[GetStartZone] Found start_zones entry: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}, heading={:.2f}",
 				in_pp->zone_id, in_pp->x, in_pp->y, in_pp->z, in_pp->heading);
 			uint32 bind_id = (uint32)atoi(row[5]);
