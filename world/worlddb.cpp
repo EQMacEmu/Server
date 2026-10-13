@@ -354,6 +354,90 @@ bool WorldDatabase::GetStartZone(PlayerProfile_Struct* in_pp, CharCreate_Struct*
 		in_pp->heading = in_cc->heading;
 	}
 
+	// If client did not provide starting coordinates (e.g. PC / Trilogy client), look them up in start_zones table
+	if (in_pp->x == 0.0f && in_pp->y == 0.0f && in_pp->z == 0.0f) {
+		std::string query = "";
+		if (in_pp->zone_id != 0) {
+			query = StringFormat(
+				"SELECT `zone_id`, `x`, `y`, `z`, `heading`, `bind_id`, `bind_x`, `bind_y`, `bind_z` FROM `start_zones` "
+				"WHERE (`zone_id` = %u OR `start_zone` = %u) AND `player_class` = %u AND `player_race` = %u AND `player_deity` = %u %s LIMIT 1",
+				in_pp->zone_id, in_pp->zone_id, in_cc->class_, in_cc->race, in_cc->deity,
+				ContentFilterCriteria::apply().c_str()
+			);
+		} else {
+			query = StringFormat(
+				"SELECT `zone_id`, `x`, `y`, `z`, `heading`, `bind_id`, `bind_x`, `bind_y`, `bind_z` FROM `start_zones` "
+				"WHERE `player_class` = %u AND `player_race` = %u AND `player_deity` = %u %s LIMIT 1",
+				in_cc->class_, in_cc->race, in_cc->deity,
+				ContentFilterCriteria::apply().c_str()
+			);
+		}
+		auto results = QueryDatabase(query);
+		if (in_pp->zone_id != 0 && (!results.Success() || results.RowCount() == 0)) {
+			query = StringFormat(
+				"SELECT `zone_id`, `x`, `y`, `z`, `heading`, `bind_id`, `bind_x`, `bind_y`, `bind_z` FROM `start_zones` "
+				"WHERE (`zone_id` = %u OR `start_zone` = %u) AND `player_class` = %u AND `player_race` = %u %s LIMIT 1",
+				in_pp->zone_id, in_pp->zone_id, in_cc->class_, in_cc->race,
+				ContentFilterCriteria::apply().c_str()
+			);
+			results = QueryDatabase(query);
+		}
+
+		if (!results.Success() || results.RowCount() == 0) {
+			query = StringFormat(
+				"SELECT `zone_id`, `x`, `y`, `z`, `heading`, `bind_id`, `bind_x`, `bind_y`, `bind_z` FROM `start_zones` "
+				"WHERE `player_class` = %u AND `player_race` = %u AND `player_deity` = %u %s LIMIT 1",
+				in_cc->class_, in_cc->race, in_cc->deity,
+				ContentFilterCriteria::apply().c_str()
+			);
+			results = QueryDatabase(query);
+		}
+
+		if (!results.Success() || results.RowCount() == 0) {
+			query = StringFormat(
+				"SELECT `zone_id`, `x`, `y`, `z`, `heading`, `bind_id`, `bind_x`, `bind_y`, `bind_z` FROM `start_zones` "
+				"WHERE `player_class` = %u AND `player_race` = %u %s LIMIT 1",
+				in_cc->class_, in_cc->race,
+				ContentFilterCriteria::apply().c_str()
+			);
+			results = QueryDatabase(query);
+		}
+
+		if (results.Success() && results.RowCount() > 0) {
+			auto row = results.begin();
+			uint32 start_zone_id = (uint32)atoi(row[0]);
+			if (start_zone_id != 0) {
+				in_pp->zone_id = start_zone_id;
+			}
+			in_pp->x = atof(row[1]);
+			in_pp->y = atof(row[2]);
+			in_pp->z = atof(row[3]);
+			in_pp->heading = atof(row[4]);
+			LogInfo("[GetStartZone] Found start_zones entry: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}, heading={:.2f}",
+				in_pp->zone_id, in_pp->x, in_pp->y, in_pp->z, in_pp->heading);
+			uint32 bind_id = (uint32)atoi(row[5]);
+			float bind_x = atof(row[6]);
+			float bind_y = atof(row[7]);
+			float bind_z = atof(row[8]);
+			if (bind_id != 0) {
+				in_pp->binds[0].zoneId = bind_id;
+				in_pp->binds[0].x = bind_x;
+				in_pp->binds[0].y = bind_y;
+				in_pp->binds[0].z = bind_z;
+				in_pp->binds[0].heading = in_pp->heading;
+			} else if (start_zone_id != 0) {
+				in_pp->binds[0].zoneId = start_zone_id;
+				in_pp->binds[0].x = in_pp->x;
+				in_pp->binds[0].y = in_pp->y;
+				in_pp->binds[0].z = in_pp->z;
+				in_pp->binds[0].heading = in_pp->heading;
+			}
+		} else {
+			LogInfo("[GetStartZone] Could not find start_zones entry for class={}, race={}, deity={}, zone={}",
+				in_cc->class_, in_cc->race, in_cc->deity, in_pp->zone_id);
+		}
+	}
+
 	for (int i = 0; i < 5; i++)
 	{
 		bool allowed_bind_zone_id = false;

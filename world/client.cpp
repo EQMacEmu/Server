@@ -1369,10 +1369,10 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	// set starting city location to the initial bind point
 	pp.binds[4] = pp.binds[0];
 
-	//LogInfo( "Current location: %s  %0.2f, %0.2f, %0.2f, %0.2f",
-	//	database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z, pp.heading);
-	//LogInfo( "Bind location: %s  %0.2f, %0.2f, %0.2f",
-	//	database.GetZoneName(pp.binds[0].zoneId), pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
+	LogInfo("Character [{}] starting location: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}, heading={:.2f}",
+		pp.name, pp.zone_id, pp.x, pp.y, pp.z, pp.heading);
+	LogInfo("Character [{}] bind location: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}",
+		pp.name, pp.binds[0].zoneId, pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
 
 	/* Starting Items inventory */
 	database.SetStartingItems(&pp, &inv, pp.race, pp.class_, pp.deity, pp.zone_id, pp.name, GetAdmin());

@@ -220,7 +220,7 @@ DECODE(OP_SendLoginInfo)
 		eq->x = emu->x_pos;
 		eq->y = emu->y_pos;
 		eq->z = emu->z_pos;
-		eq->heading = emu->heading * 2.0f;
+		eq->heading = emu->heading;
 		eq->walkspeed = emu->walkspeed;
 		eq->runspeed = emu->runspeed;
 		eq->anon = emu->anon;
@@ -235,6 +235,9 @@ DECODE(OP_SendLoginInfo)
 		eq->flymode = emu->flymode;
 		eq->GM = emu->GM;
 
+		LogInfo("[Trilogy ENCODE OP_ZoneEntry] name={} zone={} x={:.2f} y={:.2f} z={:.2f} heading={:.2f}",
+			eq->name, eq->zone, eq->x, eq->y, eq->z, eq->heading);
+
 		CRC32::SetEQChecksum(__packet->pBuffer, sizeof(structs::ServerZoneEntry_Struct));
 
 		FINISH_ENCODE();
@@ -244,22 +247,27 @@ DECODE(OP_SendLoginInfo)
 	{
 		SETUP_DIRECT_ENCODE(PlayerProfile_Struct, structs::PlayerProfile_Struct);
 
-		//Find these:
-		/*	eq->available_slots=0xffff;
-		eq->bind_point_zone = emu->binds[0].zoneId;
-		eq->bind_location[0].x = emu->binds[0].x;
-		eq->bind_location[0].y = emu->binds[0].y;
-		eq->bind_location[0].z = emu->binds[0].z;
-		OUT(birthday);
-		OUT(lastlogin);
-		OUT(timePlayedMin);
-		OUT_str(boat);
-		OUT(air_remaining);
-		OUT(level2);
-		for(r = 0; r < 9; r++)
-		{
-		OUT(item_material[r]);
-		}*/
+		const char* bind_zone_name = StaticGetZoneName(emu->binds[0].zoneId ? emu->binds[0].zoneId : emu->zone_id);
+		if (bind_zone_name) {
+			strn0cpy(eq->bind_point_zone, bind_zone_name, 20);
+			for (int b = 0; b < 4; b++) {
+				strn0cpy(eq->start_point_zone[b], bind_zone_name, 20);
+			}
+		}
+		float default_bind_y = emu->binds[0].y != 0.0f ? emu->binds[0].y : emu->y;
+		float default_bind_x = emu->binds[0].x != 0.0f ? emu->binds[0].x : emu->x;
+		float default_bind_z = emu->binds[0].z != 0.0f ? emu->binds[0].z : emu->z;
+		for (int b = 0; b < 5; b++) {
+			if (emu->binds[b].zoneId != 0) {
+				eq->bind_location[0][b] = emu->binds[b].y;
+				eq->bind_location[1][b] = emu->binds[b].x;
+				eq->bind_location[2][b] = emu->binds[b].z;
+			} else {
+				eq->bind_location[0][b] = default_bind_y;
+				eq->bind_location[1][b] = default_bind_x;
+				eq->bind_location[2][b] = default_bind_z;
+			}
+		}
 
 		int r = 0;
 		strn0cpy(eq->current_zone, StaticGetZoneName(emu->zone_id), 15);
@@ -344,6 +352,9 @@ DECODE(OP_SendLoginInfo)
 		OUT(y);
 		OUT(z);
 		OUT(heading);
+		LogInfo("[Trilogy ENCODE OP_PlayerProfile] name={} cur_zone={} x={:.2f} y={:.2f} z={:.2f} heading={:.2f} bind_zone={} bind_loc=({:.2f}, {:.2f}, {:.2f})",
+			eq->name, eq->current_zone, eq->x, eq->y, eq->z, eq->heading,
+			eq->bind_point_zone, eq->bind_location[1][0], eq->bind_location[0][0], eq->bind_location[2][0]);
 		OUT(platinum_bank);
 		OUT(gold_bank);
 		OUT(silver_bank);
@@ -433,6 +444,10 @@ DECODE(OP_SendLoginInfo)
 		IN(INT);
 		IN(CHA);
 		emu->oldface = eq->face;
+		emu->x = 0.0f;
+		emu->y = 0.0f;
+		emu->z = 0.0f;
+		emu->heading = 0.0f;
 		FINISH_DIRECT_DECODE();
 	}
 

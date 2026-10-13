@@ -2800,6 +2800,14 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 		else return;	// if not a boat, do nothing
 	}
 
+	if (m_ClientVersionBit == EQ::versions::ClientVersionBit::bit_Trilogy) {
+		static uint32 s_trilogy_update_count = 0;
+		if (++s_trilogy_update_count <= 10 || s_trilogy_update_count % 100 == 0) {
+			LogInfo("[Trilogy OP_ClientUpdate] [{}] x={:.2f} y={:.2f} z={:.2f} hdg={}",
+				GetName(), (float)ppu->x_pos, (float)ppu->y_pos, (float)ppu->z_pos / 10.0f, (int)ppu->heading);
+		}
+	}
+
 	cheat_manager.MovementCheck(glm::vec3(ppu->x_pos, ppu->y_pos, ppu->z_pos));
 
 	// Treeform spells require trees nearby to cast. Unfortunately, if there are no trees the client will quietly
