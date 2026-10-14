@@ -2238,6 +2238,14 @@ void EntityList::MessageStatus(uint32 to_guild_id, int to_minstatus, uint32 type
 // works much like MessageClose, but with formatted strings
 void EntityList::MessageClose_StringID(Mob *sender, bool skipsender, float dist, uint32 type, uint32 string_id, const char* message1,const char* message2,const char* message3,const char* message4,const char* message5,const char* message6,const char* message7,const char* message8,const char* message9)
 {
+	if (type == Chat::MeleeCrit || type == Chat::SpellCrit) {
+		FilteredMessageClose_StringID(sender, skipsender, dist, type,
+			type == Chat::MeleeCrit ? FilterMeleeCrits : FilterSpellCrits, string_id,
+			message1, message2, message3, message4, message5,
+			message6, message7, message8, message9);
+		return;
+	}
+
 	Client *c;
 	float dist2 = dist * dist;
 

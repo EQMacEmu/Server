@@ -798,7 +798,10 @@ public:
 	inline bool IsTrader() const { return(Trader); }
 	bool IsServerFilterEnabled() const { return server_filter_enabled_; }
 	eqFilterMode GetFilter(eqFilterType filter_id) const {
-		// Keep the selections, but bypass every existing filter check while disabled.
+		// These text categories need server filtering even with the master toggle off.
+		if (filter_id == FilterSocials || filter_id == FilterMeleeCrits || filter_id == FilterSpellCrits)
+			return GetFilterSetting(filter_id);
+
 		return IsServerFilterEnabled() ? GetFilterSetting(filter_id) : FilterShow;
 	}
 	eqFilterMode GetFilterSetting(eqFilterType filter_id) const {

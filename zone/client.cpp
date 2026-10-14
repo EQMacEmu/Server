@@ -3074,7 +3074,7 @@ void Client::Message_StringID(uint32 type, uint32 string_id, uint32 distance)
 		return;
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == Chat::SpellCrit)
 		return;
-	auto outapp = new EQApplicationPacket(OP_FormattedMessage, 12);
+	auto outapp = new EQApplicationPacket(OP_FormattedMessage, sizeof(FormattedMessage_Struct) + 9);
 	FormattedMessage_Struct *fm = (FormattedMessage_Struct *)outapp->pBuffer;
 	fm->string_id = string_id;
 	fm->type = type;
@@ -3103,17 +3103,13 @@ void Client::Message_StringID(uint32 type, uint32 string_id, const char* message
 	if (GetFilter(FilterSpellCrits) == FilterHide && type == Chat::SpellCrit)
 		return;
 
-	int i, argcount, length;
+	int i;
+	size_t length = sizeof(FormattedMessage_Struct) + 9;
 	char *bufptr;
 	const char *message_arg[9] = {0};
 
 	if (type == Chat::Emote) {
 		type = 4;
-	}
-
-	if(!message1) {
-		Message_StringID(type, string_id);	// use the simple message instead
-		return;
 	}
 
 	i = 0;
@@ -3127,26 +3123,26 @@ void Client::Message_StringID(uint32 type, uint32 string_id, const char* message
 	message_arg[i++] = message8;
 	message_arg[i++] = message9;
 
-	for(argcount = length = 0; message_arg[argcount]; argcount++)
-    {
-		length += strlen(message_arg[argcount]) + 1;
-    }
+	// The client reads nine strings, including empty arguments.
+	for (const char* argument : message_arg) {
+		if (argument)
+			length += strlen(argument);
+	}
 
-	auto outapp = new EQApplicationPacket(OP_FormattedMessage, length+13);
+	auto outapp = new EQApplicationPacket(OP_FormattedMessage, length);
 	FormattedMessage_Struct *fm = (FormattedMessage_Struct *)outapp->pBuffer;
 	fm->string_id = string_id;
 	fm->type = type;
 	bufptr = fm->message;
 
-	// since we're moving the pointer the 0 offset is correct
-	bufptr[0] = '\0';
-
-    for(i = 0; i < argcount; i++)
-    {
-        strcpy(bufptr, message_arg[i]);
-        bufptr += strlen(message_arg[i]) + 1;
-    }
-
+	for (const char* argument : message_arg) {
+		if (argument) {
+			const size_t argument_length = strlen(argument);
+			memcpy(bufptr, argument, argument_length);
+			bufptr += argument_length;
+		}
+		*bufptr++ = '\0';
+	}
 
     if(distance>0)
         entity_list.QueueCloseClients(this,outapp,false,distance);
@@ -3201,12 +3197,10 @@ void Client::FilteredMessage_StringID(Mob *sender, uint32 type,
 	if (!FilteredMessageCheck(sender, filter))
 		return;
 
-	auto outapp = new EQApplicationPacket(OP_Animation, 12);
-	SimpleMessage_Struct *sms = (SimpleMessage_Struct *)outapp->pBuffer;
-	sms->color = type;
-	sms->string_id = string_id;
-
-	sms->unknown8 = 0;
+	auto outapp = new EQApplicationPacket(OP_FormattedMessage, sizeof(FormattedMessage_Struct) + 9);
+	FormattedMessage_Struct *fm = (FormattedMessage_Struct *)outapp->pBuffer;
+	fm->string_id = string_id;
+	fm->type = type;
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -3222,17 +3216,13 @@ void Client::FilteredMessage_StringID(Mob *sender, uint32 type, eqFilterType fil
 	if (!FilteredMessageCheck(sender, filter))
 		return;
 
-	int i, argcount, length;
+	int i;
+	size_t length = sizeof(FormattedMessage_Struct) + 9;
 	char *bufptr;
 	const char *message_arg[9] = {0};
 
 	if (type == Chat::Emote) {
 		type = 4;
-	}
-
-	if (!message1) {
-		FilteredMessage_StringID(sender, type, filter, string_id);	// use the simple message instead
-		return;
 	}
 
 	i = 0;
@@ -3246,25 +3236,26 @@ void Client::FilteredMessage_StringID(Mob *sender, uint32 type, eqFilterType fil
 	message_arg[i++] = message8;
 	message_arg[i++] = message9;
 
-	for (argcount = length = 0; message_arg[argcount]; argcount++)
-    {
-		length += strlen(message_arg[argcount]) + 1;
-    }
+	// The client reads nine strings, including empty arguments.
+	for (const char* argument : message_arg) {
+		if (argument)
+			length += strlen(argument);
+	}
 
-    auto outapp = new EQApplicationPacket(OP_FormattedMessage, length+13);
+	auto outapp = new EQApplicationPacket(OP_FormattedMessage, length);
 	FormattedMessage_Struct *fm = (FormattedMessage_Struct *)outapp->pBuffer;
 	fm->string_id = string_id;
 	fm->type = type;
 	bufptr = fm->message;
 
-
-	for (i = 0; i < argcount; i++) {
-		strcpy(bufptr, message_arg[i]);
-		bufptr += strlen(message_arg[i]) + 1;
+	for (const char* argument : message_arg) {
+		if (argument) {
+			const size_t argument_length = strlen(argument);
+			memcpy(bufptr, argument, argument_length);
+			bufptr += argument_length;
+		}
+		*bufptr++ = '\0';
 	}
-
-	// since we're moving the pointer the 0 offset is correct
-	bufptr[0] = '\0';
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
