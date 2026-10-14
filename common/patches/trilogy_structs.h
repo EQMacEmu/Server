@@ -1156,9 +1156,9 @@ namespace Trilogy {
 		//New LFG_Struct
 		struct LFG_Struct
 		{
-			/*000*/	char	name[64 + 2];	// Comment: 
-			/*066*/	uint32	value;		// Comment: 
-			/*070*/
+			/*000*/	char	name[32];	// Comment: PC_MAX_NAME_LENGTH + 2
+			/*032*/	uint32	value;		// Comment: 1 = on, 0 = off
+			/*036*/
 		};
 
 		// EverQuest Time Information:
@@ -1563,15 +1563,14 @@ namespace Trilogy {
 
 		struct Who_All_Struct
 		{
-			/*000*/	char	whom[64];
-			/*064*/	int16	wrace;		// FF FF = no race
-			/*066*/	int16	wclass;		// FF FF = no class
-			/*068*/	int16	lvllow;		// FF FF = no numbers
-			/*070*/	int16	lvlhigh;	// FF FF = no numbers
-			/*072*/	int16	gmlookup;	// FF FF = not doing /who all gm
-			/*074*/	int16	guildid;
-			/*076*/	int8	unknown076[64];
-			/*140*/
+			/*000*/	char	whom[32];
+			/*032*/	int16	wrace;		// FF FF = no race
+			/*034*/	int16	wclass;		// FF FF = no class
+			/*036*/	int16	lvllow;		// FF FF = no numbers
+			/*038*/	int16	lvlhigh;	// FF FF = no numbers
+			/*040*/	int16	gmlookup;	// FF FF = not doing /who all gm
+			/*042*/	int8	unknown[34];
+			/*076*/
 		};
 
 		struct WhoAllPlayer

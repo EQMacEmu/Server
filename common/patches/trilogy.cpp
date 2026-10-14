@@ -18,6 +18,8 @@
 #include "../zone_store.h"
 #include "../content/world_content_service.h"
 #include "../deity.h"
+#include "../classes.h"
+#include "../races.h"
 namespace Trilogy {
 
 	static Strategy struct_strategy;
@@ -2000,14 +2002,203 @@ DECODE(OP_SendLoginInfo)
 	{
 		DECODE_LENGTH_EXACT(structs::Who_All_Struct);
 		SETUP_DIRECT_DECODE(Who_All_Struct, structs::Who_All_Struct);
-		strcpy(emu->whom, eq->whom);
+		MEMSET_IN(Who_All_Struct);
+		strn0cpy(emu->whom, eq->whom, sizeof(eq->whom));
 		IN(wrace);
 		IN(wclass);
 		IN(lvllow);
 		IN(lvlhigh);
 		IN(gmlookup);
-		IN(guildid);
+		if (strcasecmp(emu->whom, "lfg") == 0) {
+			emu->guildid = -3;
+			emu->whom[0] = '\0';
+		} else {
+			emu->guildid = -1;
+		}
 		FINISH_DIRECT_DECODE();
+	}
+
+	ENCODE(OP_WhoAllResponse)
+	{
+		EQApplicationPacket *in = *p;
+		*p = nullptr;
+
+		if (!in || in->size < 58) {
+			delete in;
+			return;
+		}
+
+		const unsigned char* bufptr = in->pBuffer;
+		const unsigned char* endptr = in->pBuffer + in->size;
+
+		uint32 plid = *(const uint32*)bufptr;
+		bufptr += 4;
+		uint16 playerineqstring = *(const uint16*)bufptr;
+		bufptr += 2;
+		bufptr += 27; // line2: "---------------------------"
+		uint8 unknown35 = *bufptr;
+		bufptr += 1;
+		bufptr += 2; // unknown36
+		uint16 playersinzonestring = *(const uint16*)bufptr;
+		bufptr += 2;
+		bufptr += 10; // unknown44[5]
+		uint32 unknown52 = *(const uint32*)bufptr;
+		bufptr += 4;
+		uint32 unknown56 = *(const uint32*)bufptr;
+		bufptr += 4;
+		uint16 totalusers = *(const uint16*)bufptr;
+		bufptr += 2;
+
+		auto send_line = [&](const std::string& line, uint32 msg_type = 10) {
+			int len = sizeof(structs::SpecialMesg_Struct) + line.length() + 5;
+			auto pkt = new EQApplicationPacket(OP_SpecialMesg, len);
+			memset(pkt->pBuffer, 0, len);
+			auto* eq = (structs::SpecialMesg_Struct*)pkt->pBuffer;
+			eq->msg_type = msg_type;
+			strcpy(eq->message, line.c_str());
+			result->SetPacket(&pkt, reliable);
+		};
+
+		send_line("Players on server:");
+
+		constexpr uint16 kStringIdWhoAllAnon = 5024;
+		constexpr uint16 kStringIdWhoAllRole = 5023;
+		constexpr uint16 kStringIdWhoAllGM   = 5022;
+		constexpr uint16 kStringIdWhoAllCutShort = 5033;
+
+		int displayed_count = 0;
+		for (uint16 i = 0; i < totalusers && bufptr < endptr; ++i) {
+			if (bufptr + sizeof(uint16) * 2 > endptr)
+				break;
+			uint16 formatstring = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 pidstring = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+
+			const char* plname = (const char*)bufptr;
+			size_t plname_len = strnlen(plname, endptr - bufptr);
+			bufptr += plname_len + 1;
+			if (bufptr >= endptr)
+				break;
+
+			if (bufptr + sizeof(uint16) > endptr)
+				break;
+			uint16 rankstring = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+
+			const char* guildbuffer = (const char*)bufptr;
+			size_t guild_len = strnlen(guildbuffer, endptr - bufptr);
+			bufptr += guild_len + 1;
+			if (bufptr >= endptr)
+				break;
+
+			// plgm(2) + unk80(2) + plflag(2) + zonestring(2) + plzone(4) + plclass_(2) + pllevel(2) + plrace(2) = 18 bytes
+			if (bufptr + 18 > endptr)
+				break;
+			uint16 plgm = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 unk80 = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 plflag = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 zonestring = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint32 plzone = *(const uint32*)bufptr;
+			bufptr += sizeof(uint32);
+			uint16 plclass_ = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 pllevel = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+			uint16 plrace = *(const uint16*)bufptr;
+			bufptr += sizeof(uint16);
+
+			const char* placcount = (const char*)bufptr;
+			size_t acct_len = strnlen(placcount, endptr - bufptr);
+			bufptr += acct_len + 1;
+			if (bufptr + sizeof(uint16) <= endptr) {
+				bufptr += sizeof(uint16); // ending
+			}
+
+			// Format GM or AFK tag
+			std::string tmpgm = "";
+			if (rankstring != 0 && rankstring != 0xFFFF) {
+				if (rankstring == 12311) {
+					tmpgm = "AFK ";
+				}
+				else {
+					const char* gm_str = GetTrilogyString(rankstring);
+					if (gm_str) {
+						tmpgm = gm_str;
+						tmpgm += " ";
+					}
+				}
+			}
+
+			// Guild
+			std::string guild_str = "";
+			if (guild_len > 0 && guildbuffer[0] != '\0') {
+				guild_str = " ";
+				guild_str += guildbuffer;
+			}
+
+			// LFG
+			std::string lfg_str = "";
+			if (plflag == 12314) {
+				lfg_str = " LFG";
+			}
+
+			// Zone
+			const char* zn = StaticGetZoneName(plzone);
+			std::string zone_str = (zn && zn[0] != '\0') ? zn : "UNKNOWN";
+
+			// Class & Race
+			const char* class_name = GetClassIDName(static_cast<uint8>(plclass_), static_cast<uint8>(pllevel));
+			const char* race_name = GetRaceIDName(plrace);
+
+			char line[512] = { 0 };
+			if (formatstring == kStringIdWhoAllAnon) {
+				snprintf(line, sizeof(line), "  %s[ANONYMOUS] %s%s", tmpgm.c_str(), plname, lfg_str.c_str());
+			}
+			else if (formatstring == kStringIdWhoAllRole) {
+				snprintf(line, sizeof(line), "  %s[ANONYMOUS] %s%s%s", tmpgm.c_str(), plname, guild_str.c_str(), lfg_str.c_str());
+			}
+			else if (formatstring == kStringIdWhoAllGM) {
+				snprintf(line, sizeof(line), "  %s[ANON %d %s] %s (%s)%s zone: %s%s",
+					tmpgm.c_str(), pllevel, class_name, plname, race_name, guild_str.c_str(), zone_str.c_str(), lfg_str.c_str());
+			}
+			else {
+				snprintf(line, sizeof(line), "  %s[%d %s] %s (%s)%s zone: %s%s",
+					tmpgm.c_str(), pllevel, class_name, plname, race_name, guild_str.c_str(), zone_str.c_str(), lfg_str.c_str());
+			}
+
+			send_line(line);
+			displayed_count++;
+		}
+
+		if (playersinzonestring == kStringIdWhoAllCutShort) {
+			send_line("Your who request was cut short..too many players.");
+		}
+		char count_line[64] = { 0 };
+		snprintf(count_line, sizeof(count_line), "%d players online", displayed_count);
+		send_line(count_line);
+
+		delete in;
+	}
+
+	DECODE(OP_LFGCommand)
+	{
+		DECODE_LENGTH_EXACT(structs::LFG_Struct);
+		SETUP_DIRECT_DECODE(LFG_Struct, structs::LFG_Struct);
+		MEMSET_IN(LFG_Struct);
+		strn0cpy(emu->name, eq->name, sizeof(eq->name));
+		IN(value);
+		FINISH_DIRECT_DECODE();
+	}
+
+	ENCODE(OP_LFGCommand)
+	{
+		delete *p;
+		*p = nullptr;
 	}
 
 	ENCODE(OP_GroupInvite2) { ENCODE_FORWARD(OP_GroupInvite); }
