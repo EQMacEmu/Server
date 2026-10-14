@@ -2411,16 +2411,6 @@ void Client::Handle_OP_CancelTrade(const EQApplicationPacket *app)
 		return;
 	}
 
-	// The recipient can close its window before its acknowledgement arrives.
-	// Its own server trade is still idle, but the requester records the pair.
-	if (trade->state == TradeNone && !trade->GetWithID() && !trade->HasOffers())
-	{
-		Client* requester = entity_list.GetClientByID(msg->target);
-		if (requester && requester != this && requester->trade->state == Requesting && requester->trade->GetWithID() == GetID())
-		{
-			requester->CancelTradeSession(GetID());
-		}
-	}
 	// an already closed or unrelated session gets no reply.
 	// another close packet could close a newer client window.
 }

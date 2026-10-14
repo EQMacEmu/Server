@@ -1339,7 +1339,24 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 
 			return true;
 		} else {
-			// The client has already changed its cursor but we're desynced and don't want to merge unrelated items into one stack so we kick instead.
+			// The opening cursor offer can arrive after the trade was cancelled.
+			if (trade->state == TradeNone && !trade->GetWithID() && !trade->HasOffers() &&
+				move_in->qty == 0 && src_inst && m_inv.CursorSize() == 1) {
+				// temporarily move the item into the intended trade slot to match the client's state so we can do a normal refund from there
+				if (!PutItemInInventory(dst_slot_id, *src_inst)) {
+					m_inv.DeleteItem(dst_slot_id);
+					database.SaveInventory(CharacterID(), nullptr, dst_slot_id);
+					Kick("Unable to save late trade offer; reconnect to resynchronize inventory.");
+					return true;
+				}
+
+				DeleteItemInInventory(src_slot_id, 0, false, true);
+
+				// return item in trade slot to inventory
+				RefundOwnTrade();
+				return true;
+			}
+
 			CancelTradeSession(0);
 			Kick("Trade changed during item movement; reconnect to resynchronize inventory.");
 
