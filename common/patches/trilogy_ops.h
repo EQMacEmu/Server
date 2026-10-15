@@ -150,6 +150,8 @@ D(OP_MBRetrievalDetailRequest)
 E(OP_MBRetrievalDetailResponse)
 D(OP_MBRetrievalPostRequest)
 D(OP_MBRetrievalEraseRequest)
+D(OP_Bind_Wound)
+E(OP_Bind_Wound)
 
 // Below are invalid opcodes ONLY
 E(OP_Unknown)

@@ -3157,6 +3157,25 @@ DECODE(OP_SendLoginInfo)
 		FINISH_DIRECT_DECODE();
 	}
 
+	DECODE(OP_Bind_Wound)
+	{
+		DECODE_LENGTH_ATLEAST(structs::BindWound_Struct);
+		SETUP_DIRECT_DECODE(BindWound_Struct, structs::BindWound_Struct);
+		emu->to = eq->to;
+		emu->type = (uint8)eq->type;
+		emu->void_ = 0;
+		FINISH_DIRECT_DECODE();
+	}
+
+	ENCODE(OP_Bind_Wound)
+	{
+		ENCODE_LENGTH_EXACT(BindWound_Struct);
+		SETUP_DIRECT_ENCODE(BindWound_Struct, structs::BindWound_Struct);
+		eq->to = emu->to;
+		eq->type = emu->type;
+		FINISH_ENCODE();
+	}
+
 	ENCODE(OP_RaidJoin) { ENCODE_FORWARD(OP_Unknown); }
 	ENCODE(OP_RaidUpdate) { ENCODE_FORWARD(OP_Unknown); }
 	ENCODE(OP_RaidInvite) { ENCODE_FORWARD(OP_Unknown); }
