@@ -103,6 +103,10 @@ Client::Client(std::unique_ptr<RDPStream> stream)
 	zone_waiting_for_bootup = 0;
 	enter_world_triggered = false;
 	m_ClientVersionBit = 0;
+	memset(m_char_primary, 0, sizeof(m_char_primary));
+	memset(m_char_secondary, 0, sizeof(m_char_secondary));
+	memset(m_char_primary_color, 0, sizeof(m_char_primary_color));
+	memset(m_char_secondary_color, 0, sizeof(m_char_secondary_color));
 	numclients++;
 }
 
@@ -194,14 +198,22 @@ void Client::SendCharInfo() {
 	// Send OP_SendCharInfo
 	auto outapp = new EQApplicationPacket(OP_SendCharInfo, sizeof(CharacterSelect_Struct));
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
+	memset(cs, 0, sizeof(CharacterSelect_Struct));
 
 	charcount = 0;
 	database.GetCharSelectInfo(GetAccountID(), cs, m_ClientVersionBit, charcount, mule);
 
+	for (int i = 0; i < 10; ++i) {
+		m_char_primary[i] = cs->primary[i];
+		m_char_secondary[i] = cs->secondary[i];
+		m_char_primary_color[i] = cs->cs_colors[i].Slot[EQ::textures::weaponPrimary].Color;
+		m_char_secondary_color[i] = cs->cs_colors[i].Slot[EQ::textures::weaponSecondary].Color;
+	}
+
 	LogInfo("SendCharInfo: AccountID [{}], charcount [{}]", GetAccountID(), charcount);
 	for (int i = 0; i < 10; ++i) {
-		LogInfo("  Slot [{}]: Name [{}], Level [{}], Class [{}], Race [{}], Zone [{}]",
-			i, cs->name[i], cs->level[i], cs->class_[i], cs->race[i], cs->zone[i]);
+		LogInfo("  Slot [{}]: Name [{}], Level [{}], Class [{}], Race [{}], Zone [{}], Primary [{}], Secondary [{}]",
+			i, cs->name[i], cs->level[i], cs->class_[i], cs->race[i], cs->zone[i], cs->primary[i], cs->secondary[i]);
 	}
 
 	QueuePacket(outapp);
@@ -730,6 +742,40 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	return true;
 }
 
+bool Client::HandleWearChangePacket(const EQApplicationPacket *app)
+{
+	if (app->size != sizeof(WearChange_Struct))
+	{
+		return false;
+	}
+
+	auto wc = (WearChange_Struct *)app->pBuffer;
+	if (wc->wear_slot_id == 7 || wc->wear_slot_id == 8)
+	{
+		int char_idx = wc->material - 1;
+		if (char_idx >= 0 && char_idx < 10)
+		{
+			uint32 idfile = (wc->wear_slot_id == 7) ? m_char_primary[char_idx] : m_char_secondary[char_idx];
+			uint32 color = (wc->wear_slot_id == 7) ? m_char_primary_color[char_idx] : m_char_secondary_color[char_idx];
+
+			auto outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+			auto out_wc = (WearChange_Struct *)outapp->pBuffer;
+			memset(out_wc, 0, sizeof(WearChange_Struct));
+			out_wc->wear_slot_id = wc->wear_slot_id;
+			out_wc->material = idfile;
+			out_wc->color.Color = color;
+
+			QueuePacket(outapp);
+			safe_delete(outapp);
+
+			LogInfo("Handled character select OP_WearChange: char slot [{}] wear_slot [{}] idfile [{}] color [{:#x}]",
+				char_idx, wc->wear_slot_id, idfile, color);
+		}
+	}
+
+	return true;
+}
+
 bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 	EmuOpcode opcode = app->GetOpcode();
@@ -802,10 +848,16 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 			return false;
 		}
 		
+		case OP_WearChange:
+		{
+			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+				return HandleWearChangePacket(app);
+			}
+			return true;
+		}
 		case OP_ZoneChange:
 		case OP_LoginUnknown1:
 		case OP_LoginUnknown2:
-		case OP_WearChange:
 		case OP_LoginComplete:
 		case OP_ApproveWorld:
 		{

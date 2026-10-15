@@ -191,9 +191,9 @@ DECODE(OP_SendLoginInfo)
 			OUT(deity[r]);
 		}
 
-		for (int i = 0; i < 8; i++) {
-			memset((char*)eq->primary + 4 * i, i + 1, 4);
-			memset((char*)eq->secondary + 4 * i, i + 1, 4);
+		for (r = 0; r < 10; r++) {
+			eq->primary[r] = emu->primary[r];
+			eq->secondary[r] = emu->secondary[r];
 		}
 
 		FINISH_ENCODE();
