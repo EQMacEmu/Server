@@ -294,6 +294,7 @@ bool Mob::CastSpell(uint16 spell_id, uint16 target_id, CastingSlot slot,
 		// the amount fizzled in one cast is capped to 1/8th of the caster's mana pool size
 		uint32 use_mana_cap = GetMaxMana() / 8;
 		use_mana = use_mana > use_mana_cap ? use_mana_cap : use_mana;
+		LogSpells("[{}] Spell [{}] ({}) fizzled. [{}] mana has been consumed", GetCleanName(), spell_id, spells[spell_id].name, use_mana);
 		LogSpellsDetail("Spell casting canceled: fizzled. [{}] mana has been consumed", use_mana);
 
 		// fizzle 40% of the mana away
@@ -935,6 +936,7 @@ bool Client::CheckFizzle(uint16 spell_id)
 		return true; // successful cast
 	}
 
+	LogSpells("[{}] CheckFizzle FAILED for spell [{}] ({}): roll [{}] > cappedChance [{}]", GetCleanName(), spell_id, spells[spell_id].name, roll100, cappedChance);
 	return false; // fizzled
 }
 

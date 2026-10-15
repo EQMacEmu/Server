@@ -20,6 +20,7 @@
 #include "../deity.h"
 #include "../classes.h"
 #include "../races.h"
+#include "../eq_constants.h"
 namespace Trilogy {
 
 	static Strategy struct_strategy;
@@ -660,17 +661,30 @@ DECODE(OP_SendLoginInfo)
 			case 173:
 				message = "Your spell fizzles!";
 				break;
+			case 180:
+				message = "You miss a note, bringing your song to a close!";
+				break;
 			default:
 				break;
 			}
 		}
-		int len = sizeof(structs::InterruptCast_Struct) + message.length() + 1;
-		__packet->pBuffer = new unsigned char[len];
-		__packet->size = len;
-		memset(__packet->pBuffer, 0, len);
-		structs::InterruptCast_Struct *eq = (structs::InterruptCast_Struct *) __packet->pBuffer;
-		eq->spawnid = 0;
-		strncpy(eq->message, message.c_str(), message.length());
+
+		if (message.length() > 0) {
+			message = CleanItemLinks(message);
+			__packet->SetOpcode(OP_SpecialMesg);
+			int len = sizeof(structs::SpecialMesg_Struct) + message.length() + 5;
+			__packet->pBuffer = new unsigned char[len];
+			__packet->size = len;
+			memset(__packet->pBuffer, 0, len);
+			structs::SpecialMesg_Struct *eq = (structs::SpecialMesg_Struct *) __packet->pBuffer;
+			strcpy(eq->message, message.c_str());
+			eq->msg_type = emu->color ? emu->color : Chat::SpellFailure;
+		}
+		else {
+			delete __packet;
+			__packet = nullptr;
+		}
+
 		FINISH_ENCODE();
 	}
 
