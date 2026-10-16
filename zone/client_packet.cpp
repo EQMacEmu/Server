@@ -2762,6 +2762,13 @@ void Client::Handle_OP_Buff(const EQApplicationPacket *app)
 				// reapply buff server-side
 				int emptyslot = -1;
 				FindAffectSlot(this, spid, &emptyslot, 1);
+				// FindAffectSlot leaves -1 when the buff won't stack back on; writing buffs[-1] corrupts the heap.
+				// Put it back where it was instead.
+				if (emptyslot < 0 || emptyslot >= buff_count)
+				{
+					Log(Logs::General, Logs::Spells, "No slot to reapply spell %d for %s; restoring it to slot %d", spid, GetName(), j);
+					emptyslot = j;
+				}
 				buffs[emptyslot] = savedbuff;
 				CalcBonuses();
 
@@ -2780,6 +2787,8 @@ void Client::Handle_OP_Buff(const EQApplicationPacket *app)
 				QueuePacket(action_packet);
 				safe_delete(action_packet);
 				SendBuffDurationPacket(spid, buffs[emptyslot].ticsremaining, buffs[emptyslot].casterlevel, emptyslot, buffs[emptyslot].instrumentmod);
+				// Handled; a moved buff would otherwise be found again in its new, higher slot.
+				break;
 			}
 		}
 	}
