@@ -32,6 +32,7 @@
 #include <algorithm>
 #include "../common/zone_store.h"
 #include "queryserv.h"
+#include "rolling_restart.h"
 
 
 extern uint32 numzones;
@@ -637,14 +638,28 @@ uint32 ZSList::TriggerBootup(uint32 iZoneID, uint32 iGuildID) {
 			iterator++;
 		}
 
-	iterator = zone_server_list.begin();
-	while (iterator != zone_server_list.end()) {
-		if ((*iterator)->GetZoneID() == 0 && !(*iterator)->IsBootingUp()) {
-			ZoneServer* zone = (*iterator).get();
-			zone->TriggerBootup(iZoneID, 0, false, iGuildID);
-			return zone->GetID();
+	// During a rolling restart, prefer a process that has already restarted. Booting into one still
+	// queued means it gets restarted later with the players who just came back, who then return to
+	// another queued process, and so on.
+	const auto &rolling = RollingRestart::Instance();
+	ZoneServer *fallback = nullptr;
+	for (const auto &zs : zone_server_list) {
+		if (zs->GetZoneID() != 0 || zs->IsBootingUp()) {
+			continue;
 		}
-		iterator++;
+		if (rolling.IsPending(zs->GetUUID())) {
+			if (!fallback) {
+				fallback = zs.get();
+			}
+			continue;
+		}
+		zs->TriggerBootup(iZoneID, 0, false, iGuildID);
+		return zs->GetID();
+	}
+
+	if (fallback) {
+		fallback->TriggerBootup(iZoneID, 0, false, iGuildID);
+		return fallback->GetID();
 	}
 	return 0;
 }

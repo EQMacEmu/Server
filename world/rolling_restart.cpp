@@ -38,6 +38,14 @@ RollingRestart &RollingRestart::Instance()
 	return instance;
 }
 
+bool RollingRestart::IsPending(const std::string &uuid) const
+{
+	if (m_phase != Phase::Restarting) {
+		return false;
+	}
+	return m_batch.count(uuid) || std::find(m_queue.begin(), m_queue.end(), uuid) != m_queue.end();
+}
+
 uint32 RollingRestart::Remaining() const
 {
 	const time_t now = std::time(nullptr);

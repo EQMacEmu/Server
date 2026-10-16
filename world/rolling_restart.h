@@ -30,6 +30,9 @@ public:
 
 	bool IsActive() const { return m_phase != Phase::Idle; }
 
+	// True if this zone server is still waiting for (or in the middle of) its restart.
+	bool IsPending(const std::string &uuid) const;
+
 	// A world shutdown or restart is taking over; stop quietly, it restarts every zone anyway.
 	void Abort();
 
