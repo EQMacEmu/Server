@@ -587,19 +587,14 @@ DECODE(OP_SendLoginInfo)
 			strn0cpy(sender, emu->message, 30);
 			bufptr = emu->message + strlen(sender) + 1;
 			std::string clean_channel_msg = CleanItemLinks(bufptr);
-			int len = sizeof(structs::ChannelMessage_Struct) + clean_channel_msg.length() + 5;
-			__packet->pBuffer = new unsigned char[len];
-			__packet->size = len;
-			memset(__packet->pBuffer, 0, len);
-			structs::ChannelMessage_Struct *eq = (structs::ChannelMessage_Struct *) __packet->pBuffer;
-			__packet->SetOpcode(OP_ChannelMessage);
-			strn0cpy(eq->sender, sender, 30);
-			strcpy(eq->message, clean_channel_msg.c_str());
-			if (emu->string_id == 1032)
-				eq->chan_num = 8;
-			else
-				eq->chan_num = 3;
-			eq->skill_in_language = 100;
+			if (emu->string_id == 1032) {
+				message = StringFormat("%s says, '%s'", sender, clean_channel_msg.c_str());
+				emu->type = 256; // MESSAGETYPE_Say
+			}
+			else {
+				message = StringFormat("%s shouts, '%s'", sender, clean_channel_msg.c_str());
+				emu->type = 262; // MESSAGETYPE_Shout
+			}
 		}
 		else {
 			std::vector<std::string> args;
