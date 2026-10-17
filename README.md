@@ -1,6 +1,10 @@
-## EQ Trilogy
+## EQ Mac - The Al'kabor Project
 
-EQTrilogyEmu is an EverQuest server emulating the original Trilogy version.
+EQMacEmu is an EverQuest server emulating the original Macintosh version called Al`kabor.
+
+- [Project Website](https://www.takproject.net/)
+- [Project Wiki](https://wiki.takp.info/index.php/Main_Page)
+- [How to play](https://wiki.takp.info/index.php/Getting_Started)
 
 ---
 
