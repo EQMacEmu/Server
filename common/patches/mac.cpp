@@ -378,15 +378,6 @@ namespace Mac {
 		result->SetPacket(&outapp, reliable);
 	}
 
-	ENCODE(OP_CancelTrade)
-	{
-		ENCODE_LENGTH_EXACT(CancelTrade_Struct);
-		SETUP_DIRECT_ENCODE(CancelTrade_Struct, structs::CancelTrade_Struct);
-		OUT(fromid);
-		eq->action=1665;
-		FINISH_ENCODE();
-	}
-
 	ENCODE(OP_ItemLinkResponse) {  ENCODE_FORWARD(OP_ItemPacket); }
 	ENCODE(OP_ItemPacket) 
 	{
@@ -449,7 +440,7 @@ namespace Mac {
 
 	ENCODE(OP_TradeItemPacket)
 	{
-			//consume the packet
+		//consume the packet
 		EQApplicationPacket *in = *p;
 		*p = nullptr;
 
@@ -470,11 +461,20 @@ namespace Mac {
 				return;
 			}
 
-			auto outapp = new EQApplicationPacket(OP_TradeItemPacket,sizeof(structs::TradeItemsPacket_Struct));
-			structs::TradeItemsPacket_Struct* myitem = (structs::TradeItemsPacket_Struct*) outapp->pBuffer;
-			myitem->fromid = old_item_pkt->fromid;
-			myitem->slotid = int_struct->slot_id;
-			memcpy(&myitem->item,mac_item,sizeof(structs::Item_Struct));
+			uint32 item_size = sizeof(structs::Item_Struct);
+			const uint8 type = item->GetItem()->ItemClass;
+			if (type == EQ::item::ItemClassBag)
+				item_size = SHORT_CONTAINER_ITEM_STRUCT_SIZE;
+			else if (type == EQ::item::ItemClassBook)
+				item_size = SHORT_BOOK_ITEM_STRUCT_SIZE;
+
+			// Captured packets have five trailing bytes after the item body.
+			auto outapp = new EQApplicationPacket(OP_TradeItemPacket, sizeof(TradeItemHeader_Struct) + item_size + 5);
+			auto myitem = reinterpret_cast<TradeItemHeader_Struct*>(outapp->pBuffer);
+			myitem->id = old_item_pkt->fromid;
+			myitem->slot = int_struct->slot_id;
+			myitem->type = type;
+			memcpy(myitem->item, mac_item, item_size);
 			result->SetPacket(&outapp, reliable);
 			delete mac_item;
 		}
@@ -647,34 +647,6 @@ namespace Mac {
 			}
 			delete in;
 		}
-	}
-
-	DECODE(OP_DeleteCharge) {  DECODE_FORWARD(OP_MoveItem); }
-	DECODE(OP_MoveItem)
-	{
-		SETUP_DIRECT_DECODE(MoveItem_Struct, structs::MoveItem_Struct);
-
-		emu->from_slot = MacToServerSlot(eq->from_slot);
-		emu->to_slot = MacToServerSlot(eq->to_slot);
-		IN(number_in_stack);
-
-		LogEQMac("EQMAC DECODE OUTPUT to_slot: {}, from_slot: {}, number_in_stack: {}", emu->to_slot, emu->from_slot, emu->number_in_stack);
-		FINISH_DIRECT_DECODE();
-	}
-
-	ENCODE(OP_DeleteCharge) {  ENCODE_FORWARD(OP_MoveItem); }
-	ENCODE(OP_MoveItem)
-	{
-		ENCODE_LENGTH_EXACT(MoveItem_Struct);
-		SETUP_DIRECT_ENCODE(MoveItem_Struct, structs::MoveItem_Struct);
-
-		eq->from_slot = ServerToMacSlot(emu->from_slot);
-		eq->to_slot = ServerToMacSlot(emu->to_slot);
-		OUT(to_slot);
-		OUT(number_in_stack);
-		LogInventory("EQMAC ENCODE OUTPUT to_slot: {}, from_slot: {}, number_in_stack: {}", eq->to_slot, eq->from_slot, eq->number_in_stack);
-
-		FINISH_ENCODE();
 	}
 
 	ENCODE(OP_ShopRequest)
