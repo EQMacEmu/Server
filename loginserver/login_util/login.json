@@ -39,7 +39,11 @@
   },
   "Old": {
     "port": 6000,
-    "opcodes": "login_opcodes_oldver.conf"
+    "mac_port": 6000,
+    "trilogy_port": 5999,
+    "opcodes": "login_opcodes_oldver.conf",
+    "login_version": "8-09-2001 14:25",
+    "mac_login_version": "12-4-2002 1800"
   },
   "schema": {
     "account_table": "tblLoginServerAccounts",

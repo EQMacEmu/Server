@@ -746,10 +746,10 @@ void Client::EnableAAEffect(aaEffectType type, uint32 duration) {
 	m_epp.aa_effects |= 1 << (type - 1);
 
 	if (duration > 0) {
-		p_timers.Start(pTimerAAEffectStart + type, duration);
+		p_timers.Start(pTimerAAEffectStart + static_cast<int>(type), duration);
 	}
 	else {
-		p_timers.Clear(&database, pTimerAAEffectStart + type);
+		p_timers.Clear(&database, pTimerAAEffectStart + static_cast<int>(type));
 	}
 }
 
@@ -760,7 +760,7 @@ void Client::DisableAAEffect(aaEffectType type) {
 	if (m_epp.aa_effects & bit) {
 		m_epp.aa_effects ^= bit;
 	}
-	p_timers.Clear(&database, pTimerAAEffectStart + type);
+	p_timers.Clear(&database, pTimerAAEffectStart + static_cast<int>(type));
 	
 	// some abilities have worn off messages
 	switch (type)
@@ -780,7 +780,7 @@ bool Client::CheckAAEffect(aaEffectType type) {
 		return(false);	//for now, special logic needed.
 	if (m_epp.aa_effects & (1 << (type - 1))) {	//is effect enabled?
 		//has our timer expired?
-		if (p_timers.Expired(&database, pTimerAAEffectStart + type)) {
+		if (p_timers.Expired(&database, pTimerAAEffectStart + static_cast<int>(type))) {
 			DisableAAEffect(type);
 			return(false);
 		}

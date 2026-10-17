@@ -4,11 +4,18 @@
 #include "emu_opcodes.h"
 #include "opcodemgr.h"
 
+#include <vector>
+
 class EQApplicationPacket;
 
 class EQPacketEncodeResult
 {
 public:
+	struct EncodedPacket {
+		EQApplicationPacket *packet;
+		bool reliable;
+	};
+
 	EQPacketEncodeResult();
 	~EQPacketEncodeResult();
 
@@ -17,18 +24,21 @@ public:
 
 	// takes ownership of *packet and clears the caller's pointer
 	void SetPacket(EQApplicationPacket **packet, bool reliable = true);
+	const std::vector<EncodedPacket> &Packets() const
+	{
+		return m_packets;
+	}
 	const EQApplicationPacket *Packet() const
 	{
-		return m_packet;
+		return m_packets.empty() ? nullptr : m_packets.front().packet;
 	}
 	bool Reliable() const
 	{
-		return m_reliable;
+		return m_packets.empty() ? true : m_packets.front().reliable;
 	}
 
 private:
-	EQApplicationPacket *m_packet;
-	bool m_reliable;
+	std::vector<EncodedPacket> m_packets;
 };
 
 class EQPacketTranslator

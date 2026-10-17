@@ -81,6 +81,26 @@ static const EQ::inventory::LookupEntry inventory_lookup_entries[EQ::versions::M
 		Mac::inventory::ConcatenateInvTypeLimbo, 
 		Mac::inventory::AllowOverLevelEquipment
 	},
+	{ // Trilogy
+		EQ::invtype::POSSESSIONS_SIZE, 
+		Mac::invtype::BANK_SIZE,
+		Mac::invtype::TRADE_SIZE,
+		Mac::invtype::WORLD_SIZE,
+		Mac::invtype::LIMBO_SIZE,
+		Mac::invtype::MERCHANT_SIZE,
+		Mac::invtype::CORPSE_SIZE,
+		Mac::invtype::BAZAAR_SIZE,
+		Mac::invtype::INSPECT_SIZE,
+
+		Mac::invslot::POSSESSIONS_BITMASK,
+		Mac::invslot::CORPSE_BITMASK,
+		Mac::invbag::SLOT_COUNT,
+
+		Mac::inventory::AllowEmptyBagInBag, 
+		Mac::inventory::AllowClickCastFromBag, 
+		Mac::inventory::ConcatenateInvTypeLimbo, 
+		Mac::inventory::AllowOverLevelEquipment
+	},
 	{ // NPC
 		EQ::invtype::POSSESSIONS_SIZE,
 		EntityLimits::NPC::INULL, 
@@ -181,6 +201,26 @@ static const EQ::inventory::LookupEntry inventory_lookup_entries[EQ::versions::M
 		false,
 		false
 	},
+	{ // OfflineTrilogy
+		Mac::INULL, 
+		Mac::INULL, 
+		Mac::invtype::TRADE_SIZE,
+		Mac::INULL, 
+		Mac::INULL,
+		Mac::invtype::MERCHANT_SIZE,
+		Mac::INULL, 
+		Mac::invtype::BAZAAR_SIZE,
+		Mac::invtype::INSPECT_SIZE,
+
+		Mac::INULL, 
+		Mac::INULL,
+		EQ::invbag::SLOT_COUNT,
+
+		false, 
+		false, 
+		false, 
+		false
+	},
 };
 
 const EQ::inventory::LookupEntry* EQ::inventory::Lookup(versions::MobVersion Mob_version)
@@ -199,6 +239,9 @@ static const EQ::behavior::LookupEntry behavior_lookup_entries[EQ::versions::Mob
 	{ // Mac
 		Mac::behavior::CoinHasWeight
 	},
+	{ // Trilogy
+		Mac::behavior::CoinHasWeight
+	},
 	{ // NPC
 		EQ::behavior::CoinHasWeight /*CoinHasWeight*/
 	},
@@ -212,6 +255,9 @@ static const EQ::behavior::LookupEntry behavior_lookup_entries[EQ::versions::Mob
 		EQ::behavior::CoinHasWeight /*CoinHasWeight*/
 	},
 	{ // OfflineMac
+		Mac::behavior::CoinHasWeight
+	},
+	{ // OfflineTrilogy
 		Mac::behavior::CoinHasWeight
 	}
 };

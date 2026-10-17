@@ -40,14 +40,17 @@
     },
     "Old": {
       "port": 6000,
-      "opcodes": "login_opcodes_oldver.conf"
+      "mac_port": 6000,
+      "trilogy_port": 5999,
+      "opcodes": "login_opcodes_oldver.conf",
+      "login_version": "8-09-2001 14:25",
+      "mac_login_version": "12-4-2002 1800"
     },
     "schema": {
       "access_log_table": "tblaccountaccesslog",
       "account_table": "tblLoginServerAccounts",
       "world_registration_table": "tblWorldServerRegistration",
       "world_admin_registration_table": "tblServerAdminRegistration",
-      "world_server_type_table": "tblServerListType",
-      "loginserver_setting_table": "tblloginserversettings"
+      "world_server_type_table": "tblServerListType"
     }
   }

@@ -48,9 +48,11 @@ public:
 	void SendUserToWorldRequest(const char* ServerIP, unsigned int client_account_id, uint32 ip);
 
 	/**
-	* Creates a server list packet for the older client.
+	* Creates a server list packet for the client.
 	*/
 	EQApplicationPacket* CreateServerListPacket(Client* c);
+	EQApplicationPacket* CreateServerListPacketMac(Client* c);
+	EQApplicationPacket* CreateServerListPacketTrilogy(Client* c);
 
 	/**
 	* Checks to see if there is a server exists with this name, ignoring option.

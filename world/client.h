@@ -121,6 +121,7 @@ private:
 	bool HandleEnterWorldPacket(const EQApplicationPacket *app);
 	bool HandleDeleteCharacterPacket(const EQApplicationPacket *app);
 	bool HandleChecksumPacket(const EQApplicationPacket *app);
+	bool HandleWearChangePacket(const EQApplicationPacket *app);
 
 	SessionDisposition m_session_disposition;
 	std::unique_ptr<RDPStream> m_stream;
@@ -130,6 +131,11 @@ private:
 	uint16	expansion;
 	uint8	charcount;
 	bool	mule;
+
+	uint32	m_char_primary[10];
+	uint32	m_char_secondary[10];
+	uint32	m_char_primary_color[10];
+	uint32	m_char_secondary_color[10];
 };
 
 #endif

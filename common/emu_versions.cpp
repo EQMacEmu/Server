@@ -48,6 +48,8 @@ const char* EQ::versions::ClientVersionName(ClientVersion client_version)
 		return "PPC Version";
 	case ClientVersion::Mac:
 		return "All Clients";
+	case ClientVersion::Trilogy:
+		return "Trilogy Version";
 	default:
 		return "Invalid Version";
 	};
@@ -68,6 +70,8 @@ uint32 EQ::versions::ConvertClientVersionToClientVersionBit(ClientVersion client
 		return bit_MacPPC;
 	case ClientVersion::Mac:
 		return bit_Mac;
+	case ClientVersion::Trilogy:
+		return bit_Trilogy;
 	default:
 		return bit_Unknown;
 	};
@@ -76,17 +80,20 @@ uint32 EQ::versions::ConvertClientVersionToClientVersionBit(ClientVersion client
 EQ::versions::ClientVersion EQ::versions::ConvertClientVersionBitToClientVersion(uint32 client_version_bit)
 {
 	switch (client_version_bit) {
-		case (uint32)static_cast<unsigned int>(ClientVersion::Unknown) :
-		case ((uint32)1 << (static_cast<unsigned int>(ClientVersion::Unused) - 1)):
+		case bit_Unknown:
+			return ClientVersion::Unknown;
+		case bit_Unused:
 			return ClientVersion::Unused;
-		case ((uint32)1 << (static_cast<unsigned int>(ClientVersion::MacPC) - 1)):
+		case bit_MacPC:
 			return ClientVersion::MacPC;
-		case ((uint32)1 << (static_cast<unsigned int>(ClientVersion::MacIntel) - 1)):
+		case bit_MacIntel:
 			return ClientVersion::MacIntel;
-		case ((uint32)1 << (static_cast<unsigned int>(ClientVersion::MacPPC) - 1)):
+		case bit_MacPPC:
 			return ClientVersion::MacPPC;
-		case ((uint32)1 << (static_cast<unsigned int>(ClientVersion::Mac) - 1)):
+		case bit_Mac:
 			return ClientVersion::Mac;
+		case bit_Trilogy:
+			return ClientVersion::Trilogy;
 		default:
 			return ClientVersion::Unknown;
 	}
@@ -166,6 +173,8 @@ const char* EQ::versions::MobVersionName(MobVersion Mob_version)
 		return "Unused";
 	case MobVersion::Mac:
 		return "Mac";
+	case MobVersion::Trilogy:
+		return "Trilogy";
 	case MobVersion::NPC:
 		return "NPC";
 	case MobVersion::NPCMerchant:
@@ -176,6 +185,8 @@ const char* EQ::versions::MobVersionName(MobVersion Mob_version)
 		return "NPC Pet";
 	case MobVersion::OfflineMac:
 		return "Offline Mac";
+	case MobVersion::OfflineTrilogy:
+		return "Offline Trilogy";
 	default:
 		return "Invalid Version";
 	};
@@ -189,6 +200,8 @@ EQ::versions::ClientVersion EQ::versions::ConvertMobVersionToClientVersion(MobVe
 		return ClientVersion::Unused;
 	case MobVersion::Mac:
 		return ClientVersion::Mac;
+	case MobVersion::Trilogy:
+		return ClientVersion::Trilogy;
 	default:
 		return ClientVersion::Unknown;
 	}
@@ -202,6 +215,8 @@ EQ::versions::MobVersion EQ::versions::ConvertClientVersionToMobVersion(ClientVe
 		return MobVersion::Unused;
 	case ClientVersion::Mac:
 		return MobVersion::Mac;
+	case ClientVersion::Trilogy:
+		return MobVersion::Trilogy;
 	default:
 		return MobVersion::Unknown;
 	}
@@ -212,6 +227,8 @@ EQ::versions::MobVersion EQ::versions::ConvertPCMobVersionToOfflinePCMobVersion(
 	switch (Mob_version) {
 	case MobVersion::Mac:
 		return MobVersion::OfflineMac;
+	case MobVersion::Trilogy:
+		return MobVersion::OfflineTrilogy;
 	default:
 		return MobVersion::Unknown;
 	}
@@ -222,6 +239,8 @@ EQ::versions::MobVersion EQ::versions::ConvertOfflinePCMobVersionToPCMobVersion(
 	switch (Mob_version) {
 	case MobVersion::OfflineMac:
 		return MobVersion::Mac;
+	case MobVersion::OfflineTrilogy:
+		return MobVersion::Trilogy;
 	default:
 		return MobVersion::Unknown;
 	}
@@ -232,6 +251,8 @@ EQ::versions::ClientVersion EQ::versions::ConvertOfflinePCMobVersionToClientVers
 	switch (Mob_version) {
 	case MobVersion::OfflineMac:
 		return ClientVersion::Mac;
+	case MobVersion::OfflineTrilogy:
+		return ClientVersion::Trilogy;
 	default:
 		return ClientVersion::Unknown;
 	}
@@ -242,6 +263,8 @@ EQ::versions::MobVersion EQ::versions::ConvertClientVersionToOfflinePCMobVersion
 	switch (client_version) {
 	case ClientVersion::Mac:
 		return MobVersion::OfflineMac;
+	case ClientVersion::Trilogy:
+		return MobVersion::OfflineTrilogy;
 	default:
 		return MobVersion::Unknown;
 	}

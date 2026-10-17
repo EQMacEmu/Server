@@ -1142,8 +1142,14 @@ void Corpse::MakeLootRequestPackets(Client* client, const EQApplicationPacket* a
 		moneyOnCorpseStruct* d = (moneyOnCorpseStruct*)outapp->pBuffer;
 
 		d->response		= 1;
-		d->unknown1		= 0x42;
-		d->unknown2		= 0xef;
+		if (client->ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+			d->unknown1 = 0x5a;
+			d->unknown2 = 0x40;
+		}
+		else {
+			d->unknown1 = 0x42;
+			d->unknown2 = 0xef;
+		}
 
 		/* Don't take the coin off if it's a gm peeking at the corpse */
 		if(Loot_Request_Type == 2 || (Loot_Request_Type >= 3 && loot_coin)) { 

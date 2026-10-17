@@ -30,7 +30,8 @@ namespace EQ
 			MacPC,
 			MacIntel,
 			MacPPC,
-			Mac
+			Mac,
+			Trilogy
 		};
 
 		enum ClientVersionBit : uint32 {
@@ -40,11 +41,12 @@ namespace EQ
 			bit_MacIntel = 0x00000004,
 			bit_MacPPC = 0x00000008,
 			bit_Mac = 0x0000000E,
+			bit_Trilogy = 0x00000010,
 			bit_AllClients = 0xFFFFFFFF
 		};
 
 
-		const ClientVersion LastClientVersion = ClientVersion::Mac;
+		const ClientVersion LastClientVersion = ClientVersion::Trilogy;
 		const size_t ClientVersionCount = (static_cast<size_t>(LastClientVersion) + 1);
 
 		bool IsValidClientVersion(ClientVersion client_version);
@@ -57,17 +59,19 @@ namespace EQ
 			Unknown = 0,
 			Unused,
 			Mac,
+			Trilogy,
 			NPC,
 			NPCMerchant,
 			ClientPet,
 			NPCPet,
-			OfflineMac
+			OfflineMac,
+			OfflineTrilogy
 		};
 
-		const MobVersion LastMobVersion = MobVersion::OfflineMac;
-		const MobVersion LastPCMobVersion = MobVersion::Mac;
+		const MobVersion LastMobVersion = MobVersion::OfflineTrilogy;
+		const MobVersion LastPCMobVersion = MobVersion::Trilogy;
 		const MobVersion LastNonPCMobVersion = MobVersion::NPCPet;
-		const MobVersion  LastOfflinePCMobVersion = MobVersion::OfflineMac;
+		const MobVersion LastOfflinePCMobVersion = MobVersion::OfflineTrilogy;
 		const size_t MobVersionCount = (static_cast<size_t>(LastMobVersion) + 1);
 
 

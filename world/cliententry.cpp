@@ -198,6 +198,13 @@ void ClientListEntry::Update(ZoneServer* iZS, ServerClientList_Struct* scl, CLE_
 		pIP = scl->IP;
 		pLSID = scl->LSAccountID;
 		strn0cpy(plskey, scl->lskey, sizeof(plskey));
+	} else {
+		if (pLSID == 0 && scl->LSAccountID != 0) {
+			pLSID = scl->LSAccountID;
+		}
+		if (plskey[0] == '\0' && scl->lskey[0] != '\0') {
+			strn0cpy(plskey, scl->lskey, sizeof(plskey));
+		}
 	}
 	padmin = scl->Admin;
 	plevel = scl->level;
@@ -306,6 +313,17 @@ void ClientListEntry::Camp(ZoneServer* iZS)
 
 bool ClientListEntry::CheckStale() 
 {
+	if (pOnline == CLE_Status::Zoning) {
+		stale++;
+		if (stale >= 20) {
+			if (pOnline > CLE_Status::Offline) {
+				SetOnline(CLE_Status::Offline);
+			}
+			return true;
+		}
+		return false;
+	}
+
 	stale++;
 	if (stale >= 3) {
 		if (pOnline > CLE_Status::Offline) {

@@ -93,6 +93,7 @@ public:
 	bool CreateWorldRegistration(std::string long_name, std::string short_name, unsigned int &id);
 
 	bool GetWorldPreferredStatus(int id);
+	bool GetVariable(const char* varname, char* varvalue, size_t varvalue_len);
 protected:
 	std::string user, pass, host, port, name;
 	MYSQL *m_database;

@@ -306,3 +306,29 @@ bool Database::GetWorldPreferredStatus(int id)
 	}
 	return true;
 }
+
+bool Database::GetVariable(const char* varname, char* varvalue, size_t varvalue_len)
+{
+	if (!varname || !varvalue || varvalue_len == 0) {
+		return false;
+	}
+
+	char escaped_varname[128] = {0};
+	DoEscapeString(escaped_varname, varname, strlen(varname) & 0x7F);
+
+	auto query = fmt::format("SELECT value FROM variables WHERE varname = '{}'", escaped_varname);
+	auto results = QueryDatabase(query);
+	if (!results.Success() || results.RowCount() == 0) {
+		return false;
+	}
+
+	auto row = results.begin();
+	if (row[0]) {
+		strncpy(varvalue, row[0], varvalue_len);
+		varvalue[varvalue_len - 1] = '\0';
+		return true;
+	}
+
+	return false;
+}
+

@@ -49,7 +49,7 @@ namespace Mac {
 		SETUP_DIRECT_DECODE(LoginInfo_Struct, structs::LoginInfo_Struct);
 		memcpy(emu->login_info, eq->AccountName, 64);
 		emu->macversion = len == 196 ? 8 : 4;
-		IN(zoning);
+		emu->zoning = (eq->zoning == 1 || __eq_buffer[188] == 1) ? 1 : 0;
 		FINISH_DIRECT_DECODE();
 	}
 
@@ -205,7 +205,7 @@ namespace Mac {
 		outapp->size = DeflatePacket((unsigned char*)__packet->pBuffer, sizeof(structs::PlayerProfile_Struct), outapp->pBuffer, 8192);
 		EncryptProfilePacket(outapp->pBuffer, outapp->size);
 		LogNetcodeDetail("[STRUCTS] Player Profile Packet is {} bytes compressed", outapp->size);
-		result->SetPacket(&outapp);
+		result->SetPacket(&outapp, reliable);
 		delete[] __emu_buffer;
 		delete __packet;
 	}
@@ -432,7 +432,7 @@ namespace Mac {
 			if(outapp->size != sizeof(structs::Item_Struct))
 				LogNetcode("Invalid size on OP_ItemPacket packet. Expected: {}, Got: {}", sizeof(structs::Item_Struct), outapp->size);
 
-			result->SetPacket(&outapp);
+			result->SetPacket(&outapp, reliable);
 			delete mac_item;
 		}
 		delete in;
@@ -492,7 +492,7 @@ namespace Mac {
 			in->size = 2;
 			in->pBuffer = new uchar[in->size];
 			*((uint16 *) in->pBuffer) = 0;
-			result->SetPacket(&in);
+			result->SetPacket(&in, reliable);
 			return;
 		}
 
@@ -541,7 +541,7 @@ namespace Mac {
 		outapp->size = buffer + DeflatePacket((uchar*)mac_item_string.c_str(), mac_item_string.length(), &outapp->pBuffer[buffer], 16382);
 		outapp->pBuffer[0] = itemcount;
 		
-		result->SetPacket(&outapp);
+		result->SetPacket(&outapp, reliable);
 		delete in;
 	}
 
@@ -593,7 +593,7 @@ namespace Mac {
 		auto outapp = new EQApplicationPacket(OP_ShopInventoryPacket, 5000);
 		outapp->size = buffer + DeflatePacket((uchar*)mac_item_string.c_str(), mac_item_string.length(), &outapp->pBuffer[buffer], 4998);
 		outapp->pBuffer[0] = itemcount;
-		result->SetPacket(&outapp);
+		result->SetPacket(&outapp, reliable);
 		delete in;
 	}
 
@@ -642,7 +642,7 @@ namespace Mac {
 				myitem->type = 5;
 				memcpy(&myitem->item,mac_item,sizeof(structs::Item_Struct));
 
-				result->SetPacket(&outapp);
+				result->SetPacket(&outapp, reliable);
 				delete mac_item;
 			}
 			delete in;
