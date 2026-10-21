@@ -93,6 +93,40 @@ void EncryptZoneSpawnPacket(uchar* pBuffer, uint32 size) {
 	}
 }
 
+void EncryptTrilogyProfilePacket(uchar* pBuffer, uint32 size) {
+	uint32* data = (uint32*)pBuffer;
+	uint32 crypt = 0x65e7;
+	uint32 next_crypt;
+
+	uint32 swap = data[0];
+	data[0] = data[size / 8];
+	data[size / 8] = swap;
+
+	for (uint32 i = 0; i < size / 4; i++) {
+		next_crypt = crypt + data[i] - 0x37a9;
+		data[i] = ((data[i] << 0x07) | (data[i] >> 0x19)) + 0x37a9;
+		data[i] = (data[i] << 0x0f) | (data[i] >> 0x11);
+		data[i] = data[i] - crypt;
+		crypt = next_crypt;
+	}
+}
+
+void EncryptTrilogyZoneSpawnPacket(uchar* pBuffer, uint32 size) {
+	uint32* data = (uint32*)pBuffer;
+	uint32 crypt = 0x0000;
+	uint32 next_crypt;
+	uint32 swap = data[0];
+	data[0] = data[size / 8];
+	data[size / 8] = swap;
+	for (uint32 i = 0; i < size / 4; i++) {
+		next_crypt = crypt + data[i] - 0x65e7;
+		data[i] = ((data[i] << 0x09) | (data[i] >> 0x17)) + 0x65e7;
+		data[i] = (data[i] << 0x0d) | (data[i] >> 0x13);
+		data[i] = data[i] - crypt;
+		crypt = next_crypt;
+	}
+}
+
 #define MEMORY_DEBUG
 
 #ifndef MEMORY_DEBUG

@@ -182,6 +182,7 @@ public:
 	void	RemoveAuth(uint32 lsid);
 	void	ResetAuth();
 	bool	GetAuth(uint32 iIP, const char* iCharName, uint32* oWID = 0, uint32* oAccID = 0, uint32* oCharID = 0, int16* oStatus = 0, char* oLSKey = 0, bool* oTellsOff = 0, uint32* oVersionbit = 0, uint32 entity_id = 0);
+	uint32	GetAuthVersionByIP(uint32 iIP);
 	bool	CheckAuth(const char* iCharName);
 	uint32	CountAuth();
 

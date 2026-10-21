@@ -20,6 +20,8 @@
 #include "../common/zone_store.h"
 #include "../common/content/world_content_service.h"
 #include "../common/skill_caps.h"
+#include "../common/patches/patches.h"
+#include "../common/deity.h"
 
 #include "client.h"
 #include "worlddb.h"
@@ -101,6 +103,10 @@ Client::Client(std::unique_ptr<RDPStream> stream)
 	zone_waiting_for_bootup = 0;
 	enter_world_triggered = false;
 	m_ClientVersionBit = 0;
+	memset(m_char_primary, 0, sizeof(m_char_primary));
+	memset(m_char_secondary, 0, sizeof(m_char_secondary));
+	memset(m_char_primary_color, 0, sizeof(m_char_primary_color));
+	memset(m_char_secondary_color, 0, sizeof(m_char_secondary_color));
 	numclients++;
 }
 
@@ -192,9 +198,23 @@ void Client::SendCharInfo() {
 	// Send OP_SendCharInfo
 	auto outapp = new EQApplicationPacket(OP_SendCharInfo, sizeof(CharacterSelect_Struct));
 	CharacterSelect_Struct* cs = (CharacterSelect_Struct*)outapp->pBuffer;
+	memset(cs, 0, sizeof(CharacterSelect_Struct));
 
 	charcount = 0;
 	database.GetCharSelectInfo(GetAccountID(), cs, m_ClientVersionBit, charcount, mule);
+
+	for (int i = 0; i < 10; ++i) {
+		m_char_primary[i] = cs->primary[i];
+		m_char_secondary[i] = cs->secondary[i];
+		m_char_primary_color[i] = cs->cs_colors[i].Slot[EQ::textures::weaponPrimary].Color;
+		m_char_secondary_color[i] = cs->cs_colors[i].Slot[EQ::textures::weaponSecondary].Color;
+	}
+
+	LogInfo("SendCharInfo: AccountID [{}], charcount [{}]", GetAccountID(), charcount);
+	for (int i = 0; i < 10; ++i) {
+		LogInfo("  Slot [{}]: Name [{}], Level [{}], Class [{}], Race [{}], Zone [{}], Primary [{}], Secondary [{}]",
+			i, cs->name[i], cs->level[i], cs->class_[i], cs->race[i], cs->zone[i], cs->primary[i], cs->secondary[i]);
+	}
 
 	QueuePacket(outapp);
 	safe_delete(outapp);
@@ -245,6 +265,9 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 
 	if (authenticated_cle)
 	{
+		if (authenticated_cle->Online() >= CLE_Status::Zoning)
+			is_player_zoning = true;
+
 		if (GetSessionLimit(authenticated_cle, is_player_zoning))
 			return false;
 
@@ -254,12 +277,27 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		if(cle->Online() < CLE_Status::Online)
 			cle->SetOnline();
 		
-		// All supported clients use the Mac packet protocol.  The login packet distinguishes Windows, Intel Mac, and PowerPC.
-		if( cle->GetMacClientVersion() != EQ::versions::ClientVersion::MacPC )
+		// Check for Trilogy or Mac client versions and assign the stream's packet translator.
+		if (cle->GetMacClientVersion() == EQ::versions::ClientVersionBit::bit_Trilogy)
 		{
-			cle->SetMacClientVersion(login_info->macversion);
+			m_ClientVersion = EQ::versions::ClientVersion::Trilogy;
+			m_ClientVersionBit = cle->GetMacClientVersion();
+			if (m_stream) {
+				m_stream->SetTranslator(Patches::GetTranslator(m_ClientVersion));
+			}
 		}
-		m_ClientVersionBit = cle->GetMacClientVersion();
+		else
+		{
+			if (cle->GetMacClientVersion() != EQ::versions::ClientVersionBit::bit_MacPC)
+			{
+				cle->SetMacClientVersion(login_info->macversion);
+			}
+			m_ClientVersionBit = cle->GetMacClientVersion();
+			m_ClientVersion = EQ::versions::ClientVersion::Mac;
+			if (m_stream) {
+				m_stream->SetTranslator(Patches::GetTranslator(m_ClientVersion));
+			}
+		}
 
 		LogInfo("ClientVersionBit is: [{}]", m_ClientVersionBit);
 		LogInfo("Logged in. Mode= [{}]", is_player_zoning ? "(Zoning)" : "(CharSel)");
@@ -284,7 +322,9 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 		mule = false;
 		database.GetAccountRestriction(cle->AccountID(), expansion, mule);
 
-		SendLogServer();
+		if (m_ClientVersion == EQ::versions::ClientVersion::Mac) {
+			SendLogServer();
+		}
 		SendApproveWorld();
 
 
@@ -326,10 +366,18 @@ bool Client::HandleSendLoginInfoPacket(const EQApplicationPacket *app) {
 
 bool Client::HandleNameApprovalPacket(const EQApplicationPacket *app)
 {
-	if(app->Size() != sizeof(NameApproval_Struct)) {
-		LogError("Wrong size: HandleNameApprovalPacket, size= [{}], expected [{}]", app->size, sizeof(NameApproval_Struct));
-		return false;
-	}
+	bool valid_size = false;
+    if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+        valid_size = (app->size == sizeof(NameApproval_Struct));
+    }
+    else {
+        // Mac client sends 76 bytes where app->Size() == 78
+        valid_size = (app->Size() == sizeof(NameApproval_Struct) || app->size == sizeof(NameApproval_Struct));
+    }
+    if (!valid_size) {
+        LogError("Wrong size: HandleNameApprovalPacket, size= [{}], Size= [{}], expected [{}]", app->size, app->Size(), sizeof(NameApproval_Struct));
+        return false;
+    }
 
 	if (GetAccountID() == 0) {
 		LogInfo("Name approval request with no logged in account");
@@ -694,9 +742,50 @@ bool Client::HandleChecksumPacket(const EQApplicationPacket *app)
 	return true;
 }
 
+bool Client::HandleWearChangePacket(const EQApplicationPacket *app)
+{
+	if (app->size != sizeof(WearChange_Struct))
+	{
+		return false;
+	}
+
+	auto wc = (WearChange_Struct *)app->pBuffer;
+	if (wc->wear_slot_id == 7 || wc->wear_slot_id == 8)
+	{
+		int char_idx = wc->material - 1;
+		if (char_idx >= 0 && char_idx < 10)
+		{
+			uint32 idfile = (wc->wear_slot_id == 7) ? m_char_primary[char_idx] : m_char_secondary[char_idx];
+			uint32 color = (wc->wear_slot_id == 7) ? m_char_primary_color[char_idx] : m_char_secondary_color[char_idx];
+
+			auto outapp = new EQApplicationPacket(OP_WearChange, sizeof(WearChange_Struct));
+			auto out_wc = (WearChange_Struct *)outapp->pBuffer;
+			memset(out_wc, 0, sizeof(WearChange_Struct));
+			out_wc->wear_slot_id = wc->wear_slot_id;
+			out_wc->material = idfile;
+			out_wc->color.Color = color;
+
+			QueuePacket(outapp);
+			safe_delete(outapp);
+
+			LogInfo("Handled character select OP_WearChange: char slot [{}] wear_slot [{}] idfile [{}] color [{:#x}]",
+				char_idx, wc->wear_slot_id, idfile, color);
+		}
+	}
+
+	return true;
+}
+
 bool Client::HandlePacket(const EQApplicationPacket *app) {
 
 	EmuOpcode opcode = app->GetOpcode();
+
+	LogInfo(
+		"HandlePacket: [{}] [{:#06x}] Size [{}]",
+		OpcodeManager::EmuToName(app->GetOpcode()),
+		app->GetProtocolOpcode(),
+		app->Size()
+	);
 
 	LogPacketClientServer(
 		"[{}] [{:#06x}] Size [{}] {}",
@@ -753,13 +842,22 @@ bool Client::HandlePacket(const EQApplicationPacket *app) {
 		}
 		case OP_WorldLogout:
 		{
+			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+				return true;
+			}
 			return false;
 		}
 		
+		case OP_WearChange:
+		{
+			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+				return HandleWearChangePacket(app);
+			}
+			return true;
+		}
 		case OP_ZoneChange:
 		case OP_LoginUnknown1:
 		case OP_LoginUnknown2:
-		case OP_WearChange:
 		case OP_LoginComplete:
 		case OP_ApproveWorld:
 		{
@@ -819,13 +917,14 @@ bool Client::Process()
 		transport_ended = true;
 		if (receive_result == RDPStream::PeerClosed)
 		{
-			LogNetcode("World client [{}] closed its RDP connection", GetAccountName());
+			LogInfo("World client [{}] closed its RDP connection (PeerClosed)", GetAccountName());
 		}
 		else
 		{
-			LogNetcode(
-				"World client [{}] lost its RDP connection, reason [{:#010x}]",
+			LogInfo(
+				"World client [{}] lost its RDP connection, receive_result [{}], disconnect_reason [{:#010x}]",
 				GetAccountName(),
+				static_cast<int>(receive_result),
 				disconnect_reason
 			);
 		}
@@ -1106,10 +1205,7 @@ void Client::SendToStream(EQApplicationPacket **packet, bool reliable)
 	}
 
 	int result = m_stream->Send(packet, reliable);
-	if (result != RDPLIB_OK)
-	{
-		LogNetcode("Unable to send opcode [{}], RDP result [{}]", OpcodeManager::EmuToName(opcode), result);
-	}
+	LogInfo("SendToStream: opcode [{}] ({:#06x}), reliable [{}] -> result [{}]", OpcodeManager::EmuToName(opcode), opcode, reliable, result);
 }
 
 void Client::QueuePacket(const EQApplicationPacket* app, bool ack_req) {
@@ -1303,6 +1399,16 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 		pp.x = pp.y = pp.z = -1;
 	}
 
+	if (pp.x == 0.0f && pp.y == 0.0f && pp.z == 0.0f) {
+		auto z = GetZone(pp.zone_id);
+		if (z) {
+			pp.x = z->safe_x;
+			pp.y = z->safe_y;
+			pp.z = z->safe_z;
+			pp.heading = z->safe_heading;
+		}
+	}
+
 	if (!pp.binds[0].zoneId)
 	{
 		pp.binds[0].zoneId = pp.zone_id;
@@ -1315,10 +1421,10 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	// set starting city location to the initial bind point
 	pp.binds[4] = pp.binds[0];
 
-	//LogInfo( "Current location: %s  %0.2f, %0.2f, %0.2f, %0.2f",
-	//	database.GetZoneName(pp.zone_id), pp.x, pp.y, pp.z, pp.heading);
-	//LogInfo( "Bind location: %s  %0.2f, %0.2f, %0.2f",
-	//	database.GetZoneName(pp.binds[0].zoneId), pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
+	LogInfo("Character [{}] starting location: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}, heading={:.2f}",
+		pp.name, pp.zone_id, pp.x, pp.y, pp.z, pp.heading);
+	LogInfo("Character [{}] bind location: zone_id={}, x={:.2f}, y={:.2f}, z={:.2f}",
+		pp.name, pp.binds[0].zoneId, pp.binds[0].x, pp.binds[0].y, pp.binds[0].z);
 
 	/* Starting Items inventory */
 	database.SetStartingItems(&pp, &inv, pp.race, pp.class_, pp.deity, pp.zone_id, pp.name, GetAdmin());
@@ -1334,6 +1440,31 @@ bool Client::OPCharCreate(char *name, CharCreate_Struct *cc)
 	return true;
 }
 
+static bool IsSameStartingCityZone(uint32 zone_a, uint32 zone_b) {
+	if (zone_a == zone_b)
+		return true;
+	// Freeport: freportn (8), freportw (9), freporte (10)
+	if ((zone_a >= 8 && zone_a <= 10) && (zone_b >= 8 && zone_b <= 10))
+		return true;
+	// Qeynos: qeynos (1), qeynos2 (2)
+	if ((zone_a == 1 || zone_a == 2) && (zone_b == 1 || zone_b == 2))
+		return true;
+	// Erudin: erudnint (23), erudnext (24)
+	if ((zone_a == 23 || zone_a == 24) && (zone_b == 23 || zone_b == 24))
+		return true;
+	// Neriak: neriaka (40), neriakb (41), neriakc (42), neriakd (43)
+	if ((zone_a >= 40 && zone_a <= 43) && (zone_b >= 40 && zone_b <= 43))
+		return true;
+	// Kaladim: kaladima (60), kaladimb (67)
+	if ((zone_a == 60 || zone_a == 67) && (zone_b == 60 || zone_b == 67))
+		return true;
+	// Felwithe: felwithea (61), felwitheb (62)
+	if ((zone_a == 61 || zone_a == 62) && (zone_b == 61 || zone_b == 62))
+		return true;
+
+	return false;
+}
+
 // returns true if the request is ok, false if there's an error
 bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 {
@@ -1346,18 +1477,33 @@ bool Client::CheckCharCreateInfo(CharCreate_Struct *cc)
 
 	int csexp = WorldContentService::Instance()->GetCurrentExpansion(); // this is the chronological expansion number or -1 to indicate ALL but we need a bit mask to compare against
 	int currentExpansions = (1 << (csexp >= 0 ? csexp : 30)) - 1; // Get expansion mask based on CurrentExpansion rule for TLP
+	if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy && cc->deity == Deity::Agnostic1) {
+		cc->deity = Deity::Agnostic2;
+	}
 
 	RaceClassCombos class_combo;
 	bool found = false;
 	int combos = character_create_race_class_combos.size();
 	for (int i = 0; i < combos; ++i) {
+		bool zone_match = false;
+		if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+			zone_match = (cc->zone_id == 0 ||
+				IsSameStartingCityZone(character_create_race_class_combos[i].Zone, cc->zone_id));
+		}
+		else {
+			zone_match = (character_create_race_class_combos[i].Zone == cc->zone_id);
+		}
+
 		if (character_create_race_class_combos[i].Class == cc->class_ &&
 				character_create_race_class_combos[i].Race == cc->race &&
 				character_create_race_class_combos[i].Deity == cc->deity &&
-				character_create_race_class_combos[i].Zone == cc->zone_id &&
+				zone_match &&
 			((currentExpansions & character_create_race_class_combos[i].ExpansionRequired) == character_create_race_class_combos[i].ExpansionRequired || 
 				character_create_race_class_combos[i].ExpansionRequired == 0)) {
 			class_combo = character_create_race_class_combos[i];
+			if (m_ClientVersion == EQ::versions::ClientVersion::Trilogy) {
+				cc->zone_id = class_combo.Zone;
+			}
 			found = true;
 			break;
 		}

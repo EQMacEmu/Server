@@ -82,8 +82,6 @@ endif
 	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in login_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
 	@echo "Sourcing player_tables..."
 	@cd ${DIR_DEVCONT}/base/db/alkabor* && for f in player_tables_*.sql; do sudo mariadb --database=peq -e "source $$f"; done
-	@echo "Sourcing loginserver..."
-	@cd ${DIR_SRC}/loginserver/login_util && sudo mariadb --database peq -e "source tblloginserversettings.sql"
 	@echo "Sourcing local development scripts"
 	@cd ${DIR_DEVCONT}/base/db/local && for f in *.sql; do sudo mariadb --database=peq -e "source $$f"; done
 

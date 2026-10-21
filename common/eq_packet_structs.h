@@ -1973,12 +1973,11 @@ struct ClickObjectAction_Struct {
 	/*020*/
 };
 
-struct Door_Struct
-{
+struct Door_Struct{
 /*0000*/ char    name[16];            // Filename of Door
-/*0016*/ float   yPos;               // y loc
-/*0020*/ float   xPos;               // x loc
-/*0024*/ float   zPos;               // z loc
+/*0016*/ float   pos_y;               // y loc
+/*0020*/ float   pos_x;               // x loc
+/*0024*/ float   pos_z;               // z loc
 /*0028*/ float	 heading;
 /*0032*/ uint16	 incline;
 /*0034*/ uint16	 size;
@@ -2004,7 +2003,6 @@ struct ClickDoor_Struct {
 	/*001*/	uint8	unknown[3];
 	/*004*/	uint16	item_id;
 	/*006*/	uint16	player_id;
-	/*008*/
 };
 
 struct MoveDoor_Struct {

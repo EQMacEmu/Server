@@ -51,6 +51,8 @@
 #include "../common/strings.h"
 #include "../common/zone_numbers.h"
 #include "../common/skill_caps.h"
+#include "../common/patches/patches.h"
+#include "../common/rdp/rdp_stream.h"
 #include "data_bucket.h"
 #include "event_codes.h"
 #include "guild_mgr.h"
@@ -338,6 +340,9 @@ int Client::HandlePacket(const EQApplicationPacket *app)
 		ClientPacketProc p;
 		p = ConnectedOpcodes[opcode];
 		if(p == nullptr) { 
+			LogInfo("[Client: {}] Unhandled Connected Opcode: {:#06x} ({}), Size: {}",
+				GetName(), opcode, OpcodeManager::EmuToName(opcode), app->size);
+
 			std::vector<std::any> args;
 			args.push_back(const_cast<EQApplicationPacket*>(app));
 			parse->EventPlayer(EVENT_UNHANDLED_OPCODE, this, "", 0, &args);
@@ -698,17 +703,21 @@ void Client::Handle_Connect_OP_ReqClientSpawn(const EQApplicationPacket *app)
 {
 	conn_state = ClientSpawnRequested;
 
-	auto outapp = new EQApplicationPacket;
-	if (entity_list.SendZoneDoorsBulk(outapp, this))
-	{
-		QueuePacket(outapp);
+	if (ClientVersion() == EQ::versions::ClientVersion::Mac){
+		auto outapp = new EQApplicationPacket;
+		if (entity_list.SendZoneDoorsBulk(outapp, this))
+		{
+			QueuePacket(outapp);
+		}
+		safe_delete(outapp);
+	} else {
+		entity_list.SendZoneDoors(this);
 	}
-	safe_delete(outapp);
 
 	entity_list.SendZoneObjects(this);
 	SendZonePoints();
 
-	outapp = new EQApplicationPacket(OP_SendExpZonein, 0);
+	auto outapp = new EQApplicationPacket(OP_SendExpZonein, 0);
 	FastQueuePacket(&outapp);
 
 	conn_state = ZoneContentsSent;
@@ -775,8 +784,17 @@ void Client::Handle_Connect_OP_SendExpZonein(const EQApplicationPacket *app)
 
 	// Crash bug fix... Divide by zero when tmpxp1 and 2 equalled each other, most likely the error case from GetEXPForLevel() (invalid class, etc)
 	if (tmpxp1 != tmpxp2 && tmpxp1 != 0xFFFFFFFF && tmpxp2 != 0xFFFFFFFF) {
-		float tmpxp = (float)((float)m_pp.exp - tmpxp2) / ((float)tmpxp1 - tmpxp2);
-		eu->exp = (uint32)(330.0f * tmpxp);
+		if (ClientVersion() == EQ::versions::ClientVersion::Trilogy) {
+			eu->exp = m_pp.exp;
+		}
+		else {
+			float tmpxp = (float)((float)m_pp.exp - tmpxp2) / ((float)tmpxp1 - tmpxp2);
+			if (tmpxp < 0.0f)
+				tmpxp = 0.0f;
+			else if (tmpxp > 1.0f)
+				tmpxp = 1.0f;
+			eu->exp = (uint32)(330.0f * tmpxp);
+		}
 		outapp->priority = 6;
 		QueuePacket(outapp);
 	}
@@ -952,9 +970,16 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 		}
 	}
 
-	// The auth version bit distinguishes Windows, Intel Mac and PPC clients.
-	SetClientVersion(EQ::versions::ClientVersion::Mac);
+	// The auth version bit distinguishes Windows, Intel Mac, PPC, and Trilogy clients.
 	m_ClientVersionBit = versionbit;
+	if (m_ClientVersionBit == EQ::versions::ClientVersionBit::bit_Trilogy) {
+		SetClientVersion(EQ::versions::ClientVersion::Trilogy);
+	} else {
+		SetClientVersion(EQ::versions::ClientVersion::Mac);
+	}
+	if (m_stream) {
+		m_stream->SetTranslator(Patches::GetTranslator(m_ClientVersion));
+	}
 	std::string clientname = EQ::versions::ClientVersionName(EQ::versions::ConvertClientVersionBitToClientVersion(m_ClientVersionBit));
 	LogInfo("ClientVersionBit is : [{}] : [{}] ", m_ClientVersionBit, clientname.c_str());
 
@@ -1621,107 +1646,7 @@ void Client::Handle_Connect_OP_ZoneEntry(const EQApplicationPacket *app)
 	memset(&m_suspendedminion, 0, sizeof(PetInfo));
 
 	/* Server Zone Entry Packet */
-	outapp = new EQApplicationPacket(OP_ZoneEntry, sizeof(ServerZoneEntry_Struct));
-	ServerZoneEntry_Struct* sze = (ServerZoneEntry_Struct*)outapp->pBuffer;
-	memset(sze, 0, sizeof(ServerZoneEntry_Struct));
-	
-	strcpy(sze->name, name);
-	strn0cpy(sze->Surname, lastname, 32);
-	sze->zoneID = zone->GetZoneID();
-	sze->x_pos = m_pp.x;
-	sze->y_pos = m_pp.y;
-	sze->z_pos = m_pp.z;
-	sze->heading = m_pp.heading;
-	sze->race = m_pp.race;
-	sze->deity = m_pp.deity;
-	sze->curHP = static_cast<uint32>(GetHPRatio());
-	sze->max_hp = 100;
-
-	sze->size = base_size;
-	sze->width = 0;
-	sze->length = 0;
-	sze->view_height = 6.2;
-	sze->sprite_oheight = 3.125;
-	
-	sze->NPC = IsBecomeNPC() ? 1 : 10;
-	sze->invis = invisible ? 1 : 0;
-	sze->sneaking = sneaking;
-	sze->animation = animation;
-	
-	sze->haircolor = m_pp.haircolor;
-	sze->beardcolor = m_pp.beardcolor;
-	sze->eyecolor1 = m_pp.eyecolor1;
-	sze->eyecolor2 = m_pp.eyecolor2;
-	sze->hairstyle = m_pp.hairstyle;
-	sze->beard = m_pp.beard;
-	sze->face = m_pp.face;
-	sze->level = m_pp.level;
-	for(int k = EQ::textures::textureBegin; k <= EQ::textures::LastTexture; k++)
-	{
-		sze->equipment[k] = GetEquipmentMaterial(k);
-		sze->equipcolors.Slot[k].Color = GetEquipmentColor(k);
-	}
-	sze->AFK = AFK;
-	sze->anon = m_pp.anon;
-	sze->title = GetAARankTitle();
-	sze->anim_type = 0x64;
-	sze->bodytexture = texture;
-	sze->bodytype = bodytype;
-
-	if(helmtexture && helmtexture != 0xFF)
-	{
-		sze->helm=helmtexture;
-	} else {
-		sze->helm = 0;
-	}
-
-	sze->GM = GetGM() ? 1 : 0;
-	sze->GuildID = GuildID();
-	if(sze->GuildID == 0)
-		sze->GuildID = 0xFFFF;
-	if (!IsInAGuild()) {
-		sze->guildrank = 0xFFFF;
-	} else {
-		sze->guildrank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), AccountID());
-	}
-	if(sze->guildrank == 0)
-		sze->guildrank = 0xFFFF;
-			
-	sze->walkspeed = walkspeed;
-	sze->runspeed = (gmspeed == 0) ? runspeed : 3.1f;
-	sze->light = m_Light.Type[EQ::lightsource::LightActive];
-	sze->class_ = GetClass();
-
-	sze->gender = m_pp.gender;
-	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground);
-	sze->prev = 0xa0ae0e00;
-	sze->next = 0xa0ae0e00;
-	sze->extra[10] = 0xFF;
-	sze->extra[11] = 0xFF;
-	sze->extra[12] = 0xFF;
-	sze->extra[13] = 0xFF;
-	sze->type = 0;
-	sze->petOwnerId = ownerid;
-
-	sze->curHP = 1;
-	sze->NPC = 0;
-	if(zone->zonemap)
-	{
-	// This prevents hopping on logging in.
-	glm::vec3 loc(m_Position.x, m_Position.y, m_Position.z);
-	if (!IsEncumbered() && m_pp.boatid == 0 && (!zone->HasWaterMap() || !zone->watermap->InLiquid(loc)) && 
-		zone->GetZoneID() != Zones::HOLE && zone->GetZoneID() != Zones::FREPORTE)
-	{
-		float bestz = zone->zonemap->FindBestZ(loc, nullptr);
-		if (bestz != BEST_Z_INVALID && size > 0)
-			m_Position.z = bestz + CalcZOffset();
-	}
-	sze->z_pos = m_Position.z;
-	}
-
-	CRC32::SetEQChecksum((unsigned char*)sze, sizeof(ServerZoneEntry_Struct));
-	outapp->priority = 6;
-	FastQueuePacket(&outapp);
+	SendServerZoneEntry();
 
 	// this sets locations mobs were, when bulk zone spawns sent
 	entity_list.BulkNewClientDistances(this);
@@ -1984,6 +1909,9 @@ void Client::Handle_OP_AutoAttack(const EQApplicationPacket *app)
 		LogError("OP size error: OP_AutoAttack expected : [4] got : [{}]", app->size);
 		return;
 	}
+
+	LogInfo("[Client: {}] Handle_OP_AutoAttack: state={}, target={}",
+		GetName(), static_cast<int>(app->pBuffer[0]), GetTarget() ? GetTarget()->GetName() : "None");
 
 	if (app->pBuffer[0] == 0) {
 		auto_attack = false;
@@ -2674,10 +2602,28 @@ void Client::Handle_OP_ClickDoor(const EQApplicationPacket *app)
 		return;
 	}
 	ClickDoor_Struct* cd = (ClickDoor_Struct*)app->pBuffer;
+	LogInfo("Handle_OP_ClickDoor: [{}] clicked door cd->doorid=[{}], cd->item_id=[{}], cd->player_id=[{}]",
+		GetName(), cd->doorid, cd->item_id, cd->player_id);
+
 	Doors* currentdoor = entity_list.FindDoor(cd->doorid);
+	if (!currentdoor && ClientVersion() == EQ::versions::ClientVersion::Trilogy)
+	{
+		currentdoor = entity_list.FindNearestDoor(this);
+		if (currentdoor) {
+			auto diff = GetPosition() - currentdoor->GetPosition();
+			float dist_sq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+			if (dist_sq > 900.0f) { // More than 30 units away
+				currentdoor = nullptr;
+			} else {
+				LogInfo("Handle_OP_ClickDoor: Door not found by id [{}], but matched nearest door [{}] (db_id: {}, door_id: {}, dist_sq: {:.2f})",
+					cd->doorid, currentdoor->GetDoorName(), currentdoor->GetDoorDBID(), currentdoor->GetDoorID(), dist_sq);
+			}
+		}
+	}
+
 	if (!currentdoor)
 	{
-		Message(Chat::White, "Unable to find door, please notify a GM (DoorID: [{}]).", cd->doorid);
+		Message(Chat::White, "Unable to find door, please notify a GM (DoorID: %u).", cd->doorid);
 		return;
 	}
 
@@ -2826,6 +2772,14 @@ void Client::Handle_OP_ClientUpdate(const EQApplicationPacket *app)
 			return;
 		}
 		else return;	// if not a boat, do nothing
+	}
+
+	if (m_ClientVersionBit == EQ::versions::ClientVersionBit::bit_Trilogy) {
+		static uint32 s_trilogy_update_count = 0;
+		if (++s_trilogy_update_count <= 10 || s_trilogy_update_count % 100 == 0) {
+			LogInfo("[Trilogy OP_ClientUpdate] [{}] x={:.2f} y={:.2f} z={:.2f} hdg={}",
+				GetName(), (float)ppu->x_pos, (float)ppu->y_pos, (float)ppu->z_pos / 10.0f, (int)ppu->heading);
+		}
 	}
 
 	cheat_manager.MovementCheck(glm::vec3(ppu->x_pos, ppu->y_pos, ppu->z_pos));
@@ -3344,6 +3298,14 @@ void Client::Handle_OP_CorpseDrag(const EQApplicationPacket *app)
 
 void Client::Handle_OP_CreateObject(const EQApplicationPacket *app) 
 {
+	if (app && app->size == sizeof(Object_Struct)) {
+		const Object_Struct* os = (const Object_Struct*)app->pBuffer;
+		glm::vec4 coords(os->x, os->y, os->z, os->heading);
+		if (DistanceSquaredNoZ(GetPosition(), coords) < (100.0f * 100.0f)) {
+			DropItem(EQ::invslot::slotCursor, &coords);
+			return;
+		}
+	}
 	DropItem(EQ::invslot::slotCursor);
 	return;
 }
@@ -3874,14 +3836,21 @@ void Client::Handle_OP_Emote(const EQApplicationPacket *app)
 
 void Client::Handle_OP_EndLootRequest(const EQApplicationPacket *app)
 {
-	if (app->size != sizeof(uint16)) {
-		std::cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(uint16) << std::endl;
+	uint32 corpse_id = 0;
+	if (app->size == sizeof(uint16)) {
+		corpse_id = *((uint16*)app->pBuffer);
+	}
+	else if (app->size == sizeof(uint32)) {
+		corpse_id = *((uint32*)app->pBuffer);
+	}
+	else {
+		std::cout << "Wrong size: OP_EndLootRequest, size=" << app->size << ", expected " << sizeof(uint16) << " or " << sizeof(uint32) << std::endl;
 		return;
 	}
 
 	SetLooting(0);
 
-	Entity* entity = entity_list.GetID(*((uint16*)app->pBuffer));
+	Entity* entity = entity_list.GetID(corpse_id);
 	if (entity == 0) {
 		Corpse::SendLootReqErrorPacket(this);
 		return;
@@ -5739,7 +5708,7 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 	}
 
 	auto* l = (LootingItem_Struct*)app->pBuffer;
-	auto entity = entity_list.GetID(*((uint16*)app->pBuffer));
+	auto entity = entity_list.GetID(l->lootee);
 	if (!entity) {
 		auto outapp = new EQApplicationPacket(OP_LootComplete, 0);
 		QueuePacket(outapp);
@@ -5757,12 +5726,19 @@ void Client::Handle_OP_LootItem(const EQApplicationPacket *app)
 
 void Client::Handle_OP_LootRequest(const EQApplicationPacket *app) 
 {
-	if (app->size != sizeof(uint16)) {
-		LogError("Wrong size: OP_EndLootRequest, size= [{}], expected [{}]", app->size, sizeof(uint16));
+	uint32 corpse_id = 0;
+	if (app->size == sizeof(uint16)) {
+		corpse_id = *((uint16*)app->pBuffer);
+	}
+	else if (app->size == sizeof(uint32)) {
+		corpse_id = *((uint32*)app->pBuffer);
+	}
+	else {
+		LogError("Wrong size: OP_LootRequest, size= [{}], expected [{} or {}]", app->size, sizeof(uint16), sizeof(uint32));
 		return;
 	}
 
-	Entity* ent = entity_list.GetID(*((uint16*)app->pBuffer));
+	Entity* ent = entity_list.GetID(corpse_id);
 	if (ent == 0) {
 		//	Message(Chat::Red, "Error: OP_LootRequest: Corpse not found (ent = 0)");
 		Corpse::SendLootReqErrorPacket(this);
@@ -8782,9 +8758,129 @@ void Client::Handle_OP_YellForHelp(const EQApplicationPacket *app)
 	return;
 }
 
+void Client::SendServerZoneEntry()
+{
+	auto outapp = new EQApplicationPacket(OP_ZoneEntry, sizeof(ServerZoneEntry_Struct));
+	ServerZoneEntry_Struct* sze = (ServerZoneEntry_Struct*)outapp->pBuffer;
+	memset(sze, 0, sizeof(ServerZoneEntry_Struct));
+	
+	strcpy(sze->name, name);
+	strn0cpy(sze->Surname, lastname, 32);
+	sze->zoneID = zone->GetZoneID();
+	sze->x_pos = m_pp.x;
+	sze->y_pos = m_pp.y;
+	sze->z_pos = m_pp.z;
+	sze->heading = m_pp.heading;
+	sze->race = m_pp.race;
+	sze->deity = m_pp.deity;
+	sze->curHP = static_cast<uint32>(GetHPRatio());
+	sze->max_hp = 100;
+
+	sze->size = base_size;
+	sze->width = 0;
+	sze->length = 0;
+	sze->view_height = 6.2;
+	sze->sprite_oheight = 3.125;
+	
+	sze->NPC = IsBecomeNPC() ? 1 : 10;
+	sze->invis = invisible ? 1 : 0;
+	sze->sneaking = sneaking;
+	sze->animation = animation;
+	
+	sze->haircolor = m_pp.haircolor;
+	sze->beardcolor = m_pp.beardcolor;
+	sze->eyecolor1 = m_pp.eyecolor1;
+	sze->eyecolor2 = m_pp.eyecolor2;
+	sze->hairstyle = m_pp.hairstyle;
+	sze->beard = m_pp.beard;
+	sze->face = m_pp.face;
+	sze->level = m_pp.level;
+	for(int k = EQ::textures::textureBegin; k <= EQ::textures::LastTexture; k++)
+	{
+		sze->equipment[k] = GetEquipmentMaterial(k);
+		sze->equipcolors.Slot[k].Color = GetEquipmentColor(k);
+	}
+	sze->AFK = AFK;
+	sze->anon = m_pp.anon;
+	sze->title = GetAARankTitle();
+	sze->anim_type = 0x64;
+	sze->bodytexture = texture;
+	sze->bodytype = bodytype;
+
+	if(helmtexture && helmtexture != 0xFF)
+	{
+		sze->helm = helmtexture;
+	} else {
+		sze->helm = 0;
+	}
+
+	sze->GM = GetGM() ? 1 : 0;
+	sze->GuildID = GuildID();
+	if(sze->GuildID == 0)
+		sze->GuildID = 0xFFFF;
+	if (!IsInAGuild()) {
+		sze->guildrank = 0xFFFF;
+	} else {
+		sze->guildrank = guild_mgr.GetDisplayedRank(GuildID(), GuildRank(), AccountID());
+	}
+	if(sze->guildrank == 0)
+		sze->guildrank = 0xFFFF;
+			
+	sze->walkspeed = walkspeed;
+	sze->runspeed = (gmspeed == 0) ? runspeed : 3.1f;
+	sze->light = m_Light.Type[EQ::lightsource::LightActive];
+	sze->class_ = GetClass();
+
+	sze->gender = m_pp.gender;
+	sze->flymode = flymode ? flymode : (FindType(SE_Levitate) ? GravityBehavior::Levitating : GravityBehavior::Ground);
+	sze->prev = 0xa0ae0e00;
+	sze->next = 0xa0ae0e00;
+	sze->extra[10] = 0xFF;
+	sze->extra[11] = 0xFF;
+	sze->extra[12] = 0xFF;
+	sze->extra[13] = 0xFF;
+	sze->type = 0;
+	sze->petOwnerId = ownerid;
+
+	sze->curHP = 1;
+	sze->NPC = 0;
+	if(zone->zonemap)
+	{
+		// This prevents hopping on logging in.
+		glm::vec3 loc(m_Position.x, m_Position.y, m_Position.z);
+		if (!IsEncumbered() && m_pp.boatid == 0 && (!zone->HasWaterMap() || !zone->watermap->InLiquid(loc)) && 
+			zone->GetZoneID() != Zones::HOLE && zone->GetZoneID() != Zones::FREPORTE)
+		{
+			float bestz = zone->zonemap->FindBestZ(loc, nullptr);
+			if (bestz != BEST_Z_INVALID && size > 0)
+				m_Position.z = bestz + CalcZOffset();
+		}
+		sze->z_pos = m_Position.z;
+	}
+
+	CRC32::SetEQChecksum((unsigned char*)sze, sizeof(ServerZoneEntry_Struct));
+	outapp->priority = 6;
+	FastQueuePacket(&outapp);
+}
+
 void Client::Handle_OP_ZoneEntryResend(const EQApplicationPacket *app)
 {
-	//EQMac doesn't reply to this according to ShowEQ captures.
+	LogDebug("[Client: {}] Handle_OP_ZoneEntryResend: size={}", GetName(), app->size);
+
+	if (m_ClientVersionBit == EQ::versions::ClientVersionBit::bit_Trilogy) {
+		if (app->size == 2) {
+			uint16 spawn_id = *(uint16*)app->pBuffer;
+			Mob* mob = entity_list.GetMob(spawn_id);
+			if (mob) {
+				EQApplicationPacket spawn_app;
+				mob->CreateSpawnPacket(&spawn_app);
+				QueuePacket(&spawn_app, true, CLIENT_CONNECTED);
+				safe_delete_array(spawn_app.pBuffer);
+			}
+		}
+		return;
+	}
+
 	return;
 }
 

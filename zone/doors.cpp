@@ -34,12 +34,7 @@
 #include <iostream>
 #include <string.h>
 
-#define DOOR_STOP_TRAP 0x00
-#define DOOR_RESET_TRAP 0x01
-#define OPEN_DOOR 0x02
-#define CLOSE_DOOR 0x03
-#define OPEN_INVDOOR 0x03
-#define CLOSE_INVDOOR 0x02
+
 
 extern EntityList entity_list;
 extern WorldServer worldserver;
@@ -859,4 +854,26 @@ float Doors::GetY()
 float Doors::GetZ()
 {
 	return m_position.z;
+}
+
+void Doors::CreateSpawnPacket(EQApplicationPacket* app)
+{
+	app->SetOpcode(OP_SpawnDoor);
+	safe_delete_array(app->pBuffer);
+	app->pBuffer = new uchar[sizeof(Door_Struct)];
+	app->size = sizeof(Door_Struct);
+	Door_Struct* nd = (Door_Struct*)app->pBuffer;
+	memset(nd, 0, sizeof(Door_Struct));
+	strncpy(nd->name, GetDoorName(), 16);
+	nd->pos_y = m_position.y;
+	nd->pos_x = m_position.x;
+	nd->pos_z = m_position.z;
+	nd->heading = m_position.w;
+	nd->incline = GetIncline();
+	nd->size = GetSize() == 0 ? 100 : GetSize();
+	nd->doorid = GetDoorID();
+	nd->opentype = GetOpenType();
+	nd->doorIsOpen = GetInvertState() ? !IsDoorOpen() : IsDoorOpen();
+	nd->inverted = GetInvertState();
+	nd->parameter = GetDoorParam();
 }

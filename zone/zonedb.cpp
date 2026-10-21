@@ -3787,11 +3787,22 @@ bool ZoneDatabase::RetrieveMBMessages(uint16 category, std::vector<MBMessageRetr
 		message.category = atoi(row[5]);
 		outData.push_back(message);
 	}
-	return false;
+	return true;
 }
 
 bool ZoneDatabase::PostMBMessage(uint32 charid, const char* charName, MBMessageRetrievalGen_Struct* inData) {
-	std::string query = StringFormat("INSERT INTO mb_messages (charid, date, language, author, subject, category, message) VALUES (%i, '%s', %i, '%s', '%s', %i, '%s')", charid, Strings::EscapePair(inData->date, sizeof(inData->date)).c_str(), inData->language, charName, Strings::EscapePair(inData->subject, strlen(inData->subject)).c_str(), inData->category, Strings::EscapePair(inData->message, strlen(inData->message)).c_str());
+	char dateBuf[16] = {0};
+	if (inData->date[0] == '\0') {
+		time_t now = time(nullptr);
+		struct tm* t = localtime(&now);
+		if (t) {
+			strftime(dateBuf, sizeof(dateBuf), "%m/%d/%y", t);
+		}
+	} else {
+		strncpy(dateBuf, inData->date, sizeof(dateBuf) - 1);
+	}
+
+	std::string query = StringFormat("INSERT INTO mb_messages (charid, date, language, author, subject, category, message) VALUES (%i, '%s', %i, '%s', '%s', %i, '%s')", charid, Strings::EscapePair(dateBuf, strlen(dateBuf)).c_str(), inData->language, charName, Strings::EscapePair(inData->subject, strlen(inData->subject)).c_str(), inData->category, Strings::EscapePair(inData->message, strlen(inData->message)).c_str());
 	auto results = QueryDatabase(query);
 	if(!results.Success())
 	{

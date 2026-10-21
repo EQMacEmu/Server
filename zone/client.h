@@ -265,6 +265,7 @@ public:
 	KeyRing_Data_Struct* GetKeyRing(uint16 keyitem, uint32 zoneid);
 	virtual bool IsClient() const { return true; }
 	void	CompleteConnect();
+	void	SendServerZoneEntry();
 	bool	TryStacking(EQ::ItemInstance* item, uint8 type = ItemPacketTrade, bool try_worn = true, bool try_cursor = true);
 	int16	GetStackSlot(EQ::ItemInstance* item, bool try_worn = true, bool try_cursor = true);
 	void	SendTraderPacket(Client* trader);
@@ -789,7 +790,7 @@ public:
 	void	PutLootInInventory(int16 slot_id, const EQ::ItemInstance &inst, LootItem** bag_item_data = 0);
 	bool	AutoPutLootInInventory(EQ::ItemInstance& inst, bool try_worn = false, bool try_cursor = true, LootItem** bag_item_data = 0);
 	bool	SummonItem(uint32 item_id, int8 quantity = -1, uint16 to_slot = EQ::invslot::slotCursor, bool force_charges = false);
-	void	DropItem(int16 slot_id);
+	void	DropItem(int16 slot_id, const glm::vec4* coords = nullptr);
 	void	SendLootItemInPacket(const EQ::ItemInstance* inst, int16 slot_id);
 	void	SendItemPacket(int16 slot_id, const EQ::ItemInstance* inst, ItemPacketType packet_type, int16 fromid = 0, int16 toid = 0, int16 skill = 0);
 	bool	IsValidSlot(uint32 slot);

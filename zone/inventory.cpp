@@ -327,7 +327,7 @@ bool Client::SummonItem(uint32 item_id, int8 quantity, uint16 to_slot, bool forc
 }
 
 // Drop item from inventory to ground (generally only dropped from SlotCursor)
-void Client::DropItem(int16 slot_id)
+void Client::DropItem(int16 slot_id, const glm::vec4* coords)
 {
 	LogInventory(
 		"[{}] (char_id: [{}]) Attempting to drop item from slot [{}] on the ground",
@@ -391,7 +391,8 @@ void Client::DropItem(int16 slot_id)
 	if(!inst)
 		return;
 
-	CreateGroundObject(inst, glm::vec4(GetX(), GetY(), GetZ(), 0), RuleI(Groundspawns, DecayTime));
+	glm::vec4 drop_coords = coords ? *coords : glm::vec4(GetX(), GetY(), GetZ(), GetHeading());
+	CreateGroundObject(inst, drop_coords, RuleI(Groundspawns, DecayTime));
 
 	safe_delete(inst);
 }

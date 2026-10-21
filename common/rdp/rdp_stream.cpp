@@ -2,6 +2,8 @@
 
 #include "../eq_packet.h"
 #include "../eq_packet_translator.h"
+#include "../eqemu_logsys.h"
+#include "../opcodemgr.h"
 
 #include <cstring>
 #include <new>
@@ -47,69 +49,93 @@ int RDPStream::Send(EQApplicationPacket **packet, bool reliable)
 	// translate packet emu -> eq
 	EQPacketEncodeResult encode_result;
 	m_translator->Encode(packet, &encode_result, reliable);
-	const EQApplicationPacket *encoded = encode_result.Packet();
-	if (encoded == nullptr)
+	if (encode_result.Packets().empty())
 		return RDPLIB_OK;
 
-	// encoder can change reliable flag
-	reliable = encode_result.Reliable();
+	int final_result = RDPLIB_OK;
 
-	// intercept 1 count OP_MobUpdate packets for batching
-	if (IsBatchablePositionUpdate(encoded, reliable))
+	for (const auto &item : encode_result.Packets())
 	{
-		if (m_connection == nullptr)
-			return RDPLIB_ERROR_NOT_USABLE;
+		const EQApplicationPacket *encoded = item.packet;
+		if (encoded == nullptr)
+			continue;
 
-		const SpawnPositionUpdates_Struct *updates = reinterpret_cast<const SpawnPositionUpdates_Struct *>(encoded->pBuffer);
-		if (!m_position_update_batch.Append(updates->spawn_update))
+		bool pkt_reliable = item.reliable;
+
+		// intercept 1 count OP_MobUpdate packets for batching
+		if (IsBatchablePositionUpdate(encoded, pkt_reliable))
 		{
-			int result = FlushPositionUpdates();
-			if (result != RDPLIB_OK)
-				return result;
+			if (m_connection == nullptr)
+				return RDPLIB_ERROR_NOT_USABLE;
 
-			(void)m_position_update_batch.Append(updates->spawn_update);
+			const SpawnPositionUpdates_Struct *updates = reinterpret_cast<const SpawnPositionUpdates_Struct *>(encoded->pBuffer);
+			if (!m_position_update_batch.Append(updates->spawn_update))
+			{
+				int result = FlushPositionUpdates();
+				if (result != RDPLIB_OK)
+					return result;
+
+				(void)m_position_update_batch.Append(updates->spawn_update);
+			}
+
+			// one batch can hold 33 updates
+			int result = m_position_update_batch.Full() ? FlushPositionUpdates() : RDPLIB_OK;
+			if (result != RDPLIB_OK)
+				final_result = result;
+			continue;
 		}
 
-		// one batch can hold 33 updates
-		return m_position_update_batch.Full() ? FlushPositionUpdates() : RDPLIB_OK;
+		// opcode bypass allows specifying the opcode directly
+		uint16 opcode = encoded->GetOpcodeBypass();
+
+		// map opcode emu -> eq
+		if (opcode == 0)
+			opcode = m_translator->EmuToEQ(encoded->GetOpcode());
+		if (opcode == 0 || opcode == 0xffff) {
+			LogError("RDPStream::Send: opcode {:#06x} ({}) translated to invalid EQ opcode {:#06x}", encoded->GetOpcode(), OpcodeManager::EmuToName(encoded->GetOpcode()), opcode);
+			return RDPLIB_CONNECTION_SEND_INVALID_ARGUMENT;
+		}
+		if (encoded->size > UINT32_MAX - 2)
+			return RDPLIB_CONNECTION_SEND_PAYLOAD_TOO_LARGE;
+
+		// assemble payload buffer
+		uint32 bytes = encoded->size + 2;
+		uint8 *data = new (std::nothrow) uint8[bytes];
+		if (data == nullptr)
+			return RDPLIB_CONNECTION_SEND_ALLOCATION_FAILED;
+
+		// EQ application opcodes are little-endian. RDP transport headers use a
+		// separate big-endian encoding inside RDPConnection.
+		data[0] = static_cast<uint8>(opcode);
+		data[1] = static_cast<uint8>(opcode >> 8);
+
+		if (encoded->size != 0)
+			std::memcpy(data + 2, encoded->pBuffer, encoded->size);
+
+		// discard return value, we aren't going to retry it
+		(void)FlushPositionUpdates();
+
+		// queue the translated/mapped packet in the transport
+		// if ack history is exhausted or a reliable send finds the send queue full,
+		// RDPConnection latches the failure and reports it on the next Receive().
+		// this eventually causes the client to be linkdead in zone
+		int result = m_connection != nullptr ? m_connection->Send(data, bytes, SendStreamNumber, pkt_reliable ? RDPLIB_SEND_RELIABLE : RDPLIB_SEND_UNRELIABLE) : RDPLIB_ERROR_NOT_USABLE;
+
+		LogInfo("RDPStream::Send: emu opcode {:#06x} ({}), EQ opcode {:#06x}, bytes {}, reliable {} -> result {}",
+			encoded->GetOpcode(), OpcodeManager::EmuToName(encoded->GetOpcode()), opcode, bytes, pkt_reliable, result);
+
+		if (result != RDPLIB_OK) {
+			LogInfo("RDPStream::Send NON-OK RESULT: result {}, emu opcode {:#06x} ({}), EQ opcode {:#06x}, bytes {}, reliable {}",
+				result, encoded->GetOpcode(), OpcodeManager::EmuToName(encoded->GetOpcode()), opcode, bytes, pkt_reliable);
+			final_result = result;
+		}
+
+		delete[] data;
+		if (result != RDPLIB_OK)
+			return result;
 	}
 
-	// opcode bypass allows specifying the opcode directly
-	uint16 opcode = encoded->GetOpcodeBypass();
-
-	// map opcode emu -> eq
-	if (opcode == 0)
-		opcode = m_translator->EmuToEQ(encoded->GetOpcode());
-	if (opcode == 0 || opcode == 0xffff)
-		return RDPLIB_CONNECTION_SEND_INVALID_ARGUMENT;
-	if (encoded->size > UINT32_MAX - 2)
-		return RDPLIB_CONNECTION_SEND_PAYLOAD_TOO_LARGE;
-
-	// assemble payload buffer
-	uint32 bytes = encoded->size + 2;
-	uint8 *data = new (std::nothrow) uint8[bytes];
-	if (data == nullptr)
-		return RDPLIB_CONNECTION_SEND_ALLOCATION_FAILED;
-
-	// EQ application opcodes are little-endian. RDP transport headers use a
-	// separate big-endian encoding inside RDPConnection.
-	data[0] = static_cast<uint8>(opcode);
-	data[1] = static_cast<uint8>(opcode >> 8);
-
-	if (encoded->size != 0)
-		std::memcpy(data + 2, encoded->pBuffer, encoded->size);
-
-	// discard return value, we aren't going to retry it
-	(void)FlushPositionUpdates();
-
-	// queue the translated/mapped packet in the transport
-	// if ack history is exhausted or a reliable send finds the send queue full,
-	// RDPConnection latches the failure and reports it on the next Receive().
-	// this eventually causes the client to be linkdead in zone
-	int result = m_connection != nullptr ? m_connection->Send(data, bytes, SendStreamNumber, reliable ? RDPLIB_SEND_RELIABLE : RDPLIB_SEND_UNRELIABLE) : RDPLIB_ERROR_NOT_USABLE;
-
-	delete[] data;
-	return result;
+	return final_result;
 }
 
 // this matches 1 count OP_MobUpdate packets
@@ -169,10 +195,14 @@ RDPStream::ReceiveResult RDPStream::Receive(EQApplicationPacket **packet, uint32
 
 		if (result == RDPConnection::NoData)
 			return NoData;
-		if (result == RDPConnection::PeerClosed)
+		if (result == RDPConnection::PeerClosed) {
+			LogInfo("RDPStream::Receive: PeerClosed (disconnect_reason={:#010x})", disconnect_reason ? *disconnect_reason : 0);
 			return PeerClosed;
-		if (result == RDPConnection::ConnectionLost)
+		}
+		if (result == RDPConnection::ConnectionLost) {
+			LogInfo("RDPStream::Receive: ConnectionLost (disconnect_reason={:#010x})", disconnect_reason ? *disconnect_reason : 0);
 			return ConnectionLost;
+		}
 
 		uint32 bytes = message.Size();
 		const uint8 *data = message.Data();
@@ -190,6 +220,9 @@ RDPStream::ReceiveResult RDPStream::Receive(EQApplicationPacket **packet, uint32
 		// map opcode eq -> emu
 		EQApplicationPacket *application_packet = new EQApplicationPacket(m_translator->EQToEmu(opcode), data + 2, bytes - 2);
 		application_packet->SetProtocolOpcode(opcode);
+
+		LogInfo("RDPStream::Receive: bytes {}, stream {}, flags {:#06x}, EQ opcode {:#06x}, emu opcode [{}] ({:#06x})",
+			bytes, message.StreamNumber(), message.Flags(), opcode, OpcodeManager::EmuToName(application_packet->GetOpcode()), application_packet->GetOpcode());
 
 		// translate packet eq -> emu
 		m_translator->Decode(application_packet);

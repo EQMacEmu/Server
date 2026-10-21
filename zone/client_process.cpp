@@ -525,12 +525,15 @@ bool Client::Process() {
 	/************ Get all packets from packet manager out queue and process them ************/
 	EQApplicationPacket *app = nullptr;
 	bool transport_ended = false;
+	uint32 rdp_disconnect_reason = 0;
+	RDPStream::ReceiveResult last_receive_result = RDPStream::NoData;
 
 	if(m_stream != nullptr && client_state != CLIENT_KICKED && client_state != DISCONNECTED)
 	{
 		while(ret && m_stream != nullptr)
 		{
-			RDPStream::ReceiveResult receive_result = m_stream->Receive(&app);
+			RDPStream::ReceiveResult receive_result = m_stream->Receive(&app, &rdp_disconnect_reason);
+			last_receive_result = receive_result;
 			if (receive_result == RDPStream::NoData)
 				break;
 
@@ -542,6 +545,9 @@ bool Client::Process() {
 					break;
 				continue;
 			}
+
+			LogInfo("[Client: {}] RDP transport ended in Client::Process! ReceiveResult: {}, DisconnectReason: {:#010x}, ret: {}",
+				GetName(), static_cast<int>(receive_result), rdp_disconnect_reason, ret);
 
 			transport_ended = true;
 			break;

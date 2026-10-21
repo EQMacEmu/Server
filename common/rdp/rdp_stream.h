@@ -74,6 +74,9 @@ public:
 	// The callback runs under the connection lock during an immediate send or on the RDP I/O thread.  Passing nullptr waits for an active call and removes it.
 	int SetPacketDropCallback(rdplib_packet_drop_callback_t callback, void *context = nullptr);
 
+	void SetTranslator(EQPacketTranslator &translator) { m_translator = &translator; }
+	EQPacketTranslator *GetTranslator() const { return m_translator; }
+
 private:
 	bool IsBatchablePositionUpdate(const EQApplicationPacket *packet, bool reliable) const;
 

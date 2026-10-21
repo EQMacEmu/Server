@@ -105,6 +105,8 @@ SET(common_sources
     json/jsoncpp.cpp
     patches/mac.cpp
     patches/mac_limits.cpp
+    patches/trilogy.cpp
+    patches/patches.cpp
     StackWalker/StackWalker.cpp
     tinyxml/tinystr.cpp
     tinyxml/tinyxml.cpp
@@ -501,6 +503,11 @@ SET(common_headers
     patches/mac_limits.h
     patches/mac_ops.h
     patches/mac_structs.h
+    patches/trilogy.h
+    patches/trilogy_constants.h
+    patches/trilogy_ops.h
+    patches/trilogy_structs.h
+    patches/patches.h
     patches/ss_declare.h
     patches/ss_define.h
     StackWalker/StackWalker.h

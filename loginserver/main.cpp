@@ -81,6 +81,39 @@ void LoadServerConfig()
 	server.options.WorldAdminRegistrationTable(server.config.GetVariableString("schema", "world_admin_registration_table", "tblServerAdminRegistration"));
 	server.options.WorldServerTypeTable(server.config.GetVariableString("schema", "world_server_type_table", "tblServerListType"));
 	server.options.LoginPasswordSalt(server.config.GetVariableString("database", "salt", ""));
+
+	std::string login_ver = server.config.GetVariableString("client_configuration", "login_version", "");
+	if (login_ver.empty()) {
+		login_ver = server.config.GetVariableString("Old", "login_version", "");
+	}
+	if (login_ver.empty()) {
+		login_ver = server.config.GetVariableString("worldservers", "login_version", "");
+	}
+	if (login_ver.empty()) {
+		login_ver = "8-09-2001 14:25";
+	}
+	server.options.LoginVersion(login_ver);
+
+	std::string mac_login_ver = server.config.GetVariableString("client_configuration", "mac_login_version", "");
+	if (mac_login_ver.empty()) {
+		mac_login_ver = server.config.GetVariableString("Old", "mac_login_version", "");
+	}
+	if (mac_login_ver.empty()) {
+		mac_login_ver = "12-4-2002 1800";
+	}
+	server.options.MacLoginVersion(mac_login_ver);
+
+	uint16 mac_port = static_cast<uint16>(server.config.GetVariableInt("Old", "mac_port", 0));
+	if (mac_port == 0) {
+		mac_port = static_cast<uint16>(server.config.GetVariableInt("Old", "port", 6000));
+	}
+	server.options.MacPort(mac_port);
+
+	uint16 trilogy_port = static_cast<uint16>(server.config.GetVariableInt("Old", "trilogy_port", 0));
+	if (trilogy_port == 0) {
+		trilogy_port = 5999;
+	}
+	server.options.TrilogyPort(trilogy_port);
 }
 
 int main(int argc, char **argv)

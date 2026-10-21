@@ -25,6 +25,7 @@
 #include "../common/platform.h"
 #include "../common/crash.h"
 #include "../common/unix.h"
+#include "../common/file.h"
 #include "worldserver.h"
 #include "zone_launch.h"
 #include <vector>
@@ -45,6 +46,12 @@ int main(int argc, char *argv[]) {
 	set_exception_handler();
 
 	PathManager::Instance()->Init();
+	if (!File::Exists(PathManager::Instance()->GetLogPath())) {
+		File::Makedir(PathManager::Instance()->GetLogPath());
+	}
+	if (!File::Exists("logs")) {
+		File::Makedir("logs");
+	}
 
 	std::string launcher_name;
 	if(argc == 2) {

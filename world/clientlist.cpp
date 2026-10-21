@@ -583,7 +583,16 @@ void ClientList::ClientUpdate(ZoneServer* zoneserver, ServerClientList_Struct* s
 		iterator.Advance();
 	}
 
-	if (scl->status != WorldSessionStatus::InZone) {
+	if (scl->status == WorldSessionStatus::InZone) {
+		cle = FindCLEByCharacterID(scl->charid);
+		if (!cle)
+			cle = FindCLEByAccountID(scl->AccountID);
+		if (cle) {
+			cle->Update(zoneserver, scl);
+			zoneserver->ChangeWID(scl->charid, cle->GetID());
+			return;
+		}
+	} else {
 		cle = FindCLEByCharacterID(scl->charid);
 		if (cle && cle->AccountID() == scl->AccountID) {
 			cle->LeavingZone(zoneserver, session_status);
@@ -1526,7 +1535,8 @@ void ClientList::SendClientVersionSummary(const char *Name)
 	std::map<EQ::versions::ClientVersionBit, int> client_count = {
 		{ EQ::versions::ClientVersionBit::bit_MacPC, 0 },
 		{ EQ::versions::ClientVersionBit::bit_MacIntel, 0 },
-		{ EQ::versions::ClientVersionBit::bit_MacPPC, 0 }
+		{ EQ::versions::ClientVersionBit::bit_MacPPC, 0 },
+		{ EQ::versions::ClientVersionBit::bit_Trilogy, 0 }
 	};
 
 	LinkedListIterator<ClientListEntry*> Iterator(clientlist);
@@ -1538,8 +1548,8 @@ void ClientList::SendClientVersionSummary(const char *Name)
 
 		if(CLE && CLE->zone()) 
 		{
-			auto  client_version = CLE->GetMacClientVersion();
-			if (client_version >= EQ::versions::ClientVersionBit::bit_MacPC && client_version <= EQ::versions::ClientVersionBit::bit_MacPPC)
+			auto client_version = CLE->GetMacClientVersion();
+			if (client_version >= EQ::versions::ClientVersionBit::bit_MacPC && client_version <= EQ::versions::ClientVersionBit::bit_Trilogy)
 			{
 				client_count[(EQ::versions::ClientVersionBit)client_version]++;
 			}
@@ -1554,7 +1564,8 @@ void ClientList::SendClientVersionSummary(const char *Name)
 	uint32 total_clients = (
 		client_count[EQ::versions::ClientVersionBit::bit_MacPC] +
 		client_count[EQ::versions::ClientVersionBit::bit_MacIntel] +
-		client_count[EQ::versions::ClientVersionBit::bit_MacPPC]
+		client_count[EQ::versions::ClientVersionBit::bit_MacPPC] +
+		client_count[EQ::versions::ClientVersionBit::bit_Trilogy]
 		);
 
 	if (client_count[EQ::versions::ClientVersionBit::bit_MacPC]) {
@@ -1592,6 +1603,19 @@ void ClientList::SendClientVersionSummary(const char *Name)
 			fmt::format(
 				"Client Counts | PPC: {} ",
 				client_count[EQ::versions::ClientVersionBit::bit_MacPPC]
+			).c_str()
+		);
+	}
+
+	if (client_count[EQ::versions::ClientVersionBit::bit_Trilogy]) {
+		ZSList::Instance()->SendEmoteMessage(
+			Name,
+			0,
+			AccountStatus::Player,
+			Chat::NPCQuestSay,
+			fmt::format(
+				"Client Counts | Trilogy: {} ",
+				client_count[EQ::versions::ClientVersionBit::bit_Trilogy]
 			).c_str()
 		);
 	}

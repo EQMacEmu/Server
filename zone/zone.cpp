@@ -1395,6 +1395,29 @@ bool Zone::GetAuth(uint32 iIP, const char* iCharName, uint32* oWID, uint32* oAcc
 	return false;
 }
 
+uint32 Zone::GetAuthVersionByIP(uint32 iIP) {
+	LinkedListIterator<ZoneClientAuth_Struct*> iterator(client_auth_list);
+
+	iterator.Reset();
+	while (iterator.MoreElements()) {
+		ZoneClientAuth_Struct* zca = iterator.GetData();
+		if (!zca->stale && (iIP == 0 || zca->ip == iIP)) {
+			return zca->version;
+		}
+		iterator.Advance();
+	}
+
+	iterator.Reset();
+	while (iterator.MoreElements()) {
+		ZoneClientAuth_Struct* zca = iterator.GetData();
+		if (!zca->stale) {
+			return zca->version;
+		}
+		iterator.Advance();
+	}
+	return 0;
+}
+
 uint32 Zone::CountAuth() {
 	LinkedListIterator<ZoneClientAuth_Struct*> iterator(client_auth_list);
 

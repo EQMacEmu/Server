@@ -50,6 +50,12 @@ LauncherLink::LauncherLink(int id, std::shared_ptr<EQ::Net::ServertalkServerConn
 }
 
 LauncherLink::~LauncherLink() {
+	if (tcpc) {
+		tcpc->OnMessage(nullptr);
+	}
+	if (m_process_timer) {
+		m_process_timer->Stop();
+	}
 }
 
 void LauncherLink::Process(EQ::Timer* t) {
@@ -84,6 +90,10 @@ void LauncherLink::ProcessMessage(uint16 opcode, EQ::Net::Packet& p)
 			break;
 		}
 		case ServerOP_LauncherConnectInfo: {
+			if (!pack->pBuffer || pack->size < sizeof(LauncherConnectInfo)) {
+				LogInfo("Invalid ServerOP_LauncherConnectInfo packet size");
+				break;
+			}
 			const LauncherConnectInfo *it = (const LauncherConnectInfo *) pack->pBuffer;
 			if(HasName()) {
 				LogInfo("Launcher [{}] received an additional connect packet with name [{}]. Ignoring", m_name.c_str(), it->name);
@@ -124,14 +134,19 @@ void LauncherLink::ProcessMessage(uint16 opcode, EQ::Net::Packet& p)
 			break;
 		}
 		case ServerOP_LauncherZoneStatus: {
-			const LauncherZoneStatus *it = (const LauncherZoneStatus *) pack->pBuffer;
-			std::map<std::string, ZoneState>::iterator res;
-			res = m_states.find(it->short_name);
-			if(res == m_states.end()) {
-				LogInfo("[{}] reported state for zone [{}] which it does not have", m_name.c_str(), it->short_name);
+			if (!pack->pBuffer || pack->size < sizeof(LauncherZoneStatus)) {
+				LogInfo("Invalid ServerOP_LauncherZoneStatus packet size");
 				break;
 			}
-			LogInfo("[{}] [{}] reported state [{}] ([{}] starts)", m_name.c_str(), it->short_name, it->running ? "STARTED" : "STOPPED", it->start_count);
+			const LauncherZoneStatus *it = (const LauncherZoneStatus *) pack->pBuffer;
+			std::string zone_name = it->short_name;
+			std::map<std::string, ZoneState>::iterator res;
+			res = m_states.find(zone_name);
+			if(res == m_states.end()) {
+				LogInfo("[{}] reported state for zone [{}] which it does not have", m_name.c_str(), zone_name.c_str());
+				break;
+			}
+			LogInfo("[{}] [{}] reported state [{}] ([{}] starts)", m_name.c_str(), zone_name.c_str(), it->running ? "STARTED" : "STOPPED", it->start_count);
 			res->second.up = it->running;
 			res->second.starts = it->start_count;
 			break;

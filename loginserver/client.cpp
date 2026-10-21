@@ -34,8 +34,10 @@ extern EQCrypto eq_crypto;
 extern EQEmuLogSys LogSys;
 extern LoginServer server;
 
-Client::Client(std::unique_ptr<RDPStream> stream)
+Client::Client(std::unique_ptr<RDPStream> stream, LSMacClientVersion default_version)
 	: m_client_status(cs_not_sent_session_ready),
+	  m_client_mac_version(default_version),
+	  m_is_trilogy(default_version == trilogy),
 	  m_account_id(0),
 	  m_sent_session_info(false),
 	  m_ip(0),
@@ -211,11 +213,37 @@ void Client::Handle_SessionReady()
 
 	m_client_status = cs_waiting_for_login;
 
-	char buf[20];
-	strcpy(buf, "12-4-2002 1800");
+	char buf[64] = {0};
+	std::string ver;
+	if (IsTrilogy()) {
+		ver = server.options.GetLoginVersion();
+		if (ver.empty() && server.db) {
+			char db_buf[64] = {0};
+			if (server.db->GetVariable("LoginVersion", db_buf, sizeof(db_buf))) {
+				ver = db_buf;
+			}
+		}
+		if (ver.empty()) {
+			ver = "8-09-2001 14:25";
+		}
+	}
+	else {
+		ver = server.options.GetMacLoginVersion();
+		if (ver.empty() && server.db) {
+			char db_buf[64] = {0};
+			if (server.db->GetVariable("MacLoginVersion", db_buf, sizeof(db_buf))) {
+				ver = db_buf;
+			}
+		}
+		if (ver.empty()) {
+			ver = "12-4-2002 1800";
+		}
+	}
+
+	strncpy(buf, ver.c_str(), sizeof(buf) - 1);
 	auto outapp = new EQApplicationPacket(OP_SessionReady, strlen(buf) + 1);
 	strcpy((char*)outapp->pBuffer, buf);
-	LogInfo("EQMac Stream selected.");
+	LogInfo("SessionReady sent version timestamp: [{}] (client_type={})", buf, (IsTrilogy() ? "Trilogy" : "Mac"));
 	QueuePacket(outapp);
 	delete outapp;
 }
@@ -283,7 +311,12 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		username = lcs->username;
 		password = lcs->password;
 		platform = "PC";
-		m_client_mac_version = pc;
+		if (m_is_trilogy) {
+			m_client_mac_version = trilogy;
+		}
+		else {
+			m_client_mac_version = pc;
+		}
 	}
 	else if (client == "PCT") {
 		string ourdata = data;
@@ -296,7 +329,8 @@ void Client::Handle_Login(const char* data, unsigned int size, std::string clien
 		username = userpass.substr(0, userpass.find("/"));
 		password = userpass.substr(userpass.find("/") + 1);
 		platform = "PCT";
-		m_client_mac_version = pc;
+		m_client_mac_version = trilogy;
+		m_is_trilogy = true;
 	}
 	std::string userandpass = m_salt.Salt(password);
 	m_client_status = cs_logged_in;

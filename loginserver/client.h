@@ -42,7 +42,7 @@ public:
 	/**
 	* Constructor takes ownership of the client stream.
 	*/
-	Client(std::unique_ptr<RDPStream> stream);
+	Client(std::unique_ptr<RDPStream> stream, LSMacClientVersion default_version = intel);
 
 	/**
 	* Destructor.
@@ -129,7 +129,8 @@ public:
 	*/
 	unsigned int GetMacClientVersion() const { return m_client_mac_version; }
 
-
+	bool IsTrilogy() const { return m_is_trilogy || m_client_mac_version == trilogy; }
+	void SetTrilogy(bool trilogy_client) { m_is_trilogy = trilogy_client; if (trilogy_client) m_client_mac_version = trilogy; }
 
 private:
 	void QueuePacket(const EQApplicationPacket *packet, bool reliable = true);
@@ -141,6 +142,7 @@ private:
 	EQ::Random                         m_random;
 	LSClientStatus                     m_client_status;
 	LSMacClientVersion                 m_client_mac_version;
+	bool                               m_is_trilogy;
 
 	std::string  m_account_name;
 	unsigned int m_account_id;

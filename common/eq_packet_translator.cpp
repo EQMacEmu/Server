@@ -6,24 +6,23 @@
 #include <cassert>
 
 EQPacketEncodeResult::EQPacketEncodeResult()
-	: m_packet(nullptr),
-	  m_reliable(true)
 {
 }
 
 EQPacketEncodeResult::~EQPacketEncodeResult()
 {
-	delete m_packet;
+	for (auto &p : m_packets)
+	{
+		delete p.packet;
+	}
 }
 
 void EQPacketEncodeResult::SetPacket(EQApplicationPacket **packet, bool reliable)
 {
-	assert(m_packet == nullptr);
-	if (m_packet != nullptr || packet == nullptr || *packet == nullptr)
+	if (packet == nullptr || *packet == nullptr)
 		return;
 
-	m_packet = *packet;
-	m_reliable = reliable;
+	m_packets.push_back({ *packet, reliable });
 	*packet = nullptr;
 }
 

@@ -70,11 +70,13 @@ private:
 	static constexpr uint32 MaximumClientAcceptsPerTick = 5;
 
 	void AcceptClients();
+	void AcceptClientsFromEndpoint(RDPEndpoint &endpoint, LSMacClientVersion default_version);
 	ClientList::iterator RemoveClient(ClientList::iterator client);
 
 	RDPRuntime m_rdp_runtime;
 	EQPacketTranslator m_packet_translator;
 	RDPEndpoint m_rdp_endpoint;
+	RDPEndpoint m_rdp_endpoint_trilogy;
 	ClientList clients;
 };
 
