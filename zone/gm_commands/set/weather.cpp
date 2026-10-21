@@ -12,11 +12,11 @@ void SetWeather(Client *c, const Seperator *sep)
 	}
 
 	uint8 weather_type = 0;
-	if (sep->IsNumber(1) && sep->arg[2][0] != 0)
+	if (sep->IsNumber(2) && sep->arg[2][0] != 0)
 		weather_type = atoi(sep->arg[2]);
 
 	uint8 serverwide = 0;
-	if (sep->IsNumber(2) && sep->arg[3][0] != 0)
+	if (sep->IsNumber(3) && sep->arg[3][0] != 0)
 		serverwide = atoi(sep->arg[3]);
 
 	//Turn off weather
@@ -45,7 +45,7 @@ void SetWeather(Client *c, const Seperator *sep)
 	{
 		uint8 intensity = 3;
 		uint16 timer = 0;
-		if (sep->IsNumber(3) && sep->arg[4][0] != 0)
+		if (sep->IsNumber(4) && sep->arg[4][0] != 0)
 			timer = atoi(sep->arg[4]) * 60;
 
 		// Snow
