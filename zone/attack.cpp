@@ -2865,10 +2865,6 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 			else {
 				int32 origdmg = damage;
 				damage = AffectMagicalDamage(damage, spell_id, iBuffTic, attacker);
-				if (origdmg != damage && attacker && attacker->IsClient()) {
-					if (attacker->CastToClient()->GetFilter(FilterDamageShields) != FilterHide)
-						attacker->Message(Chat::Yellow, "The Spellshield absorbed %d of %d points of damage", origdmg - std::max(damage, 0), origdmg);
-				}
 			}
 		}
 
