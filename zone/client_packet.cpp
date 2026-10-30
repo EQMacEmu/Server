@@ -2711,9 +2711,27 @@ void Client::Handle_OP_ClickObject(const EQApplicationPacket *app)
 	}
 
 	auto* click_object = (ClickObject_Struct*)app->pBuffer;
+	click_object->player_id = GetID();
+
 	auto* entity = entity_list.GetID(click_object->drop_id);
 	if (entity && entity->IsObject()) {
 		auto* object = entity->CastToObject();
+
+		glm::vec3 object_pos(object->GetX(), object->GetY(), object->GetZ());
+		float max_range = static_cast<float>(RuleI(Range, ClickObject));
+		if (DistanceSquared(glm::vec3(GetPosition()), object_pos) > max_range * max_range) {
+			LogCheat("[{}] clicked object [{}] from out of range ([{:.1f}] > [{:.1f}])",
+				GetName(), click_object->drop_id, Distance(glm::vec3(GetPosition()), object_pos), max_range);
+
+			// Tell the client the click failed so it clears its pending action
+			auto outapp = new EQApplicationPacket(OP_ClickObject, sizeof(ClickObject_Struct));
+			ClickObject_Struct* reject = (ClickObject_Struct*)outapp->pBuffer;
+			reject->player_id = GetID();
+			reject->drop_id = 0xFFFFFFFF;
+			QueuePacket(outapp);
+			safe_delete(outapp);
+			return;
+		}
 
 		object->HandleClick(this, click_object);
 
