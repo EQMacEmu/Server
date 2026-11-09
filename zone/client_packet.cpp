@@ -3032,11 +3032,12 @@ void Client::Handle_OP_AutoAttack2(const EQApplicationPacket *app)
 
 void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 {
-	if(app->size<64)
+	if(app->size > 0 && app->size<64)
 	{
 		Consent_Struct* c = (Consent_Struct*)app->pBuffer;
 
-		char cname[64];
+		// the name is not guaranteed to be terminated, use this copy instead of c->name
+		char cname[64] = {};
 		memcpy(cname, c->name, app->size);
 		cname[63] = '\0';
 
@@ -3052,14 +3053,14 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 		}
 		else if (IsConsented(gname))
 		{
-			Message_StringID(Chat::White, StringID::CONSENT_DENIED, c->name);
+			Message_StringID(Chat::White, StringID::CONSENT_DENIED, cname);
 			char ownername[64];
 			strcpy(ownername, GetName());
-			Consent(0, ownername, c->name, true);
+			Consent(0, ownername, cname, true);
 
 			auto pack = new ServerPacket(ServerOP_ConsentDeny, sizeof(ServerOP_ConsentDeny_Struct));
 			ServerOP_ConsentDeny_Struct* scs = (ServerOP_ConsentDeny_Struct*)pack->pBuffer;
-			strcpy(scs->grantname, c->name);
+			strcpy(scs->grantname, cname);
 			strcpy(scs->ownername, GetName());
 			worldserver.SendPacket(pack);
 			safe_delete(pack);
@@ -3069,7 +3070,7 @@ void Client::Handle_OP_Consent(const EQApplicationPacket *app)
 		{
 			auto pack = new ServerPacket(ServerOP_Consent, sizeof(ServerOP_Consent_Struct));
 			ServerOP_Consent_Struct* scs = (ServerOP_Consent_Struct*)pack->pBuffer;
-			strcpy(scs->grantname, c->name);
+			strcpy(scs->grantname, cname);
 			strcpy(scs->ownername, GetName());
 			scs->message_string_id = 0;
 			scs->permission = 1;
@@ -4042,8 +4043,13 @@ void Client::Handle_OP_Forage(const EQApplicationPacket *app)
 
 void Client::Handle_OP_FriendsWho(const EQApplicationPacket *app)
 {
-	char *FriendsString = (char*)app->pBuffer;
-	FriendsWho(FriendsString);
+	if (app->size == 0) {
+		return;
+	}
+
+	// the packet is not guaranteed to be terminated, only read up to its size
+	std::string friends_string((const char*)app->pBuffer, strnlen((const char*)app->pBuffer, app->size));
+	FriendsWho(friends_string.data());
 	return;
 }
 
@@ -5334,7 +5340,7 @@ void Client::Handle_OP_GuildLeader(const EQApplicationPacket *app)
 
 		//NOTE: we could do cross-zone lookups here...
 		char target[64];
-		strcpy(target, gml->name);
+		strn0cpy(target, gml->name, sizeof(target));
 
 		Client* newleader = entity_list.GetClientByName(target);
 		if (newleader) {
@@ -5372,6 +5378,8 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 	}
 
 	GuildCommand_Struct* gc = (GuildCommand_Struct*)app->pBuffer;
+	gc->othername[sizeof(gc->othername) - 1] = '\0';
+	gc->myname[sizeof(gc->myname) - 1] = '\0';
 	if (!IsInAGuild())
 		Message(Chat::White, "Error: You arent in a guild!");
 	// we can always remove ourself, otherwise, our rank needs remove permissions
@@ -5383,7 +5391,8 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 	else {
 		uint32 char_id;
 		Client* client = entity_list.GetClientByName(gc->othername);
-		Client* remover = entity_list.GetClientByName(gc->myname);
+		// the remover is always the sender, gc->myname may name someone else or nobody
+		Client* remover = this;
 
 		if (client) {
 			if (!client->IsInGuild(GuildID())) {
@@ -5404,8 +5413,8 @@ void Client::Handle_OP_GuildRemove(const EQApplicationPacket *app)
 		else {
 			CharGuildInfo gci;
 			CharGuildInfo gci_;
-			if (!guild_mgr.GetCharInfo(gc->myname, gci_)) {
-				Message(Chat::White, "Unable to find '%s'", gc->myname);
+			if (!guild_mgr.GetCharInfo(GetName(), gci_)) {
+				Message(Chat::White, "Unable to find '%s'", GetName());
 				return;
 			}
 			if (!guild_mgr.GetCharInfo(gc->othername, gci)) {
@@ -6405,6 +6414,7 @@ void Client::Handle_OP_PickPocket(const EQApplicationPacket *app)
 	{
 		LogError("Size mismatch for Pick Pocket packet");
 		DumpPacket(app);
+		return;
 	}
 
 	if (!HasSkill(EQ::skills::SkillPickPockets))
@@ -6525,14 +6535,17 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 
 		if (!leader || !i || i != this) {
 			// send back a failure message back to the invited
-			i->Message_StringID(Chat::DefaultText, StringID::CANNOT_JOIN_RAID, ri->leader_name);
+			// i may be null here, and when it is not it is this client
+			char leader_name[64];
+			strn0cpy(leader_name, ri->leader_name, sizeof(leader_name));
+			Message_StringID(Chat::DefaultText, StringID::CANNOT_JOIN_RAID, leader_name);
 
 			// this will reset the raid for the invited, but will not give them a message their raid was disbanded.
 			auto outapp = new EQApplicationPacket(OP_RaidUpdate, sizeof(RaidGeneral_Struct));
 			RaidGeneral_Struct *rg = (RaidGeneral_Struct*)outapp->pBuffer;
 			rg->action = RaidCommandSendDisband;
-			strcpy(rg->leader_name, ri->player_name);
-			strcpy(rg->player_name, ri->player_name);
+			strn0cpy(rg->leader_name, ri->player_name, sizeof(rg->leader_name));
+			strn0cpy(rg->player_name, ri->player_name, sizeof(rg->player_name));
 			this->QueuePacket(outapp);
 			safe_delete(outapp);
 			return;
@@ -6837,8 +6850,15 @@ void Client::Handle_OP_ReadBook(const EQApplicationPacket *app)
 		LogError("Wrong size: OP_ReadBook, size=[{}], expected [{}]", app->size, sizeof(BookRequest_Struct));
 		return;
 	}
-	BookRequest_Struct* book = (BookRequest_Struct*)app->pBuffer;
-	ReadBook(book);
+	if (app->size == 0) {
+		return;
+	}
+
+	// shorter packets are accepted, so copy into a zeroed struct and make sure the name is terminated
+	BookRequest_Struct book = {};
+	memcpy(&book, app->pBuffer, app->size);
+	book.txtfile[sizeof(book.txtfile) - 1] = '\0';
+	ReadBook(&book);
 	return;
 }
 
@@ -7217,7 +7237,7 @@ void Client::Handle_OP_ShopPlayerBuy(const EQApplicationPacket *app)
 	auto returnapp = new EQApplicationPacket(OP_ShopPlayerBuy, sizeof(Merchant_Sell_Struct));
 	Merchant_Sell_Struct* mss = (Merchant_Sell_Struct*)returnapp->pBuffer;
 	mss->itemslot=0;
-	mss->npcid=tmp->GetID();
+	mss->npcid=mp->npcid;
 	mss->playerid=GetID();
 	mss->price=0;
 	mss->quantity=0;

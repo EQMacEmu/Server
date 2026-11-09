@@ -640,16 +640,25 @@ bool Client::HandleEnterWorldPacket(const EQApplicationPacket *app)
 
 bool Client::HandleDeleteCharacterPacket(const EQApplicationPacket *app) {
 
-	uint32 char_acct_id = database.GetAccountIDByChar((char*)app->pBuffer);
-	uint32 level = database.GetLevelByChar((char*)app->pBuffer);
+	if (app->size == 0) {
+		LogInfo("Empty OP_DeleteCharacter packet");
+		return true;
+	}
+
+	// the name is not guaranteed to be terminated, only read up to the packet size
+	char name[64] = {};
+	memcpy(name, app->pBuffer, std::min<uint32>(app->size, sizeof(name) - 1));
+
+	uint32 char_acct_id = database.GetAccountIDByChar(name);
+	uint32 level = database.GetLevelByChar(name);
 	if(char_acct_id == GetAccountID()) {
 		if(level >= 30) {
-			database.MarkCharacterDeleted((char *)app->pBuffer);
-			LogInfo("Backing up and marking as deleted character: [{}]", (char *)app->pBuffer);
+			database.MarkCharacterDeleted(name);
+			LogInfo("Backing up and marking as deleted character: [{}]", name);
 		}
 		else {
-			database.DeleteCharacter((char *)app->pBuffer);
-			LogInfo("Delete character: [{}]", (char *)app->pBuffer);
+			database.DeleteCharacter(name);
+			LogInfo("Delete character: [{}]", name);
 
 		}
 		SendCharInfo();
