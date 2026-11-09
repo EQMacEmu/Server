@@ -6488,6 +6488,8 @@ void Client::Handle_OP_RaidCommand(const EQApplicationPacket *app)
 	}
 
 	RaidGeneral_Struct *ri = (RaidGeneral_Struct*)app->pBuffer;
+	ri->player_name[sizeof(ri->player_name) - 1] = '\0';
+	ri->leader_name[sizeof(ri->leader_name) - 1] = '\0';
 	//Say("RaidCommand(action) %d leader_name(68): %s, player_name(04) %s param(132) %d", ri->action, ri->leader_name, ri->player_name, ri->parameter);
 
 	switch (ri->action)

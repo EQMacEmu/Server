@@ -90,7 +90,7 @@ void Raid::AddMember(Client *c, uint32 group, bool rleader, bool groupleader, bo
                                     "isgroupleader = %d, israidleader = %d, islooter = %d",
                                     (unsigned long)GetID(), (unsigned long)c->CharacterID(),
                                     (unsigned long)group, c->GetClass(), c->GetLevel(),
-                                    c->GetName(), groupleader, rleader, looter);
+                                    Strings::Escape(c->GetName()).c_str(), groupleader, rleader, looter);
     auto results = database.QueryDatabase(query);
 
 	if(!results.Success()) {
@@ -190,7 +190,7 @@ void Raid::AddGroupToRaid(Client* inviter, Client* invitee, Group* group, uint32
 
 void Raid::RemoveMember(const char *characterName)
 {
-	std::string query = StringFormat("DELETE FROM raid_members where name='%s'", characterName);
+	std::string query = StringFormat("DELETE FROM raid_members where name='%s'", Strings::Escape(characterName).c_str());
 	auto results = database.QueryDatabase(query);
 
 	Client *client = entity_list.GetClientByName(characterName);
@@ -349,7 +349,7 @@ void Raid::DisbandRaidMember(const char *name, Client *who)
 void Raid::MoveMember(const char *name, uint32 newGroup)
 {
 	std::string query = StringFormat("UPDATE raid_members SET groupid = %lu WHERE name = '%s'",
-                                    (unsigned long)newGroup, name);
+                                    (unsigned long)newGroup, Strings::Escape(name).c_str());
     auto results = database.QueryDatabase(query);
 
 	LearnMembers();
@@ -369,7 +369,7 @@ void Raid::MoveMember(const char *name, uint32 newGroup)
 void Raid::SetGroupLeader(const char *who, uint32 gid, bool flag)
 {
 	std::string query = StringFormat("UPDATE raid_members SET isgroupleader = %lu WHERE name = '%s'",
-                                    (unsigned long)flag, who);
+                                    (unsigned long)flag, Strings::Escape(who).c_str());
     auto results = database.QueryDatabase(query);
 
 	LearnMembers();
@@ -389,7 +389,7 @@ void Raid::SetGroupLeader(const char *who, uint32 gid, bool flag)
 
 void Raid::UnSetGroupLeader(const char *who, const char *other, uint32 gid)
 {
-	std::string query = StringFormat("UPDATE raid_members SET isgroupleader = 0 WHERE name = '%s'", who);
+	std::string query = StringFormat("UPDATE raid_members SET isgroupleader = 0 WHERE name = '%s'", Strings::Escape(who).c_str());
     auto results = database.QueryDatabase(query);
 
 	LearnMembers();
@@ -410,13 +410,13 @@ void Raid::UnSetGroupLeader(const char *who, const char *other, uint32 gid)
 void Raid::SetRaidLeader(const char *wasLead, const char *name)
 {
 	if (strlen(wasLead) > 0) {
-		std::string query = StringFormat("UPDATE raid_members SET israidleader = 0 WHERE name = '%s'", wasLead);
+		std::string query = StringFormat("UPDATE raid_members SET israidleader = 0 WHERE name = '%s'", Strings::Escape(wasLead).c_str());
 		auto results = database.QueryDatabase(query);
 		if (!results.Success())
 			LogError("Set Raid Leader error: [{}]", results.ErrorMessage());
 	}
 	if (strlen(name) > 0) {
-		std::string query = StringFormat("UPDATE raid_members SET israidleader = 1, islooter = 1 WHERE name = '%s'", name);
+		std::string query = StringFormat("UPDATE raid_members SET israidleader = 1, islooter = 1 WHERE name = '%s'", Strings::Escape(name).c_str());
 		auto results = database.QueryDatabase(query);
 		if (!results.Success())
 			LogError("Set Raid Leader error: [{}]", results.ErrorMessage());
@@ -455,7 +455,7 @@ bool Raid::IsGroupLeader(const char *who)
 void Raid::UpdateLevel(const char *name, int newLevel)
 {
 	std::string query = StringFormat("UPDATE raid_members SET level = %lu WHERE name = '%s'",
-                                    (unsigned long)newLevel, name);
+                                    (unsigned long)newLevel, Strings::Escape(name).c_str());
     auto results = database.QueryDatabase(query);
 
 	LearnMembers();
@@ -931,7 +931,7 @@ void Raid::ChangeLootType(uint32 type)
 
 void Raid::AddRaidLooter(const char* looter)
 {
-	std::string query = StringFormat("UPDATE raid_members SET islooter = 1 WHERE name = '%s'", looter);
+	std::string query = StringFormat("UPDATE raid_members SET islooter = 1 WHERE name = '%s'", Strings::Escape(looter).c_str());
 	auto results = database.QueryDatabase(query);
 
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)
@@ -953,7 +953,7 @@ void Raid::AddRaidLooter(const char* looter)
 
 void Raid::RemoveRaidLooter(const char* looter)
 {
-	std::string query = StringFormat("UPDATE raid_members SET islooter = 0 WHERE name = '%s'", looter);
+	std::string query = StringFormat("UPDATE raid_members SET islooter = 0 WHERE name = '%s'", Strings::Escape(looter).c_str());
 	auto results = database.QueryDatabase(query);
 
 	for(int x = 0; x < MAX_RAID_MEMBERS; x++)

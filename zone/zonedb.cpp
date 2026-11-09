@@ -1505,13 +1505,13 @@ bool ZoneDatabase::DeleteCharacterConsent(char grantname[64], char ownername[64]
 {
 	if (corpse_id == 0)
 	{
-		std::string query = StringFormat("DELETE FROM `character_consent` WHERE `consenter_name` = '%s' AND `name` = '%s'", ownername, grantname);
+		std::string query = StringFormat("DELETE FROM `character_consent` WHERE `consenter_name` = '%s' AND `name` = '%s'", Strings::Escape(ownername).c_str(), Strings::Escape(grantname).c_str());
 		QueryDatabase(query);
 		return true;
 	}
 	else
 	{
-		std::string query = StringFormat("DELETE FROM `character_consent` WHERE `consenter_name` = '%s' AND `name` = '%s' AND corpse_id = %u", ownername, grantname, corpse_id);
+		std::string query = StringFormat("DELETE FROM `character_consent` WHERE `consenter_name` = '%s' AND `name` = '%s' AND corpse_id = %u", Strings::Escape(ownername).c_str(), Strings::Escape(grantname).c_str(), corpse_id);
 		QueryDatabase(query);
 		return true;
 	}
