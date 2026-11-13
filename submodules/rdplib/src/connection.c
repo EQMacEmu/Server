@@ -93,7 +93,12 @@ void connection_recalc_event_timeout(connection_t *c, timeout_data *uevent_time)
         {
             c->cn_event_type = CONNECTION_EVENT_TX;
             uevent_time->infinite = 0;
+#ifdef RDPLIB_SOURCE_FAITHFUL
             uevent_time->time = c->tx_ack_time;
+#else
+            // We may still owe ACKs to a stopped peer; respect retry pacing.
+            tx_get_event_time(c, uevent_time);
+#endif
         }
     }
     else
@@ -470,6 +475,14 @@ void connection_handle_icmp(connection_t *c, uint8_t type, uint8_t code, uint8_t
 {
     uint32_t current_time;
     uint32_t ignored;
+
+#ifndef RDPLIB_SOURCE_FAITHFUL
+    // Preserve the original disconnect details; trace replies are separate.
+    if (!trace_reply && !c->tx_connected)
+    {
+        return;
+    }
+#endif
 
     ignored = 0;
     current_time = time_get_ms();

@@ -850,6 +850,43 @@ void rdp_destroy_internal(rdp_t *rdp)
     }
 }
 
+#if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
+void rdplib_rdp_drain_icmp_errors(rdp_t *rdp)
+{
+    enum { RDP_ICMP_ERROR_BATCH_SIZE = 32 };
+    rdplib_platform_icmp_error_t errors[RDP_ICMP_ERROR_BATCH_SIZE];
+    uint32_t count;
+    uint32_t i;
+
+    do
+    {
+        // Clear a burst before dispatch can wait on a peer's connection lock.
+        for (count = 0; count < RDP_ICMP_ERROR_BATCH_SIZE; ++count)
+        {
+            if (!rdplib_platform_receive_icmp_error(rdp->udp_socket, &errors[count]))
+            {
+                break;
+            }
+        }
+        for (i = 0; i < count; ++i)
+        {
+            rdplib_platform_icmp_error_t *error = &errors[i];
+
+            if (error->type == 3 || error->type == 4 || error->type == 11)
+            {
+                struct sockaddr_in remote_addr;
+                struct sockaddr_in source_addr;
+
+                // Error records are byte-aligned; dispatch needs aligned addresses.
+                memcpy(&remote_addr, error->remote_address, sizeof(remote_addr));
+                memcpy(&source_addr, error->source_address, sizeof(source_addr));
+                rdplib_rdp_handle_reported_icmp(rdp, (struct sockaddr *)&remote_addr, error->type, error->code, 0, 0, &source_addr);
+            }
+        }
+    } while (count == RDP_ICMP_ERROR_BATCH_SIZE);
+}
+#endif
+
 void rdp_io_thread(void *data)
 {
     rdp_t *rdp;
@@ -993,16 +1030,7 @@ void rdp_io_thread(void *data)
 #if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
                 if (rdp->icmp_socket == -1)
                 {
-                    rdplib_platform_icmp_error_t error;
-
-                    while (rdplib_platform_receive_icmp_error(rdp->udp_socket, &error))
-                    {
-                        if (error.type == 3 || error.type == 4 || error.type == 11)
-                        {
-                            rdplib_rdp_handle_reported_icmp(rdp, (struct sockaddr *)(void *)error.remote_address, error.type, error.code, 0, 0,
-                                                            (struct sockaddr_in *)(void *)error.source_address);
-                        }
-                    }
+                    rdplib_rdp_drain_icmp_errors(rdp);
                 }
 #endif
                 do

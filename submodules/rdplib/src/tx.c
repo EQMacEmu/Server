@@ -19,6 +19,10 @@
 #endif
 #include <string.h>
 
+#if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
+#include <errno.h>
+#endif
+
 #include "bandwidth.h"
 #include "bitops.h"
 #ifdef RDPLIB_DEBUG
@@ -1352,6 +1356,14 @@ void tx_abort_connection(connection_t *c, uint32_t disconnect_reason)
     tx_flush_output_buffers(c);
     rx_flush_input_buffers(c);
 
+#ifndef RDPLIB_SOURCE_FAITHFUL
+    if (!c->tx_connected)
+    {
+        // Keep the first abort's cause, counters, and notification state.
+        goto complete_waiters;
+    }
+#endif
+
     if (!c->tx_syn_acked)
     {
         ++g_rdp_stat->embryonic_connections_dropped;
@@ -1365,10 +1377,12 @@ void tx_abort_connection(connection_t *c, uint32_t disconnect_reason)
     {
         ++g_rdp_stat->connections_dropped_hacker;
     }
+#ifdef RDPLIB_SOURCE_FAITHFUL
     else if (c->rx_icmp_received && (int32_t)(time_get_ms() - c->rx_icmp_time) < 10000)
     {
         c->tx_disconnect_reason = RDP_DISCONNECT_REASON_ICMP;
     }
+#endif
 
     if (disconnect_reason > RDP_DISCONNECT_REASON_UNACKNOWLEDGED_MESSAGE)
     {
@@ -1433,6 +1447,11 @@ void tx_abort_connection(connection_t *c, uint32_t disconnect_reason)
         }
     }
 
+#ifndef RDPLIB_SOURCE_FAITHFUL
+    c->tx_enqueued_disconnect_msg = 0;
+
+complete_waiters:
+#endif
     if (c->tx_all_acked)
     {
 #ifdef RDPLIB_DEBUG
@@ -1448,7 +1467,9 @@ void tx_abort_connection(connection_t *c, uint32_t disconnect_reason)
         c->tx_all_acked_event = NULL;
     }
 
+#ifdef RDPLIB_SOURCE_FAITHFUL
     c->tx_enqueued_disconnect_msg = 0;
+#endif
 }
 
 void tx_received_stopped(connection_t *c)
@@ -1599,6 +1620,9 @@ uint32_t tx_send_packet(connection_t *c, char *data, uint32_t size, uint16_t opt
     uint32_t ack_size;
     uint16_t header[12];
     uint32_t result;
+#if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
+    uint32_t short_backoff = 0;
+#endif
     uint16_t *options;
 #ifndef RDPLIB_SOURCE_FAITHFUL
     uint32_t send_ack_separately = 0;
@@ -1718,6 +1742,14 @@ uint32_t tx_send_packet(connection_t *c, char *data, uint32_t size, uint16_t opt
         result = usend(c->tx_socket, iov, 2u, &c->tx_remote_addr, c->cn_rdp->encrypt, c->cn_rdp->crc);
 #else
         result = rdplib_usend(c, c->tx_socket, iov, data ? 2u : 1u, &c->tx_remote_addr, c->cn_rdp->encrypt, c->cn_rdp->crc);
+#if defined(__linux__)
+        if (result == 5)
+        {
+            // Capture the failed send's errno before logging or clock calls.
+            int error = errno;
+            short_backoff = error != EAGAIN && error != EWOULDBLOCK && error != ENOBUFS && error != ENOMEM;
+        }
+#endif
 #endif
 #ifdef RDPLIB_DEBUG
         dpf(0x40000u, "sendto TIME: %u SEQNUM: %u SIZE: %u\n", time_get_ms(), c->tx_next_seqnum, size + header_size);
@@ -1748,7 +1780,18 @@ uint32_t tx_send_packet(connection_t *c, char *data, uint32_t size, uint16_t opt
     }
     else if (result == 5)
     {
-        bandwidth_enqueue_bytes(&c->tx_bandwidth, bandwidth_get_send_speed(&c->tx_bandwidth) / 10u);
+        uint32_t rate = bandwidth_get_send_speed(&c->tx_bandwidth);
+        uint32_t backoff_bytes = rate / 10u;
+
+#if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
+        if (short_backoff)
+        {
+            // Keep retry pacing for unattributed errors modest: about 20 ms.
+            // Round up so a low configured rate still yields a nonzero charge.
+            backoff_bytes = rate / 50u + (rate % 50u != 0u);
+        }
+#endif
+        bandwidth_enqueue_bytes(&c->tx_bandwidth, backoff_bytes);
 #ifndef RDPLIB_SOURCE_FAITHFUL
         c->rx_msgid_count = saved_unreported_message_count;
         c->rx_msgid_lo = saved_unreported_min_message_id;

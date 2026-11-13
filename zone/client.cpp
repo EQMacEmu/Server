@@ -940,8 +940,16 @@ std::string FormatRDPTransport(const RDPStream::ConnectionSnapshot &snapshot)
 		reason_name = "PeerReset";
 		break;
 	case RDPLIB_DISCONNECT_REASON_ICMP:
-		reason_name = "ICMP";
-		break;
+		return fmt::format(
+			"ICMP({:#010x}, type={}, code={}, reporter={}.{}.{}.{})",
+			snapshot.disconnect_reason,
+			static_cast<uint32>(snapshot.disconnect_info.icmp_type),
+			static_cast<uint32>(snapshot.disconnect_info.icmp_code),
+			static_cast<uint32>(snapshot.disconnect_info.icmp_source_ipv4[0]),
+			static_cast<uint32>(snapshot.disconnect_info.icmp_source_ipv4[1]),
+			static_cast<uint32>(snapshot.disconnect_info.icmp_source_ipv4[2]),
+			static_cast<uint32>(snapshot.disconnect_info.icmp_source_ipv4[3])
+		);
 	case RDPLIB_DISCONNECT_REASON_UNACKNOWLEDGED_MESSAGE:
 		reason_name = "UnacknowledgedMessage";
 		break;

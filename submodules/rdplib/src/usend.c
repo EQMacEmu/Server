@@ -27,8 +27,19 @@ enum
     RDP_USEND_CAPACITY_EXCEEDED = 18
 };
 
-static uint32_t rdplib_usend_socket_error_is_retryable(uint32_t error)
+static uint32_t rdplib_usend_socket_error_is_retryable(uint32_t error, int32_t sent)
 {
+#if defined(__linux__) && !defined(RDPLIB_SOURCE_FAITHFUL)
+    // Linux can report another destination's pending error on this shared
+    // socket. Attribute peer failures through the receive-side error record;
+    // preserve retry state instead of aborting the current sender.
+    if (sent < 0)
+    {
+        return 1;
+    }
+#else
+    (void)sent;
+#endif
     if (error == RDP_USEND_WOULD_BLOCK)
     {
         return 1;
@@ -162,7 +173,7 @@ uint32_t usend(intptr_t socket, iov_t *iov, uint32_t iov_len, struct sockaddr *r
     char_sent = rdplib_platform_send_datagram(socket, (const uint8_t *)buffer, (uint32_t)buffer_size, (const uint8_t *)remote_addr);
     if (char_sent != buffer_size)
     {
-        if (rdplib_usend_socket_error_is_retryable(rdplib_platform_last_socket_error()))
+        if (rdplib_usend_socket_error_is_retryable(rdplib_platform_last_socket_error(), char_sent))
         {
             result = 5;
         }
@@ -223,7 +234,7 @@ static uint32_t rdplib_usend_send_joined(intptr_t socket, char *buffer, int32_t 
     char_sent = rdplib_platform_send_datagram(socket, (const uint8_t *)buffer, (uint32_t)buffer_size, (const uint8_t *)remote_addr);
     if (char_sent != buffer_size)
     {
-        return rdplib_usend_socket_error_is_retryable(rdplib_platform_last_socket_error()) ? 5u : 1u;
+        return rdplib_usend_socket_error_is_retryable(rdplib_platform_last_socket_error(), char_sent) ? 5u : 1u;
     }
     return 0;
 }
