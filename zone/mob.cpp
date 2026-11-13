@@ -1203,7 +1203,7 @@ void Mob::SendRealPosition()
 		SpawnPositionUpdates_Struct *spu = (SpawnPositionUpdates_Struct *)app->pBuffer;
 		spu->num_updates = 1; // hack - only one spawn position per update
 		MakeSpawnUpdateNoDelta(&spu->spawn_update);
-		entity_list.QueueClientsPosUpdate(this, app, true, false);
+		entity_list.QueueClientsPosUpdate(this, app, true);
 		safe_delete(app);
 	}
 }
@@ -3298,9 +3298,10 @@ bool Mob::DoKnockback(Mob *caster, float pushback, float pushup, bool send_packe
 	float dy = cosf(heading) * pushback;
 	float dz = pushup;
 
+	std::unique_ptr<EQApplicationPacket> app; // unique_ptr deletes packet whether sent or not below
 	if (send_packet)
 	{
-		auto app = new EQApplicationPacket(OP_MobUpdate, sizeof(SpawnPositionUpdates_Struct));
+		app = std::make_unique<EQApplicationPacket>(OP_MobUpdate, sizeof(SpawnPositionUpdates_Struct));
 		SpawnPositionUpdates_Struct *spu = (SpawnPositionUpdates_Struct *)app->pBuffer;
 		spu->num_updates = 1;
 		MakeSpawnUpdate(&spu->spawn_update);
@@ -3308,8 +3309,6 @@ bool Mob::DoKnockback(Mob *caster, float pushback, float pushup, bool send_packe
 		dx = spu->spawn_update.delta_yzx.GetX();
 		dy = spu->spawn_update.delta_yzx.GetY();
 		dz = spu->spawn_update.delta_yzx.GetZ();
-		entity_list.QueueCloseClients(this, app, false, 350, nullptr, false, FilterPCSpells);
-		safe_delete(app);
 	}
 
 	glm::vec3 newloc(GetX() + dx, GetY() + dy, GetZ() + dz);
@@ -3324,6 +3323,11 @@ bool Mob::DoKnockback(Mob *caster, float pushback, float pushup, bool send_packe
 
 	if (CheckCoordLosNoZLeaps(GetX(), GetY(), GetZ(), newloc.x, newloc.y, newloc.z))
 	{
+		if (app)
+		{
+			entity_list.QueueCloseClients(this, app.get(), false, 350, nullptr, true, FilterPCSpells);
+		}
+
 		if (IsClient())
 		{
 			CastToClient()->cheat_manager.SetExemptStatus(KnockBack, true);
