@@ -1535,12 +1535,14 @@ bool Client::SwapItem(MoveItem_Struct* move_in) {
 		// When we have a bag on the cursor filled with items that is new (zoned with it, summoned it, picked it up from the ground)
 		// the client is only aware of the bag. So, we have to send packets for each item within the bag once it is placed in the inventory.
 		// This is a workaround hack until we can figure out how to send these items to the client while they are still on the cursor.
+		// A bag can go from the cursor into a general or a bank slot, so its contents are sent for either.
 		const EQ::ItemInstance* baginst = m_inv[dst_slot_id];
 		if(src_slot_id == EQ::invslot::slotCursor && baginst && baginst->IsType(EQ::item::ItemClassBag))
 		{
-			for (int16 trade_bag_slot = EQ::invbag::GENERAL_BAGS_BEGIN + (dst_slot_id - EQ::invslot::GENERAL_BEGIN) * EQ::invbag::SLOT_COUNT;
-				trade_bag_slot <= EQ::invbag::GENERAL_BAGS_BEGIN + (dst_slot_id - EQ::invslot::GENERAL_BEGIN) * EQ::invbag::SLOT_COUNT + 9;
-				++trade_bag_slot) {
+			for (uint8 bag_idx = EQ::invbag::SLOT_BEGIN; bag_idx <= EQ::invbag::SLOT_END; ++bag_idx) {
+				int16 trade_bag_slot = EQ::InventoryProfile::CalcSlotId(dst_slot_id, bag_idx);
+				if (trade_bag_slot == INVALID_INDEX)
+					break;
 				const EQ::ItemInstance* inst = m_inv[trade_bag_slot];
 				if(inst)
 				{

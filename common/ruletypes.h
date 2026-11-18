@@ -415,6 +415,7 @@ RULE_INT ( Range, DamageMessages, 75, "")
 RULE_INT ( Range, CombatSpecials, 80, "")
 RULE_INT ( Range, SpellMessages, 75, "")
 RULE_INT ( Range, SongMessages, 60, "")
+RULE_INT ( Range, ClickObject, 30, "Max distance a client can be from a ground item or world container to click it. The client allows 20; the rest covers position update lag.")
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(Doors)

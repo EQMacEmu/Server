@@ -765,11 +765,11 @@ const EQ::ItemData* SharedDatabase::IterateItems(uint32* id)
 
 std::string SharedDatabase::GetBook(const char *txtfile)
 {
-	char txtfile2[20];
 	std::string txtout;
-	strcpy(txtfile2, txtfile);
+	// the name comes from a 20 byte client field that may not be terminated
+	std::string book_name(txtfile, strnlen(txtfile, 20));
 
-	std::string query = StringFormat("SELECT txtfile FROM books WHERE name = '%s'", txtfile2);
+	std::string query = StringFormat("SELECT txtfile FROM books WHERE name = '%s'", Strings::Escape(book_name).c_str());
 	auto results = QueryDatabase(query);
 	if (!results.Success()) {
 		txtout.assign(" ",1);
@@ -777,7 +777,7 @@ std::string SharedDatabase::GetBook(const char *txtfile)
 	}
 
     if (results.RowCount() == 0) {
-		LogError("No book to send, ({0})", txtfile);
+		LogError("No book to send, ({0})", book_name);
         txtout.assign(" ",1);
         return txtout;
     }
